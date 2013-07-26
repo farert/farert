@@ -1,0 +1,27 @@
+
+
+
+
+create table tl(sales_km, name, flg);
+insert into tl values(0, 'tsukimino', 0);
+insert into tl values(1, 'minamima', 0);
+insert into tl values(2, 'suzuka', 0);
+insert into tl values(3, 'nagatsu', 1);
+insert into tl values(4, 'tana', 0);
+insert into tl values(5, 'aobada', 0);
+insert into tl values(6, 'fujigaoka', 0);
+insert into tl values(7, 'ichigao', 0);
+insert into tl values(8, 'eda', 0);
+insert into tl values(9, 'azam', 1);
+insert into tl values(10, 'tamaplaza', 0);
+insert into tl values(11, 'saginu', 0);
+insert into tl values(12, 'miyama', 0);
+insert into tl values(13, 'miyaza', 0);
+insert into tl values(14, 'kagiga', 0);
+insert into tl values(15, 'mizono', 1);
+insert into tl values(16, 'takatsu', 0);
+insert into tl values(17, 'futakos', 0);
+insert into tl values(18, 'futakot', 1);
+insert into tl values(19, 'youga', 0);
+
+

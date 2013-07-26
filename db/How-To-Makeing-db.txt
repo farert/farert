@@ -1,0 +1,39 @@
+2013-7-25
+	mkdb.bat を実行するだけで良しとする
+
+
+2012-6-9
+
+ jr.db
+ 
+ 作成方法
+ 　1) Excel(JRDB.XLS)を編集
+ 　  各シートをコピーして、任意の新規作成テキストファイル(JRDB.TXT)へ貼り付ける
+      (lines, clinfar, rule69, rule70, rule86, fare)
+   
+   2) python jr_db_reg.py
+   3) python node_list.py
+
+
+   jrdb.db -+- jr_db_reg.py
+          +- node_list.py     ※ jrdb.pyはjr_db_reg.py, node_list.py などから使用されます.
+
+
+  以上で完成
+  
+  alps_mfcに組み込む場合、
+  リソースディレクトリにcrypt_tofish.exe enc jr.db で作成されたjr.db.encを
+  prj/res/　へ配置
+
+
+
+
+
+オープンソース化する
+
+経路探索、交通系以外のシステムの用途では利用可能とする？
+→あいまいだからダメ
+
+GPLが望ましい
+
+

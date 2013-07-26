@@ -1,0 +1,161 @@
+Data
+
+
+発駅 xxxxxx　|都道府県| |直接入力| |線名|
+着駅 xxxxxx
+経由 xxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+都道府県入力ダイアログ
+
+　1)都道府県一覧：コンボボックス
+　2)あいうえお順駅名：コンボボックス
+
+直接入力
+　1)あ～ん、1文字消去：ボタン
+　2)繰り返し
+　1文字入力ごとに、候補をリスト表示
+
+　候補リストを選択させる
+　
+線名入力
+　1)あいうえお順：コンボボックス
+
+
+
+-- 会社 t_company
+create table t_company(
+	id 	integer primary key not null,
+        name 	text unique	-- 会社
+)
+
+-- 都道府県 t_prefect
+create table t_prefect(
+	id 	integer primary key not null,
+        name 	text
+)
+
+
+-- primary key は、下16ビットをシーケンスIDとして、上位は各種フラグの意味にする
+-- 制御フラグ、規則例外フラグ、大都市特定区間、近郊区間など
+
+-- 駅
+create table t_eki(
+      id 	integer not null primary key,
+      name 	text 	not null unique,    -- 駅名 name unicode
+      kana 	text	not null,           -- かな kana unicode
+      prefect 	integer not null foreign key references t_prefect(id), 	    -- 都道府県idx$
+      company 	integer not null foreign key references t_company(id), 	    -- 鉄道会社idx$
+)
+
+
+-- 線区
+create table t_trl(
+	id		integer not null primary key,
+	name 		text 	not null unique,	-- 路線名 name unicode unique
+        kana 		text 	not null,		-- かな kana unicode
+        eki_begin_id 	integer	not null foreign key references t_eki(id),	-- 起点駅idx$
+        eki_end_id 	integer	not null foreign key references t_eki(id),	-- 起点駅idx$
+     )
+
+
+-- 駅路線T 
+create table t_trnode(
+	id		integer not null primary key,
+	trl		integer not null unique foreign key references t_trl(id), -- 路線Idx$
+	eki		integer not null unique foreign key references t_eki(id), -- 駅Idx$
+	km_sum		integer not null -- 起点からの運賃計算キロ km short x10
+    	expect_flg	integer not null default(0),	-- 特例except flag int32
+	brch		integer not null foreign key references t_trnode(id),	-- X 分岐idx$. 分岐があるかないかフラグ 無ければ-1
+
+-- 分岐駅T
+create table t_jct(
+	id		integer not null primary key,
+	eki		integer not null
+	trl		integer not null
+)
+
+X 分岐駅T t_jct
+X      駅idx$.    unique
+x      線区idx$. unique
+
+
+
+
+経路  t_route
+        路線Idx$ rosen_idx
+        駅Idx$    eki_id
+
+線区T
+路線idx$、駅idx$、計算キロ、フラグ、分岐$
+$foreign key
+Unique key(路線、駅)
+
+駅から路線
+select 路線 from  線区 where 駅 
+
+select * from t_trnode where eki
+
+
+路線から分岐駅
+select 駅 from 分岐駅 where 線区
+
+都道府県
+select 駅 from 駅 where 都道府県
+※ 会社も同様
+ 
+1)駅から路線一覧
+ 上り方向or下り方向
+2)路線から分岐駅一覧
+ 開始駅 and (上り方向 or 下り方向)
+
+1)は直近路線(経路リストの最新)を引数とする。経路リストの最新はリスト内直近の路線は、除外する。上り下りは不要(関数仕様として将来の為必要
+2)は現在駅(経路リストの最新)ー経路リストを引数とする。経路リスト内にある駅までを候補リストとする。その先は載せない。経路リスト内の直近の駅(現在駅)は、除外。経路リスト内に存在する駅があったら、その駅までを候補リストとする。
+
+
++1 都道府県リストを返す
+	select name from t_prefect order by id
+
++2 都道府県コードと「あ～ん」を入力とし駅一覧を返す
+	select t_eki.name from t_eki join t_prefect on t_prefect.id=prefect where prefect=? and kana like '?%' order by kana
+
++3 路線コードと「あ～ん」を入力とし駅一覧を返す
+	
+
++4 全路線リストを返す
++5 全会社リストを返す
++6 会社コードから路線一覧を返す
++7 都道府県コードから路線リストを返す
++8「あ～ん」を入力とし路線一覧を返す
++9 ひらがな駅名から駅一覧を返す
++10 漢字駅名から駅一覧を返す
++11 入力履歴の最新順に駅一覧を返す
+
++12 駅名から駅コードを返す
+
++13 駅コードから路線コード一覧を返す
+
++14 路線コードと開始駅コードと経路内路線駅リストを入力として駅一覧を返す
+（経路入力時、着駅指定リストに使用）
+
++16 経路リストから路線コード内の駅一覧を返す（メソッド15の最後の入力引数で分岐駅前提）
+（池袋->渋谷->目黒->秋葉原->御茶ノ水のとき、代々木と神田が該当）
+
++17 路線コードから分岐駅一覧を返す
+        オプションとして駅コードも指定
+         さらにオプションとして最近の経由リストを指定
+     駅コード指定の場合、近い順に昇順ソート、経由リスト内に存在する駅は選択不可？
++18 経路リストをチェック
+     経路エラーはあり得ないので、診断用
++19 経路リストから営業キロを計算
+      配列で会社線、特定経路、JR各線別
+      に返す
++20 営業キロ情報から金額情報を返す
++21 指定した駅が経路リスト内で通過していないかチェックする
++22 指定駅が路線内に存在する駅か？
+         #Aで町田ー長津田と指定してたら？
+
+
+
+| Style : Background0, Font0, Size16 |

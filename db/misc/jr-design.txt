@@ -1,0 +1,732 @@
+
+
+1 運賃
+特別料金
+3島
+地方交通線のみ
+特定電車区間
+特定私鉄競合区間
+特定区間
+
+
+2 新幹線乗換(新幹線－＞在来線）
+乗換駅、乗換路線、乗換可能方向
+（戻らなければ無条件でＯＫ）
+新幹線駅フラグ
+新幹線路線属性
+在来線戻り禁止分岐駅フラグ
+東京-浜松-天竜峡はNG
+東京-浜松-高塚はOK
+名古屋-浜松-天竜峡はOK
+名古屋-浜松-高塚はNG
+
+
+東京-静岡-富士はOK
+名古屋-三島-富士もOK
+
+
+t_lines.spe_route bit1 ON にして、addRoute, clrRoute時は、そのまままで、m_stmtJunctionsFromLine, m_stmtStationsFromLineでは、where (spe_route & 2) = 0 の条件を付加。新幹線にない駅で分岐駅は spe_routeのbit1をONにする
+--
+
+
+東京-(新幹線)-名古屋-(中央西)恵那 -(a)
+は
+正確には、
+東京-(新幹線)-名古屋-(東海道線)-金山(中央西)恵那 -(b)
+である。
+だが、名古屋-(東海道線)-金山間は特例で除外可能
+
+
+東京-(新幹線)-名古屋-(中央西)恵那  -(a)
+
+
+->
+名古屋で中央西線の乗り換えられるので、(a)指定で操作可能
+ただし、名古屋-金山間は途中下車(始発駅含む）できません」の注釈が入る。
+この間は、中央西線のspe_routeに途中下車禁止フラグをbit2(where (sproute & 4)=4)をONにする
+
+
+(a)を(b)で計算
+内部データ保存時に(b)に変換？
+計算時、特例により振り分け(b)で計算？
+いずれにせよ注釈は表示するので後者でも前者でも構わないが、前者のメリットは薄い
+
+
+(b)指定は、名古屋から戻る際、重複するのでNG
+金山までは可能。それ以遠の中央西線の駅ならOKだが、東海道線はNG
+東海道線は名古屋から上り方向の駅を表示しないようにすべき
+--
+
+
+addRoute(line_id,
+   if 2 <= m_route.size() && line_id is HEIKOU_ZAIRAISEN関数：SQL 検討
+     if HIWORD(m_route.back()) is SHINKANSEN関数：SQL 検討
+        reverse_iterator rit = m_route.rbegin();
+        s2 = *rit;     // 浜松
+        li = HIWORD(s2)
+        s2 = LOWORD(s2)
+        ++rit;
+        s1 = *rit;     // 新横浜
+        if line_id:stationId1-stationId2 is assend(上り?)
+          if li:s1-s2 is assend
+             ok(thru)
+          else
+             ng                   return -1
+        else // descend(下り)
+          if li:s1-s2 is assend
+             ng                   return -1
+          else
+             ok(thru)
+     else
+        thru
+   else
+     thru
+     
+->または、事前に上位の
+OnBnClickedButtonSel()のcase 2:路線から分岐駅の表示(SetLineOrStationList(m_curLineId);)でやるか。
+(選択できないようにさせる）-> 前者(addRouteではじかせることとする）
+
+
+Q新横浜発、天竜川着と指定して、浜松以遠を選択したら？エラーになるべき
+-> ならないのでまずい
+-> 手当：
+
+
+東京-山手線-品川-新横浜-小田原-熱海-三島-静岡-浜松
+東京-名古屋-金山-恵那
+東京-金山-恵那
+
+
+
+
+
+Case1.
+新横浜
+東海道新幹線静岡
+東海道線草薙
+
+Case2.
+新横浜
+東海道新幹線浜松
+東海道線天竜川NG
+
+なにも考えないとどちらもOK
+長津田 横浜線
+東神奈川 東海道線
+川崎 南武線
+立川 中央線
+八王子 横浜線
+十日市場<-NG
+成瀬ならOK
+
+Lineテーブルから発駅、発降車駅、チェック駅1, チェック駅2の4駅を営業キロ順に並べて重なり合ってないかチェック
+
+函館、五稜郭など
+
+新幹線は、表示しない在来線乗り換え駅を列挙するが、博多から新大阪の場合？
+分岐テーブルマップなので問題ない
+
+1) 東京ー新幹線ー浜松ー東海道線ー天竜川
+2) 東京ー東海道線ー浜松ー東海道線ー天竜川
+3) 東京ー新幹線ー静岡ー東海道線ー草薙
+
+2)はそもそも、東海道線から東海道線への乗り換えが不可。
+
+新幹線の各駅に降車時の無効駅リストテーブルが必要
+上記例では掛川ー浜松までの各駅
+静岡ー三島までの在来線各駅はなし
+上り方向と下り方向と別々に持つ必要がある
+または、進行禁止路線と方向を一つ持てば良い。
+進行方向は不要？
+
+
+
+
+
+
+
+
+
+
+神田や金山の扱い
+
+
+
+
+
+
+
+
+規則88条
+大阪・新大阪－姫路以遠は、大阪から計算する。
+
+
+規則89条
+北新地から尼崎以遠へは大阪から計算する(料金のみ。有効期間は通常通り)
+
+
+
+
+規則86条
+都区市内発着
+
+
+規則87条
+山手線内発着
+
+
+
+
+3．会社線通貨連絡運輸
+
+
+4. 選択乗車（特例運賃計算区間）
+
+
+5. 大都市発着区間
+
+
+6. 大都市内発着
+
+
+
+
+3
+IGRいわて銀河、青い森鉄道は2線合わせて「IGRいわて銀河・青い森鉄道」と扱う
+本当は、
+盛岡－二戸－目時：IGRいわて銀河
+目時－八戸－青森：青い森鉄道
+
+
+通過するのに、
+
+
+新青森東北線
+青森青い森鉄道
+目時IGRいわて銀河
+盛岡東北線
+
+
+としなくてよく、
+
+
+新青森東北線
+青森IGRいわて銀河・青い森鉄道
+盛岡東北線
+
+
+とすることができる
+
+
+
+
+select dfare from t_clinfar where cline_id=?1 and ((station_id1=?1 and station_id2=?2) or (station_id1=?2 and station_id2=?1))
+
+
+create table t_clinfar (
+dfare int,
+station_id1 int,
+station_id2 int
+)
+
+
+
+
+中央林間つきみ野
+中央林間南町田
+中央林間すずかけ台
+中央林間つくし野
+中央林間長津田
+
+
+つきみ野南町田
+つきみ野すずかけ台
+つきみ野つくし野
+つきみ野長津田
+
+
+すずかけ台南町田
+すずかけ台すずかけ台
+すずかけ台つくし野
+すずかけ台長津田
+:
+:
+
+
+(N-1)*N/2
+12
+13
+14
+15
+23
+24
+25
+34
+35
+45
+
+
+
+
+1 2
+1 3
+1 4
+2 3
+2 4
+3 4
+
+==============================================
+新幹線はラインコードが大きくなる様に後ろへ移動。
+ラインコードは20xしか無いので内部では2バイトで持つ(下位)
+上位にはspe_flgを持つ
+AddRoute()内でこれをみてルートチェック
+もともとラインコードは16ビット処理だった。
+並行在来線はラインコードが小さい値となる様にする。4ビット以内。これはspe_flgに含められる。ビット0-3
+ビット4は=1で上り線戻り有効(三島など)、ビット5は=1で下り線戻り有効(静岡など)。
+
+海峡線
+函館線
+津軽線
+奥羽線
+東北線
+高崎線
+上越線
+信越線
+東海道線
+山陽線
+鹿児島線
+
+RouteItem
+ Short station
+ Short line
+ Int flg
+
+
+
+t_shinkansen(
+   line_id int,
+   station_Id,
+   zai_line_Id,
+   zai_station_Id,   updown int,      --- up: =1, down: =2, both=0
+
+ Primary key(line_Id, station_id, zai_station_I'd)
+)
+上りの場合、
+select zai_line_id, zai_station_id 
+from t_shinkansen 
+where line_id=? and station_id=? and (updown & 1)=0
+下りの場合、(updown & 2)=0
+updownのbit0,1は負論理でbit0が上り、bit1が下り
+下りに有効は、1
+上りに有効は、2
+bit2は1で平行在来線別線扱い
+bit3は1で下り方向、0で上り方向
+浜松は、0
+静岡は、4
+三島は、6
+新富士は、1,三島       2,静岡
+
+三島で下車
+上りで来てたら、静岡まで
+下りで来てたら、三島まで
+
+東海道新幹線、浜松、東海道線、浜松
+東海道新幹線、新富士、東海道線、三島
+山陽新幹線、姫路、東海道線、神戸
+山陽新幹線、姫路、山陽線線、姫路
+下りでしか成り立たない話しとなる
+
+
+東北新幹線、仙台、東北線、仙台
+東北新幹線、古川、東北線、仙台　　　  A　(陸羽東線）
+東北新幹線、古川、東北線、一ノ関         B
+東北新幹線、一ノ関、東北線、一ノ関
+東北新幹線、八戸、東北線、盛岡             C
+東北新幹線、新青森、東北線、盛岡          D
+
+平行在来線駅がない場合（列N=13)=2の場合、
+下りで古川下車の場合、仙台まで分岐通過マークだが、
+上りで古川下車の場合、一ノ関までの分岐通過マーク
+新青森で下車したとき？
+上り→現在はあり得ない
+下り→東北線、八戸までの分岐通過マークを埋める。
+
+
+
+課題
+
+1 運賃
+特別料金
+3島
+地方交通線のみ
+特定電車区間
+特定私鉄競合区間
+特定区間
+
+2 新幹線乗換(新幹線－＞在来線）
+乗換駅、乗換路線、乗換可能方向
+（戻らなければ無条件でＯＫ）
+
+3．会社線通貨連絡運輸
+
+4. 選択乗車（特例運賃計算区間）
+
+5. 大都市発着区間
+
+6. 大都市内発着
+
+ーー
+
+Edit入力 enter 
+
+
+フラグ
+大都市近郊区間
+電車特定区間
+特定料金区間
+特定都区市内
+東京山手線内
+分岐駅
+ 選択経路
+同名駅
+
+
+画面発着駅指定着駅指定は直接入力だが候補リストには自動で出せるか？
+「会社・都道府県」>>「路線」>>「候補」
+1- 直接入力
+2- 一部入力(候補検索ボタンが必要)
+3- 会社指定→路線
+4- 都道府県指定→路線
+5- 会社+路線→駅
+6- 都道府県+路線→駅
+
+1 検索 複数見つかったら候補リストボックスへ
+単一なら発着駅エディットボックスへ
+エディットボックスの変更を監視
+2 1と同様
+3 会社一覧と都道府県一覧を得る
+会社指定→路線一覧を得る
+4 都道府県指定→路線一覧を得る
+会社と都道府県は、
+5 
+6 
+
+
+
+===============================================================
+
+2011-7-29
+
+
+select sales_km, calc_km, cityflg, company_id from t_lines l join t_station t on t.rowid=l.station_id join t_company c on c.rowid=t.company_id where line_id=? and (station_id=? or station_id=?)";
+
+
+===============================================================
+----------------
+query 一覧
+No.summaryinout1/*
+1会社一覧を得るなし会社*
+2都道府県一覧を得るなし都道府県*
+3会社から路線会社路線*
+4都道府県から路線都道府県路線*
+5漢字から駅駅名-駅*
+6ひらがなから駅かな駅*
+7路線から駅路線駅*
+8路線から分岐駅路線駅*
+9都道府県+路線から駅都道府県,路線駅1
+10会社+路線から駅会社,路線駅1
+11駅から路線駅路線*
+12-------
+13駅から駅の営業キロ、換算キロを得る　駅1, 駅2営業キロ,換算キロ1単一路線
+14駅名+路線から駅コード駅,路線駅Id1
+
+
+
+
+1select name from t_compnay;
+2select name from t_prefect;
+3select distinct(line ) from lines where company=? order by line; 'JR東海'
+select n.name, t.company_id from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id join t_company c on c.rowid=t.company_id where c.name='JR東海' group by l.line_id order by n.name;
+select n.name, line_id from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id where company_id=3 group by l.line_id order by n.name;
+4select distinct(line) from lines where prefect=?;'滋賀県'
+select n.name, l.line_id from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id join t_prefect p on p.rowid=t.prefect_id where p.name='佐賀県' group by l.line_id;
+select n.name, l.line_id from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id where prefect_id=41 group by l.line_id order by n.name;
+5select rowid, name from [t_station] where name like ?:'北千%';
+6select rowid, name from [t_station] where kana like ?;'きた%';
+7select station_id, t.name from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id where n.name='小海線' order by sales_km
+8select station_id, t.name from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id where t.jctflg<>0 and n.name='函館線' order by l.sales_km 
+9select station_id, t.name from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id join t_prefect p on p.rowid=t.prefect_id where n.name='小海線' and p.name='長野県' order by sales_km
+select station_id, t.name from t_lines l join t_station t on t.rowid=l.station_id where line_id=90 and prefect_id=5 order by sales_km;
+10select station_id, t.name from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id join t_company c on c.rowid=t.company_id where n.name='東海道線' and c.name='JR東日本' order by sales_km
+select station_id, t.name from t_lines l join t_station t on t.rowid=l.station_id where line_id=90 and company_id=5 order by sales_km;
+11select line from lines where station=?;
+select n.name, l.line_id from t_line n join t_lines l on n.rowid=l.line_id where station_id=508;
+12--------
+13select sales_km, calc_km from t_lines l join t_station t on t.rowid=l.station_id join t_line n on n.rowid=l.line_id where (t.name='追分' or t.name='米沢' )and n.name='奥羽線' order by sales_km desc;
+14select l.station_id from t_lines l join t_station t on l.station_id=t.rowid join t_line n on n.rowid=l.line_id where t.name='大久保' and n.name='中央東線'
+
+
+
+
+
+
+select distinct(line ) from lines where company=? order by line; 'JR東海'
+select line FROM lines S1 WHERE EXISTS ( SELECT * FROM  lines S2 WHERE S1.key_1 = S2.key_1 AND S1.key_2 = S2.key_2 AND S1.rowid < S2.rowid)
+select line FROM lines S1 WHERE EXISTS ( SELECT * FROM  lines S2 WHERE S1.line = S2.line AND S1.rowid < S2.rowid) where compay='JR西日本'
+
+
+立川－高尾間の分岐駅(結果は、立川と八王子)一覧
+select * from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and jctflg!=0 and 
+(sales_km<=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and t.name='高尾') and 
+sales_km>=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and t.name='立川')) or
+(sales_km>=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and t.name='高尾') and 
+sales_km<=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and t.name='立川')) 
+↓コードのみ(中央東線line_id=23, 立川=532、高尾=537
+
+
+select id from t_lines l join t_station t on t.rowid=l.station_id join t_jct j on j.station_id=l.station_id where line_id=23 and jctflg!=0 and 
+((sales_km<=(select sales_km from t_lines where line_id=23 and station_id=537) and 
+sales_km>=(select sales_km from t_lines where  line_id=23 and station_id=532)) or
+(sales_km>=(select sales_km from t_lines where line_id=23 and station_id=537) and 
+sales_km<=(select sales_km from t_lines where  line_id=23 and station_id=532))) 
+↓もっと実用的に(bind(1, line), bind(2, eki1), bind(3, eki2))
+
+
+"select t.name from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name=?1 and jctflg!=0 and "
+"((sales_km<=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name=?1 and t.name=?2) and "
+"sales_km>=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name=?1 and t.name=?3)) or "
+"(sales_km>=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name=?1 and t.name=?2) and " 
+"sales_km<=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name=?1 and t.name=?3)))"
+
+
+
+
+select id,t.name from t_lines l join t_station t on t.rowid=l.station_id join t_jct j on j.station_id=l.station_id where line_id=93 and jctflg!=0 and 
+((sales_km<=(select sales_km from t_lines where line_id=93 and station_id=1996) and 
+sales_km>=(select sales_km from t_lines where  line_id=93 and station_id=2050)) or 
+(sales_km>=(select sales_km from t_lines where line_id=93 and station_id=1996) and 
+sales_km<=(select sales_km from t_lines where  line_id=93 and station_id=2050)))
+
+
+
+
+const char* cmd_sql_linedup = 
+"select station_id from t_lines where line_id=?1 and ("
+"station_id=?2 OR "
+"station_id=?3 OR "
+"station_id=?4 OR "
+"station_id=?5) order by sales_km";
+重複ルートチェックに使用
+発駅が分岐駅以外のときのみチェックする（発駅が分岐駅なら着駅が分岐駅であろうと単独駅であろうと分岐駅マップでチェック可能）
+毎回分岐駅指定時に分岐駅マップとともに発駅-分岐駅までの区間をこのSQLでチェックする。
+?1は発駅-1回目の乗り換え駅までの路線(これが異なればOK-チェック終了）
+？2-?3 は発駅-1回目の乗換駅
+?4-?5は、チェックする分岐駅-分岐駅
+すべて同一路線なので、営業キロでソートし、線が重複していないかチェックする。
+
+
+
+
+"select sales_km, calc_km, spe_route from t_lines where line_id=? and (station_id=? or station_id=?)";
+計算キロ算出
+
+
+spe_routeは現在0固定(Pythonで設定)
+cityflgはt_station
+===============================================================
+
+駅から路線
+select trl from t_trnode where eki=?
+
+路線から分岐駅
+select eki from t_trnode where
+ trl=? and jct>0 and km 
+km 指定駅より上り(下り)方面
+km 指定駅のkm未満(より大きい)
+ 
+
+
+Data
+-- 会社 t_company
+create table t_company(
+  id  integer primary key,
+  name text unique -- 会社
+)
+-- 都道府県 t_prefect
+create table t_prefect(
+  id  integer primary key,
+  name  text
+)
+
+-- primary key は、下16ビットをシーケンスIDとして、上位は各種フラグの意味にする
+-- 制御フラグ、規則例外フラグ、大都市特定区間、近郊区間など
+-- 駅
+create table t_eki(
+  id  integer primary key,
+  name text unique,-- 駅名
+  kana text,      -- かな
+  prefect integer
+    foreign key references        
+         t_prefect(id),
+      -- 都道府県idx$
+  company integer
+    foreign key references 
+         t_company(id),
+      -- 鉄道会社idx$
+)
+
+-- 線区
+create table t_trl(
+  id integer primary key,
+  name text unique, -- 路線名
+  kana text, -- かな
+  eki_begin_id  integer
+     foreign key references 
+       t_eki(id), -- 起点駅idx$
+  eki_end_id integer
+     foreign key references 
+       t_eki(id), -- 起点駅idx$
+)
+
+-- 駅路線T 
+create table t_trnode(
+  id integer primary key,
+  trl integer unique
+     foreign key references 
+        t_trl(id), -- 路線Idx$
+  eki integer unique 
+     foreign key references 
+        t_eki(id), -- 駅Idx$
+  km_sum integer
+  -- 起点からの運賃計算キロkm  
+  -- short x10
+  expect_flg integer 
+     default(0),
+  -- 特例except flag int32
+  brch integer foreign key 
+     references t_trnode(id), 
+  -- X 分岐idx$. 
+  -- 分岐があるかないかフラグ
+  -- 無ければ-1
+
+-- 分岐駅T
+create table t_jct(
+ id integer primary key,
+ eki integer 
+ trl integer
+)
+
+X 分岐駅T t_jct
+   X  駅idx$.    unique
+   x  線区idx$. unique
+
+
+経路  t_route
+  路線Idx$ rosen_idx
+  駅Idx$  eki_id
+
+線区T
+  路線idx$、
+  駅idx$、
+  計算キロ、
+  フラグ、
+  分岐$$ foreign key
+ Unique key(路線、駅)
+
+駅から路線
+select 路線 from  線区 where 駅 
+select * from t_trnode where eki
+
+路線から分岐駅
+select 駅 from 分岐駅 where 線区
+都道府県
+select 駅 from 駅 where 都道府県
+※ 会社も同様 
+1)駅から路線一覧 上り方向or下り方向2)路線から分岐駅一覧 開始駅 and (上り方向 or 下り方向)
+1)は直近路線(経路リストの最新)を引数とする。経路リストの最新はリスト内直近の路線は、除外する。上り下りは不要(関数仕様として将来の為必要2)は現在駅(経路リストの最新)ー経路リストを引数とする。経路リスト内にある駅までを候補リストとする。その先は載せない。経路リスト内の直近の駅(現在駅)は、除外。経路リスト内に存在する駅があったら、その駅までを候補リストとする。
+
++1 都道府県リストを返す select name from t_prefect order by id
++2 都道府県コードと「あ～ん」を入力とし駅一覧を返す select t_eki.name from t_eki join t_prefect on t_prefect.id=prefect where prefect=? and kana like '?%' order by kana
++3 路線コードと「あ～ん」を入力とし駅一覧を返す 
++4 全路線リストを返す+5 全会社リストを返す
++6 会社コードから路線一覧を返す
++7 都道府県コードから路線リストを返す
++8「あ～ん」を入力とし路線一覧を返す
++9 ひらがな駅名から駅一覧を返す
++10 漢字駅名から駅一覧を返す
++11 入力履歴の最新順に駅一覧を返す
++12 駅名から駅コードを返す
++13 駅コードから路線コード一覧を返す
++14 路線コードと開始駅コードと経路内路線駅リストを入力として駅一覧を返す（経路入力時、着駅指定リストに使用）
++16 経路リストから路線コード内の駅一覧を返す（メソッド15の最後の入力引数で分岐駅前提）（池袋->渋谷->目黒->秋葉原->御茶ノ水のとき、代々木と神田が該当）
++17 路線コードから分岐駅一覧を返す        オプションとして駅コードも指定         さらにオプションとして最近の経由リストを指定     駅コード指定の場合、近い順に昇順ソート、経由リスト内に存在する駅は選択不可？
++18 経路リストをチェック
+     経路エラーはあり得ないので、診断用
++19 経路リストから営業キロを計算      配列で会社線、特定経路、JR各線別      に返す
++20 営業キロ情報から金額情報を返す+21 指定した駅が経路リスト内で通過していないかチェックする
++22 指定駅が路線内に存在する駅か？         #Aで町田ー長津田と指定してたら？
+
+
+
+
+----
+同名駅は漢字上での話で読みが異なっても同名とはしない
+
+
+DBをプログラムからどのようにして読み出すか
+　　Browfish暗号する
+　　リソースファイルの保持
+　　その形式は？
+
+
+sqlite3
+
+
+ .backup file
+    db file create
+      sqlite3_backup_init() api used.
+      sqlite3_backup_xxx() api used.
+
+
+ .dump
+    sql statementエコーバック
+ 
+ 
+
+
+ .restore file
+    .backup file 's restore.と同様以下APIで実現
+      sqlite3_backup_init() api used.
+      sqlite3_backup_xxx() api used.
+ 
+ 
+
+
+結論
+　1- RCには、Dumpして生成された全SQL文をBrowfish暗号格納
+　2- RCリード
+　3- RC復号
+　4- :memory: DBへCreate
+　5- DBへRC復号SQL文を実行
+　
+　1．Dumpツールは？RCへの登録 ちょっとめんどいけど頻度は少ないはずだし手間もどうってことないはず。
+　1. 3．鍵は？ CBC 初期ベクトル const変数ハードコード UUIDGEN、
+　　UUIDGENの下4ビットのスクランブルの暗号のスクランブル。
+　5．APIは？sql3_exec()で一括
+　
+　Tempファイルを作成が簡単なのだが、拾われる恐れがある。
+　
+　-> Tempファイル作成にする。
+　　作成して :memory: open -> sqlite3_backup_init()でrestoreして tempを削除
+　　~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  <--- 決定
+　
+　理想
+　memoryをファイルとして扱えないか？
+　メモリイメージをSQLITE側でアタッチできないか？
+
+
+
+
+　uuidgenの256×2バイト
+　
+

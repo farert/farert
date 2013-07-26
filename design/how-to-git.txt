@@ -1,0 +1,22 @@
+git
+
+
+$ mkdir ~/any_proj_dir
+$ cd ~/any_proj_dir
+$ git init --separate-git-dir=$HOME/Dropbox/any_proj_repo
+$ echo "<?php phpinfo();" > miracle.php
+$ git add .
+$ git commit -m "ƒIƒŒ‚Í‚â‚é‚ºƒIƒŒ‚Í‚â‚é‚º"
+
+.. on another machine ..
+
+$ mkdir ~/proj_on_another_machine_dir
+$ cd proj_on_another_machine_dir
+$ echo "gitdir: $HOME/Dropbox/any_proj_dir" > .git
+$ git config core.worktree `pwd`
+$ git checkout HEAD .
+$ echo "var_dump(trim('0') == false); // true" >> miracle.php
+$ git add -u
+$ git ci -m "’ˆÓ‘‚«‚ğ’Ç‰Á"
+
+

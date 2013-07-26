@@ -1,0 +1,875 @@
+運賃計算構成
+
+
+c: show_route() をshow_fare()の中にいれる
+
+showFare:
+	checkOfRuleSpecificCoreLine(void); // route_list_raw -> route_list_cooked
+	86,87適用の発着表示
+	fare_info.calc_fare(route_list_raw);
+	fare_info.fare に金額
+
+
+
+showFare() の処理要約
+	- checkOfRuleSpecificCoreLine() /* 86, 87, 69, 70条 114条適用かチェック */
+	- 114条適用されていたら1行目にその場合の運賃額を表示する
+	- route_list_cookedが空でないと規則適用と判断し都区市内発着表示を
+	     - route_list_cookedに対してcalc_fare()
+	- route_list_cookedが空の場合規則非適用と判断し
+	     - route_list_rawに対してcalc_fare()
+	- fare_infoの運賃を表示
+	- 
+	- 
+	- 
+下関-岩国
+経由：山陽線
+営業キロ： 182.0 km 計算キロ： 182.0 km運賃：\3,260     \2,600[2割引] \3,260[周割] \6,520[往復] \1,950[4割引]有効日数：   2日
+下関-岩国
+経由：山陽線<櫛ヶ浜>岩徳線
+営業キロ： 182.0 km 計算キロ： 182.0 km運賃：\3,260     \2,600[2割引] \3,260[周割] \6,520[往復] \1,950[4割引]有効日数：   2日
+fare_info.calc_fare:
+	FARE_INFO::aggregate_fare_info(ite->lineId, station_id1, ite->stationId)) {
+		FARE_INFO::CheckSpecficFarePass(line_id, station_id1, station_id2);	// 特別加算区間（同一会社発着)
+		FARE_INFO::Fare_company(station_id1, station_id2);			// 会社線
+	FARE_INFO::days_ticket(this->sales_km);						// JRのみの営業キロで86,87適用後の距離で計算すべき
+	FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);	// 特例運賃
+
+	* {は、ノード毎 インデント内は各ノードに対していおこなわれる.
+
+
+
+route.checkOfRuleSpecificCoreLine:  86、87条、69条判定＆経路算出 showFare()の最初に呼ばれる
+	Route::CheckOfRule86(route_list_raw, &exit, &enter, &cityId);
+	Route::reRouteRule86j87j(cityId, chk, exit, enter);
+		Route::SpecificCoreAreaFirstTransferStationBy(exit.lineId, IDENT1(cityId));
+		Route::Retrieve_SpecificCoreStation(IDENT1(cityId));
+		Route::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
+		Route::Retrieve_SpecificCoreStation(IDENT2(cityId));
+	Route::ReRouteRule70j(route_list_raw, &route_list_cooked)
+	Route::reRouteRule69j(route_tmp);			/* 69条適用(route_tmp->route_list_cooked) */
+	Route::CheckOfRule87(route_list_raw);
+	Route::CheckOfRule88j(&route_list_cooked);
+	Route::CheckOfRule114j(route_list_raw, route_list_cooked, rtky & 0x03 | 0x8000);
+	Route::reRouteRule86j87j(cityId, 2, exit, enter);
+	Route::reRouteRule69j(route_tmp);			/* 69条適用(route_tmp->route_list_cooked) */
+	Route::reRouteRule86j87j(cityId, 1, exit, enter);
+	Route::reRouteRule69j(route_tmp);			/* 69条適用(route_tmp->route_list_cooked) */
+	Route::CheckOfRule88j(&route_list_cooked);
+	Route::CheckOfRule114j(route_list_raw, route_list_cooked, chk & 0x03);
+
+
+
+
+
+
+
+----------------------------------------------------------------
+
+rule70
+#if 0
+		　甲府
+中央東線　東京 route_item_1
+東海道線　静岡 route_item_2
+
+		　甲府
+中央東線　代々木 station_id1
+(line_id) 品川 station_id2
+東海道線　静岡
+
+	双葉
+常磐線　日暮里
+東北線　小山
+
+	双葉
+常磐線　日暮里
+(line_id) 日暮里
+東北線　小山
+
+#endif
+
+
+terminate:
+
+#if 0
+0		長津田	
+1	横浜線	橋本
+2	相模線	茅ヶ崎
+3	東海道線 富士 -> delete 茅ヶ崎-富士
+	身延線	国母  -> delete(国母-富士)
+
+
+		長津田	
+	横浜線	橋本
+	相模線	茅ヶ崎
+	東海道線 国府津 <- 
+	御殿場線 沼津
+	東海道線 富士
+	身延線	国母
+
+	東海道線 茅ヶ崎 二宮 国府津
+#endif
+
+
+
+route.add()
+
+#if 0
+
+o junction
+. junction(dont check yet)
+g goal
+s start
+left station1
+right station2
+(g) 着指定
+<g> 着指定／終了駅どちらも可(の筈)
+0 正常終了
+1 正常終了(最後)(つぎのremoveTailでlast itemの通過マスクをOffしない)
+2 正常終了(最後)(つぎのremoveTailでlast itemの通過マスクをOffする)
+-1 異常終了
+
+///////////////////////////////////////////////
+
+stationId2 == endStationIdの場合は2とする(但し1の場合もある)
+呼び出し側はendStationIdのみが終わりとは限らない(着指定の場合もあるので)
+
+
+rc == 0
+  last_flag = 0
+  return 1
+rc == 1
+  last_flag = 1
+  return 0
+rc == 2
+  last_flag = 0
+  return 0
+rc < 0
+  last_flag = 0
+  return -1
+
+
+removeTail():
+  if ((i != 0) || (last_flag == 0)) {
+    mask off
+
+alloff: y = alloff / L = last on / x = 途中on
+                                                                                    alloff
+                                                                             rc
+a -----o----o  通常(東京-富士-甲府)                                           0        y        
+
+d -----o----g  通常(東京-富士-<g>国母)                                        0        y        
+
+            g  東京-富士-(g)甲府                                              0        y         
+g -----o----o  八王子-甲府-富士-東神奈川
+               ※ g == sもテスト時考慮
+               八王子-甲府-富士-蒲田
+
+f -----o----s  町田-橋本-茅ヶ崎-東神奈川-町田                                 2        y         
+               町田-東神奈川-川崎-立川-八王子-町田
+               町田-八王子-立川-川崎-東神奈川-町田
+
+v -----o--s-g  町田-橋本-茅ヶ崎-東神奈川-古淵                                -1       y         start
+               町田-東神奈川-川崎-立川-八王子-成瀬
+               町田-八王子-立川-川崎-東神奈川-古淵
+
+               inStation(stationId2, startStationId, (nextStationId))
+               || 町田-八王子間に古淵があるか？
+                  町田-八王子間に町田があるか？にならないようにstartStationId!=stationId2条件判定後
+               inStation(startStationId, stationId1, stationId2) 
+                  東神奈川-古淵間に町田はあるか?
+                  東神奈川-町田間に町田はあるか?にならないようにstartStationId!=stationId2条件判定後
+
+
+l -----o-g--o  東京-富士-((g)身延)-甲府                                      -1        y        end
+
+
+p ---g-o----o  八王子-甲府-富士-((g)二宮)-品川                               -1        y        end 
+               八王子-甲府-富士-((g)二宮)-有楽町
+
+
+     g
+t ---o------o  茅ヶ崎-(g鶴見)-東京                                           -1        y         end
+               茅ヶ崎-(g鶴見)-蒲田
+
+
+w -----o--g-s  町田-橋本-茅ヶ崎-東神奈川-(g成瀬)-町田                        -1       y         
+               町田-東神奈川-川崎-立川-八王子-(g古淵)-町田
+               町田-八王子-立川-川崎-東神奈川-(g成瀬)-町田
+
+
+b -----o----x  八王子-東神奈川-茅ヶ崎-橋本                                    1        L         
+
+            s  八王子-甲府-富士-東神奈川-八王子                               1        L         
+j -----o----x  
+               ※ g == sもテスト時考慮
+
+
+            g  
+h -----o----x  八王子-東神奈川-茅ヶ崎-(g)橋本                                 1        L         
+               八王子-東神奈川-茅ヶ崎-g橋本
+               新秋津-新松戸-日暮里-南浦和
+               ※着駅は着席指定、事前指定の2種で試すこと
+
+            s
+x -----o--g-.  橋本-茅ヶ崎-東神奈川-(g成瀬)-橋本                             -1       L         
+               東神奈川-川崎-立川-八王子-(g町田)-東神奈川
+               八王子-立川-川崎-東神奈川-(g町田)-八王子
+
+
+            s  
+k -----x----.  八街-佐倉-成田-我孫子-新松戸-西船橋-(佐倉x)-八街              -1        L        
+
+
+e -----x----g  町田-橋本-茅ヶ崎-東神奈川-(橋本<x>)-(g)片倉                   -1        L         
+
+
+r -----o-s--x  町田-橋本-茅ヶ崎-東神奈川-(町田)-橋本                         -1        L         
+
+
+     g
+u ---o------x  八王子-甲府-富士-東神奈川-(g橋本)-八王子                      -1        L         end
+
+m -----o-g--x  八王子-東神奈川-茅ヶ崎-(g)海老名-橋本                         -1        L        
+               八王子-橋本-茅ヶ崎-東神奈川-(g)町田-橋本
+
+c -----x----.  横浜-東神奈川-橋本-茅ヶ崎-(横浜x)-(東神奈川x)-川崎            -1        x         
+               八王子-橋本-茅ヶ崎-東神奈川-(橋本x)-(八王子x)
+               渋谷-新宿-御茶ノ水
+               府中本町-(南浦和)-新松戸-日暮里-(南浦和x)-高崎
+               町田-橋本-茅ヶ崎-東神奈川-(橋本x)-八王子
+          
+
+            g  町田-橋本-茅ヶ崎-東神奈川-(橋本x)-<g>八王子                   -1        x         
+i -----x----.  
+
+
+
+               府中本町-(南浦和)-新松戸-日暮里-(南浦和x)-(g)浦和-大宮        -1        x        end
+n ---g-o----x  府中本町-(南浦和)-新松戸-日暮里-(g)西日暮里-大宮
+               稲城長沼-府中本町-(南浦和)-新松戸-日暮里-(g)西日暮里-大宮
+  ---g-x----.  東川口-西国分寺-立川-拝島-高麗川-大宮-(g)浦和-日暮里
+               ※着駅は着席指定、事前指定の2種で試すこと
+
+o -----x-g--.  町田-橋本-茅ヶ崎-東神奈川-(橋本<x>)-(g)片倉-八王子            -1        x        end 
+
+
+q -----o-s--o  南浦和-武蔵浦和-大宮-上野                                     -1        x        
+  ---s-o----o
+  ---s-o----x  橋本-茅ヶ崎-川崎-立川-八王子-東神奈川
+               (町田-橋本-茅ヶ崎-川崎-立川-八王子-東神奈川)
+               (片倉-橋本-茅ヶ崎-川崎-立川-八王子-東神奈川)
+               川崎-武蔵小杉-鶴見-(川崎x)-品川
+  ※ sは分岐駅以外あり得ない
+
+s -----x-s--.  新秋津-南浦和-東京-立川-府中本町-武蔵浦和/新松戸              -1        x        start
+
+s ---s-x----.  保土ヶ谷-東神奈川-橋本-茅ヶ崎-品川                            -1        x        
+
+
+end:
+endStationId in the last between stationId1 and stationId2
+
+start:
+startStationId in the last between stationId1 and stationId2
+
+/////////////////////////////////////////////
+
+
+分岐駅-同一線内（分岐駅含まない）-分岐駅
+分岐駅-同一線内（分岐駅含む）-分岐駅
+
+非分岐駅-同一線内（分岐駅含まない）-分岐駅
+非分岐駅-同一線内（分岐駅含む）-分岐駅
+
+非分岐駅-同一線内（分岐駅含まない）-非分岐駅
+非分岐駅-同一線内（分岐駅含む）-非分岐駅
+
+分岐駅-同一線内（分岐駅含まない）-非分岐駅
+分岐駅-同一線内（分岐駅含む）-非分岐駅
+
+type X 武蔵小杉
+type 6 八王子-東神奈川-茅ヶ崎-橋本
+type 9 橋本-茅ヶ崎-東神奈川-八王子
+type O 橋本-東神奈川-川崎-立川-八王子-橋本
+type O 長津田-東神奈川-川崎-立川-八王子-長津田
+
+
+
+#endif
+
+
+
+
+
+
+#if 0
+				大森    川崎-鶴見-東神奈川
+	東海道線	東神奈川
+	横浜線	八王子
+	中央東線	立川	立川-府中本町-武蔵小杉-尻手-川崎
+	南武線	川崎		x
+	東海道線	茅ヶ崎  x
+
+川崎 鶴見 東神奈川x 横浜 大船 
+
+
+		長津田	
+	横浜線	橋本
+	相模線	茅ヶ崎
+	東海道線 国府津
+	御殿場線 沼津
+	東海道線 富士
+	身延線	国母
+
+
+		長津田
+	横浜線	東神奈川
+	東海道線	川崎
+	南武線	立川
+	中央東線	八王子
+	横浜線	十日市場
+
+ s1!=begin then s1 dup ok
+
+		長津田
+	横浜線	八王子
+	中央東線	立川
+	南武線	川崎
+	東海道線	茅ヶ崎
+	相模線	橋本<End>
+
+#endif
+
+#if 0
+			立川	川崎-尻手-武蔵小杉-府中本町-立川
+	南武線	川崎
+
+#endif
+
+
+todo test
+
+2012-6-27
+alps_mfcDlg.cpp
+	経路選択中、着駅指定をカレント駅に指定する　　→ L239あたりの処理
+			(駅選択中／分岐駅選択中／路線選択中の3状態)
+	
+
+
+	経路重複駅が着駅指定している駅
+	経路重複駅による着駅指定変更時の表示
+
+	経路選択中着駅短縮時、経路リストが、結果、0行(あり得る？）、1行、2行のときの表示
+	
+	経路重複による終了時(RouteEnd()付加による副作用チェック）
+
+
+	発駅	経路(路線-分岐-路線-着)
+	発駅	経路(路線-着)
+	
+	発駅	経路(路線-分岐-路線-分岐-路線)	「－」
+	発駅	経路(路線-分岐-路線-分岐-路線-分岐)	「－」
+	発駅	経路(路線-分岐-路線-分岐-路線-着)	「－」
+	発駅	経路(路線-分岐)	「－」
+	発駅	経路(路線)	「－」
+	
+	発駅	着駅	路線(路線-分岐-路線-分岐-路線-着)	「－」
+	発駅	着駅	路線(路線-分岐-路線--着)	「－」
+	:
+	:
+	:
+
+
+
+
+
+
+
+
+
+
+    発駅消去はなし(アプリ終わらせる）
+    終着駅消去はなし(リスト表示時「終着駅指定」ボタンでリストした駅に変更可能とする.
+
+　　着駅はいつでも変更できる。着駅があとから指定され既にとおっているルートの場合、いつまでも到達できなくなる
+　　-> 着駅チェックする？（現在経路内に存在するか追っかけるか？）
+　　着駅は最初または発駅指定時直後のみ指定可能とする。ルート指定されたら指定禁止とする。
+
+ x   発駅選択 | label
+ x   
+ x   路線選択 | label
+ x   分岐駅選択 | button
+ x 　終着駅選択 | button
+ x    
+ x   "" (運賃計算)
+
+
+
+x 終着駅選択で終着駅を選んだ後の動作が未 終着指定後の動作
+x 終着駅選択済みでBSボタンでキャンセルの動作が未
+x ある程度進んだ状態で、発駅、着駅の変更は？　→できない。やりなおし
+x　終着駅の書換え
+x 全削除していったた動作
+x 長津田―成瀬なんかは？
+
+////////////////////////////////////////////////////////////////////////
+member
+    int  m_moSel;    // 0= nothing 
+                        // bit0: 1=路線から分岐駅リスト表示、分岐駅選択 0: 駅の乗り換え路線一覧表示 路線選択
+                        // bit1: 1=開始駅指定有無
+                        // bit2: 1=終了駅指定有無
+                        // bit3: 1=route 選択終了
+    int  m_startStationId;
+    int  m_curStationId 初期値 0
+    int  m_curLineId;
+del(不要)   bool m_bTerminalSel  // 分岐駅リストで全駅リストするか？(ボタンクリックしたか)(着駅未指定時/指定時関わらず)
+    int m_terminalId  初期値 0
+    int m_moSelOpt  // 1=分岐駅／2=全駅リスト
+
+
+InitDialog
+    IDC_EDIT_STAT 発駅選択してください
+    CALC disable
+    m_moSel = 0
+    IDC_LIST_LINESTATIONS disable
+    IDC_BUTTON_BS disable
+　　IDC_STATIC_LIST_SEL text = ""
+    IDC_RADIO_BRANCH_SEL Visible False
+    IDC_RADIO_TERMINAL_SEL Visible Fals
+    IDC_LIST_ROUTE_LINE disable    ずっとDisableのまんま(選択することはないので)
+    IDC_LIST_ROUTE_BRANCH disable  
+    m_startStationId = 0
+    m_moSelOpt = 0
+
+発駅駅選択(IDC_BUTTON_STARTSEL) Dlg IDOK
+    if 0 < IDC_LIST_ROUTE_LINE count
+       msg ルート選択中ですがすべてキャンセルしてもよろしいですか？(y/n)
+       if no then return
+    IDC_RADIO_BRANCH_SEL Visible False
+    IDC_RADIO_TERMINAL_SEL Visible False
+    m_startStationId = m_curStationId = dlg.getStationId();
+    IDC_EDIT_START text = dlg.getStationName()
+    IDC_LIST_ROUTE_LINE clear
+    IDC_LIST_ROUTE_BRANCH clear
+    IDC_BUTTON_BS disable
+    RouteDupChk::route.clear();
+    RouteDupChk::addRoute stationId;
+    IDC_EDIT_STAT 路線を選択してください.
+    m_curLineId = 0
+    m_moSelOpt = 0
+    IDC_LIST_LINESTATIONS enable
+    m_moSel &= ~0x04;
+    m_moSel |= 0x02;
+    ListView update(m_curStationId); //駅の所属路線       リスト：路線表示
+　　IDC_STATIC_LIST_SEL text = "路線選択"
+
+着駅指定(IDC_BUTTON_ENDSEL) Dlg IDOK
+    if 0 < IDC_LIST_ROUTE_LINE count
+       assert(false)
+       return
+    IDC_RADIO_BRANCH_SEL Visible False
+    IDC_RADIO_TERMINAL_SEL Visible False
+    m_terminalId = dlg.id
+    IDC_EDIT_END text = dlg.getStationName();
+    m_moSel |= 0x04;
+
+
+<< button or ListCtrl Double click
+    return if sel_index nothing
+    switch m_moSel & 0x0b
+    case 3
+        // retrive from station list                駅リスト表示で駅を選択
+        // 選ばれているのは駅
+        rc = RouteDupChk::addRoute m_curLineId, m_curStationId, sel_index.data
+        if rc < 0  重複ルート
+            RouteDupChk::clrRoute m_curLineId, m_curStationId, sel_index.data
+            return;
+        when rc == 1 
+        　　if sel_index.data != m_terminalId    着駅指定済みで重複駅が着駅 or 着駅指定で着駅ならOK
+                if yes != 片道ルートが終了しました. 着駅に指定しますか？
+                   Route::clrRoute m_curLineId, m_curStationId, sel_index.data
+                   return
+                else
+                   m_terminalId = sel_index.data
+                   m_curStationId = sel_index.data
+                   IDC_EDIT_END text = sel_index.text
+                   m_moSel |= 0x04
+            IDC_BUTTON_CALC enable
+            IDC_RADIO_BRANCH_SEL Visible False
+            IDC_RADIO_TERMINAL_SEL Visible False
+            IDC_STATIC_LIST_SEL text ""
+            m_curStationId = sel_index.data;     // 駅ID 指定終了 m_curStationId == m_terminalId
+            m_moSel &= ~0x01;
+            m_moSel |= 0x08;
+            IDC_LIST_LINESTATIONS disable
+            IDC_EDIT_STAT 準備完了. [計算]-料金・キロ算出 [DEL]-経路変更
+            return
+        
+        when rc == 0 route OK
+                if m_terminalId == sel_index.data || m_moSelOpt == 2  終着駅選択
+                    if m_terminalId != sel_index.data 
+                       if no == 終着駅を変更しますか？
+                          Route::clrRoute m_curLineId, m_curStationId, sel_index.data
+                          return
+
+                    m_terminalId == sel_index.data
+　　　　　　　　　　m_curStationgId = sel_index.data
+                    m_moSel &= ~0x01;
+                    m_moSel |= 0x08;
+                    IDC_BUTTON_CALC enable
+                    IDC_RADIO_BRANCH_SEL Visible False
+                    IDC_RADIO_TERMINAL_SEL Visible False
+                    IDC_STATIC_LIST_SEL text ""
+                    IDC_LIST_LINESTATIONS disable
+                    IDC_EDIT_STAT 準備完了. [計算]-料金・キロ算出 [DEL]-経路変更
+                    return
+                
+                IDC_RADIO_BRANCH_SEL Visible False
+                IDC_RADIO_TERMINAL_SEL Visible False
+                m_curStationId = sel_index.data;     // 駅ID
+                m_moSel &= ~0x01
+                IDC_LIST_ROUTE_BRANCH add to sel_index.text     右のリストに分岐駅を指定追加
+                IDC_STATIC_LIST_SEL text "路線選択"
+                ListView update(m_curStationId) : 駅から路線
+                return
+        else
+            assert(false)
+            return; // 選択前、選択完了
+    case 2
+        // retrieve from line list                   路線リスト表示で路線を選択
+        // 選ばれているのは路線
+        IDC_LIST_ROUTE_LINE add to sel_index.text       左のリストに路線を追加
+        IDC_BUTTON_ENDSEL disable 着駅指定禁止
+        IDC_BUTTON_BS enable                                
+        IDC_RADIO_BRANCH_SEL Visible True		終着駅指定していても終着駅選択すれば書換え
+        IDC_RADIO_BRANCH_SEL Value True
+        IDC_RADIO_TERMINAL_SEL Visible True
+        IDC_RADIO_TERMINAL_SEL Value False
+        m_moSelOpt = 1	// 1=branch, 2=all station
+        IDC_STATIC_LIST_SEL text "駅選択"
+        m_curLineId = sel_index.data          // 路線ID
+        m_moSel |= 0x01;                // 最終指定は路線
+        ListView update(m_curLineId) : 路線から分岐駅
+    default
+        assert(false)
+        return; // 選択前、選択完了
+        
+
+IDC_RADIO_BRANCH_SEL or IDC_RADIO_TERMINAL_SEL pushd
+    switch m_moSel & 0x0b
+    case 2	// 路線リスト表示中
+        assert(false);
+        break
+    case 3	// 駅リスト表示中
+        assert(((m_moSel & 0x04) && (0 < m_terminalId)) || ((m_moSel & 0x04) == 0) && (m_terminalId == 0))
+        if IDC_RADIO_BRANCH_SEL Value is True
+           if m_moSelOpt != 1
+              ListView update(m_curLineId)
+              m_moSelOpt = 1
+        else
+           if m_moSelOpt != 2
+              ListView update(m_curLineId, true)
+              m_moSelOpt = 2
+    default
+        assert(false);
+    }
+
+IDC_BUTTON_CALC pushed
+    // todo here
+
+
+bs(del) button pushed
+    if m_moSel & 0x08 != 0
+        m_moSel &= ~0x09
+        // failthru
+        
+    switch m_moSel & 0x03
+    case 3		駅リスト表示中
+	m_moSel &= ~0x01
+        ListView update(m_curStationId) : 駅から路線
+	remove IDC_LIST_ROUTE_LINE tail id
+        if IDC_LIST_ROUTE_LINE count is 0
+            IDC_BUTTON_BS disable 
+            m_curLineId = 0;
+            IDC_BUTTON_ENDSEL enable 着駅指定有効
+        else
+            m_curLineId = IDC_LIST_ROUTE_LINE tail id
+        IDC_RADIO_BRANCH_SEL Visible False
+        IDC_RADIO_TERMINAL_SEL Visible False
+        IDC_STATIC_LIST_SEL text "路線選択"
+
+    case 2		路線リスト表示中
+        if ! IDC_LIST_ROUTE_BRANCH tail id
+            assert(false)			ルートにひとつもない
+            return
+        assert(m_curStationId == IDC_LIST_ROUTE_BRANCH tail id)
+        IDC_LIST_ROUTE_BRANCH tail id remove	最後の分岐駅を削除
+        if ! IDC_LIST_ROUTE_BRANCH tail id
+            delStartStationId = m_startStationId	ルートリスト＝1つの場合、2個前は発駅
+        else
+            delStartStationId = IDC_LIST_ROUTE_BRANCH tail id	ルートリスト2つ以上
+        RouteDupChk::clrRoute m_curLineId, delStartStationId, m_curStationId
+        m_curStationId = delStartStationId
+
+        IDC_RADIO_BRANCH_SEL Visible True
+        IDC_RADIO_BRANCH_SEL Value True
+        IDC_RADIO_TERMINAL_SEL Visible True
+        IDC_RADIO_TERMINAL_SEL Value False
+        IDC_STATIC_LIST_SEL text "駅選択"
+        m_moSel |= 0x01;                     // 最終指定は路線
+        ListView update(m_curLineId) : 路線から分岐駅
+    else
+        assert(false)
+        return; // 選択前、選択完了
+
+
+// m_moSel & 1 == 1:
+//      idは路線Id	路線分岐駅
+//      terminal_sel false
+//
+// m_moSel & 1 == 1:
+//      idは駅Id　　　  駅の路線リスト
+
+ListView update(id, terminal_sel = false)
+    switch m_moSel & 0x0b
+    case 3		// 駅リスト表示
+        if terminal_sel
+            路線(id)から駅, m_curStationIdは除外、m_terminalIdは路線リストの先頭に"(着駅)"と表示
+        else
+            路線(id)から分岐駅 or m_curStationIdは除外、m_terminalIdは路線リストの先頭に"(着駅)"と表示
+    case 2		// 路線リスト表示
+        駅(id)の所属路線をリスト m_curLineIdは除外
+    default
+        assert(false)
+        return; // 選択前、選択完了
+    
+---------------------------------------
+終着駅指定のチェックボックスの制御
+        起動時禁止
+        路線リスト表示時禁止
+        
+        
+        
+
+            高尾
+中央東線    立川    高尾-立川間の分岐(立川,八王子)=select * from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and jctflg!=0 and sales_km<=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and t.name='高尾') and sales_km>=(select sales_km from t_lines l join t_line n on n.rowid=l.line_id join t_station t on t.rowid=l.station_id where n.name='中央東線' and t.name='立川');
+南武線      川崎
+東海道線    東神奈川
+横浜線      八王子  <- X
+八高線      高崎
+
+
+八王子選択
+路線選択：横浜線、八高線、中央東線
+八高線選択
+高崎(終着駅)、拝島、高麗川
+
+
+	新宿	中央東、山手
+中央東	八王子	八高線、横浜線
+
+///////////////////////////////////////////////////////////////////////
+            高尾	中央東線
+中央東線    立川	中央東線、南武線、青梅線
+南武線      川崎	南武線、東海道線、鶴見線
+東海道線    東神奈川	東海道線、横浜線
+横浜線      八王子	横浜線、中央東線、八高線
+八高線      高崎	八高線、上越線、信越線、上越新幹線、北陸新幹線
+
+
+
+
+
+addroute
+  重複ポイントで抜ける（含まない）戻り値は重複ポイントの分岐番号
+  
+  
+  重複なしの戻り値は０
+  最後の駅の重複の場合、―１
+  致命的エラー   －２
+  線区が直前と同様 －３
+ 
+  
+
+
+
+*****************************************************************************
+12 分岐駅=1 (jctflg)
+22 新幹線で新幹線の駅の無い在来線分岐駅(Route MASK以外は除外)
+23 JR以外=1
+24 70条定義レコード用レコード(*通常除外-line_idが独自なのでline_id指定したqueryなら指定しなくてOK)
+31 分岐駅特例(江差線の函館、札沼線の札幌、石北線の旭川(*通常除外)
+****************************************************************************
+
+(lflg & (1 << 23))!=0
+
+
+sales_km>=0 新幹線中間分岐駅を除外
+
+
+0=(lflg & ((1 << 24)|(1 << 31))
+
+
+select id,t.name from t_lines l join t_station t on t.rowid=l.station_id join t_jct j on j.station_id=l.station_id where line_id=93 and jctflg!=0 and 
+((sales_km<=(select sales_km from t_lines where line_id=93 and station_id=1996) and 
+sales_km>=(select sales_km from t_lines where  line_id=93 and station_id=2050)) or 
+(sales_km>=(select sales_km from t_lines where line_id=93 and station_id=1996) and 
+sales_km<=(select sales_km from t_lines where  line_id=93 and station_id=2050)))
+
+
+
+
+
+
+	CDBContext ctx = Route::enum_xxxx()
+	ctx.bind(1, "hello");
+	ctx.bind(2, 343);
+	while(ctx.moveNext()) {
+	  ctx.getText(1);
+	  ctx.getInt(1);
+	}
+
+	or
+
+	CDBContext* pctx = CDB::getInstance()->prepare(Fjr::sql_enum_company_prefect));
+	pctx->bind(1, "hello");
+	pctx->bind(2, 343);
+	while(pctx->moveNext()) {
+	  pctx->getText(1);
+	  pctx->getInt(1);
+	}
+	delete pctx;
+
+MainUI class members
+
+Member(in Route member)
+  m_route.startStationId
+  m_route.endStationId
+
+m_curStationId
+m_curLineId
+SelMode (station|line)
+--
+
+MainUI class::Init method
+ Initialize valiables
+Sel begin Station
+  BeginStaionId, curStationId set
+  SelMode =linelist
+  List line show
+
+
+
+
+MainUI class::
+// 発駅指定
+//	IDC_BUTTON_STARTSEL [...] button pushed
+//
+
+MainUI class::
+// 着駅指定
+//	IDC_BUTTON_ENDSEL [...] button pushed.
+//
+
+MainUI class::
+// 「路線」／「分岐駅」／「着駅」の選択
+//	IDC_BUTTON_SEL [+] button pushed.
+//
+  If selmode == linelist
+     line List append sel line
+     Selmode = station list
+     Radio select enable as jct
+     Show list station line, curStation
+  Else
+     Addroute line, curStation,sel station
+     If ng
+         Error message
+          Return              
+     Elseif last or terminal or radio select by terminal
+         RouteEnd()     
+         Jct List append station 
+         Farecalc
+     Else
+         Sel mode = line
+         curStation = sel station
+         Show list line - line, curStation    
+          Jct List append station
+          Farecalc
+          If Station is Terminal or  radio select is terminal
+              Routeend
+
+MainUI class::
+//	List double click
+//	IDC_LIST_LINESTATIONS [(路線／分岐駅／着駅)] ListCtrl Double clicked.
+//
+-> IDC_BUTTON_SEL [+] button pushed.
+
+
+MainUI class::
+//	分岐駅選択 Radio Button
+//	IDC_RADIO_BRANCH_SEL [分岐駅] Radio Button pushed.
+//
+   Assert selMode == station
+   Assert line list count > 0
+   If radio is terminal
+      Show list all station:last line list
+   Else
+      Show list jct station:last line list
+
+MainUI class::
+//	終着駅指定 Radio button
+//	IDC_RADIO_STATION_SEL [着駅] Radio Button pushed.
+//
+-> IDC_RADIO_BRANCH_SEL [分岐駅] Radio Button pushed.
+
+
+
+MainUI class::
+//	発駅、着駅、経路 => 全消去
+//	IDC_BUTTON_ALL_CLEAR [X] Button pushed.
+//
+
+	m_route.clrRoute();
+	m_selMode = SEL_LINE;
+
+MainUI class::
+//	着駅クリア
+//	IDC_BUTTON_TERM_CLEAR [X] button pushed.
+//
+  textfield.Terminal = ""
+  
+  x GetWindowLong()->GWL_USERDATA にstationIdを含められないか？
+
+MainUI class::
+// delete button(経路の末尾をキャンセル)
+//	IDC_BUTTON_BS [-] button pushed.
+//
+   If SelMode == line
+      If curStation == beginStation
+          Assert list count 0
+          Return
+      SelMode = station
+      route.removeTail()
+      Jct List  remove tail
+      Jct List new tail -> curStation
+      Show list to jct station by line and excet curStation
+       Radio select as jct
+      
+    Else. // station sel
+       SelMode = line
+       Line List  remove tail
+       Show list to line by curStation
+
+
+MainUI class::routeEnd()
+//	着駅までの指定完了
+//
+  [路線/分岐駅/着駅]リストを消してタイトル消去して追加[+]ボタン無効化
+
+
+
+
+
+
+
