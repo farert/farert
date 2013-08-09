@@ -21,6 +21,15 @@ static tstring num_str_yen(int num)
 	return s;
 }
 
+static tstring cr_remove(tstring s)
+{
+	tstring::size_type idx = 0;
+	while (tstring::npos != (idx = s.find(_T('\r'), idx))) {
+		s.replace(idx, 1, _T(" "), 1, 1);
+	}
+	return s;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 static void test_route(void)
@@ -172,30 +181,35 @@ _T("c69条の経路////////////////////////////////////////"),
 		route.setup_route(buffer);
 
 		tstring s = route.showFare(RULE_NO_APPLIED);
+		s = cr_remove(s);
 		_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 		_ftprintf(os, _T("結果ルート(非適用)--->\n"));
 		_ftprintf(os, route.show_route(false).c_str());
 		_ftprintf(os, _T("<---\n\n"));
 
 		s = route.showFare(RULE_APPLIED);
+		s = cr_remove(s);
 		_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		_ftprintf(os, _T("結果ルート(適用)--->\n"));
 		_ftprintf(os, route.show_route(true).c_str());
 		_ftprintf(os, _T("<---\n\n"));
 
 		s = route.showFare(RULE_APPLIED | NO_APPLIED_START);
+		s = cr_remove(s);
 		_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 		_ftprintf(os, _T("結果ルート(適用)--->\n"));
 		_ftprintf(os, route.show_route(true).c_str());
 		_ftprintf(os, _T("<---\n\n"));
 
 		s = route.showFare(RULE_APPLIED | NO_APPLIED_TERMINAL);
+		s = cr_remove(s);
 		_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 		_ftprintf(os, _T("結果ルート(適用)--->\n"));
 		_ftprintf(os, route.show_route(true).c_str());
 		_ftprintf(os, _T("<---\n\n"));
 
 		s = route.showFare(RULE_APPLIED | NO_APPLIED_START | NO_APPLIED_TERMINAL);
+		s = cr_remove(s);
 		_ftprintf(os, _T("///発・着=単駅\n%s\n"), s.c_str());
 		_ftprintf(os, _T("結果ルート(適用)--->\n"));
 		_ftprintf(os, route.show_route(true).c_str());
@@ -334,12 +348,14 @@ void test_autoroute(void)
 			_ftprintf(os, _T("Can't route.\n"));
 		} else {
 			tstring s = route.showFare(RULE_NO_APPLIED);
+			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 			_ftprintf(os, _T("結果ルート(非適用)--->\n"));
 			_ftprintf(os, route.show_route(false).c_str());
 			_ftprintf(os, _T("<---\n\n"));
 
 			s = route.showFare(RULE_APPLIED);
+			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			_ftprintf(os, _T("結果ルート(適用)--->\n"));
 			_ftprintf(os, route.show_route(true).c_str());
@@ -354,12 +370,14 @@ void test_autoroute(void)
 			_ftprintf(os, _T("Can't route.\n"));
 		} else {
 			tstring s = route.showFare(RULE_NO_APPLIED);
+			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 			_ftprintf(os, _T("結果ルート(非適用)--->\n"));
 			_ftprintf(os, route.show_route(false).c_str());
 			_ftprintf(os, _T("<---\n\n"));
 
 			s = route.showFare(RULE_APPLIED);
+			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			_ftprintf(os, _T("結果ルート(適用)--->\n"));
 			_ftprintf(os, route.show_route(true).c_str());

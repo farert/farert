@@ -157,9 +157,13 @@ public:
 #define MASK_SANYO_SHINKANSEN		(0x10000 << 4)	// 20:ŽR—zVŠ²ü
 #define MASK_KYUSYU_SHINKANSEN		(0x10000 << 5)	// 21:‹ãBVŠ²ü
 #define MASK_HOKKAIDO_SHINKANSEN	(0x10000 << 6)	// 22:–kŠC“¹VŠ²ü
-#define MASK_FLAG_SHINKANSEN		(0x007f0000)	// VŠ²ü
-
-
+#define MASK_FLAG_SHINKANSEN(flg)	((flg)&0x007f0000)	// VŠ²ü	aggregate_fare_info()‚ÌÅŒã‚ÅÝ’è
+#define MASK_CITYNO(flg)			((flg)&0x0f)
+#define BCSUBURB					7
+#define MASK_URBNNO(flg)			(((flg)>>7)&0x07)
+#define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* ‘åã“dŽÔ“Á’è‹æŠÔ ?*/
+#define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* “Œ‹ž“dŽÔ“Á’è‹æŠÔ ?*/
+#define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* ŽR“_ü“à^‘åãŠÂóü“à ?*/
 	int fare;
 	int avail_days;
 

@@ -1846,14 +1846,14 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 	if (fite == in_route_list.cend()) {
 		return 0;	/* empty */
 	}
-	city_no_s = (fite->flag & 0x0f);
+	city_no_s = MASK_CITYNO(fite->flag);
 
 	rite = in_route_list.crbegin();
 	if (rite == in_route_list.crend()) {
 		ASSERT(FALSE);
 		return 0;	/* fatal error */
 	}
-	city_no_e = (rite->flag & 0x0f);
+	city_no_e = MASK_CITYNO(rite->flag);
 
 	*cityId_pair = MAKEPAIR(city_no_s, city_no_e);
 
@@ -1862,12 +1862,12 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 		c = 0;
 		for (fite++; fite != in_route_list.cend(); fite++) {
 			if (c == 0) {
-				if ((fite->flag & 0x0f) != city_no_s) {
+				if (MASK_CITYNO(fite->flag) != city_no_s) {
 					c = 1;			// ”²‚¯‚½
 					out_line.set(*fite);
 				}
 			} else {
-				if ((fite->flag & 0x0f) == city_no_s) {
+				if (MASK_CITYNO(fite->flag) == city_no_s) {
 					if (c == 1) {
 						c = 2;		// –ß‚Á‚Ä‚«‚½
 						in_line.set(*fite);
@@ -1910,13 +1910,13 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 		in_line.set(*rite);
 		for (rite++; rite != in_route_list.crend(); rite++) {
 			if (c == 0) {
-				if ((rite->flag & 0x0f) != city_no_e) {
+				if (MASK_CITYNO(rite->flag) != city_no_e) {
 					c = 1;			// 
 				} else {
 					in_line.set(*rite);
 				}
 			} else {
-				if ((rite->flag & 0x0f) == city_no_e) {
+				if (MASK_CITYNO(rite->flag) == city_no_e) {
 					if (c == 1) {
 						c = 2;
 					} else {
@@ -2392,7 +2392,7 @@ bool Route::checkOfRuleSpecificCoreLine(int disCity, int* rule114)
 				}
 				// route_list_cooked = route_list_tmp
 				route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
-				return true;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+				return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 
 			/* route_list_tmp = route_list_tmp2 */
@@ -2415,7 +2415,7 @@ bool Route::checkOfRuleSpecificCoreLine(int disCity, int* rule114)
 				}
 				// route_list_cooked = route_list_tmp
 				route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
-				return true;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+				return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			if ((sk != 900) || (sk2 == 1000)) {
 				break;
@@ -3243,9 +3243,9 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 	DBO ctx = DBS::getInstance()->compileSql(
 "select"
 "	(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
-"	(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"
+"	(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 0
 "	(select max(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
-"	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"
+"	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 1
 "	case when exists (select * from t_lines"
 "	where line_id=?1 and (lflg&(1<<21)!=0) and station_id=?2)"
 "	then -1 else"
@@ -3253,7 +3253,7 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	where line_id=?1 and  (lflg&(1<<21)!=0)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
-"	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"
+"	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// 2
 "	case when exists (select * from t_lines"
 "	where line_id=?1 and (lflg&(1<<21)!=0) and station_id=?3)"
 "	then -1 else"
@@ -3261,10 +3261,10 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	where line_id=?1 and  (lflg&(1<<21)!=0) "
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
-"	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"
-"	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"
+"	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// 3
+"	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
 "	((select 2147483648*(1&(lflg>>23)) from t_lines where line_id=?1) + "
-"	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"
+"	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
 );
 
 	if (ctx.isvalid()) {
@@ -3297,6 +3297,7 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 {
 	int company_id1;
 	int company_id2;
+	int flag;
 
 	vector<int> d = FARE_INFO::GetDistanceEx(line_id, station_id1, station_id2);
 	this->fare += FARE_INFO::CheckSpecficFarePass(line_id, station_id1, station_id2);
@@ -3455,13 +3456,19 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 			break;
 		}
 	}
-	if ((this->flag & 0x8000) == 0) {
-		this->flag = (IDENT1(d.at(5)) | 0x8000);
+	if ((this->flag & 0x8000) == 0) {		// b15‚ª0‚Ìê‡Å‰‚È‚Ì‚Å‰w1‚Ìƒtƒ‰ƒO‚à”½‰f
+		this->flag = IDENT1(d.at(5));		// ‰w1 sflg‚Ì‰º13ƒrƒbƒg
 	}
-	this->flag &= ((IDENT2(d.at(5)) | 0x8000));
+	flag = IDENT2(d.at(5));					// ‰w2 sflg‚Ì‰º13ƒrƒbƒg
+	if ((flag & 0x0380) != (this->flag & 0x0380)) {/* ‹ßx‹æŠÔ(b7-9) ‚Ì”äŠr */
+		flag &= ~0x380;						/* ‹ßx‹æŠÔ OFF */
+	}
+	this->flag &= flag;						/* b11,10,5(‘åã/“Œ‹“dÔ“Á’è‹æŠÔ, Rèü^‘åãŠÂóü“à) */
+	this->flag |= 0x8000;					/* Ÿ‰ñ‚©‚ç‰w1‚Í•s—v */
 	if (IS_SHINKANSEN_LINE(line_id)) {
-		this->flag |= (0x10000 << ((line_id - 1) & 0x0f));
+		this->flag |= ((line_id & 0x0f) << 16);	/* make flag for MASK_FLAG_SHINKANSEN() */
 	}
+	/* flag(sflg)‚ÍAb11,10,5, 7-9 ‚Ì‚İg—p‚Å‘¼‚ÍFARE_INFO‚Å‚Íg—p‚µ‚È‚¢ */
 	return true;
 }
 
@@ -3505,12 +3512,12 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList)
 						(this->hokkaido_sales_km == this->hokkaido_calc_km) && 
 						(this->shikoku_sales_km == this->shikoku_calc_km));
 
-	if (((this->flag >> 7) & 0x07) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
+	if (MASK_URBNNO(this->flag) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
 						/* “Á’è‹æŠÔ‚Ì”»’è */
 		int fare = FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);
 		if (0 < fare) {
 			TRACE("specific fare section replace for Metro.\n");
-			this->fare = fare;
+			this->fare = fare;	/* ‘å“ss“Á’è‹æŠÔ‰^’À */
 			return true;	// >>>>>>>>>>>>>>>>>>>>
 		} else {
 			// “ss‹ßx‹æŠÔ“à‚Ì”­’…‚Å‚·‚Ì‚ÅÅ’ZŒo˜H‚Ì‰^’À‚Å‚²—˜—p‰Â”\‚Å‚·(“r’†‰ºÔ•s‰ÂA—LŒø“ú”“–“úŒÀ‚è)
@@ -3548,24 +3555,24 @@ bool FARE_INFO::retr_fare()
 
 				// –{B3Ğ‚ ‚èH
 	if (0 < (this->base_sales_km + this->base_calc_km)) {
-		if ((this->flag & (1 << 11)) != 0) {
+		if (IS_OSMSP(this->flag)) {
 			/* ‘åã“dÔ“Á’è‹æŠÔ‚Ì‚İ */
 			ASSERT(this->fare == 0); /* ‰ïĞü‚ğ’Ê‚Á‚Ä‚¢‚È‚¢‚Í‚¸‚È‚Ì‚Å */
 			ASSERT(this->base_sales_km == this->total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
-			if ((this->flag & (1 << 5)) != 0) {
+			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(e)\n");
 				this->fare = FARE_INFO::Fare_e(this->total_jr_sales_km);
 			} else {
 				TRACE("fare(c)\n");
 				this->fare = FARE_INFO::Fare_c(this->total_jr_sales_km);
 			}
-		} else if ((this->flag & (1 << 10)) != 0) { 
+		} else if (IS_TKMSP(this->flag)) { 
 			/* “Œ‹“dÔ“Á’è‹æŠÔ‚Ì‚İ */
 			ASSERT(this->fare == 0); /* ‰ïĞü‚ğ’Ê‚Á‚Ä‚¢‚È‚¢‚Í‚¸‚È‚Ì‚Å */
 			ASSERT(this->base_sales_km == this->total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
-			if ((this->flag & (1 << 5)) != 0) {
+			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(d)\n");
 				this->fare = FARE_INFO::Fare_d(this->total_jr_sales_km);
 			} else {
@@ -3916,10 +3923,10 @@ int FARE_INFO::Fare_a(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 140;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 180;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -3963,10 +3970,10 @@ int FARE_INFO::Fare_b(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 130;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 150;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -4010,10 +4017,10 @@ int FARE_INFO::Fare_c(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 120;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 160;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -4057,10 +4064,10 @@ int FARE_INFO::Fare_d(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 130;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 150;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -4100,10 +4107,10 @@ int FARE_INFO::Fare_e(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 120;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 160;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -4143,10 +4150,10 @@ int FARE_INFO::Fare_f(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 160;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 200;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -4194,10 +4201,10 @@ int FARE_INFO::Fare_g(int km)
 	int fare;
 	int c_km;
 
-	if (km < 40) {							// 1 to 3km
+	if (km < 31) {							// 1 to 3km
 		return 160;
 	}
-	if (km < 70) {							// 4 to 6km
+	if (km < 61) {							// 4 to 6km
 		return 200;
 	}
 	if (km < 101) {							// 7 to 10km
@@ -4375,11 +4382,13 @@ ASSERT(FALSE);
 //		}
 	}
 
-	if ((((fare_info.flag >> 7) & 0x07) != 0) && ((fare_info.flag & MASK_FLAG_SHINKANSEN) == 0)) { 
+	if ((MASK_URBNNO(fare_info.flag) != 0) && (MASK_FLAG_SHINKANSEN(fare_info.flag) == 0)) { 
 		 /* ‘SŒo˜H‚ª‹ßx‹æŠÔ“à‚ÅVŠ²ü–¢—˜—p‚Ì‚Æ‚«Å’Z‹——£‚ÅZo‰Â”\ */
 		_sntprintf_s(cb, MAX_BUF,
 			_T("‹ßx‹æŠÔ“à‚Å‚·‚Ì‚ÅÅ’ZŒo˜H‚Ì‰^’À‚Å—˜—p‰Â”\‚Å‚·(“r’†‰ºÔ•s‰ÂA—LŒø“ú”“–“úŒÀ‚è)\r\n"));
 		sResult += cb;
+		ASSERT(fare_info.avail_days <= 2);
+		fare_info.avail_days = 1;	/* “–“úŒÀ‚è */
 	}
 	_sntprintf_s(cb, MAX_BUF,
 						_T("‰c‹ÆƒLƒF%6s km ŒvZƒLƒF%6s km"), 
