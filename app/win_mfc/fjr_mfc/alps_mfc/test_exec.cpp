@@ -169,6 +169,9 @@ _T("c69条の経路////////////////////////////////////////"),
 	TCHAR buffer[1024];
 	LPTSTR psz_title = _T("");
 	int i;
+	int opt;
+	int flag;
+
 	for (i = 0; '\0' != *route_def[i]; i++) {
 		route.removeAll();
 		if (route_def[i][0] == _T('c')) {
@@ -194,26 +197,30 @@ _T("c69条の経路////////////////////////////////////////"),
 		_ftprintf(os, route.show_route(true).c_str());
 		_ftprintf(os, _T("<---\n\n"));
 
-		s = route.showFare(RULE_APPLIED | NO_APPLIED_START);
-		s = cr_remove(s);
-		_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
-		_ftprintf(os, _T("結果ルート(適用)--->\n"));
-		_ftprintf(os, route.show_route(true).c_str());
-		_ftprintf(os, _T("<---\n\n"));
+		opt = route.fareCalcOption();
+		if (opt == 2) {
+			s = route.showFare(RULE_APPLIED | APPLIED_START);
+			s = cr_remove(s);
+			_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
+			_ftprintf(os, _T("結果ルート(適用)--->\n"));
+			_ftprintf(os, route.show_route(true).c_str());
+			_ftprintf(os, _T("<---\n\n"));
 
-		s = route.showFare(RULE_APPLIED | NO_APPLIED_TERMINAL);
-		s = cr_remove(s);
-		_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
-		_ftprintf(os, _T("結果ルート(適用)--->\n"));
-		_ftprintf(os, route.show_route(true).c_str());
-		_ftprintf(os, _T("<---\n\n"));
+			opt = route.fareCalcOption();
+			ASSERT(opt == 1);
 
-		s = route.showFare(RULE_APPLIED | NO_APPLIED_START | NO_APPLIED_TERMINAL);
-		s = cr_remove(s);
-		_ftprintf(os, _T("///発・着=単駅\n%s\n"), s.c_str());
-		_ftprintf(os, _T("結果ルート(適用)--->\n"));
-		_ftprintf(os, route.show_route(true).c_str());
-		_ftprintf(os, _T("<---\n\n"));
+			s = route.showFare(RULE_APPLIED);
+			s = cr_remove(s);
+			_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
+			_ftprintf(os, _T("結果ルート(適用)--->\n"));
+			_ftprintf(os, route.show_route(true).c_str());
+			_ftprintf(os, _T("<---\n\n"));
+
+			opt = route.fareCalcOption();
+			ASSERT(opt == 2);
+		} else {
+			ASSERT(opt == 0);	/* opt=1はあり得ない */
+		}
 	}
 }
 

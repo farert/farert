@@ -33,8 +33,6 @@ void CTermSel::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CTermSel, CDialogEx)
-	ON_BN_CLICKED(IDC_BUTTON_COMPANY_SEL, &CTermSel::OnBnClickedButtonCompanySel)
-	ON_BN_CLICKED(IDC_BUTTON_LINE_SEL, &CTermSel::OnBnClickedButtonLineSel)
 	ON_LBN_SELCHANGE(IDC_LIST_COMPANY, &CTermSel::OnLbnSelchangeListCompany)
 	ON_LBN_DBLCLK(IDC_LIST_COMPANY, &CTermSel::OnLbnDblclkListCompany)
 	ON_LBN_DBLCLK(IDC_LIST_LINES, &CTermSel::OnLbnDblclkListLines)
@@ -179,7 +177,7 @@ void CTermSel::OnLbnSelchangeListCompany()
 {
 	if (500 < (GetTickCount() - m_dwSystime)) {
 		reinterpret_cast<CListBox*>(GetDlgItem(IDC_LIST_LINES))->ResetContent();
-		OnBnClickedButtonCompanySel();
+		OnLbnDblclkListCompany();
 		m_dwSystime = GetTickCount();
 	} else {
 		m_lastListChange = 1;
@@ -193,7 +191,7 @@ void CTermSel::OnLbnSelchangeListLines()
 {
 	if (500 < (GetTickCount() - m_dwSystime)) {
 		reinterpret_cast<CListBox*>(GetDlgItem(IDC_LIST_TERMINALS))->ResetContent();
-		OnBnClickedButtonLineSel();
+		OnLbnDblclkListLines();
 		m_dwSystime = GetTickCount();
 	} else {
 		m_lastListChange = 2;
@@ -303,10 +301,10 @@ void CTermSel::OnCbnKillfocusComboStation()
 
 
 
-//	[>>] Company/Prefect -> Line
-//	IDC_BUTTON_COMPANY_SEL
+//	[Company/Prefect] Listbox double click
+//	IDC_LIST_COMPANY
 //
-void CTermSel::OnBnClickedButtonCompanySel()
+void CTermSel::OnLbnDblclkListCompany()
 {
 	int idx;
 	CListBox* pL = (CListBox*)GetDlgItem(IDC_LIST_COMPANY);
@@ -325,21 +323,15 @@ void CTermSel::OnBnClickedButtonCompanySel()
 }
 
 
-//	[Company/Prefect] Listbox double click
-//	IDC_LIST_COMPANY
-//
-void CTermSel::OnLbnDblclkListCompany()
-{
-	OnBnClickedButtonCompanySel();
-}
-
-
+//	Double click to Lines list
+//	IDC_LIST_LINES
 //	[>>] line -> station
-//	IDC_BUTTON_LINE_SEL
 //	‰ïŽÐor“s“¹•{Œ§ + ˜Hü‚É‘®‚·‚é‰w‚ð—ñ‹“
 //
-void CTermSel::OnBnClickedButtonLineSel()
+void CTermSel::OnLbnDblclkListLines()
 {
+	// update station list
+
 	int idx0;
 	int idx1;
 
@@ -364,15 +356,6 @@ void CTermSel::OnBnClickedButtonLineSel()
 		}
 		// GetDlgItem(IDC_LIST_TERMINALS)->SetFocus();
 	}
-}
-
-//	Double click to Lines list
-//	IDC_LIST_LINES
-//
-void CTermSel::OnLbnDblclkListLines()
-{
-	// update station list
-	OnBnClickedButtonLineSel();
 }
 
 

@@ -82,11 +82,11 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_RADIO_TERMINAL_SEL, &Calps_mfcDlg::OnBnClickedRadioTerminalSel)
 	ON_BN_CLICKED(IDC_BUTTON_ALL_CLEAR, &Calps_mfcDlg::OnBnClickedButtonAllClear)
 	ON_BN_CLICKED(IDC_BUTTON_TERM_CLEAR, &Calps_mfcDlg::OnBnClickedButtonTermClear)
-	ON_BN_CLICKED(IDC_BUTTON_START_8X, &Calps_mfcDlg::OnBnClickedButtonStart8x)
-	ON_BN_CLICKED(IDC_BUTTON_TERMINAL_8X, &Calps_mfcDlg::OnBnClickedButtonTerminal8x)
 	ON_BN_CLICKED(IDC_BUTTON_AUTOROUTE, &Calps_mfcDlg::OnBnClickedButtonAutoroute)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_DROPFILES()
+	ON_BN_CLICKED(IDC_CHECK_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedCheckSpecialCity)
+	ON_BN_CLICKED(IDC_CHECK_RULEAPPLY, &Calps_mfcDlg::OnBnClickedCheckRuleapply)
 END_MESSAGE_MAP()
 
 
@@ -288,7 +288,7 @@ _T("着駅挿入、経路短縮"),
 			//setupForLinelistByStation(m_curStationId, curLineId);	// 着駅の所属路線
 			routeEnd();
 			///* 運賃表示 */
-			//SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(retrieve_fare_condition()).c_str());
+			///showFare();
 		} else {
 			return;
 		}
@@ -418,7 +418,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		}
 		
 		/* 運賃表示 */
-		SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(retrieve_fare_condition()).c_str());
+		showFare();
 		m_curStationId = selId;
 		m_selMode = SEL_LINE;	/* for [-] button */
 	}
@@ -512,8 +512,7 @@ void Calps_mfcDlg::OnBnClickedButtonBs()
 		pLRoute->SetItemData(numList - 1, MAKEPAIR(curLineId, 0));
 
 		/* 運賃表示 */
-		SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(retrieve_fare_condition()).c_str());
-
+		showFare();
 	} else {	/* SEL_JUNCTION or SEL_TERMINATE */
 		/* 分岐駅／着駅リスト表示中 */
 		m_selMode = SEL_LINE;
@@ -573,23 +572,6 @@ void Calps_mfcDlg::OnBnClickedButtonTermClear()
 	GetDlgItem(IDC_BUTTON_TERM_CLEAR)->EnableWindow(FALSE);
 }
 
-
-//	IDC_BUTTON_START_8X [発駅単駅] button pushed
-//
-void Calps_mfcDlg::OnBnClickedButtonStart8x()
-{
-	// TODO
-}
-
-
-//	IDC_BUTTON_TERMINAL_8X [着駅単駅] button pushed
-//
-void Calps_mfcDlg::OnBnClickedButtonTerminal8x()
-{
-	// TODO
-}
-
-
 //	IDC_BUTTON_AUTOROUTE [最短経路] button pushed
 //
 void Calps_mfcDlg::OnBnClickedButtonAutoroute()
@@ -618,7 +600,7 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 			//GetDlgItem(IDC_BUTTON_BS)->EnableWindow(TRUE);			// Enable [-] button
 			//
 			///* 運賃表示 */
-			//SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(retrieve_fare_condition()).c_str());
+			///showFare();
 			routeEnd();
 			return;				/* success */
 		} else {
@@ -846,6 +828,7 @@ void Calps_mfcDlg::ResetContent()
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
 	CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
+	GetDlgItem(IDC_CHECK_SPECIAL_CITY)->EnableWindow(FALSE);
 }
 
 //	着駅までの指定完了
@@ -934,7 +917,7 @@ int Calps_mfcDlg::UpdateRouteList()
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(TRUE);			// Enable [-] button
 
 		/* 運賃表示 */
-		SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(retrieve_fare_condition()).c_str());
+		showFare();
 	}
 	return idx;
 }
@@ -1019,12 +1002,61 @@ void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
 	}
 }
 
-/*	運賃表示条件フラグ取得
+
+/*	運賃表示
  *
  */
-int Calps_mfcDlg::retrieve_fare_condition()
+void Calps_mfcDlg::showFare()
 {
-	return ((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_START_FIX)) ? NO_APPLIED_START : 0) |
-		   ((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_TERMINAL_FIX)) ? NO_APPLIED_TERMINAL : 0) |
-		   ((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
+	int opt;
+	int flag;
+	bool ui_sel;
+	
+	/*	運賃表示条件フラグ取得 */
+
+	flag = 0;
+
+	/* 単駅選択可能な特定都区市内発着か? */
+	opt = m_route.fareCalcOption();
+	if ((opt == 1) || (opt == 2)) {
+		/* 単駅指定 */
+		ui_sel = (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SPECIAL_CITY));
+		if (((opt == 1) && !opt) || ((opt == 2) && opt)) {
+			flag = APPLIED_START;
+		}
+	}
+	/* 規則適用か? */
+	flag |=	((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
+	
+	SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(flag).c_str());
+	
+	opt = m_route.fareCalcOption();
+	if ((opt == 1) || (opt == 2)) {
+		//case 1:		// 「発駅を単駅に指定」
+		//case 2:		// 「着駅を単駅に指定」
+		GetDlgItem(IDC_CHECK_SPECIAL_CITY)->EnableWindow(TRUE);
+		if (opt == 1) {
+			SetDlgItemText(IDC_CHECK_SPECIAL_CITY, _T("発駅を単駅に指定"));
+		} else {
+			SetDlgItemText(IDC_CHECK_SPECIAL_CITY, _T("着駅を単駅に指定"));
+		}
+	} else {
+		GetDlgItem(IDC_CHECK_SPECIAL_CITY)->EnableWindow(FALSE);
+	}
 }
+
+
+
+//	[発駅を単駅に指定／着駅を単駅に指定]
+//
+ void Calps_mfcDlg::OnBnClickedCheckSpecialCity()
+ {
+	showFare();
+ }
+
+//	[特例適用]
+//
+ void Calps_mfcDlg::OnBnClickedCheckRuleapply()
+ {
+	showFare();
+ }

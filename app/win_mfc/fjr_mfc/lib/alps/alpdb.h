@@ -217,20 +217,22 @@ public:
 };
 
 // 1レコードめのlineIdの定義
-#define B1LID_BEGIN_CITY	0
-#define B1LID_FIN_CITY		1
-#define B1LID_BEGIN_YAMATE	2
-#define B1LID_FIN_YAMATE	3
-#define B1LID_BEGIN_2CITY	4	// not used
-#define B1LID_FIN_2CITY		5	// not used
+#define B1LID_BEGIN_CITY		0
+#define B1LID_FIN_CITY			1
+#define B1LID_BEGIN_YAMATE		2
+#define B1LID_FIN_YAMATE		3
+#define B1LID_BEGIN_2CITY		4	// not used
+#define B1LID_FIN_2CITY			5	// not used
+#define B1LID_BEGIN_CITY_OFF	6
+#define B1LID_FIN_CITY_OFF		7
 
 #define BSR70	24
 
 /* cooked flag for shoFare(), show_route() */
 #define	RULE_NO_APPLIED			0x8000
 #define	RULE_APPLIED			0
-#define NO_APPLIED_START		0x0001
-#define NO_APPLIED_TERMINAL		0x0010
+#define APPLIED_START			0x0010
+#define APPLIED_TERMINAL		0x0000
 
 
 // station_id & line_id
@@ -332,7 +334,7 @@ public:
 	vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
 
 private:
-	bool			checkOfRuleSpecificCoreLine(int disCity, int* rule114);
+	bool			checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114);
 	static DBO	 	Enum_junctions_of_line(int line_id, int begin_station_id, int to_station_id);
 
 private:
@@ -379,6 +381,8 @@ public:	// termsel
 
 	// alps_mfcDlg
 	tstring 		showFare(int cooked);
+	int				fareCalcOption();
+	
 	tstring 		show_route(bool cooked);
 
 	int				setup_route(LPCTSTR route_str);

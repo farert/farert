@@ -48,8 +48,7 @@ protected:
 	UINT CancelRouteQuery();
 	void CantSameStartAndEnd();
 	void ResetContent();
-	int retrieve_fare_condition();
-
+	void showFare();
 private:
 	Route	m_route;
 	Calps_mfcDlg::SELMODE m_selMode;
@@ -72,5 +71,7 @@ public:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnDropFiles(HDROP hDropInfo);
+	afx_msg void OnBnClickedCheckSpecialCity();
+	afx_msg void OnBnClickedCheckRuleapply();
 };
 
