@@ -351,7 +351,7 @@ void test_autoroute(void)
 		_ftprintf(os, _T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], route_def[i + 1]);
 
 		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
-		if (! route.changeNeerest(true)) {
+		if (! route.changeNeerest(false)) {
 			_ftprintf(os, _T("Can't route.\n"));
 		} else {
 			tstring s = route.showFare(RULE_NO_APPLIED);
@@ -373,7 +373,7 @@ void test_autoroute(void)
 		route.setup_route(buffer);
 		route.endStationId = Route::GetStationId(route_def[i + 1]);
 		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
-		if (! route.changeNeerest(false)) {
+		if (! route.changeNeerest(true)) {
 			_ftprintf(os, _T("Can't route.\n"));
 		} else {
 			tstring s = route.showFare(RULE_NO_APPLIED);

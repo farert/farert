@@ -588,7 +588,7 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 	}
 	
 	if (m_route.changeNeerest((IDYES == MessageBox(_T("新幹線を含めますか?"),
-										_T("確認"), MB_YESNO | MB_ICONQUESTION )))) {
+										_T("確認"), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2)))) {
 		CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 		int numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		if (0 < numList) {

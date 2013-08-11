@@ -2280,6 +2280,8 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	int skm;
 	vector<RouteItem> route_list_tmp;
 	vector<RouteItem> route_list_tmp2;
+	vector<RouteItem> route_list_tmp3;
+	vector<RouteItem> route_list_tmp4;
 	Station enter;
 	Station exit;
 	int n;
@@ -2326,7 +2328,6 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	}
 
 	/* (”­‰w=“s‹æs“à or ’…‰w=“s‹æs“à) 
-     *
 	 */
 	/* route_list_tmp = route_list_tmp2 */
 	route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
@@ -2334,18 +2335,27 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	/* •ÏŠ· -> route_list_tmp:86“K—p */
 	Route::ReRouteRule86j87j(cityId, chk, exit, enter, &route_list_tmp);
 
+	// 69‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp3‚Ö
+	n = Route::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69ğ“K—p(route_list_tmp->route_list_tmp3) */
+	
+	TRACE("Rule 69 applied %dtimes.\n", n);
+
+	/* route_list_tmp	70-88-69-86“K—p
+	 * route_list_tmp2	70-88-69“K—p
+	 * route_list_tmp3	70-88-69-86-69“K—p
+	 */
 	/* compute of sales_km by route_list_cooked */
-	sales_km = Route::Get_route_distance(route_list_tmp).at(0);
+	sales_km = Route::Get_route_distance(route_list_tmp3).at(0);
 	
 	if (2000 < sales_km) {
 		/* <<<“s‹æs“à“K—p>>> */
 		/* 201km <= sales_km */
 		/* enable */
-		route_list_tmp.at(0).lineId = (chk & 0x03);	// B1LID_BEGIN_CITY, B1LID_FIN_CITY
+		route_list_tmp3.at(0).lineId = (chk & 0x03);	// B1LID_BEGIN_CITY, B1LID_FIN_CITY
 		TRACE("applied for rule86(%d)\n", chk & 0x03);
 
-		// route_list_cooked = route_list_tmp
-		route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
+		// route_list_cooked = route_list_tmp3
+		route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
 		return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
@@ -2356,11 +2366,11 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 		/* apply to 87 */
 		if (1000 < sales_km) {
 			/* Rèü“à”­’… enable */
-			route_list_tmp.at(0).lineId = ((rtky & 0x03) << 2);	// B1LID_BEGIN_YAMATE, B1LID_FIN_YAMATE
+			route_list_tmp3.at(0).lineId = ((rtky & 0x03) << 2);	// B1LID_BEGIN_YAMATE, B1LID_FIN_YAMATE
 			TRACE("applied for rule87\n");
 
-			// route_list_cooked = route_list_tmp
-			route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
+			// route_list_cooked = route_list_tmp3
+			route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 			return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		}
 		sk = 900;	/* 90km */
@@ -2368,6 +2378,9 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 		/* can't apply to 87 */
 		sk = 1900;	/* 190km */
 	}
+
+	// route_list_tmp4 = route_list_tmp3
+	route_list_tmp4.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
 	/* ”­’…‚Æ‚à“s‹æs“à? */
 	if ((0x03 & (rtky | chk)) == 3) { /* –¼ŒÃ‰®s“à-‘åãs“à‚È‚Ç([–¼]-[ã]A[‹ã]-[•Ÿ]A[‹æ]-[•l]) */
@@ -2380,8 +2393,13 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 			/* ”­‰w‚Ì‚İ“Á’è“s‹æs“à’…Œo˜H‚É•ÏŠ· */
 			Route::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
+			// 69‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp3‚Ö
+			n = Route::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69ğ“K—p(route_list_tmp->route_list_tmp3) */
+			
+			TRACE("Rule 69 applied %dtimes.\n", n);
+
 			/* ”­‰w‚Ì‚İ“s‹æs“à‚É‚µ‚Ä‚à201/101kmˆÈã‚©H */
-			skm = Route::Get_route_distance(route_list_tmp).at(0);
+			skm = Route::Get_route_distance(route_list_tmp3).at(0);
 			if (sk2 < skm) {
 				// ”­ “s‹æs“à—LŒø
 				flg = 0x01;
@@ -2392,8 +2410,13 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 			/* ’…‰w‚Ì‚İ“Á’è“s‹æs“à’…Œo˜H‚É•ÏŠ·‰¼“K—p */
 			Route::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp);
 
+			// 69‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp3‚Ö
+			n = Route::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69ğ“K—p(route_list_tmp->route_list_tmp3) */
+			
+			TRACE("Rule 69 applied %dtimes.\n", n);
+
 			/* ’…‰w‚Ì‚İ“s‹æs“à‚É‚µ‚Ä‚à201/101kmˆÈã‚©H */
-			skm = Route::Get_route_distance(route_list_tmp).at(0);
+			skm = Route::Get_route_distance(route_list_tmp3).at(0);
 			if (sk2 < skm) {
 				// ’… “s‹æs“à—LŒø
 				flg |= 0x02;
@@ -2406,29 +2429,34 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 					/* ”­‰w‚Ì‚İ“Á’è“s‹æs“à’…Œo˜H‚É•ÏŠ· */
 					Route::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
+					// 69‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp3‚Ö
+					n = Route::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69ğ“K—p(route_list_tmp->route_list_tmp3) */
+					
+					TRACE("Rule 69 applied %dtimes.\n", n);
+
 					/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª”­‰w‚Ì‚İ“s‹æs“à“K—p */
 					if (sk == 900) {
 						TRACE("applied for rule87(start)\n");
-						route_list_tmp.at(0).lineId = (1 << B1LID_BEGIN_YAMATE) | (1 << B1LID_BEGIN_CITY_OFF);
+						route_list_tmp3.at(0).lineId = (1 << B1LID_BEGIN_YAMATE) | (1 << B1LID_BEGIN_CITY_OFF);
 					} else {
 						TRACE("applied for rule86(start)\n");
-						route_list_tmp.at(0).lineId = (1 << B1LID_BEGIN_CITY) | (1 << B1LID_BEGIN_CITY_OFF);
+						route_list_tmp3.at(0).lineId = (1 << B1LID_BEGIN_CITY) | (1 << B1LID_BEGIN_CITY_OFF);
 					}
-					// route_list_cooked = route_list_tmp
-					route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
+					// route_list_cooked = route_list_tmp3
+					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 					return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				} else {
 					/* ’…‚Ì‚İ“s‹æs“à“K—p */
 					/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª’…‰w‚Ì‚İ“s‹æs“à“K—p */
 					if (sk == 900) {
 						TRACE("applied for rule87(end)\n");
-						route_list_tmp.at(0).lineId = (1 << B1LID_FIN_YAMATE) | (1 << B1LID_FIN_CITY_OFF);
+						route_list_tmp3.at(0).lineId = (1 << B1LID_FIN_YAMATE) | (1 << B1LID_FIN_CITY_OFF);
 					} else {
 						TRACE("applied for rule86(end)\n");
-						route_list_tmp.at(0).lineId = (1 << B1LID_FIN_CITY) | (1 << B1LID_FIN_CITY_OFF);
+						route_list_tmp3.at(0).lineId = (1 << B1LID_FIN_CITY) | (1 << B1LID_FIN_CITY_OFF);
 					}
-					// route_list_cooked = route_list_tmp
-					route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
+					// route_list_cooked = route_list_tmp3
+					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 					return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				}
 			} else if (flg == 0x01) {
@@ -2437,28 +2465,33 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 				/* ”­‰w‚Ì‚İ“Á’è“s‹æs“à’…Œo˜H‚É•ÏŠ· */
 				Route::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
+				// 69‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp3‚Ö
+				n = Route::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69ğ“K—p(route_list_tmp->route_list_tmp3) */
+				
+				TRACE("Rule 69 applied %dtimes.\n", n);
+
 				/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª”­‰w‚Ì‚İ“s‹æs“à“K—p */
 				if (sk == 900) {
 					TRACE("applied for rule87(start)\n");
-					route_list_tmp.at(0).lineId = (1 << B1LID_BEGIN_YAMATE);
+					route_list_tmp3.at(0).lineId = (1 << B1LID_BEGIN_YAMATE);
 				} else {
 					TRACE("applied for rule86(start)\n");
-					route_list_tmp.at(0).lineId = (1 << B1LID_BEGIN_CITY);
+					route_list_tmp3.at(0).lineId = (1 << B1LID_BEGIN_CITY);
 				}
-				// route_list_cooked = route_list_tmp
-				route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
+				// route_list_cooked = route_list_tmp3
+				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 				return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			} else if (flg == 0x02) {
 				/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª’…‰w‚Ì‚İ“s‹æs“à“K—p */
 				if (sk == 900) {
 					TRACE("applied for rule87(end)\n");
-					route_list_tmp.at(0).lineId = (1 << B1LID_FIN_YAMATE);
+					route_list_tmp3.at(0).lineId = (1 << B1LID_FIN_YAMATE);
 				} else {
 					TRACE("applied for rule86(end)\n");
-					route_list_tmp.at(0).lineId = (1 << B1LID_FIN_CITY);
+					route_list_tmp3.at(0).lineId = (1 << B1LID_FIN_CITY);
 				}
-				// route_list_cooked = route_list_tmp
-				route_list_cooked.assign(route_list_tmp.cbegin(), route_list_tmp.cend());
+				// route_list_cooked = route_list_tmp3
+				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 				return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			/* flg == 0 */
@@ -2469,11 +2502,13 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 		}
 		/* passthru */
 	}
-#if 0
-route_list_tmp2   ‚à‚Æ(69A70A88“K—p‚à‚Ìj
-route_list_tmp    86A86“K—pŒã(‰ó‚µ‚Ä‚àAtmp2‚©‚ç¶¬‚µ‚Ä‚à‰Â)
-route_list_cooked ‹ó
-#endif
+
+	/* route_list_tmp	x
+	 * route_list_tmp2	70-88-69“K—p
+	 * route_list_tmp3	x
+	 * route_list_tmp4	70-88-69-86-69“K—p
+	 * route_list_cooked ‹ó
+	 */
 
 	/* –¢•ÏŠ· */
 	TRACE("no applied for rule86/87(sales_km=%d)\n", sales_km);
@@ -2481,24 +2516,25 @@ route_list_cooked ‹ó
 	if (sk <= sales_km) {
 			/* 114ğ“K—p‚©ƒ`ƒFƒbƒN */
 		if ((0x03 & chk) == 3) {
-			is114 =
-			(Route::CheckOfRule114j(route_list_tmp2, route_list_tmp,
+			is114 =					/* 86,87“K—p‘O,   86,87“K—pŒã */
+			(Route::CheckOfRule114j(route_list_tmp2, route_list_tmp4,
 									0x01 | ((sk2 == 2000) ? 0 : 0x8000), 
 									rule114)) ||
-			(Route::CheckOfRule114j(route_list_tmp2, route_list_tmp,
+			(Route::CheckOfRule114j(route_list_tmp2, route_list_tmp4,
 									0x02 | ((sk2 == 2000) ? 0 : 0x8000),
 									rule114));
 		} else {
 			ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
 			is114 =
-			Route::CheckOfRule114j(route_list_tmp2, route_list_tmp,
+			Route::CheckOfRule114j(route_list_tmp2, route_list_tmp4,
 								   (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000),
 								   rule114);
 		}
 	} else {
 		is114 = false;
 	}
-	// route_list_cooked = route_list_tmp
+	/* 86-87”ñ“K—p */
+	// route_list_cooked = route_list_tmp2
 	route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 	return is114;
 }
@@ -3108,7 +3144,7 @@ bool Route::changeNeerest(bool useBulletTrain)
 		vector<vector<int>>::const_iterator ite;
 		for (ite = nodes.cbegin(); ite != nodes.cend(); ite++) {
 			a = ite->at(0) - 1;	// jctId
-			if ((!IsJctMask(a + 1) || (lastNode == (a + 1))) && (!useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
+			if ((!IsJctMask(a + 1) || (lastNode == (a + 1))) && (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
 				/* VŠ²ü‚Å‚È‚¢ */
 				cost = minCost[doneNode] + ite->at(1); // cost
 				// ƒm[ƒhto‚Í‚Ü‚¾–K‚ê‚Ä‚¢‚È‚¢ƒm[ƒh
@@ -4507,6 +4543,7 @@ int Route::fareCalcOption()
 	if (0 != (route_list_cooked.at(0).lineId & (1 << B1LID_FIN_CITY_OFF))) {
 		return 2;
 	}
+	return 0;
 }
 
 int Route::setup_route(LPCTSTR route_str)
