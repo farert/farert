@@ -170,7 +170,6 @@ _T("c69èÇÃåoòH////////////////////////////////////////"),
 	LPTSTR psz_title = _T("");
 	int i;
 	int opt;
-	int flag;
 
 	for (i = 0; '\0' != *route_def[i]; i++) {
 		route.removeAll();
@@ -182,6 +181,8 @@ _T("c69èÇÃåoòH////////////////////////////////////////"),
 		_tcscpy_s<1024>(buffer, route_def[i]);
 		_ftprintf(os, _T("!---<%02d>:%s -----------------\n<%s>\n"), i, psz_title, buffer);
 		route.setup_route(buffer);
+
+		TRACE("test_exec(route): %d*************************************************\n", i);
 
 		tstring s = route.showFare(RULE_NO_APPLIED);
 		s = cr_remove(s);
@@ -344,6 +345,7 @@ void test_autoroute(void)
 	int i;
 	for (i = 0; _T('\0') != *route_def[i]; i += 2) {
 		_ftprintf(os, _T("!===<%02d>: auto route ==================\n\n"), i);
+		TRACE("test_exec(auto route): %d*************************************************\n", i);
 		route.removeAll();
 		_tcscpy_s<1024>(buffer, route_def[i]);
 		route.setup_route(buffer);

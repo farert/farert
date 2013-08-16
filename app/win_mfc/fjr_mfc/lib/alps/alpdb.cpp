@@ -1334,26 +1334,26 @@ int Route::ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteIt
 
 	for (route_item = in_route_list.cbegin(); route_item != in_route_list.cend(); route_item++) {
 		if (stage == 0) {
-			if ((route_item->flag & (1 << BSR70)) == 0) {
+			if ((route_item->flag & (1 << BCRULE70)) == 0) {
 				stage = 1;					/* 1: off */
 			} else {
 				break;	/* 70ğ“K—pƒGƒŠƒA“à”­‚Í”ñ“K—p(86A87ğ) stage==0 */
 			}
 		} else if (stage == 1) {
-			if ((route_item->flag & (1 << BSR70)) != 0) {
+			if ((route_item->flag & (1 << BCRULE70)) != 0) {
 				stage = 2;					/* 2: on */ /* ŠO‚©‚çi“ü‚µ‚½ */
 				route_item_1 = route_item;
 			}
 			// else ŠO‚Ì‚Ü‚Ü
 		} else if (stage == 2) {
-			if ((route_item->flag & (1 << BSR70)) == 0) {
+			if ((route_item->flag & (1 << BCRULE70)) == 0) {
 				stage = 3;					/* 3: off: !70 -> 70 -> !70 (applied) */
 				route_item_2 = route_item;	// i“ü‚µ‚Ä’Eo‚µ‚½
 			}
 			// else ’†‚Ì‚Ü‚Ü
 		} else if (stage == 3) {
 			/* 4 */
-			if ((route_item->flag & (1 << BSR70)) != 0) {
+			if ((route_item->flag & (1 << BCRULE70)) != 0) {
 				stage = 4;				// i“ü‚µ‚Ä’Eo‚µ‚Ä”²‚¯‚½(‚ç70ğ”ñ“K—p)
 				break;					/* !70 -> 70 -> !70 -> 70 (exclude) */
 			}
@@ -1551,7 +1551,7 @@ bool Route::Query_rule69t(const vector<RouteItem>& in_route_list, const RouteIte
 			vector<vector<PAIRIDENT>>::const_iterator it;
 			s2 = route_item->stationId;
 			if (s1 != 0) { /* 2‰ñ–ÚˆÈ~ ? */
-				if (!cur.compare(*route_item)) {
+				if (!cur.is_equal(*route_item)) {
 					it = results->cbegin();
 					while (it != results->cend()) {
 						lineId = it->at(0);
@@ -2056,14 +2056,15 @@ int Route::CheckOfRule87(const vector<RouteItem>& in_route_list)
 
 
 //static
-//	86ğ’†S‰w‚©‚çÅ‰‚ÌæŠ·‰w‚Ü‚Å‚Ì˜Hü‚ÆæŠ·‰w‚ğ•Ô‚·
+//	i“ü/’Eo˜Hü‚©‚ç86ğ’†S‰w‚©‚çÅ‰‚ÌæŠ·‰w‚Ü‚Å‚Ì˜Hü‚ÆæŠ·‰w‚ğ•Ô‚·
 //	showFare() => checkOfRuleSpecificCoreLine() => ReRouteRule86j87j() =>
 //
 //  @param [in] lineId : i“ü^’Eo˜Hü
 //	@param [in] cityId : “s‹æs“àId
 //
-//  @retval 0< : •Ô‹p”z—ñ”
-//		   -1 : ¸”s
+//  @retval vector<Station> : •Ô‹p”z—ñ(lineId, stationId)
+//
+//	—áFlineId:í”Öü, cityId:[‹æ] -> “Œ–küA“ú•é—¢
 //
 vector<Station> Route::SpecificCoreAreaFirstTransferStationBy(int lineId, int cityId)
 {
@@ -2182,38 +2183,35 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int mode, const Station& exit, 
 	vector<Station> firstTransferStation;
 	
 	if ((mode & 1) != 0) {
-		/* ”­‰w-’Eo: exit —LŒø*/
+		/* ”­‰w-’Eo: exit —LŒø*/		/* ex) [[“Œ–küA“ú•é—¢]] = (í”Öü, [‹æ]) */
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(exit.lineId, IDENT1(cityId));
 		if (firstTransferStation.size() <= 0) {
-			ASSERT(FALSE);
+			ASSERT(FALSE);				/* ƒe[ƒuƒ‹–¢’è‹` */
 		} else {
 			vector<Station>::const_reverse_iterator sta_ite;
 			sta_ite = firstTransferStation.crbegin();
 			if (exit.lineId == sta_ite->lineId) {
-				work_route_list.push_back(RouteItem(0, sta_ite->stationId));
-				// ASSERT(sta_ite->stationId == Route::Retrieve_SpecificCoreStation(IDENT(cityId))); (V‰¡•l‚Æ‚©‚ ‚é‚Ì‚Å)
+				work_route_list.push_back(RouteItem(0, sta_ite->stationId));	/* ”­‰w:“s‹æs“à‘ã•\‰w */
+				// ASSERT(sta_ite->stationId == Route::Retrieve_SpecificCoreStation(IDENT(cityId))); (V‰¡•l‚Æ‚©V_ŒË‚ª‚ ‚é‚Ì‚Å)
 			} else {
 				coreStationId = Route::Retrieve_SpecificCoreStation(IDENT1(cityId));
 				ASSERT(0 < coreStationId);
-				work_route_list.push_back(RouteItem(0, coreStationId));
+				work_route_list.push_back(RouteItem(0, coreStationId));			/* ”­‰w:“s‹æs“à‘ã•\‰w */
 				while (sta_ite != firstTransferStation.crend()) {
 					work_route_list.push_back(RouteItem(sta_ite->lineId, sta_ite->stationId));
 					++sta_ite;
 				}
 			}
 		}
-		itr = out_route_list->cbegin();
-		skip = true;
-		while (itr != out_route_list->cend()) {
+		for (skip = true, itr = out_route_list->cbegin(); itr != out_route_list->cend(); ++itr) {
 			if (skip) {
-				if (exit.compare(*itr)) {
+				if (exit.is_equal(*itr)) {
 					skip = false;
 					work_route_list.push_back(*itr);
-				}
+				}/* else  ’Eo ˜Hü:‰w‚Ì‘O‚ÌŒo˜H‚ğƒXƒLƒbƒv*/
 			} else {
 				work_route_list.push_back(*itr);
 			}
-			++itr;
 		}
 		TRACE("start station is re-route rule86/87\n");
 	} else {
@@ -2227,7 +2225,7 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int mode, const Station& exit, 
 		/* ’…‰w-i“ü: entr —LŒø */
 		itr = work_route_list.cbegin();
 		while (itr != work_route_list.cend()) {
-			if (enter.compare(*itr)) {
+			if (enter.is_equal(*itr)) {
 				break;
 			} else {
 				out_route_list->push_back(*itr);
@@ -2292,6 +2290,7 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	bool is114;
 	int flg;
 
+#if 0	/* 20130817 bug */
 	// route_list_tmp = route_list_raw
 	// 70‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp‚Ö
 	n = Route::ReRouteRule70j(route_list_raw, &route_list_tmp);
@@ -2300,7 +2299,9 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	} else {
 		route_list_tmp.assign(route_list_raw.cbegin(), route_list_raw.cend());
 	}
-
+#else
+	route_list_tmp.assign(route_list_raw.cbegin(), route_list_raw.cend());
+#endif
 	// 88‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp‚Ö
 	n = Route::CheckOfRule88j(&route_list_tmp);
 	if (0 != n) {
@@ -4402,7 +4403,7 @@ tstring Route::showFare(int cooked)
 			sExt = _T("");
 		} else {
 			// rule 114 applied
-			_sntprintf_s(cb, MAX_BUF, _T("‹K’ö114ğ“K—p—¿‹àF\\%5s ‰c‹ÆƒLƒ: %6s km / ŒvZƒLƒ: %6s km\r\n"), 
+			_sntprintf_s(cb, MAX_BUF, _T("‹K’ö114ğ“K—p—¿‹àF\\%-5s ‰c‹ÆƒLƒ: %6s km / ŒvZƒLƒ: %6s km\r\n"), 
 						 num_str_yen(rule114[0]).c_str(),
 						 num_str_km(rule114[1]).c_str(),
 						 num_str_km(rule114[2]).c_str());
@@ -4469,7 +4470,7 @@ ASSERT(FALSE);
 		_sntprintf_s(cb, MAX_BUF,
 			_T("‹ßx‹æŠÔ“à‚Å‚·‚Ì‚ÅÅ’ZŒo˜H‚Ì‰^’À‚Å—˜—p‰Â”\‚Å‚·(“r’†‰ºÔ•s‰ÂA—LŒø“ú”“–“úŒÀ‚è)\r\n"));
 		sResult += cb;
-		ASSERT(fare_info.avail_days <= 2);
+		//ASSERT(fare_info.avail_days <= 2);
 		fare_info.avail_days = 1;	/* “–“úŒÀ‚è */
 	}
 	_sntprintf_s(cb, MAX_BUF,
@@ -4514,7 +4515,7 @@ ASSERT(FALSE);
 	}
 	_sntprintf_s(cb, MAX_BUF,
 				//_T("‰^’ÀF\\%5s     \\%5s[2Š„ˆø] \\%5s[üŠ„] \\%5s[‰•œ] \\%5s[4Š„ˆø]\r\n")
-				_T("‰^’ÀF\\%5s     \\%5s[‰•œ]\r\n")
+				_T("‰^’ÀF\\%-5s     \\%-5s[‰•œ]\r\n")
 				_T("—LŒø“ú”F%4u“ú\r\n"),
 						num_str_yen(fare_info.fare).c_str(),
 						//num_str_yen(fare2).c_str(),

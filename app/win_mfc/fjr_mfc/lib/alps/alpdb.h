@@ -112,7 +112,7 @@ public:
 			   stationId == item_.stationId /* && 
 			   flag == item_.flag */; 
 	}
-	bool compare(const RouteItem& item_) const { 
+	bool is_equal(const RouteItem& item_) const { 
 		return lineId == item_.lineId && 
 			   stationId == item_.stationId /* && 
 			   flag == item_.flag */; 
@@ -226,7 +226,8 @@ public:
 #define B1LID_BEGIN_CITY_OFF	6
 #define B1LID_FIN_CITY_OFF		7
 
-#define BSR70	24
+#define BSR70		24
+#define BCRULE70	6
 
 /* cooked flag for shoFare(), show_route() */
 #define	RULE_NO_APPLIED			0x8000
@@ -276,11 +277,11 @@ public:
 		return lineId == item_.lineId && 
 			   stationId == item_.stationId;
 	}
-	bool compare(const Station& item_) const { 
+	bool is_equal(const Station& item_) const { 
 		return lineId == item_.lineId && 
 			   stationId == item_.stationId; 
 	}
-	bool compare(const RouteItem& item_) const { 
+	bool is_equal(const RouteItem& item_) const { 
 		return lineId == item_.lineId && 
 			   stationId == item_.stationId; 
 	}
@@ -292,7 +293,7 @@ public:
 	IDENT lineId;
 	IDENT stationId1;
 	IDENT stationId2;
-	Node() { lineId = 0; stationId1 = 0; stationId2; }
+	Node() { lineId = 0; stationId1 = 0; stationId2 = 0; }
 };
 
 class Route
