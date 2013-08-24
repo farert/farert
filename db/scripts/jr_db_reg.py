@@ -108,6 +108,16 @@ create table t_rule69 (
 """)
 ###########################################
 con.execute("""
+create table t_rule70 (
+	station_id1 integer not null references t_station(rowid),
+	station_id2 integer not null references t_station(rowid),
+	sales_km integer not null,
+
+	primary key (station_id1, station_id2)
+);
+""")
+###########################################
+con.execute("""
 create table t_rule86 (
 	line_id1 integer not null references t_line(rowid),
 	station_id integer not null references t_station(rowid),
@@ -245,10 +255,12 @@ con.commit()
 
 n_station = 0
 branch = []
-id70 = 10000	# rule70適用t_linesのline_idの開始値
 n_segment = 0
 for lin in open(fn, 'r', encoding='shift-jis'):
 	if lin[0] == '#':
+		continue		# コメントスキップ
+
+	if lin.strip() == '':
 		continue		# コメントスキップ
 
 	if lin.startswith('*line'):
@@ -477,19 +489,8 @@ insert into t_rule69(id, station_id1, station_id2, line_id, ord) values(
 
 #------------------------------------------------------------------------------
 	elif n_segment == 4:	# rule70
-		sql1 = """
-insert into t_lines values(?,
- (select rowid from t_station where name=? and samename=?),
- ?, 0, ((1 << 24) | (select rowid from t_line where name=?)));
-"""
-		sql2 = """
-insert into t_lines values(?,
- (select rowid|2147483648 from t_station where name=? and samename=?),
- ?, 0, ((1 << 24) | (select rowid from t_line where name=?)));
-"""
-		# b24=special_t_lines
-		# BSR70=(1 << 24)
-		tmp = linitems[1].strip()
+
+		tmp = linitems[0].strip()		# station_id1
 		if 0 <= tmp.find('('):
 			station1 = tmp[:tmp.find('(')]
 			station1_s = tmp[tmp.find('('):]
@@ -497,7 +498,7 @@ insert into t_lines values(?,
 			station1 = tmp
 			station1_s = ''
 
-		tmp = linitems[3].strip()
+		tmp = linitems[1].strip()		# station_id2
 		if 0 <= tmp.find('('):
 			station2 = tmp[:tmp.find('(')]
 			station2_s = tmp[tmp.find('('):]
@@ -505,13 +506,12 @@ insert into t_lines values(?,
 			station2 = tmp
 			station2_s = ''
 
-		id70 += 1
-		#print(id70, end='|')
-		con.execute(sql1, [id70, station1, station1_s, 0, linitems[0].strip()])
-		#if station1 == station2 and station1_s == station2_s:
-		#	id70 += 1
-		#print(id70, lin, end='')
-		con.execute(sql2, [id70, station2, station2_s, int(linitems[4]), linitems[2].strip()])
+		con.execute("""
+insert into t_rule70 values(
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?),
+ ?);""",
+		[station1, station1_s, station2, station2_s, int(linitems[2])])
 
 #------------------------------------------------------------------------------
 	elif n_segment == 5:	# rule86

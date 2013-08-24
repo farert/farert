@@ -401,8 +401,8 @@ t_line n on n.rowid=l.line_id where %s=%d and (l.lflg&(1<<23))=0 group by l.line
 select n.name, line_id, lflg from t_line n left join t_lines l on n.rowid=l.line_id left join  t_station t on t.rowid=l.station_id  
  where %s=%d and (l.lflg&(1<<23))=0 group by l.line_id order by n.name
 
-"select n.name, line_id, lflg from t_line n left join t_lines l on n.rowid=l.line_id left join"
-" t_station t on t.rowid=l.station_id where %s=%d and (l.lflg&((1<<23)|(1<<31)|(1<<24)))=0 and sales_km>=0 group by l.line_id order by n.name";
+select n.name, line_id, lflg from t_line n left join t_lines l on n.rowid=l.line_id left join
+ t_station t on t.rowid=l.station_id where %s=%d and (l.lflg&((1<<23)|(1<<31)|(1<<24)))=0 and sales_km>=0 group by l.line_id order by n.name;
 
 
 
@@ -413,8 +413,8 @@ where line_id=? and ?=1 order by sales_km
 select t.name, station_id from t_station t left join t_lines l on t.rowid=l.station_id 
 where line_id=? and ?=1 order by sales_km
 
-"select t.name, station_id from t_station t left join t_lines l on t.rowid=l.station_id"
-" where line_id=? and %s=? and (l.lflg&((1<<23)|(1<<31)|(1<<24)))=0 and sales_km>=0 order by sales_km";
+select t.name, station_id from t_station t left join t_lines l on t.rowid=l.station_id
+ where line_id=? and %s=? and (l.lflg&((1<<23)|(1<<31)|(1<<24)))=0 and sales_km>=0 order by sales_km;
 
 ----------------
 ˜Hü‚Ì•ªŠò‰w(‚Æw’è‰w‚ªŠÜ‚Ü‚ê‚ê‚Î‚»‚Ì‰w‚à)ˆê——
@@ -827,9 +827,33 @@ select	(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or
 		(select calc_km from t_lines where line_id=?1 and (lflg&(1<<21))!=0),
 		(select company_id from t_station where rowid=?2),
 		(select company_id from t_station where rowid=?3)
-"""
+
 
 # sales_km, calc_km, sales_km(station1‚Ì‰ïĞ‹æŠÔ), calc_km(station1‚Ì‰ïĞ‹æŠÔ), station1‚Ìcompany_id, station2‚Ìcompany_id
 
+
+
+-----------------------------------------------------------
+2013-8-21
+RetrieveOut70station(lineId, stationId1, stationId2)
+ ˆê”Ô¶‘¤‚Ì70ğ“K—p‰w‚ğ“¾‚é
+ stationId1‚Í70ğ“K—p‰w‚Å‚ ‚é•K—v‚ª‚ ‚é
+ stationId2‚Í70ğ”ñ“K—p‰w‚Å‚ ‚é•K—v‚ª‚ ‚é
+
+
+select station_id from t_lines where line_id=?1 and 
+ sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&(1<<6))!=0);
+
+ª‚±‚ê‚Å—Ç‚¢B70ğ‚Í“Œ‹“s‹æ“à‚Å‚ ‚é‚Ì‚Å‚·‚×‚Ä‰c‹ÆƒLƒ‚Í¸‡‚Å‚ ‚èAŠO‘¤‚Ì70ğ“K—p‰w‚Í‰c‹ÆƒLƒ‚ª‘å‚«‚¢”‚ğ‘I‘ğ‚·‚ê‚Î‚æ‚¢B
+‚Ü‚½A‰w‚à•s—v‚È‚Ì‚Åƒpƒ‰ƒ[ƒ^‚Í˜HüID‚Ì‚İ‚Æ‚·‚é
+
+-- “ŒŠC“¹ü 77   ?1
+-- •iì 893
+
+-- “Œ‹ 467   ?2
+
+-- 1494 •xm   ?3
+
+-- 1<<6: 70ğ“K—p‰w
 
 

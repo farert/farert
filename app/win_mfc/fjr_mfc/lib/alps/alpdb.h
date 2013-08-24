@@ -40,6 +40,8 @@ using namespace std;
 #define IS_COMPANY_LINE(id)     (202<(id))
 //#define MAX_JCT 311
 
+/* ID for line_id on t_lines */
+#define ID_L_RULE70		-10
 
 // length define(UTF-8)
 #define MAX_STATION_CHR	32		// 38
@@ -214,6 +216,7 @@ public:
 	static int		CheckSpecficFarePass(int line_id, int station_id1, int station_id2);
 	static int		SpecficFareLine(int station_id1, int station_id2);
 	static vector<int> GetDistanceEx(int line_id, int station_id1, int station_id2);
+	static int		Retrieve70Distance(int station_id1, int station_id2);
 };
 
 // 1レコードめのlineIdの定義
@@ -342,7 +345,7 @@ private:
 	bool			aggregate_fare_info(int line_id, int station_id1, int station_id2);
 
 	static bool 	InStation(int stationId, int lineId, int b_stationId, int e_stationId);
-	static bool 	Retrieve_70inout(int line_id1, int line_id2, Node* node);
+	static int		RetrieveOut70Station(int line_id);
 	
 	vector<vector<int>> Node_next(int jctId);
 

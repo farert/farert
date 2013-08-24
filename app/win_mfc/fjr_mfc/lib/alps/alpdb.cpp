@@ -597,15 +597,18 @@ DBO Route::Enum_junctions_of_line(int line_id, int begin_station_id, int to_stat
 	return dbo;
 }
 
+//static
 //	70条進入路線、脱出路線から進入、脱出境界駅と営業キロ、路線IDを返す
 //
-//	@param [in] line_id1   進入路線
-//	@param [in] line_id2   脱出路線
-//	@param [out] node      計算用路線、発駅、至駅
+//	@param [in] line_id    大環状線進入／脱出路線
+//	@return IDENT1(一番外側の大環状線内(70条適用)駅) / IDENT2(
 //
-bool Route::Retrieve_70inout(int line_id1, int line_id2, Node* node)
+int Route::RetrieveOut70Station(int line_id)
 {
 	static const char tsql[] =
+"select station_id from t_lines where line_id=?1 and "
+" sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&(1<<6))!=0);";
+#if 0
 "select	t1.line_id,"
 "	65535&t1.station_id,"
 "	65535&t2.station_id"
@@ -621,19 +624,15 @@ bool Route::Retrieve_70inout(int line_id1, int line_id2, Node* node)
 " where"
 "	(t1.lflg&65535)=?1 and"
 "	(t2.lflg&65535)=?2";
-
+#endif
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	if (dbo.isvalid()) {
-		dbo.setParam(1, line_id1);
-		dbo.setParam(2, line_id2);
+		dbo.setParam(1, line_id);
 	}
 	if (dbo.moveNext()) {
-		node->lineId = dbo.getInt(0);
-		node->stationId1 = dbo.getInt(1);
-		node->stationId2 = dbo.getInt(2);
-		return true; 
+		return dbo.getInt(0);
 	}
-	return false;
+	return 0;
 }
 
 /*	経路追加
@@ -1325,70 +1324,88 @@ tstring Route::CoreAreaNameByCityId(int startEndFlg, int flg, SPECIFICFLAG flags
 int Route::ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list)
 {
 	int stage;
+	int stationId_o70;
+	int flag;
 
 	vector<RouteItem>::const_iterator route_item;
-	vector<RouteItem>::const_iterator route_item_1;
-	vector<RouteItem>::const_iterator route_item_2;
 
 	stage = 0;
 
 	for (route_item = in_route_list.cbegin(); route_item != in_route_list.cend(); route_item++) {
+		bool skip = false;
+		RouteItem ri = *route_item;
+
 		if (stage == 0) {
 			if ((route_item->flag & (1 << BCRULE70)) == 0) {
 				stage = 1;					/* 1: off */
 			} else {
-				break;	/* 70条適用エリア内発は非適用(86、87条) stage==0 */
+				break;		/* 70条適用エリア内発は非適用(86、87条) */
 			}
 		} else if (stage == 1) {
 			if ((route_item->flag & (1 << BCRULE70)) != 0) {
 				stage = 2;					/* 2: on */ /* 外から進入した */
-				route_item_1 = route_item;
+								/* 路線より最外側の大環状線内(70条適用)駅を得る */
+				stationId_o70 = Route::RetrieveOut70Station(route_item->lineId);
+				ASSERT(0 < stationId_o70);
+				ri.stationId = stationId_o70;
+				flag = route_item->flag;
+			} else {	// 外のまま
+				/* do nothing */
 			}
-			// else 外のまま
 		} else if (stage == 2) {
 			if ((route_item->flag & (1 << BCRULE70)) == 0) {
+				int stationId_tmp;
 				stage = 3;					/* 3: off: !70 -> 70 -> !70 (applied) */
-				route_item_2 = route_item;	// 進入して脱出した
+								/* 進入して脱出した */
+								/* 路線より最外側の大環状線内(70条適用)駅を得る */
+				stationId_tmp = Route::RetrieveOut70Station(route_item->lineId);
+				ASSERT(0 < stationId_tmp);
+				if (stationId_tmp != stationId_o70) {
+					out_route_list->push_back(RouteItem(ID_L_RULE70, stationId_tmp, flag));
+				}
+			} else {	// 中のまま
+				skip = true;
+				flag = route_item->flag;
 			}
-			// else 中のまま
 		} else if (stage == 3) {
 			/* 4 */
 			if ((route_item->flag & (1 << BCRULE70)) != 0) {
-				stage = 4;				// 進入して脱出して抜けた(ら70条非適用)
-				break;					/* !70 -> 70 -> !70 -> 70 (exclude) */
+				stage = 4;				// 進入して脱出して(通過して)また進入したら70条非適用
+										/* !70 -> 70 -> !70 -> 70 (exclude) */
+				break;
+			} else {
+				/* 70条通過(通過して外に出ている */
+				/* do nothing */
 			}
+		} else {	/* -1: 発駅から70条適用駅 */
+			/* do nothing */
+		}
+		if (!skip) {
+			out_route_list->push_back(ri);
 		}
 	}
-	if (stage == 3) {	/* 70条適用駅を通過 */
-		// 適合
-		vector<RouteItem> route_70list;
-		Node node;	/* 70条通過: 路線、駅1、駅2 */
-		if (!Route::Retrieve_70inout(route_item_1->lineId, route_item_2->lineId,
-							  &node)) {
-			ASSERT(FALSE);
-			return -1;
-		}
-		if (node.stationId1 == node.stationId2) { /* 例えば京葉線<->東北線 */
-			out_route_list->assign(in_route_list.cbegin(), in_route_list.cend());
-		} else {	/* 例えば、総武線 <-> 常磐線 */
-			for (route_item = in_route_list.cbegin(); route_item != in_route_list.cend(); route_item++) {
-				if ((stage == 3) && (route_item == route_item_1)) {
-					stage = 4;
-					out_route_list->push_back(RouteItem(route_item->lineId, node.stationId1, 0));
-				} else if ((stage == 3) || (stage == 5)) {
-					out_route_list->push_back(*route_item);
-				} else if ((stage == 4) && (route_item == route_item_2)) {
-					out_route_list->push_back(RouteItem(node.lineId, node.stationId2, 0));
-					out_route_list->push_back(*route_item);
-					stage = 5;
-				}
-			}
-		}
-		return 0;	// done
-	} else {
+	
+	switch (stage) {
+	case 0:
 		// 非適合
+		// 0: 70条適用駅発
+		out_route_list->assign(in_route_list.cbegin(), in_route_list.cend());
+		break;
+	case 1:		// 1: 70条適用駅なし(都内を通らない多くのルート)
 		return -1;
+		break;
+	case 3:		/* 70条適用駅を通過 */
+		return 0;	// done
+		break;
+	case 2:		// 2: 70条適用駅着(発駅は非適用駅)
+	case 4:		// 4: 70条適用駅区間を通過して再度進入した場合
+	default:
+		/* cancel */
+		out_route_list->clear();
+		out_route_list->assign(in_route_list.cbegin(), in_route_list.cend());
+		break;
 	}
+	return -1;
 }
 
 
@@ -1455,7 +1472,7 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 
 	TRACE(_T("c69 line_id=%d, station_id1=%d, station_id2=%d\n"), line_id, station_id1, station_id2);
 
-	DBO ctx = DBS::getInstance()->compileSql(tsql);
+	DBO ctx = DBS::getInstance()->compileSql(tsql, true);
 	if (ctx.isvalid()) {
 		ctx.setParam(1, line_id);
 		ctx.setParam(2, station_id1);
@@ -1530,7 +1547,7 @@ bool Route::Query_rule69t(const vector<RouteItem>& in_route_list, const RouteIte
 
 	results->clear();
 	
-	DBO ctx = DBS::getInstance()->compileSql(tsql);
+	DBO ctx = DBS::getInstance()->compileSql(tsql, true);
 	if (ctx.isvalid()) {
 		ctx.setParam(1, ident);
 		while (ctx.moveNext()) {
@@ -2290,20 +2307,17 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	bool is114;
 	int flg;
 
-#if 0	/* 20130817 bug */
-	// route_list_tmp = route_list_raw
-	// 70を適用したものをroute_list_tmpへ
-	n = Route::ReRouteRule70j(route_list_raw, &route_list_tmp);
-	if (0 == n) {
-		TRACE("Rule70 applied.\n");
-	} else {
-		route_list_tmp.assign(route_list_raw.cbegin(), route_list_raw.cend());
-	}
-#else
-	route_list_tmp.assign(route_list_raw.cbegin(), route_list_raw.cend());
-#endif
+	// 69を適用したものをroute_list_tmp2へ
+	n = Route::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
+	TRACE("Rule 69 applied %dtimes.\n", n);
+
+	// route_list_tmp2 = route_list_tmp
+	// 70を適用したものをroute_list_tmp2へ
+	n = Route::ReRouteRule70j(route_list_tmp, &route_list_tmp2);
+	TRACE(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
+
 	// 88を適用したものをroute_list_tmpへ
-	n = Route::CheckOfRule88j(&route_list_tmp);
+	n = Route::CheckOfRule88j(&route_list_tmp2);
 	if (0 != n) {
 		if ((n & 1) != 0) {
 			TRACE("Apply to rule88 for start.\n");
@@ -2311,10 +2325,6 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 			TRACE("Apply to rule88 for arrive.\n");
 		}
 	}
-	// 69を適用したものをroute_list_tmp2へ
-	n = Route::ReRouteRule69j(route_list_tmp, &route_list_tmp2);	/* 69条適用(route_list_tmp->route_list_tmp2) */
-	
-	TRACE("Rule 69 applied %dtimes.\n", n);
 
 	/* 特定都区市内発着可否判定 */
 	chk = Route::CheckOfRule86(route_list_tmp2, &exit, &enter, &cityId);
@@ -3347,7 +3357,7 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
 "	((select 2147483648*(1&(lflg>>23)) from t_lines where line_id=?1) + "
 "	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
-);
+, true);
 
 	if (ctx.isvalid()) {
 		ctx.setParam(1, line_id);
@@ -3366,6 +3376,33 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 	return result;
 }
 
+// static
+//		@brief 70条通過の営業キロを得る
+//
+//	@param [in] station_id1		駅1
+//	@param [in] station_id2		駅2
+//
+//	@return station_id1, station_id2間の営業キロ
+//
+int FARE_INFO::Retrieve70Distance(int station_id1, int station_id2)
+{
+	static const char tsql[] = 
+"select sales_km from t_rule70"
+" where "
+" ((station_id1=?1 and station_id2=?2) or" 
+"  (station_id1=?2 and station_id2=?1))";
+
+	DBO dbo(DBS::getInstance()->compileSql(tsql, true));
+	dbo.setParam(1, station_id1);
+	dbo.setParam(2, station_id2);
+
+	if (dbo.moveNext()) {
+		return dbo.getInt(0);
+	}
+	return 0;
+}
+
+
 //	1経路の営業キロ、計算キロを集計
 //	calc_fare() =>
 //
@@ -3380,6 +3417,18 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 	int company_id1;
 	int company_id2;
 	int flag;
+
+	if (line_id == ID_L_RULE70) {
+		int sales_km;
+		sales_km = FARE_INFO::Retrieve70Distance(station_id1, station_id2);
+		ASSERT(0 < sales_km);
+		this->sales_km += sales_km;			// total 営業キロ(会社線含む、有効日数計算用)
+		this->base_sales_km	+= sales_km;
+		this->base_calc_km += sales_km;
+		this->local_only = false;		// 幹線
+
+		return true;
+	}
 
 	vector<int> d = FARE_INFO::GetDistanceEx(line_id, station_id1, station_id2);
 	this->fare += FARE_INFO::CheckSpecficFarePass(line_id, station_id1, station_id2);
@@ -4677,9 +4726,13 @@ tstring Route::show_route(bool cooked)
 			/* 中間駅 */
 			stationName = Route::StationName(pos->stationId);
 			//_sntprintf_s(buf, MAX_BUF, _T("{%s}%s"), lineName.c_str(), stationName.c_str());
-			result_str += _T("(");
-			result_str += lineName;
-			result_str += _T(")");
+			if (ID_L_RULE70 != pos->lineId) {
+				result_str += _T("(");
+				result_str += lineName;
+				result_str += _T(")");
+			} else {
+				result_str += _T(",");
+			}
 			result_str += stationName;
 		} else {
 			/* 着駅 */
