@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_WM_DROPFILES()
 	ON_BN_CLICKED(IDC_CHECK_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedCheckSpecialCity)
 	ON_BN_CLICKED(IDC_CHECK_RULEAPPLY, &Calps_mfcDlg::OnBnClickedCheckRuleapply)
+	ON_BN_CLICKED(IDC_BUTTON_REVERSE, &Calps_mfcDlg::OnBnClickedButtonReverse)
 END_MESSAGE_MAP()
 
 
@@ -134,7 +135,9 @@ BOOL Calps_mfcDlg::OnInitDialog()
 
 	ResetContent();	// 発駅、着駅、経路 => 全消去 IDC_BUTTON_ALL_CLEAR [X] Button pushed.
 
+//////////////////////////////////////
 	test_exec();	// 単体テストを実行(結果はtest_result.txt)
+//////////////////////////////////////
 
 	DragAcceptFiles();
 
@@ -848,6 +851,49 @@ void Calps_mfcDlg::routeEnd()
 	SetDlgItemText(IDC_EDIT_STAT, _T("完了"));
 }
 
+
+
+//	[発駅を単駅に指定／着駅を単駅に指定]
+//
+void Calps_mfcDlg::OnBnClickedCheckSpecialCity()
+{
+	showFare();
+}
+
+//	[特例適用]チェックボタン
+//
+void Calps_mfcDlg::OnBnClickedCheckRuleapply()
+{
+	showFare();
+}
+
+//	[リバース]Pushボタン
+//	経路を逆転する
+//
+void Calps_mfcDlg::OnBnClickedButtonReverse()
+{
+	int rc;
+	int endStationId;
+
+	endStationId = m_route.endStationId;
+
+	rc = m_route.reverse();
+
+	if (0 < rc) {
+		GetDlgItem(IDC_EDIT_START)->SetWindowText(Route::StationName(m_route.startStationId).c_str());	// 発駅表示
+		UpdateRouteList();
+		if (0 < endStationId) {
+			if (endStationId == m_route.startStationId) {
+				endStationId = (m_route.routeList().cend() - 1)->stationId;
+			}
+			m_route.endStationId = endStationId;
+			GetDlgItem(IDC_EDIT_END)->SetWindowText(Route::StationName(endStationId).c_str());	// 着駅表示
+		}
+	} else if (rc < 0) {
+		AfxMessageBox(_T("経路が重複しています"));
+	}
+}
+
 //	m_routeの内容でIDC_LIST_ROUTEを作成しなおす
 //	@return IDC_LIST_ROUTEの行数を返す
 //
@@ -909,6 +955,7 @@ int Calps_mfcDlg::UpdateRouteList()
 			pLRoute->SetColumnWidth(1, w1);
 		}
 
+		// UI mode set
 		m_selMode = SEL_LINE;				/* for [-] button */
 		setupForLinelistByStation(stationId, lineId);	// 着駅の所属路線
 
@@ -923,27 +970,10 @@ int Calps_mfcDlg::UpdateRouteList()
 }
 
 
-//	for TEST
-//
-//
-void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	//int numList;
-
-	//CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
-
-	//test_exec();	// 単体テストを実行(結果はtest_result.txt)
-	//numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
-
-	//m_curStationId = IDENT2(pLRoute->GetItemData(numList - 1));	// last station
-	//m_selMode = SEL_LINE;				/* for [-] button */
-	//int curLineId = IDENT1(pLRoute->GetItemData(numList - 1));	// last line
-	//ASSERT(0 < curLineId);
-	//setupForLinelistByStation(m_curStationId, curLineId);	// 着駅の所属路線
-}
-
 /*	ファイルをD&Dすることで経路を追加する機能
  *	ファイルは単一テキストファイルのみで1行目1行のみ読み込んで設定
+ *	1行のみで, ',', ' ', '|', '/', (tab)などの区切りで"駅、路線、分岐駅、路線、..."の並び
+ *
  */
 void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
 {
@@ -1046,17 +1076,21 @@ void Calps_mfcDlg::showFare()
 }
 
 
-
-//	[発駅を単駅に指定／着駅を単駅に指定]
+//	for TEST
 //
- void Calps_mfcDlg::OnBnClickedCheckSpecialCity()
- {
-	showFare();
- }
-
-//	[特例適用]
 //
- void Calps_mfcDlg::OnBnClickedCheckRuleapply()
- {
-	showFare();
- }
+void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	//int numList;
+
+	//CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
+
+	//test_exec();	// 単体テストを実行(結果はtest_result.txt)
+	//numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
+
+	//m_curStationId = IDENT2(pLRoute->GetItemData(numList - 1));	// last station
+	//m_selMode = SEL_LINE;				/* for [-] button */
+	//int curLineId = IDENT1(pLRoute->GetItemData(numList - 1));	// last line
+	//ASSERT(0 < curLineId);
+	//setupForLinelistByStation(m_curStationId, curLineId);	// 着駅の所属路線
+}

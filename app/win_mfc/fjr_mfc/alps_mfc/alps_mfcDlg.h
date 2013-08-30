@@ -73,5 +73,6 @@ public:
 	afx_msg void OnDropFiles(HDROP hDropInfo);
 	afx_msg void OnBnClickedCheckSpecialCity();
 	afx_msg void OnBnClickedCheckRuleapply();
+	afx_msg void OnBnClickedButtonReverse();
 };
 

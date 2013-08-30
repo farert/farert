@@ -4467,28 +4467,48 @@ ASSERT(FALSE);
 			}
 		} else {
 			/* Œo˜H•ÏX */
-			sResult = Route::CoreAreaNameByCityId(CSTART, 
+			sResult = _T("");
+
+			/* ”­‰w */
+			sWork = Route::CoreAreaNameByCityId(CSTART, 
 						 						  route_list_cooked.front().lineId, 
 						 						  route_list_cooked.front().flag);
+			if (sWork == _T("")) {
+				/* ’P‰w */
+				sWork = Route::StationName(route_list_cooked.front().stationId);
+			}
+			sResult += sWork;
+			sResult += _T(" -> ");
+
+			/* ’…‰w */
 			sWork = Route::CoreAreaNameByCityId(CEND, 
 						 						route_list_cooked.front().lineId, 
 						 						route_list_cooked.back().flag);
-			if ((sResult != _T("")) || (sWork != _T(""))) {
-				if ((sResult != _T("")) && (sWork != _T(""))) {
-					_sntprintf_s(cb, MAX_BUF, _T("%s”­ - %s’…\r\n"), sResult.c_str(), sWork.c_str());
-				} else if (sResult != _T("")) {
-					_sntprintf_s(cb, MAX_BUF, _T("%s”­\r\n"), sResult.c_str());
-				} else {
-					_sntprintf_s(cb, MAX_BUF, _T("     - %s’…\r\n"), sWork.c_str());
-				}
-				sResult = cb;
+			if (sWork == _T("")) {
+				/* ’P‰w */
+				sWork = Route::StationName(route_list_cooked.back().stationId);
 			}
+			sResult += sWork;
+			sResult += _T("\r\nŒo—R:");
+			sResult += Route::show_route(true);
+			
 			if (!fare_info.calc_fare(route_list_cooked)) {
 				return tstring(_T(""));
 			}
 		}
 	} else {
 		/* ‹K‘¥”ñ“K—p */
+		sResult = _T("");
+
+		/* ’P‰w */
+		sWork = Route::StationName(route_list_raw.front().stationId);
+		sResult += sWork;
+		sResult += _T(" -> ");
+		sWork = Route::StationName(route_list_raw.back().stationId);
+		sResult += sWork;
+		sResult += _T("\r\nŒo—R:");
+		sResult += Route::show_route(false);
+		
 		if (!fare_info.calc_fare(route_list_raw)) {
 			return tstring(_T(""));
 		}
@@ -4528,7 +4548,7 @@ ASSERT(FALSE);
 						num_str_km(fare_info.total_jr_calc_km).c_str());
 	sResult += cb;
 	if (fare_info.total_jr_sales_km != fare_info.sales_km) {
-		_sntprintf_s(cb, MAX_BUF, _T("‰ïĞü‰c‹ÆƒLƒF%6s km"), 
+		_sntprintf_s(cb, MAX_BUF, _T("‰ïĞü‰c‹ÆƒLƒF%6s km\r\n"), 
 			num_str_km(fare_info.sales_km - fare_info.total_jr_sales_km).c_str());
 		sResult += cb;
 	} else {
@@ -4596,6 +4616,70 @@ int Route::fareCalcOption()
 	return 0;
 }
 
+//public:
+//	Œo˜H‚ğ‹t“]
+//
+//	@retval 1   sucess
+//	@retval 0   sucess(empty)
+//	@retval -1	failure(6‚Ìš‚ğ‹t“]‚·‚é‚Æ9‚É‚È‚èŒo˜Hd•¡‚Æ‚È‚é‚½‚ß)
+//
+int Route::reverse()
+{
+	int station_id;
+	int line_id;
+	vector<RouteItem> route_list_rev;
+	vector<RouteItem>::const_reverse_iterator rev_pos;
+	vector<RouteItem>::const_iterator pos;
+
+	if (route_list_raw.size() <= 0) {
+		return 0;
+	}
+
+	for (rev_pos = route_list_raw.crbegin(); rev_pos != route_list_raw.crend(); rev_pos++) {
+		route_list_rev.push_back(*rev_pos);
+	}
+
+	removeAll();	/* clear route_list_raw */
+
+	pos = route_list_rev.cbegin();
+	startStationId = pos->stationId;
+	station_id = startStationId;
+	line_id = pos->lineId;
+	for (pos++; pos != route_list_rev.cend(); pos++) {
+		int rc = add(line_id, station_id, pos->stationId);
+		if (rc < 0) {
+			/* error */
+			/* restore */
+	
+			removeAll();	/* clear route_list_raw */
+
+			rev_pos = route_list_rev.crbegin();
+			station_id = rev_pos->stationId;
+			startStationId = station_id;
+			for (rev_pos++; rev_pos != route_list_rev.crend(); rev_pos++) {
+				rc = add(rev_pos->lineId, station_id, rev_pos->stationId);
+				ASSERT(0 <= rc);
+				station_id = rev_pos->stationId;
+			}
+			return -1;
+		}
+		station_id = pos->stationId;
+		line_id = pos->lineId;
+	}
+	return 1;
+}
+
+
+/*!	@brief ƒ‹[ƒgì¬(•¶š—ñ‚©‚çRouteƒIƒuƒWƒFƒNƒg‚Ìì¬)
+ *
+ *	@param [in] route_str	ƒJƒ“ƒ}‚È‚Ç‚ÌƒfƒŠƒ~ƒ^‚Å‹æØ‚ç‚ê‚½•¶š—ñ("‰wA˜HüA•ªŠò‰wA˜HüA..."j
+ *	@retval -200 failure(‰w–¼•s³)
+ *	@retval -300 failure(ü–¼•s³)
+ *	@retval -1   failure(Œo˜Hd•¡•s³)
+ *	@retval -2   failure(Œo˜H•s³)
+ *	@retval 1 success
+ *	@retval 0 success
+ */
 int Route::setup_route(LPCTSTR route_str)
 {
 	const static TCHAR* token = _T(", |/\t");
@@ -4676,78 +4760,35 @@ tstring Route::show_route(bool cooked)
 	}
 	
 	if (routeList->size() == 0) {	/* Œo˜H‚È‚µ(AutoRoute) */
-		result_str = _T("start:  ");
-		result_str += Route::StationName(startStationId);
-		result_str += _T(",    end:");
-		result_str += Route::StationName(endStationId);
-		result_str += _T("\n");
-		return result_str.c_str();
-		//_sntprintf_s(buf, MAX_BUF, _T("start:  %s,    end:%s\n"), Route::StationName(startStationId).c_str(), 
-		//											 Route::StationName(endStationId).c_str());
-		//return buf;
+		return _T("");
 	}
 	
 	vector<RouteItem>::const_iterator pos = routeList->cbegin();
 
-	//ASSERT(pos->stationId == route.startStationId);
-	
-	/* ”­‰w */
-	stationName = Route::CoreAreaNameByCityId(CSTART, pos->lineId, pos->flag);
-	if (stationName == _T("")) {
-		/* ’P‰w */
-		stationName = Route::StationName(pos->stationId);
-	}
-	result_str = _T("start:  ");
-	result_str += stationName;
-	/* ’…‰ww’è */
-	if (0 < endStationId) {
-		result_str += _T("       end: ");
+	result_str = _T("");
 
-			/* “s‹æs“à‰w? */
-		stationName = Route::CoreAreaNameByCityId(CEND, pos->lineId, routeList->back().flag);
-		if (stationName == _T("")) {
-			/* ’P‰w */
-			stationName = Route::StationName(endStationId);
-		}
-		result_str += stationName;
-		//_sntprintf_s(buf, MAX_BUF, _T("       end: %s\n"), Route::StationName(endStationId).c_str());
-		//result_str += buf;
-	} else {
-		/* ’…‰w–¢w’è */
-//		_sntprintf_s(buf, MAX_BUF, _T("\n"));
-	}
-	result_str += _T("\n");
-	pos++;
-	for (; pos != routeList->cend() ; pos++) {
+	for (pos++; pos != routeList->cend() ; pos++) {
 
 		lineName = LineName(pos->lineId);
 
 		if ((pos + 1) != routeList->cend()) {
 			/* ’†ŠÔ‰w */
 			stationName = Route::StationName(pos->stationId);
-			//_sntprintf_s(buf, MAX_BUF, _T("{%s}%s"), lineName.c_str(), stationName.c_str());
 			if (ID_L_RULE70 != pos->lineId) {
-				result_str += _T("(");
+				result_str += _T("<");
 				result_str += lineName;
-				result_str += _T(")");
+				result_str += _T(">");
 			} else {
 				result_str += _T(",");
 			}
 			result_str += stationName;
 		} else {
 			/* ’…‰w */
-				/* “s‹æs“à‰w? */
-			stationName = Route::CoreAreaNameByCityId(CEND, routeList->cbegin()->lineId, routeList->back().flag);
-			if (stationName == _T("")) {
-				/* ’P‰w */
-				stationName = Route::StationName(endStationId);
-			}
-			//_sntprintf_s(buf, MAX_BUF, _T("{%s}%s%s\n"), lineName.c_str(), stationName.c_str(), Route::CoreAreaNameByCityId(CEND, routeList->cbegin()->lineId, pos->flag).c_str());
-			result_str += _T("(");
+			result_str += _T("<");
 			result_str += lineName;
-			result_str += _T(")");
-			result_str += stationName;
-			result_str += _T("(end)\n");
+			result_str += _T(">");
+			//result_str += stationName;
+			result_str += _T("\r\n");
 		}
 		//result_str += buf;
 	}

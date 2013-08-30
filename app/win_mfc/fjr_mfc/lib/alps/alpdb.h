@@ -394,6 +394,7 @@ public:	// termsel
 	int 			add(int line_id, int stationId1, int stationId2);
 	void 			removeTail(bool begin_off = false);
 	void 			removeAll();
+	int				reverse();
 	bool 			checkPassStation(int stationId);
 	void 			terminate(int stationId);
 	bool			changeNeerest(bool useBulletTrain);
