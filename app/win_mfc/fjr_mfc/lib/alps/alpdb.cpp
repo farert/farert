@@ -509,30 +509,28 @@ vector<vector<int>> Route::Node_next(int jctId)
 //	@param [in] lineId      òHê¸
 //	@param [in] b_stationId äJénâw
 //	@param [in] e_stationId èIóπâw
-//	@retval true  found
-//	@retval false notfound
+//	@return 0: not found / not 0: ocunt of found.
 //
-bool Route::InStation(int stationId, int lineId, int b_stationId, int e_stationId)
+int Route::InStation(int stationId, int lineId, int b_stationId, int e_stationId)
 {
 	static const char tsql[] =
 "select count(*)"
 "	from t_lines"
 "	where line_id=?1"
 "	and station_id=?4"
+"	and (lflg&(1<<31))=0"
 "	and sales_km>="
 "			(select min(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0)"
+"				 station_id=?3))"
 "	and sales_km<="
 "			(select max(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or "
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0)";
+"				 station_id=?3))";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	if (dbo.isvalid()) {
@@ -542,10 +540,10 @@ bool Route::InStation(int stationId, int lineId, int b_stationId, int e_stationI
 		dbo.setParam(4, stationId);
 
 		if (dbo.moveNext()) {
-			return 0 < dbo.getInt(0);
+			return dbo.getInt(0);
 		}
 	}
-	return false;
+	return 0;
 }
 
 //static
@@ -567,15 +565,13 @@ DBO Route::Enum_junctions_of_line(int line_id, int begin_station_id, int to_stat
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0)"
+"				 station_id=?3))"
 "	and sales_km<="
 "			(select max(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0)"
+"				 station_id=?3))"
 " order by"
 " case when"
 "	(select sales_km from t_lines where line_id=?1 and station_id=?3) <"
@@ -607,7 +603,7 @@ int Route::RetrieveOut70Station(int line_id)
 {
 	static const char tsql[] =
 "select station_id from t_lines where line_id=?1 and "
-" sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&(1<<6))!=0);";
+" sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&(1<<6))!=0 and (lflg&(1<<31))=0);";
 #if 0
 "select	t1.line_id,"
 "	65535&t1.station_id,"
@@ -872,7 +868,7 @@ bool Route::checkPassStation(int stationId)
 
 	for (route_item = route_list_raw.cbegin(); route_item != route_list_raw.cend(); route_item++) {
 		if (stationIdFrom != 0) {
-			if (Route::InStation(stationId, route_item->lineId, stationIdFrom, route_item->stationId)) {
+			if (0 != Route::InStation(stationId, route_item->lineId, stationIdFrom, route_item->stationId)) {
 				return true;
 			}
 		} else {
@@ -900,7 +896,7 @@ void Route::terminate(int stationId)
 		if (stationIdFrom != 0) {
 			/* stationIdÇÕroute_list_raw[i].lineIdì‡ÇÃstationIdFromÇ©ÇÁ
 			              route_list_raw[i].statonIdÇÃä‘Ç…Ç†ÇÈÇ©? */
-			if (Route::InStation(stationId, route_list_raw[i].lineId, stationIdFrom, route_list_raw[i].stationId)) {
+			if (0 != Route::InStation(stationId, route_list_raw[i].lineId, stationIdFrom, route_list_raw[i].stationId)) {
 				newLastIndex = i;
 				line_id = route_list_raw[i].lineId;
 				stationIdTo = route_list_raw[i].stationId;
@@ -1428,6 +1424,7 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 " from t_lines"
 " where line_id=?1"
 " and station_id"
+" and (lflg&(1<<31))=0"
 " in (select station_id"
 "      from t_lines"
 "      where line_id=?1"
@@ -3966,39 +3963,37 @@ int FARE_INFO::CheckSpecficFarePass(int line_id, int station_id1, int station_id
 "	from t_lines"
 "	where line_id=?1"
 "	and station_id=f.station_id1"
+"   and (lflg&(1<<31))=0"
 "	and sales_km>="
 "			(select min(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0)"
+"				 station_id=?3))"
 "	and sales_km<="
 "			(select max(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0))"
+"				 station_id=?3)))"
 " and exists ("
 " select *"
 "	from t_lines"
 "	where line_id=?1"
 "	and station_id=f.station_id2"
+"   and (lflg&(1<<31))=0"
 "	and sales_km>="
 "			(select min(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0)"
+"				 station_id=?3))"
 "	and sales_km<="
 "			(select max(sales_km)"
 "			from t_lines"
 "			where line_id=?1"
 "			and (station_id=?2 or"
-"				 station_id=?3)"
-"			and (lflg&(1<<31))=0))"
+"				 station_id=?3)))"
 " order by fare desc"
 " limit(1)";
 

@@ -422,17 +422,8 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 			station_id = cur.fetchone()[0]
 			n_station += 1
 
-		sales_km = int(float(linitems[5]))
-		if 0 < sales_km:
-			sales_km = int(float(linitems[5]) * 10)
-		else:
-			sales_km = int(sales_km)
-
-		calc_km = int(float(linitems[6]))
-		if 0 < calc_km:
-			calc_km = int(float(linitems[6]) * 10)
-		else:
-			calc_km = int(calc_km)
+		sales_km = int(float(linitems[5]) * 10)
+		calc_km = int(float(linitems[6]) * 10)
 
 		con.execute('insert into t_lines values(?, ?, ?, ?, ?)', [line_id, station_id, sales_km, calc_km, flg] )
 

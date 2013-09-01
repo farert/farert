@@ -344,7 +344,7 @@ private:
 private:
 	bool			aggregate_fare_info(int line_id, int station_id1, int station_id2);
 
-	static bool 	InStation(int stationId, int lineId, int b_stationId, int e_stationId);
+	static int	 	InStation(int stationId, int lineId, int b_stationId, int e_stationId);
 	static int		RetrieveOut70Station(int line_id);
 	
 	vector<vector<int>> Node_next(int jctId);
