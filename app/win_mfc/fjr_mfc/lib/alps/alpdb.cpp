@@ -2280,6 +2280,8 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int mode, const Station& exit, 
 //	showFare() =>
 //	route_list_raw => route_list_cooked
 //
+//	Œã”¼‚ÅB1LID_xxx(route[0].lineId)‚ğİ’è‚µ‚Ü‚·
+//
 //	@param [in]  dis_cityflag     bit0:1 = ”­‰w:’…‰w –³Œø(0)/—LŒø(1)
 //	@param [out] rule114	 [0] = ‰^’À, [1] = ‰c‹ÆƒLƒ, [2] = ŒvZƒLƒ
 //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
@@ -2585,6 +2587,7 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 //	‘åã-[“ŒŠC“¹ü]-V‘åã-[R—zVŠ²ü]-
 //	‚Ìê‡A‘åã-[“ŒŠC“¹ü]-V‘åã‚Ì‹æŠÔ‚ğŠO‚·i201kmˆÈã‚È‚çŠO‚³‚È‚¢)
 //	(‚±‚ÌŠÖ”‚Ö‚Í201kmˆÈã‚Ì86ğ“K—p‚É‚ÍŒÄ‚Î‚ê‚é‚±‚Æ‚Í‚È‚¢)
+//	B1LID_xxx(route[0].lineId)‚Ìİ’è‘O‚Å‚ ‚é‚±‚Æ‚ğ‘O’ñ(0‚ğİ’è)‚Æ‚µ‚Ü‚·
 //
 //	@param [in/out] route    route
 //	
@@ -2616,19 +2619,23 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 		chk_distance2 = Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, StationIdOf_HIMEJI)[0];
 	}
 
-	    // V‘åã ”­
+	    // V‘åã ”­ “ŒŠC“¹ü - R—zü
 	if ((route->front().stationId == StationIdOf_SHINOSAKA) && 
 		(route->at(1).lineId == LineIdOf_TOKAIDO) &&
 	    (route->at(2).lineId == LineIdOf_SANYO) &&
 	    (chk_distance1 <= Route::GetDistance(LineIdOf_SANYO, StationIdOf_KOUBE, route->at(2).stationId)[0])) {
+
+		ASSERT(route->at(1).stationId == StationIdOf_KOUBE);
 		/*	V‘åã”­“ŒŠC“¹ü-R—zü-•P˜HˆÈ‰“‚È‚ç”­‰w‚ğV‘åã->‘åã‚Ö */
 		route->front().stationId = StationIdOf_OSAKA;
 		return 1;
-	}	// V‘åã ’…
+	}	// V‘åã ’… R—zü - “ŒŠC“¹ü
 	else if ((route->back().stationId == StationIdOf_SHINOSAKA) && 
 			 (route->back().lineId == LineIdOf_TOKAIDO) &&
 			 (route->at(lastIndex - 1).lineId == LineIdOf_SANYO) &&
 	    	 (chk_distance1 <= Route::GetDistance(LineIdOf_SANYO, StationIdOf_KOUBE, route->at(lastIndex - 2).stationId)[0])) {
+
+		ASSERT(route->at(lastIndex - 1).stationId == StationIdOf_KOUBE);
 		/*	V‘åã’…“ŒŠC“¹ü-R—zü-•P˜HˆÈ‰“‚È‚ç’…‰w‚ğV‘åã->‘åã‚Ö */
 		route->back().stationId = StationIdOf_OSAKA;
 		return 2;
@@ -2638,6 +2645,7 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 		(route->at(2).lineId == LineIdOf_SANYOSHINKANSEN) &&
 		(route->at(1).stationId == StationIdOf_SHINOSAKA) &&
 		(chk_distance2 <= Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, route->at(2).stationId)[0])) {
+
 		/* ‘åã”­-“ŒŠC“¹üã‚è-V‘åã-R—zVŠ²ü •P˜HˆÈ‰“‚Ìê‡A‘åã”­-“ŒŠC“¹ü ‚ğíœ‚·‚é */
 		ASSERT(route->at(1).lineId == LineIdOf_TOKAIDO);
 		vector<RouteItem>::iterator ite = route->begin();
@@ -2645,14 +2653,16 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 		route->front().lineId = 0;
 		route->front().flag = Route::AttrOfStationOnLineLine(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA);
 		return 1;
+
 	}	// ‘åã ’…
 	else if ((route->back().stationId == StationIdOf_OSAKA) && 
 			 (route->back().lineId == LineIdOf_TOKAIDO) &&
 			 (route->at(lastIndex - 1).stationId == StationIdOf_SHINOSAKA) &&
 			 (route->at(lastIndex - 1).lineId == LineIdOf_SANYOSHINKANSEN) &&
 			 (chk_distance2 <= Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, route->at(lastIndex - 2).stationId)[0])) {
+
 		/* R—zVŠ²ü •P˜HˆÈ‰“`V‘åãæŠ·“ŒŠC“¹ü-‘åã’…‚Ìê‡AÅŒã‚Ì“ŒŠC“¹ü-‘åã ‚ğíœ‚·‚é */
-		route->pop_back();
+		route->pop_back();	// remove “ŒŠC“¹ü-‘åã
 		return 2;
 	}
 	else {
