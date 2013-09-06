@@ -465,7 +465,6 @@ static void test_route(void)
 				} else {
 					_ftprintf(os, _T("------ ”½“] ------\n\n"));
 				}
-				TRACE(_T("reverse.\n"));
 			} else {
 				_ftprintf(os, _T("\n"));
 			}

@@ -20,7 +20,43 @@
 ○ Routeオブジェクト内に拡張エラー情報を持つ(int 2つくらい）
 add()で重複経路の時、どの路線のどの駅間で何駅が重複となったか。
 (GUIでは、何駅だけの情報で良いが、D&Dでは路線、駅間も必要となる)
+->困難なので辞め
 
+
+
+b#13090601
+	山陽線神戸-門司を指定すると[九]変換でASSERTエラー
+	flagsが0となっており、Routeオブジェクトを見ると山陽線、小倉と変換されてしまっていた。
+	->
+	DB:
+	b#13090104に修正した、
+	山陽線	小倉	山陽線	8
+	は間違いで、
+	->
+	山陽線	門司	鹿児島線	8
+	にする。
+
+b#13090501
+	69が適用されなくなった
+	->
+	Query_a69list()のSQLが、
+" select station_id, lflg"
+" from t_lines"
+" where line_id=?1"
+" and station_id"
+" and (lflg&(1<<31))=0"
+" in (select station_id"
+　　:
+となっていた。
+（SQLエラーにならずにログにも出ない）
+" select station_id, lflg"
+" from t_lines"
+" where line_id=?1"
+" and (lflg&(1<<31))=0"
+" and station_id"
+" in (select station_id"
+　　:
+が正しい
 
 2013-9-1
 b#13090105
