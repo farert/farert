@@ -688,6 +688,10 @@ int Route::add(int line_id, int stationId1, int stationId2)
 		ASSERT(2 <= num);
 		ASSERT(route_list_raw.at(num - 1).stationId == stationId1);
 
+		lflg = Route::AttrOfStationOnLineLine(line_id, stationId1);
+		if (!isLflgEnable(lflg)) {
+			return -2;		/* •s³Œo˜H(line_id‚ÉstationId1‚Í‘¶Ý‚µ‚È‚¢) */
+		}
 		lflg = Route::AttrOfStationOnLineLine(line_id, stationId2);
 		if ((num < 2) || (route_list_raw.at(num - 1).stationId != stationId1) || !isLflgEnable(lflg)) {
 			return -2;		/* •s³Œo˜H(line_id‚ÉstationId2‚Í‘¶Ý‚µ‚È‚¢) */
