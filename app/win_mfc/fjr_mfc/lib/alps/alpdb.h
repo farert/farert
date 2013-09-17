@@ -2,6 +2,9 @@
 
 #define _ALPDB_H__
 
+using namespace std;
+#include <vector>
+
 /*!	@file alpdb core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
  */
@@ -20,9 +23,10 @@ typedef unsigned int SPECIFICFLAG;
 #define IDENT1(ident) ((IDENT)(0xffff & ident))
 #define IDENT2(ident) ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
 
-using namespace std;
-#include <vector>
-
+#define FLG_HIDE_LINE					(1<<16)
+#define FLG_HIDE_STATION				(1<<15)
+#define IS_FLG_HIDE_LINE(lflg)			(0!=(lflg&FLG_HIDE_LINE))		// òHê¸îÒï\é¶
+#define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// âwîÒï\é¶
 
 /* --------------------------------------- */
 /* util */
@@ -33,6 +37,8 @@ using namespace std;
 #define MASK(bdef)	(1 << bdef)
 #define BIT_CHK(flg, bdef) (0 != (flg & MASK(bdef)))
 
+#define HWORD_BIT	16		/* Number of bit in half word(unsigned short) */
+
 /* --------------------------------------- */
 #define MAX_STATION     4590
 #define MAX_LINE        209
@@ -40,8 +46,12 @@ using namespace std;
 #define IS_COMPANY_LINE(id)     (202<(id))
 //#define MAX_JCT 311
 
-/* ID for line_id on t_lines */
+// âwÇÕï™äÚâwÇ©
+#define STATION_IS_JUNCTION(sid)	(0 != (Route::AttrOfStationId(sid) & (1<<12)))
+
+	/* ID for line_id on t_lines */
 #define ID_L_RULE70		-10
+
 
 // length define(UTF-8)
 #define MAX_STATION_CHR	32		// 38
@@ -55,6 +65,13 @@ using namespace std;
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
+
+#define _TAX	5	/* è¡îÔê≈ [%] */
+
+/* è¡îÔê≈(éléÃå‹ì¸)â¡éZ */
+#define taxadd(fare) (fare + ((fare * 1000 * _TAX / 100000) + 5) / 10 * 10)
+
+#define KM(kmx10) ((kmx10 + 9) / 10)	/* kmíPà Ç≈í[êîÇÕêÿÇËè„Ç∞ */
 
 #define CSTART	1
 #define CEND	2
@@ -83,6 +100,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #endif
 
+#define	MASK_ROUTE_FLAG	0x1fff
+
 
 class RouteItem
 {
@@ -94,7 +113,7 @@ public:
 	RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_) {
 		lineId = lineId_;
 		stationId = stationId_;
-		flag = flag_;
+		flag = flag_ & MASK_ROUTE_FLAG;
 	}
 	RouteItem(IDENT lineId_, IDENT stationId_);
 
@@ -152,14 +171,14 @@ public:
 	int company_fare;				/* âÔé–ê¸óøã‡ */
 	int flag;						/* IDENT1: ëSt_station.sflgÇÃò_óùêœ IDENT2: bit16-22: shinkansen ride mask  */
 
-#define MASK_TOHOKU_SHINKANSEN		(0x10000 << 0)	// 16:ìåñkêVä≤ê¸
-#define MASK_JYOETSU_SHINKANSEN		(0x10000 << 1)	// 17:è„âzêVä≤ê¸
-#define MASK_HOKURIKU_SHINKANSEN	(0x10000 << 2)	// 18:ñkó§í∑ñÏêVä≤ê¸
-#define MASK_TOKAIDO_SHINKANSEN		(0x10000 << 3)	// 19:ìåäCìπêVä≤ê¸
-#define MASK_SANYO_SHINKANSEN		(0x10000 << 4)	// 20:éRózêVä≤ê¸
-#define MASK_KYUSYU_SHINKANSEN		(0x10000 << 5)	// 21:ã„èBêVä≤ê¸
-#define MASK_HOKKAIDO_SHINKANSEN	(0x10000 << 6)	// 22:ñkäCìπêVä≤ê¸
-#define MASK_FLAG_SHINKANSEN(flg)	((flg)&0x007f0000)	// êVä≤ê¸	aggregate_fare_info()ÇÃç≈å„Ç≈ê›íË
+#define FLAG_TOHOKU_SHINKANSEN		(1<<16)				// 1:ìåñkêVä≤ê¸
+#define FLAG_JYOETSU_SHINKANSEN		(2<<16)				// 2:è„âzêVä≤ê¸
+#define FLAG_HOKURIKU_SHINKANSEN	(3<<16)				// 3:ñkó§í∑ñÏêVä≤ê¸
+#define FLAG_TOKAIDO_SHINKANSEN		(4<<16)				// 4:ìåäCìπêVä≤ê¸
+#define FLAG_SANYO_SHINKANSEN		(5<<16)				// 5:éRózêVä≤ê¸
+#define FLAG_KYUSYU_SHINKANSEN		(6<<16)				// 6:ã„èBêVä≤ê¸
+#define FLAG_HOKKAIDO_SHINKANSEN	(7<<16)				// 7:ñkäCìπêVä≤ê¸
+#define MASK_FLAG_SHINKANSEN(flg)	((flg)&0x000f0000)	// êVä≤ê¸	aggregate_fare_info()ÇÃç≈å„Ç≈ê›íË
 #define MASK_CITYNO(flg)			((flg)&0x0f)
 #define BCSUBURB					7
 #define MASK_URBNNO(flg)			(((flg)>>7)&0x07)
@@ -228,8 +247,9 @@ public:
 #define B1LID_FIN_2CITY			5	// not used
 #define B1LID_BEGIN_CITY_OFF	6
 #define B1LID_FIN_CITY_OFF		7
+#define B1LID_BEGIN_OOSAKA		8
+#define B1LID_FIN_OOSAKA		9
 
-#define BSR70		24
 #define BCRULE70	6
 
 /* cooked flag for shoFare(), show_route() */
@@ -315,6 +335,7 @@ public:
 	static int StationIdOf_OSAKA;    	// ëÂç„
 	static int StationIdOf_KOUBE;     	// ê_åÀ
 	static int StationIdOf_HIMEJI;    	// ïPòH
+	static int StationIdOf_NISHIAKASHI; // êºñæêŒ
 	static int LineIdOf_TOKAIDO;       	// ìåäCìπê¸
 	static int LineIdOf_SANYO;        	// éRózê¸
 	static int LineIdOf_SANYOSHINKANSEN; // éRózêVä≤ê¸
@@ -363,6 +384,7 @@ public:
 	static int 		Jct2id(int jctId);
 	static tstring 	JctName(int jctId);
 	static tstring 	StationName(int id);
+	static tstring 	StationNameEx(int id);
 	static tstring 	LineName(int id);
 	static SPECIFICFLAG AttrOfStationId(int id);
 	static SPECIFICFLAG AttrOfStationOnLineLine(int line_id, int station_id);

@@ -416,6 +416,8 @@ static void test_route(void)
 /* 333 */	 _T("‰p‰ê•Û,R—zü,•P˜H,R—zVŠ²ü,V‘åã,“ŒŠC“¹ü,‘åã"),	/**-*/
 /* 334 */	 _T("”d–‚‰ª,•PVü,•P˜H,R—zVŠ²ü,V‘åã,“ŒŠC“¹ü,‘åã"),	/**-*/
 /* 335 */	 _T("‹Œû,”d’Aü,•P˜H,R—zVŠ²ü,V‘åã,“ŒŠC“¹ü,‘åã"),	/**-*/
+/* 335 */	 _T("™–{’¬,ã˜aü,“V‰¤›,‘åãŠÂóü,‘åã,“ŒŠC“¹ü,V‘åã,R—zVŠ²ü,•ŸR"),	/**-*/
+
 		_T("c114ğ‚ÌŒo˜H"),
 /* 336 */	 _T("ˆäŒ´s,Œ|”õü,L“‡,R—zü,˜a‹C"),	/***/
 /* 337 */	 _T("ˆäŒ´s,Œ|”õü,L“‡,R—zü,‹g‰i"),	/***/
@@ -724,6 +726,9 @@ int test_exec(void)
 
 	_ftprintf(os, _T("\n#---specificial route-------------------------------------------\n"));
 	test_route();
+
+	CTimeSpan ts = CTime::GetCurrentTime() - t;
+	_ftprintf(os, _T("lapse: %s\n"), ts.Format("%H:%M:%Ss"));
 
 	fclose(os);
 	return 1;
