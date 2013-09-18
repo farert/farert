@@ -1,6 +1,9 @@
 Debug/
 *.opensdf
 *.sdf
+*.bak
+*.aps
+*.suo
 /app/win_mfc/fjr_mfc/alps_mfc.suo
 /app/win_mfc/fjr_mfc/alps_mfc/alps_mfc.aps
 /app/win_mfc/fjr_mfc/ipch/alps_mfc-34f8128f/alps_mfc-e9738891.ipch

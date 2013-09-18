@@ -2651,7 +2651,9 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 
 	if (!StationIdOf_SHINOSAKA) {	/* 前処理 キャッシュ処理 */
 		StationIdOf_SHINOSAKA = Route::GetStationId(_T("新大阪"));
-		StationIdOf_OSAKA = Route::GetStationId(_T("大阪"));
+		if (!StationIdOf_OSAKA) {
+			StationIdOf_OSAKA = Route::GetStationId(_T("大阪"));
+		}
 		StationIdOf_KOUBE = Route::GetStationId(_T("神戸"));
 		StationIdOf_HIMEJI = Route::GetStationId(_T("姫路"));
 		StationIdOf_NISHIAKASHI = Route::GetStationId(_T("西明石"));
@@ -3463,7 +3465,7 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// 3
 "	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
-"	((select sum(2147483648*(1&(lflg>>23))) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)) + "
+"	((select 2147483648*(1&(lflg>>23)) from t_lines where line_id=?1 and station_id=?3) + "
 "	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
 , true);
 
@@ -3563,7 +3565,6 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 		company_id2 = company_id1;
 	}
 	this->sales_km += d.at(0);			// total 営業キロ(会社線含む、有効日数計算用)
-	this->calc_km += d.at(1);			// 		 計算キロ
 	if (company_id1 == company_id2) {		// 同一 1社
 		if ((d.at(5) & 0x80000000) != 0) {	/* 会社線 */
 			this->company_fare += FARE_INFO::Fare_company(station_id1, station_id2);
@@ -4662,17 +4663,20 @@ ASSERT(FALSE);
 		//ASSERT(fare_info.avail_days <= 2);
 		fare_info.avail_days = 1;	/* 当日限り */
 	}
-	_sntprintf_s(cb, MAX_BUF,
-						_T("営業キロ：%6s km 計算キロ：%6s km"), 
-						num_str_km(fare_info.total_jr_sales_km).c_str(),
-						num_str_km(fare_info.total_jr_calc_km).c_str());
-	sResult += cb;
 	if (fare_info.total_jr_sales_km != fare_info.sales_km) {
-		_sntprintf_s(cb, MAX_BUF, _T(" 会社線営業キロ：%6s km\r\n"), 
-			num_str_km(fare_info.sales_km - fare_info.total_jr_sales_km).c_str());
+		_sntprintf_s(cb, MAX_BUF,
+							_T("営業キロ：%6s km(JR線営業キロ / 計算キロ：%6s km / %6s km 会社線営業キロ：%6s km)\r\n"), 
+							num_str_km(fare_info.sales_km).c_str(),
+							num_str_km(fare_info.total_jr_sales_km).c_str(),
+							num_str_km(fare_info.total_jr_calc_km).c_str(),
+							num_str_km(fare_info.sales_km - fare_info.total_jr_sales_km).c_str());
 		sResult += cb;
 	} else {
-		sResult += _T("\r\n");
+		_sntprintf_s(cb, MAX_BUF,
+							_T("営業キロ：%6s km 計算キロ：%6s km\r\n"), 
+							num_str_km(fare_info.total_jr_sales_km).c_str(),
+							num_str_km(fare_info.total_jr_calc_km).c_str());
+		sResult += cb;
 	}
 	if (0 < fare_info.hokkaido_sales_km) {
 		_sntprintf_s(cb, MAX_BUF, _T("JR北海道営業キロ / 計算キロ：%6s km / %6s km\r\n"),
