@@ -1132,6 +1132,7 @@ int Route::InStationOnLine(int line_id, int station_id)
 	return 0;
 }
 
+
 // ‰w(station_id)‚ÌŠ‘®‚·‚é˜HüID‚ğ“¾‚é. 
 // ‰w‚Í”ñ•ªŠò‰w‚Å, ˜Hü‚Í1‚Â‚µ‚©‚È‚¢‚Æ‰ğ‚Á‚Ä‚¢‚é‚±‚Æ‚ğ‘O’ñ‚Æ‚·‚é.
 //
@@ -1861,6 +1862,51 @@ int Route::RemoveDupRoute(vector<RouteItem> *routeList)
 	return affects;
 }
 
+//static 
+//	˜Hü‚Ì‰wŠÔ‚É“s‹æs“à‰w‚Í‚ ‚é‚©H
+//	     “ŒŠC“¹VŠ²ü ‹“s •ÄŒ´ŠÔ‚É‘’Ã‰w‚Í‘¶İ‚·‚é‚Æ‚µ‚Ä•Ô‚µ‚Ü‚·.
+//
+//	@param [in] cityno     ŒŸõ‚·‚é“s‹æs“àNo
+//	@param [in] lineId     ˜Hü
+//	@param [in] stationId1 ŠJn‰w
+//	@param [in] stationId2 I—¹‰w
+//	@return 0: not found / not 0: ocunt of found.
+//
+int Route::InCityStation(int cityno, int lineId, int stationId1, int stationId2)
+{
+	static const char tsql[] =
+"select count(*)"
+"	from t_lines"
+"	where line_id=?1"
+"	and (lflg&(1<<31))=0 and (lflg&15)=?4"
+"	and sales_km>="
+"			(select min(sales_km)"
+"			from t_lines"
+"			where line_id=?1"
+"			and (station_id=?2 or"
+"				 station_id=?3))"
+"	and sales_km<="
+"			(select max(sales_km)"
+"			from t_lines"
+"			where line_id=?1"
+"			and (station_id=?2 or "
+"				 station_id=?3))";
+
+	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	if (dbo.isvalid()) {
+		dbo.setParam(1, lineId);
+		dbo.setParam(2, stationId1);
+		dbo.setParam(3, stationId2);
+		dbo.setParam(4, cityno & 0x0f);
+
+		if (dbo.moveNext()) {
+			return dbo.getInt(0);
+		}
+	}
+	return 0;
+}
+
+
 //static
 //	86ğ“K—p‚³‚ê‚é‚©‚Ìƒ`ƒFƒbƒN
 //	showFare() => checkOfRuleSpecificCoreLine() =>
@@ -1877,6 +1923,24 @@ int Route::RemoveDupRoute(vector<RouteItem> *routeList)
 //		 0x83: ”­‰w=’…‰w=“Á’è“s‹æs“à        entr, exit —LŒø
 //			4: ‘S‰w“¯ˆê“Á’è“s‹æs“à          -
 //
+//	 [‹ã] R—zVŠ²ü
+//	 [•Ÿ] ­™“‡ü
+//	 [_] R—zVŠ²ü
+//	 [D] ”ŸŠÙü
+//	 [å] “Œ–kVŠ²üA“Œ–kü
+//	 [L] R—zVŠ²üAR—zü
+//	 [ã] “ŒŠC“¹ü
+//	 [‹] “ŒŠC“¹ü
+//	 [–¼] “ŒŠC“¹ü
+//	 [•l] “ŒŠC“¹ü
+//	 ‚ÆA“s‹æ“àˆÈŠO‚Í‚İ‚ñ‚È‚ ‚è“¾‚é
+// “¯ˆêü‚Å“s‹æs“à‰w(o)‚Ìƒpƒ^[ƒ“
+//	--o-- ã‹Lˆê——
+//	ooooo ‚ ‚è(–â‘è‚È‚µ)
+//	o---- ’Êí
+//	----o ’Êí
+//	o---o ‚È‚µ(æÔ‰w‚Ü‚½‚Í•ªŠò‰w`•ªŠò‰w‚Ü‚½‚Í~Ô‰w‚ª“s‹æs“à‚¾‚ªŠÔ‚É”ñ“s‹æs“à‚ªŠÜ‚Ü‚ê‚é—á‚Í‚È‚µB
+//
 int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, Station* entr, PAIRIDENT* cityId_pair)
 {
 	vector<RouteItem>::const_iterator fite;
@@ -1887,6 +1951,8 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 	int r;
 	Station in_line;
 	Station out_line;
+	int stationId;
+	int lineId;
 	
 	r = 0;
 	fite = in_route_list.cbegin();
@@ -1907,14 +1973,16 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 	if (city_no_s != 0) {
 		// ”­‰w=“Á’è“s‹æs“à
 		c = 0;
+		stationId = fite->stationId;	// ”­ 
 		for (fite++; fite != in_route_list.cend(); fite++) {
+			int cno = MASK_CITYNO(fite->flag);
 			if (c == 0) {
-				if (MASK_CITYNO(fite->flag) != city_no_s) {
+				if (cno != city_no_s) {
 					c = 1;			// ”²‚¯‚½
 					out_line.set(*fite);
 				}
 			} else {
-				if (MASK_CITYNO(fite->flag) == city_no_s) {
+				if (cno == city_no_s) {
 					if (c == 1) {
 						c = 2;		// –ß‚Á‚Ä‚«‚½
 						in_line.set(*fite);
@@ -1922,12 +1990,14 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 						ASSERT(c == 2);
 					}
 				} else {
-					if (c == 2) {
+					if ((c == 2) || (0 < InCityStation(city_no_s, fite->lineId, stationId, fite->stationId))) {
 						c = 3;		// –ß‚Á‚Ä‚Ü‚½”²‚¯‚½
 						break;
 					}
+					ASSERT(c == 1);
 				}
 			}
+			stationId = fite->stationId;	// ”­ 
 		}
 		switch (c) {
 		case 0:
@@ -1956,26 +2026,30 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 		c = 0;
 		in_line.set(*rite);
 		for (rite++; rite != in_route_list.crend(); rite++) {
+			int cno = MASK_CITYNO(rite->flag);
 			if (c == 0) {
-				if (MASK_CITYNO(rite->flag) != city_no_e) {
+				if (cno != city_no_e) {
 					c = 1;			// 
 				} else {
 					in_line.set(*rite);
 				}
 			} else {
-				if (MASK_CITYNO(rite->flag) == city_no_e) {
+				if (cno == city_no_e) {
 					if (c == 1) {
 						c = 2;
 					} else {
 						ASSERT(c == 2);
 					}
 				} else {
-					if (c == 2) {
+					if ((c == 2) || (0 < InCityStation(city_no_e, lineId, stationId, rite->stationId))) {
 						c = 3;
 						break;
 					}
+					ASSERT(c == 1);
 				}
 			}
+			stationId = rite->stationId;	// ”­ 
+			lineId = rite->lineId;
 		}
 		switch (c) {
 		case 1:
@@ -3565,6 +3639,11 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 		company_id2 = company_id1;
 	}
 	this->sales_km += d.at(0);			// total ‰c‹ÆƒLƒ(‰ïĞüŠÜ‚ŞA—LŒø“ú”ŒvZ—p)
+	if (IS_SHINKANSEN_LINE(line_id)) {
+		/* R—zVŠ²ü L“‡-“¿RŠÔ‚ğ’Ê‚éê‡‚Ì1Œo˜H‚Å‚ÍAfare(l, i) ‚Æ‚³‚ê‚é‚Ä‚µ‚Ü‚¤‚©‚ç.
+		 */
+		this->local_only = false;		// Š²ü
+	}
 	if (company_id1 == company_id2) {		// “¯ˆê 1Ğ
 		if ((d.at(5) & 0x80000000) != 0) {	/* ‰ïĞü */
 			this->company_fare += FARE_INFO::Fare_company(station_id1, station_id2);

@@ -379,6 +379,8 @@ private:
 
 	static void  	ReRouteRule86j87j(PAIRIDENT cityId, int mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
 
+	static int		InCityStation(int cityno, int lineId, int stationId1, int stationId2);
+
 public:
 	static int 		Id2jctId(int stationId);
 	static int 		Jct2id(int jctId);
