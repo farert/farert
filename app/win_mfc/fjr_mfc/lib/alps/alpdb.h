@@ -425,10 +425,9 @@ public:
 	int				setup_route(LPCTSTR route_str);
 
 	int 			add(int line_id, int stationId1, int stationId2);
-	void 			removeTail(bool begin_off = false, bool ignore_flag = false);
+	void 			removeTail(bool begin_off = false);
 	void 			removeAll();
 	int				reverse();
-	void			clearJunctionFlag();
 	bool 			checkPassStation(int stationId);
 	void 			terminate(int stationId);
 	bool			changeNeerest(bool useBulletTrain);

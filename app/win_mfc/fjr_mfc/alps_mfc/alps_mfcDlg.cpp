@@ -975,7 +975,6 @@ int Calps_mfcDlg::UpdateRouteList()
 		}
 	}
 	ASSERT(pLRoute->GetItemCount() == idx);
-	m_route.clearJunctionFlag();	// 内部データ構造=表示データなので分岐特例によるremoveTailのフラグをAll Offする
 	
 	if (0 < idx) {
 		// カラム幅設定

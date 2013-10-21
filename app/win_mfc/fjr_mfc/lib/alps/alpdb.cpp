@@ -653,7 +653,6 @@ int Route::add(int line_id, int stationId1, int stationId2)
 	int jct_on;
 	SPECIFICFLAG lflg1;
 	SPECIFICFLAG lflg2;
-	SPECIFICFLAG lflg;
 	int ln, st1, st2;
 	int update = 0;
 	last_flag = 0;
@@ -679,7 +678,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 			return -1;	/* <t> already passed error  */
 		}
 		TRACE(_T("add-begin %s(%d)\n"), Route::StationName(stationId1).c_str(), stationId1);
-		route_list_raw.push_back(RouteItem(0, stationId1, lflg1 & ~MASK(BSRJCTSP)));
+		route_list_raw.push_back(RouteItem(0, stationId1, lflg1));
 		lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
 		if (!isLflgEnable(lflg2)) {
 			return -2;		/* 不正経路(line_idにstationId2は存在しない) */
@@ -729,7 +728,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
 		if (route_list_raw.at(num - 1).lineId == line_id) {
 			TRACE("JCT: B-1, D-1\n");
-			removeTail(false, true);
+			removeTail();
 			num--;
 			stationId1 = route_list_raw.at(num - 1).stationId;
 			update = 1;
@@ -740,10 +739,9 @@ int Route::add(int line_id, int stationId1, int stationId2)
 				ln = route_list_raw.at(num - 1).lineId;
 				st1 = route_list_raw.at(num - 2).stationId;
 				st2 = Route::NextShinkansenTransferTerm(line_id, route_list_raw.at(num - 1).stationId, stationId2);
-				removeTail(false, true);
+				removeTail();
 				rc = add(ln, st1, st2);
 				ASSERT(rc == 1);
-				route_list_raw.at(num - 1).flag |= MASK(BSRJCTSP);
 				stationId1 = st2;
 				update = 1;
 			} else {
@@ -758,8 +756,6 @@ int Route::add(int line_id, int stationId1, int stationId2)
 	}
 	type_h_detect_flag = 0;
 	
-	lflg = lflg2 & ~MASK(BSRJCTSP);
-
 	// 151 check
 	if (BIT_CHK(lflg1, BSRJCTSP)) {
 		// 段差型
@@ -776,7 +772,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 				// stationId1 == jctSpStationId;
 				route_list_raw.at(num - 1).stationId = jctSpStationId;
 				if ((2 < num) && (route_list_raw.at(num - 1).stationId == route_list_raw.at(num - 2).stationId)) {
-					removeTail(false, true);
+					removeTail();
 					stationId1 = jctSpStationId;
 					TRACE(_T("JCT: 塩尻\n"));
 				}
@@ -789,7 +785,6 @@ int Route::add(int line_id, int stationId1, int stationId2)
 					rc = add(jctSpMainLineId, route_list_raw.at(num - 1).stationId, jctSpStationId);
 					ASSERT(rc == 1);
 					stationId1 = jctSpStationId;
-					lflg |= MASK(BSRJCTSP);
 					update = 1;
 				} else {
 					// C-2
@@ -799,7 +794,6 @@ int Route::add(int line_id, int stationId1, int stationId2)
 					route_list_raw.at(num - 1).stationId = st1;
 					route_list_raw.push_back(RouteItem(jctSpMainLineId, jctSpStationId));
 					stationId1 = jctSpStationId;
-					lflg |= MASK(BSRJCTSP);
 					update = 1;
 				}
 			}
@@ -829,7 +823,6 @@ int Route::add(int line_id, int stationId1, int stationId2)
 			}
 			line_id = jctSpMainLineId;
 			stationId1 = jctSpStationId;
-			lflg |= MASK(BSRJCTSP);
 			type_h_detect_flag = 2;
 			update = 1;
 		}
@@ -897,7 +890,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 		return -1;	/* already passed error */
 	}
 
-	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg));
+	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 
 	if (rc == 0) {
 		TRACE(_T("added continue.\n"));
@@ -936,7 +929,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 //
 //	@param [in] begin_off    最終ノードの始点もOffするか(デフォルト:Offしない)
 //
-void Route::removeTail(bool begin_off/* = false*/, bool ignore_flg/* =false*/ )
+void Route::removeTail(bool begin_off/* = false*/)
 {
 	int line_id;
 	int begin_station_id;
@@ -945,8 +938,6 @@ void Route::removeTail(bool begin_off/* = false*/, bool ignore_flg/* =false*/ )
 	int route_num;
 	int i;
 	vector<int> junctions;	// 分岐駅リスト
-//	SPECIFICFLAG lflg;
-
 
 	route_num = route_list_raw.size();
 	if (route_num < 2) {
@@ -991,27 +982,9 @@ void Route::removeTail(bool begin_off/* = false*/, bool ignore_flg/* =false*/ )
 
 	last_flag = 0;
 
-/*	lflg = route_list_raw.back().flag; 機能停止中(↓のコメントに同じ) */
 	route_list_raw.pop_back();
-
-/*	機能停止中(画面表示=Route内部とするようにした為)
-	if (!ignore_flg && BIT_CHK(lflg, BSRJCTSP)) {
-		removeTail(begin_off, ignore_flg);
-	}
-*/
 }
 
-//public
-//	分岐フラグ全Off
-//
-void Route::clearJunctionFlag()
-{
-	vector<RouteItem>::iterator pos;
-
-	for (pos = route_list_raw.begin(); pos != route_list_raw.end(); pos++) {
-		pos->flag &= ~MASK(BSRJCTSP);
-	}
-}
 
 //private:
 //	@brief	分岐マークOff
