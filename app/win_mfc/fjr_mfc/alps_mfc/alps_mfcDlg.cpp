@@ -375,9 +375,20 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		int rslt = m_route.add(curLineId, m_curStationId, selId);
 		if (rslt < 0) {
 			ASSERT(rslt == -1);		/* -1 以外はバグ(DBエラーか、引数不正) */
+			if (-1 != rslt) {
+				AfxMessageBox(_T("Fatal error occured."));
+				ResetContent();
+				return;
+			}
 			SetDlgItemText(IDC_EDIT_STAT, _T("経路が重複しています."));
 			return;
-		} else if (0 == rslt) {	/* fin */
+		}
+		if (10 <= rslt) {
+			rslt -= 10;
+			UpdateRouteList();
+			return;
+		}
+		if (0 == rslt) {	/* fin */
 			if (m_route.endStationId != selId) {
 				if ((m_selMode != SEL_TERMINATE) &&
 				(IDYES != MessageBox(
