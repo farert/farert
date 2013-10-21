@@ -206,7 +206,9 @@ n_segment = 0
 
 pre_items = []
 post_items = []
+num_of_line = 0
 for lin in open(fn, 'r', encoding='shift-jis'):
+	num_of_line += 1
 	if lin[0] == '#':
 		continue		# コメントスキップ
 
@@ -256,7 +258,9 @@ con.commit()
 n_station = 0
 branch = []
 n_segment = 0
+num_of_line = 0
 for lin in open(fn, 'r', encoding='shift-jis'):
+	num_of_line += 1
 	if lin[0] == '#':
 		continue		# コメントスキップ
 
@@ -313,7 +317,7 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 	if n_segment == 1:	# 路線
 	
 		if 0 <= linitems[1].find("branch"):
-			branch.append([linitems[2].strip(), linitems[3].strip(), 
+			branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
 						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip()])
 			continue			# 分岐特例はあとで
 
@@ -321,6 +325,7 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 			continue
 
 		if 19 != len(linitems):
+			print(num_of_line, lin)
 			raise ValueError
 
 		# BSRJCTFLG: 分岐フラグ
@@ -348,13 +353,22 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 		# BSRHZLIN: 新幹線＜－＞並行在来線乗換
 		tmp = linitems[15].strip()
 		if tmp[0] != '!' and tmp != "":
-			cur.execute('select rowid from t_hzline where line_id=(select rowid from t_line where name=?)', [tmp])
-			row = cur.fetchone()
-			if None == row:
-				con.execute('insert into t_hzline values((select rowid from t_line where name=?))', [tmp])
+			if tmp.startswith('-'):
+				# bit16-13	境界駅=高崎
+				cur.execute('select rowid from t_hzline where line_id=65535')
+				row = cur.fetchone()
+				if None == row:
+					con.execute('insert into t_hzline values(65535)')
+					cur.execute('select rowid from t_hzline where line_id=65535')
+					row = cur.fetchone()
+			else:
 				cur.execute('select rowid from t_hzline where line_id=(select rowid from t_line where name=?)', [tmp])
 				row = cur.fetchone()
-			
+				if None == row:
+					con.execute('insert into t_hzline values((select rowid from t_line where name=?))', [tmp])
+					cur.execute('select rowid from t_hzline where line_id=(select rowid from t_line where name=?)', [tmp])
+					row = cur.fetchone()
+				
 			tmp = row[0]
 			tmp &= 0x0f
 			flg |= (tmp << 13)		# bit16-13
@@ -599,6 +613,7 @@ insert into t_farest values(
 
 
 for bitem in branch:
+	# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅
 	if 0 <= bitem[2].find('('):
 		bstation = bitem[2][:bitem[2].find('(')]
 		bstation_same = bitem[2][bitem[2].find('('):]
@@ -610,9 +625,10 @@ for bitem in branch:
 	con.execute("""insert into t_lines values(
 	(select rowid from t_line where name=?), 
 	(select rowid from t_station where name=? and samename=?), 
-	(select rowid from t_station where name=? and samename=?), 
-	(select rowid from t_line where name=?), ? | (select sflg from t_station where name=? and samename=?))""", 
-	[bitem[0], bitem[1], bitem[4], bstation, bstation_same, bitem[3], 1 << 31, bitem[1], bitem[4]])
+	?,
+	(select rowid from t_station where name=? and samename=?) + 65536 * (select rowid from t_line where name=?), 
+	(1 << 31) | (select sflg from t_station where name=? and samename=?))""", 
+	[bitem[0], bitem[1], bitem[5], bitem[3], bstation, bstation_same, bitem[4], bitem[1], bitem[5]])
 	# b31=special_t_lines
 
 # make t_jct

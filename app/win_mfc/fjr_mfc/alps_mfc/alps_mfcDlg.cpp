@@ -628,6 +628,7 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 
 	pLSel->DeleteAllItems();			// all record clear
 
+	// •ªŠò‰w<->I’…‰w ‘I‘ğ
 	GetDlgItem(IDC_RADIO_BRANCH_SEL)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_RADIO_TERMINAL_SEL)->ShowWindow(SW_HIDE);
 
@@ -637,13 +638,14 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 	pLSel->GetClientRect(rc);
 
 	column.mask = LVCF_TEXT | LVCF_WIDTH;
-	column.pszText = _T("˜Hü");
+	column.pszText = _T("˜Hü");		// List title
 	column.cx = rc.Width();
 	pLSel->SetColumn(0, &column);
 	column.pszText = _T("");
 	column.cx = 10;
 	pLSel->SetColumn(1, &column);
 
+	// ‰w‚ÌŠ‘®˜Hü‚ğƒŠƒXƒg
 	DBO dbo = Route::Enum_line_of_stationId(stationId);
 	if (!dbo.isvalid()) {
 		ASSERT(FALSE);
@@ -733,6 +735,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId /* =0 
 
 		CString jctLines;
 		if (0 != dbo.getInt(2)) { /* •ªŠò‰w */
+			// •ªŠò‰w‚Ìæ‚è“ü‚ê˜Hü‚ğ'/'‚Å‹æØ‚è—ñ‹“‚µ‚½•¶š—ñ‚ğì¬
 			DBO dbo_lines = Route::Enum_line_of_stationId(stationId);
 			if (!dbo_lines.isvalid()) {
 				ASSERT(FALSE);
@@ -877,6 +880,18 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 
 	endStationId = m_route.endStationId;
 
+	if (m_route.routeList().size() == 0) {
+		if ((0 < m_route.endStationId) && (0 < m_route.startStationId)) {
+			m_route.endStationId = m_route.startStationId;
+			m_curStationId = m_route.startStationId = endStationId;
+			GetDlgItem(IDC_EDIT_START)->SetWindowText(Route::StationName(m_route.startStationId).c_str());	// ”­‰w•\¦
+			GetDlgItem(IDC_EDIT_END)->SetWindowText(Route::StationName(m_route.endStationId).c_str());	// ’…‰w•\¦
+
+			setupForLinelistByStation(m_curStationId);				// ”­‰w‚ÌŠ‘®˜Hüˆê——‚Ì•\¦
+		}
+		return;
+	}
+	
 	rc = m_route.reverse();
 
 	if (0 < rc) {
@@ -908,6 +923,10 @@ int Calps_mfcDlg::UpdateRouteList()
 	CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 
 	pLRoute->DeleteAllItems();
+
+	if (m_route.routeList().size() <= 1) {
+		return 0;
+	}
 
 	vector<RouteItem>::const_iterator pos = m_route.routeList().cbegin();
 	w0 = w1 = 0;
@@ -945,6 +964,7 @@ int Calps_mfcDlg::UpdateRouteList()
 		}
 	}
 	ASSERT(pLRoute->GetItemCount() == idx);
+	m_route.clearJunctionFlag();	// “à•”ƒf[ƒ^\‘¢=•\¦ƒf[ƒ^‚È‚Ì‚Å•ªŠò“Á—á‚É‚æ‚éremoveTail‚Ìƒtƒ‰ƒO‚ğAll Off‚·‚é
 	
 	if (0 < idx) {
 		// ƒJƒ‰ƒ€•İ’è
@@ -1081,6 +1101,7 @@ void Calps_mfcDlg::showFare()
 //
 void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
+#ifdef _DEBUG
 	//int numList;
 
 	//CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
@@ -1093,4 +1114,24 @@ void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 	//int curLineId = IDENT1(pLRoute->GetItemData(numList - 1));	// last line
 	//ASSERT(0 < curLineId);
 	//setupForLinelistByStation(m_curStationId, curLineId);	// ’…‰w‚ÌŠ‘®˜Hü
+
+	if (0 < m_route.routeList().size()) {
+
+		vector<RouteItem>::const_iterator pos = m_route.routeList().cbegin();
+		TRACE(_T("\nbegin befor: %s\n"), Route::StationName(pos->stationId).c_str());
+		for (++pos; pos != m_route.routeList().cend(); pos++) {
+			TRACE(_T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
+		}
+		TRACE(_T("\n"));
+	
+		UpdateRouteList();
+
+		pos = m_route.routeList().cbegin();
+		TRACE(_T("\nbegin after: %s\n"), Route::StationName(pos->stationId).c_str());
+		for (++pos; pos != m_route.routeList().cend(); pos++) {
+			TRACE(_T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
+		}
+		TRACE(_T("\n"));
+	}
+#endif
 }

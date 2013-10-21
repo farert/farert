@@ -187,7 +187,7 @@ DBO Route::Enum_lines_from_company_prefect(int id)
 " left join t_station t on t.rowid=l.station_id"
 " where %s=%d"
 " and (l.lflg&((1<<23)|(1<<31)|(1<<22)))=0"
-" and sales_km>=0 group by l.line_id order by n.name";
+" group by l.line_id order by n.name";
 
 	int ident;
 
@@ -253,8 +253,9 @@ DBO Route::Enum_station_match(LPCTSTR station)
 tstring Route::GetPrefectByStationId(int stationId)
 {
 	static const char tsql[] = 
-"select p.name from t_prefect p left join t_station t on t.prefect_id=p.rowid where t.rowid=?";
-
+//"select p.name from t_prefect p left join t_station t on t.prefect_id=p.rowid where t.rowid=?";
+"select name from t_prefect where rowid=(select prefect_id from t_station where rowid=?)";
+//‚±‚±‚Å‚Í‚Ç[‚Å‚à‚¢‚¢‚¯‚ÇAsqlite‚ÍŒ‹‡’x‚­‚ÄƒTƒuƒNƒGƒŠ‚Ì•û‚ª‘‚©‚Á‚½‚Ì‚Å‚±‚¤‚µ‚Ä‚İ‚½
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	dbo.setParam(1, stationId);
 
@@ -279,7 +280,7 @@ DBO Route::Enum_station_located_in_prefect_or_company_and_line(int prefectOrComp
 //"select t.name, station_id from t_lines l left join t_station t on t.rowid=l.station_id "
 //" where line_id=? and %s=? order by sales_km";
 "/**/select t.name, station_id from t_station t left join t_lines l on t.rowid=l.station_id"
-" where line_id=? and %s=? and (l.lflg&((1<<23)|(1<<31)|(1<<22)))=0 and sales_km>=0 order by sales_km";
+" where line_id=? and %s=? and (l.lflg&((1<<23)|(1<<31)|(1<<22)))=0 order by sales_km";
 
 	char sql[256];
 	int ident;
@@ -334,7 +335,8 @@ DBO Route::Enum_line_of_stationId(int stationId)
 {
 	static const  char tsql[] =
 "select n.name, line_id from t_line n left join t_lines l on n.rowid=l.line_id"
-" where station_id=? and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0";
+//" where station_id=? and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0";
+" where station_id=? and (lflg&(1<<22))=0";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	dbo.setParam(1, stationId);
@@ -359,7 +361,8 @@ DBO Route::Enum_junction_of_lineId(int lineId, int stationId)
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
 " where line_id=?1 and ((lflg & (1<<12))<>0 or station_id=?2)"
-" and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0"
+//" and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0"
+" and (lflg&(1<<22))=0"
 " order by l.sales_km";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
@@ -381,7 +384,7 @@ DBO Route::Enum_station_of_lineId(int lineId)
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
 " where line_id=?"
-" and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0"
+" and (lflg&((1<<31)|(1<<22)))=0"
 " order by l.sales_km";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
@@ -404,19 +407,17 @@ DBO Route::Enum_neer_node(int stationId)
 "select 	station_id , abs(("
 "	select case when calc_km>0 then calc_km else sales_km end "
 "	from t_lines "
-"	where 0<=sales_km and 0=(lflg&((1<<31)|(1<<22))) "
+"	where 0=(lflg&((1<<31)|(1<<22))) "
 "	and line_id=(select line_id "
 "				 from	t_lines "
 "				 where	station_id=?1" 
-"				 and	0<=sales_km "
 "				 and	0=(lflg&((1<<31)|(1<<22)))) "
 "	and station_id=?1)-case when calc_km>0 then calc_km else sales_km end) as cost"
 " from 	t_lines "
-" where 	0<=sales_km and 0=(lflg&((1<<31)|(1<<22)))"
+" where 0=(lflg&((1<<31)|(1<<22)))"
 " and	line_id=(select	line_id "
 " 				 from	t_lines "
 " 				 where	station_id=?1"
-" 				 and	0<=sales_km"
 " 				 and	0=(lflg&((1<<31)|(1<<22))))"
 " and	sales_km in ((select max(y.sales_km)"
 "					  from	t_lines x left join t_lines y"
@@ -592,7 +593,9 @@ DBO Route::Enum_junctions_of_line(int line_id, int begin_station_id, int to_stat
 //	70ği“ü˜HüA’Eo˜Hü‚©‚çi“üA’Eo‹«ŠE‰w‚Æ‰c‹ÆƒLƒA˜HüID‚ğ•Ô‚·
 //
 //	@param [in] line_id    ‘åŠÂóüi“ü^’Eo˜Hü
-//	@return IDENT1(ˆê”ÔŠO‘¤‚Ì‘åŠÂóü“à(70ğ“K—p)‰w) / IDENT2(
+//	@return ˆê”ÔŠO‘¤‚Ì‘åŠÂóü“à(70ğ“K—p)‰w
+//
+//	@note “Œ‹“s‹æ“à‚È‚Ì‚ÅA‰c‹ÆƒLƒMAXŒÅ’è(‰º‚è‘¦‚¿“Œ‹‚©‚çˆê”Ô‰“‚¢70ğ“K—p‰w)‚Æ‚·‚é
 //
 int Route::RetrieveOut70Station(int line_id)
 {
@@ -636,7 +639,7 @@ int Route::RetrieveOut70Station(int line_id)
  *  @retval 1 = OK
  *  //@retval 2 = OK(re-route)
  *  @retval -1 = overpass(•œæƒGƒ‰[)
- *  @retval -2 = Œo˜HƒGƒ‰[(stationId1 or staionId2‚Íline_id“à‚É‚È‚¢)
+ *  @retval -2 = Œo˜HƒGƒ‰[(stationId1 or stationId2‚Íline_id“à‚É‚È‚¢)
  *  @retval -100 DB error
  *  @return last_flg(rc) :  0 = Ÿ‚ÉremoveTail‚ÅlastItem‚Ì’Ê‰ßƒ}ƒXƒN‚ğOff‚·‚é(typeO‚Å‚àP‚Å‚à‚È‚¢‚Ì‚Å)
  *			          	not 0 = Ÿ‚ÉremoveTail‚ÅlastItem‚Ì’Ê‰ßƒ}ƒXƒN‚ğOff‚É‚µ‚È‚¢(typeO/P)
@@ -648,18 +651,24 @@ int Route::add(int line_id, int stationId1, int stationId2)
 	int j;
 	int num;
 	int jct_on;
+	SPECIFICFLAG lflg1;
+	SPECIFICFLAG lflg2;
 	SPECIFICFLAG lflg;
+	int ln, st1, st2;
+
+	last_flag = 0;
 
 	if (startStationId == stationId1) {	/* ‰‰ñ */
 		/* ”­‰w */
-		lflg = Route::AttrOfStationOnLineLine(line_id, stationId1);
-		if (!isLflgEnable(lflg)) {
+		lflg1 = Route::AttrOfStationOnLineLine(line_id, stationId1);
+		if (!isLflgEnable(lflg1)) {
 			return -2;		/* •s³Œo˜H(line_id‚ÉstationId1‚Í‘¶İ‚µ‚È‚¢) */
 		}
-		ASSERT(0 == route_list_raw.size());
+		//ASSERT(0 == route_list_raw.size());
 		route_list_raw.clear();
 		JctMaskClear();
 		fare_info.reset();
+		type_h_detect_flag = 0;
 		TRACE(_T("clear-all mask.\n"));
 
 		/* ’…‰w‚ª”­‰w`Å‰‚Ì•ªŠò‰wŠÔ‚É‚ ‚é‚©? */
@@ -670,38 +679,161 @@ int Route::add(int line_id, int stationId1, int stationId2)
 			return -1;	/* <t> already passed error  */
 		}
 		TRACE(_T("add-begin %s(%d)\n"), Route::StationName(stationId1).c_str(), stationId1);
-		route_list_raw.push_back(RouteItem(0, stationId1, lflg));
-		lflg = Route::AttrOfStationOnLineLine(line_id, stationId2);
-		if (!isLflgEnable(lflg)) {
+		route_list_raw.push_back(RouteItem(0, stationId1, lflg1 & ~MASK(BSRJCTSP)));
+		lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
+		if (!isLflgEnable(lflg2)) {
 			return -2;		/* •s³Œo˜H(line_id‚ÉstationId2‚Í‘¶İ‚µ‚È‚¢) */
 		}
+		num = 1;
 	} else {
 		num = route_list_raw.size();
 		ASSERT(2 <= num);
-		ASSERT(route_list_raw.at(num - 1).stationId == stationId1);
+		if (num < 2) {
+			return -3;	// bug
+		}
 
-		lflg = Route::AttrOfStationOnLineLine(line_id, stationId1);
-		if (!isLflgEnable(lflg)) {
+		lflg1 = Route::AttrOfStationOnLineLine(line_id, stationId1);
+		if (!isLflgEnable(lflg1)) {
 			return -2;		/* •s³Œo˜H(line_id‚ÉstationId1‚Í‘¶İ‚µ‚È‚¢) */
 		}
-		lflg = Route::AttrOfStationOnLineLine(line_id, stationId2);
-		if ((num < 2) || (route_list_raw.at(num - 1).stationId != stationId1) || !isLflgEnable(lflg)) {
+
+		ASSERT(BIT_CHK(lflg1, BSRJCTSP) || route_list_raw.at(num - 1).stationId == stationId1);
+
+		lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
+		if (!isLflgEnable(lflg2)) {
 			return -2;		/* •s³Œo˜H(line_id‚ÉstationId2‚Í‘¶İ‚µ‚È‚¢) */
 		}
 		/* VŠ²üİ—ˆü“¯ˆê‹‹æŠÔ‚Ìd•¡Œo˜Hƒ`ƒFƒbƒN */
-		if (! Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
+		if ((2 != type_h_detect_flag) && !Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
 		                              route_list_raw.at(num - 2).stationId, stationId1, stationId2)) {
 			return -1;
 		}
 	}
 	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), Route::LineName(line_id).c_str(), line_id, Route::StationName(stationId1).c_str(), stationId1, Route::StationName(stationId2).c_str(), stationId2);
 	
+	if ((stationId1 == stationId2) || (route_list_raw.at(num - 1).stationId == stationId2)) {
+		return 1;	//>>>>>>>>>
+	}
+
+	// ‘O‰ñ…•½Œ^ŒŸ’m
+	switch (type_h_detect_flag) {
+	case 1:
+		//if (route_list_raw.at(num - 1).lineId == line_id) {
+		//	if (0 == Direction_a_b(line_id, stationId1, stationId2, route_list_raw.at(num - 2), stationId1)) {
+		//	}
+		//}
+		// pass thru
+		TRACE("JCT: h_detect 1 (E10, F, H)\n");
+		break;
+	case 2:
+		TRACE("JCT: h_detect 2 (J, B, D)\n");
+		if (route_list_raw.at(num - 1).lineId == line_id) {
+			TRACE("JCT: B-1, D-1\n");
+			removeTail(false, true);
+			num--;
+			stationId1 = route_list_raw.at(num - 1).stationId;
+		} else if (Route::IsAbreastShinkansen(route_list_raw.at(num - 1).lineId, line_id, stationId1, stationId2)) {
+			// line_id‚Í•Àsİ—ˆü
+			if (0 != Route::InStation(route_list_raw.at(num - 2).stationId, line_id, stationId1, stationId2)) {
+				TRACE("JCT: D-2\n");
+				ln = route_list_raw.at(num - 1).lineId;
+				st1 = route_list_raw.at(num - 2).stationId;
+				st2 = Route::NextShinkansenTransferTerm(line_id, route_list_raw.at(num - 1).stationId, stationId2);
+				removeTail(false, true);
+				rc = add(ln, st1, st2);
+				ASSERT(rc == 1);
+				route_list_raw.at(num - 1).flag |= MASK(BSRJCTSP);
+				stationId1 = st2;
+			} else {
+				TRACE("JCT: B-2\n");
+			}
+		} else {
+			TRACE("JCT: J\n");
+		}
+		break;
+	default:
+		break;
+	}
+	type_h_detect_flag = 0;
+	
+	lflg = lflg2 & ~MASK(BSRJCTSP);
+
+	// 151 check
+	if (BIT_CHK(lflg1, BSRJCTSP)) {
+		// ’i·Œ^
+		// retrieve from a, d to b, c 
+		retrieveJunctionSpecific(line_id, stationId1); // update jctSpMainLineId(b), jctSpStation(c)
+		if (stationId2 != jctSpStationId) {
+			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
+				if (0 < Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, route_list_raw.at(num - 1).stationId)) {
+					TRACE("JCT: C-1\n");
+					routePassOff(jctSpMainLineId, jctSpStationId, route_list_raw.at(num - 1).stationId);	// C-1
+				} else { // A-1
+					TRACE("JCT: A-1\n");
+				}
+				// stationId1 == jctSpStationId;
+				route_list_raw.at(num - 1).stationId = jctSpStationId;
+				if ((2 < num) && (route_list_raw.at(num - 1).stationId == route_list_raw.at(num - 2).stationId)) {
+					removeTail(false, true);
+					stationId1 = jctSpStationId;
+					TRACE(_T("JCT: ‰–K\n"));
+				}
+			} else {
+				if (!Route::IsAbreastShinkansen(jctSpMainLineId, route_list_raw.at(num - 1).lineId, stationId1, stationId2)
+					|| (Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, route_list_raw.at(num - 1).stationId) <= 0)) {
+					// A-0, I, A-2
+					TRACE("JCT: A-0, I, A-2\n");
+					rc = add(jctSpMainLineId, route_list_raw.at(num - 1).stationId, jctSpStationId);
+					ASSERT(rc == 1);
+					stationId1 = jctSpStationId;
+					lflg |= MASK(BSRJCTSP);
+				} else {
+					// C-2
+					TRACE("JCT: C-2\n");
+					routePassOff(jctSpMainLineId, jctSpStationId, stationId1);
+					st1 = Route::NextShinkansenTransferTerm(route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 1).stationId, route_list_raw.at(num - 2).stationId);
+					route_list_raw.at(num - 1).stationId = st1;
+					route_list_raw.push_back(RouteItem(jctSpMainLineId, jctSpStationId));
+					stationId1 = jctSpStationId;
+					lflg |= MASK(BSRJCTSP);
+				}
+			}
+		} else {
+			// E, G
+			TRACE("JCT: E, G\n");
+			line_id = jctSpMainLineId;
+		}
+	}
+	if (BIT_CHK(lflg2, BSRJCTSP)) {
+		// …•½Œ^
+		retrieveJunctionSpecific(line_id, stationId2);
+		if (stationId1 == jctSpStationId) {
+			// E10-, F, H
+			TRACE("JCT: E10-, F, H\n");
+			line_id = jctSpMainLineId;
+			type_h_detect_flag = 1;
+		} else {
+			// J, B, D
+			TRACE("JCT: J, B, D\n");
+			rc = add(line_id, stationId1, jctSpStationId);
+			if (rc != 1) {
+				ASSERT(FALSE);
+				return rc;			// >>>>>>>>>>>>>>>>>>>>>
+			}
+			line_id = jctSpMainLineId;
+			stationId1 = jctSpStationId;
+			lflg |= MASK(BSRJCTSP);
+			type_h_detect_flag = 2;
+		}
+	}
+
 	DBO dbo = Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
 	if (!dbo.isvalid()) {
 		return -100;
 	}
 
 	vector<int> junctions;
+
 	while (dbo.moveNext()) {
 		junctions.push_back(dbo.getInt(0));
 	}
@@ -719,7 +851,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 		JctMaskOn(jct_on);
 		TRACE(_T("  add-mask on: %s(%d,%d)\n"), Route::JctName(junctions[i]).c_str(), Route::Jct2id(junctions[i]), junctions[i]);
 	}
-	
+
 	if (num <= i) {	// •œæ‚È‚µ
 		if (((2 <= route_list_raw.size()) && (startStationId != stationId2) && (0 != Route::InStation(startStationId, line_id, stationId1, stationId2))) ||
 			(((0 < endStationId) && (endStationId != stationId2) && (2 <= route_list_raw.size())) &&
@@ -775,11 +907,12 @@ int Route::add(int line_id, int stationId1, int stationId2)
 	return 0;
 }
 
+
 //	Œo˜H‚Ì––”ö‚ğœ‹
 //
 //	@param [in] begin_off    ÅIƒm[ƒh‚Ìn“_‚àOff‚·‚é‚©(ƒfƒtƒHƒ‹ƒg:Off‚µ‚È‚¢)
 //
-void Route::removeTail(bool begin_off/* = false*/ )
+void Route::removeTail(bool begin_off/* = false*/, bool ignore_flg/* =false*/ )
 {
 	int line_id;
 	int begin_station_id;
@@ -788,6 +921,7 @@ void Route::removeTail(bool begin_off/* = false*/ )
 	int route_num;
 	int i;
 	vector<int> junctions;	// •ªŠò‰wƒŠƒXƒg
+	SPECIFICFLAG lflg;
 
 
 	route_num = route_list_raw.size();
@@ -833,9 +967,54 @@ void Route::removeTail(bool begin_off/* = false*/ )
 
 	last_flag = 0;
 
+	lflg = route_list_raw.back().flag;
 	route_list_raw.pop_back();
+	
+	if (!ignore_flg && BIT_CHK(lflg, BSRJCTSP)) {
+		removeTail(begin_off, ignore_flg);
+	}
 }
 
+//public
+//	•ªŠòƒtƒ‰ƒO‘SOff
+//
+void Route::clearJunctionFlag()
+{
+	vector<RouteItem>::iterator pos;
+
+	for (pos = route_list_raw.begin(); pos != route_list_raw.end(); pos++) {
+		pos->flag &= ~MASK(BSRJCTSP);
+	}
+}
+
+//private:
+//	@brief	•ªŠòƒ}[ƒNOff
+//
+//	@param [in]  line_id          ˜Hü
+//	@param [in]  to_station_id    ŠJn‰w(ŠÜ‚Ü‚È‚¢)
+//	@param [in]  begin_station_id I—¹‰w(ŠÜ‚Ş)
+//
+void Route::routePassOff(int line_id, int to_station_id, int begin_station_id)
+{
+	int jct_num;
+	int i;
+	vector<int> junctions;	// •ªŠò‰wƒŠƒXƒg
+
+	DBO dbo = Route::Enum_junctions_of_line(line_id, to_station_id, begin_station_id);
+	if (!dbo.isvalid()) {
+		return;
+	}
+	
+	while (dbo.moveNext()) {
+		junctions.push_back(dbo.getInt(0));
+	}
+
+	jct_num = junctions.size();
+
+	for (i = 1; i < jct_num; i++) {
+		JctMaskOff(junctions[i]);
+	}
+}
 
 //	Œo˜Hİ’è’† Œo˜Hd•¡”­¶
 //	Œo˜Hİ’èƒLƒƒƒ“ƒZƒ‹
@@ -851,6 +1030,8 @@ void Route::removeAll()
 	startStationId = endStationId = 0;
 	route_list_raw.clear();
 	route_list_cooked.clear();
+
+	type_h_detect_flag = 0;
 }
 
 
@@ -1144,7 +1325,6 @@ int Route::LineIdFromStationId(int station_id)
   "select line_id"
   " from t_lines"
   " where station_id=?"
-  " and 0<=sales_km"
   " and 0=(lflg&((1<<31)|(1<<22)))");
 	if (ctx.isvalid()) {
   		ctx.setParam(1, station_id);
@@ -1200,6 +1380,30 @@ int Route::GetLineId(LPCTSTR lineName)
 		}
 	}
 	return 0;
+}
+
+
+//	@brief •ªŠò“Á—á‚Ì•ªŠò˜Hüa+æŠ·‰wd‚©‚ç–{üb‚Æ•ªŠò‰wc‚ğ“¾‚é
+//
+//	@param [in]  jctLineId         a •ªŠò˜Hü
+//	@param [in]  transferStationId d æŠ·‰w
+//	@param [out] jctSpMainLineId   b –{ü
+//	@param [out] jctSpStationId    c •ªŠò‰w
+//
+void Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
+{
+	const char tsql[] =
+	"select calc_km>>16, calc_km&65535 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
+
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
+	if (dbo.isvalid()) {
+		dbo.setParam(1, jctLineId);
+		dbo.setParam(2, transferStationId);
+		if (dbo.moveNext()) {
+			jctSpMainLineId = dbo.getInt(0);
+			jctSpStationId = dbo.getInt(1);
+		}
+	}
 }
 
 //static
@@ -2670,37 +2874,6 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 }
 
 
-#if 0	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  ŒvZƒLƒ220km`‚ÅA“s‹æs“à“K—p‚³‚ê‚Ä‚¢‚È‚¢ê‡A114ğ‚ğ‚İ‚éH
-					Route::CheckOfRule114j(route, route_new, rtky & 0x03 | 0x8000)
-
-	if (1900 < sales_km) {
-		Route::CheckOfRule114j(route, route_new, rtky & 0x03 | 0x8000);
-	}
-	
-	’·’Ã“c-‘•ê‚Ì—á
-	‘•ê‚Í‰¡•l‚©‚ç200‡qˆÈ‰º‚È‚Ì‚Å’·’Ã“c‚©‚çŒvZ
-	‘•ê‚Ìæ‚Ìb”ãZ‹g‚Í200‡q‚ğ‰z‚¦‚é‚Ì‚Å‰¡•l‚©‚çŒvZ
-	’·’Ã“c-‘•ê‚Í\3890‚¾‚ªA
-	‰¡•l-b”ãZ‹g‚Í\3570‚È‚Ì‚Å’·’Ã“c-‘•ê‚à3570‚É‚·‚é‚Æ‚¢‚¤—‹ü
-	
-	•ÄŒ´-V‰¡ ‰¡•ls“à‚É‚³‚ê‚½
-	
-	ŠCK-’·’Ã“c‚Í‰¡•ls“à
-
-
-
-—á‚¦‚ÎA‘åãs“à‰w‚Å‚ ‚é™–{’¬‰w‚©‚çA–¼ŒÃ‰®s“à‰w‚Å‚ ‚é‘å‚‰w‚Ü‚Å
-iã˜aA‘åãŠÂóA“ŒŠC“¹Œo—R220.4kmj‚ÍA’†S‰w“¯m‚ª200kmˆÈ‰ºi190.4kmj‚¾‚ªA
-™–{’¬ - –¼ŒÃ‰®ŠÔ‚Í208.0kmA‘åã - ‘å‚ŠÔ‚Í202.8km‚Æ‚¢‚¸‚ê‚à200km’´‚È‚Ì‚ÅA
-æÔŒ”‚Íu™–{’¬i’P‰wjË–¼ŒÃ‰®s“àv‚©u‘åãs“àË‘å‚i’P‰wjv‚Ì‚¢‚¸‚ê‚©‚Æ‚È‚éB
-‚±‚Ì‚æ‚¤‚Èê‡Aæ‹q‚©‚ç“Á‚É‹‚ß‚ª‚È‚¢ŒÀ‚èAæÔŒã‚Ì—\’è•ÏX‚É‘Î‰‚Å‚«‚é‚æ‚¤A
-’…‰w‘¤‚É“Á’è“s‹æs“à§“x‚ª“K—p‚³‚ê‚éB
-
-
-#endif	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 //static:
 //	88ğ‚Ìƒ`ƒFƒbƒN‚Æ•ÏŠ·
 //	V‘åã”­i’…j-[“ŒŠC“¹ü]-_ŒË-[R—zü]-•P˜HˆÈ‰“‚È‚çAV‘åã¨‘åã’uŠ·
@@ -2844,7 +3017,6 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 	}
 	return 0;
 }
-
 
 
 //static:
@@ -3096,12 +3268,67 @@ int Route::Retreive_SpecificCoreAvailablePoint(int km, int km_offset, int line_i
 
 
 //static
+//	˜Hü‚ÍVŠ²ü‚Ìİ—ˆü‚©?
+//
+//	@param [in] line_id1		”äŠrŒ³˜Hü(İ—ˆü)
+//	@param [in] line_id2		˜Hü(VŠ²ü)
+//	@param [in] station_id1		‰w1 (”­) İ—ˆüÚ‘±‰w‚Å‚ ‚é‚±‚Æ
+//	@param [in] station_id2		‰w2 (’…) İ—ˆüÚ‘±‰w‚Å‚È‚­‚Ä‚à‰Â
+//
+//	@return	true •Àsİ—ˆü
+//
+bool Route::IsAbreastShinkansen(int line_id1, int line_id2, int station_id1, int station_id2)
+{
+const char tsql[] = "select line_id from t_hzline where rowid=("
+	"	select ((lflg>>13)&15) from t_lines where line_id=?1 and station_id=?2"
+	"	)";
+const char tsql2[] = "select line_id from t_hzline where line_id>0 and rowid in ("
+	"	select ((lflg>>13)&15) from t_lines where ((lflg>>13)&15)!=0 and line_id=?1 and "
+	"	case when (select sales_km from t_lines where line_id=?1 and station_id=?2)<"
+	"	          (select sales_km from t_lines where line_id=?1 and station_id=?3)"
+	"	then"
+	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+	"	else"
+	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+	"	end"
+	") limit(1);";
+
+	int line_id = -1;
+
+	if (!IS_SHINKANSEN_LINE(line_id2)) {
+		return false;
+	}
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
+	if (dbo.isvalid()) {
+		dbo.setParam(1, line_id2);
+		dbo.setParam(2, station_id1);
+		if (dbo.moveNext()) {
+			line_id = dbo.getInt(0);
+			if (line_id <= 0) {
+				DBO dbo2 = DBS::getInstance()->compileSql(tsql2);
+				if (dbo2.isvalid()) {
+					dbo2.setParam(1, line_id2);
+					dbo2.setParam(2, station_id1);
+					dbo2.setParam(3, station_id2);
+					if (dbo2.moveNext()) {
+						line_id = dbo2.getInt(0);
+					}
+				}
+			}
+		}
+	}
+	return line_id == line_id1;
+}
+
+
+//static
 //	•Àsİ—ˆü‚ğ“¾‚é
 //
 //	@param [in] line_id     ˜Hü(VŠ²ü)
 //	@param [in] station_id	‰w(•Àsİ—ˆü‰w(VŠ²üÚ‘±‰w)
 //
 //	@retval not 0 •Àsİ—ˆü
+//	@retval 0xffff •Àsİ—ˆü‚Í2‚Â‚ ‚èA‚»‚Ì‹«ŠE‰w‚Å‚ ‚é(ã‰zVŠ²ü ‚è)
 //
 int Route::GetHZLine(int line_id, int station_id)
 {
@@ -3141,27 +3368,78 @@ int Route::GetHZLine(int line_id, int station_id)
 //
 bool Route::CheckTransferShinkansen(int line_id1, int line_id2, int station_id1, int station_id2, int station_id3)
 {
-	int bullut_line;
+	int bullet_line;
+	int local_line;
 	int dir;
-
-	if (IS_SHINKANSEN_LINE(line_id2) && (line_id1 == Route::GetHZLine(line_id2, station_id2))) {
-		bullut_line = line_id1;
-	} else if (IS_SHINKANSEN_LINE(line_id1) && (line_id2 == Route::GetHZLine(line_id1, station_id2))) {
-		bullut_line = line_id2;
+	int hzl;
+	
+	if (IS_SHINKANSEN_LINE(line_id2)) {
+		bullet_line = line_id2;		// İ—ˆü->VŠ²üæŠ·
+		local_line = line_id1;
+	} else if (IS_SHINKANSEN_LINE(line_id1)) {
+		bullet_line = line_id1;		// VŠ²ü->İ—ˆüæŠ·
+		local_line = line_id2;
 	} else {
-		return true;
+		return true;				// ‚»‚êˆÈŠO‚Í‘ÎÛŠO
 	}
+	hzl = Route::GetHZLine(bullet_line, station_id2);
+	if (hzl == 0x0fff) {
+		hzl = Route::NextShinkansenTransferTerm(bullet_line, station_id2, 
+								(bullet_line == line_id2) ? station_id2 : station_id1);
+		if (local_line != hzl) {
+			return true;
+		}
+	} else if (hzl != local_line) {
+		return true;				// ‚»‚êˆÈŠO‚Í‘ÎÛŠO
+	}
+
 	// table.A
 	dir = Route::DirLine(line_id1, station_id1, station_id2);
 	if (dir == Route::DirLine(line_id2, station_id2, station_id3)) {
 		return true;		// ã‚è¨ã‚è or ‰º‚è¨‰º‚è
 	}
 	if (dir == LDIR_ASC) {	// ‰º‚è¨ã‚è
-		return (((Route::AttrOfStationOnLineLine(bullut_line, station_id2) >> 25) & 0x01) != 0);
+		return (((Route::AttrOfStationOnLineLine(local_line, station_id2) >> 25) & 0x01) != 0);
 	} else {				// ã‚è¨‰º‚è
-		return (((Route::AttrOfStationOnLineLine(bullut_line, station_id2) >> 25) & 0x02) != 0);
+		return (((Route::AttrOfStationOnLineLine(local_line, station_id2) >> 25) & 0x02) != 0);
 	}
 	return true;
+}
+
+
+//static
+//	VŠ²ü‚Ì‰w1‚©‚ç‰w2•û–Ê‚Ì—×‚Ìİ—ˆüÚ‘±‰w‚ğ•Ô‚·
+//
+//	@param [in] line_id1  VŠ²ü
+//	@param [in] station_id1  ‰w1
+//	@param [in] station_id2  ‰w2(•ûŒü)
+//
+//	@return ‰wid
+//
+int Route::NextShinkansenTransferTerm(int line_id, int station_id1, int station_id2)
+{
+	const static char tsql[] =
+	"select station_id from t_lines where line_id=?1 and"
+	" case when"
+	"(select sales_km from t_lines where line_id=?1 and station_id=?3)<"
+	"(select sales_km from t_lines where line_id=?1 and station_id=?2) then"
+	" sales_km=(select max(sales_km) from t_lines where line_id=?1 and ((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2))"
+	" else"
+	" sales_km=(select min(sales_km) from t_lines where line_id=?1 and ((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2))"
+	" end";
+
+	DBO dbo(DBS::getInstance()->compileSql(tsql));
+
+	ASSERT(IS_SHINKANSEN_LINE(line_id));
+
+	dbo.setParam(1, line_id);
+	dbo.setParam(2, station_id1);
+	dbo.setParam(3, station_id2);
+
+	if (dbo.moveNext()) {
+		return dbo.getInt(0);
+	}
+	return 0;
 }
 
 //static
@@ -4947,6 +5225,7 @@ ASSERT((rc == 0) || (rc == 1));
 		}
 	}
 	delete [] rstr;
+
 	return rc;
 }
 
@@ -5013,19 +5292,3 @@ tstring Route::show_route(bool cooked)
 	return result_str;
 }
 
-
-// ‰•œŠ„ˆø 1Š„ˆø‚« ’[”Ø‚èÌ‚Ä 10190 ¨ 9170
-
-#if 0
-—˜—p‹æŠÔ‚ÉV‰ºŠÖ`”‘½ŠÔ‚ğŠÜ‚Şê‡‚ÍAVŠ²ü‚Æİ—ˆü‚Æ‚Å‚Í‰^’À‚ªˆÙ‚È‚è‚Ü‚·B
-‚±‚Ì—á‚Ìê‡‚Ì‰^’ÀŒvZ‚ÍŸ‚Ì‚Æ‚¨‚è‚Å‚·B
-‚ä‚«‚ÍVŠ²ü—˜—p‚Å–{B“àŠ²ü‚Ì‰^’À‚ğ“K—p‚µA‰^ZŒvZƒLƒ‚Í1179.3km‚Å13,440‰~B
-•Ğ“¹1Š„ˆø‚Å12,090‰~B‚©‚¦‚è‚Íİ—ˆü—˜—p‚Å”‘½`“Œ‹ŠÔ‚Ì‰^’ÀŒvZƒLƒ‚Í1179.3km‚Å
-u–{B3Ğ“à‚ÌŠ²ü‚Ì•’Ê‰^’À•\v‚ğ“K—p‚µ‚½13,440‰~‚ÉJR‹ãB—˜—p•ªi”‘½`‰ºŠÖŠÔ79kmj‚Ì
-‰ÁZŠz150‰~‚ğ‰Á‚¦A13,590‰~B•Ğ“¹1Š„ˆø‚Å12,230‰~‚É‚È‚è‚Ü‚·B
-‰•œŠ„ˆø‰^’À‚Í12,090‰~{12,230‰~24,320‰~‚Å‚·B
-
-
-#endif
-
-// ƒfƒoƒbƒN

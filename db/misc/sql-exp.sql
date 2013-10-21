@@ -857,3 +857,122 @@ select station_id from t_lines where line_id=?1 and
 -- 1<<6: 70条適用駅
 
 
+-----------------------------------------------
+2013-9-29
+
+-- 東海道新幹線の並行在来線接続駅
+select name from t_station where rowid in 
+(select station_id from t_lines where ((lflg>>13)&15)!=0 and line_id=4 order by sales_km);
+---((lflg>>13)&15)はすべて4(東海道新幹線ID==(select rowid from t_hzline where line_id=東海道線))
+
+-- 東海道線の新幹線接続駅
+select name from t_station where rowid in 
+(select station_id from t_lines where (lflg&(1<<27))!=0 and line_id=77 order by sales_km);
+--ちなみにサブクエリにするとソートが効いてない
+
+
+---
+-- 新幹線の隣の在来線接続駅を返すクエリー
+select l.station_id from t_lines where line_id=?1 and (lflg&(1<<22))=0 and 
+sales_km<
+(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)) order by sales_km desc limit(1);
+
+?1 東海道新幹線
+?2 新横浜
+?3 名古屋
+
+?2が新大阪や京都にすると、米原が返される
+?2が新横浜や東京にすると、三河安城が返される
+
+select name from t_station where rowid in (
+
+select station_id from t_lines where line_id=4 and ((lflg>>13)&15)!=0 
+and 
+sales_km<
+(select max(sales_km) from t_lines where line_id=4 and (station_id=1553 or station_id=1601)) 
+
+)
+
+
+
+NextShinkansenTransferTerm
+
+select name from t_station where rowid in (
+
+select station_id from t_lines where line_id=4 and 
+ case when
+ (select sales_km from t_lines where line_id=4 and station_id=893) <
+ (select sales_km from t_lines where line_id=4 and station_id=1553) then
+ sales_km=(select max(sales_km) from t_lines where line_id=4 and ((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and sales_km<(select sales_km from t_lines where line_id=4 and station_id=1553))
+ else
+ sales_km=(select min(sales_km) from t_lines where line_id=4 and ((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and sales_km>(select sales_km from t_lines where line_id=4 and station_id=1553))
+ end
+ 
+)
+--------------------------------
+RetrieveJunctionSpecific
+
+select calc_km&65535, calc_km>>16 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2
+select calc_km&65535, calc_km>>16 from t_lines where (lflg&(1<<31))!=0 and line_id=115 and station_id=1553
+
+
+
+--------------------------------
+--- IsAbreastShinkansen()
+
+select line_id from t_hzline where rowid=(
+	select ((lflg>>13)&15) from t_lines where ((lflg>>13)&15)!=0 and line_id=2 and station_id=885
+)
+
+
+
+	select line_id from t_hzline where line_id>0 and rowid in (
+		select ((lflg>>13)&15) from t_lines where ((lflg>>13)&15)!=0 and line_id=2 and 
+		case when (select sales_km from t_lines where line_id=2 and station_id=885)<
+		          (select sales_km from t_lines where line_id=2 and station_id=4576)
+		then
+		sales_km>(select sales_km from t_lines where line_id=2 and station_id=885)
+		else
+		sales_km<(select sales_km from t_lines where line_id=2 and station_id=885)
+		end
+	) limit(1);
+
+
+
+-------------
+-------------
+Enum_neer_node()
+?1=2902=京橋
+
+select 	station_id , abs((
+	select case when calc_km>0 then calc_km else sales_km end 
+	from t_lines 
+	where 0=(lflg&((1<<31)|(1<<22))) 
+	and line_id=(select line_id 
+				 from	t_lines 
+				 where	station_id=2902 
+				 and	0=(lflg&((1<<31)|(1<<22)))) 
+	and station_id=2902)-case when calc_km>0 then calc_km else sales_km end) as cost
+ from 	t_lines 
+ where 0=(lflg&((1<<31)|(1<<22)))
+ and	line_id=(select	line_id 
+ 				 from	t_lines 
+ 				 where	station_id=2902
+ 				 and	0=(lflg&((1<<31)|(1<<22))))
+ and	sales_km in ((select max(y.sales_km)
+					  from	t_lines x left join t_lines y
+					  on	x.line_id=y.line_id 
+					  where	0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<22)))
+					  and	0<=y.sales_km and (1<<12)=(y.lflg&((1<<31)|(1<<22)|(1<<12)))
+					  and	x.station_id=2902
+					  and	x.sales_km>y.sales_km
+					 ),
+					 (select min(y.sales_km)
+					  from	t_lines x left join t_lines y
+					  on	x.line_id=y.line_id 
+					  where 0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<22)))
+					  and	0<=y.sales_km and (1<<12)=(y.lflg&((1<<31)|(1<<22)|(1<<12)))
+					  and	x.station_id=2902
+					  and	x.sales_km<y.sales_km));
+
+結果おかしい。みなおし

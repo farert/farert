@@ -178,6 +178,12 @@ FJR
 <桜島,桜島線,西九条,	41
 大阪環状線,京橋,	78
 
+加島-尼崎 22
+尼崎-大阪 77
+大阪-京橋 42
+京橋-加島 103
+
+
 ------------------------
 'alps_mfc.exe': 'C:\home\devel\farejr\app\win_mfc\fjr_mfc\Debug\alps_mfc.exe' を読み込みました。シンボルが読み込まれました。
 'alps_mfc.exe': 'C:\Windows\SysWOW64\ntdll.dll' を読み込みました。Cannot find or open the PDB file

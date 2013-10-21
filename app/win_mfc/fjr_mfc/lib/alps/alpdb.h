@@ -28,6 +28,7 @@ typedef unsigned int SPECIFICFLAG;
 #define IS_FLG_HIDE_LINE(lflg)			(0!=(lflg&FLG_HIDE_LINE))		// òHê¸îÒï\é¶
 #define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// âwîÒï\é¶
 
+#define BSRJCTSP		31		// ï™äÚì¡ó·
 /* --------------------------------------- */
 /* util */
 #define NumOf(c)  (sizeof(c) / sizeof(c[0]))
@@ -100,7 +101,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #endif
 
-#define	MASK_ROUTE_FLAG	0x1fff
+#define	MASK_ROUTE_FLAG	(0x1fff | MASK(BSRJCTSP))
 
 
 class RouteItem
@@ -327,6 +328,9 @@ class Route
 	FARE_INFO fare_info;
 private:
 	SPECIFICFLAG last_flag;	// add() - removeTail() work
+	int 		 type_h_detect_flag;
+	int			 jctSpMainLineId;		// ï™äÚì¡ó·:ñ{ê¸(b)
+	int			 jctSpStationId;		// ï™äÚì¡ó·:ï™äÚâw(c)
 public:
 	int startStationId;
 	int endStationId;
@@ -407,6 +411,11 @@ public:	// termsel
 	static tstring 	GetKanaFromStationId(int stationId);
 	static DBO	 	Enum_line_of_stationId(int stationId);
 
+private:
+	void	routePassOff(int line_id, int to_station_id, int begin_station_id);
+	void 	retrieveJunctionSpecific(int jctLineId, int transferStationId);
+
+public:
 	// alps_mfcDlg
 	tstring 		showFare(int cooked);
 	int				fareCalcOption();
@@ -416,9 +425,10 @@ public:	// termsel
 	int				setup_route(LPCTSTR route_str);
 
 	int 			add(int line_id, int stationId1, int stationId2);
-	void 			removeTail(bool begin_off = false);
+	void 			removeTail(bool begin_off = false, bool ignore_flag = false);
 	void 			removeAll();
 	int				reverse();
+	void			clearJunctionFlag();
 	bool 			checkPassStation(int stationId);
 	void 			terminate(int stationId);
 	bool			changeNeerest(bool useBulletTrain);
@@ -443,8 +453,10 @@ public:	// termsel
 	static int		CheckOfRule89j(const vector<RouteItem> &route);
 
 	static tstring  CoreAreaNameByCityId(int startEndFlg, int flg, SPECIFICFLAG flags);
+	static bool		IsAbreastShinkansen(int line_id1, int line_id2, int station_id1, int station_id2);
 	static int      GetHZLine(int line_id, int station_id);
 	static bool		CheckTransferShinkansen(int line_id1, int line_id2, int station_id1, int station_id2, int station_id3);
+	static int		NextShinkansenTransferTerm(int line_id, int station_id1, int station_id2);
 
 	static vector<PAIRIDENT> GetNeerNode(int station_id);
 };
