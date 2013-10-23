@@ -741,9 +741,29 @@ void test_jctspecial()
 	_T("_B-2|恵那,中央西線,名古屋,東海道新幹線,新大阪"),
 	_T("_D-2|恵那,中央西線,名古屋,東海道新幹線,新横浜"),
 	_T("_J|恵那,中央西線,名古屋,関西線,亀山"),
-	_T("_|松本,中央西線,名古屋,東海道新幹線,新横浜"),
-	_T("_|新横浜,東海道新幹線,名古屋,中央西線,松本,篠ノ井線,篠ノ井"),
-	_T("_|新横浜,東海道新幹線,名古屋,中央西線,松本,中央東線,東京,東北線,大宮"),
+	_T("_1|松本,中央西線,名古屋,東海道新幹線,新横浜"),
+	_T("_2|新横浜,東海道新幹線,名古屋,中央西線,松本,篠ノ井線,篠ノ井"),
+	_T("_3|新横浜,東海道新幹線,名古屋,中央西線,松本,中央東線,東京,東北線,大宮"),
+	_T("_4|甲府,中央東線,松本,中央西線,名古屋,東海道新幹線,品川"),
+	_T("_5|甲府,中央東線,松本,中央東線,塩尻"),
+	_T("_6|甲府,中央東線,松本,中央西線,塩尻"),
+	_T("_7|甲府,中央東線,松本,篠ノ井線,塩尻"),
+	_T("_8|恵那,中央西線,松本,中央東線,東京,東北線,大宮"),
+	_T("_9|恵那,中央西線,松本,中央東線,東京,東北新幹線,大宮"),
+	_T("_a|塩尻,中央東線,松本,大糸線,白馬"),
+	_T("_b|塩尻,中央東線,松本,中央西線,塩尻"),
+	_T("_c|塩尻,中央西線,松本,中央東線,塩尻"),
+	_T("_d|塩尻,篠ノ井線,松本,中央東線,塩尻"),
+	_T("_e|塩尻,篠ノ井線,松本,中央西線,塩尻"),
+	_T("_f|塩尻,篠ノ井線,松本,篠ノ井線,塩尻"),
+//	_T("_g|塩尻,中央東線,松本,中央西線,恵那"),
+//	_T("_h|塩尻,中央西線,松本,中央東線,甲府"),
+	_T("_i|塩尻,中央西線,松本,篠ノ井線,塩尻"),
+	_T("_i|金山(中),中央西線,名古屋,東海道線,金山(中)"),
+	_T("_i|金山(中),東海道線,名古屋,東海道線,金山(中)"),
+	//_T("_i|金山(中),東海道線,名古屋,東海道線,大高"),
+	//_T("_i|金山(中),東海道線,名古屋,東海道線,刈谷"),
+	//_T("_i|金山(中),東海道線,名古屋,東海道線,静岡"),
 	_T(""),
 	};
 	TCHAR buffer[1024];
@@ -767,12 +787,14 @@ void test_jctspecial()
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
-		vector<RouteItem>::const_iterator pos = route.routeList().cbegin();
-		_ftprintf(os, _T("\nbegin: %s\n"), Route::StationName(pos->stationId).c_str());
-		for (++pos; pos != route.routeList().cend(); pos++) {
-			_ftprintf(os, _T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
+		if (0 < route.routeList().size()) {
+			vector<RouteItem>::const_iterator pos = route.routeList().cbegin();
+			_ftprintf(os, _T("\nbegin: %s\n"), Route::StationName(pos->stationId).c_str());
+			for (++pos; pos != route.routeList().cend(); pos++) {
+				_ftprintf(os, _T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
+			}
+			_ftprintf(os, _T("\n"));
 		}
-		_ftprintf(os, _T("\n"));
 	}
 }
 

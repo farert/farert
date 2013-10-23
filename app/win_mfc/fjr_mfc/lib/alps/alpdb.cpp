@@ -664,11 +664,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 			return -2;		/* 不正経路(line_idにstationId1は存在しない) */
 		}
 		//ASSERT(0 == route_list_raw.size());
-		route_list_raw.clear();
-		JctMaskClear();
-		fare_info.reset();
-		type_h_detect_flag = 0;
-		TRACE(_T("clear-all mask.\n"));
+		removeAll(false, false);
 
 		/* 着駅が発駅～最初の分岐駅間にあるか? */
 		/* (着駅未指定, 発駅=着駅は除く) */
@@ -817,8 +813,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 			// J, B, D
 			TRACE("JCT: J, B, D\n");
 			rc = add(line_id, stationId1, jctSpStationId);
-			if (rc != 1) {
-				ASSERT(FALSE);
+			if ((rc != 1) && (rc != 11)) {
 				return rc;			// >>>>>>>>>>>>>>>>>>>>>
 			}
 			line_id = jctSpMainLineId;
@@ -906,7 +901,7 @@ int Route::add(int line_id, int stationId1, int stationId2)
 	}
 	TRACE(_T("added last.\n"));
 
-	if (update) {
+	if (update || last_flag) {
 		/*  路線が重複した場合削除、更に分岐駅が重複した場合も削除
 		 *  例として、甲府-中央東線-松本-中央西線-塩尻と指定した場合
 		 */
@@ -915,9 +910,13 @@ int Route::add(int line_id, int stationId1, int stationId2)
 			route_list_raw.at(num - 2) = route_list_raw.at(num - 1);
 			route_list_raw.pop_back();
 			num--;
-			if ((1 < num) && (route_list_raw.at(num - 1).stationId == route_list_raw.at(num - 2).stationId)) {
-				route_list_raw.pop_back();
-			}
+		}
+		if ((1 < num) && (route_list_raw.at(num - 1).stationId == route_list_raw.at(num - 2).stationId)) {
+			route_list_raw.pop_back();
+			num--;
+		}
+		if (num <= 1) {
+			removeAll(false, false);
 		}
 	}
 	
@@ -948,12 +947,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	
 	/* 発駅～最初の乗換駅時 */
 	if (route_num == 2) {
-		route_list_raw.clear();
-		fare_info.reset();
-
-		JctMaskClear();
-		last_flag = 0;
-		TRACE(_T("clear-all mask.\n"));
+		removeAll(false, false);
 		return;
 	}
 	to_station_id = route_list_raw[route_num - 1].stationId;	// tail
@@ -1018,20 +1012,32 @@ void Route::routePassOff(int line_id, int to_station_id, int begin_station_id)
 
 //	経路設定中 経路重複発生時
 //	経路設定キャンセル
+//
+//	@param [in]  bWithStart  開始駅もクリアするか(デフォルトクリア)
+//	@param [in]  bWithEnd    終了駅もクリアするか(デフォルトクリア)
+//	@note
 //	x stop_jctId > 0 : 指定分岐駅前までクリア(指定分岐駅含まず)
 //	x stop_jctId = 0 : (default)指定分岐駅指定なし
 //	x stop_jctId < 0 : 開始地点も削除
 //
-void Route::removeAll()
+void Route::removeAll(bool bWithStart /* =true */, bool bWithEnd /* =true */)
 {
 	JctMaskClear();
 	fare_info.reset();
 
-	startStationId = endStationId = 0;
+	if (bWithStart) {
+		startStationId = 0;
+	}
+	if (bWithEnd) {
+		endStationId = 0;
+	}
 	route_list_raw.clear();
 	route_list_cooked.clear();
 
+	last_flag = 0;
 	type_h_detect_flag = 0;
+
+	TRACE(_T("clear-all mask.\n"));
 }
 
 
@@ -3498,7 +3504,7 @@ bool Route::changeNeerest(bool useBulletTrain)
 	int nLastNode;
 	
 	/* 途中追加か、最初からか */
-	if (0 < route_list_raw.size()) {
+	if (1 < route_list_raw.size()) {
 		stationId = route_list_raw.back().stationId;
 	} else {
 		stationId = startStationId;
@@ -3523,7 +3529,7 @@ bool Route::changeNeerest(bool useBulletTrain)
 		if (lid == Route::LineIdFromStationId(endStationId)) { /* 発駅と着駅は同一路線 */
 			///km = Route::Get_node_distance(lid, stationId, endStationId);
 			// 渋谷-原宿など >>>>>>>>>>>>>>>>>>>>>
-			if (0 < route_list_raw.size() && route_list_raw.back().lineId == lid) {
+			if (1 < route_list_raw.size() && route_list_raw.back().lineId == lid) {
 				removeTail();
 			}
 			return 0 <= add(lid, stationId, endStationId);
@@ -3752,7 +3758,7 @@ bool Route::changeNeerest(bool useBulletTrain)
 		lid = 0;
 	}
 	
-	if ((0 < route_list_raw.size()) && (0 < route.size()) && (route_list_raw.back().lineId == line_id[route[0]])) {
+	if ((1 < route_list_raw.size()) && (1 < route.size()) && (route_list_raw.back().lineId == line_id[route[0]])) {
 		removeTail();
 		ASSERT(0 < route_list_raw.size()); /* route_list_raw.size() は0か2以上 */
 		stationId = route_list_raw.back().stationId;
@@ -4918,7 +4924,7 @@ tstring Route::showFare(int cooked)
 	tstring sExt;
 	int rule114[3];
 
-	if (route_list_raw.size() <= 0) {
+	if (route_list_raw.size() <= 1) {
 		return tstring(_T(""));
 	}
 
@@ -4938,7 +4944,7 @@ tstring Route::showFare(int cooked)
 		}
 		// 仮↑
 
-		if (route_list_cooked.size() <= 0) {
+		if (route_list_cooked.size() <= 1) {
 ASSERT(FALSE);
 			if (!fare_info.calc_fare(route_list_raw)) {
 				return tstring(_T(""));
@@ -5092,7 +5098,7 @@ ASSERT(FALSE);
 //
 int Route::fareCalcOption()
 {
-	if ((route_list_raw.size() <= 0) || (route_list_cooked.size() <= 0)) {
+	if ((route_list_raw.size() <= 1) || (route_list_cooked.size() <= 1)) {
 		return 0;
 	}
 	if (0 != (route_list_cooked.at(0).lineId & (1 << B1LID_BEGIN_CITY_OFF))) {
@@ -5119,7 +5125,7 @@ int Route::reverse()
 	vector<RouteItem>::const_reverse_iterator rev_pos;
 	vector<RouteItem>::const_iterator pos;
 
-	if (route_list_raw.size() <= 0) {
+	if (route_list_raw.size() <= 1) {
 		return 0;
 	}
 
@@ -5244,7 +5250,7 @@ tstring Route::show_route(bool cooked)
 	//TCHAR buf[MAX_BUF];
 	tstring result_str;
 	
-	if (cooked && 0 < route_list_cooked.size()) {
+	if (cooked && 1 < route_list_cooked.size()) {
 		routeList = &route_list_cooked;	/* 規則適用 */
 	} else {
 		routeList = &route_list_raw;	/* 規則非適用 */

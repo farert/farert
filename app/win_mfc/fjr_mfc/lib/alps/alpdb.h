@@ -426,7 +426,7 @@ public:
 
 	int 			add(int line_id, int stationId1, int stationId2);
 	void 			removeTail(bool begin_off = false);
-	void 			removeAll();
+	void 			removeAll(bool bWithStart =true, bool bWithEnd =true);
 	int				reverse();
 	bool 			checkPassStation(int stationId);
 	void 			terminate(int stationId);
