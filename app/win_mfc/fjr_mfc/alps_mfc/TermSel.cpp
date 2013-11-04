@@ -471,10 +471,12 @@ void CTermSel::SetTerminalLineLabel(int stationId)
 	
 	CString sJctList;
 	while (dbo.moveNext()) {
-		if (sJctList != _T("")) {
-			sJctList += _T("/");
+		if (!BIT_CHK(dbo.getInt(2), BSRJCTSP)) {
+			if (sJctList != _T("")) {
+				sJctList += _T("/");
+			}
+			sJctList += dbo.getText(0).c_str();
 		}
-		sJctList += dbo.getText(0).c_str();
 	}
 	labelText += sJctList;
 	GetDlgItem(IDC_EDIT_LINE)->SetWindowText(labelText);

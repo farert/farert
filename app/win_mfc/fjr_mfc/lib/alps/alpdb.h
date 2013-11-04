@@ -37,6 +37,8 @@ typedef unsigned int SPECIFICFLAG;
 
 #define MASK(bdef)	(1 << bdef)
 #define BIT_CHK(flg, bdef) (0 != (flg & MASK(bdef)))
+#define BIT_ON(flg, bdef)  (flg |= MASK(bdef))
+#define BIT_OFF(flg, bdef) (flg &= ~MASK(bdef))
 
 #define HWORD_BIT	16		/* Number of bit in half word(unsigned short) */
 
@@ -49,6 +51,7 @@ typedef unsigned int SPECIFICFLAG;
 
 // ‰w‚Í•ªŠò‰w‚©
 #define STATION_IS_JUNCTION(sid)	(0 != (Route::AttrOfStationId(sid) & (1<<12)))
+#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
 
 	/* ID for line_id on t_lines */
 #define ID_L_RULE70		-10
@@ -328,11 +331,12 @@ class Route
 	FARE_INFO fare_info;
 private:
 	SPECIFICFLAG last_flag;	// add() - removeTail() work
-	int 		 type_h_detect_flag;
 	int			 jctSpMainLineId;		// •ªŠò“Á—á:–{ü(b)
 	int			 jctSpStationId;		// •ªŠò“Á—á:•ªŠò‰w(c)
 public:
-	int startStationId;
+	int startStationId() 
+	{ return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId; }
+
 	int endStationId;
 
 	static int StationIdOf_SHINOSAKA;	// V‘åã
@@ -361,6 +365,9 @@ public:
 	}
 	vector<RouteItem>& routeList() { return route_list_raw; }
 	vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
+	bool isModified() {
+		return (last_flag & (1 << 6)) != 0;
+	}
 
 private:
 	bool			checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114);
@@ -414,6 +421,7 @@ public:	// termsel
 private:
 	void	routePassOff(int line_id, int to_station_id, int begin_station_id);
 	void 	retrieveJunctionSpecific(int jctLineId, int transferStationId);
+	int		junctionStationExistsInRoute(int stationId);
 
 public:
 	// alps_mfcDlg
@@ -424,7 +432,8 @@ public:
 
 	int				setup_route(LPCTSTR route_str);
 
-	int 			add(int line_id, int stationId1, int stationId2);
+	int 			add(int line_id, int stationId2);
+	int 			add(int stationId);
 	void 			removeTail(bool begin_off = false);
 	void 			removeAll(bool bWithStart =true, bool bWithEnd =true);
 	int				reverse();

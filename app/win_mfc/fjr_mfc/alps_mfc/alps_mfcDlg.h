@@ -45,10 +45,13 @@ protected:
 	void setupForLinelistByStation(int stationId, int curLineId = 0);
 	void setupForStationlistByLine(int lineId, int curStationId = 0);
 	int UpdateRouteList();
+	int ModifyRouteList();
 	UINT CancelRouteQuery();
 	void CantSameStartAndEnd();
 	void ResetContent();
 	void showFare();
+	int parseAndSetupRoute(LPCTSTR route_str);
+
 private:
 	Route	m_route;
 	Calps_mfcDlg::SELMODE m_selMode;

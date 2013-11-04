@@ -7,6 +7,9 @@
 FILE *os;
 Route route;
 
+static int test_setup_route(TCHAR* buffer);
+
+
 static tstring num_str_yen(int num)
 {
 	TCHAR cb[16];
@@ -585,9 +588,11 @@ void test_hzl(void)
 		int rc;
 
 		for (p = _tcstok_s(buffer, _T(", "), &ctx); p; p = _tcstok_s(NULL, _T(", "), &ctx)) {
+			fail = false;
 			if (stationId1 == 0) {
-				route.startStationId = stationId1 = Route::GetStationId(p);
+				stationId1 = Route::GetStationId(p);
 				ASSERT(0 < stationId1);
+				route.add(stationId1);
 			} else if (lineId == 0) {
 				lineId = Route::GetLineId(p);
 				ASSERT(0 < lineId);
@@ -604,7 +609,7 @@ void test_hzl(void)
 				}
 				stationId2 = Route::GetStationId(p);
 				ASSERT(0 < stationId2);
-				rc = route.add(lineId, stationId1, stationId2);
+				rc = route.add(lineId, /*stationId1,*/ stationId2);
 				if (cont && rc < 0) {
 					_ftprintf(os, _T("VŠ²ü<->Ý—ˆüæ‚èŠ·‚¦: Test Program Bug!!!!! %s(%s)\n"), p, route_def[i]);
 				} else if (!cont) {
@@ -718,52 +723,55 @@ void test_jctspecial()
 	_T("^A-2|V‘åã,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,Œb“ß"),
 	_T("^C-2|V‰¡•l,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,Œb“ß"),
 	_T("^E-0|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†)"),
-	_T("^E-1|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
+	_T("^E-1_|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
+	_T("^E-1a|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,x‘åã"),
 	_T("^E-2|V‘åã,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
 	_T("^G|‹TŽR,ŠÖ¼ü,–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
 	_T("^G-3|–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
 	_T("^G-2|–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†)"),
-//	_T("x^G-4|–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‘åã"),
+	_T("^G-4|–¼ŒÃ‰®,’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,x‘åã"),
 	_T("_F-0|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®"),
 	_T("_F-1|‰¡•l,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‘åã"),
 	_T("_F-2|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‘åã"),
-//	_T("x_E-10|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‰¡•l"),
+	_T("_E-10|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‰¡•l"),
 	_T("_H|‰¡•l,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,ŠÖ¼ü,‹TŽR"),
-	_T("_E-11|‘åã,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
-//	_T("_E-12|‘åã,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‘åŠ_"),
-//	_T("_E-13|‰¡•l,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,Ã‰ª"),
-	_T("_E-14|‰¡•l,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‹àŽR(’†)"),
-	_T("_F-3|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‘åã"),
-//	_T("_F-3|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‰¡•l"),
+	_T("_E-11|‘åã,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,x‹àŽR(’†),“ŒŠC“¹ü,‰¡•l"),
+	_T("_E-12|‘åã,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,x–¼ŒÃ‰®,“ŒŠC“¹ü,‘åŠ_"),
+	_T("_E-13|‰¡•l,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,xÃ‰ª"),
+	_T("_E-14|‰¡•l,“ŒŠC“¹ü,‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‹àŽR(’†)"),
+	_T("_F-3a|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‘åã"),
+	_T("_F-3b|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‰¡•l"),
 	_T("_J-0|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®"),
+	_T("_B-0|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,’†‰›¼ü,x‹àŽR(’†)"),
 	_T("_B-1|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‘åã"),
-	_T("_D-1|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‰¡•l"),
+	_T("_D-1|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‰¡•l"),
 	_T("_B-2|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‘åã"),
 	_T("_D-2|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‰¡•l"),
 	_T("_J|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,ŠÖ¼ü,‹TŽR"),
 	_T("_1|¼–{,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‰¡•l"),
-	_T("_2|V‰¡•l,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,¼–{,ŽÂƒmˆäü,ŽÂƒmˆä"),
-	_T("_3|V‰¡•l,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,¼–{,’†‰›“Œü,“Œ‹ž,“Œ–kü,‘å‹{"),
+	_T("_2a|V‰¡•l,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,¼–{,ŽÂƒmˆäü,ŽÂƒmˆä"),
+	_T("_2b|ŽÂƒmˆä,ŽÂƒmˆäü,¼–{,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‰¡•l"),
+	_T("_3|V‰¡•l,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,¼–{,’†‰›“Œü,“Œ‹ž,“Œ–kü,x‘å‹{"),
 	_T("_4|b•{,’†‰›“Œü,¼–{,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,•iì"),
-	_T("_5|b•{,’†‰›“Œü,¼–{,’†‰›“Œü,‰–K"),
-	_T("_6|b•{,’†‰›“Œü,¼–{,’†‰›¼ü,‰–K"),
-	_T("_7|b•{,’†‰›“Œü,¼–{,ŽÂƒmˆäü,‰–K"),
-	_T("_8|Œb“ß,’†‰›¼ü,¼–{,’†‰›“Œü,“Œ‹ž,“Œ–kü,‘å‹{"),
+	_T("_5|b•{,’†‰›“Œü,¼–{,’†‰›“Œü,x‰–K"),
+	_T("_6|b•{,’†‰›“Œü,¼–{,’†‰›¼ü,x‰–K"),
+	_T("_7|b•{,’†‰›“Œü,¼–{,ŽÂƒmˆäü,x‰–K"),
+	_T("_8|Œb“ß,’†‰›¼ü,¼–{,’†‰›“Œü,“Œ‹ž,“Œ–kü,x‘å‹{"),
 	_T("_9|Œb“ß,’†‰›¼ü,¼–{,’†‰›“Œü,“Œ‹ž,“Œ–kVŠ²ü,‘å‹{"),
 	_T("_a|‰–K,’†‰›“Œü,¼–{,‘åŽ…ü,”’”n"),
-	_T("_b|‰–K,’†‰›“Œü,¼–{,’†‰›¼ü,‰–K"),
-	_T("_c|‰–K,’†‰›¼ü,¼–{,’†‰›“Œü,‰–K"),
-	_T("_d|‰–K,ŽÂƒmˆäü,¼–{,’†‰›“Œü,‰–K"),
-	_T("_e|‰–K,ŽÂƒmˆäü,¼–{,’†‰›¼ü,‰–K"),
-	_T("_f|‰–K,ŽÂƒmˆäü,¼–{,ŽÂƒmˆäü,‰–K"),
-//	_T("_g|‰–K,’†‰›“Œü,¼–{,’†‰›¼ü,Œb“ß"),
-//	_T("_h|‰–K,’†‰›¼ü,¼–{,’†‰›“Œü,b•{"),
-	_T("_i|‰–K,’†‰›¼ü,¼–{,ŽÂƒmˆäü,‰–K"),
-	_T("_i|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‹àŽR(’†)"),
-	_T("_i|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‹àŽR(’†)"),
-	//_T("_i|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‘å‚"),
-	//_T("_i|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,Š ’J"),
-	//_T("_i|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,Ã‰ª"),
+	_T("_b|‰–K,’†‰›“Œü,¼–{,’†‰›¼ü,x‰–K"),
+	_T("_c|‰–K,’†‰›¼ü,¼–{,’†‰›“Œü,x‰–K"),
+	_T("_d|‰–K,ŽÂƒmˆäü,¼–{,’†‰›“Œü,x‰–K"),
+	_T("_e|‰–K,ŽÂƒmˆäü,¼–{,’†‰›¼ü,x‰–K"),
+	_T("_f|‰–K,ŽÂƒmˆäü,¼–{,ŽÂƒmˆäü,x‰–K"),
+	_T("_g|‰–K,’†‰›“Œü,¼–{,’†‰›¼ü,Œb“ß"),
+	_T("_h|‰–K,’†‰›¼ü,¼–{,’†‰›“Œü,b•{"),
+	_T("_i|‰–K,’†‰›¼ü,¼–{,ŽÂƒmˆäü,x‰–K"),
+	_T("_j0|‹àŽR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‹àŽR(’†)"),
+	_T("_j1|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‹àŽR(’†)"),
+	_T("_j2|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‘å‚"),
+	_T("_j3|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,xŠ ’J"),
+	_T("_j4|‹àŽR(’†),“ŒŠC“¹ü,–¼ŒÃ‰®,“ŒŠC“¹ü,xÃ‰ª"),
 	_T(""),
 	};
 	TCHAR buffer[1024];
@@ -780,7 +788,7 @@ void test_jctspecial()
 		pbuffer++;
 		_ftprintf(os, _T("!****<%02d>: ********************* %s *******************\n<%s>\n"), i + 1, buffer, pbuffer);
 		TRACE(_T("test_exec(route): %d********************** %s *********************\n%s\n"), i + 1, buffer, pbuffer);
-		rc = route.setup_route(pbuffer);
+		rc = test_setup_route(pbuffer);
 		ASSERT(0 <= rc);
 
 		tstring s = route.showFare(RULE_APPLIED);
@@ -793,9 +801,52 @@ void test_jctspecial()
 			for (++pos; pos != route.routeList().cend(); pos++) {
 				_ftprintf(os, _T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
 			}
-			_ftprintf(os, _T("\n"));
+			_ftprintf(os, _T("\n%d\n"), rc);
 		}
 	}
+}
+
+static int test_setup_route(TCHAR* buffer)
+{
+	TCHAR* p;
+	int lineId = 0;
+	int stationId1 = 0;
+	int stationId2 = 0;
+	TCHAR* ctx = NULL;
+	bool fail;
+	int rc;
+
+	for (p = _tcstok_s(buffer, _T(", "), &ctx); p; p = _tcstok_s(NULL, _T(", "), &ctx)) {
+		fail = false;
+		if (stationId1 == 0) {
+			stationId1 = Route::GetStationId(p);
+			ASSERT(0 < stationId1);
+			route.add(stationId1);
+		} else if (lineId == 0) {
+			lineId = Route::GetLineId(p);
+			ASSERT(0 < lineId);
+		} else {
+			if ('x' == *p) {
+				++p;
+				fail = true;
+			} else {
+				fail = false;
+			}
+			stationId2 = Route::GetStationId(p);
+			ASSERT(0 < stationId2);
+			rc = route.add(lineId, /*stationId1,*/ stationId2);
+			if (fail) {
+				ASSERT(rc < 0);
+				_ftprintf(os, _T("Setup route: Failure OK (%d)\n"), rc);
+				return 1;
+			} else {
+				ASSERT(0 <= rc);
+			}
+			lineId = 0;
+			stationId1 = stationId2;
+		}
+	}
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -811,7 +862,9 @@ int test_exec(void)
 
 	_ftprintf(os, _T("timestamp: %s\n"), t.Format("%y.%m.%d %H:%M"));
 	
-#if 0	//#####################
+	_ftprintf(os, _T("\n#---special junction -------------------------------------------\n"));
+	test_jctspecial();
+
 	_ftprintf(os, _T("\n#---hzl---------------------------------------------------------\n"));
 	test_hzl();
 
@@ -820,10 +873,7 @@ int test_exec(void)
 
 	_ftprintf(os, _T("\n#---specificial route-------------------------------------------\n"));
 	test_route();
-#endif	//#################
-	_ftprintf(os, _T("\n#---special junction -------------------------------------------\n"));
-	test_jctspecial();
-	
+
 	CTimeSpan ts = CTime::GetCurrentTime() - t;
 	_ftprintf(os, _T("lapse: %s\n"), ts.Format("%H:%M:%Ss"));
 
