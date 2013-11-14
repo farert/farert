@@ -71,6 +71,9 @@ select name from t_station where rowid in
 (select station_id from t_lines where (lflg&(1<<27))!=0 and line_id=77 order by sales_km);
 
 
+b#13110401
+	基43-2、基151-3を考慮(新幹線小倉-博多乗車時の吉塚-博多と西小倉-小倉の除外)
+
 b#13102701
 	第3セクタ回り、まったくダメ
 

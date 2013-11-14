@@ -181,6 +181,16 @@ create table t_hzline(
 );
 """)
 ###########################################
+con.execute("""
+create table t_jctspcl(
+	id integer primary key autoincrement,
+	jctsp_line_id1 integer not null,
+	jctsp_station_id1 integer not null,
+	jctsp_line_id2 integer not null default(0),
+	jctsp_station_id2 integer not null default(0)
+);
+""")
+###########################################
 
 
 
@@ -318,7 +328,7 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 	
 		if 0 <= linitems[1].find("branch"):
 			branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
-						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip()])
+						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip()])
 			continue			# 分岐特例はあとで
 
 		if linitems[3].strip().startswith("-"):
@@ -613,7 +623,10 @@ insert into t_farest values(
 
 
 for bitem in branch:
-	# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅
+	#		branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
+	#					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip()])
+	# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2
+
 	if 0 <= bitem[2].find('('):
 		bstation = bitem[2][:bitem[2].find('(')]
 		bstation_same = bitem[2][bitem[2].find('('):]
@@ -621,15 +634,40 @@ for bitem in branch:
 		bstation = bitem[2]
 		bstation_same = ''
 
-	#print(bitem[0], bitem[1], bitem[4], bstation, bstation_same, bitem[3], end='|')
+	if bitem[6]:
+		bline2 = bitem[6][:bitem[6].find('/')]					### 分岐駅まで2路線以上(日田彦山線‐小倉の例)
+		bstation2t = bitem[6][bitem[6].find('/') + 1:]
+		if 0 <= bstation2t.find('('):
+			bstation2 = bstation2t[:bstation2t.find('(')]		# 同名駅がある駅の場合
+			bstation2_same = bstation2t[bstation2t.find('('):]
+		else:
+			bstation2 = bstation2t								# 同名駅でない場合
+			bstation2_same = ''
+
+		con.execute("""
+		insert into t_jctspcl(jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
+		(select rowid from t_line where name=?), 
+		(select rowid from t_station where name=? and samename=?), 
+		(select rowid from t_line where name=?), 
+		(select rowid from t_station where name=? and samename=?)) 
+		""", 
+		[bitem[4], bstation, bstation_same, bline2, bstation2, bstation2_same])
+	else:
+		con.execute("""
+		insert into t_jctspcl(jctsp_line_id1, jctsp_station_id1) values(
+		(select rowid from t_line where name=?), 
+		(select rowid from t_station where name=? and samename=?)) 
+		""", 
+		[bitem[4], bstation, bstation_same])
+
 	con.execute("""insert into t_lines values(
 	(select rowid from t_line where name=?), 
 	(select rowid from t_station where name=? and samename=?), 
 	?,
-	(select rowid from t_station where name=? and samename=?) + 65536 * (select rowid from t_line where name=?), 
+	(select seq from sqlite_sequence where name='t_jctspcl'), 
 	(1 << 31) | (select sflg from t_station where name=? and samename=?))""", 
-	[bitem[0], bitem[1], bitem[5], bitem[3], bstation, bstation_same, bitem[4], bitem[1], bitem[5]])
-	# b31=special_t_lines
+	[bitem[0], bitem[1], bitem[5], bitem[3], bitem[1], bitem[5]])
+	# b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb12のみ使用される
 
 # make t_jct
 con.execute("""

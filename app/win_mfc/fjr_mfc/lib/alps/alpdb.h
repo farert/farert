@@ -80,6 +80,9 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define CSTART	1
 #define CEND	2
 
+// DB ŒÅ’è’è‹`(DB•ÏX‚Ì‚È‚¢‘O’ñ‚ÌDB’l’è‹`)
+//	‘¬“xl—¶‚µSQL‚Åæ“¾‚µ‚È‚¢
+//
 #define JR_HOKKAIDO	1	
 #define JR_EAST		2	
 #define JR_CENTRAL	3	
@@ -95,6 +98,20 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define	LINE_SANYO_SINKANSEN	5	// R—zVŠ²ü
 #define	LINE_KYUSYU_SINKANSEN	6	// ‹ãBVŠ²ü
 #define	LINE_HOKKAIDO_SINKANSEN	7	// –kŠC“¹VŠ²ü
+
+
+#define CITYNO_TOKYO		1		// “Œ‹“s‹æ“à[‹æ]
+#define CITYNO_YOKOHAMA		2		// ‰¡•ls“à[•l]
+#define CITYNO_NAGOYA		3		// –¼ŒÃ‰®s“à[–¼]
+#define CITYNO_KYOUTO		4		// ‹“ss“à[‹]
+#define CITYNO_OOSAKA		5		// ‘åãs“à[ã]
+#define CITYNO_KOUBE		6		// _ŒËs“à[_]
+#define CITYNO_HIROSIMA		7		// L“‡s“à[L]
+#define CITYNO_KITAKYUSYU	8		// –k‹ãBs“à[‹ã]
+#define CITYNO_FUKUOKA		9		// •Ÿ‰ªs“à[•Ÿ]
+#define CITYNO_SENDAI		10		// å‘äs“à[å]
+#define CITYNO_SAPPORO		11		// D–ys“à[D]
+
 
 #if 0
   vector<RouteItem> æ“ª‚ÌlineId
@@ -323,6 +340,24 @@ public:
 	Node() { lineId = 0; stationId1 = 0; stationId2 = 0; }
 };
 
+class DbidOf
+{
+public:
+	DbidOf();
+	static int StationIdOf_SHINOSAKA;	// V‘åã
+	static int StationIdOf_OSAKA;    	// ‘åã
+	static int StationIdOf_KOUBE;     	// _ŒË
+	static int StationIdOf_HIMEJI;    	// •P˜H
+	static int StationIdOf_NISHIAKASHI; // ¼–¾Î
+	static int LineIdOf_TOKAIDO;       	// “ŒŠC“¹ü
+	static int LineIdOf_SANYO;        	// R—zü
+	static int LineIdOf_SANYOSHINKANSEN; // R—zVŠ²ü
+	static int LineIdOf_HAKATAMINAMISEN; // ”‘½“ìü
+
+	static int StationIdOf_KITASHINCHI; // –kV’n
+	static int StationIdOf_AMAGASAKI;	// “òè
+};
+
 class Route
 {
 	BYTE jct_mask[(MAX_JCT + 7)/ 8];	// about 40byte
@@ -333,27 +368,17 @@ private:
 	SPECIFICFLAG last_flag;	// add() - removeTail() work
 	int			 jctSpMainLineId;		// •ªŠò“Á—á:–{ü(b)
 	int			 jctSpStationId;		// •ªŠò“Á—á:•ªŠò‰w(c)
+	int			 jctSpMainLineId2;		// •ªŠò“Á—á:–{ü(b)
+	int			 jctSpStationId2;		// •ªŠò“Á—á:•ªŠò‰w(c)
 public:
 	int startStationId() 
 	{ return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId; }
 
 	int endStationId;
 
-	static int StationIdOf_SHINOSAKA;	// V‘åã
-	static int StationIdOf_OSAKA;    	// ‘åã
-	static int StationIdOf_KOUBE;     	// _ŒË
-	static int StationIdOf_HIMEJI;    	// •P˜H
-	static int StationIdOf_NISHIAKASHI; // ¼–¾Î
-	static int LineIdOf_TOKAIDO;       	// “ŒŠC“¹ü
-	static int LineIdOf_SANYO;        	// R—zü
-	static int LineIdOf_SANYOSHINKANSEN; // R—zVŠ²ü
-
-	static int StationIdOf_KITASHINCHI; // –kV’n
-	static int StationIdOf_AMAGASAKI;	// “òè
-
 	enum LINE_DIR {
-		LDIR_ASC  = 0,
-		LDIR_DESC = 1
+		LDIR_ASC  = 0,		// ‰º‚è
+		LDIR_DESC = 1		// ã‚è
 	};
 
 public:

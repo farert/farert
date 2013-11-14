@@ -1057,7 +1057,7 @@ int Calps_mfcDlg::ModifyRouteList()
 	ASSERT(rpos != m_route.routeList().crend());
 	ASSERT(rpos != m_route.routeList().crbegin());
 	if (!ri.is_equal(*rpos)) {
-		return idx;		// !!! safety >>>>>>>>>>>
+		return idx;		// safety >>>>>>>>>>>
 	}
 	
 	do {

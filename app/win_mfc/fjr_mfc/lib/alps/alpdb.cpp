@@ -22,18 +22,52 @@ using namespace std;
 ////////////////////////////////////////////
 //	static member
 
-/*static */ int Route::StationIdOf_SHINOSAKA = 0;		// V‘åã
-/*static */ int Route::StationIdOf_OSAKA = 0;    		// ‘åã
-/*static */ int Route::StationIdOf_KOUBE = 0;     		// _ŒË
-/*static */ int Route::StationIdOf_HIMEJI = 0;    		// •P˜H
-/*static */ int Route::StationIdOf_NISHIAKASHI = 0;    	// ¼–¾Î
-/*static */ int Route::LineIdOf_TOKAIDO = 0;       		// “ŒŠC“¹ü
-/*static */ int Route::LineIdOf_SANYO = 0;        		// R—zü
-/*static */ int Route::LineIdOf_SANYOSHINKANSEN = 0; 	// R—zVŠ²ü
+/*static */ int DbidOf::StationIdOf_SHINOSAKA = 0;		// V‘åã
+/*static */ int DbidOf::StationIdOf_OSAKA = 0;    		// ‘åã
+/*static */ int DbidOf::StationIdOf_KOUBE = 0;     		// _ŒË
+/*static */ int DbidOf::StationIdOf_HIMEJI = 0;    		// •P˜H
+/*static */ int DbidOf::StationIdOf_NISHIAKASHI = 0;    // ¼–¾Î
+/*static */ int DbidOf::LineIdOf_TOKAIDO = 0;       	// “ŒŠC“¹ü
+/*static */ int DbidOf::LineIdOf_SANYO = 0;        		// R—zü
+/*static */ int DbidOf::LineIdOf_SANYOSHINKANSEN = 0; 	// R—zVŠ²ü
+/*static */ int DbidOf::LineIdOf_HAKATAMINAMISEN = 0; 	// ”‘½“ìü
 
-/*static */ int Route::StationIdOf_KITASHINCHI = 0;  	// –kV’n
-/*static */ int Route::StationIdOf_AMAGASAKI = 0;  		// “òè
+/*static */ int DbidOf::StationIdOf_KITASHINCHI = 0;  	// –kV’n
+/*static */ int DbidOf::StationIdOf_AMAGASAKI = 0;  	// “òè
 
+
+////////////////////////////////////////////
+//	DbidOf
+//
+DbidOf::DbidOf()
+{
+	if (!DbidOf::StationIdOf_SHINOSAKA) {	/* ‘Oˆ— ƒLƒƒƒbƒVƒ…ˆ— */
+		DbidOf::StationIdOf_SHINOSAKA 	 = Route::GetStationId(_T("V‘åã"));
+		DbidOf::StationIdOf_OSAKA 		 = Route::GetStationId(_T("‘åã"));
+		DbidOf::StationIdOf_KOUBE 		 = Route::GetStationId(_T("_ŒË"));
+		DbidOf::StationIdOf_HIMEJI 		 = Route::GetStationId(_T("•P˜H"));
+		DbidOf::StationIdOf_NISHIAKASHI  = Route::GetStationId(_T("¼–¾Î"));
+		DbidOf::LineIdOf_TOKAIDO 		 = Route::GetLineId(_T("“ŒŠC“¹ü"));
+		DbidOf::LineIdOf_SANYO 			 = Route::GetLineId(_T("R—zü"));
+		DbidOf::LineIdOf_SANYOSHINKANSEN = Route::GetLineId(_T("R—zVŠ²ü"));
+		DbidOf::LineIdOf_HAKATAMINAMISEN = Route::GetLineId(_T("”‘½“ìü"));
+
+		DbidOf::StationIdOf_KITASHINCHI = Route::GetStationId(_T("–kV’n"));
+		DbidOf::StationIdOf_AMAGASAKI = Route::GetStationId(_T("“òè"));
+	}
+	ASSERT(0 < DbidOf::StationIdOf_SHINOSAKA);
+	ASSERT(0 < DbidOf::StationIdOf_OSAKA);
+	ASSERT(0 < DbidOf::StationIdOf_KOUBE);
+	ASSERT(0 < DbidOf::StationIdOf_HIMEJI);
+	ASSERT(0 < DbidOf::StationIdOf_NISHIAKASHI);
+	ASSERT(0 < DbidOf::LineIdOf_TOKAIDO);
+	ASSERT(0 < DbidOf::LineIdOf_SANYO);
+	ASSERT(0 < DbidOf::LineIdOf_SANYOSHINKANSEN);
+	ASSERT(0 < DbidOf::LineIdOf_HAKATAMINAMISEN);
+
+	ASSERT(0 < DbidOf::StationIdOf_KITASHINCHI);
+	ASSERT(0 < DbidOf::StationIdOf_AMAGASAKI);
+}
 
 ////////////////////////////////////////////
 //	RouteItem
@@ -330,6 +364,7 @@ tstring Route::GetKanaFromStationId(int stationId)
 //
 //	@param [in] stationId   ‰wident
 //	@return DBƒNƒGƒŠŒ‹‰ÊƒIƒuƒWƒFƒNƒg(˜Hü)
+//	@return field0(text):˜Hü–¼, field1(int):˜Hüid, field2(int):lflg(bit31‚Ì‚İ)
 //
 DBO Route::Enum_line_of_stationId(int stationId)
 {
@@ -358,12 +393,21 @@ DBO Route::Enum_line_of_stationId(int stationId)
 DBO Route::Enum_junction_of_lineId(int lineId, int stationId)
 {
 	static const  char tsql[] =
+#if 1	// •ªŠò“Á—á‚Ì‚İ‚ÌæŠ·‰w(RŒ`‚Æ‚©)‚ğŠÜ‚Ş
+"select t.name, station_id, sflg&(1<<12)"
+" from t_lines l left join t_station t on t.rowid=l.station_id"
+" where line_id=?1 and (lflg&(1<<22))=0 and"
+" exists (select * from t_lines where line_id!=?1 and l.station_id=station_id)"
+" or station_id=?2 order by l.sales_km";
+#else
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
 " where line_id=?1 and ((lflg & (1<<12))<>0 or station_id=?2)"
 //" and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0"
 " and (lflg&(1<<22))=0"
 " order by l.sales_km";
+#endif
+
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	dbo.setParam(1, lineId);
@@ -721,22 +765,39 @@ int Route::add(int line_id, int stationId2)
 	//}
 	if (stationId1 == stationId2) {
 		TRACE(_T("iregal parameter by same station_id.\n"));
-		return -1;		// E-11 >>>>>>>>>>>>>>>>>>
+		TRACE(_T("add_abort\n"));
+		return -1;		// E-112 >>>>>>>>>>>>>>>>>>
 	}
 	
 	// …•½Œ^ŒŸ’m
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP)) {
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
 		if (Route::IsAbreastShinkansen(route_list_raw.at(num - 1).lineId, line_id, stationId1, stationId2)) {
-			// line_id‚Í•Àsİ—ˆü
+			// 	line_id‚ÍVŠ²ü
+			//	route_list_raw.at(num - 1).lineId‚Í•Àsİ—ˆü
+			// 
+			ASSERT(IS_SHINKANSEN_LINE(line_id));
 			if (0 != Route::InStation(route_list_raw.at(num - 2).stationId, line_id, stationId1, stationId2)) {
 				TRACE("JCT: D-2\n");
-				i = route_list_raw.at(num - 1).lineId;
-				j = Route::NextShinkansenTransferTerm(line_id, route_list_raw.at(num - 1).stationId, stationId2);
-				removeTail();
-				rc = add(i, j);		//****************
-				ASSERT(rc == 1);
-				stationId1 = j;
+				i = route_list_raw.at(num - 1).lineId;	// •Àsİ—ˆü
+				j = Route::NextShinkansenTransferTerm(line_id, stationId1, stationId2);
+				if (j <= 0) {	// —×‰w‚ª‚È‚¢ê‡
+					// VŠ²ü‚Ì”­‰w‚É‚Í•Àsİ—ˆü(˜Hüb)‚ÉŠ‘®‚µ‚Ä‚¢‚é‚©?
+					if (0 == Route::InStationOnLine(jctSpMainLineId, stationId2)) {
+						TRACE(_T("prev station is not found in shinkansen.\n"));
+						TRACE(_T("add_abort\n"));
+						return -1;			// >>>>>>>>>>>>>>>>>>>
+					} else {
+						removeTail();
+						stationId1 = route_list_raw.back().stationId;
+						line_id = jctSpMainLineId;
+					}
+				} else {
+					removeTail();
+					rc = add(i, j);		//****************
+					ASSERT(rc == 1);
+					stationId1 = j;
+				}
 				BIT_ON(last_flag, 6);
 			} else {
 				TRACE("JCT: B-2\n");
@@ -753,23 +814,26 @@ int Route::add(int line_id, int stationId2)
 		retrieveJunctionSpecific(line_id, stationId1); // update jctSpMainLineId(b), jctSpStation(c)
 		if (stationId2 != jctSpStationId) {
 			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
-				if (0 < Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, route_list_raw.at(num - 1).stationId)) {
+				ASSERT(stationId1 == route_list_raw.at(num - 1).stationId);
+				if (0 < Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, stationId1)) {
 					TRACE("JCT: C-1\n");
-					routePassOff(jctSpMainLineId, jctSpStationId, route_list_raw.at(num - 1).stationId);	// C-1
+					routePassOff(jctSpMainLineId, jctSpStationId, stationId1);	// C-1
 				} else { // A-1
 					TRACE("JCT: A-1\n");
 				}
 				if ((2 <= num) && (jctSpStationId == route_list_raw.at(num - 2).stationId)) {
 					removeTail();
-					TRACE(_T("JCT: ‰–K\n"));		// 3, 4, 8, 9, g,h
+					TRACE(_T("JCT: A-C\n"));		// 3, 4, 8, 9, g,h
 					--num;
+				} else {
+					route_list_raw.at(num - 1).stationId = jctSpStationId;
+					route_list_raw.at(num - 1).flag = Route::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, jctSpStationId) & MASK_ROUTE_FLAG;
 				}
-				route_list_raw.at(num - 1).stationId = jctSpStationId;
-				route_list_raw.at(num - 1).flag = Route::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, jctSpStationId) & MASK_ROUTE_FLAG;
 				stationId1 = jctSpStationId;
 			} else {
-				if ((num < 2) || !Route::IsAbreastShinkansen(jctSpMainLineId, route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId)
-					|| (Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, route_list_raw.at(num - 1).stationId) <= 0)) {
+				if ((num < 2) || 
+				!Route::IsAbreastShinkansen(jctSpMainLineId, route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId)
+				|| (Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, stationId1) <= 0)) {
 					// A-0, I, A-2
 					TRACE("JCT: A-0, I, A-2\n");	//***************
 					rc = add(jctSpMainLineId, /*route_list_raw.at(num - 1).stationId,*/ jctSpStationId);
@@ -778,12 +842,27 @@ int Route::add(int line_id, int stationId2)
 				} else {
 					// C-2
 					TRACE("JCT: C-2\n");
+					ASSERT(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId));
 					routePassOff(jctSpMainLineId, jctSpStationId, stationId1);
-					i = Route::NextShinkansenTransferTerm(route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 1).stationId, route_list_raw.at(num - 2).stationId);
-					route_list_raw.at(num - 1).stationId = i;
-					route_list_raw.at(num - 1).flag = Route::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, i) & MASK_ROUTE_FLAG;
-					route_list_raw.push_back(RouteItem(jctSpMainLineId, jctSpStationId));
-					stationId1 = jctSpStationId;
+					i = Route::NextShinkansenTransferTerm(route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId);
+					if (i <= 0) {	// —×‰w‚ª‚È‚¢ê‡
+						// VŠ²ü‚Ì”­‰w‚É‚Í•Àsİ—ˆü(˜Hüb)‚ÉŠ‘®‚µ‚Ä‚¢‚é‚©?
+						if (0 == Route::InStationOnLine(jctSpMainLineId, route_list_raw.at(num - 2).stationId)) {
+							TRACE(_T("next station is not found in shinkansen.\n"));
+							TRACE(_T("add_abort\n"));
+							return -1;			// >>>>>>>>>>>>>>>>>>>
+						} else {
+							removeTail();
+							rc = add(jctSpMainLineId, jctSpStationId);
+							ASSERT(rc == 1);
+							stationId1 = jctSpStationId;
+						}
+					} else {
+						route_list_raw.at(num - 1).stationId = i;
+						route_list_raw.at(num - 1).flag = Route::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, i) & MASK_ROUTE_FLAG;
+						route_list_raw.push_back(RouteItem(jctSpMainLineId, jctSpStationId));
+						stationId1 = jctSpStationId;
+					}
 				}
 			}
 			BIT_ON(last_flag, 6);
@@ -793,6 +872,7 @@ int Route::add(int line_id, int stationId2)
 			line_id = jctSpMainLineId;
 			
 			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
+				// E-3 , B-0, 5, 6, b, c, d, e
 				// E-0, E-1, E-1a, 6, b, c, d, e
 				replace_flg = true;
 			} else {
@@ -803,7 +883,6 @@ int Route::add(int line_id, int stationId2)
 	}
 	if (BIT_CHK(lflg2, BSRJCTSP)) {
 		// …•½Œ^
-	
 			// a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
 		retrieveJunctionSpecific(line_id, stationId2);
 		if (stationId1 == jctSpStationId) {
@@ -813,6 +892,8 @@ int Route::add(int line_id, int stationId2)
 			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
 				replace_flg = true;
 				TRACE("JCT: F1, H, E11-14\n");
+			} else {
+				jct_flg_on = true;	// f3b
 			}
 		} else {
 			// J, B, D
@@ -820,6 +901,8 @@ int Route::add(int line_id, int stationId2)
 			rc = add(line_id, /*stationId1,*/ jctSpStationId);	//**************
 			if (rc != 1) {
 				BIT_ON(last_flag, 6);
+				TRACE(_T("junction special horizen type convert error.\n"));
+				TRACE(_T("add_abort\n"));
 				return rc;			// >>>>>>>>>>>>>>>>>>>>>
 			}
 			line_id = jctSpMainLineId;
@@ -832,6 +915,7 @@ int Route::add(int line_id, int stationId2)
 	DBO dbo = Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
 	if (!dbo.isvalid()) {
 		TRACE(_T("DB error(add-junction-enum)\n"));
+		TRACE(_T("add_abort\n"));
 		return -100;		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 
@@ -869,13 +953,14 @@ int Route::add(int line_id, int stationId2)
 	} else {	// •œæ
 		if ((jnum - 1) == i) { /* last */
 			if ((!STATION_IS_JUNCTION(stationId2)) ||
-				/*BIT_CHK(lflg1, BSRJCTSP) || */ BIT_CHK(lflg2, BSRJCTSP) ||	// E-12
-				BIT_CHK(route_list_raw.back().flag, BSRJCTSP) ||				// E-14
-				((2 <= route_list_raw.size()) && (start_station_id != stationId2) && 
-				 (0 != Route::InStation(start_station_id, line_id, stationId1, stationId2))) ||
-				(((0 < endStationId) && (endStationId != stationId2) && (2 <= route_list_raw.size())) &&
-				(0 != Route::InStation(endStationId, line_id, stationId1, stationId2))) ||
-				(0 < junctionStationExistsInRoute(stationId2))) {
+			((2 <= num) && (start_station_id != stationId2) && 
+			 (0 != Route::InStation(start_station_id, line_id, stationId1, stationId2))) ||
+			(((0 < endStationId) && (endStationId != stationId2) && (2 <= num)) &&
+			(0 != Route::InStation(endStationId, line_id, stationId1, stationId2))) ||
+			// /*BIT_CHK(lflg1, BSRJCTSP) || */ BIT_CHK(lflg2, BSRJCTSP) ||	// E-12
+			// BIT_CHK(route_list_raw.back().flag, BSRJCTSP) ||				// E-14
+			// (0 < junctionStationExistsInRoute(stationId2)) ||
+			((2 <= num) && (0 < Route::InStation(stationId2, line_id, route_list_raw.at(num - 2).stationId, stationId1)))) {
 				rc = -1;	/* <k> <e> <r> <x> <u> <m> */
 			} else  {
 				rc = 1;		/* <b> <j> <h> */
@@ -907,6 +992,8 @@ int Route::add(int line_id, int stationId2)
 	}
 	if (jct_flg_on) {
 		lflg2 |= MASK(BSRJCTSP);	// …•½Œ^ŒŸ’m(D-2)
+	} else {
+		lflg2 &= ~MASK(BSRJCTSP);
 	}
 	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 	++num;
@@ -1428,7 +1515,10 @@ int Route::GetLineId(LPCTSTR lineName)
 void Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
 {
 	const char tsql[] =
-	"select calc_km>>16, calc_km&65535 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
+	//"select calc_km>>16, calc_km&65535, (lflg>>16)&32767, lflg&32767 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
+	"select jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
+	" from t_jctspcl where id=("
+	"	select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
@@ -1437,6 +1527,8 @@ void Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
 		if (dbo.moveNext()) {
 			jctSpMainLineId = dbo.getInt(0);
 			jctSpStationId = dbo.getInt(1);
+			jctSpMainLineId2 = dbo.getInt(2);
+			jctSpStationId2 = dbo.getInt(3);
 		}
 	}
 }
@@ -1696,7 +1788,7 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 " select station_id, lflg"
 " from t_lines"
 " where line_id=?1"
-" and (lflg&(1<<31))=0"
+" and (lflg&((1<<31)|(1<<29)))=(1<<29)"
 " and station_id"
 " in (select station_id"
 "      from t_lines"
@@ -1716,7 +1808,7 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 "      and (sales_km>=(select sales_km"
 "                  from t_lines"
 "                  where line_id=?1"
-"                  and station_id=?3))))) and (lflg&(1<<29))!=0"
+"                  and station_id=?3)))))"
 " order by"
 " case when"
 " (select sales_km from t_lines where line_id=?1 and station_id=?3) <"
@@ -2117,7 +2209,7 @@ int Route::InCityStation(int cityno, int lineId, int stationId1, int stationId2)
 "select count(*)"
 "	from t_lines"
 "	where line_id=?1"
-"	and (lflg&(1<<31))=0 and (lflg&15)=?4"
+"	and (lflg&2147483663)=?4"
 "	and sales_km>="
 "			(select min(sales_km)"
 "			from t_lines"
@@ -2130,7 +2222,7 @@ int Route::InCityStation(int cityno, int lineId, int stationId1, int stationId2)
 "			where line_id=?1"
 "			and (station_id=?2 or "
 "				 station_id=?3))";
-
+//2147483663 = 0x8000000f = (lflg&(1<<31) = 0 and (lflg&15)=?4) 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, lineId);
@@ -2182,6 +2274,7 @@ int Route::InCityStation(int cityno, int lineId, int stationId1, int stationId2)
 //
 int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, Station* entr, PAIRIDENT* cityId_pair)
 {
+	DbidOf dbid;
 	vector<RouteItem>::const_iterator fite;
 	vector<RouteItem>::const_reverse_iterator rite;
 	int city_no_s;
@@ -2199,13 +2292,21 @@ int Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, 
 		return 0;	/* empty */
 	}
 	city_no_s = MASK_CITYNO(fite->flag);
-
+	// ”­‰w‚ª“òè‚Ìê‡‘åãs“à”­‚Å‚Í‚È‚¢@Šî153-2
+	if ((city_no_s == CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == fite->stationId)) {
+		city_no_s = 0;
+	}
+	
 	rite = in_route_list.crbegin();
 	if (rite == in_route_list.crend()) {
 		ASSERT(FALSE);
 		return 0;	/* fatal error */
 	}
 	city_no_e = MASK_CITYNO(rite->flag);
+	// ’…‰w‚ª“òè‚Ìê‡‘åãs“à’…‚Å‚Í‚È‚¢@Šî153-2
+	if ((city_no_e == CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == rite->stationId)) {
+		city_no_e = 0;
+	}
 
 	*cityId_pair = MAKEPAIR(city_no_s, city_no_e);
 
@@ -2925,88 +3026,77 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 //
 int Route::CheckOfRule88j(vector<RouteItem> *route)
 {
+	DbidOf	dbid;
 	int lastIndex;
 	static int chk_distance1 = 0;
 	static int chk_distance2 = 0;
 	
 	lastIndex = route->size() - 1;
 
-	if (!StationIdOf_SHINOSAKA) {	/* ‘Oˆ— ƒLƒƒƒbƒVƒ…ˆ— */
-		StationIdOf_SHINOSAKA = Route::GetStationId(_T("V‘åã"));
-		if (!StationIdOf_OSAKA) {
-			StationIdOf_OSAKA = Route::GetStationId(_T("‘åã"));
-		}
-		StationIdOf_KOUBE = Route::GetStationId(_T("_ŒË"));
-		StationIdOf_HIMEJI = Route::GetStationId(_T("•P˜H"));
-		StationIdOf_NISHIAKASHI = Route::GetStationId(_T("¼–¾Î"));
-		LineIdOf_TOKAIDO = Route::GetLineId(_T("“ŒŠC“¹ü"));
-		LineIdOf_SANYO = Route::GetLineId(_T("R—zü"));
-		LineIdOf_SANYOSHINKANSEN = Route::GetLineId(_T("R—zVŠ²ü"));
-	}
 	if (!chk_distance1) {	/* chk_distance: R—zü _ŒË-•P˜HŠÔ‰c‹ÆƒLƒ, VŠ²ü V‘åã-•P˜H */
-		chk_distance1 = Route::GetDistance(LineIdOf_SANYO, StationIdOf_KOUBE, StationIdOf_HIMEJI)[0];
-		chk_distance2 = Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, StationIdOf_HIMEJI)[0];
+		chk_distance1 = Route::GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, dbid.StationIdOf_HIMEJI)[0];
+		chk_distance2 = Route::GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, dbid.StationIdOf_HIMEJI)[0];
 	}
 
 	if (2 <= lastIndex) {
 		    // V‘åã ”­ “ŒŠC“¹ü - R—zü
-		if ((route->front().stationId == StationIdOf_SHINOSAKA) && 
-			(route->at(1).lineId == LineIdOf_TOKAIDO) &&
-		    (route->at(2).lineId == LineIdOf_SANYO) &&
-		    (chk_distance1 <= Route::GetDistance(LineIdOf_SANYO, StationIdOf_KOUBE, route->at(2).stationId)[0])) {
+		if ((route->front().stationId == dbid.StationIdOf_SHINOSAKA) && 
+			(route->at(1).lineId == dbid.LineIdOf_TOKAIDO) &&
+		    (route->at(2).lineId == dbid.LineIdOf_SANYO) &&
+		    (chk_distance1 <= Route::GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, route->at(2).stationId)[0])) {
 
-			ASSERT(route->at(1).stationId == StationIdOf_KOUBE);
+			ASSERT(route->at(1).stationId == dbid.StationIdOf_KOUBE);
 			/*	V‘åã”­“ŒŠC“¹ü-R—zü-•P˜HˆÈ‰“‚È‚ç”­‰w‚ğV‘åã->‘åã‚Ö */
-			route->front() = RouteItem(0, StationIdOf_OSAKA);	// V‘åã->‘åã
+			route->front() = RouteItem(0, dbid.StationIdOf_OSAKA);	// V‘åã->‘åã
 
 			return 1;
 		}	// V‘åã ’… R—zü - “ŒŠC“¹ü
-		else if ((route->back().stationId == StationIdOf_SHINOSAKA) && 
-				 (route->back().lineId == LineIdOf_TOKAIDO) &&
-				 (route->at(lastIndex - 1).lineId == LineIdOf_SANYO) &&
-		    	 (chk_distance1 <= Route::GetDistance(LineIdOf_SANYO, StationIdOf_KOUBE, route->at(lastIndex - 2).stationId)[0])) {
+		else if ((route->back().stationId == dbid.StationIdOf_SHINOSAKA) && 
+				 (route->back().lineId == dbid.LineIdOf_TOKAIDO) &&
+				 (route->at(lastIndex - 1).lineId == dbid.LineIdOf_SANYO) &&
+		    	 (chk_distance1 <= Route::GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, route->at(lastIndex - 2).stationId)[0])) {
 
-			ASSERT(route->at(lastIndex - 1).stationId == StationIdOf_KOUBE);
+			ASSERT(route->at(lastIndex - 1).stationId == dbid.StationIdOf_KOUBE);
 			/*	V‘åã’…“ŒŠC“¹ü-R—zü-•P˜HˆÈ‰“‚È‚ç’…‰w‚ğV‘åã->‘åã‚Ö */
-			route->back() = RouteItem(LineIdOf_TOKAIDO, StationIdOf_OSAKA);	// V‘åã->‘åã
+			route->back() = RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_OSAKA);	// V‘åã->‘åã
 
 			return 2;
 		}
 		    // ‘åã ”­ V‘åã Œo—R R—zVŠ²ü
-		if ((route->front().stationId == StationIdOf_OSAKA) && 
-			(route->at(2).lineId == LineIdOf_SANYOSHINKANSEN) &&
-			(route->at(1).stationId == StationIdOf_SHINOSAKA) &&
-			(chk_distance2 <= Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, route->at(2).stationId)[0])) {
+		if ((route->front().stationId == dbid.StationIdOf_OSAKA) && 
+			(route->at(2).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
+			(route->at(1).stationId == dbid.StationIdOf_SHINOSAKA) &&
+			(chk_distance2 <= Route::GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route->at(2).stationId)[0])) {
 
-			ASSERT(route->at(1).lineId == LineIdOf_TOKAIDO);
+			ASSERT(route->at(1).lineId == dbid.LineIdOf_TOKAIDO);
 
 			/* ‘åã”­-“ŒŠC“¹üã‚è-V‘åã-R—zVŠ²ü •P˜HˆÈ‰“‚Ìê‡A‘åã”­-“ŒŠC“¹ü-R—zü ¼–¾ÎŒo—R‚É•t‚¯‘Ö‚¦‚é */
 			
-			route->at(1) = RouteItem(LineIdOf_TOKAIDO, StationIdOf_KOUBE);
+			route->at(1) = RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_KOUBE);
 			route->at(1).flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			vector<RouteItem>::iterator ite = route->begin();
 			ite += 2;	// at(2)						// R—zü-¼–¾Î
-			ite = route->insert(ite, RouteItem(LineIdOf_SANYO, StationIdOf_NISHIAKASHI));
+			ite = route->insert(ite, RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_NISHIAKASHI));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			return 1;
 		}	// R—zVŠ²ü V‘åã Œo—R ‘åã ’…
-		else if ((route->back().stationId == StationIdOf_OSAKA) && 
-				 (route->at(lastIndex - 1).stationId == StationIdOf_SHINOSAKA) &&
-				 (route->at(lastIndex - 1).lineId == LineIdOf_SANYOSHINKANSEN) &&
-				 (chk_distance2 <= Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, route->at(lastIndex - 2).stationId)[0])) {
+		else if ((route->back().stationId == dbid.StationIdOf_OSAKA) && 
+				 (route->at(lastIndex - 1).stationId == dbid.StationIdOf_SHINOSAKA) &&
+				 (route->at(lastIndex - 1).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
+				 (chk_distance2 <= Route::GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route->at(lastIndex - 2).stationId)[0])) {
 
-			ASSERT((route->back().lineId == LineIdOf_TOKAIDO));
+			ASSERT((route->back().lineId == dbid.LineIdOf_TOKAIDO));
 
 			/* R—zVŠ²ü •P˜HˆÈ‰“`V‘åãæŠ·“ŒŠC“¹ü-‘åã’…‚Ìê‡AÅŒã‚Ì“ŒŠC“¹ü-‘åã ‚ğ¼–¾Î R—züA“ŒŠC“¹ü‚É•t‚¯‘Ö‚¦‚é */
 
-			route->at(lastIndex - 1) = RouteItem(LineIdOf_SANYOSHINKANSEN, StationIdOf_NISHIAKASHI);	// V‘åã->¼–¾Î
+			route->at(lastIndex - 1) = RouteItem(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_NISHIAKASHI);	// V‘åã->¼–¾Î
 			route->at(lastIndex - 1).flag |= FLG_HIDE_STATION;
 			route->at(lastIndex).flag |= FLG_HIDE_LINE;	// “ŒŠC“¹ü ”ñ•\¦
 			vector<RouteItem>::iterator ite = route->end();
 			ite--;
-			ite = route->insert(ite, RouteItem(LineIdOf_SANYO, StationIdOf_KOUBE));
+			ite = route->insert(ite, RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			return 2;
@@ -3014,37 +3104,37 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 	}
 	if (1 <= lastIndex) {
 		    // V‘åã ”­ R—zVŠ²ü
-		if ((route->front().stationId == StationIdOf_SHINOSAKA) && 
-			(route->at(1).lineId == LineIdOf_SANYOSHINKANSEN) &&
-			(chk_distance2 <= Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, route->at(1).stationId)[0])) {
+		if ((route->front().stationId == dbid.StationIdOf_SHINOSAKA) && 
+			(route->at(1).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
+			(chk_distance2 <= Route::GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route->at(1).stationId)[0])) {
 
 			/* ‘åã”­-“ŒŠC“¹üã‚è-V‘åã-R—zVŠ²ü •P˜HˆÈ‰“‚Ìê‡A‘åã”­-“ŒŠC“¹ü-R—zü ¼–¾ÎŒo—R‚É•t‚¯‘Ö‚¦‚é */
 			
 			vector<RouteItem>::iterator ite = route->begin();
-			*ite = RouteItem(0, StationIdOf_OSAKA);
+			*ite = RouteItem(0, dbid.StationIdOf_OSAKA);
 			ite++;
-			ite = route->insert(ite, RouteItem(LineIdOf_SANYO, StationIdOf_NISHIAKASHI));
+			ite = route->insert(ite, RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_NISHIAKASHI));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
-			ite = route->insert(ite, RouteItem(LineIdOf_TOKAIDO, StationIdOf_KOUBE));
+			ite = route->insert(ite, RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_KOUBE));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			return 1;
 
 		}	// R—zVŠ²ü ‘åã ’…
-		else if ((route->back().stationId == StationIdOf_SHINOSAKA) && 
-				 (route->back().lineId == LineIdOf_SANYOSHINKANSEN) &&
-				 (chk_distance2 <= Route::GetDistance(LineIdOf_SANYOSHINKANSEN, StationIdOf_SHINOSAKA, route->at(lastIndex - 1).stationId)[0])) {
+		else if ((route->back().stationId == dbid.StationIdOf_SHINOSAKA) && 
+				 (route->back().lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
+				 (chk_distance2 <= Route::GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route->at(lastIndex - 1).stationId)[0])) {
 
 			/* R—zVŠ²ü •P˜HˆÈ‰“`V‘åãæŠ·“ŒŠC“¹ü-‘åã’…‚Ìê‡AÅŒã‚Ì“ŒŠC“¹ü-‘åã ‚ğ¼–¾Î R—züA“ŒŠC“¹ü‚É•t‚¯‘Ö‚¦‚é */
 
-			route->back() = RouteItem(LineIdOf_SANYOSHINKANSEN, StationIdOf_NISHIAKASHI);	// V‘åã->¼–¾Î
+			route->back() = RouteItem(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_NISHIAKASHI);	// V‘åã->¼–¾Î
 			route->back().flag |= FLG_HIDE_STATION;
 
-			route->push_back(RouteItem(LineIdOf_SANYO, StationIdOf_KOUBE));	// add R—zü-_ŒË
+			route->push_back(RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE));	// add R—zü-_ŒË
 			route->back().flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
-			route->push_back(RouteItem(LineIdOf_TOKAIDO, StationIdOf_OSAKA));	// add “ŒŠC“¹ü-‘åã
+			route->push_back(RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_OSAKA));	// add “ŒŠC“¹ü-‘åã
 			route->back().flag |= FLG_HIDE_LINE;
 
 			return 2;
@@ -3068,6 +3158,7 @@ int Route::CheckOfRule88j(vector<RouteItem> *route)
 //
 int Route::CheckOfRule89j(const vector<RouteItem>& route)
 {
+	DbidOf dbid;
 	int lastIndex;
 	static int distance = 0;
 	
@@ -3075,31 +3166,29 @@ int Route::CheckOfRule89j(const vector<RouteItem>& route)
 	if (lastIndex < 2) {
 		return 0;
 	}
-	if (!StationIdOf_OSAKA) {
-		StationIdOf_OSAKA = Route::GetStationId(_T("‘åã"));
-	}
-	if (!StationIdOf_KITASHINCHI) {
-		StationIdOf_KITASHINCHI = Route::GetStationId(_T("–kV’n"));
-		StationIdOf_HIMEJI = Route::GetStationId(_T("“òè"));
-	}
 
-	if ((route.front().stationId == StationIdOf_KITASHINCHI) && 
-		(route.at(1).stationId == StationIdOf_AMAGASAKI)) {
+				// –kV’n”­
+	if (((route.front().stationId == dbid.StationIdOf_KITASHINCHI) && 
+		(route.at(1).stationId == dbid.StationIdOf_AMAGASAKI)) && 
+		((lastIndex <= 1) || (route.at(2).lineId != dbid.LineIdOf_TOKAIDO) || 
+			(LDIR_ASC == Route::DirLine(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_AMAGASAKI, route.at(2).stationId)))) {
 		/* –kV’n-(JR“Œ¼ü)-“òè ‚Ìê‡A”­‰wi–kV’nj‚ğ‘åã‚É */
-		// route.front().stationId = StationIdOf_OSAKA;
+		// route.front().stationId = dbid.StationIdOf_OSAKA;
 		if (distance == 0) {
-			distance = Route::GetDistance(LineIdOf_SANYO,   StationIdOf_OSAKA, StationIdOf_AMAGASAKI)[0] -
-					   Route::GetDistance(route.at(1).lineId, StationIdOf_AMAGASAKI, StationIdOf_KITASHINCHI)[0];
+			distance = Route::GetDistance(dbid.LineIdOf_TOKAIDO,   dbid.StationIdOf_OSAKA, dbid.StationIdOf_AMAGASAKI)[0] -
+					   Route::GetDistance(route.at(1).lineId, dbid.StationIdOf_AMAGASAKI, dbid.StationIdOf_KITASHINCHI)[0];
 		}
 		ASSERT(distance < 0);
 		return distance;
-	}
-	else if ((route.back().stationId == StationIdOf_KITASHINCHI) && 
-			 (route.at(lastIndex - 1).stationId == StationIdOf_AMAGASAKI)) {
-		//route.back().stationId = StationIdOf_OSAKA;
+	}			// –kV’nI’…
+	else if (((route.back().stationId == dbid.StationIdOf_KITASHINCHI) && 
+			 (route.at(lastIndex - 1).stationId == dbid.StationIdOf_AMAGASAKI)) && 
+			 ((lastIndex <= 1) || (route.at(lastIndex - 1).lineId != dbid.LineIdOf_TOKAIDO) || 
+		(LDIR_DESC == Route::DirLine(dbid.LineIdOf_TOKAIDO, route.at(lastIndex - 2).stationId, dbid.StationIdOf_AMAGASAKI)))) {
+		//route.back().stationId = dbid.StationIdOf_OSAKA;
 		if (distance == 0) {
-			distance = Route::GetDistance(LineIdOf_SANYO,   StationIdOf_OSAKA, StationIdOf_AMAGASAKI)[0] -
-					   Route::GetDistance(route.back().lineId, StationIdOf_AMAGASAKI, StationIdOf_KITASHINCHI)[0];
+			distance = Route::GetDistance(dbid.LineIdOf_TOKAIDO,   dbid.StationIdOf_OSAKA, dbid.StationIdOf_AMAGASAKI)[0] -
+					   Route::GetDistance(route.back().lineId, dbid.StationIdOf_AMAGASAKI, dbid.StationIdOf_KITASHINCHI)[0];
 		}
 		ASSERT(distance < 0);
 		return distance;
@@ -3368,7 +3457,8 @@ const char tsql2[] = "select line_id from t_hzline where line_id>0 and rowid in 
 int Route::GetHZLine(int line_id, int station_id)
 {
 	const static char tsql[] =
-"select line_id from t_hzline where rowid=(select (lflg>>13)&15 from t_lines where line_id=?1 and station_id=?2)";
+"select line_id from t_hzline where rowid="
+"(select (lflg>>13)&15 from t_lines where line_id=?1 and station_id=?2)";
 
 	DBO dbo(DBS::getInstance()->compileSql(tsql));
 
@@ -3419,9 +3509,10 @@ bool Route::CheckTransferShinkansen(int line_id1, int line_id2, int station_id1,
 	}
 	hzl = Route::GetHZLine(bullet_line, station_id2);
 	if (hzl == 0x0fff) {
+		// •Àsİ—ˆüŒËĞ‚ªØ‚è‘Ö‚í‚é(ã‰zü ‚è)
 		hzl = Route::NextShinkansenTransferTerm(bullet_line, station_id2, 
 								(bullet_line == line_id2) ? station_id2 : station_id1);
-		if (local_line != hzl) {
+		if (local_line != Route::GetHZLine(bullet_line, hzl)) {
 			return true;
 		}
 	} else if (hzl != local_line) {
@@ -3449,7 +3540,7 @@ bool Route::CheckTransferShinkansen(int line_id1, int line_id2, int station_id1,
 //	@param [in] station_id1  ‰w1
 //	@param [in] station_id2  ‰w2(•ûŒü)
 //
-//	@return ‰wid
+//	@return ‰wid 0‚ğ•Ô‚µ‚½ê‡A—×‰w‚Í‰w2‚Ü‚½‚Í‚»‚ê‚æ‚èæ‚Ì‰w
 //
 int Route::NextShinkansenTransferTerm(int line_id, int station_id1, int station_id2)
 {
@@ -3458,9 +3549,15 @@ int Route::NextShinkansenTransferTerm(int line_id, int station_id1, int station_
 	" case when"
 	"(select sales_km from t_lines where line_id=?1 and station_id=?3)<"
 	"(select sales_km from t_lines where line_id=?1 and station_id=?2) then"
-	" sales_km=(select max(sales_km) from t_lines where line_id=?1 and ((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2))"
+	" sales_km=(select max(sales_km) from t_lines where line_id=?1 and"
+	"	((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and"
+	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
+	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?3))"
 	" else"
-	" sales_km=(select min(sales_km) from t_lines where line_id=?1 and ((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2))"
+	" sales_km=(select min(sales_km) from t_lines where line_id=?1 and"
+	"	((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and"
+	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
+	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?3))"
 	" end";
 
 	DBO dbo(DBS::getInstance()->compileSql(tsql));
@@ -3836,7 +3933,7 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 0
 "	(select max(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
 "	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 1
-"	case when exists (select * from t_lines	where line_id=?1 and (lflg&(1<<21)!=0) and station_id=?2)"
+"	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21) and station_id=?2)"
 "	then -1 else"
 "	abs((select sales_km from t_lines"
 "	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21)"
@@ -3844,7 +3941,7 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// 2
 "	case when exists (select * from t_lines"
-"	where line_id=?1 and (lflg&(1<<21)!=0) and station_id=?3)"
+"	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21) and station_id=?3)"
 "	then -1 else"
 "	abs((select calc_km from t_lines"
 "	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21)"
@@ -3855,6 +3952,8 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	((select 2147483648*(1&(lflg>>23)) from t_lines where line_id=?1 and station_id=?3) + "
 "	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
 , true);
+//	2147483648 = 0x80000000
+	DbidOf dbid;
 
 	if (ctx.isvalid()) {
 		ctx.setParam(1, line_id);
@@ -3868,6 +3967,12 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 			result.push_back(ctx.getInt(3));	// calc_km  for in company as station_id1
 			result.push_back(ctx.getInt(4));	// IDENT1(‰wID1‚Ì‰ïĞID) + IDENT2(‰wID2‚Ì‰ïĞID)
 			result.push_back(ctx.getInt(5));	// bit31:1=JRˆÈŠO‚Ì‰ïĞü^0=JRƒOƒ‹[ƒvĞü / IDENT1(‰w1‚Ìsflg) / IDENT2(‰w2‚Ìsflg(MSB=bit15œ‚­))
+
+			if ((line_id == dbid.LineIdOf_HAKATAMINAMISEN) || (dbid.LineIdOf_SANYOSHINKANSEN == line_id)) {	// R—zVŠ²ü
+				result[2] = 0;
+				result[3] = 0;
+				result[4] = MAKEPAIR(JR_WEST, JR_WEST);
+			}
 		}
 	}
 	return result;

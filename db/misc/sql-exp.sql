@@ -580,6 +580,13 @@ lflg!=(select sflg from t_lines l2 where (lflg&((1<<24)|(1<<31)))=0 and l1.line_
 ¨ 160s
 ¨179s
 
+˜Hü‚Ì•ªŠò‰wˆê——‚ğ“¾‚é
+ˆÈ‰º‚Ì—á‚Í“ŒŠC“¹ü‚Ì•ªŠò‰wˆê——‚ğ“¾‚é‚à‚Ì‚Å‚ ‚é‚ªA‚¢‚¸‚ê‚à‰Â
+select * from t_lines l where line_id=77 and exists (select * from t_lines where line_id!=77 and l.station_id=station_id );
+select * from t_lines l where line_id=77 and station_id in (select station_id from t_lines where line_id!=77 );
+select * from t_lines l where line_id=77 and (lflg&(1<<12))!=0;
+-- ÅŒã‚Ì—á‚¾‚¯‚Å‚ÍA“Á—á˜Hü•ªŠò‰w‚ª˜R‚ê‚é‚Ì‚ÅæŠ·•\¦‚ÍAˆê”Ô–Ú‚©2”Ô–Ú‚ğg—p‚·‚é(lflg&(1<<22))=0‚Í•K—v(VŠ²ü)
+
 
 -------------------
 æÔŒo˜Hƒ}[ƒN
@@ -940,6 +947,8 @@ select line_id from t_hzline where rowid=(
 
 
 -------------
+
+
 -------------
 Enum_neer_node()
 ?1=2902=‹‹´
