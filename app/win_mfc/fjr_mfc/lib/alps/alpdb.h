@@ -165,10 +165,9 @@ public:
 // 両者の違いは？
 class FARE_INFO {
 public:
-	int sales_km;			// 有効日数計算用
-	int calc_km;
+	int sales_km;			// 有効日数計算用(会社線含む)
 
-	int base_sales_km;		// 本州3社
+	int base_sales_km;		// JR本州3社
 	int base_calc_km;
 
 	int kyusyu_sales_km;
@@ -215,7 +214,6 @@ public:
 	bool calc_fare(const vector<RouteItem>& routeList);
 	void reset() {
 		sales_km = 0;
-		calc_km = 0;
 
 		base_sales_km = 0;
 		base_calc_km = 0;
@@ -354,8 +352,13 @@ public:
 	static int LineIdOf_SANYOSHINKANSEN; // 山陽新幹線
 	static int LineIdOf_HAKATAMINAMISEN; // 博多南線
 
-	static int StationIdOf_KITASHINCHI; // 北新地
-	static int StationIdOf_AMAGASAKI;	// 尼崎
+	static int StationIdOf_KITASHINCHI; 	// 北新地
+	static int StationIdOf_AMAGASAKI;		// 尼崎
+
+	static int StationIdOf_KOKURA;  		// 小倉
+	static int StationIdOf_NISHIKOKURA;  	// 西小倉
+	static int StationIdOf_HAKATA;  		// 博多
+	static int StationIdOf_YOSHIZUKA;	  	// 吉塚
 };
 
 class Route
@@ -481,6 +484,7 @@ public:
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int lineId, int cityId);
 	static int 		Retrieve_SpecificCoreStation(int cityId);
 	static int		Retreive_SpecificCoreAvailablePoint(int km, int km_offset, int line_id, int station_id);
+	static int		CheckAndApplyRule43_2j(const vector<RouteItem> &route, FARE_INFO* fare_inf);
 	static bool		CheckOfRule114j(const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int kind, int* result);
 	static int		CheckOfRule88j(vector<RouteItem> *route);
 	static int		CheckOfRule89j(const vector<RouteItem> &route);

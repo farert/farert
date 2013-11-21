@@ -35,6 +35,11 @@ using namespace std;
 /*static */ int DbidOf::StationIdOf_KITASHINCHI = 0;  	// 北新地
 /*static */ int DbidOf::StationIdOf_AMAGASAKI = 0;  	// 尼崎
 
+/*static */ int DbidOf::StationIdOf_KOKURA = 0;  		// 小倉
+/*static */ int DbidOf::StationIdOf_NISHIKOKURA = 0;  	// 西小倉
+/*static */ int DbidOf::StationIdOf_HAKATA = 0;  		// 博多
+/*static */ int DbidOf::StationIdOf_YOSHIZUKA = 0;  	// 吉塚
+
 
 ////////////////////////////////////////////
 //	DbidOf
@@ -54,6 +59,11 @@ DbidOf::DbidOf()
 
 		DbidOf::StationIdOf_KITASHINCHI = Route::GetStationId(_T("北新地"));
 		DbidOf::StationIdOf_AMAGASAKI = Route::GetStationId(_T("尼崎"));
+
+		DbidOf::StationIdOf_KOKURA = Route::GetStationId(_T("小倉"));
+		DbidOf::StationIdOf_NISHIKOKURA = Route::GetStationId(_T("西小倉"));
+		DbidOf::StationIdOf_HAKATA = Route::GetStationId(_T("博多"));
+		DbidOf::StationIdOf_YOSHIZUKA = Route::GetStationId(_T("吉塚"));
 	}
 	ASSERT(0 < DbidOf::StationIdOf_SHINOSAKA);
 	ASSERT(0 < DbidOf::StationIdOf_OSAKA);
@@ -67,6 +77,11 @@ DbidOf::DbidOf()
 
 	ASSERT(0 < DbidOf::StationIdOf_KITASHINCHI);
 	ASSERT(0 < DbidOf::StationIdOf_AMAGASAKI);
+
+	ASSERT(0 < DbidOf::StationIdOf_KOKURA);
+	ASSERT(0 < DbidOf::StationIdOf_NISHIKOKURA);
+	ASSERT(0 < DbidOf::StationIdOf_HAKATA);
+	ASSERT(0 < DbidOf::StationIdOf_YOSHIZUKA);
 }
 
 ////////////////////////////////////////////
@@ -397,8 +412,15 @@ DBO Route::Enum_junction_of_lineId(int lineId, int stationId)
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
 " where line_id=?1 and (lflg&(1<<22))=0 and"
-" exists (select * from t_lines where line_id!=?1 and l.station_id=station_id)"
-" or (line_id=?1 and (lflg&(1<<22))=0 and station_id=?2) order by l.sales_km";
+" station_id in (select station_id from t_lines where line_id!=?1 or station_id=?2)"
+" order by l.sales_km";
+
+//"select t.name, station_id, sflg&(1<<12)"
+//" from t_lines l left join t_station t on t.rowid=l.station_id"
+//" where line_id=?1 and (lflg&(1<<22))=0 and"
+//" exists (select * from t_lines where line_id!=?1 and l.station_id=station_id)"
+//" or (line_id=?1 and (lflg&(1<<22))=0 and station_id=?2) order by l.sales_km";
+// -- exists を使うとやたら遅い
 #else
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
@@ -3102,6 +3124,101 @@ bool Route::checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114)
 	return is114;
 }
 
+//static:
+//	規則43条の2
+//	@param [out] fare_inf  営業キロ(sales_km, kyusyu_sales_km, kyusyu_calc_km)
+//
+int Route::CheckAndApplyRule43_2j(const vector<RouteItem> &route, FARE_INFO* fare_inf)
+{
+	DbidOf dbid;
+	int stage;
+	int c;
+	int rl;
+	int km;
+	int kagoshima_line_id;
+	vector<RouteItem>::const_iterator ite = route.cbegin();
+
+	stage = 0;
+	c = 0;
+	rl = 0;
+	while (ite != route.cend()) {
+		switch (stage) {
+		case 0:
+			if (ite->stationId == dbid.StationIdOf_NISHIKOKURA) {
+				c = 1;
+				stage = 1;
+			} else if (ite->stationId == dbid.StationIdOf_HAKATA) {
+				if (ite->lineId == dbid.LineIdOf_SANYOSHINKANSEN) {
+					c = 4;
+				} else {
+					c = 2;
+				}
+				stage = 1;
+			} else if (ite->stationId == dbid.StationIdOf_YOSHIZUKA) {
+				c = 3;
+				stage = 1;
+				break;
+			}
+			break;
+		case 1:
+			switch (c) {
+			case 1:
+				if ((ite->stationId == dbid.StationIdOf_KOKURA) && 
+				((ite + 1) != route.cend()) &&
+				((ite + 1)->lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
+				((ite + 1)->stationId == dbid.StationIdOf_HAKATA)) {
+					rl |= 1;
+				}
+				break;
+			case 2:
+				if ((ite->stationId == dbid.StationIdOf_KOKURA) && 
+				(ite->lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
+				((ite + 1) != route.cend()) &&
+				((ite + 1)->stationId == dbid.StationIdOf_NISHIKOKURA)) {
+					rl |= 1;
+				}
+				break;
+			case 3:
+				if ((ite->stationId == dbid.StationIdOf_HAKATA) && 
+				((ite + 1) != route.cend()) &&
+				((ite + 1)->lineId == dbid.LineIdOf_SANYOSHINKANSEN)) {
+					rl |= 2;
+				}
+				break;
+			case 4:
+				if (ite->stationId == dbid.StationIdOf_YOSHIZUKA) {
+					rl |= 2;
+				}
+				break;
+			default:
+				break;
+			}
+			c = 0;
+			stage = 0;
+			break;
+		default: 
+			ASSERT(FALSE);
+			break;
+		}
+		ite++;
+	}
+	if (rl != 0) {
+		km = 0;
+		kagoshima_line_id = Route::GetLineId(_T("鹿児島線"));
+		if ((rl & 1) != 0) {
+			km = Route::GetDistance(kagoshima_line_id, dbid.StationIdOf_KOKURA, dbid.StationIdOf_NISHIKOKURA)[0];
+			TRACE(_T("applied 43-2(西小倉)\n"));
+		}
+		if ((rl & 2) != 0) {
+			km += Route::GetDistance(kagoshima_line_id, dbid.StationIdOf_HAKATA, dbid.StationIdOf_YOSHIZUKA)[0];
+			TRACE(_T("applied 43-2(吉塚)\n"));
+		}
+		fare_inf->sales_km			-= km;
+		fare_inf->kyusyu_sales_km	-= km;
+		fare_inf->kyusyu_calc_km	-= km;
+	}
+	return 0;
+}
 
 //static:
 //	88条のチェックと変換
@@ -4127,6 +4244,7 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 
 	vector<int> d = FARE_INFO::GetDistanceEx(line_id, station_id1, station_id2);
 	
+	
 							// 特別加算区間
 	this->fare += FARE_INFO::CheckSpecficFarePass(line_id, station_id1, station_id2);
 
@@ -4151,7 +4269,7 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 	}
 	this->sales_km += d.at(0);			// total 営業キロ(会社線含む、有効日数計算用)
 	if (IS_SHINKANSEN_LINE(line_id)) {
-		/* 山陽新幹線 広島-徳山間を通る場合の1経路では、fare(l, i) とされるてしまうから.
+		/* 山陽新幹線 広島-徳山間を通る場合の1経路では、fare(l, i) とされてしまうから.
 		 */
 		this->local_only = false;		// 幹線
 	}
@@ -4334,6 +4452,9 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList)
 		}
 		station_id1 = ite->stationId;
 	}
+	/* 43-2 */
+	Route::CheckAndApplyRule43_2j(routeList, this);
+
 	/* 乗車券の有効日数 */
 	this->avail_days = FARE_INFO::days_ticket(this->sales_km);
 
@@ -4574,7 +4695,6 @@ int FARE_INFO::days_ticket(int sales_km)
 	}
 	return (sales_km + 1999) / 2000 + 1;
 }
-
 
 //static
 //	会社線の運賃を得る
