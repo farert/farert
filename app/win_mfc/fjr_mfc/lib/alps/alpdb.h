@@ -211,7 +211,7 @@ public:
 	FARE_INFO() { reset(); }
 	bool retr_fare();
 	bool aggregate_fare_info(int line_id, int station_id1, int station_id2);
-	bool calc_fare(const vector<RouteItem>& routeList);
+	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);
 	void reset() {
 		sales_km = 0;
 
@@ -258,6 +258,7 @@ public:
 };
 
 // 1レコードめのlineIdの定義
+#define B1LID_MARK				0x8000		// line_idとの区別で負数になるように
 #define B1LID_BEGIN_CITY		0
 #define B1LID_FIN_CITY			1
 #define B1LID_BEGIN_YAMATE		2
@@ -380,8 +381,8 @@ public:
 	int endStationId;
 
 	enum LINE_DIR {
-		LDIR_ASC  = 0,		// 下り
-		LDIR_DESC = 1		// 上り
+		LDIR_ASC  = 1,		// 下り
+		LDIR_DESC = 2		// 上り
 	};
 
 public:
@@ -460,7 +461,7 @@ public:
 
 	int				setup_route(LPCTSTR route_str);
 
-	int 			add(int line_id, int stationId2);
+	int 			add(int line_id, int stationId2, int ctlflg = 0);
 	int 			add(int stationId);
 	void 			removeTail(bool begin_off = false);
 	void 			removeAll(bool bWithStart =true, bool bWithEnd =true);

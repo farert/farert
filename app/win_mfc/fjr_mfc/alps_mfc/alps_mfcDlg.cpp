@@ -1006,6 +1006,8 @@ int Calps_mfcDlg::UpdateRouteList()
 
 		/* ‰^’À•\Ž¦ */
 		showFare();
+	} else {
+		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
 	}
 	return idx;
 }
@@ -1117,6 +1119,8 @@ int Calps_mfcDlg::ModifyRouteList()
 
 		/* ‰^’À•\Ž¦ */
 		showFare();
+	} else {
+		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
 	}
 	return idx;
 }
@@ -1209,7 +1213,7 @@ void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 	//ASSERT(0 < curLineId);
 	//setupForLinelistByStation(m_curStationId, curLineId);	// ’…‰w‚ÌŠ‘®˜Hü
 
-	if (0 < m_route.routeList().size()) {
+	if (1 < m_route.routeList().size()) {
 
 		vector<RouteItem>::const_iterator pos = m_route.routeList().cbegin();
 		TRACE(_T("\nbegin befor: %s\n"), Route::StationName(pos->stationId).c_str());
@@ -1226,6 +1230,8 @@ void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 			TRACE(_T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
 		}
 		TRACE(_T("\n"));
+	} else {
+		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
 	}
 #endif
 	CRouteInputDlg dlg;
