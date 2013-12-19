@@ -8,8 +8,8 @@ FILE *os;
 Route route;
 
 
-#define TID(s)	Route::GetStationId(s)
-#define LID(s)	Route::GetLineId(s)
+#define TID(s)	Route::GetStationId(_T(#s))
+#define LID(s)	Route::GetLineId(_T(#s))
 
 static int test_setup_route(TCHAR* buffer);
 
@@ -41,7 +41,7 @@ static tstring cr_remove(tstring s)
 
 static void test_route(void)
 {
-	TCHAR *route_def[] = {
+	const static TCHAR *route_def[] = {
 		_T("c69ğ‚ÌŒo˜H"),
 /* 1 */		_T("‰¡•l,“ŒŠC“¹ü,“Œ‹,‹—tü,‘h‰ä,ŠO–[ü,‘å–Ô,“Œ‹àü,¬“Œ,‘•ü,²‘q,¬“cü,¬“c,¬“cü(¬“c-‰ä‘·q),‰ä‘·q,í”Öü,ŠâÀ"),
 			_T("‰¡•l,“ŒŠC“¹ü,“Œ‹,‹—tü,‘h‰ä"),
@@ -490,7 +490,7 @@ static void test_route(void)
 	_T(""),
 	};
 	TCHAR buffer[1024];
-	LPTSTR psz_title = _T("");
+	LPCTSTR psz_title = _T("");
 	int i;
 	int opt;
 	int t;
@@ -560,7 +560,7 @@ void test_hzl(void)
 {
 	// route.add() ƒ`ƒFƒbƒN x‚Ì‚Â‚¢‚½‰w‚Ö’…AƒGƒ‰[‚Æ‚È‚é‚±‚Æ.
 
-	TCHAR *route_def[] = {
+	const static TCHAR *route_def[] = {
     _T("“Œ‹, “ŒŠC“¹VŠ²ü, •iì, “ŒŠC“¹ü, xV‹´"),
     _T("“Œ‹, “ŒŠC“¹ü, •iì, “ŒŠC“¹VŠ²ü, x“Œ‹"),
     _T("V‹´, “ŒŠC“¹ü, •iì, “ŒŠC“¹VŠ²ü, x“Œ‹"),
@@ -1019,7 +1019,7 @@ void test_hzl(void)
 
 static void test_hzl2()
 {
-	TCHAR *param[] = {
+	const static TCHAR *param[] = {
 		_T("‹“s,“ŒŠC“¹VŠ²ü,V‘åã,Šò•Œ‰H“‡"),
 		_T("O‰ÍˆÀé,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,V‰¡•l"),
 		_T("O‰ÍˆÀé,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,V‰¡•l"),
@@ -1041,10 +1041,10 @@ static void test_hzl2()
 		p1 = _tcstok_s(NULL, _T(", "), &ctx);
 		p2 = _tcstok_s(NULL, _T(", "), &ctx);
 		p3 = _tcstok_s(NULL, _T(", "), &ctx);
-		ip0 = TID(p0);
-		ip1 = LID(p1);
-		ip2 = TID(p2);
-		ip3 = TID(p3);
+		ip0 = Route::GetStationId(p0);
+		ip1 = Route::GetLineId(p1);
+		ip2 = Route::GetStationId(p2);
+		ip3 = Route::GetStationId(p3);
 		ASSERT(0 < ip0 && 0 < ip1 && 0 < ip2 && 0 < ip3);
 		t = Route::NextShinkansenTransferTerm(ip1, ip2, ip3);
 		TRACE(_T("VŠ²ü—×‰w: %s\n"), param[i]);
@@ -1060,7 +1060,7 @@ static void test_hzl2()
 
 void test_autoroute(void)
 {
-	TCHAR *route_def[] = {
+	const static TCHAR *route_def[] = {
 /* 00 */    _T("“Œ‹,“ŒŠC“¹VŠ²ü,Ã‰ª,“ŒŠC“¹ü,•l¼"), _T("–¼ŒÃ‰®"),
 /* 01 */    _T("•xR"), _T("“V—³ì"),
 /* 02 */    _T("“V—³ì"), _T("•xR"),
@@ -1143,7 +1143,7 @@ void test_autoroute(void)
 //
 void test_jctspecial()
 {
-	TCHAR *route_def[] = {
+	const static TCHAR *route_def[] = {
 	_T("^A-0|–¼ŒÃ‰®,’†‰›¼ü,Œb“ß"),
 	_T("^A-1|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,Œb“ß"),
 	_T("^C-1|‰¡•l,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,Œb“ß"),
@@ -1155,7 +1155,9 @@ void test_jctspecial()
 	_T("^E-1_|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,‹àR(’†),“ŒŠC“¹ü,‰¡•l"),
 	_T("^E-1a|‘åã,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,‹àR(’†),“ŒŠC“¹ü,x‘åã"),
 	_T("^E-2|V‘åã,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,‹àR(’†),“ŒŠC“¹ü,‰¡•l"),
-	_T("^E-3|‰¡•l,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,x‹àR(’†)"),		//
+	_T("^E-3|‰¡•l,“ŒŠC“¹ü,–¼ŒÃ‰®,’†‰›¼ü,x‹àR(’†)"),		// 12.15.add
+	_T("^E-4|Ã‰ª,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,’†‰›¼ü,x‹àR(’†)"),	// 12.15.add
+	_T("^E-5|Ã‰ª,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‹àR(’†)"),	// 12.15.add
 	_T("^G|‹TR,ŠÖ¼ü,–¼ŒÃ‰®,’†‰›¼ü,‹àR(’†),“ŒŠC“¹ü,‰¡•l"),
 	_T("^G-3|–¼ŒÃ‰®,’†‰›¼ü,‹àR(’†),“ŒŠC“¹ü,‰¡•l"),
 	_T("^G-2|–¼ŒÃ‰®,’†‰›¼ü,‹àR(’†)"),
@@ -1171,7 +1173,7 @@ void test_jctspecial()
 	_T("_E-13|‰¡•l,“ŒŠC“¹ü,‹àR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,xÃ‰ª"),
 	_T("_E-14|‰¡•l,“ŒŠC“¹ü,‹àR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,x‹àR(’†)"),	//
 	_T("_F-3a|‹àR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‘åã"),
-	_T("_F-3b|‹àR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,V‰¡•l"),
+	_T("_F-3b|‹àR(’†),’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹VŠ²ü,xV‰¡•l"),	//12/15
 	_T("_J-0|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®"),
 	_T("_B-0|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,’†‰›¼ü,x‹àR(’†)"),	//1
 	_T("_B-1|Œb“ß,’†‰›¼ü,–¼ŒÃ‰®,“ŒŠC“¹ü,‘åã"),
@@ -1214,7 +1216,7 @@ void test_jctspecial()
 	_T("KE0|¬‘q,“ú“c•FRü,¼¬‘q"),
 	_T("KE1|–åi,­™“‡ü,¬‘q,“ú“c•FRü,¼¬‘q"),
 	_T("KE2|Ü”ö,­™“‡ü,¬‘q,“ú“c•FRü,x¼¬‘q"),
-	_T("KE3|”‘½,R—zVŠ²ü,¬‘q,“ú“c•FRü,¼¬‘q"),
+	_T("KE3|”‘½,R—zVŠ²ü,¬‘q,“ú“c•FRü,x¼¬‘q"),
 	_T("KE4|L“‡,R—zVŠ²ü,¬‘q, “ú“c•FRü,¼¬‘q"),
 	_T("KE5|¼¬‘q,­™“‡ü,¬‘q,“ú“c•FRü,x¼¬‘q"),
 	_T("KF0|¬‘q,“ú“c•FRü,é–ì"),
@@ -1232,7 +1234,7 @@ void test_jctspecial()
 	_T("KI1|¼¬‘q,“ú“c•FRü,¬‘q,­™“‡ü,–åi"),
 	_T("KI2|¼¬‘q,“ú“c•FRü,¬‘q,­™“‡ü,xÜ”ö"),
 	_T("KI2-1|¼¬‘q,“ú“c•FRü,¬‘q,­™“‡ü,x¼¬‘q"),
-	_T("KI3|¼¬‘q,“ú“c•FRü,¬‘q,R—zVŠ²ü,”‘½"),
+	_T("KI3|¼¬‘q,“ú“c•FRü,¬‘q,R—zVŠ²ü,x”‘½"),
 	_T("KI4|¼¬‘q,“ú“c•FRü,¬‘q,R—zVŠ²ü,L“‡"),
 	_T("KJ0|é–ì,“ú“c•FRü,¬‘q"),
 	_T("KJ1|é–ì,“ú“c•FRü,¬‘q,­™“‡ü,–åi"),
@@ -1360,6 +1362,31 @@ void test_jctspecial()
 	_T("v0|–åi` ­™“‡ü ”‘½ ÂŒIü ÂŒI"),
 	_T("v1|‹v—¯•Ä ­™“‡ü ”‘½ ÂŒIü ÂŒI"),
 	_T("v2|Œú‹· R—zVŠ²ü ”‘½ ÂŒIü ÂŒI"),
+	_T("*|”‘½ R—zVŠ²ü ¬‘q ­™“‡ü ¼¬‘q"),
+	_T("*|”‘½ R—zVŠ²ü ¬‘q ­™“‡ü ’Å"),
+	_T("*|¬‘q R—zVŠ²ü ”‘½ ­™“‡ü ‹g’Ë ÂŒIü ÂŒI"),
+	_T("*|¬‘q R—zVŠ²ü ”‘½ ­™“‡ü ‹g’Ë"),
+	_T("*|é–ì “ú–Lü ¼¬‘q ­™“‡ü ¬‘q R—zVŠ²ü ”‘½"),
+	_T("*|ÂŒI ÂŒIü ‹g’Ë ­™“‡ü ”‘½ R—zVŠ²ü ¬‘q"),
+	_T("*|‘å‹{ ã‰zVŠ²ü ’·‰ª M‰zü(Âƒmˆä-VŠƒ) ’¼]’Ã"),
+	_T("*|‘å‹{ ã‰zVŠ²ü ’·‰ª M‰zü(Âƒmˆä-VŠƒ) x‹{“à"),
+	_T("*|‘å‹{ ã‰zVŠ²ü ’·‰ª M‰zü(Âƒmˆä-VŠƒ) x‹{“à ã‰zü ¬ç’J"),
+	_T("*|’¼]’Ã M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü ‘å‹{"),
+	_T("*|V’Ã M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü ‘å‹{"),
+	_T("*|V’Ã M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü VŠƒ"),
+	_T("*|‹{“à M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü ‘å‹{"),
+	_T("*|’¼]’Ã M‰zü(Âƒmˆä-VŠƒ) ‹{“à M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü x‘å‹{"),
+	_T("*|¬ç’J ã‰zü ‹{“à M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü x‘å‹{"),
+	_T("*|‹{“à M‰zü(Âƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü VŠƒ"),
+	_T("*|VŠƒ ã‰zVŠ²ü ’·‰ª ã‰zVŠ²ü VŠƒ"),
+	_T("*|"),
+	_T("*|"),
+	_T("*|"),
+	_T("*|"),
+	_T("*|"),
+	_T("*|"),
+	_T("*|"),
+	_T("*|"),
 	_T(""),
 	_T(""),
 	};
@@ -1439,6 +1466,14 @@ static int test_setup_route(TCHAR* buffer)
 	return 0;
 }
 
+static void test_shinkanzen()
+{
+	ASSERT(Route::IsAbreastShinkansen(LID(“ŒŠC“¹ü), LID(“ŒŠC“¹VŠ²ü), TID(¬“cŒ´), TID(V•xm)));
+	ASSERT(Route::IsAbreastShinkansen(LID(ã‰zü), LID(ã‰zVŠ²ü), TID(‰zŒã“’‘ò), TID(V•xm)));
+	ASSERT(Route::IsAbreastShinkansen(LID(ã‰zü), LID(ã‰zVŠ²ü), TID(‚è), TID(ã–Ñ‚Œ´)));
+	ASSERT(Route::IsAbreastShinkansen(LID(‚èü), LID(ã‰zVŠ²ü), TID(‚è), TID(ŒF’J)));
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 //	TEST Main
@@ -1452,6 +1487,9 @@ int test_exec(void)
 
 	_ftprintf(os, _T("timestamp: %s\n"), t.Format("%y.%m.%d %H:%M"));
 	
+	_ftprintf(os, _T("\n#---shinkansen  -------------------------------------------\n"));
+	test_shinkanzen();
+
 	_ftprintf(os, _T("\n#---special junction -------------------------------------------\n"));
 	test_jctspecial();
 #if 1

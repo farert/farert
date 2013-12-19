@@ -30,10 +30,24 @@ def is_shinkansen(line_id):
 #	line_idは新幹線であること
 #	lineIdは並行在来線、0は並行在来線はないことを示す
 #
-def getHZline(line_id, station_id):
+def getHZline(line_id, station_id, station_id2 = -1):
 	cur = con.cursor()
 	try:
-	 cur.execute("select line_id from t_hzline where rowid=(select (lflg>>13)&15 from t_lines where line_id=? and station_id=?)", [line_id, station_id])
+	 cur.execute("select line_id from t_hzline where rowid=(select (lflg>>19)&15 from t_lines where line_id=? and station_id=?)", [line_id, station_id])
+	 lid = cur.fetchone()[0]
+	 if 0 < lid and lid < 32768:
+	  return lid
+	 cur.execute("""
+	 select line_id from t_hzline where line_id<32767 and rowid in (
+		select ((lflg>>19)&15) from t_lines where ((lflg>>19)&15)!=0 and line_id=?1 and 
+		case when (select sales_km from t_lines where line_id=?1 and station_id=?2)<
+		          (select sales_km from t_lines where line_id=?1 and station_id=?3)
+		then
+		sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2)
+		else
+		sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2)
+		end
+	) limit(1);""", [line_id, station_id, station_id2]);
 	 return cur.fetchone()[0]
 	except:
 	 return 0;
@@ -51,7 +65,7 @@ def line_from_station_id(station_id):
   from t_lines 
   where station_id=? 
   and 0<=sales_km 
-  and 0=(lflg & ((1 << 24)|(1 << 31)|(1<<22)))""", [station_id])
+  and 0=(lflg & ((1 << 31)|(1 << 17)))""", [station_id])
   return cur.fetchone()[0]
 
 # 駅ID(分岐駅)の最寄りの分岐駅を得る(全路線）
@@ -64,30 +78,30 @@ def node_next(jct_id):
 select 	id, 
  (select case when calc_km>0 then calc_km else sales_km end 
   from t_jct j left join t_lines l on j.station_id=l.station_id 
-  where line_id=?1 and id=?2 and 0<=sales_km and 0=(lflg&((1<<24)|(1<<31)|(1<<22))))-case when calc_km>0 then calc_km else sales_km end as cost
+  where line_id=?1 and id=?2 and 0<=sales_km and 0=(lflg&((1<<31)|(1<<17))))-case when calc_km>0 then calc_km else sales_km end as cost
 from 	t_jct j left join t_lines l on j.station_id=l.station_id
 where 	line_id=?1
 and 	sales_km=(select max(sales_km) 
 				  from t_jct j left join t_lines l on j.station_id=l.station_id  
-				  where line_id=?1 and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))
+				  where line_id=?1 and 0=(lflg&((1<<31)|(1<<17)))
 				  and 0<=sales_km and sales_km<
 				  (select sales_km from t_jct j left join t_lines l on 
 				   j.station_id=l.station_id where line_id=?1 and id=?2 
-				   and 0<=sales_km and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))))
+				   and 0<=sales_km and 0=(lflg&((1<<31)|(1<<17)))))
 union
 select id, case when calc_km>0 then calc_km else sales_km end - 
  (select case when calc_km>0 then calc_km else sales_km end 
   from t_jct j left join t_lines l on j.station_id=l.station_id 
-  where 0<=sales_km and line_id=?1 and id=?2 and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))) as cost
+  where 0<=sales_km and line_id=?1 and id=?2 and 0=(lflg&((1<<31)|(1<<17)))) as cost
 from 	t_lines l join t_jct j on j.station_id=l.station_id
 where 	line_id=?1
 and 	sales_km=(select min(sales_km) 
 				  from t_jct j left join t_lines l on j.station_id=l.station_id  
-				  where line_id=?1 and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))
+				  where line_id=?1 and 0=(lflg&((1<<31)|(1<<17)))
 				  and 0<=sales_km
 				  and sales_km>(select sales_km 
 						  		from t_jct j left join t_lines l on j.station_id=l.station_id 
-						  		where line_id=?1 and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))
+						  		where line_id=?1 and 0=(lflg&((1<<31)|(1<<17)))
 						  		and id=?2 and 0<=sales_km));
 """
   cur = con.cursor()
@@ -96,7 +110,7 @@ and 	sales_km=(select min(sales_km)
   cur.execute("""
   select line_id 
   from t_lines l left join t_jct j on j.station_id=l.station_id 
-  where id=?                and 0<=sales_km and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))""", [jct_id])
+  where id=?                and 0<=sales_km and 0=(lflg&((1<<31)|(1<<17)))""", [jct_id])
   for lin in cur:
     cur2.execute(sql, [lin[0], jct_id])
     for st in cur2:
@@ -129,33 +143,33 @@ def neer_node(station_id):
 select 	station_id , abs((
 	select case when calc_km>0 then calc_km else sales_km end 
 	from t_lines 
-	where 0<=sales_km and 0=(lflg&((1<<24)|(1<<31)|(1<<22))) 
+	where 0<=sales_km and 0=(lflg&((1<<31)|(1<<17))) 
 	and line_id=(select line_id 
 				 from	t_lines 
 				 where	station_id=?1 
 				 and	0<=sales_km 
-				 and	0=(lflg&((1<<24)|(1<<31)|(1<<22)))) 
+				 and	0=(lflg&((1<<31)|(1<<17)))) 
 	and station_id=?1)-case when calc_km>0 then calc_km else sales_km end) as cost
 from 	t_lines 
-where 	0<=sales_km and 0=(lflg&((1<<24)|(1<<31)|(1<<22)))
+where 	0<=sales_km and 0=(lflg&((1<<31)|(1<<17)))
  and	line_id=(select	line_id 
  				 from	t_lines 
  				 where	station_id=?1
  				 and	0<=sales_km
- 				 and	0=(lflg&((1<<24)|(1<<31)|(1<<22))))
+ 				 and	0=(lflg&((1<<31)|(1<<17))))
  and	sales_km in ((select max(y.sales_km)
 					  from	t_lines x left join t_lines y
 					  on	x.line_id=y.line_id 
-					  where	0<=x.sales_km and 0=(x.lflg&((1<<24)|(1<<31)|(1<<22)))
-					  and	0<=y.sales_km and (1<<12)=(y.lflg&((1<<24)|(1<<31)|(1<<22)|(1<<12)))
+					  where	0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<17)))
+					  and	0<=y.sales_km and (1<<15)=(y.lflg&((1<<31)|(1<<17)|(1<<15)))
 					  and	x.station_id=?1
 					  and	x.sales_km>y.sales_km
 					 ),
 					 (select min(y.sales_km)  
 					  from	t_lines x left join t_lines y
 					  on	x.line_id=y.line_id 
-					  where 0<=x.sales_km and 0=(x.lflg&((1<<24)|(1<<31)|(1<<22)))
-					  and	0<=y.sales_km and (1<<12)=(y.lflg&((1<<24)|(1<<31)|(1<<22)|(1<<12)))
+					  where 0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<17)))
+					  and	0<=y.sales_km and (1<<15)=(y.lflg&((1<<31)|(1<<17)|(1<<15)))
 					  and	x.station_id=?1
 					  and	x.sales_km<y.sales_km));
 """

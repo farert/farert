@@ -23,8 +23,8 @@ typedef unsigned int SPECIFICFLAG;
 #define IDENT1(ident) ((IDENT)(0xffff & ident))
 #define IDENT2(ident) ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
 
-#define FLG_HIDE_LINE					(1<<16)
-#define FLG_HIDE_STATION				(1<<15)
+#define FLG_HIDE_LINE					(1<<19)
+#define FLG_HIDE_STATION				(1<<18)
 #define IS_FLG_HIDE_LINE(lflg)			(0!=(lflg&FLG_HIDE_LINE))		// ˜Hü”ñ•\Ž¦
 #define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// ‰w”ñ•\Ž¦
 
@@ -121,8 +121,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #endif
 
-#define	MASK_ROUTE_FLAG	(0x1fff | MASK(BSRJCTSP))
-
+#define MASK_ROUTE_FLAG_LFLG	0xff000000
+#define MASK_ROUTE_FLAG_SFLG	0x0000ffff
 
 class RouteItem
 {
@@ -131,11 +131,7 @@ public:
 	IDENT lineId;
 	IDENT stationId;
 	SPECIFICFLAG flag;
-	RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_) {
-		lineId = lineId_;
-		stationId = stationId_;
-		flag = flag_ & MASK_ROUTE_FLAG;
-	}
+	RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_);
 	RouteItem(IDENT lineId_, IDENT stationId_);
 
 	RouteItem(const RouteItem& item_) {
@@ -492,7 +488,7 @@ public:
 
 	static tstring  CoreAreaNameByCityId(int startEndFlg, int flg, SPECIFICFLAG flags);
 	static bool		IsAbreastShinkansen(int line_id1, int line_id2, int station_id1, int station_id2);
-	static int      GetHZLine(int line_id, int station_id);
+	static int      GetHZLine(int line_id, int station_id, int station_id2 = -1);
 	static bool		CheckTransferShinkansen(int line_id1, int line_id2, int station_id1, int station_id2, int station_id3);
 	static int		NextShinkansenTransferTerm(int line_id, int station_id1, int station_id2);
 

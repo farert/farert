@@ -184,6 +184,7 @@ create table t_hzline(
 con.execute("""
 create table t_jctspcl(
 	id integer primary key autoincrement,
+	type integer not null,
 	jctsp_line_id1 integer not null,
 	jctsp_station_id1 integer not null,
 	jctsp_line_id2 integer not null default(0),
@@ -203,7 +204,7 @@ prefects = [
 ['岡山県'], ['広島県'], ['山口県'], ['香川県'], ['徳島県'], ['愛媛県'], ['高知県'], ['福岡県'], 
 ['佐賀県'], ['長崎県'], ['大分県'], ['熊本県'], ['宮崎県'], ['鹿児島県']]
 con.executemany('insert into t_prefect values(?)', prefects)
-print("registerd t_prefect {0} affected.".format(len(prefects)))
+print("registered t_prefect {0} affected.".format(len(prefects)))
 
 cur = con.cursor()
 
@@ -249,7 +250,7 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 prefects = None
 #会社
 con.executemany('insert into t_company values(?)', items[0])
-print("registerd t_company {0} affected.".format(len(items[0])))
+print("registered t_company {0} affected.".format(len(items[0])))
 #線区
 con.executemany('insert into t_line values(?)', pre_items)
 n_line_Index_of_Shinkansen = len(pre_items)
@@ -257,7 +258,7 @@ con.executemany('insert into t_line values(?)', items[1])
 n_line_Index_of_CompanyLine = len(pre_items) + len(items[1])
 con.executemany('insert into t_line values(?)', post_items)
 
-print("registerd t_line {0} affected.".format(len(pre_items) + len(items[1]) + len(post_items)))
+print("registered t_line {0} affected.".format(len(pre_items) + len(items[1]) + len(post_items)))
 
 con.commit()
 
@@ -328,37 +329,41 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 	
 		if 0 <= linitems[1].find("branch"):
 			branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
-						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip()])
+						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), 
+						   linitems[7].strip(), 0 if linitems[7].strip() == '' else (1 << 15)])
 			continue			# 分岐特例はあとで
 
 		if linitems[3].strip().startswith("-"):
 			continue
 
-		if 19 != len(linitems):
+		if 20 != len(linitems):
 			print(num_of_line, lin)
 			raise ValueError
 
 		# BSRJCTFLG: 分岐フラグ
-		flg = 0 if linitems[7].strip() == '' else (1 << 12)	# jctflg
+		sflg = 0 if linitems[7].strip() == '' else (1 << 12)	# jctflg
+		lflg = 0 if linitems[7].strip() == '' else (1 << 15)	# jctflg
 
-		tmp = int(linitems[17])			# 規則69条 t_rule69.id
-		if 0 < tmp:						# BSR69NOMASK, BSR69TERM, BSR69CONT
+		# 規則69条 t_rule69.id
+		# BSR69NOMASK, BSR69TERM, BSR69CONT
+		tmp = int(linitems[17])
+		if 0 < tmp:
 			if 100 <= tmp:
-				flg |= (1 << 28)		# BSR69CONT
+				lflg |= (1 << 23)		# BSR69CONT
 				tmp -= 100
-			flg |= (1 << 29)			# BSR69TERM
-			flg |= ((0x0f & tmp) << 17)	# BSR69NOMASK(20-17)
+			lflg |= (1 << 24)			# BSR69TERM
+			lflg |= ((0x0f & tmp) << 0)	# BSR69NOMASK(20-17)
 
 
 		# BSRBORDER: 本州3社、3島会社境界駅
 		tmp = int(linitems[16])
 		if 0 < tmp:
-			flg |= (1 << 21)
+			lflg |= (1 << 16)
 
 		# BSRVIRJCT: 新幹線で新幹線の駅の無い在来線分岐駅
 		tmp = int(linitems[18])
 		if 0 < tmp:
-			flg |= (1 << 22)
+			lflg |= (1 << 17)
 
 		# BSRHZLIN: 新幹線＜－＞並行在来線乗換
 		tmp = linitems[15].strip()
@@ -381,47 +386,73 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 				
 			tmp = row[0]
 			tmp &= 0x0f
-			flg |= (tmp << 13)		# bit16-13
+			lflg |= (tmp << 19)		# BSRHZLIN: bit16-13 -> 22-19
 
 		# BCRULE70:規則70条
 		tmp = int(linitems[14])
 		if 0 != tmp:
-			flg |= (1 << 6)
+			sflg |= (1 << 6)
 
 		# BCYAMATE
 		tmp = int(linitems[13])
 		if 0 != tmp:
-			flg |= (1 << 5)
+			sflg |= (1 << 5)
 
 		# BCOSMSP, BCTKMSP
 		tmp = int(linitems[12])
 		if 1 == tmp:
-			flg |= (1 << 10)	# BCTKMSP: 東京電車特定区間
+			sflg |= (1 << 10)	# BCTKMSP: 東京電車特定区間
 		elif 2 == tmp:
-			flg |= (1 << 11)	# BCOSMSP: 大阪電車特定区間
+			sflg |= (1 << 11)	# BCOSMSP: 大阪電車特定区間
 		
 		# BCSUBURB: 近郊区間
 		tmp = int(linitems[11])
 		tmp &= 0x07
-		flg |= (tmp << 7)	# bit9-7
+		sflg |= (tmp << 7)	# bit9-7
 
-		# BSRSHINKTRSALW、BSRSHINKTRS: 新幹線、在来線乗換
+		# BSRSHINKTRSALW: 新幹線、在来線乗換
+		# (新幹線のみ)
 		tmp = int(linitems[10])
 		if 10 <= tmp and tmp <= 13:
-			flg |= ((1 << 27) | ((tmp - 10) << 25))
+			if 0 != int(linitems[16]):
+				print(num_of_line, lin)
+				raise ValueError
+			#lflg |= ((1 << 27) | ((tmp - 10) << 25))
+			lflg |= ((tmp - 10) << 19)
 
 		# BCCITYCT, BCCITYNO
 		tmp = int(linitems[9])
 		if 100 <= tmp:
-			flg |= (1 << 4)	# BCCITYCT
+			sflg |= (1 << 4)	# BCCITYCT
 			tmp -= 100
 
 		tmp &= 0x0f
-		flg |= (tmp << 0)	# BCCITYNO: bit3-0
+		sflg |= (tmp << 0)	# BCCITYNO: bit3-0
 
 		# BSRCOMPANY
+		# (会社線)
 		if not linitems[1].strip().startswith("JR"):
-			flg |= (1 << 23)
+			lflg |= (1 << 18)
+
+		# BSRJCTSP_B: 分岐特例
+		tmp = linitems[19].strip()
+		if tmp[0] != '!' and tmp != "":
+			tmps = tmp.split('/')
+			while len(tmps) < 4:
+				tmps.append('')
+
+			con.execute("""
+			insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
+			?, ?, ?, ?, ?)
+			""", 
+			[jcttype, tmps[0], tmps[1], tmps[2], tmps[3]])
+
+			cur.execute('select seq from sqlite_sequence where name=\'t_jctspcl\'')
+			lflg &= 0xffffff00
+			lflg |= (0xff & cur.fetchone()[0])
+			lflg |= (1 << 29)
+		else:
+			lflg &= 0xffffff00
 
 		cur.execute('select rowid from t_prefect where name=?', [linitems[0].strip()])	# retrive 都道府県id
 		prefect_id = cur.fetchone()[0]
@@ -441,7 +472,7 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 		else:
 			con.execute('insert into t_station values(?, ?, ?, ?, ?, ?)', \
 						[ station_name, linitems[4].strip(), company_id, prefect_id, \
-						  samename, flg])
+						  samename, sflg])
 			cur.execute('select rowid from t_station where name=? and samename=?', [station_name, samename])
 			station_id = cur.fetchone()[0]
 			n_station += 1
@@ -449,7 +480,7 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 		sales_km = int(float(linitems[5]) * 10)
 		calc_km = int(float(linitems[6]) * 10)
 
-		con.execute('insert into t_lines values(?, ?, ?, ?, ?)', [line_id, station_id, sales_km, calc_km, flg] )
+		con.execute('insert into t_lines values(?, ?, ?, ?, ?)', [line_id, station_id, sales_km, calc_km, lflg] )
 
 #------------------------------------------------------------------------------
 	elif n_segment == 2:	# 料金表 各路線(N-1)*N/2 N=駅数
@@ -624,8 +655,8 @@ insert into t_farest values(
 
 for bitem in branch:
 	#		branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
-	#					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip()])
-	# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2
+	#					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg])
+	# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg
 
 	if 0 <= bitem[2].find('('):
 		bstation = bitem[2][:bitem[2].find('(')]
@@ -645,7 +676,8 @@ for bitem in branch:
 			bstation2_same = ''
 
 		con.execute("""
-		insert into t_jctspcl(jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
+		insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
+		1,
 		(select rowid from t_line where name=?), 
 		(select rowid from t_station where name=? and samename=?), 
 		(select rowid from t_line where name=?), 
@@ -654,7 +686,8 @@ for bitem in branch:
 		[bitem[4], bstation, bstation_same, bline2, bstation2, bstation2_same])
 	else:
 		con.execute("""
-		insert into t_jctspcl(jctsp_line_id1, jctsp_station_id1) values(
+		insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1) values(
+		1,
 		(select rowid from t_line where name=?), 
 		(select rowid from t_station where name=? and samename=?)) 
 		""", 
@@ -665,9 +698,9 @@ for bitem in branch:
 	(select rowid from t_station where name=? and samename=?), 
 	?,
 	(select seq from sqlite_sequence where name='t_jctspcl'), 
-	(1 << 31) | (select sflg from t_station where name=? and samename=?))""", 
-	[bitem[0], bitem[1], bitem[5], bitem[3], bitem[1], bitem[5]])
-	# b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb12のみ使用される
+	(1 << 31) | ?)""", 
+	[bitem[0], bitem[1], bitem[5], bitem[3], bitem[7]])
+	# b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb15のみ使用される
 
 # make t_jct
 con.execute("""
@@ -716,12 +749,12 @@ print("#define IS_SHINKANSEN_LINE(id)	((0<(id))&&((id)<={0}))".format(n_line_Ind
 print("#define IS_COMPANY_LINE(id)	({0}<(id))".format(n_line_Index_of_CompanyLine))
 
 # 以下のクエリー文でも会社線路線かどうか判定可(0でJR、非0で会社線)
-# select count(*) from t_lines where line_id=? and (lflg & (1 << 23))!=0;
+# select count(*) from t_lines where line_id=? and (lflg & (1 << 18))!=0;
 
 # 以下のクエリー文で会社線路線一覧を得られる
-# select * from t_line where rowid in (select line_id from t_lines where (lflg & (1 << 23))!=0);
+# select * from t_line where rowid in (select line_id from t_lines where (lflg & (1 << 18))!=0);
 # または以下でも同様の結果が得られる
-# select * from t_line n where exists (select * from t_lines l where l.line_id=n.rowid and (lflg & (1 << 23))!=0);
+# select * from t_line n where exists (select * from t_lines l where l.line_id=n.rowid and (lflg & (1 << 18))!=0);
 
 cur.execute("select count(*) from t_jct")
 n = cur.fetchone()[0]

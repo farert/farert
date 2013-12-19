@@ -99,11 +99,24 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_)
 	lineId = lineId_;
 	stationId = stationId_;
 
-	if (lineId <= 0) {
-		flag = Route::AttrOfStationId((int)stationId_) & MASK_ROUTE_FLAG;
-	} else {
-		flag = Route::AttrOfStationOnLineLine((int)lineId_, (int)stationId_) & MASK_ROUTE_FLAG;
-	}
+//	if (lineId <= 0) {
+		flag = Route::AttrOfStationId((int)stationId_) & MASK_ROUTE_FLAG_SFLG;
+//	} else {
+//		flag = Route::AttrOfStationOnLineLine((int)lineId_, (int)stationId_);
+//	}
+}
+
+//	constructor
+//	@param [in] lineId_    òHê¸
+//	@param [in] stationId_ âw
+//	@param [in] flag_      mask(bit31-16ÇÃÇ›óLå¯)
+//
+RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_) 
+{
+	lineId = lineId_;
+	stationId = stationId_;
+	flag = Route::AttrOfStationId((int)stationId_) & MASK_ROUTE_FLAG_SFLG;
+	flag |= (flag_ & MASK_ROUTE_FLAG_LFLG);
 }
 
 //////////////////////////////////////////////////////
@@ -235,7 +248,7 @@ DBO Route::Enum_lines_from_company_prefect(int id)
 " left join t_lines l on n.rowid=l.line_id"
 " left join t_station t on t.rowid=l.station_id"
 " where %s=%d"
-" and (l.lflg&((1<<23)|(1<<31)|(1<<22)))=0"
+" and (l.lflg&((1<<18)|(1<<31)|(1<<17)))=0"
 " group by l.line_id order by n.name";
 
 	int ident;
@@ -261,7 +274,7 @@ DBO Route::Enum_lines_from_company_prefect(int id)
 DBO Route::Enum_station_match(LPCTSTR station)
 {
 	char sql[256];
-	const char tsql[] = "/**/select name, rowid, samename from t_station where (sflg&(1<<23))=0 and %s like '%q%%'";
+	const char tsql[] = "/**/select name, rowid, samename from t_station where (sflg&(1<<18))=0 and %s like '%q%%'";
 	const char tsql_s[] = " and samename='%q'";
 
 	tstring sameName;
@@ -329,7 +342,7 @@ DBO Route::Enum_station_located_in_prefect_or_company_and_line(int prefectOrComp
 //"select t.name, station_id from t_lines l left join t_station t on t.rowid=l.station_id "
 //" where line_id=? and %s=? order by sales_km";
 "/**/select t.name, station_id from t_station t left join t_lines l on t.rowid=l.station_id"
-" where line_id=? and %s=? and (l.lflg&((1<<23)|(1<<31)|(1<<22)))=0 order by sales_km";
+" where line_id=? and %s=? and (l.lflg&((1<<18)|(1<<31)|(1<<16)))=0 order by sales_km";
 
 	char sql[256];
 	int ident;
@@ -385,8 +398,8 @@ DBO Route::Enum_line_of_stationId(int stationId)
 {
 	static const  char tsql[] =
 "select n.name, line_id, lflg from t_line n left join t_lines l on n.rowid=l.line_id"
-//" where station_id=? and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0";
-" where station_id=? and (lflg&(1<<22))=0";
+//" where station_id=? and (lflg&((1<<31)|(1<<17)))=0 and sales_km>=0";
+" where station_id=? and (lflg&(1<<17))=0";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	dbo.setParam(1, stationId);
@@ -411,22 +424,22 @@ DBO Route::Enum_junction_of_lineId(int lineId, int stationId)
 #if 1	// ï™äÚì¡ó·ÇÃÇ›ÇÃèÊä∑âw(éRå`Ç∆Ç©)Çä‹Çﬁ
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
-" where line_id=?1 and (lflg&(1<<22))=0 and"
+" where line_id=?1 and (lflg&(1<<17))=0 and"
 " station_id in (select station_id from t_lines where line_id!=?1 or station_id=?2)"
 " order by l.sales_km";
 
 //"select t.name, station_id, sflg&(1<<12)"
 //" from t_lines l left join t_station t on t.rowid=l.station_id"
-//" where line_id=?1 and (lflg&(1<<22))=0 and"
+//" where line_id=?1 and (lflg&(1<<17))=0 and"
 //" exists (select * from t_lines where line_id!=?1 and l.station_id=station_id)"
-//" or (line_id=?1 and (lflg&(1<<22))=0 and station_id=?2) order by l.sales_km";
+//" or (line_id=?1 and (lflg&(1<<17))=0 and station_id=?2) order by l.sales_km";
 // -- exists ÇégÇ§Ç∆Ç‚ÇΩÇÁíxÇ¢
 #else
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
-" where line_id=?1 and ((lflg & (1<<12))<>0 or station_id=?2)"
-//" and (lflg&((1<<31)|(1<<22)))=0 and sales_km>=0"
-" and (lflg&(1<<22))=0"
+" where line_id=?1 and ((sflg & (1<<12))<>0 or station_id=?2)"
+//" and (lflg&((1<<31)|(1<<17)))=0 and sales_km>=0"
+" and (lflg&(1<<17))=0"
 " order by l.sales_km";
 #endif
 
@@ -450,7 +463,7 @@ DBO Route::Enum_station_of_lineId(int lineId)
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
 " where line_id=?"
-" and (lflg&((1<<31)|(1<<22)))=0"
+" and (lflg&((1<<31)|(1<<17)))=0"
 " order by l.sales_km";
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
@@ -473,31 +486,31 @@ DBO Route::Enum_neer_node(int stationId)
 "select 	station_id , abs(("
 "	select case when calc_km>0 then calc_km else sales_km end "
 "	from t_lines "
-"	where 0=(lflg&((1<<31)|(1<<22))) "
+"	where 0=(lflg&((1<<31)|(1<<17))) "
 "	and line_id=(select line_id "
 "				 from	t_lines "
 "				 where	station_id=?1" 
-"				 and	0=(lflg&((1<<31)|(1<<22)))) "
+"				 and	0=(lflg&((1<<31)|(1<<17)))) "
 "	and station_id=?1)-case when calc_km>0 then calc_km else sales_km end) as cost"
 " from 	t_lines "
-" where 0=(lflg&((1<<31)|(1<<22)))"
+" where 0=(lflg&((1<<31)|(1<<17)))"
 " and	line_id=(select	line_id "
 " 				 from	t_lines "
 " 				 where	station_id=?1"
-" 				 and	0=(lflg&((1<<31)|(1<<22))))"
+" 				 and	0=(lflg&((1<<31)|(1<<17))))"
 " and	sales_km in ((select max(y.sales_km)"
 "					  from	t_lines x left join t_lines y"
 "					  on	x.line_id=y.line_id "
-"					  where	0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<22)))"
-"					  and	0<=y.sales_km and (1<<12)=(y.lflg&((1<<31)|(1<<22)|(1<<12)))"
+"					  where	0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<17)))"
+"					  and	0<=y.sales_km and (1<<15)=(y.lflg&((1<<31)|(1<<17)|(1<<15)))"
 "					  and	x.station_id=?1"
 "					  and	x.sales_km>y.sales_km"
 "					 ),"
 "					 (select min(y.sales_km)"
 "					  from	t_lines x left join t_lines y"
 "					  on	x.line_id=y.line_id "
-"					  where 0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<22)))"
-"					  and	0<=y.sales_km and (1<<12)=(y.lflg&((1<<31)|(1<<22)|(1<<12)))"
+"					  where 0<=x.sales_km and 0=(x.lflg&((1<<31)|(1<<17)))"
+"					  and	0<=y.sales_km and (1<<15)=(y.lflg&((1<<31)|(1<<17)|(1<<15)))"
 "					  and	x.station_id=?1"
 "					  and	x.sales_km<y.sales_km))";
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
@@ -561,7 +574,7 @@ vector<vector<int>> Route::Node_next(int jctId)
 //static 
 //	òHê¸ÇÃâwä‘Ç…âwÇÕÇ†ÇÈÇ©ÅH
 //	lineIdÇÃb_stationId to e_stationId in stationId ?
-//	íçÅF lflg&(1<<22)Çä‹ÇﬂÇƒÇ¢Ç»Ç¢ÇΩÇﬂÅAêVä≤ê¸ì‡ï™äÚâwÅAÇΩÇ∆Ç¶ÇŒÅA
+//	íçÅF lflg&(1<<17)Çä‹ÇﬂÇƒÇ¢Ç»Ç¢ÇΩÇﬂÅAêVä≤ê¸ì‡ï™äÚâwÅAÇΩÇ∆Ç¶ÇŒÅA
 //	     ìåäCìπêVä≤ê¸ ãûìs ïƒå¥ä‘Ç…ëêí√âwÇÕë∂ç›Ç∑ÇÈÇ∆ÇµÇƒï‘ÇµÇ‹Ç∑.
 //
 //	@param [in] stationId   åüçıâw
@@ -608,7 +621,7 @@ int Route::InStation(int stationId, int lineId, int b_stationId, int e_stationId
 //static
 //	òHê¸ÇÃbegin_station_idâwÇ©ÇÁto_station_idâwÇ‹Ç≈ÇÃï™äÚâwÉäÉXÉgÇï‘Ç∑
 //
-//	íçÅF lflg&(1<<22)Çä‹ÇﬂÇƒÇ¢Ç»Ç¢ÇΩÇﬂÅAêVä≤ê¸ì‡ï™äÚâwÅAÇΩÇ∆Ç¶ÇŒÅA
+//	íçÅF lflg&(1<<17)Çä‹ÇﬂÇƒÇ¢Ç»Ç¢ÇΩÇﬂÅAêVä≤ê¸ì‡ï™äÚâwÅAÇΩÇ∆Ç¶ÇŒÅA
 //	     ìåäCìπêVä≤ê¸ ãûìs ïƒå¥ä‘Ç…ëêí√âwÇÕë∂ç›Ç∑ÇÈÇ∆ÇµÇƒï‘ÇµÇ‹Ç∑.
 //
 //	@param [in] line_id          òHê¸
@@ -621,7 +634,7 @@ DBO Route::Enum_junctions_of_line(int line_id, int begin_station_id, int to_stat
 {
 	static const char tsql[] = 
 "select id from t_lines l join t_jct j on j.station_id=l.station_id where"
-"	line_id=?1 and (lflg&((1<<31)|(1<<12)))=(1<<12)"
+"	line_id=?1 and (lflg&((1<<31)|(1<<15)))=(1<<15)"
 "	and sales_km>="
 "			(select min(sales_km)"
 "			from t_lines"
@@ -667,7 +680,8 @@ int Route::RetrieveOut70Station(int line_id)
 {
 	static const char tsql[] =
 "select station_id from t_lines where line_id=?1 and "
-" sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&((1<<6)|(1<<31)))=(1<<6));";
+" sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&(1<<31))=0 and"
+" exists (select * from t_station where rowid=station_id and (sflg&(1<<6))!=0));";
 #if 0
 "select	t1.line_id,"
 "	65535&t1.station_id,"
@@ -760,11 +774,6 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	(endStationId != stationId2) &&
 	(0 != Route::InStation(endStationId, line_id, stationId1, stationId2))) {
 		return -1;	/* <t> already passed error  */
-	}
-
-	lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
-	if (!isLflgEnable(lflg2)) {
-		return -2;		/* ïsê≥åoòH(line_idÇ…stationId2ÇÕë∂ç›ÇµÇ»Ç¢) */
 	}
 
 	ASSERT(BIT_CHK(lflg1, BSRJCTSP) || route_list_raw.at(num - 1).stationId == stationId1);
@@ -869,8 +878,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 					TRACE(_T("JCT: A-C\n"));		// 3, 4, 8, 9, g,h
 					--num;
 				} else {
-					route_list_raw.at(num - 1).stationId = jctSpStationId;
-					route_list_raw.at(num - 1).flag = Route::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, jctSpStationId) & MASK_ROUTE_FLAG;
+					route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId, jctSpStationId);
 				}
 				if (jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
 					rc = add(jctSpMainLineId2, jctSpStationId2, 1<<8);	//**************
@@ -945,8 +953,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 							stationId1 = jctSpStationId;
 						}
 					} else {
-						route_list_raw.at(num - 1).stationId = i;
-						route_list_raw.at(num - 1).flag = Route::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, i) & MASK_ROUTE_FLAG;
+						route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId, i);
 						route_list_raw.push_back(RouteItem(jctSpMainLineId, jctSpStationId));
 						stationId1 = jctSpStationId;
 					}
@@ -963,16 +970,17 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 			
 			line_id = jctSpMainLineId;
 
+			if ((2 <= num) && 
+			(0 < Route::InStation(stationId2, jctSpMainLineId, 
+			route_list_raw.at(num - 2).stationId, stationId1))) {
+				TRACE(_T("E-3:duplicate route error.\n"));
+				TRACE(_T("add_abort\n"));
+				return -1;	// Duplicate route error >>>>>>>>>>>>>>>>>
+			}
+
 			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
 				// E-3 , B-0, 5, 6, b, c, d, e
 				// E-0, E-1, E-1a, 6, b, c, d, e
-				if ((2 <= num) && 
-				(0 < Route::InStation(stationId2, jctSpMainLineId, 
-				route_list_raw.at(num - 2).stationId, stationId1))) {
-					TRACE(_T("E-3:duplicate route error.\n"));
-					TRACE(_T("add_abort\n"));
-					return -1;	// Duplicate route error >>>>>>>>>>>>>>>>>
-				}
 				replace_flg = true;
 			} else {
 				// E-2, G, G-3, G-2, G-4
@@ -1000,7 +1008,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 				replace_flg = true;
 				TRACE("JCT: F1, H, E11-14\n");
 			} else {
-				jct_flg_on = true;	// f3b
+				// f3bÇÕÉGÉâÅ[Ç∆Ç∑ÇÈÇΩÇﬂ. jct_flg_on = true;	// f3b
 			}
 		} else {
 			// J, B, D
@@ -1586,7 +1594,7 @@ int Route::LineIdFromStationId(int station_id)
   "select line_id"
   " from t_lines"
   " where station_id=?"
-  " and 0=(lflg&((1<<31)|(1<<22)))");
+  " and 0=(lflg&((1<<31)|(1<<17)))");
 	if (ctx.isvalid()) {
   		ctx.setParam(1, station_id);
 		if (ctx.moveNext()) {
@@ -1603,7 +1611,7 @@ int Route::LineIdFromStationId(int station_id)
 //
 int Route::GetStationId(LPCTSTR station)
 {
-	const char tsql[] = "select rowid from t_station where (sflg&(1<<23))=0 and name=?1 and samename=?2";
+	const char tsql[] = "select rowid from t_station where (sflg&(1<<18))=0 and name=?1 and samename=?2";
 
 	tstring sameName;
 	tstring stationName(station);
@@ -1932,11 +1940,11 @@ int Route::ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteIt
 bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<PAIRIDENT>* results, bool continue_flag)
 {
 	const static char tsql[] = 
-//" select station_id, (lflg>>17)&15, (lflg>>29)&1,  (lflg>>28)&1"
+//" select station_id, (lflg>>0)&15, (lflg>>24)&1,  (lflg>>23)&1"
 " select station_id, lflg"
 " from t_lines"
 " where line_id=?1"
-" and (lflg&((1<<31)|(1<<29)))=(1<<29)"
+" and (lflg&((1<<31)|(1<<24)))=(1<<24)"
 " and station_id"
 " in (select station_id"
 "      from t_lines"
@@ -1990,7 +1998,9 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 		while (ctx.moveNext()) {
 			cur_stid = ctx.getInt(0);
 			cur_flag = ctx.getInt(1);
-			pre_list.push_back(MAKEPAIR(IDENT1(cur_stid), IDENT2(cur_flag)));
+			// bit23 -> bit15 | bit3-0
+			cur_flag = ((cur_flag >> (23 - 15)) & (1 << 15)) | (cur_flag & 0x0f);
+			pre_list.push_back(MAKEPAIR(IDENT1(cur_stid), cur_flag));
 		}
 		cur_stid = 0;
 		cur_flag = 0;
@@ -1998,23 +2008,23 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 			cur_stid = IDENT1(*it);
 			cur_flag = IDENT2(*it);
 
-			if (((prev_flag >> (17 - HWORD_BIT)) & 0x0f) == ((cur_flag >> (17 - HWORD_BIT)) & 0x0f)) {
+			if ((prev_flag & 0x0f) == (cur_flag & 0x0f)) {
 				// OK
-				if (((cur_flag & (1 << (28 - HWORD_BIT))) != 0) && ((it + 1) == pre_list.cend()) && 
+				if (((cur_flag & (1 << 15)) != 0) && ((it + 1) == pre_list.cend()) && 
 					 (station_id2 == cur_stid)) { /* ç≈å„Ç≈BSR69CONT=1 */
 					next_continue = true;
-				} else if ((cur_flag & (1 << (28 - HWORD_BIT))) != 0) {
+				} else if ((cur_flag & (1 << 15)) != 0) {
 					// NG
 					prev_flag = 0;
 					continue;
 				}
-				results->push_back(MAKEPAIR(IDENT1(prev_stid), IDENT1((prev_flag >> (17 - HWORD_BIT)) & 0x0f)));
-				results->push_back(MAKEPAIR(IDENT1(cur_stid), IDENT1((cur_flag >> (17 - HWORD_BIT)) & 0x0f)));
+				results->push_back(MAKEPAIR(IDENT1(prev_stid), (prev_flag & 0x0f)));
+				results->push_back(MAKEPAIR(IDENT1(cur_stid), (cur_flag & 0x0f)));
 				prev_flag = 0;
 
 				TRACE(_T("c69             station_id1=%s(%d), station_id2=%s(%d)\n"), Route::StationName(prev_stid).c_str(), prev_stid, Route::StationName(cur_stid).c_str(), cur_stid);
 
-				if (((cur_flag & (1 << (28 - HWORD_BIT))) != 0) && 
+				if (((cur_flag & (1 << 15)) != 0) && 
 				    ((it + 1) == pre_list.cend()) && 
 				    (station_id2 == cur_stid)) { /* ç≈å„Ç≈BSR69CONT=1 */
 					next_continue = true;
@@ -2023,8 +2033,8 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 				}
 			} else {
 				/* åpë±à»äOÇ≈åpë±ÉtÉâÉOïtBSR69TERMÇÕñ≥å¯*/
-				if ((continue_flag && ((cur_flag & (1 << (28 - HWORD_BIT))) != 0) && (station_id1 == cur_stid)) ||
-				   (!continue_flag && ((cur_flag & (1 << (28 - HWORD_BIT))) == 0))) {
+				if ((continue_flag && ((cur_flag & (1 << 15)) != 0) && (station_id1 == cur_stid)) ||
+				   (!continue_flag && ((cur_flag & (1 << 15)) == 0))) {
 					// OK
 					prev_flag = cur_flag;
 					prev_stid = cur_stid;
@@ -2357,7 +2367,8 @@ int Route::InCityStation(int cityno, int lineId, int stationId1, int stationId2)
 "select count(*)"
 "	from t_lines"
 "	where line_id=?1"
-"	and (lflg&2147483663)=?4"
+"	and (lflg&(1<<31))=0"
+"	and exists (select * from t_station where rowid=station_id and (sflg&15)=?4)"
 "	and sales_km>="
 "			(select min(sales_km)"
 "			from t_lines"
@@ -2370,7 +2381,6 @@ int Route::InCityStation(int cityno, int lineId, int stationId1, int stationId2)
 "			where line_id=?1"
 "			and (station_id=?2 or "
 "				 station_id=?3))";
-//2147483663 = 0x8000000f = (lflg&(1<<31) = 0 and (lflg&15)=?4) 
 	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, lineId);
@@ -3650,45 +3660,10 @@ int Route::Retreive_SpecificCoreAvailablePoint(int km, int km_offset, int line_i
 //
 bool Route::IsAbreastShinkansen(int line_id1, int line_id2, int station_id1, int station_id2)
 {
-const char tsql[] = "select line_id from t_hzline where rowid=("
-	"	select ((lflg>>13)&15) from t_lines where line_id=?1 and station_id=?2"
-	"	)";
-const char tsql2[] = "select line_id from t_hzline where line_id>0 and rowid in ("
-	"	select ((lflg>>13)&15) from t_lines where ((lflg>>13)&15)!=0 and line_id=?1 and "
-	"	case when (select sales_km from t_lines where line_id=?1 and station_id=?2)<"
-	"	          (select sales_km from t_lines where line_id=?1 and station_id=?3)"
-	"	then"
-	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2)"
-	"	else"
-	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2)"
-	"	end"
-	") limit(1);";
-
-	int line_id = -1;
-
 	if (!IS_SHINKANSEN_LINE(line_id2)) {
 		return false;
 	}
-	DBO dbo = DBS::getInstance()->compileSql(tsql);
-	if (dbo.isvalid()) {
-		dbo.setParam(1, line_id2);
-		dbo.setParam(2, station_id1);
-		if (dbo.moveNext()) {
-			line_id = dbo.getInt(0);
-			if (line_id <= 0) {
-				DBO dbo2 = DBS::getInstance()->compileSql(tsql2); // çÇçË(è„âzêVä≤ê¸/ñkó§êVä≤ê¸)Ç∆Ç©
-				if (dbo2.isvalid()) {
-					dbo2.setParam(1, line_id2);
-					dbo2.setParam(2, station_id1);
-					dbo2.setParam(3, station_id2);
-					if (dbo2.moveNext()) {
-						line_id = dbo2.getInt(0);
-					}
-				}
-			}
-		}
-	}
-	return line_id == line_id1;
+	return line_id1 == GetHZLine(line_id2, station_id1, station_id2);
 }
 
 
@@ -3701,13 +3676,25 @@ const char tsql2[] = "select line_id from t_hzline where line_id>0 and rowid in 
 //	@retval not 0 ï¿çsç›óàê¸
 //	@retval 0xffff ï¿çsç›óàê¸ÇÕ2Ç¬Ç†ÇËÅAÇªÇÃã´äEâwÇ≈Ç†ÇÈ(è„âzêVä≤ê¸ çÇçË)
 //
-int Route::GetHZLine(int line_id, int station_id)
+int Route::GetHZLine(int line_id, int station_id, int station_id2 /* =-1 */)
 {
-	const static char tsql[] =
-"select line_id from t_hzline where rowid="
-"(select (lflg>>13)&15 from t_lines where line_id=?1 and station_id=?2)";
+// êVä≤ê¸-ï¿çsç›óàê¸éÊìæÉNÉGÉä(GetHZLine)
+const char tsql_hzl1[] = "select line_id from t_hzline where rowid=("
+	"	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2"
+	"	)";
+const char tsql_hzl2[] = "select line_id from t_hzline where line_id<32767 and rowid in ("
+	"	select ((lflg>>19)&15) from t_lines where ((lflg>>19)&15)!=0 and line_id=?1 and "
+	"	case when (select sales_km from t_lines where line_id=?1 and station_id=?2)<"
+	"	          (select sales_km from t_lines where line_id=?1 and station_id=?3)"
+	"	then"
+	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+	"	else"
+	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+	"	end"
+	") limit(1);";
 
-	DBO dbo(DBS::getInstance()->compileSql(tsql));
+	int lineId = 0;
+	DBO dbo(DBS::getInstance()->compileSql(tsql_hzl1));
 
 	ASSERT(IS_SHINKANSEN_LINE(line_id));
 
@@ -3715,9 +3702,18 @@ int Route::GetHZLine(int line_id, int station_id)
 	dbo.setParam(2, station_id);
 
 	if (dbo.moveNext()) {
-		return dbo.getInt(0);
+		lineId = dbo.getInt(0);
+		if (32767 < lineId) {
+			DBO dbo2(DBS::getInstance()->compileSql(tsql_hzl2));
+			dbo2.setParam(1, line_id);
+			dbo2.setParam(2, station_id);
+			dbo2.setParam(3, station_id2);
+			if (dbo2.moveNext()) {
+				lineId = dbo2.getInt(0);
+			}
+		}
 	}
-	return 0;
+	return lineId;
 }
 
 
@@ -3754,16 +3750,10 @@ bool Route::CheckTransferShinkansen(int line_id1, int line_id2, int station_id1,
 	} else {
 		return true;				// ÇªÇÍà»äOÇÕëŒè€äO
 	}
-	hzl = Route::GetHZLine(bullet_line, station_id2);
-	if (hzl == 0x0fff) {
-		// ï¿çsç›óàê¸åÀê–Ç™êÿÇËë÷ÇÌÇÈ(è„âzê¸ çÇçË)
-		hzl = Route::NextShinkansenTransferTerm(bullet_line, station_id2, 
-								(bullet_line == line_id2) ? station_id2 : station_id1);
-		if (local_line != Route::GetHZLine(bullet_line, hzl)) {
-			return true;
-		}
-	} else if (hzl != local_line) {
-		return true;				// ÇªÇÍà»äOÇÕëŒè€äO
+	hzl = Route::GetHZLine(bullet_line, station_id2, 
+			(bullet_line == line_id2) ? station_id2 : station_id1);
+	if (local_line != hzl) {
+		return true;
 	}
 
 	// table.A
@@ -3772,9 +3762,9 @@ bool Route::CheckTransferShinkansen(int line_id1, int line_id2, int station_id1,
 		return true;		// è„ÇËÅ®è„ÇË or â∫ÇËÅ®â∫ÇË
 	}
 	if (dir == LDIR_ASC) {	// â∫ÇËÅ®è„ÇË
-		return (((Route::AttrOfStationOnLineLine(local_line, station_id2) >> 25) & 0x01) != 0);
+		return (((Route::AttrOfStationOnLineLine(local_line, station_id2) >> 19) & 0x01) != 0);
 	} else {				// è„ÇËÅ®â∫ÇË
-		return (((Route::AttrOfStationOnLineLine(local_line, station_id2) >> 25) & 0x02) != 0);
+		return (((Route::AttrOfStationOnLineLine(local_line, station_id2) >> 19) & 0x02) != 0);
 	}
 	return true;
 }
@@ -3797,12 +3787,12 @@ int Route::NextShinkansenTransferTerm(int line_id, int station_id1, int station_
 	"(select sales_km from t_lines where line_id=?1 and station_id=?3)<"
 	"(select sales_km from t_lines where line_id=?1 and station_id=?2) then"
 	" sales_km=(select max(sales_km) from t_lines where line_id=?1 and"
-	"	((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and"
+	"	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and"
 	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
 	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?3))"
 	" else"
 	" sales_km=(select min(sales_km) from t_lines where line_id=?1 and"
-	"	((lflg>>13)&15)!=0 and (lflg&((1<<22)|(1<<31)))=0 and"
+	"	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and"
 	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
 	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?3))"
 	" end";
@@ -4180,23 +4170,23 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 0
 "	(select max(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
 "	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 1
-"	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21) and station_id=?2)"
+"	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?2)"
 "	then -1 else"
 "	abs((select sales_km from t_lines"
-"	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21)"
+"	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// 2
 "	case when exists (select * from t_lines"
-"	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21) and station_id=?3)"
+"	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?3)"
 "	then -1 else"
 "	abs((select calc_km from t_lines"
-"	where line_id=?1 and (lflg&((1<<21)|(1<<31)))=(1<<21)"
+"	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// 3
 "	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
-"	((select 2147483648*(1&(lflg>>23)) from t_lines where line_id=?1 and station_id=?3) + "
+"	((select 2147483648*(1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3) + "
 "	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
 , true);
 //	2147483648 = 0x80000000
@@ -4481,7 +4471,7 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList, bool applied_rule/
 	this->local_only_as_hokkaido = true;
 	for (ite = routeList.cbegin(); ite != routeList.cend(); ite++) {
 
-//ASSERT((ite->flag  & ~MASK_ROUTE_FLAG) == 0);
+//ASSERT((ite->flag) == 0);
 		if (station_id1 != 0) {
 							/* âÔé–ï âcã∆ÉLÉçÅAåvéZÉLÉçÇÃéÊìæ */
 			if (!FARE_INFO::aggregate_fare_info(ite->lineId, station_id1, ite->stationId)) {
