@@ -681,7 +681,7 @@ for bitem in branch:
 
 		con.execute("""
 		insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
-		1,
+		0,
 		(select rowid from t_line where name=?), 
 		(select rowid from t_station where name=? and samename=?), 
 		(select rowid from t_line where name=?), 

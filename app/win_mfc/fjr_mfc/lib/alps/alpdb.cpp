@@ -1659,23 +1659,26 @@ int Route::GetLineId(LPCTSTR lineName)
 //	@param [out] jctSpMainLineId   b –{ü
 //	@param [out] jctSpStationId    c •ªŠò‰w
 //
-void Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
+//	@return type 0: nomal, 1-3:type B
+//
+int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
 {
 	const char tsql[] =
 	//"select calc_km>>16, calc_km&65535, (lflg>>16)&32767, lflg&32767 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
-	"select jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
+	"select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
 	" from t_jctspcl where id=("
 	"	select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)";
-
+	int type = -1;
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, jctLineId);
 		dbo.setParam(2, transferStationId);
 		if (dbo.moveNext()) {
-			jctSpMainLineId = dbo.getInt(0);
-			jctSpStationId = dbo.getInt(1);
-			jctSpMainLineId2 = dbo.getInt(2);
-			jctSpStationId2 = dbo.getInt(3);
+			type = dbo.getInt(0);
+			jctSpMainLineId = dbo.getInt(1);
+			jctSpStationId = dbo.getInt(2);
+			jctSpMainLineId2 = dbo.getInt(3);
+			jctSpStationId2 = dbo.getInt(4);
 		}
 	}
 	ASSERT(((jctSpMainLineId2 == 0) && (jctSpStationId2 == 0)) ||
@@ -1683,6 +1686,7 @@ void Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
 	if (jctSpStationId2 == 0) {	// safety
 		jctSpMainLineId2 = 0;
 	}
+	return type;
 }
 
 //static
