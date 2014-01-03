@@ -438,14 +438,18 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 		tmp = linitems[19].strip()
 		if tmp[0] != '!' and tmp != "":
 			tmps = tmp.split('/')
-			while len(tmps) < 4:
+			while len(tmps) < 5:
 				tmps.append('')
+
+			if int(tmps[0]) < 1 or 3 < int(tmps[0]):  # あえてisdigit()を使わず例外スローさせる
+				print(num_of_line, lin)
+				raise ValueError
 
 			con.execute("""
 			insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
 			?, ?, ?, ?, ?)
 			""", 
-			[jcttype, tmps[0], tmps[1], tmps[2], tmps[3]])
+			[tmps[0], tmps[1], tmps[2], tmps[3], tmps[4]])
 
 			cur.execute('select seq from sqlite_sequence where name=\'t_jctspcl\'')
 			lflg &= 0xffffff00
