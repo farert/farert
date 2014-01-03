@@ -445,7 +445,7 @@ public:	// termsel
 
 private:
 	void	routePassOff(int line_id, int to_station_id, int begin_station_id);
-	void 	retrieveJunctionSpecific(int jctLineId, int transferStationId);
+	int 	retrieveJunctionSpecific(int jctLineId, int transferStationId);
 	int		junctionStationExistsInRoute(int stationId);
 
 public:
