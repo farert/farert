@@ -29,6 +29,11 @@ typedef unsigned int SPECIFICFLAG;
 #define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// 駅非表示
 
 #define BSRJCTSP		31		// 分岐特例
+#define	BSRJCTHORD		31		// 水平型検知フラグ
+
+#define BSRNOTYET		30		// 不完全ルート
+#define BSRJCTSP_B		29		// 分岐特例B
+
 /* --------------------------------------- */
 /* util */
 #define NumOf(c)  (sizeof(c) / sizeof(c[0]))
