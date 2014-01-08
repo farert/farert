@@ -776,15 +776,15 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 		return -1;	/* <t> already passed error  */
 	}
 
-	ASSERT(BIT_CHK(lflg1, BSRJCTSP) || route_list_raw.at(num - 1).stationId == stationId1);
+	ASSERT(BIT_CHK(lflg1, BSRJCTHORD) || route_list_raw.at(num - 1).stationId == stationId1);
 
 	lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
 	if (!isLflgEnable(lflg2)) {
 		return -2;		/* 不正経路(line_idにstationId2は存在しない) */
 	}
-	/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTSP=ONがD-2ケースである */
+	/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
 	if (!BIT_CHK(ctlflg, 8) && 
-	(1 < num) && !BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP) && 
+	(1 < num) && !BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD) && 
 	!Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
 									route_list_raw.at(num - 2).stationId, stationId1, stationId2)) {
 		return -1;		// F-3b
@@ -794,7 +794,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	
 	// 直前同一路線指定は受け付けない
 	// 直前同一駅は受け付けない
-	//if (!BIT_CHK(route_list_raw.back().flag, BSRJCTSP) && ((1 < num) && (line_id == route_list_raw.back().lineId))) {
+	//if (!BIT_CHK(route_list_raw.back().flag, BSRJCTHORD) && ((1 < num) && (line_id == route_list_raw.back().lineId))) {
 	//	TRACE(_T("iregal parameter by same line_id.\n"));
 	//	return -1;		// E-2, G, G-3, f, j1,j2,j3,j4 >>>>>>>>>>>>>>>>>>
 	//}
@@ -814,7 +814,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	}
 	
 	// 水平型検知
-	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP)) {
+	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD)) {
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
 		if (Route::IsAbreastShinkansen(route_list_raw.at(num - 1).lineId, line_id, stationId1, stationId2)) {
 			// 	line_idは新幹線
@@ -1103,7 +1103,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 			(0 != Route::InStation(endStationId, line_id, stationId1, stationId2))) 
 			// ||
 			// /*BIT_CHK(lflg1, BSRJCTSP) || */ BIT_CHK(lflg2, BSRJCTSP) ||	// E-12
-			// BIT_CHK(route_list_raw.back().flag, BSRJCTSP) ||				// E-14
+			// BIT_CHK(route_list_raw.back().flag, BSRJCTHORD) ||				// E-14
 			// (0 < junctionStationExistsInRoute(stationId2)) ||
 		//	((2 <= num) && (0 < Route::InStation(stationId2, line_id, route_list_raw.at(num - 2).stationId, stationId1)))
 			) {
@@ -1138,9 +1138,9 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 		--num;
 	}
 	if (jct_flg_on) {
-		lflg2 |= MASK(BSRJCTSP);	// 水平型検知(D-2)
+		lflg2 |= MASK(BSRJCTHORD);	// 水平型検知(D-2)
 	} else {
-		lflg2 &= ~MASK(BSRJCTSP);
+		lflg2 &= ~MASK(BSRJCTHORD);
 	}
 	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 	++num;
