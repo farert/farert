@@ -17,8 +17,6 @@ typedef short IDENT;
 typedef unsigned int PAIRIDENT;
 typedef unsigned int SPECIFICFLAG;
 
-#define isLflgEnable(lflg)	(0==((1<<30)&lflg))
-
 #define MAKEPAIR(ident1, ident2) ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
 #define IDENT1(ident) ((IDENT)(0xffff & ident))
 #define IDENT2(ident) ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
@@ -31,7 +29,7 @@ typedef unsigned int SPECIFICFLAG;
 #define BSRJCTSP		31		// 分岐特例
 #define	BSRJCTHORD		31		// 水平型検知フラグ
 
-#define BSRNOTYET		30		// 不完全ルート
+#define BSRNOTYET_NA	30		// 不完全ルート
 #define BSRJCTSP_B		29		// 分岐特例B
 
 /* --------------------------------------- */
@@ -42,6 +40,8 @@ typedef unsigned int SPECIFICFLAG;
 
 #define MASK(bdef)	(1 << bdef)
 #define BIT_CHK(flg, bdef) (0 != (flg & MASK(bdef)))
+#define BIT_CHK2(flg, bdef1, bdef2) (0 != (flg & (MASK(bdef1)|MASK(bdef2))))
+#define BIT_CHK3(flg, bdef1, bdef2, bdef3) (0 != (flg & (MASK(bdef1)|MASK(bdef2)|MASK(bdef3))))
 #define BIT_ON(flg, bdef)  (flg |= MASK(bdef))
 #define BIT_OFF(flg, bdef) (flg &= ~MASK(bdef))
 
@@ -363,6 +363,14 @@ public:
 	static int StationIdOf_YOSHIZUKA;	  	// 吉塚
 };
 
+typedef struct 
+{
+	int		jctSpMainLineId;		// 分岐特例:本線(b)
+	int		jctSpStationId;			// 分岐特例:分岐駅(c)
+	int		jctSpMainLineId2;		// 分岐特例:本線(b)
+	int		jctSpStationId2;		// 分岐特例:分岐駅(c)
+} JCTSP_DATA;
+
 class Route
 {
 	BYTE jct_mask[(MAX_JCT + 7)/ 8];	// about 40byte
@@ -371,10 +379,6 @@ class Route
 	FARE_INFO fare_info;
 private:
 	SPECIFICFLAG last_flag;	// add() - removeTail() work
-	int			 jctSpMainLineId;		// 分岐特例:本線(b)
-	int			 jctSpStationId;		// 分岐特例:分岐駅(c)
-	int			 jctSpMainLineId2;		// 分岐特例:本線(b)
-	int			 jctSpStationId2;		// 分岐特例:分岐駅(c)
 public:
 	int startStationId() 
 	{ return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId; }
@@ -449,9 +453,10 @@ public:	// termsel
 	static DBO	 	Enum_line_of_stationId(int stationId);
 
 private:
-	void	routePassOff(int line_id, int to_station_id, int begin_station_id);
-	int 	retrieveJunctionSpecific(int jctLineId, int transferStationId);
-	int		junctionStationExistsInRoute(int stationId);
+	void		routePassOff(int line_id, int to_station_id, int begin_station_id);
+	static int 	retrieveJunctionSpecific(int jctLineId, int transferStationId, JCTSP_DATA* jctspdt);
+	int			getBsrjctSpType(SPECIFICFLAG flg);
+	int			junctionStationExistsInRoute(int stationId);
 
 public:
 	// alps_mfcDlg
@@ -461,6 +466,8 @@ public:
 	tstring 		show_route(bool cooked);
 
 	int				setup_route(LPCTSTR route_str);
+
+	bool			chk_jctsb_b(int kind, int num);
 
 	int 			add(int line_id, int stationId2, int ctlflg = 0);
 	int 			add(int stationId);
