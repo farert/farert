@@ -709,6 +709,32 @@ int Route::RetrieveOut70Station(int line_id)
 	return 0;
 }
 
+
+bool Route::chk_jctsb_b(int kind, int num)
+{
+	DbidOf dbid;
+
+	switch (kind) {
+	case 1:
+		/* 博多-新幹線-小倉*/
+		return (2 <= num) && 
+			(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId) &&
+			(dbid.StationIdOf_KOKURA == route_list_raw.at(num - 1).stationId) &&
+			(dbid.StationIdOf_HAKATA == route_list_raw.at(num - 2).stationId);
+		break;
+	case 2:
+		/* 小倉-新幹線-博多 */
+		return (2 <= num) && 
+			(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId) &&
+			(dbid.StationIdOf_HAKATA == route_list_raw.at(num - 1).stationId) &&
+			(dbid.StationIdOf_KOKURA == route_list_raw.at(num - 2).stationId);
+		break;
+	default:
+		break;
+	}
+	return false;
+}
+
 /*	経路追加
  *
  *	@param [in] line_id      路線ident
@@ -751,7 +777,9 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	int start_station_id;
 	bool replace_flg = false;	// 経路追加ではなく置換
 	bool jct_flg_on = false;    // 水平型検知(D-2)
-	
+	int type;
+	JCTSP_DATA jctspdt;
+
 	last_flag &= ~((1 << 5) | (1 << 6));
 
 	num = route_list_raw.size();
@@ -764,7 +792,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 
 	/* 発駅 */
 	lflg1 = Route::AttrOfStationOnLineLine(line_id, stationId1);
-	if (!isLflgEnable(lflg1)) {
+	if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
 		return -2;		/* 不正経路(line_idにstationId1は存在しない) */
 	}
 
@@ -779,19 +807,10 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	ASSERT(BIT_CHK(lflg1, BSRJCTHORD) || route_list_raw.at(num - 1).stationId == stationId1);
 
 	lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
-	if (!isLflgEnable(lflg2)) {
+	if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
 		return -2;		/* 不正経路(line_idにstationId2は存在しない) */
 	}
-	/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
-	if (!BIT_CHK(ctlflg, 8) && 
-	(1 < num) && !BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD) && 
-	!Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
-									route_list_raw.at(num - 2).stationId, stationId1, stationId2)) {
-		return -1;		// F-3b
-	}
 
-	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), Route::LineName(line_id).c_str(), line_id, Route::StationName(stationId1).c_str(), stationId1, Route::StationName(stationId2).c_str(), stationId2);
-	
 	// 直前同一路線指定は受け付けない
 	// 直前同一駅は受け付けない
 	//if (!BIT_CHK(route_list_raw.back().flag, BSRJCTHORD) && ((1 < num) && (line_id == route_list_raw.back().lineId))) {
@@ -812,6 +831,21 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 		TRACE(_T("add_abort\n"));
 		return -1;		//  >>>>>>>>>>>>>>>>>>
 	}
+
+	// 分岐特例B(BSRJCTSP_B)水平型検知
+	if (BIT_CHK(lflg2, BSRJCTSP) && chk_jctsb_b((type = getBsrjctSpType(lflg2)), num)) {
+		TRACE("JCT: h_(B)detect\n");
+		BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
+	} else {
+		/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
+		if (!BIT_CHK(ctlflg, 8) && 
+		(1 < num) && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) && 
+		!Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
+										route_list_raw.at(num - 2).stationId, stationId1, stationId2)) {
+			return -1;		// F-3b
+		}
+	}
+	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), Route::LineName(line_id).c_str(), line_id, Route::StationName(stationId1).c_str(), stationId1, Route::StationName(stationId2).c_str(), stationId2);
 	
 	// 水平型検知
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD)) {
@@ -856,14 +890,14 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 		// 段差型
 		if (BIT_CHK(lflg2, BSRJCTSP)) {	// 水平型でもある?
 			// retrieve from a, d to b, c 
-			retrieveJunctionSpecific(line_id, stationId2); // update jctSpMainLineId(b), jctSpStation(c)
+			retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 			if (jctSpStationId2 != 0) {
 				BIT_OFF(lflg1, BSRJCTSP);				// 別に要らないけど
 				break;
 			}
 		}
 		// retrieve from a, d to b, c 
-		retrieveJunctionSpecific(line_id, stationId1); // update jctSpMainLineId(b), jctSpStation(c)
+		retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 		if (stationId2 != jctSpStationId) {
 			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
 				ASSERT(stationId1 == route_list_raw.at(num - 1).stationId);
@@ -992,7 +1026,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	if (BIT_CHK(lflg2, BSRJCTSP)) {
 		// 水平型
 			// a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
-		retrieveJunctionSpecific(line_id, stationId2);
+		retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
 		if (stationId1 == jctSpStationId) {
 			// E10-, F, H
 			TRACE("JCT: E10-, F, H/KI0-4\n");
@@ -1137,10 +1171,12 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 		route_list_raw.pop_back();
 		--num;
 	}
+	lflg2 |= (lflg1 & 0xff000000);
+	lflg2 &= 0xff00ffff;
 	if (jct_flg_on) {
-		lflg2 |= MASK(BSRJCTHORD);	// 水平型検知(D-2)
+		BIT_ON(lflg2, BSRJCTHORD);	// 水平型検知(D-2)
 	} else {
-		lflg2 &= ~MASK(BSRJCTHORD);
+		BIT_OFF(lflg2, BSRJCTHORD);
 	}
 	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 	++num;
@@ -1656,12 +1692,11 @@ int Route::GetLineId(LPCTSTR lineName)
 //
 //	@param [in]  jctLineId         a 分岐路線
 //	@param [in]  transferStationId d 乗換駅
-//	@param [out] jctSpMainLineId   b 本線
-//	@param [out] jctSpStationId    c 分岐駅
+//	@param [out] jctspdt   b 本線, c 分岐駅
 //
 //	@return type 0: nomal, 1-3:type B
 //
-int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
+int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId, JCTSP_DATA* jctspdt)
 {
 	const char tsql[] =
 	//"select calc_km>>16, calc_km&65535, (lflg>>16)&32767, lflg&32767 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
@@ -1675,20 +1710,43 @@ int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId)
 		dbo.setParam(2, transferStationId);
 		if (dbo.moveNext()) {
 			type = dbo.getInt(0);
-			jctSpMainLineId = dbo.getInt(1);
-			jctSpStationId = dbo.getInt(2);
-			jctSpMainLineId2 = dbo.getInt(3);
-			jctSpStationId2 = dbo.getInt(4);
+			jctspdt->jctSpMainLineId = dbo.getInt(1);
+			jctspdt->jctSpStationId = dbo.getInt(2);
+			jctspdt->jctSpMainLineId2 = dbo.getInt(3);
+			jctspdt->jctSpStationId2 = dbo.getInt(4);
 		}
 	}
-	ASSERT(((jctSpMainLineId2 == 0) && (jctSpStationId2 == 0)) ||
-		   ((jctSpMainLineId2 != 0) && (jctSpStationId2 != 0)));
-	if (jctSpStationId2 == 0) {	// safety
-		jctSpMainLineId2 = 0;
+	ASSERT(((jctspdt->jctSpMainLineId2 == 0) && (jctspdt->jctSpStationId2 == 0)) ||
+		   ((jctspdt->jctSpMainLineId2 != 0) && (jctspdt->jctSpStationId2 != 0)));
+	if (jctspdt->jctSpStationId2 == 0) {	// safety
+		jctspdt->jctSpMainLineId2 = 0;
 	}
 	return type;
 }
 
+//	@brief 分岐特例の分岐路線a+乗換駅dから本線bと分岐駅cを得る
+//
+//	@param [in]  jctLineId         a 分岐路線
+//	@param [in]  transferStationId d 乗換駅
+//	@param [out] jctSpMainLineId   b 本線
+//	@param [out] jctSpStationId    c 分岐駅
+//
+//	@return type 0: nomal, 1-3:type B
+//
+int Route::getBsrjctSpType(SPECIFICFLAG flg)
+{
+	const char tsql[] =
+	"select type from t_jctspcl where id=%d;";
+	int type = -1;
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
+	if (dbo.isvalid()) {
+		dbo.setParam(1, flg & 0xff);
+		if (dbo.moveNext()) {
+			type = dbo.getInt(0);
+		}
+	}
+	return type;
+}
 //static
 //	運賃計算キロと営業キロを返す
 //
