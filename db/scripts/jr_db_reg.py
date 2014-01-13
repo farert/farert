@@ -455,8 +455,6 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 			lflg &= 0xffffff00
 			lflg |= (0xff & cur.fetchone()[0])
 			lflg |= (1 << 29)
-		else:
-			lflg &= 0xffffff00
 
 		cur.execute('select rowid from t_prefect where name=?', [linitems[0].strip()])	# retrive 都道府県id
 		prefect_id = cur.fetchone()[0]

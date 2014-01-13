@@ -29775,7 +29775,8 @@ static int sqlite3_os_type = 0;
 #if SQLITE_OS_WINCE
 # define isNT()  (1)
 #else
-  static int isNT(void){
+#pragma warning (disable : 4996)
+	static int isNT(void){
     if( sqlite3_os_type==0 ){
       OSVERSIONINFO sInfo;
       sInfo.dwOSVersionInfoSize = sizeof(sInfo);
