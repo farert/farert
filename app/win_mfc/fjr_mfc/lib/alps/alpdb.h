@@ -32,6 +32,8 @@ typedef unsigned int SPECIFICFLAG;
 #define BSRNOTYET_NA	30		// 不完全ルート
 #define BSRJCTSP_B		29		// 分岐特例B
 
+#define BSR69TERM		24
+#define BSR69CONT		23
 /* --------------------------------------- */
 /* util */
 #define NumOf(c)  (sizeof(c) / sizeof(c[0]))

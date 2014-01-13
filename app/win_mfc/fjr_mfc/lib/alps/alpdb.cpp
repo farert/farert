@@ -777,9 +777,10 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	int start_station_id;
 	bool replace_flg = false;	// åoòHí«â¡Ç≈ÇÕÇ»Ç≠íuä∑
 	bool jct_flg_on = false;    // êÖïΩå^åüím(D-2)
-	int type;
+	int type = 0;
 	JCTSP_DATA jctspdt;
-
+int ttt = line_id;
+int uuu;
 	last_flag &= ~((1 << 5) | (1 << 6));
 
 	num = route_list_raw.size();
@@ -789,7 +790,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	}
 	start_station_id = route_list_raw.front().stationId;
 	stationId1 = route_list_raw.back().stationId;
-
+uuu = stationId1;
 	/* î≠âw */
 	lflg1 = Route::AttrOfStationOnLineLine(line_id, stationId1);
 	if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
@@ -857,20 +858,25 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 			ASSERT(IS_SHINKANSEN_LINE(line_id));
 			if (0 != Route::InStation(route_list_raw.at(num - 2).stationId, line_id, stationId1, stationId2)) {
 				TRACE("JCT: D-2\n");
-				i = route_list_raw.at(num - 1).lineId;	// ï¿çsç›óàê¸
 				j = Route::NextShinkansenTransferTerm(line_id, stationId1, stationId2);
 				if (j <= 0) {	// ó◊âwÇ™Ç»Ç¢èÍçá
+ASSERT(ttt = line_id);
+					// retrieve from a, d to b, c 
+//					type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+//					ASSERT(type == 1);
+jctspdt.jctSpMainLineId = line_id;
 					// êVä≤ê¸ÇÃî≠âwÇ…ÇÕï¿çsç›óàê¸(òHê¸b)Ç…èäëÆÇµÇƒÇ¢ÇÈÇ©?
-					if (0 == Route::InStationOnLine(jctSpMainLineId, stationId2)) {
+					if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId, stationId2)) {
 						TRACE(_T("prev station is not found in shinkansen.\n"));
 						TRACE(_T("add_abort\n"));
 						return -1;			// >>>>>>>>>>>>>>>>>>>
 					} else {
 						removeTail();
 						stationId1 = route_list_raw.back().stationId;
-						line_id = jctSpMainLineId;
+						line_id = jctspdt.jctSpMainLineId;
 					}
 				} else {
+					i = route_list_raw.at(num - 1).lineId;	// ï¿çsç›óàê¸
 					removeTail();
 					rc = add(i, j, 1<<8);		//****************
 					ASSERT(rc == 1);
@@ -890,32 +896,41 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 		// íiç∑å^
 		if (BIT_CHK(lflg2, BSRJCTSP)) {	// êÖïΩå^Ç≈Ç‡Ç†ÇÈ?
 			// retrieve from a, d to b, c 
-			retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
-			if (jctSpStationId2 != 0) {
+ASSERT(ttt = line_id);
+			type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+			ASSERT(type == 1);
+			if (jctspdt.jctSpStationId2 != 0) {
 				BIT_OFF(lflg1, BSRJCTSP);				// ï Ç…óvÇÁÇ»Ç¢ÇØÇ«
 				break;
 			}
 		}
+ASSERT(ttt = line_id);
+ASSERT(uuu = stationId1);
 		// retrieve from a, d to b, c 
-		retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
-		if (stationId2 != jctSpStationId) {
-			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
+		type = retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+		ASSERT(type == 1);
+		if (stationId2 != jctspdt.jctSpStationId) {
+			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				ASSERT(stationId1 == route_list_raw.at(num - 1).stationId);
-				if (0 < Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, stationId1)) {
+				if (0 < Route::InStation(jctspdt.jctSpStationId, 
+										 route_list_raw.at(num - 1).lineId, 
+										 route_list_raw.at(num - 2).stationId, 
+										 stationId1)) {
 					TRACE("JCT: C-1\n");
-					routePassOff(jctSpMainLineId, jctSpStationId, stationId1);	// C-1
+					routePassOff(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, stationId1);	// C-1
 				} else { // A-1
 					TRACE("JCT: A-1\n");
 				}
-				if ((2 <= num) && (jctSpStationId == route_list_raw.at(num - 2).stationId)) {
+				if ((2 <= num) && (jctspdt.jctSpStationId == route_list_raw.at(num - 2).stationId)) {
 					removeTail();
 					TRACE(_T("JCT: A-C\n"));		// 3, 4, 8, 9, g,h
 					--num;
 				} else {
-					route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId, jctSpStationId);
+					route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId, 
+														   jctspdt.jctSpStationId);
 				}
-				if (jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
-					rc = add(jctSpMainLineId2, jctSpStationId2, 1<<8);	//**************
+				if (jctspdt.jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
+					rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, 1<<8);	//**************
 					ASSERT(rc == 1);
 					num++;
 					if (rc != 1) {			// safety
@@ -924,22 +939,31 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 						TRACE(_T("add_abort\n"));
 						return -1;
 					}
-					if (stationId2 == jctSpStationId2) {
+					if (stationId2 == jctspdt.jctSpStationId2) {
 						TRACE(_T("KF1,2)\n"));
-						line_id = jctSpMainLineId2;
+						line_id = jctspdt.jctSpMainLineId2;
 						replace_flg = true;
 					}
-					stationId1 = jctSpStationId2;
+					stationId1 = jctspdt.jctSpStationId2;
 				} else {
-					stationId1 = jctSpStationId;
+					stationId1 = jctspdt.jctSpStationId;
 				}
 			} else {
+ASSERT(uuu = stationId1);
 				if ((num < 2) || 
-				!Route::IsAbreastShinkansen(jctSpMainLineId, route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId)
-				|| (Route::InStation(jctSpStationId, route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, stationId1) <= 0)) {
+				!Route::IsAbreastShinkansen(jctspdt.jctSpMainLineId, 
+											route_list_raw.at(num - 1).lineId, 
+											stationId1, 
+											route_list_raw.at(num - 2).stationId)
+				|| (Route::InStation(jctspdt.jctSpStationId, 
+									 route_list_raw.at(num - 1).lineId, 
+									 route_list_raw.at(num - 2).stationId, 
+									 stationId1) <= 0)) {
 					// A-0, I, A-2
 					TRACE("JCT: A-0, I, A-2\n");	//***************
-					rc = add(jctSpMainLineId, /*route_list_raw.at(num - 1).stationId,*/ jctSpStationId, 1<<8);
+					rc = add(jctspdt.jctSpMainLineId, 
+							 /*route_list_raw.at(num - 1).stationId,*/ jctspdt.jctSpStationId, 
+							 1<<8);
 					ASSERT(rc == 1);
 					num++;
 					if (rc != 1) {				// safety
@@ -948,8 +972,8 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 						TRACE(_T("add_abort\n"));
 						return -1;					//>>>>>>>>>>>>>>>>>>>>>>>>>>
 					}
-					if (jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
-						rc = add(jctSpMainLineId2, jctSpStationId2, 1<<8);	//**************
+					if (jctspdt.jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
+						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, 1<<8);	//**************
 						num++;
 						ASSERT(rc == 1);
 						if (rc != 1) {			// safety
@@ -958,61 +982,65 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 							TRACE(_T("add_abort\n"));
 							return -1;				//>>>>>>>>>>>>>>>>>>>>>>>>>>
 						}
-						if (stationId2 == jctSpStationId2) {
+						if (stationId2 == jctspdt.jctSpStationId2) {
 							TRACE(_T("KF0,3,4)\n"));
-							line_id = jctSpMainLineId2;
+							line_id = jctspdt.jctSpMainLineId2;
 							replace_flg = true;
 						}
-						stationId1 = jctSpStationId2;
+						stationId1 = jctspdt.jctSpStationId2;
 					} else {
-						stationId1 = jctSpStationId;
+						stationId1 = jctspdt.jctSpStationId;
 					}
 				} else {
+ASSERT(uuu = stationId1);
 					// C-2
 					TRACE("JCT: C-2\n");
 					ASSERT(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId));
-					routePassOff(jctSpMainLineId, jctSpStationId, stationId1);
+					routePassOff(jctspdt.jctSpMainLineId, 
+								 jctspdt.jctSpStationId, stationId1);
 					i = Route::NextShinkansenTransferTerm(route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId);
 					if (i <= 0) {	// ó◊âwÇ™Ç»Ç¢èÍçá
 						TRACE("JCT: C-2(none next station on bullet line)\n");
 						// êVä≤ê¸ÇÃî≠âwÇ…ÇÕï¿çsç›óàê¸(òHê¸b)Ç…èäëÆÇµÇƒÇ¢ÇÈÇ©?
-						if (0 == Route::InStationOnLine(jctSpMainLineId, route_list_raw.at(num - 2).stationId)) {
+						if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId, 
+														route_list_raw.at(num - 2).stationId)) {
 							TRACE(_T("next station is not found in shinkansen.\n"));
 							TRACE(_T("add_abort\n"));
 							return -1;			// >>>>>>>>>>>>>>>>>>>
 						} else {
 							removeTail();
-							rc = add(jctSpMainLineId, jctSpStationId, 1<<8);	//**************
+							rc = add(jctspdt.jctSpMainLineId, 
+									 jctspdt.jctSpStationId, 1<<8);	//**************
 							ASSERT(rc == 1);
-							stationId1 = jctSpStationId;
+							stationId1 = jctspdt.jctSpStationId;
 						}
 					} else {
 						route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId, i);
-						route_list_raw.push_back(RouteItem(jctSpMainLineId, jctSpStationId));
-						stationId1 = jctSpStationId;
+						route_list_raw.push_back(RouteItem(jctspdt.jctSpMainLineId, 
+														   jctspdt.jctSpStationId));
+						stationId1 = jctspdt.jctSpStationId;
 					}
 				}
 			}
 			BIT_ON(last_flag, 6);
 		} else {
-			// E, G		(stationId2 == jctSpStationId)
+			// E, G		(stationId2 == jctspdt.jctSpStationId)
 			TRACE("JCT: E, G\n");
-			if (jctSpStationId2 != 0) {
+			if (jctspdt.jctSpStationId2 != 0) {
 				TRACE("JCT: KE0-4\n");
 				BIT_OFF(lflg2, BSRJCTSP);
 			}
-			
-			line_id = jctSpMainLineId;
-
+			line_id = jctspdt.jctSpMainLineId;
+ASSERT(uuu = stationId1);
 			if ((2 <= num) && 
-			(0 < Route::InStation(stationId2, jctSpMainLineId, 
+			(0 < Route::InStation(stationId2, jctspdt.jctSpMainLineId, 
 			route_list_raw.at(num - 2).stationId, stationId1))) {
 				TRACE(_T("E-3:duplicate route error.\n"));
 				TRACE(_T("add_abort\n"));
 				return -1;	// Duplicate route error >>>>>>>>>>>>>>>>>
 			}
 
-			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
+			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				// E-3 , B-0, 5, 6, b, c, d, e
 				// E-0, E-1, E-1a, 6, b, c, d, e
 				replace_flg = true;
@@ -1026,14 +1054,17 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	if (BIT_CHK(lflg2, BSRJCTSP)) {
 		// êÖïΩå^
 			// a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
-		retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
-		if (stationId1 == jctSpStationId) {
+ASSERT(ttt = line_id);
+ASSERT(uuu = stationId1);
+		type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
+		ASSERT(type == 1);
+		if (stationId1 == jctspdt.jctSpStationId) {
 			// E10-, F, H
 			TRACE("JCT: E10-, F, H/KI0-4\n");
-			line_id = jctSpMainLineId;	// a -> b
-			if (route_list_raw.at(num - 1).lineId == jctSpMainLineId) {
+			line_id = jctspdt.jctSpMainLineId;	// a -> b
+			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				if ((2 <= num) && 
-				(0 < Route::InStation(stationId2, jctSpMainLineId, 
+				(0 < Route::InStation(stationId2, jctspdt.jctSpMainLineId, 
 				route_list_raw.at(num - 2).stationId, stationId1))) {
 					TRACE(_T("E11:duplicate route error.\n"));
 					TRACE(_T("add_abort\n"));
@@ -1046,9 +1077,9 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 			}
 		} else {
 			// J, B, D
-			if ((jctSpStationId2 != 0) && (stationId1 == jctSpStationId2)) {	// ï™äÚì¡ó·òHê¸2
+			if ((jctspdt.jctSpStationId2 != 0) && (stationId1 == jctspdt.jctSpStationId2)) {	// ï™äÚì¡ó·òHê¸2
 				TRACE("JCT: KJ0-4(J, B, D)\n");
-				rc = add(jctSpMainLineId2, jctSpStationId, 1<<8);		//**************
+				rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, 1<<8);		//**************
 				num++;
 				if (rc != 1) {
 					BIT_ON(last_flag, 6);
@@ -1057,12 +1088,12 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 					return rc;			// >>>>>>>>>>>>>>>>>>>>>
 				}
 			} else {
-				if (jctSpStationId2 != 0) {	// ï™äÚì¡ó·òHê¸2
+				if (jctspdt.jctSpStationId2 != 0) {	// ï™äÚì¡ó·òHê¸2
 					TRACE("JCT: KH0-4(J, B, D)\n");
-					rc = add(line_id, /*stationId1,*/ jctSpStationId2, 1<<8);	//**************
+					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId2, 1<<8);	//**************
 					num++;
 					if (rc == 1) {
-						rc = add(jctSpMainLineId2, jctSpStationId, 1<<8);	//**************
+						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, 1<<8);	//**************
 						num++;
 					}
 					if (rc != 1) {
@@ -1073,7 +1104,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 					}
 				} else {
 					TRACE("JCT: J, B, D\n");
-					rc = add(line_id, /*stationId1,*/ jctSpStationId, 1<<8);	//**************
+					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, 1<<8);	//**************
 					num++;
 					if (rc != 1) {
 						BIT_ON(last_flag, 6);
@@ -1084,8 +1115,8 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 				}
 			}
 			jct_flg_on = true;
-			line_id = jctSpMainLineId;
-			stationId1 = jctSpStationId;
+			line_id = jctspdt.jctSpMainLineId;
+			stationId1 = jctspdt.jctSpStationId;
 		}
 		BIT_ON(last_flag, 6);
 	}
@@ -1165,9 +1196,10 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 
 	/* í«â¡Ç©íuä∑Ç© */
 	if (replace_flg) {
-		ASSERT((line_id == jctSpMainLineId) || (line_id == jctSpMainLineId2));
-		ASSERT((route_list_raw.at(num - 1).lineId == jctSpMainLineId) ||
-			   (route_list_raw.at(num - 1).lineId == jctSpMainLineId2));
+		ASSERT(type == 1);	// enable jctspdt
+		ASSERT((line_id == jctspdt.jctSpMainLineId) || (line_id == jctspdt.jctSpMainLineId2));
+		ASSERT((route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) ||
+			   (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId2));
 		route_list_raw.pop_back();
 		--num;
 	}
@@ -1407,7 +1439,7 @@ void Route::terminate(int stationId)
 //
 //	@param [in] line_id     òHê¸
 //	@param [in] station_id1 î≠
-//	@param [in] station_id2 éä
+//	@param [in] k éä
 //
 //	@retval 0 â∫ÇË(Route::LDIR_ASC)
 //	@retval 1 è„ÇË(Route::LDIR_DESC)
@@ -1586,14 +1618,18 @@ SPECIFICFLAG Route::AttrOfStationId(int id)
 SPECIFICFLAG Route::AttrOfStationOnLineLine(int line_id, int station_id)
 {
 	DBO ctx = DBS::getInstance()->compileSql(
-		"select lflg from t_lines where line_id=?1 and station_id=?2", true);
+	//  "select lflg, sflg from t_lines where line_id=?1 and station_id=?2", true);
+		"select sflg, lflg from t_station t left join t_lines on t.rowid=station_id where line_id=?1 and station_id=?2", true);
 	if (ctx.isvalid()) {
-
+		int s;
+		int l;
 		ctx.setParam(1, line_id);
 		ctx.setParam(2, station_id);
 
 		if (ctx.moveNext()) {
-			return ctx.getInt(0);
+			s = 0x0000ffff & ctx.getInt(0);
+			l = 0xff000000 & ctx.getInt(1);
+			return s | l;
 		}
 	}
 	return (1<<30);
@@ -1703,7 +1739,10 @@ int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId, JCTSP_
 	"select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
 	" from t_jctspcl where id=("
 	"	select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)";
-	int type = -1;
+	int type = 0;
+
+	memset(jctspdt, 0, sizeof(JCTSP_DATA));
+
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, jctLineId);
@@ -2061,7 +2100,7 @@ bool Route::Query_a69list(int line_id, int station_id1, int station_id2, vector<
 			cur_stid = ctx.getInt(0);
 			cur_flag = ctx.getInt(1);
 			// bit23 -> bit15 | bit3-0
-			cur_flag = ((cur_flag >> (23 - 15)) & (1 << 15)) | (cur_flag & 0x0f);
+			cur_flag = ((cur_flag >> (BSR69CONT - 15)) & (1 << 15)) | (cur_flag & 0x0f);
 			pre_list.push_back(MAKEPAIR(IDENT1(cur_stid), cur_flag));
 		}
 		cur_stid = 0;

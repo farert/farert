@@ -455,8 +455,6 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 			lflg &= 0xffffff00
 			lflg |= (0xff & cur.fetchone()[0])
 			lflg |= (1 << 29)
-		else:
-			lflg &= 0xffffff00
 
 		cur.execute('select rowid from t_prefect where name=?', [linitems[0].strip()])	# retrive 都道府県id
 		prefect_id = cur.fetchone()[0]
@@ -681,7 +679,7 @@ for bitem in branch:
 
 		con.execute("""
 		insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
-		0,
+		1,
 		(select rowid from t_line where name=?), 
 		(select rowid from t_station where name=? and samename=?), 
 		(select rowid from t_line where name=?), 
