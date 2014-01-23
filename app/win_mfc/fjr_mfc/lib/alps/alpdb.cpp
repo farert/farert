@@ -861,19 +861,19 @@ uuu = stationId1;
 				j = Route::NextShinkansenTransferTerm(line_id, stationId1, stationId2);
 				if (j <= 0) {	// ó◊âwÇ™Ç»Ç¢èÍçá
 ASSERT(ttt = line_id);
-					// retrieve from a, d to b, c 
-//					type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
-//					ASSERT(type == 1);
-jctspdt.jctSpMainLineId = line_id;
+					i = route_list_raw.at(num - 1).lineId;	// ï¿çsç›óàê¸
 					// êVä≤ê¸ÇÃî≠âwÇ…ÇÕï¿çsç›óàê¸(òHê¸b)Ç…èäëÆÇµÇƒÇ¢ÇÈÇ©?
-					if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId, stationId2)) {
+					if (0 == Route::InStationOnLine(i, stationId2)) {
 						TRACE(_T("prev station is not found in shinkansen.\n"));
-						TRACE(_T("add_abort\n"));
+						TRACE(_T("add_abort\n"));	// åbìﬂ-ñºå√âÆ-ìåãûï˚ñ Ç≈ÅA
+													// ñºå√âÆ-éOâÕà¿èÈä‘Ç…ç›óàê¸Ç…Ç»Ç¢âwÇ™ë∂ç›ÇµÅA
+													// ÇªÇÃâwÇ™íÖâw(stationId2)ÇÃèÍçá
+													// Ç†ÇËÇ¶Ç»Ç¢
 						return -1;			// >>>>>>>>>>>>>>>>>>>
 					} else {
 						removeTail();
 						stationId1 = route_list_raw.back().stationId;
-						line_id = jctspdt.jctSpMainLineId;
+						line_id = i;
 					}
 				} else {
 					i = route_list_raw.at(num - 1).lineId;	// ï¿çsç›óàê¸
@@ -1628,7 +1628,7 @@ SPECIFICFLAG Route::AttrOfStationOnLineLine(int line_id, int station_id)
 
 		if (ctx.moveNext()) {
 			s = 0x0000ffff & ctx.getInt(0);
-			l = 0xff000000 & ctx.getInt(1);
+			l = 0xffff0000 & ctx.getInt(1);
 			return s | l;
 		}
 	}
