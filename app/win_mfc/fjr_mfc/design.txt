@@ -2,13 +2,18 @@
 -―――――――――――
 GIT コミット後のログ
 -――――――――――
-
+2014-1-26
+ albdp.cpp - getBsrjctSpType() query invalid statement '%d% -> '?'
+ getBsrjctSpType() I/F変更AttrOfStationOnLineLine()で得たlflgの下位8ビットは
+ sflgのものであるから正しくない。
+ TODO: test_result.txt 結果の確認
+ TODO: jb21はadd()ではxではない。showFareでYETフラグ見て未完成であることを
+ しめさなければならない。
+ TODO: 長岡廻りの実装
+ 
 2014-1-22
   フラグビット23-16がOffにしており、新幹線乗換フラグ(b19-20)がロストしてしまっていた。
   AttrOfStationOnLineLine()修正で対応
-  
-
-
 
 2014-1-3　コミット
 
