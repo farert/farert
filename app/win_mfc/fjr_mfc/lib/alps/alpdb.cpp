@@ -834,7 +834,7 @@ uuu = stationId1;
 	}
 
 	// 分岐特例B(BSRJCTSP_B)水平型検知
-	if (BIT_CHK(lflg2, BSRJCTSP) && chk_jctsb_b((type = getBsrjctSpType(lflg2)), num)) {
+	if (BIT_CHK(lflg2, BSRJCTSP_B) && chk_jctsb_b((type = getBsrjctSpType(line_id, stationId2)), num)) {
 		TRACE("JCT: h_(B)detect\n");
 		BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
 	} else {
@@ -1772,14 +1772,15 @@ int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId, JCTSP_
 //
 //	@return type 0: nomal, 1-3:type B
 //
-int Route::getBsrjctSpType(SPECIFICFLAG flg)
+int Route::getBsrjctSpType(int line_id, int station_id)
 {
 	const char tsql[] =
-	"select type from t_jctspcl where id=%d;";
+	"select type from t_jctspcl where id=(select lflg&255 from t_lines where line_id=?1 and station_id=?2)";
 	int type = -1;
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
-		dbo.setParam(1, flg & 0xff);
+		dbo.setParam(1, line_id);
+		dbo.setParam(2, station_id);
 		if (dbo.moveNext()) {
 			type = dbo.getInt(0);
 		}
