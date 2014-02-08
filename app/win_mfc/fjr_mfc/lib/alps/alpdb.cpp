@@ -1033,13 +1033,16 @@ ASSERT(uuu = stationId1);
 			line_id = jctspdt.jctSpMainLineId;
 ASSERT(uuu = stationId1);
 			if ((2 <= num) && 
+			!BIT_CHK(Route::AttrOfStationOnLineLine(line_id, stationId2), BSRJCTSP_B) &&
 			(0 < Route::InStation(stationId2, jctspdt.jctSpMainLineId, 
 			route_list_raw.at(num - 2).stationId, stationId1))) {
 				TRACE(_T("E-3:duplicate route error.\n"));
 				TRACE(_T("add_abort\n"));
 				return -1;	// Duplicate route error >>>>>>>>>>>>>>>>>
 			}
-
+			if (BIT_CHK(Route::AttrOfStationOnLineLine(line_id, stationId2), BSRJCTSP_B)) {
+				BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
+			}
 			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				// E-3 , B-0, 5, 6, b, c, d, e
 				// E-0, E-1, E-1a, 6, b, c, d, e
@@ -5408,6 +5411,10 @@ tstring Route::showFare(int cooked)
 		return tstring(_T(""));
 	}
 
+	if (BIT_CHK(route_list_raw.back().flag, BSRNOTYET_NA)) {
+		return tstring(_T("この経路の片道乗車券は購入できません."));
+	}
+	
 	if (RULE_APPLIED == (RULE_NO_APPLIED & cooked)) {
 		/* 規則適用 */
 		/* 86, 87, 69, 70条 114条適用かチェック */
