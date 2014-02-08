@@ -2,6 +2,12 @@
 -―――――――――――
 GIT コミット後のログ
 -――――――――――
+2014-2-6
+DB新幹線、西小倉、吉塚を分岐駅に指定
+
+2014-2-3
+showFare()不完全経路を追加
+
 2014-1-26
  albdp.cpp - getBsrjctSpType() query invalid statement '%d% -> '?'
  getBsrjctSpType() I/F変更AttrOfStationOnLineLine()で得たlflgの下位8ビットは
