@@ -1306,7 +1306,7 @@ void test_jctspecial()
 	_T("yg|横浜   東海道線     京都 湖西線 敦賀"),
 	_T("yh|新大阪 東海道新幹線 京都 湖西線 敦賀"),
 	_T("yi|新大阪 東海道線     京都 湖西線 敦賀"),
-	_T("yj|岡山 山陽新幹線 新大阪 東海道線 大阪 福知山線 谷川"),		//!!!
+	_T("yj|岡山 山陽新幹線 新大阪 東海道線 大阪 福知山線 谷川"),		//!!!ok
 	_T("yk|神戸 東海道線 大阪 福知山線 谷川"),
 	_T("yl|谷川 福知山線 大阪 東海道線 新大阪 山陽新幹線 岡山"),
 	_T("ym|谷川 福知山線 大阪 東海道線 x神戸"),
@@ -1344,7 +1344,7 @@ void test_jctspecial()
 	_T("wi|呉 呉線 広島 可部線 可部"),
 	_T("wj|可部 可部線 広島 呉線 呉"),
 	_T("wk|岡山 山陽新幹線 広島 呉線 呉"),
-	_T("wl|岡山 山陽線 広島 呉線 呉"),			////!!!
+	_T("wl|岡山 山陽線 広島 呉線 呉"),			////!!!ok
 	_T("wm|厚狭 山陽新幹線 広島 呉線 呉"),
 	_T("wn|厚狭 山陽線 広島 呉線 呉"),
 	_T("wo|厚狭 山陽新幹線 広島 可部線 可部"),
@@ -1353,7 +1353,7 @@ void test_jctspecial()
 	_T("wr|可部 可部線 広島 山陽線 x厚狭"),
 	_T("ws|可部 可部線 広島 山陽新幹線 岡山"),
 	_T("wt|可部 可部線 広島 山陽線 岡山"),
-	_T("wu|長門市 山陰線 下関 山陽線 x厚狭"),	//////
+	_T("wu|長門市 山陰線 下関 山陽線 x厚狭"),	//////ok
 	_T("wv|厚狭 山陽線 下関 山陰線 長門市"),
 	_T("ww|篠栗 篠栗線 博多 山陽新幹線 厚狭"),
 	_T("wx|篠栗 篠栗線 博多 鹿児島線 x門司港"),
@@ -1365,7 +1365,7 @@ void test_jctspecial()
 	_T("jb1|博多 山陽新幹線 小倉 鹿児島線 x香椎"),
 	_T("jb2|小倉 山陽新幹線 博多 鹿児島線 吉塚 篠栗線 篠栗"),
 	_T("jb20|小倉 山陽新幹線 博多 篠栗線 篠栗"),
-	_T("jb21|小倉 山陽新幹線 博多 鹿児島線 x吉塚"),		//!!!!
+	_T("jb21|小倉 山陽新幹線 博多 鹿児島線 x吉塚"),							//!!!!
 	_T("jb3|小倉 山陽新幹線 博多 篠栗線 x吉塚"),
 	_T("jb31|博多,山陽新幹線,小倉,鹿児島線,x西小倉"),
 	_T("jb4|城野 日豊線 西小倉 鹿児島線 小倉 山陽新幹線 博多"),
@@ -1409,7 +1409,7 @@ void test_jctspecial()
 			vector<RouteItem>::const_iterator pos = route.routeList().cbegin();
 			_ftprintf(os, _T("\nbegin: %s\n"), Route::StationName(pos->stationId).c_str());
 			for (++pos; pos != route.routeList().cend(); pos++) {
-				_ftprintf(os, _T("%s, %s, %d\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag>>31);
+				_ftprintf(os, _T("%s, %s, %04x\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag);
 			}
 			_ftprintf(os, _T("\nrc=%d, modify flag=%s\n"), rc, route.isModified() ? _T("ON"):_T("OFF"));
 		}
