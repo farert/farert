@@ -780,9 +780,11 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	bool jct_flg_on = false;    // 水平型検知(D-2)
 	int type = 0;
 	JCTSP_DATA jctspdt;
-int ttt = line_id;
-int uuu;
-	last_flag &= ~((1 << 5) | (1 << 6));
+#ifdef _DEBUG
+	int original_line_id = line_id;
+	int first_station_id1;
+#endif
+	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_JCTSP_ROUTE_CHANGE));
 
 	num = route_list_raw.size();
 	if (num <= 0) {
@@ -791,7 +793,9 @@ int uuu;
 	}
 	start_station_id = route_list_raw.front().stationId;
 	stationId1 = route_list_raw.back().stationId;
-uuu = stationId1;
+#ifdef _DEBUG
+first_station_id1 = stationId1;
+#endif
 	/* 発駅 */
 	lflg1 = Route::AttrOfStationOnLineLine(line_id, stationId1);
 	if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
@@ -841,15 +845,23 @@ uuu = stationId1;
 	} else {
 		/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
 		if (!BIT_CHK(ctlflg, 8) && 
-		(1 < num) && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) && 
-		!Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
+			(1 < num) && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) && 
+			!Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
 										route_list_raw.at(num - 2).stationId, stationId1, stationId2)) {
 			TRACE("JCT: F-3b\n");
 			return -1;		// F-3b
 		}
 	}
 	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), Route::LineName(line_id).c_str(), line_id, Route::StationName(stationId1).c_str(), stationId1, Route::StationName(stationId2).c_str(), stationId2);
-	
+	if ((2 <= num) && BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B) &&	/* b#14021205 add */
+		(dbid.LineIdOf_SANYOSHINKANSEN == line_id)) {
+		JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 2).stationId));
+		TRACE("b#14021205-1\n");
+	} else if ((1 <= num) && BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
+		(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId)) {
+		JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 1).stationId));
+		TRACE("b#14021205-2\n");
+	}
 	// 水平型検知
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD)) {
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
@@ -862,7 +874,7 @@ uuu = stationId1;
 				TRACE("JCT: D-2\n");
 				j = Route::NextShinkansenTransferTerm(line_id, stationId1, stationId2);
 				if (j <= 0) {	// 隣駅がない場合
-ASSERT(ttt = line_id);
+ASSERT(original_line_id = line_id);
 					i = route_list_raw.at(num - 1).lineId;	// 並行在来線
 					// 新幹線の発駅には並行在来線(路線b)に所属しているか?
 					if (0 == Route::InStationOnLine(i, stationId2)) {
@@ -873,20 +885,21 @@ ASSERT(ttt = line_id);
 													// ありえない
 						return -1;			// >>>>>>>>>>>>>>>>>>>
 					} else {
-						TRACE("JCT: hor.\n");
+						TRACE("JCT: hor.(D-2x)\n");
 						removeTail();
+						num--;
 						stationId1 = route_list_raw.back().stationId;
 						line_id = i;
 					}
 				} else {
-					TRACE("JCT: hor.1\n");
+					TRACE("JCT: hor.1(D-2)\n");
 					i = route_list_raw.at(num - 1).lineId;	// 並行在来線
 					removeTail();
 					rc = add(i, j, 1<<8);		//****************
 					ASSERT(rc == 1);
 					stationId1 = j;
 				}
-				BIT_ON(last_flag, 6);
+				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 			} else {
 				TRACE("JCT: B-2\n");
 			}
@@ -900,7 +913,7 @@ ASSERT(ttt = line_id);
 		// 段差型
 		if (BIT_CHK(lflg2, BSRJCTSP)) {	// 水平型でもある?
 			// retrieve from a, d to b, c 
-ASSERT(ttt = line_id);
+ASSERT(original_line_id = line_id);
 			type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 			ASSERT(type == 1);
 			TRACE("JCT: detect step-horiz\n");
@@ -909,8 +922,8 @@ ASSERT(ttt = line_id);
 				break;
 			}
 		}
-ASSERT(ttt = line_id);
-ASSERT(uuu = stationId1);
+ASSERT(original_line_id = line_id);
+ASSERT(first_station_id1 = stationId1);
 		// retrieve from a, d to b, c 
 		type = retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 		ASSERT(type == 1);
@@ -941,7 +954,7 @@ ASSERT(uuu = stationId1);
 					ASSERT(rc == 1);
 					num++;
 					if (rc != 1) {			// safety
-						BIT_ON(last_flag, 6);
+						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 						TRACE(_T("A-1/C-1(special junction 2)\n"));
 						TRACE(_T("add_abort\n"));
 						return -1;
@@ -956,7 +969,7 @@ ASSERT(uuu = stationId1);
 					stationId1 = jctspdt.jctSpStationId;
 				}
 			} else {
-ASSERT(uuu = stationId1);
+ASSERT(first_station_id1 = stationId1);
 				if ((num < 2) || 
 				!Route::IsAbreastShinkansen(jctspdt.jctSpMainLineId, 
 											route_list_raw.at(num - 1).lineId, 
@@ -983,7 +996,7 @@ ASSERT(uuu = stationId1);
 					ASSERT(rc == 1);
 					num++;
 					if (rc != 1) {				// safety
-						BIT_ON(last_flag, 6);
+						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 						TRACE(_T("A-0, I, A-2\n"));
 						TRACE(_T("add_abort\n"));
 						return -1;					//>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -993,7 +1006,7 @@ ASSERT(uuu = stationId1);
 						num++;
 						ASSERT(rc == 1);
 						if (rc != 1) {			// safety
-							BIT_ON(last_flag, 6);
+							BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 							TRACE(_T("A-0, I, A-2(special junction 2)\n"));
 							TRACE(_T("add_abort\n"));
 							return -1;				//>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1008,7 +1021,7 @@ ASSERT(uuu = stationId1);
 						stationId1 = jctspdt.jctSpStationId;
 					}
 				} else {
-ASSERT(uuu = stationId1);
+ASSERT(first_station_id1 = stationId1);
 					// C-2
 					TRACE("JCT: C-2\n");
 					ASSERT(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId));
@@ -1038,7 +1051,7 @@ ASSERT(uuu = stationId1);
 					}
 				}
 			}
-			BIT_ON(last_flag, 6);
+			BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		} else {
 			// E, G		(stationId2 == jctspdt.jctSpStationId)
 			TRACE("JCT: E, G\n");
@@ -1047,7 +1060,7 @@ ASSERT(uuu = stationId1);
 				BIT_OFF(lflg2, BSRJCTSP);
 			}
 			line_id = jctspdt.jctSpMainLineId;
-ASSERT(uuu = stationId1);
+ASSERT(first_station_id1 = stationId1);
 			if ((2 <= num) && 
 //			!BIT_CHK(Route::AttrOfStationOnLineLine(line_id, stationId2), BSRJCTSP_B) &&
 			(0 < Route::InStation(stationId2, jctspdt.jctSpMainLineId, 
@@ -1060,7 +1073,7 @@ ASSERT(uuu = stationId1);
 				// 博多-小倉-西小倉
 				// 
 				TRACE("jct-b nisi-kokura-stop/yoshizuka-stop\n");
-				BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
+				//BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
 			}
 			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				// E-3 , B-0, 5, 6, b, c, d, e
@@ -1071,15 +1084,15 @@ ASSERT(uuu = stationId1);
 				// E-2, G, G-3, G-2, G-4
 				TRACE("JCT: E-2, G, G-3, G-2, G-4\n");
 			}
-			BIT_ON(last_flag, 6);
+			BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		}
 		break;
 	}
 	if (BIT_CHK(lflg2, BSRJCTSP)) {
 		// 水平型
 			// a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
-ASSERT(ttt = line_id);
-ASSERT(uuu = stationId1);
+ASSERT(original_line_id = line_id);
+ASSERT(first_station_id1 = stationId1);
 		type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
 		ASSERT(type == 1);
 		if (stationId1 == jctspdt.jctSpStationId) {
@@ -1097,7 +1110,7 @@ ASSERT(uuu = stationId1);
 				replace_flg = true;
 				TRACE("JCT: F1, H, E11-14\n");
 			} else {
-				// f3bはエラーとするため. jct_flg_on = true;	// f3b
+				// F-3bはエラーとするため. jct_flg_on = true;	// F-3b
 			}
 		} else {
 			// J, B, D
@@ -1106,23 +1119,23 @@ ASSERT(uuu = stationId1);
 				rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, 1<<8);		//**************
 				num++;
 				if (rc != 1) {
-					BIT_ON(last_flag, 6);
+					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 					TRACE(_T("junction special (KJ) error.\n"));
 					TRACE(_T("add_abort\n"));
 					return rc;			// >>>>>>>>>>>>>>>>>>>>>
 				}
 			} else {
 				if (jctspdt.jctSpStationId2 != 0) {	// 分岐特例路線2
-					TRACE("JCT: KH0-4(J, B, D)\n");
+					TRACE(_T("JCT: KH0-4(J, B, D) add(日田彦山線, 城野c')\n"));
 					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId2, 1<<8);	//**************
 					num++;
 					if (rc == 1) {
-						TRACE("JCT: ???\n");
+						TRACE(_T("JCT: add(日豊線b', 西小倉c)\n"));
 						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, 1<<8);	//**************
 						num++;
 					}
 					if (rc != 1) {
-						BIT_ON(last_flag, 6);
+						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 						TRACE(_T("junction special horizen type convert error.\n"));
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
@@ -1132,18 +1145,19 @@ ASSERT(uuu = stationId1);
 					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, 1<<8);	//**************
 					num++;
 					if (rc != 1) {
-						BIT_ON(last_flag, 6);
+						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 						TRACE(_T("junction special horizen type convert error.\n"));
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
 					}
+					jct_flg_on = true;	//b#14021202
 				}
 			}
-			jct_flg_on = true;
+			// b#14021202 jct_flg_on = true;
 			line_id = jctspdt.jctSpMainLineId;
 			stationId1 = jctspdt.jctSpStationId;
 		}
-		BIT_ON(last_flag, 6);
+		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 	}
 
 	DBO dbo = Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
@@ -1215,7 +1229,7 @@ ASSERT(uuu = stationId1);
 			TRACE(_T("  add_mask off: %s\n"), Route::JctName(jct_on).c_str());
 		}
 		TRACE(_T("add_abort\n"));
-		BIT_OFF(last_flag, 5);
+		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 		// E-12, 6, b, c, d, e 
 		return -1;	/* already passed error >>>>>>>>>>>>>>>>>>>> */
 	}
@@ -1229,6 +1243,9 @@ ASSERT(uuu = stationId1);
 		route_list_raw.pop_back();
 		--num;
 	}
+	lflg1 = Route::AttrOfStationOnLineLine(line_id, stationId1);
+	lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
+
 	lflg2 |= (lflg1 & 0xff000000);
 	lflg2 &= 0xff00ffff;
 	if (jct_flg_on) {
@@ -1241,14 +1258,14 @@ ASSERT(uuu = stationId1);
 
 	if (rc == 0) {
 		TRACE(_T("added continue.\n"));
-		BIT_OFF(last_flag, 5);
+		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 	} else if (rc == 1) {
-		BIT_ON(last_flag, 5);
+		BIT_ON(last_flag, BLF_TRACKMARKCTL);
 	} else if (rc = 2) {
-		BIT_OFF(last_flag, 5);	/* 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので) */
+		BIT_OFF(last_flag, BLF_TRACKMARKCTL);	/* 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので) */
 	} else {
 		ASSERT(FALSE);
-		BIT_ON(last_flag, 5);
+		BIT_ON(last_flag, BLF_TRACKMARKCTL);
 	}
 	TRACE(_T("added last.\n"));
 
@@ -1273,7 +1290,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	route_num = route_list_raw.size();
 	if (route_num < 2) {
 		ASSERT(FALSE);
-		BIT_OFF(last_flag, 5);
+		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 		return;
 	}
 	
@@ -1300,13 +1317,13 @@ void Route::removeTail(bool begin_off/* = false*/)
 	}
 	for (i = 0; i < jct_num; i++) {
 		/* i=0:最近分岐駅でO型経路、P型経路の着駅の場合は除外 */
-		if ((i != 0) || !BIT_CHK(last_flag, 5)) {
+		if ((i != 0) || !BIT_CHK(last_flag, BLF_TRACKMARKCTL)) {
 			JctMaskOff(junctions[i]);
 			TRACE(_T("removed   : %s\n"), Route::JctName(junctions[i]).c_str());
 		}
 	}
 
-	BIT_OFF(last_flag, 5);
+	BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 	route_list_raw.pop_back();
 }
 
@@ -1368,7 +1385,7 @@ void Route::removeAll(bool bWithStart /* =true */, bool bWithEnd /* =true */)
 	route_list_raw.clear();
 	route_list_cooked.clear();
 
-	last_flag = 0;
+	last_flag = LASTFLG_OFF;
 
 	TRACE(_T("clear-all mask.\n"));
 
