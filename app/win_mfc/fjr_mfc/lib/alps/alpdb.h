@@ -373,6 +373,14 @@ typedef struct
 	int		jctSpStationId2;		// •ªŠò“Á—á:•ªŠò‰w(c)
 } JCTSP_DATA;
 
+/* last_flag */
+#define BLF_TRACKMARKCTL		5
+#define BLF_JCTSP_ROUTE_CHANGE	6
+#define LASTFLG_OFF				0
+
+/*   route
+ *
+ */
 class Route
 {
 	BYTE jct_mask[(MAX_JCT + 7)/ 8];	// about 40byte
