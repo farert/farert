@@ -715,14 +715,14 @@ bool Route::chk_jctsb_b(int kind, int num)
 	DbidOf dbid;
 
 	switch (kind) {
-	case 1:
+	case JCTSP_B_NISHIKOKURA:
 		/* îéëΩ-êVä≤ê¸-è¨ëq*/
 		return (2 <= num) && 
 			(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId) &&
 			(dbid.StationIdOf_KOKURA == route_list_raw.at(num - 1).stationId) &&
 			(dbid.StationIdOf_HAKATA == route_list_raw.at(num - 2).stationId);
 		break;
-	case 2:
+	case JCTSP_B_YOSHIZUKA:
 		/* è¨ëq-êVä≤ê¸-îéëΩ */
 		return (2 <= num) && 
 			(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId) &&
@@ -755,6 +755,7 @@ bool Route::chk_jctsb_b(int kind, int num)
  *	@retval last_flag bit5=0 : éüÇ…removeTailÇ≈lastItemÇÃí âﬂÉ}ÉXÉNÇOffÇ∑ÇÈ(typeOÇ≈Ç‡PÇ≈Ç‡Ç»Ç¢ÇÃÇ≈)
  *	@retval last_flag bit6=1 : ï™äÚì¡ó·ãÊä‘éwíËÇ…ÇÊÇÈåoòHïœçXÇ†ÇË
  */
+#define ADD_BULLET_NC	(1<<8)
 int Route::add(int stationId)
 {
 	removeAll(true, false);
@@ -853,15 +854,55 @@ first_station_id1 = stationId1;
 		}
 	}
 	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), Route::LineName(line_id).c_str(), line_id, Route::StationName(stationId1).c_str(), stationId1, Route::StationName(stationId2).c_str(), stationId2);
-	if ((2 <= num) && BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B) &&	/* b#14021205 add */
-		(dbid.LineIdOf_SANYOSHINKANSEN == line_id)) {
-		JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 2).stationId));
-		TRACE("b#14021205-1\n");
+
+	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B)) {
+		 /* êMâzê¸è„ÇË(ã{ì‡ÅEíºç]í√ï˚ñ ) ? (ÉtÉâÉOÇØÇøÇ¡ÇƒÇÈÇÃÇ≈ãgíÀÅAè¨ëqâÙÇËÇ∆ãÊï ÇµÇ»ÇØÇÍÇŒÇ»ÇÁÇ»Ç¢) */
+		if ((LDIR_DESC == Route::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2)) &&
+		    ((num < 2) || ((2 <= num) && 
+		    (LDIR_ASC  == Route::DirLine(route_list_raw.at(num - 1).lineId,
+		                                 route_list_raw.at(num - 2).stationId, 
+		                                 route_list_raw.at(num - 1).stationId)))) &&
+			(JCTSP_B_NAGAOKA == retrieveJunctionSpecific(route_list_raw.at(num - 1).lineId, 
+			                                             route_list_raw.at(num - 1).stationId, &jctspdt))) {
+			if (stationId2 == jctspdt.jctSpStationId2) { /* ã{ì‡é~Ç‹ÇËÅH */
+				TRACE("JSBH004\n");
+				TRACE("add_abort\n");
+				return -1;
+			} else {
+				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+					// í∑â™ Å® âYç≤
+				// êVä≤ê¸ í∑â™-âYç≤ÇOff
+				routePassOff(route_list_raw.at(num - 1).lineId, 
+				             route_list_raw.at(num - 1).stationId, 
+				             jctspdt.jctSpStationId);
+				route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
+				                                       jctspdt.jctSpStationId);
+
+				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+
+					// è„âzê¸-ã{ì‡í«â¡
+				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId2, ADD_BULLET_NC);		//****************
+				if (rc != 1) {
+					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+					TRACE(_T("junction special (JSBS001) error.\n"));
+					TRACE(_T("add_abort\n"));
+					return rc;			// >>>>>>>>>>>>>>>>>>>>>
+				}
+				num++;
+				stationId1 = jctspdt.jctSpStationId2; // ã{ì‡
+				// line_id : êMâzê¸
+				// stationId2 : ã{ì‡Å`í∑â™
+			}
+		} else if ((2 <= num) && (dbid.LineIdOf_SANYOSHINKANSEN == line_id)) { /* b#14021205 add */
+			JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 2).stationId));
+			TRACE("b#14021205-1\n");
+		}
 	} else if ((1 <= num) && BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
 		(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId)) {
 		JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 1).stationId));
 		TRACE("b#14021205-2\n");
 	}
+
 	// êÖïΩå^åüím
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD)) {
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
@@ -894,8 +935,13 @@ ASSERT(original_line_id = line_id);
 				} else {
 					TRACE("JCT: hor.1(D-2)\n");
 					i = route_list_raw.at(num - 1).lineId;	// ï¿çsç›óàê¸
+					if (Route::InStationOnLine(i, j) <= 0) {
+						TRACE(_T("junction special (JSBX001) error.\n"));
+						TRACE(_T("add_abort\n"));
+						return -1;
+					}
 					removeTail();
-					rc = add(i, j, 1<<8);		//****************
+					rc = add(i, j, ADD_BULLET_NC);		//****************
 					ASSERT(rc == 1);
 					stationId1 = j;
 				}
@@ -906,17 +952,19 @@ ASSERT(original_line_id = line_id);
 		} else {
 			TRACE("JCT: J\n");
 		}
+		TRACE(">\n");
 	}
 	
 	// 151 check
 	while (BIT_CHK(lflg1, BSRJCTSP)) {
+		TRACE(">\n");
 		// íiç∑å^
 		if (BIT_CHK(lflg2, BSRJCTSP)) {	// êÖïΩå^Ç≈Ç‡Ç†ÇÈ?
 			// retrieve from a, d to b, c 
 ASSERT(original_line_id = line_id);
 			type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
-			ASSERT(type == 1);
-			TRACE("JCT: detect step-horiz\n");
+			ASSERT(0 < type);
+			TRACE("JCT: detect step-horiz:%u\n", type);
 			if (jctspdt.jctSpStationId2 != 0) {
 				BIT_OFF(lflg1, BSRJCTSP);				// ï Ç…óvÇÁÇ»Ç¢ÇØÇ«
 				break;
@@ -926,7 +974,8 @@ ASSERT(original_line_id = line_id);
 ASSERT(first_station_id1 = stationId1);
 		// retrieve from a, d to b, c 
 		type = retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
-		ASSERT(type == 1);
+		ASSERT(0 < type);
+		TRACE("JCT: detect step:%u\n", type);
 		if (stationId2 != jctspdt.jctSpStationId) {
 			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				ASSERT(stationId1 == route_list_raw.at(num - 1).stationId);
@@ -950,7 +999,7 @@ ASSERT(first_station_id1 = stationId1);
 				}
 				if (jctspdt.jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
 					TRACE("JCT: step_(2)detect\n");
-					rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, 1<<8);	//**************
+					rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, ADD_BULLET_NC);	//**************
 					ASSERT(rc == 1);
 					num++;
 					if (rc != 1) {			// safety
@@ -992,7 +1041,7 @@ ASSERT(first_station_id1 = stationId1);
 					}
 					rc = add(jctspdt.jctSpMainLineId, 
 							 /*route_list_raw.at(num - 1).stationId,*/ jctspdt.jctSpStationId, 
-							 1<<8);
+							 ADD_BULLET_NC);
 					ASSERT(rc == 1);
 					num++;
 					if (rc != 1) {				// safety
@@ -1002,7 +1051,7 @@ ASSERT(first_station_id1 = stationId1);
 						return -1;					//>>>>>>>>>>>>>>>>>>>>>>>>>>
 					}
 					if (jctspdt.jctSpStationId2 != 0) {		// ï™äÚì¡ó·òHê¸2
-						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, 1<<8);	//**************
+						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, ADD_BULLET_NC);	//**************
 						num++;
 						ASSERT(rc == 1);
 						if (rc != 1) {			// safety
@@ -1039,7 +1088,7 @@ ASSERT(first_station_id1 = stationId1);
 						} else {
 							removeTail();
 							rc = add(jctspdt.jctSpMainLineId, 
-									 jctspdt.jctSpStationId, 1<<8);	//**************
+									 jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
 							ASSERT(rc == 1);
 							stationId1 = jctspdt.jctSpStationId;
 						}
@@ -1094,7 +1143,8 @@ ASSERT(first_station_id1 = stationId1);
 ASSERT(original_line_id = line_id);
 ASSERT(first_station_id1 = stationId1);
 		type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
-		ASSERT(type == 1);
+		ASSERT(0 < type);
+		TRACE("JCT:%u\n", type);
 		if (stationId1 == jctspdt.jctSpStationId) {
 			// E10-, F, H
 			TRACE("JCT: E10-, F, H/KI0-4\n");
@@ -1116,7 +1166,7 @@ ASSERT(first_station_id1 = stationId1);
 			// J, B, D
 			if ((jctspdt.jctSpStationId2 != 0) && (stationId1 == jctspdt.jctSpStationId2)) {	// ï™äÚì¡ó·òHê¸2
 				TRACE("JCT: KJ0-4(J, B, D)\n");
-				rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, 1<<8);		//**************
+				rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);		//**************
 				num++;
 				if (rc != 1) {
 					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
@@ -1127,11 +1177,11 @@ ASSERT(first_station_id1 = stationId1);
 			} else {
 				if (jctspdt.jctSpStationId2 != 0) {	// ï™äÚì¡ó·òHê¸2
 					TRACE(_T("JCT: KH0-4(J, B, D) add(ì˙ìcïFéRê¸, èÈñÏc')\n"));
-					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId2, 1<<8);	//**************
+					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId2, ADD_BULLET_NC);	//**************
 					num++;
 					if (rc == 1) {
 						TRACE(_T("JCT: add(ì˙ñLê¸b', êºè¨ëqc)\n"));
-						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, 1<<8);	//**************
+						rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
 						num++;
 					}
 					if (rc != 1) {
@@ -1142,7 +1192,7 @@ ASSERT(first_station_id1 = stationId1);
 					}
 				} else {
 					TRACE("JCT: J, B, D\n");
-					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, 1<<8);	//**************
+					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
 					num++;
 					if (rc != 1) {
 						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
@@ -1159,6 +1209,46 @@ ASSERT(first_station_id1 = stationId1);
 		}
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 	}
+	
+	// í∑â™é¸ÇËÇÃíiç∑å^
+	if ((2 <= num) && BIT_CHK(lflg1, BSRJCTSP_B)) {
+		if (JCTSP_B_NAGAOKA == retrieveJunctionSpecific(line_id, 
+		                                                route_list_raw.at(num - 1).stationId, &jctspdt)) {
+		 	/* êMâzê¸â∫ÇË(íºç]í√Å®í∑â™ï˚ñ ) && êVä≤ê¸|è„âzê¸è„ÇË(í∑â™-ëÂã{ï˚ñ )? */
+			if ((LDIR_ASC == Route::DirLine(route_list_raw.at(num - 1).lineId, 
+		                                    route_list_raw.at(num - 2).stationId, 
+		                                    route_list_raw.at(num - 1).stationId)) &&
+			    (LDIR_DESC == Route::DirLine(line_id, 
+		                                    route_list_raw.at(num - 1).stationId, 
+		                                    stationId2))) {
+				/* ã{ì‡î≠ */
+				if (route_list_raw.at(num - 2).stationId == jctspdt.jctSpStationId2) {
+					TRACE(_T("junction special 2(JSBS004) error.\n"));
+					TRACE(_T("add_abort\n"));
+					return -1;			// >>>>>>>>>>>>>>>>>>>>>
+				}
+				// í∑â™Off
+				JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 1).stationId));
+
+				// í∑â™->ã{ì‡Ç÷íuä∑
+				route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
+				                                       jctspdt.jctSpStationId2);
+			             
+                // è„âzê¸ ã{ì‡Å®âYç≤
+				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, ADD_BULLET_NC);		//****************
+				if (1 != rc) {
+					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+					TRACE(_T("junction special 2(JSBH001) error.\n"));
+					TRACE(_T("add_abort\n"));
+					return rc;			// >>>>>>>>>>>>>>>>>>>>>
+				}
+				stationId1 = jctspdt.jctSpStationId;
+				num += 1;
+				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+        	}
+	    }
+	}
+	
 
 	DBO dbo = Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
 	if (!dbo.isvalid()) {
@@ -1236,7 +1326,7 @@ ASSERT(first_station_id1 = stationId1);
 
 	/* í«â¡Ç©íuä∑Ç© */
 	if (replace_flg) {
-		ASSERT(type == 1);	// enable jctspdt
+		ASSERT(0 < type);	// enable jctspdt
 		ASSERT((line_id == jctspdt.jctSpMainLineId) || (line_id == jctspdt.jctSpMainLineId2));
 		ASSERT((route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) ||
 			   (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId2));
@@ -1484,8 +1574,8 @@ void Route::terminate(int stationId)
 //	@param [in] station_id1 î≠
 //	@param [in] k éä
 //
-//	@retval 0 â∫ÇË(Route::LDIR_ASC)
-//	@retval 1 è„ÇË(Route::LDIR_DESC)
+//	@retval 1 â∫ÇË(Route::LDIR_ASC)
+//	@retval 2 è„ÇË(Route::LDIR_DESC)
 //
 //  @node ìØàÍâwÇÃèÍçáâ∫ÇË(0)Çï‘Ç∑
 //
@@ -1779,9 +1869,12 @@ int Route::retrieveJunctionSpecific(int jctLineId, int transferStationId, JCTSP_
 {
 	const char tsql[] =
 	//"select calc_km>>16, calc_km&65535, (lflg>>16)&32767, lflg&32767 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
-	"select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
-	" from t_jctspcl where id=("
-	"	select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)";
+//	"select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
+//	" from t_jctspcl where id=("
+//	"	select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)";
+	"select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2" \
+	" from t_jctspcl where id=(" \
+	"	select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
 	int type = 0;
 
 	memset(jctspdt, 0, sizeof(JCTSP_DATA));
