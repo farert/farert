@@ -34,6 +34,13 @@ typedef unsigned int SPECIFICFLAG;
 
 #define BSR69TERM		24
 #define BSR69CONT		23
+
+#define JCTSP				 	1
+#define JCTSP_2L			 	2
+#define JCTSP_B_NISHIKOKURA 	3
+#define JCTSP_B_YOSHIZUKA	 	4
+#define JCTSP_B_NAGAOKA 		5
+
 /* --------------------------------------- */
 /* util */
 #define NumOf(c)  (sizeof(c) / sizeof(c[0]))

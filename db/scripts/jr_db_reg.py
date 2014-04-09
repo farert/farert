@@ -14,6 +14,14 @@ import sys
 import re
 from collections import defaultdict
 
+def same_staion(station_name):
+	if 0 <= station_name.find('('):
+		name = station_name[:station_name.find('(')]		# 同名駅がある駅の場合
+		same = station_name[station_name.find('('):]
+	else:
+		name = station_name								# 同名駅でない場合
+		same = ''
+	return (name, same)
 
 if 1 < len(sys.argv):
   fn = sys.argv[1] 
@@ -441,15 +449,24 @@ for lin in open(fn, 'r', encoding='shift-jis'):
 			while len(tmps) < 5:
 				tmps.append('')
 
-			if int(tmps[0]) < 1 or 3 < int(tmps[0]):  # あえてisdigit()を使わず例外スローさせる
+			if int(tmps[0]) < 1 or 5 < int(tmps[0]):  # あえてisdigit()を使わず例外スローさせる
 				print(num_of_line, lin)
 				raise ValueError
 
 			con.execute("""
 			insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
-			?, ?, ?, ?, ?)
+			?1, 
+			(select case when (select rowid from t_line where name=?2) is null then 0 
+			else              (select rowid from t_line where name=?2) end),
+			(select case when (select rowid from t_station where name=?3 and samename=?4) is null then 0
+			else              (select rowid from t_station where name=?3 and samename=?4) end),
+			(select case when (select rowid from t_line where name=?5) is null then 0
+			else              (select rowid from t_line where name=?5) end),
+			(select case when (select rowid from t_station where name=?6 and samename=?7) is null then 0
+			else              (select rowid from t_station where name=?6 and samename=?7) end))
 			""", 
-			[tmps[0], tmps[1], tmps[2], tmps[3], tmps[4]])
+			[tmps[0], tmps[1], same_staion(tmps[2])[0], same_staion(tmps[2])[1], 
+			 tmps[3], same_staion(tmps[4])[0], same_staion(tmps[4])[1]])
 
 			cur.execute('select seq from sqlite_sequence where name=\'t_jctspcl\'')
 			lflg &= 0xffffff00
@@ -679,7 +696,7 @@ for bitem in branch:
 
 		con.execute("""
 		insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
-		1,
+		2,
 		(select rowid from t_line where name=?), 
 		(select rowid from t_station where name=? and samename=?), 
 		(select rowid from t_line where name=?), 
@@ -700,10 +717,10 @@ for bitem in branch:
 	(select rowid from t_station where name=? and samename=?), 
 	?,
 	(select seq from sqlite_sequence where name='t_jctspcl'), 
-	(1 << 31) | ?)""", 
+	((1 << 31) | (4294967040 & ?) | (255 & (select seq from sqlite_sequence where name='t_jctspcl'))))""", 
 	[bitem[0], bitem[1], bitem[5], bitem[3], bitem[7]])
 	# b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb15のみ使用される
-
+	# 0xffffff00=4294967040
 # make t_jct
 con.execute("""
 insert into t_jct(station_id) select rowid from t_station 
