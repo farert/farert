@@ -4671,17 +4671,17 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 			break;
 		}
 	}
-	if ((this->flag & 0x8000) == 0) {		// b15‚ª0‚Ìê‡Å‰‚È‚Ì‚Å‰w1‚Ìƒtƒ‰ƒO‚à”½‰f
+	if ((this->flag & FLAG_FARECALC_INITIAL) == 0) { // b15‚ª0‚Ìê‡Å‰‚È‚Ì‚Å‰w1‚Ìƒtƒ‰ƒO‚à”½‰f
 		this->flag = IDENT1(d.at(5));		// ‰w1 sflg‚Ì‰º13ƒrƒbƒg
 	}
 	flag = IDENT2(d.at(5));					// ‰w2 sflg‚Ì‰º13ƒrƒbƒg
-	if ((flag & 0x0380) != (this->flag & 0x0380)) {/* ‹ßx‹æŠÔ(b7-9) ‚Ì”äŠr */
-		flag &= ~0x380;						/* ‹ßx‹æŠÔ OFF */
+	if ((flag & MASK_URBAN) != (this->flag & MASK_URBAN)) {/* ‹ßx‹æŠÔ(b7-9) ‚Ì”äŠr */
+		flag &= ~MASK_URBAN;				/* ‹ßx‹æŠÔ OFF */
 	}
-	this->flag &= flag;						/* b11,10,5(‘åã/“Œ‹ž“dŽÔ“Á’è‹æŠÔ, ŽRŽèü^‘åãŠÂóü“à) */
-	this->flag |= 0x8000;					/* ŽŸ‰ñ‚©‚ç‰w1‚Í•s—v */
+	this->flag &= (flag | FLAG_SHINKANSEN);	/* b11,10,5(‘åã/“Œ‹ž“dŽÔ“Á’è‹æŠÔ, ŽRŽèü^‘åãŠÂóü“à) */
+	this->flag |= FLAG_FARECALC_INITIAL;	/* ŽŸ‰ñ‚©‚ç‰w1‚Í•s—v */
 	if (IS_SHINKANSEN_LINE(line_id)) {
-		this->flag |= ((line_id & 0x0f) << 16);	/* make flag for MASK_FLAG_SHINKANSEN() */
+		this->flag |= ((line_id & MASK_SHINKANSEN) << BSHINKANSEN);	/* make flag for MASK_FLAG_SHINKANSEN() */
 	}
 	/* flag(sflg)‚ÍAb11,10,5, 7-9 ‚Ì‚ÝŽg—p‚Å‘¼‚ÍFARE_INFO‚Å‚ÍŽg—p‚µ‚È‚¢ */
 	return true;
