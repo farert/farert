@@ -401,6 +401,12 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 				_T("経路が片道条件に達しました. 着駅として終了しますか？"), _T("経路終端"),
 										MB_YESNO | MB_ICONQUESTION))) {
 					m_route.removeTail();
+					if (0 < ModifyRouteList()) {		// 経路表示更新
+						curLineId = m_route.routeList().back().lineId;
+						selId = m_route.routeList().back().stationId;
+					} else {
+						ResetContent();
+					}
 					return;
 				}
 				m_route.endStationId = selId;				// 着駅変更
@@ -1009,6 +1015,7 @@ int Calps_mfcDlg::UpdateRouteList()
 	} else {
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
 	}
+	UpdateWindow();
 	return idx;
 }
 
@@ -1122,6 +1129,7 @@ int Calps_mfcDlg::ModifyRouteList()
 	} else {
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
 	}
+	UpdateWindow();
 	return idx;
 }
 
