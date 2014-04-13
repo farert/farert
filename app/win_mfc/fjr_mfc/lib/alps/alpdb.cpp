@@ -778,7 +778,7 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	SPECIFICFLAG lflg2;
 	int start_station_id;
 	bool replace_flg = false;	// 経路追加ではなく置換
-	bool jct_flg_on = false;    // 水平型検知(D-2)
+	SPECIFICFLAG jct_flg_on = 0;   // 水平型検知(D-2) / BSRNOTYET_NA
 	int type = 0;
 	JCTSP_DATA jctspdt;
 #ifdef _DEBUG
@@ -842,7 +842,7 @@ first_station_id1 = stationId1;
 	// 分岐特例B(BSRJCTSP_B)水平型検知
 	if (BIT_CHK(lflg2, BSRJCTSP_B) && chk_jctsb_b((type = getBsrjctSpType(line_id, stationId2)), num)) {
 		TRACE("JCT: h_(B)detect\n");
-		BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
+		BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
 	} else {
 		/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
 		if (!BIT_CHK(ctlflg, 8) && 
@@ -856,7 +856,8 @@ first_station_id1 = stationId1;
 	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), Route::LineName(line_id).c_str(), line_id, Route::StationName(stationId1).c_str(), stationId1, Route::StationName(stationId2).c_str(), stationId2);
 
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B)) {
-		 /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので吉塚、小倉廻りと区別しなければならない) */
+		 /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので
+		  * t_jctspcl.type retrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
 		if ((LDIR_DESC == Route::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2)) &&
 		    ((num < 2) || ((2 <= num) && 
 		    (LDIR_ASC  == Route::DirLine(route_list_raw.at(num - 1).lineId,
@@ -869,7 +870,6 @@ first_station_id1 = stationId1;
 				TRACE("add_abort\n");
 				return -1;
 			} else {
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 					// 長岡 → 浦佐
 				// 新幹線 長岡-浦佐をOff
 				routePassOff(route_list_raw.at(num - 1).lineId, 
@@ -877,13 +877,10 @@ first_station_id1 = stationId1;
 				             jctspdt.jctSpStationId);
 				route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
 				                                       jctspdt.jctSpStationId);
-
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
-
 					// 上越線-宮内追加
 				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId2, ADD_BULLET_NC);		//****************
+				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 				if (rc != 1) {
-					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 					TRACE(_T("junction special (JSBS001) error.\n"));
 					TRACE(_T("add_abort\n"));
 					return rc;			// >>>>>>>>>>>>>>>>>>>>>
@@ -901,6 +898,7 @@ first_station_id1 = stationId1;
 		(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId)) {
 		JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 1).stationId));
 		TRACE("b#14021205-2\n");
+		BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
 	}
 
 	// 水平型検知
@@ -1082,6 +1080,7 @@ ASSERT(first_station_id1 = stationId1);
 						// 新幹線の発駅には並行在来線(路線b)に所属しているか?
 						if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId, 
 														route_list_raw.at(num - 2).stationId)) {
+							BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 							TRACE(_T("next station is not found in shinkansen.\n"));
 							TRACE(_T("add_abort\n"));
 							return -1;			// >>>>>>>>>>>>>>>>>>>
@@ -1122,7 +1121,6 @@ ASSERT(first_station_id1 = stationId1);
 				// 博多-小倉-西小倉
 				// 
 				TRACE("jct-b nisi-kokura-stop/yoshizuka-stop\n");
-				//BIT_ON(lflg2, BSRNOTYET_NA);	/* 不完全経路フラグ */
 			}
 			if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
 				// E-3 , B-0, 5, 6, b, c, d, e
@@ -1160,7 +1158,7 @@ ASSERT(first_station_id1 = stationId1);
 				replace_flg = true;
 				TRACE("JCT: F1, H, E11-14\n");
 			} else {
-				// F-3bはエラーとするため. jct_flg_on = true;	// F-3b
+				// F-3bはエラーとするため. BIT_ON(jct_flg_on, BSRJCTHORD);	// F-3b
 			}
 		} else {
 			// J, B, D
@@ -1200,10 +1198,10 @@ ASSERT(first_station_id1 = stationId1);
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
 					}
-					jct_flg_on = true;	//b#14021202
+					BIT_ON(jct_flg_on, BSRJCTHORD);	//b#14021202
 				}
 			}
-			// b#14021202 jct_flg_on = true;
+			// b#14021202 BIT_ON(jct_flg_on, BSRJCTHORD);
 			line_id = jctspdt.jctSpMainLineId;
 			stationId1 = jctspdt.jctSpStationId;
 		}
@@ -1236,15 +1234,14 @@ ASSERT(first_station_id1 = stationId1);
 			             
                 // 上越線 宮内→浦佐
 				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, ADD_BULLET_NC);		//****************
+				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 				if (1 != rc) {
-					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 					TRACE(_T("junction special 2(JSBH001) error.\n"));
 					TRACE(_T("add_abort\n"));
 					return rc;			// >>>>>>>>>>>>>>>>>>>>>
 				}
 				stationId1 = jctspdt.jctSpStationId;
 				num += 1;
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
         	}
 	    }
 	}
@@ -1337,12 +1334,8 @@ ASSERT(first_station_id1 = stationId1);
 	lflg2 = Route::AttrOfStationOnLineLine(line_id, stationId2);
 
 	lflg2 |= (lflg1 & 0xff000000);
-	lflg2 &= 0xff00ffff;
-	if (jct_flg_on) {
-		BIT_ON(lflg2, BSRJCTHORD);	// 水平型検知(D-2)
-	} else {
-		BIT_OFF(lflg2, BSRJCTHORD);
-	}
+	lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));	// 水平型検知(D-2);
+	lflg2 |= jct_flg_on;	// BSRNOTYET_NA:BSRJCTHORD
 	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 	++num;
 
