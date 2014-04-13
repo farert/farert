@@ -202,7 +202,7 @@ public:
 
 	int company_fare;				/* ‰ïĞü—¿‹à */
 	int flag;						/* IDENT1: ‘St_station.sflg‚Ì˜_—Ï IDENT2: bit16-22: shinkansen ride mask  */
-
+	bool ret_dis;					/* ‰•œŠ„ˆø*/
 #define BSHINKANSEN					16
 #define FLAG_FARECALC_INITIAL		(1<<15)				
 #define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:“Œ–kVŠ²ü

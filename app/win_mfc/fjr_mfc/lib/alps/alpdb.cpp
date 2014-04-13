@@ -5538,7 +5538,7 @@ tstring Route::showFare(int cooked)
 	}
 
 	if (BIT_CHK(route_list_raw.back().flag, BSRNOTYET_NA)) {
-		return tstring(_T("‚±‚ÌŒo˜H‚Ì•Ğ“¹æÔŒ”‚Íw“ü‚Å‚«‚Ü‚¹‚ñ."));
+		return tstring(_T("--------------"));	//‚±‚ÌŒo˜H‚Ì•Ğ“¹æÔŒ”‚Íw“ü‚Å‚«‚Ü‚¹‚ñ."));
 	}
 	
 	if (RULE_APPLIED == (RULE_NO_APPLIED & cooked)) {
@@ -5614,8 +5614,9 @@ ASSERT(FALSE);
 	ASSERT(100<=fare_info.fare);
 //	fare2 = fare_info.fare / 10 * 8 / 10 * 10;
 //	fare4 = fare_info.fare / 10 * 6 / 10 * 10;
-	if (6000 < fare_info.total_jr_calc_km) {
+	if (6000 < fare_info.total_jr_calc_km) {	/* ‰•œŠ„ˆø */
 		fareW = fare_info.fare / 10 * 9 / 10 * 10 * 2;
+		fare_info.ret_dis = TRUE;
 //		if (MASK_FLAG_SHINKANSEN(fare_info.flag) == FLAG_TOKAIDO_SHINKANSEN) {
 //			/* 600kmˆÈ‰º‚Å“ŒŠC“¹VŠ²üŠÜ‚Ş */
 //			fareC = fare_info.fare / 100 * 95 / 10 * 10;	/* 0.5Š„ */
@@ -5623,6 +5624,7 @@ ASSERT(FALSE);
 //			fareC = fare2;									/* 2Š„ */
 //		}
 	} else {
+		fare_info.ret_dis = FALSE;
 		fareW = fare_info.fare * 2;
 //		if (2000 < fare_info.total_jr_calc_km) {
 //			fareC = fare2;									/* 2Š„ */
@@ -5684,12 +5686,13 @@ ASSERT(FALSE);
 	}
 	_sntprintf_s(cb, MAX_BUF,
 				//_T("‰^’ÀF\\%5s     \\%5s[2Š„ˆø] \\%5s[üŠ„] \\%5s[‰•œ] \\%5s[4Š„ˆø]\r\n")
-				_T("‰^’ÀF\\%-5s     \\%-5s[‰•œ]"),
+				_T("‰^’ÀF\\%-5s     \\%-5s[‰•œ%s]"),
 						num_str_yen(fare_info.fare + fare_info.company_fare).c_str(),
 						//num_str_yen(fare2).c_str(),
 						//num_str_yen(fareC).c_str(),
-						num_str_yen(fareW + fare_info.company_fare * 2).c_str());
+						num_str_yen(fareW + fare_info.company_fare * 2).c_str(),
 						//num_str_yen(fare4).c_str(),
+						fare_info.ret_dis == TRUE ? _T("(Š„)") : _T(""));
 	sWork = cb;
 	if (0 < fare_info.company_fare) {
 		_sntprintf_s(cb, MAX_BUF,
