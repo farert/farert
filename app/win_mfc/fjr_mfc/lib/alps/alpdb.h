@@ -138,6 +138,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define MASK_ROUTE_FLAG_LFLG	0xff000000
 #define MASK_ROUTE_FLAG_SFLG	0x0000ffff
 
+#define MASK_URBAN		0x380
+
 class RouteItem
 {
 	RouteItem() {}
@@ -201,20 +203,25 @@ public:
 	int company_fare;				/* 会社線料金 */
 	int flag;						/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 
-#define FLAG_TOHOKU_SHINKANSEN		(1<<16)				// 1:東北新幹線
-#define FLAG_JYOETSU_SHINKANSEN		(2<<16)				// 2:上越新幹線
-#define FLAG_HOKURIKU_SHINKANSEN	(3<<16)				// 3:北陸長野新幹線
-#define FLAG_TOKAIDO_SHINKANSEN		(4<<16)				// 4:東海道新幹線
-#define FLAG_SANYO_SHINKANSEN		(5<<16)				// 5:山陽新幹線
-#define FLAG_KYUSYU_SHINKANSEN		(6<<16)				// 6:九州新幹線
-#define FLAG_HOKKAIDO_SHINKANSEN	(7<<16)				// 7:北海道新幹線
-#define MASK_FLAG_SHINKANSEN(flg)	((flg)&0x000f0000)	// 新幹線	aggregate_fare_info()の最後で設定
+#define BSHINKANSEN					16
+#define FLAG_FARECALC_INITIAL		(1<<15)				
+#define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:東北新幹線
+#define FLAG_JYOETSU_SHINKANSEN		(2<<BSHINKANSEN)				// 2:上越新幹線
+#define FLAG_HOKURIKU_SHINKANSEN	(3<<BSHINKANSEN)				// 3:北陸長野新幹線
+#define FLAG_TOKAIDO_SHINKANSEN		(4<<BSHINKANSEN)				// 4:東海道新幹線
+#define FLAG_SANYO_SHINKANSEN		(5<<BSHINKANSEN)				// 5:山陽新幹線
+#define FLAG_KYUSYU_SHINKANSEN		(6<<BSHINKANSEN)				// 6:九州新幹線
+#define FLAG_HOKKAIDO_SHINKANSEN	(7<<BSHINKANSEN)				// 7:北海道新幹線
+#define FLAG_SHINKANSEN				0x000f0000			// 新幹線	aggregate_fare_info()の最後で設定
+#define MASK_SHINKANSEN				0x0f				// 新幹線	aggregate_fare_info()の最後で設定
+#define MASK_FLAG_SHINKANSEN(flg)	((flg)&FLAG_SHINKANSEN)	// 新幹線	aggregate_fare_info()の最後で設定
 #define MASK_CITYNO(flg)			((flg)&0x0f)
 #define BCSUBURB					7
 #define MASK_URBNNO(flg)			(((flg)>>7)&0x07)
 #define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
+
 	int fare;
 	int avail_days;
 
