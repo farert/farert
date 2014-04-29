@@ -60,7 +60,7 @@ typedef unsigned int SPECIFICFLAG;
 #define MAX_STATION     4590
 #define MAX_LINE        209
 #define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=7))	/* VŠ²ü‚Í«—ˆ“I‚É‚à10‚Ü‚½‚Í15ˆÈ“à */
-#define IS_COMPANY_LINE(id)     (202<(id))
+#define IS_COMPANY_LINE_OF(id)     (202<(id))
 //#define MAX_JCT 311
 
 // ‰w‚Í•ªŠò‰w‚©
@@ -222,12 +222,13 @@ public:
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* “Œ‹ž“dŽÔ“Á’è‹æŠÔ ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* ŽR“_ü“à^‘åãŠÂóü“à ?*/
 
+#define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
 	int fare;
 	int avail_days;
 
 	FARE_INFO() { reset(); }
 	bool retr_fare();
-	bool aggregate_fare_info(int line_id, int station_id1, int station_id2);
+	int aggregate_fare_info(int line_id, int station_id1, int station_id2, int before_staion_id1);
 	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);
 	void reset() {
 		sales_km = 0;
@@ -391,6 +392,7 @@ typedef struct
 #define BLF_TRACKMARKCTL		5
 #define BLF_JCTSP_ROUTE_CHANGE	6
 #define LASTFLG_OFF				0
+#define BLF_END					16
 
 /*   route
  *
@@ -426,14 +428,13 @@ public:
 	bool isModified() {
 		return (last_flag & (1 << 6)) != 0;
 	}
+	void end()		{ BIT_ON(last_flag, BLF_END); }
 
 private:
 	bool			checkOfRuleSpecificCoreLine(int dis_cityflag, int* rule114);
 	static DBO	 	Enum_junctions_of_line(int line_id, int begin_station_id, int to_station_id);
 
 private:
-	bool			aggregate_fare_info(int line_id, int station_id1, int station_id2);
-
 	static int	 	InStation(int stationId, int lineId, int b_stationId, int e_stationId);
 	static int		RetrieveOut70Station(int line_id);
 	
@@ -500,7 +501,7 @@ public:
 	int				reverse();
 	bool 			checkPassStation(int stationId);
 	void 			terminate(int stationId);
-	bool			changeNeerest(bool useBulletTrain);
+	int				changeNeerest(bool useBulletTrain);
 
 	static DBO	 	Enum_junction_of_lineId(int lineId, int stationId);
 	static DBO	 	Enum_station_of_lineId(int lineId);
