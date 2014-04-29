@@ -785,6 +785,10 @@ int Route::add(int line_id, int stationId2, int ctlflg)
 	int original_line_id = line_id;
 	int first_station_id1;
 #endif
+	if (BIT_CHK(last_flag, BLF_END)) {
+		return	0;		/* already terminated. */
+	}
+
 	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_JCTSP_ROUTE_CHANGE));
 
 	num = route_list_raw.size();
@@ -1350,9 +1354,19 @@ ASSERT(first_station_id1 = stationId1);
 		ASSERT(FALSE);
 		BIT_ON(last_flag, BLF_TRACKMARKCTL);
 	}
-	TRACE(_T("added last.\n"));
 
-	return ((rc == 0) ? 1:0);
+	TRACE(_T("added last(%d).\n"), rc);
+
+	if (rc != 0) {
+		if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
+			TRACE(_T("HHH¼¬‘qE‹g’Ë.\n"), rc);
+			return 1;	/* ¼¬‘qA‹g’Ë */
+		} else {
+			return 0;
+		}
+	} else {
+		return 1;	/* OK - Can you continue */
+	}
 }
 
 
@@ -1406,7 +1420,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 		}
 	}
 
-	BIT_OFF(last_flag, BLF_TRACKMARKCTL);
+	last_flag &= ((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
 	route_list_raw.pop_back();
 }
 
@@ -1931,12 +1945,17 @@ vector<int> Route::GetDistance(int line_id, int station_id1, int station_id2)
 	const char tsql[] = 
 "select max(sales_km)-min(sales_km), case max(calc_km)-min(calc_km) when 0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end" 
 " from t_lines"
+" where line_id=?1 and (lflg&(1<<31))=0 and (station_id=?2 or station_id=?3)";
+
+#if 0	/* 140416 */
+"select max(sales_km)-min(sales_km), case max(calc_km)-min(calc_km) when 0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end" 
+" from t_lines"
 " where line_id=?1"
 " and	(lflg&(1<<31))=0"
 " and	sales_km>=(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 " and	sales_km<=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))";
 
-#if 0
+/* old #if 0 */
 "select l1.sales_km - l2.sales_km, l1.calc_km - l2.calc_km"
 " from t_lines l1"
 " left join t_lines l2"
@@ -1979,12 +1998,17 @@ int Route::Get_node_distance(int line_id, int station_id1, int station_id2)
 	const char tsql[] = 
 "select case when sum(calc_km)=0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end"
 " from	t_lines"
+" where line_id=?1 and (lflg&(1<<31))=0 and	(station_id=?2 or station_id=?3)";
+
+#if 0	/* 140416 */
+"select case when sum(calc_km)=0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end"
+" from	t_lines"
 " where line_id=?1"
 " and	(lflg&(1<<31))=0"
 " and	sales_km>=(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 " and	sales_km<=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))";
 
-#if 0
+/* old #if 0 */
 "select case when (l1.calc_km-l2.calc_km)=0 then l1.sales_km - l2.sales_km else  l1.calc_km - l2.calc_km end"
 " from t_lines l1"
 " left join t_lines l2"
@@ -4068,9 +4092,12 @@ vector<PAIRIDENT> Route::GetNeerNode(int station_id)
 //
 //	@param [in] useBulletTrain (bool)VŠ²üg—p—L–³
 //	@retval true success
-//	@retval false fail
+//	@retval 1 : success
+//	@retval 0 : loop end.
+//	@retval -n: add() error(re-track)
+//	@retval -32767 unknown error(DB error or BUG)
 //
-bool Route::changeNeerest(bool useBulletTrain)
+int Route::changeNeerest(bool useBulletTrain)
 {
 	ASSERT(0 < startStationId());
 	ASSERT(0 < endStationId);
@@ -4105,7 +4132,7 @@ bool Route::changeNeerest(bool useBulletTrain)
 	}
 
 	if (stationId == endStationId) {
-		return false;			/* already routed */
+		return 0;			/* already routed */
 	}
 
 	/* ƒ_ƒCƒNƒXƒgƒ‰•Ï”‰Šú‰» */
@@ -4120,13 +4147,16 @@ bool Route::changeNeerest(bool useBulletTrain)
 	lastNode = Route::Id2jctId(endStationId);
 	if (startNode == 0) { /* ŠJn‰w‚Í”ñ•ªŠò‰w */
 		lid = Route::LineIdFromStationId(stationId);
-		if (lid == Route::LineIdFromStationId(endStationId)) { /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü */
+		if ((lastNode == 0) & (lid == Route::LineIdFromStationId(endStationId))) {  /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü (A) */
+		//if (0 < Route::InStationOnLine(lid, endStationId)) { /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü (B) */
+			// ‘åè-“c’[‚ÍRèü‚æ‚è“ŒŠC“¹E“Œ–küŒo—R‚Ì‚Ù‚¤‚ª‹ß‚­‚»‚¿‚ç‚ª‘I‘ğ‚³‚ê‚é(A)‚É‚µ‚½
+			// !!!‚¾‚ª•sŠ®‘SB‘¼‚Ì—á‚ÍH(‘åè-‹î‚ªRèüŒo—R‚Ì•û‚ª’Z‚¢‚Ì‚Í‹ô‘R))
 			///km = Route::Get_node_distance(lid, stationId, endStationId);
 			// a’J-Œ´h‚È‚Ç >>>>>>>>>>>>>>>>>>>>>
 			if (1 < route_list_raw.size() && route_list_raw.back().lineId == lid) {
 				removeTail();
 			}
-			return 0 <= add(lid, /*stationId,*/ endStationId);
+			return add(lid, /*stationId,*/ endStationId);
 		}
 		
 		// ‰w‚Ì—¼—×‚ÌÅŠñ•ªŠò‰wID‚Æ‚»‚Ì‰w‚Ü‚Å‚ÌŒvZƒLƒ‚ğ“¾‚é
@@ -4146,21 +4176,26 @@ bool Route::changeNeerest(bool useBulletTrain)
 				fromNode[b - 1] = -1;
 				line_id[b - 1] = lid;
 			} else if (IsJctMask(a)) {
-				return false;
+				TRACE("Autoroute:”­‰w‚Ì—¼—×‚Ì•ªŠò‰w‚ÍŠù‚É’Ê‰ßÏ‚İ");
+				return -10;
 			}
 		} else {
+			/* –Ó’°ü */
 			if (IsJctMask(a)) {
-				return false;
+				TRACE("Autoroute:–Ó’°ü‚Å’Ê‰ßÏ‚İ.");
+				return -11;
 			}
 		}
 	} else {
 		minCost[startNode - 1] = 0;
 	}
+
 	if (lastNode == 0) { /* I—¹‰w‚Í”ñ•ªŠò‰w ? */
 		// ‰w‚Ì—¼—×‚ÌÅŠñ•ªŠò‰wID‚Æ‚»‚Ì‰w‚Ü‚Å‚ÌŒvZƒLƒ‚ğ“¾‚é
 		vector<PAIRIDENT> neer_node = Route::GetNeerNode(endStationId);
 
 		// dijkstra‚Ì‚ ‚Æ‚Åg—p‚Ì‚½‚ß‚É•Ï”‚ÉŠi”[
+		// I—¹‰w‚Ì—¼—×‚Ì•ªŠò‰w‚É‚Â‚¢‚Ä‚Íadd()‚ÅƒGƒ‰[‚Æ‚È‚é‚Ì‚Å•s—v(‚©‚Ç‚¤‚©Hj
 	
 		lastNode1 = Route::Id2jctId(IDENT1(neer_node.at(0)));
 		lastNode1_distance = IDENT2(neer_node.at(0));
@@ -4216,11 +4251,19 @@ bool Route::changeNeerest(bool useBulletTrain)
 
 		vector<vector<int>> nodes = Route::Node_next(doneNode + 1);
 		vector<vector<int>>::const_iterator ite;
+
 		for (ite = nodes.cbegin(); ite != nodes.cend(); ite++) {
+
 			a = ite->at(0) - 1;	// jctId
-			if ((!IsJctMask(a + 1) || (lastNode == (a + 1))) && (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
+
+			if ((!IsJctMask(a + 1) || ((nLastNode == 0) && (lastNode == (a + 1))) ||
+			                          ((0 < nLastNode) && (lastNode1 == (a + 1))) || 
+			                          ((1 < nLastNode) && (lastNode2 == (a + 1)))) && 
+			    (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
+
 				/* VŠ²ü‚Å‚È‚¢ */
 				cost = minCost[doneNode] + ite->at(1); // cost
+
 				// ƒm[ƒhto‚Í‚Ü‚¾–K‚ê‚Ä‚¢‚È‚¢ƒm[ƒh
 				// ‚Ü‚½‚Íƒm[ƒhto‚Ö‚æ‚è¬‚³‚¢ƒRƒXƒg‚ÌŒo˜H‚¾‚Á‚½‚ç
 				// ƒm[ƒhto‚ÌÅ¬ƒRƒXƒg‚ğXV
@@ -4236,9 +4279,9 @@ bool Route::changeNeerest(bool useBulletTrain)
 				}
 			}
 		}
+		TRACE("\n");
 	}
 
-	TRACE(_T("\n"));
 
 	vector<IDENT> route;
 	int lineid = 0;
@@ -4250,8 +4293,9 @@ bool Route::changeNeerest(bool useBulletTrain)
 		// ŒvZƒLƒ{2‚Â‚ÌÅŒã‚Ì•ªŠò‰wŒó•â‚Ü‚Å‚ÌŒvZƒLƒ‚ÍA
 		// ‚Ç‚¿‚ç‚ª’Z‚¢‚©H
 	
-		if ((2 == nLastNode) &&
-			((minCost[lastNode2 - 1] + lastNode2_distance) < (minCost[lastNode1 - 1] + lastNode1_distance))) {
+		if ((2 == nLastNode) && 
+		   ((minCost[lastNode2 - 1] + lastNode2_distance) < 
+		    (minCost[lastNode1 - 1] + lastNode1_distance))) {
 			id = lastNode2;		// ’Z‚¢•û‚ğÅŒã‚Ì•ªŠò‰w‚Æ‚·‚é
 		} else {
 			id = lastNode1;
@@ -4260,10 +4304,12 @@ bool Route::changeNeerest(bool useBulletTrain)
 		id = lastNode;
 	}
 
-	if (fromNode[id - 1] <= 0) {
+	if (fromNode[id - 1] == 0) {
 		TRACE( _T("can't lowcost route.\n"));
-		return false;
+		return -1002;
 	}
+	//‚±‚ê‚ª‚ ‚é‚ÆLš(ˆ»£-“ŒìŒû)‚Å¸”sB‰½ŒÌ“ü‚ê‚Ä‚½‚Ì‚©HHH
+	//b#13091401
 
 	// ”­‰w(=•ªŠò‰w)‚Å‚È‚­Å‰‚Ì•ªŠò‰w(-1+1=0)‚Å‚È‚¢ŠÔ
 	// ÅŒã‚Ì•ªŠò‰w‚©‚çfrom‚ğƒgƒŒ[ƒX >> route[]
@@ -4274,7 +4320,8 @@ bool Route::changeNeerest(bool useBulletTrain)
 				//printf("@@@@->%d\n", lineid);
 				 	/* VŠ²ü¨•Àsİ—ˆü */
 				int zline = Route::GetHZLine(lineid, Route::Jct2id(id));
-				for (idb = id; (idb != startNode) && (line_id[idb - 1] == zline); idb = fromNode[idb - 1] + 1) {
+				for (idb = id; (idb != startNode) && (line_id[idb - 1] == zline); 
+				     idb = fromNode[idb - 1] + 1) {
 					TRACE( _T("    ? %s %s/"),  Route::LineName(line_id[idb - 1]).c_str(), Route::StationName(Jct2id(idb)).c_str());
 					;
 				}
@@ -4355,24 +4402,36 @@ bool Route::changeNeerest(bool useBulletTrain)
 	if ((1 < route_list_raw.size()) && (1 < route.size()) && (route_list_raw.back().lineId == line_id[route[0]])) {
 		removeTail();
 		ASSERT(0 < route_list_raw.size()); /* route_list_raw.size() ‚Í0‚©2ˆÈã */
-		stationId = route_list_raw.back().stationId;
+		//stationId = route_list_raw.back().stationId;
 	}
+
 	for (i = 0; i < (int)route.size(); i++) {
-		if (add(line_id[route[i]], /*stationId,*/ Route::Jct2id(route[i] + 1)) < 0) {
-			ASSERT(FALSE);
-			return false;
+		a = add(line_id[route[i]], /*stationId,*/ Route::Jct2id(route[i] + 1));
+		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+		if (a <= 0) {
+			//ASSERT(FALSE);
+			if ((a < 0) || ((i + 1) < (int)route.size())) { 
+				return a;	/* error */
+			} else {
+				break;
+			}
 		}
-		stationId = Route::Jct2id(route[i] + 1);
+		//stationId = Route::Jct2id(route[i] + 1);
 	}
 	if (lastNode == 0) {
 		ASSERT(0 < lid);
-		if (add(lid, /*stationId,*/ endStationId) < 0) {
-			ASSERT(FALSE);
-			return false;
+		if (a == 0) {
+			return -1000;
+		}
+		a = add(lid, /*stationId,*/ endStationId);
+		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+		if (a <= 0) {
+			//ASSERT(FALSE);
+			return a;
 		}
 	}
 	route_list_cooked.clear();
-	return true;
+	return 1;
 }
 
 /*	˜Hü‚Ì2“_ŠÔ‰c‹ÆƒLƒAŒvZƒLƒA‰ïĞ(JR-Gr.)‹«ŠE‚ğ“¾‚é
@@ -4403,16 +4462,14 @@ vector<int> FARE_INFO::GetDistanceEx(int line_id, int station_id1, int station_i
 "	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 1
 "	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?2)"
 "	then -1 else"
-"	abs((select sales_km from t_lines"
-"	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
+"	abs((select sales_km from t_lines where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// 2
 "	case when exists (select * from t_lines"
 "	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?3)"
 "	then -1 else"
-"	abs((select calc_km from t_lines"
-"	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
+"	abs((select calc_km from t_lines where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// 3
@@ -4479,10 +4536,11 @@ int FARE_INFO::Retrieve70Distance(int station_id1, int station_id2)
 //	@param [in] line_id      ˜Hü
 //	@param [in] station_id1  ‰w1
 //	@param [in] station_id2  ‰w2
-//	@retval true Success
-//	@retval false Fatal error
+//	@param [in] station_id0  ‘O‰ñ‚Ì‰w1
+//	@retval 0 < Success(‰ïĞü‚Ìê‡A¡‰ñ‚Ì‰w1AJRü‚Ìê‡0)
+//	@retval -1 Fatal error
 //
-bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id2)
+int FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id2, int station_id_0)
 {
 	int company_id1;
 	int company_id2;
@@ -4497,7 +4555,7 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 		this->base_calc_km += sales_km;
 		this->local_only = false;		// Š²ü
 
-		return true;
+		return 0;
 	}
 
 	vector<int> d = FARE_INFO::GetDistanceEx(line_id, station_id1, station_id2);
@@ -4508,7 +4566,7 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 
 	if (6 != d.size()) {
 		ASSERT(FALSE);
-		return false;	/* failure abort end. >>>>>>>>> */
+		return -1;	/* failure abort end. >>>>>>>>> */
 	}
 	company_id1 = IDENT1(d.at(4));
 	company_id2 = IDENT2(d.at(4));
@@ -4519,22 +4577,35 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 	if ((company_id2 == JR_CENTRAL) || (company_id2 == JR_WEST)) {
 		company_id2 = JR_EAST;	/* –{BOĞ‚Æ‚µ‚ÄJR“ŒŠCAJR¼‚ÍAJR“Œ‚Æ‚·‚é */
 	}
+TRACE(_T("multicompany line none detect X: %d, %d, comp1,2=%d, %d, %s:%s-%s\n"), d.at(2), d.at(3), company_id1, company_id2, Route::LineName(line_id).c_str(), Route::StationName(station_id1).c_str(), Route::StationName(station_id2).c_str());
 	if (d.at(2) == -1) {		/* station_id1‚ª‹«ŠE‰w‚Ìê‡ */
+		TRACE("multicompany line detect 1: %d, %d(com1 <- com2)\n", d.at(2), d.at(3));
 		company_id1 = company_id2;
 	}
 	if (d.at(3) == -1) {		/* station_id2‚ª‹«ŠE‰w‚Ìê‡ */
+		TRACE("multicompany line detect 2: %d, %d(com2 <- com1)\n", d.at(2), d.at(3));
 		company_id2 = company_id1;
 	}
+	
 	this->sales_km += d.at(0);			// total ‰c‹ÆƒLƒ(‰ïĞüŠÜ‚ŞA—LŒø“ú”ŒvZ—p)
-	if (IS_SHINKANSEN_LINE(line_id)) {
-		/* R—zVŠ²ü L“‡-“¿RŠÔ‚ğ’Ê‚éê‡‚Ì1Œo˜H‚Å‚ÍAfare(l, i) ‚Æ‚³‚ê‚Ä‚µ‚Ü‚¤‚©‚ç.
-		 */
-		this->local_only = false;		// Š²ü
-	}
-	if (company_id1 == company_id2) {		// “¯ˆê 1Ğ
-		if ((d.at(5) & 0x80000000) != 0) {	/* ‰ïĞü */
-			this->company_fare += FARE_INFO::Fare_company(station_id1, station_id2);
+	if (IS_COMPANY_LINE(d.at(5))) {	/* ‰ïĞü */
+		if (0 < station_id_0) {
+			/* 2‰ñ˜A‘±‚Å‰ïĞü‚Ìê‡ */
+			this->company_fare += FARE_INFO::Fare_company(station_id_0, station_id2);
+			this->company_fare -= FARE_INFO::Fare_company(station_id_0, station_id1);
 		} else {
+			this->company_fare += FARE_INFO::Fare_company(station_id1, station_id2);
+		}
+		station_id_0 = station_id1;
+	} else {
+		station_id_0 = 0;
+		/* JR Group */
+		if (IS_SHINKANSEN_LINE(line_id)) {
+			/* R—zVŠ²ü L“‡-“¿RŠÔ‚ğ’Ê‚éê‡‚Ì1Œo˜H‚Å‚ÍAfare(l, i) ‚Æ‚³‚ê‚Ä‚µ‚Ü‚¤‚©‚ç.
+			 */
+			this->local_only = false;		// Š²ü
+		}
+		if (company_id1 == company_id2) {		// “¯ˆê 1Ğ
 				/* ’Pˆê JR Group */
 			switch (company_id1) {
 			case JR_HOKKAIDO:
@@ -4580,89 +4651,89 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 				ASSERT(FALSE);	/* ‚ ‚è“¾‚È‚¢ */
 				break;
 			}
-		}
-	} else {								// ‰ïĞŒ×‚è?
-		switch (company_id1) {
-		case JR_HOKKAIDO:					// JR–kŠC“¹->–{B3Ğ(JR“Œ)
-			ASSERT(FALSE);		// –kŠC“¹VŠ²ü‚ªŠJ’Ê‚·‚é‚Ü‚Å‚¨—a‚¯
-			this->hokkaido_sales_km 	+= d.at(2);
-			this->base_sales_km 		+= (d.at(0) - d.at(2));
-			if (0 == d.at(1)) { /* Š²ü? */
-				ASSERT(FALSE);	/* ‚ ‚è‚¦‚È‚¢ */
-				this->hokkaido_calc_km  += d.at(2);
-				this->base_calc_km  	+= (d.at(0) - d.at(2));
-				this->local_only_as_hokkaido = false;
-			} else {
-				this->hokkaido_calc_km  += d.at(3);
-				this->base_calc_km  	+= (d.at(1) - d.at(3));
-			}
-			break;
-		case JR_SHIKOKU:					// JRl‘->–{B3Ğ(JR¼)
-			this->shikoku_sales_km 		+= d.at(2);
-			this->base_sales_km 		+= (d.at(0) - d.at(2));
-			if (0 == d.at(1)) { 			/* Š²ü? */
-				this->shikoku_calc_km 	+= d.at(2);
-				this->base_calc_km  	+= (d.at(0) - d.at(2));
-				this->local_only = false;	// Š²ü
-			} else {
-				this->shikoku_calc_km 	+= d.at(3);
-				this->base_calc_km  	+= (d.at(1) - d.at(3));
-			}
-			break;
-		case JR_KYUSYU:					// JR‹ãB->–{B3Ğ(JR¼)
-			this->kyusyu_sales_km 		+= d.at(2);
-			this->base_sales_km 		+= (d.at(0) - d.at(2));
-			if (0 == d.at(1)) { /* Š²ü? */
-				this->kyusyu_calc_km 	+= d.at(2);
-				this->base_calc_km 		+= (d.at(0) - d.at(2));
-				this->local_only = false;	// Š²ü
-			} else {
-				this->kyusyu_calc_km 	+= d.at(3);
-				this->base_calc_km 		+= (d.at(1) - d.at(3));
-			}
-			break;
-		default:
-			this->base_sales_km 		+= d.at(2);
-			if (0 == d.at(1)) { /* Š²ü? */
-				this->base_calc_km 		+= d.at(2);
-				this->local_only = false;	// Š²ü
-			} else {
-				this->base_calc_km 		+= d.at(3);
-			}
-			switch (company_id2) {
-			case JR_HOKKAIDO:			// –{B3Ğ(JR“Œ)->JR–kŠC“¹
-				ASSERT(FALSE);	// –kŠC“¹VŠ²ü‚ª—ˆ‚é‚Ü‚Å‚¨—a‚¯
-				this->hokkaido_sales_km		+= (d.at(0) - d.at(2));
+		} else {								// ‰ïĞŒ×‚è?
+			switch (company_id1) {
+			case JR_HOKKAIDO:					// JR–kŠC“¹->–{B3Ğ(JR“Œ)
+				ASSERT(FALSE);		// –kŠC“¹VŠ²ü‚ªŠJ’Ê‚·‚é‚Ü‚Å‚¨—a‚¯
+				this->hokkaido_sales_km 	+= d.at(2);
+				this->base_sales_km 		+= (d.at(0) - d.at(2));
 				if (0 == d.at(1)) { /* Š²ü? */
-					this->hokkaido_calc_km	+= (d.at(0) - d.at(2));
+					ASSERT(FALSE);	/* ‚ ‚è‚¦‚È‚¢ */
+					this->hokkaido_calc_km  += d.at(2);
+					this->base_calc_km  	+= (d.at(0) - d.at(2));
 					this->local_only_as_hokkaido = false;
 				} else {
-					this->hokkaido_calc_km	+= (d.at(1) - d.at(3));
+					this->hokkaido_calc_km  += d.at(3);
+					this->base_calc_km  	+= (d.at(1) - d.at(3));
 				}
 				break;
-			case JR_SHIKOKU:			// –{B3Ğ(JR¼)->JRl‘
-				this->shikoku_sales_km		+= (d.at(0) - d.at(2));
-				if (0 == d.at(1)) { /* Š²ü? */
-					this->shikoku_calc_km	+= (d.at(0) - d.at(2));
+			case JR_SHIKOKU:					// JRl‘->–{B3Ğ(JR¼)
+				this->shikoku_sales_km 		+= d.at(2);
+				this->base_sales_km 		+= (d.at(0) - d.at(2));
+				if (0 == d.at(1)) { 			/* Š²ü? */
+					this->shikoku_calc_km 	+= d.at(2);
+					this->base_calc_km  	+= (d.at(0) - d.at(2));
+					this->local_only = false;	// Š²ü
 				} else {
-					this->shikoku_calc_km	+= (d.at(1) - d.at(3));
+					this->shikoku_calc_km 	+= d.at(3);
+					this->base_calc_km  	+= (d.at(1) - d.at(3));
 				}
 				break;
-			case JR_KYUSYU:				// –{B3Ğ(JR¼)->JR‹ãB
-				this->kyusyu_sales_km		+= (d.at(0) - d.at(2));
+			case JR_KYUSYU:					// JR‹ãB->–{B3Ğ(JR¼)
+				this->kyusyu_sales_km 		+= d.at(2);
+				this->base_sales_km 		+= (d.at(0) - d.at(2));
 				if (0 == d.at(1)) { /* Š²ü? */
-					this->kyusyu_calc_km	+= (d.at(0) - d.at(2));
+					this->kyusyu_calc_km 	+= d.at(2);
+					this->base_calc_km 		+= (d.at(0) - d.at(2));
+					this->local_only = false;	// Š²ü
 				} else {
-					this->kyusyu_calc_km	+= (d.at(1) - d.at(3));
+					this->kyusyu_calc_km 	+= d.at(3);
+					this->base_calc_km 		+= (d.at(1) - d.at(3));
 				}
 				break;
 			default:
-				ASSERT(FALSE);
-				return false;	/* failure abort end. >>>>>>>>> */
-				break;	/* ‚ ‚è“¾‚È‚¢ */
-			}
-			break;
-		}
+				this->base_sales_km 		+= d.at(2);
+				if (0 == d.at(1)) { /* Š²ü? */
+					this->base_calc_km 		+= d.at(2);
+					this->local_only = false;	// Š²ü
+				} else {
+					this->base_calc_km 		+= d.at(3);
+				}
+				switch (company_id2) {
+				case JR_HOKKAIDO:			// –{B3Ğ(JR“Œ)->JR–kŠC“¹
+					ASSERT(FALSE);	// –kŠC“¹VŠ²ü‚ª—ˆ‚é‚Ü‚Å‚¨—a‚¯
+					this->hokkaido_sales_km		+= (d.at(0) - d.at(2));
+					if (0 == d.at(1)) { /* Š²ü? */
+						this->hokkaido_calc_km	+= (d.at(0) - d.at(2));
+						this->local_only_as_hokkaido = false;
+					} else {
+						this->hokkaido_calc_km	+= (d.at(1) - d.at(3));
+					}
+					break;
+				case JR_SHIKOKU:			// –{B3Ğ(JR¼)->JRl‘
+					this->shikoku_sales_km		+= (d.at(0) - d.at(2));
+					if (0 == d.at(1)) { /* Š²ü? */
+						this->shikoku_calc_km	+= (d.at(0) - d.at(2));
+					} else {
+						this->shikoku_calc_km	+= (d.at(1) - d.at(3));
+					}
+					break;
+				case JR_KYUSYU:				// –{B3Ğ(JR¼)->JR‹ãB
+					this->kyusyu_sales_km		+= (d.at(0) - d.at(2));
+					if (0 == d.at(1)) { /* Š²ü? */
+						this->kyusyu_calc_km	+= (d.at(0) - d.at(2));
+					} else {
+						this->kyusyu_calc_km	+= (d.at(1) - d.at(3));
+					}
+					break;
+				default:
+					ASSERT(FALSE);
+					return -1;	/* failure abort end. >>>>>>>>> */
+					break;	/* ‚ ‚è“¾‚È‚¢ */
+				}
+				break;
+			} /* JR 2company */
+		} /* JR Group */
 	}
 	if ((this->flag & FLAG_FARECALC_INITIAL) == 0) { // b15‚ª0‚Ìê‡Å‰‚È‚Ì‚Å‰w1‚Ìƒtƒ‰ƒO‚à”½‰f
 		this->flag = IDENT1(d.at(5));		// ‰w1 sflg‚Ì‰º13ƒrƒbƒg
@@ -4677,7 +4748,7 @@ bool FARE_INFO::aggregate_fare_info(int line_id, int station_id1, int station_id
 		this->flag |= ((line_id & MASK_SHINKANSEN) << BSHINKANSEN);	/* make flag for MASK_FLAG_SHINKANSEN() */
 	}
 	/* flag(sflg)‚ÍAb11,10,5, 7-9 ‚Ì‚İg—p‚Å‘¼‚ÍFARE_INFO‚Å‚Íg—p‚µ‚È‚¢ */
-	return true;
+	return station_id_0;
 }
 
 // Private:
@@ -4694,10 +4765,11 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList, bool applied_rule/
 {
 	vector<RouteItem>::const_iterator ite;
 	int station_id1;
+	int b_station_id;
 	
 	reset();
 
-	station_id1 = 0;
+	b_station_id = station_id1 = 0;
 	this->local_only = true;
 	this->local_only_as_hokkaido = true;
 	for (ite = routeList.cbegin(); ite != routeList.cend(); ite++) {
@@ -4705,7 +4777,8 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList, bool applied_rule/
 //ASSERT((ite->flag) == 0);
 		if (station_id1 != 0) {
 							/* ‰ïĞ•Ê‰c‹ÆƒLƒAŒvZƒLƒ‚Ìæ“¾ */
-			if (!FARE_INFO::aggregate_fare_info(ite->lineId, station_id1, ite->stationId)) {
+			b_station_id = FARE_INFO::aggregate_fare_info(ite->lineId, station_id1, ite->stationId, b_station_id);
+			if (b_station_id < 0) {
 				ASSERT(FALSE);
 				goto err;		/* >>>>>>>>>>>>>>>>>>> */
 			}
@@ -4858,7 +4931,7 @@ bool FARE_INFO::retr_fare()
 		/* JR–kŠC“¹‚Ì‚İ */
 		ASSERT(this->total_jr_sales_km == this->hokkaido_sales_km);
 		ASSERT(this->total_jr_calc_km == this->hokkaido_calc_km);
-		ASSERT(this->fare == 0);
+		//çÎü(‹ó`ü)‚ÌŠ„‘•ª‚ª‚ ‚é‚Ì‚ÅBASSERT(this->fare == 0);
 		if (this->local_only_as_hokkaido) {
 			/* JR–kŠC“¹ ’n•ûŒğ’Êü‚Ì‚İ */
 			
@@ -4881,62 +4954,70 @@ bool FARE_INFO::retr_fare()
 		/* JR‹ãB‚Ì‚İ */
 		ASSERT(this->total_jr_sales_km == this->kyusyu_sales_km);
 		ASSERT(this->total_jr_calc_km == this->kyusyu_calc_km);
-		ASSERT(this->fare == 0);
+		//‹{è‹ó`üŠ„‘‚ª‚ ‚é‚Ì‚ÅBASSERT(this->fare == 0);
 
+		fare = 0;
 		if (this->local_only) {
 			/* JR‹ãB ’n•ûŒğ’Êü */
 			TRACE("fare(ls)[9]?\n");
 			/* (l) */
-			this->fare = IDENT2(FARE_INFO::Fare_table(this->total_jr_calc_km, this->total_jr_sales_km));
+			fare = IDENT2(FARE_INFO::Fare_table(this->total_jr_calc_km, this->total_jr_sales_km));
 		} else if (this->total_jr_calc_km != this->total_jr_sales_km) {
 				/* JR‹ãB Š²ü+’n•ûŒğ’Êü */
 				/* (n) */
 			if ((KM(this->total_jr_calc_km) == 4) && (KM(this->total_jr_sales_km) == 3)) {
-				this->fare = 170;	/* \ */
+				fare = 170;	/* \ */
 			} else if ((KM(this->total_jr_calc_km) == 11) && (KM(this->total_jr_sales_km) == 10)) {
-				this->fare = 240;	/* \ */
+				fare = 240;	/* \ */
 			}
 		}
 		/* JR‹ãB Š²ü‚Ì‚İAŠ²ü{’n•ûŒğ’ÊüA’n•ûŒğ’Êü‚Ì‚İ ‚Ì(l), (n)”ñ“K—p */
 		// (h)<s><c>
-		if (this->fare == 0) {
+		if (fare == 0) {
 			TRACE("fare(m, h)[9]\n");
-			this->fare = FARE_INFO::Fare_table("m", "h", this->total_jr_calc_km);
-			if (this->fare <= 0) {
+			fare = FARE_INFO::Fare_table("m", "h", this->total_jr_calc_km);
+			if (fare <= 0) {
 				TRACE("Table farem.h overflow!");
-				this->fare = FARE_INFO::Fare_h(this->total_jr_calc_km);
+				fare = FARE_INFO::Fare_h(this->total_jr_calc_km);
 			}
 		}
+		
+		this->fare += fare;
+		
 	} else if (0 < (this->shikoku_sales_km + this->shikoku_calc_km)) {
 		/* JRl‘‚Ì‚İ */
 		ASSERT(this->total_jr_sales_km == this->shikoku_sales_km);
 		ASSERT(this->total_jr_calc_km == this->shikoku_calc_km);
 		ASSERT(this->fare == 0);
 
+		fare = 0;
 		if (this->local_only) {
 			/* JRl‘ ’n•ûŒğ’Êü */
 			TRACE("fare(ls)[4]?\n");
 			/* (k) */
-			this->fare = IDENT1(FARE_INFO::Fare_table(this->total_jr_calc_km, this->total_jr_sales_km));
+			fare = IDENT1(FARE_INFO::Fare_table(this->total_jr_calc_km, this->total_jr_sales_km));
 		} else if (this->total_jr_calc_km != this->total_jr_sales_km) {
 				/* JRl‘ Š²ü+’n•ûŒğ’Êü */
 				/* (m) */
 			if ((KM(this->total_jr_calc_km) == 4) && (KM(this->total_jr_sales_km) == 3)) {
-				this->fare = 160;	/* \ */
+				fare = 160;	/* \ */
 			} else if ((KM(this->total_jr_calc_km) == 11) && (KM(this->total_jr_sales_km) == 10)) {
-				this->fare = 230;	/* \ */
+				fare = 230;	/* \ */
 			}
 		}
 		/* JRl‘ Š²ü‚Ì‚İAŠ²ü{’n•ûŒğ’ÊüA’n•ûŒğ’Êü‚Ì‚İ ‚Ì(l), (n)”ñ“K—p */
 		// (g)<s><c>
-		if (this->fare == 0) {
+		if (fare == 0) {
 			TRACE("fare(m, g)[4]\n");
-			this->fare = FARE_INFO::Fare_table("m", "g", this->total_jr_calc_km);
-			if (this->fare <= 0) {
+			fare = FARE_INFO::Fare_table("m", "g", this->total_jr_calc_km);
+			if (fare <= 0) {
 				TRACE("Table farem.g overflow!");
-				this->fare = FARE_INFO::Fare_g(this->total_jr_calc_km);
+				fare = FARE_INFO::Fare_g(this->total_jr_calc_km);
 			}
 		}
+		
+		this->fare += fare;
+
 	} else {
 		ASSERT(FALSE);
 		return false;
@@ -5842,7 +5923,7 @@ int Route::setup_route(LPCTSTR route_str)
 			 * 1: success
 			 */
 ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11));
-			if (rc < 0) {
+			if (rc <= 0) {
 				break;
 			}
 			lineId = 0;

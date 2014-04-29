@@ -409,6 +409,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 					}
 					return;
 				}
+				m_route.end();
 				m_route.endStationId = selId;				// 着駅変更
 				SetDlgItemText(IDC_EDIT_END, selTitle);
 				GetDlgItem(IDC_BUTTON_TERM_CLEAR)->EnableWindow(TRUE);
@@ -604,6 +605,8 @@ void Calps_mfcDlg::OnBnClickedButtonTermClear()
 //
 void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 {
+	int rc;
+	
 	if ((m_route.startStationId ()<= 0) || (m_route.endStationId <= 0)) {
 		MessageBox(_T("開始駅、終了駅を指定しないと最短経路は算出しません."),
 										_T("確認"), MB_OK | MB_ICONEXCLAMATION);
@@ -615,8 +618,9 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 		return;
 	}
 	
-	if (m_route.changeNeerest((IDYES == MessageBox(_T("新幹線を含めますか?"),
-										_T("確認"), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2)))) {
+	rc = m_route.changeNeerest((IDYES == MessageBox(_T("新幹線を含めますか?"),
+										_T("確認"), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2)));
+	if (0 <= rc) {
 		CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 		int numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		if (0 < numList) {
@@ -634,9 +638,22 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 		} else {
 			ASSERT(FALSE);
 		}
+	} else if (-100 < rc) {
+		MessageBox(_T("経路が重複しているため算出できませんでした."),
+				   _T("自動ルート"), MB_OK | MB_ICONEXCLAMATION);
+	} else { /* < -1000 */
+		MessageBox(_T("算出できませんでした."),
+				   _T("確認"), MB_OK | MB_ICONEXCLAMATION);
 	}
-	MessageBox(_T("算出できませんでした."),
-			   _T("確認"), MB_OK | MB_ICONEXCLAMATION);
+	if (m_route.isModified()) {
+		if (0 < ModifyRouteList()) {		// 経路表示更新
+			int curLineId = m_route.routeList().back().lineId;
+			int selId = m_route.routeList().back().stationId;
+			setupForLinelistByStation(selId, curLineId);
+			showFare();
+			routeEnd();
+		}
+	}
 }
 
 //	ListView<IDC_LIST_LINESTATIONS>
@@ -907,7 +924,7 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 
 	endStationId = m_route.endStationId;
 
-	if (m_route.routeList().size() == 0) {
+	if (m_route.routeList().size() <= 1) {
 		if ((0 < m_route.endStationId) && (0 < m_route.startStationId())) {
 			m_route.endStationId = m_route.startStationId();
 			m_curStationId = endStationId;

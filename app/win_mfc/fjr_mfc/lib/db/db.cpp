@@ -1,6 +1,5 @@
-#ifdef _DEBUG
+
 #include "../../alps_mfc/stdafx.h"
-#endif
 #include "db.h"
 
 /*!	@file db.cpp
