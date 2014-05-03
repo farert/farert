@@ -1,3 +1,200 @@
+2014-4-28
+b#14042801: 宮崎空港線がおかしい。また、宮崎空港線から戻って再指定すると重複エラーになる。
+->
+問題なし、151条廻りでそのようになる
+運賃表示の件は、fare = を+=にするなどの対処で対応
+
+2014-4-27
+b#14042701:四国 内子線廻りで重複エラーとなる
+->
+問題なし、151条廻りでそのようになる
+
+b#14042702:複数3会社線に乗り継ぎが可能となっている。
+->
+できる仕様とする。
+
+
+2014-4-27
+小海-上田
+を自動経路すると新幹線非経由指定なのに新幹線経由となってしまう。
+
+
+2014-4-27
+KTR(北タンゴ鉄道)のように乗換のある場合、乗り継ぎ運賃とならない。
+西舞鶴-宮津-福知山となった際に宮津で下車した運賃となってしまう(+80円)
+→
+Aggregate時に判定を含める。
+
+
+2014-4-25
+広島-長崎 在来線でAutorouteすると筑豊線経由となる。運賃は同一だが距離は確かに少ない。
+一方新幹線でAutorouteすると、\7,140が、7040となる。経由はMARSは博多-鳥栖経由でが、
+こっちでは、小倉で新幹線を降りてしまい筑豊本線となる。距離は低いが運賃は高い
+
+
+＞＞＞＞＞＞＞＞＞＞＞確認したら消す
+!===<00>: auto route ==================
+
+* pre route >>>>>>>
+  {函館 -> 青森}
+* auto route(新幹線未使用) >>>>>>>
+///非適用
+函館 -> 青森
+経由：<函館線>五稜郭<江差線>木古内<海峡線>中小国<津軽線>
+営業キロ： 160.4 km 計算キロ： 176.1 km
+JR北海道営業キロ / 計算キロ： 129.0 km /  141.6 km
+運賃：\3,150     \6,300[往復]
+有効日数：   2日
+
+///適用
+函館 -> 青森
+経由：<函館線>五稜郭<江差線>木古内<海峡線>中小国<津軽線>
+営業キロ： 160.4 km 計算キロ： 176.1 km
+JR北海道営業キロ / 計算キロ： 129.0 km /  141.6 km
+運賃：\3,150     \6,300[往復]
+有効日数：   2日
+
+* auto route(新幹線使用) >>>>>>>
+///非適用
+函館 -> 青森
+経由：<函館線>五稜郭<江差線>木古内<海峡線>中小国<津軽線>
+営業キロ： 160.4 km 計算キロ： 176.1 km
+JR北海道営業キロ / 計算キロ： 129.0 km /  141.6 km
+運賃：\3,150     \6,300[往復]
+有効日数：   2日
+
+///適用
+函館 -> 青森
+経由：<函館線>五稜郭<江差線>木古内<海峡線>中小国<津軽線>
+営業キロ： 160.4 km 計算キロ： 176.1 km
+JR北海道営業キロ / 計算キロ： 129.0 km /  141.6 km
+運賃：\3,150     \6,300[往復]
+有効日数：   2日
+
+!===<01>: auto route ==================
+
+* pre route >>>>>>>
+  {岡山 -> 松山}
+* auto route(新幹線未使用) >>>>>>>
+///非適用
+岡山 -> 松山
+経由：<宇野線>茶屋町<本四備讃線>宇多津<予讃線>
+営業キロ： 214.4 km 計算キロ： 214.4 km
+JR四国営業キロ / 計算キロ： 186.6 km /  186.6 km
+運賃：\3,810     \7,620[往復]
+有効日数：   3日
+
+///適用
+岡山 -> 松山
+経由：<宇野線>茶屋町<本四備讃線>宇多津<予讃線>
+営業キロ： 214.4 km 計算キロ： 214.4 km
+JR四国営業キロ / 計算キロ： 186.6 km /  186.6 km
+運賃：\3,810     \7,620[往復]
+有効日数：   3日
+
+* auto route(新幹線使用) >>>>>>>
+///非適用
+岡山 -> 松山
+経由：<宇野線>茶屋町<本四備讃線>宇多津<予讃線>
+営業キロ： 214.4 km 計算キロ： 214.4 km
+JR四国営業キロ / 計算キロ： 186.6 km /  186.6 km
+運賃：\3,810     \7,620[往復]
+有効日数：   3日
+
+///適用
+岡山 -> 松山
+経由：<宇野線>茶屋町<本四備讃線>宇多津<予讃線>
+営業キロ： 214.4 km 計算キロ： 214.4 km
+JR四国営業キロ / 計算キロ： 186.6 km /  186.6 km
+運賃：\3,810     \7,620[往復]
+有効日数：   3日
+
+!===<02>: auto route ==================
+
+* pre route >>>>>>>
+  {広島 -> 博多}
+* auto route(新幹線未使用) >>>>>>>
+///非適用
+広島 -> 博多
+経由：<山陽線>岩国<岩徳線>櫛ヶ浜<山陽線>門司<鹿児島線>
+営業キロ： 280.7 km 計算キロ： 285.1 km
+JR九州営業キロ / 計算キロ：  79.0 km /   79.0 km
+運賃：\5,090     \10,180[往復]
+有効日数：   3日
+
+///適用
+広島市内[広] -> 福岡市内[福]
+経由：<山陽線>岩国<岩徳線>櫛ヶ浜<山陽線>門司<鹿児島線>
+営業キロ： 280.7 km 計算キロ： 285.1 km
+JR九州営業キロ / 計算キロ：  79.0 km /   79.0 km
+運賃：\5,090     \10,180[往復]
+有効日数：   3日
+
+* auto route(新幹線使用) >>>>>>>
+///非適用
+広島 -> 博多
+経由：<山陽新幹線>
+営業キロ： 280.7 km 計算キロ： 285.1 km
+運賃：\4,940     \9,880[往復]
+有効日数：   3日
+
+///適用
+広島市内[広] -> 福岡市内[福]
+経由：<山陽新幹線>
+営業キロ： 280.7 km 計算キロ： 285.1 km
+運賃：\4,940     \9,880[往復]
+有効日数：   3日
+
+!===<03>: auto route ==================
+
+* pre route >>>>>>>
+  {広島 -> 長崎}
+* auto route(新幹線未使用) >>>>>>>
+///非適用
+広島 -> 長崎
+経由：<山陽線>岩国<岩徳線>櫛ヶ浜<山陽線>門司<鹿児島線>折尾<筑豊線>原田<鹿児島線>鳥栖<長崎線>
+営業キロ： 422.1 km 計算キロ： 432.0 km
+JR九州営業キロ / 計算キロ： 220.4 km /  225.9 km
+運賃：\7,140     \14,280[往復]
+有効日数：   4日
+
+///適用
+広島市内[広] -> 長崎
+経由：<山陽線>岩国<岩徳線>櫛ヶ浜<山陽線>門司<鹿児島線>折尾<筑豊線>原田<鹿児島線>鳥栖<長崎線>
+営業キロ： 422.1 km 計算キロ： 432.0 km
+JR九州営業キロ / 計算キロ： 220.4 km /  225.9 km
+運賃：\7,140     \14,280[往復]
+有効日数：   4日
+
+* auto route(新幹線使用) >>>>>>>
+///非適用
+広島 -> 長崎
+経由：<山陽新幹線>小倉<鹿児島線>折尾<筑豊線>原田<鹿児島線>鳥栖<長崎線>
+営業キロ： 422.1 km 計算キロ： 432.0 km
+JR九州営業キロ / 計算キロ： 208.6 km /  214.1 km
+運賃：\7,140     \14,280[往復]
+有効日数：   4日
+
+///適用
+広島市内[広] -> 長崎
+経由：<山陽新幹線>小倉<鹿児島線>折尾<筑豊線>原田<鹿児島線>鳥栖<長崎線>
+営業キロ： 422.1 km 計算キロ： 432.0 km
+JR九州営業キロ / 計算キロ： 208.6 km /  214.1 km
+運賃：\7,140     \14,280[往復]
+有効日数：   4日
+
+＜＜＜＜＜＜確認したら消す
+
+2014-4-21
+b#14042101
+  setup_route() 一周超える経路も指定できるようになっていたのをやめる
+  これにともないテストコードも修正
+  test_autoroute()
+/* 16 */    _T("小田原,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線"), _T("x早川"),
+  の部分等
+
+
+
 jb21 NG 鹿児島線だとだめ。篠栗線だとOK。逆はどっちもOK
 -> 修正BSRNOTYET_NAをjct_flg_onに含めることにより対応 140413
 
@@ -347,7 +544,7 @@ b#13120901
 	新大阪-新幹線-岡山 赤穂線 西大寺はOKなのに
 	新大阪-新幹線-岡山 赤穂線 伊里はなぜか114チェックのAssertエラーに引っかかる(結果はOK)
 	->
-	!!!
+	クエリが冗長で誤りがあったので修正(Get_distance()と、Get_node_distance())
 
 
 b#13112301
@@ -386,7 +583,7 @@ b#13112305
 	とくに問題にならない。変換なしの新在別路線とされるため。
 	例:厚狭 新幹線 広島 可部線 可部は、そのまま経路通りに計算・発券される
 
-b#13112201	!!!
+b#13112201
 	東京-東海道線-小田原-新幹線-新横浜はOKだが、品川はNGとなる
 	神戸-山陽線-広島-山陽新幹線-三原は良い。
 	なんで？
@@ -399,8 +596,7 @@ b#13112201	!!!
 		神戸(A)
 	山陽線-広島(B)
 	山陽新幹線-三原(C)	* 新幹線(A)-(B)間に三原(C)は無い(新幹線に神戸駅が無い)
-
-	!!!
+	140416 ok
 	
 b#13112202
 		新大阪
@@ -417,6 +613,106 @@ b#13110401
 b#13102701
 	第3セクタ回り、まったくダメ
 	->
+	宮津線の宮津のりかえがダメ
+	西舞鶴-宮津がJR西-会社線となる。他の路線は会社線駅であってもJR線所属なので起こらなかった。
+
+multicompany line none detect X: 0, 0, comp1=1, comp2=1, 函館線:函館-五稜郭
+multicompany line none detect X: 0, 0, comp1=1, comp2=1, 江差線:五稜郭-木古内
+multicompany line none detect X: 0, -1, comp1=1, comp2=2, 海峡線:木古内-中小国
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: -1, 0, comp1=2, comp2=2, 津軽線:中小国-青森
+multicompany line detect 1: -1, 0(com1 <- com2)
+fare(a)
+fare(opq, o)
+
+
+multicompany line none detect X: 0, -1, comp1=2, comp2=2, 津軽線:青森-中小国
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: -1, 0, comp1=2, comp2=1, 海峡線:中小国-木古内
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: 0, 0, comp1=1, comp2=1, 江差線:木古内-五稜郭
+multicompany line none detect X: 0, 0, comp1=1, comp2=1, 函館線:五稜郭-函館
+fare(a)
+fare(opq, o)
+
+
+added last(0).
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 宇野線:岡山-茶屋町
+CheckSpecificFarePass found: 児島, 宇多津, +100
+multicompany line none detect X: 129, 0, comp1=2, comp2=6, 本四備讃線:茶屋町-宇多津
+multicompany line none detect X: 0, 0, comp1=6, comp2=6, 予讃線:宇多津-松山
+fare(a)
+fare(opq,p)
+
+multicompany line none detect X: 0, 0, comp1=6, comp2=6, 予讃線:松山-宇多津
+CheckSpecificFarePass found: 児島, 宇多津, +100
+multicompany line none detect X: 181, 0, comp1=6, comp2=2, 本四備讃線:宇多津-茶屋町
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 宇野線:茶屋町-岡山
+fare(a)
+fare(opq,p)
+
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽線:広島-岩国
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 岩徳線:岩国-櫛ヶ浜
+multicompany line none detect X: 1166, 0, comp1=2, comp2=5, 山陽線:櫛ヶ浜-門司
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:門司-博多
+fare(a)
+fare(opq,q)
+
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:博多-門司
+multicompany line none detect X: 63, 0, comp1=5, comp2=2, 山陽線:門司-櫛ヶ浜
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 岩徳線:櫛ヶ浜-岩国
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽線:岩国-広島
+fare(a)
+fare(opq,q)
+
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽新幹線:広島-博多
+fare(a)
+
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽新幹線:博多-広島
+fare(a)
+
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽線:広島-岩国
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 岩徳線:岩国-櫛ヶ浜
+multicompany line none detect X: 1166, 0, comp1=2, comp2=5, 山陽線:櫛ヶ浜-門司
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:門司-折尾
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 筑豊線:折尾-原田
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:原田-鳥栖
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 長崎線:鳥栖-長崎
+fare(a)
+fare(opq,q)
+
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 長崎線:長崎-鳥栖
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:鳥栖-原田
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 筑豊線:原田-折尾
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:折尾-門司
+multicompany line none detect X: 63, 0, comp1=5, comp2=2, 山陽線:門司-櫛ヶ浜
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 岩徳線:櫛ヶ浜-岩国
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽線:岩国-広島
+fare(a)
+fare(opq,q)
+
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽新幹線:広島-小倉
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:小倉-折尾
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 筑豊線:折尾-原田
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:原田-鳥栖
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 長崎線:鳥栖-長崎
+fare(a)
+fare(opq,q)
+
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 長崎線:長崎-鳥栖
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:鳥栖-原田
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 筑豊線:原田-折尾
+multicompany line none detect X: 0, 0, comp1=5, comp2=5, 鹿児島線:折尾-小倉
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 山陽新幹線:小倉-広島
+fare(a)
+fare(opq,q)
+
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 東海道新幹線:東京-静岡
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 東海道線:静岡-浜松
+multicompany line none detect X: 0, 0, comp1=2, comp2=2, 東海道線:浜松-名古屋
+fare(a)
+
+	
 	!!!
 
 
@@ -468,8 +764,32 @@ b#13091701
 
 b#13091401
 	綾瀬－東川口 間の自動経路が効かない
-	->
+	->[日暮里]+<上野>+<田端>+<赤羽>-<新松戸>
+	  [田端]-<日暮里>+<赤羽>+<池袋>
+	  [上野]+<秋葉原>-<日暮里>
+	  [秋葉原]+<神田>-<上野>+<御茶ノ水>+<錦糸町>
+	  [神田]+<東京>-<秋葉原>-<御茶ノ水>
+	  [御茶ノ水]-<神田>-<秋葉原>+<代々木>
+	  [新松戸]-<日暮里>+<南浦和>+<我孫子>+<西船橋>
+	  [東京]-<神田>+<品川>-<錦糸町>+<市川塩浜>
+	  [池袋]-<田端>-<赤羽>+<新宿>
+	  [錦糸町]-<東京>-<秋葉原>-<西船橋>
+	  [赤羽]-<日暮里>-<田端>+<南浦和>+<武蔵浦和>-<池袋>
+	  [新宿]-<代々木>-<代々木>+<西国分寺>-<池袋>
+	  [代々木]-<御茶ノ水>-<新宿>-<新宿>-<品川>
+	  [品川]-<東京>-<代々木>+<川崎>+<武蔵小杉>
+	  [我孫子]-<新松戸>+<友部>+<成田>
+	  [南浦和]
+	他にも長津田-厚木などL字ルートはすべてNG
+	
+	東川口 南浦和 75
+	東川口 新松戸 183
+	綾瀬 新松戸   130     313
+	綾瀬 南浦和   244     319
+	
 	!!!
+	140419 FIX 不要な判定をとった
+	
 
 b#13090701
 	<石倉,函館線,森,函館線(砂原線),大沼,函館線,五稜郭,江差線,木古内,海峡線,中小国,津軽線,青森,IGRいわて銀河・青い森鉄道,盛岡,東北線,大宮,東北線(埼京線),赤羽,東北線(尾久経由),日暮里,東北線,神田,中央東線,八王子,横浜線,東神奈川,東海道線,鶴見,東海道線(西大井経由),品川,東海道線,東京,京葉線,蘇我,外房線,茂原>
@@ -623,6 +943,10 @@ b#13090716
 	MARSでは114条適用されているが、こちらではされない
 	->
 	b#13090705の修正により、(e)は修正された
+	(b) OK #140417(確認)
+	(c) OK #140417(確認)
+	(d) OK #140417(確認)
+	(e) OK #140417(確認)
 	!!!
 	
 b#13090717
