@@ -177,13 +177,13 @@ public:
 // 両者の違いは？
 class FARE_INFO {
 public:
-	int sales_km;			// 有効日数計算用(会社線含む)
+	int sales_km;			//*** 有効日数計算用(会社線含む)
 
-	int base_sales_km;		// JR本州3社
-	int base_calc_km;
+	int base_sales_km;		//*** JR本州3社
+	int base_calc_km;		//***
 
-	int kyusyu_sales_km;
-	int kyusyu_calc_km;
+	int kyusyu_sales_km;	//***
+	int kyusyu_calc_km;		//***
 
 	int hokkaido_sales_km;
 	int hokkaido_calc_km;
@@ -197,12 +197,12 @@ public:
 	// (base_sales_km == base_calc_km) && (kyusyu_sales_km == kyusyu_calc_km) && 
 	// (hokkaido_sales_km == hokkaido_calc_km) && (shikoku_sales_km == shikoku_calc_km)
 	bool major_only;				/* 幹線のみ */
-	int total_jr_sales_km;
-	int total_jr_calc_km;
+	int total_jr_sales_km;			//***
+	int total_jr_calc_km;			//***
 
 	int company_fare;				/* 会社線料金 */
-	int flag;						/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
-	bool ret_dis;					/* 往復割引*/
+	int flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
+	bool ret_dis;					//***/* 往復割引*/
 #define BSHINKANSEN					16
 #define FLAG_FARECALC_INITIAL		(1<<15)				
 #define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:東北新幹線
@@ -223,14 +223,14 @@ public:
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
 
 #define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
-	int fare;
-	int avail_days;
+	int fare;						//***
+	int avail_days;					//***
 
 	FARE_INFO() { reset(); }
 	bool retr_fare();
 	int aggregate_fare_info(int line_id, int station_id1, int station_id2, int before_staion_id1);
-	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);
-	void reset() {
+	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);	//***
+	void reset() {				//***
 		sales_km = 0;
 
 		base_sales_km = 0;
