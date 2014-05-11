@@ -23,6 +23,7 @@ using namespace std;
 						 (m_route.endStationId == m_curStationId))
 
 
+
 // アプリケーションのバージョン情報に使われる CAboutDlg ダイアログ
 
 class CAboutDlg : public CDialogEx
