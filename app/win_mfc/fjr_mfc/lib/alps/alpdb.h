@@ -1,6 +1,7 @@
 #if !defined _ALPDB_H__
 
 #define _ALPDB_H__
+extern int g_tax;	/* in alps_mfc.cpp */
 
 using namespace std;
 #include <vector>
@@ -84,10 +85,14 @@ typedef unsigned int SPECIFICFLAG;
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 
-#define _TAX	5	/* Á”ïÅ [%] */
-
 /* Á”ïÅ(lÌŒÜ“ü)‰ÁZ */
-#define taxadd(fare) (fare + ((fare * 1000 * _TAX / 100000) + 5) / 10 * 10)
+#define taxadd(fare, tax)    (fare + ((fare * 1000 * tax / 100000) + 5) / 10 * 10)
+#define taxadd_ic(fare, tax) (fare + (fare * 1000 * tax / 100000))
+
+/* round up on 5 */
+#define round(d) 		(((d) + 5) / 10 * 10)	/* 10‰~–¢–lÌŒÜ“ü */ 
+#define round_up(d)     (((d) + 9) / 10 * 10)	/* 10‰~–¢–Ø‚èã‚° */
+#define round_down(d)   ((d) / 10 * 10)			/* 10‰~–¢–Ø‚èÌ‚Ä */
 
 #define KM(kmx10) ((kmx10 + 9) / 10)	/* km’PˆÊ‚Å’[”‚ÍØ‚èã‚° */
 
@@ -177,6 +182,8 @@ public:
 // —¼Ò‚Ìˆá‚¢‚ÍH
 class FARE_INFO {
 public:
+	FARE_INFO() { reset(); if (FARE_INFO::tax <= 0) { FARE_INFO::tax = g_tax; }}
+
 	int sales_km;			//*** —LŒø“ú”ŒvZ—p(‰ïĞüŠÜ‚Ş)
 
 	int base_sales_km;		//*** JR–{B3Ğ
@@ -224,13 +231,15 @@ public:
 
 #define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
 	int fare;						//***
+	int fare_ic;					//***
 	int avail_days;					//***
-
-	FARE_INFO() { reset(); }
+	static int tax;					/* Á”ïÅ */
+	int companymask;
 	bool retr_fare();
 	int aggregate_fare_info(int line_id, int station_id1, int station_id2, int before_staion_id1);
 	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);	//***
 	void reset() {				//***
+		companymask = 0;
 		sales_km = 0;
 
 		base_sales_km = 0;
@@ -255,20 +264,24 @@ public:
 		company_fare = 0;
 		flag = 0;
 		fare = 0;
+		fare_ic = 0;
 		avail_days = 0;
 	}
-	static int	 	Fare_a(int km);
-	static int	 	Fare_b(int km);
-	static int	 	Fare_c(int km);
-	static int	 	Fare_d(int km);
-	static int	 	Fare_e(int km);
-	static int	 	Fare_f(int km);
-	static int	 	Fare_g(int km);
-	static int	 	Fare_h(int km);
+	static int	 	Fare_basic_f(int km);
+	static int	 	Fare_sub_f(int km);
+	static int	 	Fare_tokyo_f(int km);
+	static int	 	Fare_osaka(int km);
+	static int	 	Fare_yamate_f(int km);
+	static int	 	Fare_osakakan(int km);
+	static int	 	Fare_hokkaido_basic(int km);
+	static int	 	Fare_hokkaido_sub(int km);
+	static int	 	Fare_shikoku(int skm, int ckm);
+	static int	 	Fare_kyusyu(int skm, int ckm);
 	static int		days_ticket(int sales_km);
 	static int		Fare_company(int station_id1, int station_id2);
 	static int		Fare_table(const char* tbl, const char* field, int km);
-	static PAIRIDENT Fare_table(int dkm, int skm);
+	static int		Fare_table(int dkm, int skm, char c);
+	static int		Fare_table(const char* tbl, char c, int km);
 	static int		CheckSpecficFarePass(int line_id, int station_id1, int station_id2);
 	static int		SpecficFareLine(int station_id1, int station_id2);
 	static vector<int> GetDistanceEx(int line_id, int station_id1, int station_id2);

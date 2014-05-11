@@ -17,6 +17,10 @@
  *	../../jr_db_reg.py
  */
 
+#define DEFAULT_TAX		8
+
+extern int g_tax;	// global
+
 
 
 // Calps_mfcApp:

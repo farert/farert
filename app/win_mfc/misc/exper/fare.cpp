@@ -217,7 +217,7 @@ public:
 	static int Fare_hokkaido_basic(int km, int tax);
 	static int Fare_shikoku(int km, int tax);
 	static int Fare_kyusyu(int km, int tax);
-	static int Fare_sub_hokkaido(int km, int tax);
+	static int Fare_hokkaido_sub(int km, int tax);
 
 	static int Fare_table_l(int km);
 };
@@ -792,7 +792,7 @@ int FARE_INFO::Fare_kyusyu(int km, int tax)
 //	@param [in] tax   ê≈ó¶
 //	@return â^í¿äz
 //
-int FARE_INFO::Fare_sub_hokkaido(int km, int tax)
+int FARE_INFO::Fare_hokkaido_sub(int km, int tax)
 {
 	int fare;
 	int c_km;
@@ -1020,8 +1020,8 @@ int main(int argc, char** argv)
 	printf("\n\n");
 	printf("JRñkín     ÉLÉç: 5%%  8%%í èÌ\n");
 	for (i = 0; i < 5000; i++) {
-		c[0] = FARE_INFO::Fare_sub_hokkaido(i, 5);
-		c[1] = FARE_INFO::Fare_sub_hokkaido(i, 8);
+		c[0] = FARE_INFO::Fare_hokkaido_sub(i, 5);
+		c[1] = FARE_INFO::Fare_hokkaido_sub(i, 8);
 		if (b[0] != c[0]) {
 			if (b[1] != c[1]) {
 				printf("JRñkín    %5.1f:%4d %4d\n", (float)i/10, c[0], c[1]);
