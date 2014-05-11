@@ -24,6 +24,8 @@ BEGIN_MESSAGE_MAP(Calps_mfcApp, CWinApp)
 END_MESSAGE_MAP()
 
 
+int g_tax;	// global
+
 // Calps_mfcApp コンストラクション
 
 Calps_mfcApp::Calps_mfcApp()
@@ -59,6 +61,16 @@ BOOL Calps_mfcApp::InitInstance()
 
 	CWinApp::InitInstance();
 
+
+	LPTSTR opt = _tcsstr(m_lpCmdLine, _T("-tax"));
+	if (NULL != opt) {
+		g_tax = _ttoi(opt + 4);
+		if (g_tax <= 0) {
+			g_tax = DEFAULT_TAX;
+		}
+	} else {
+		g_tax = DEFAULT_TAX;	/* default */
+	}
 
 	AfxEnableControlContainer();
 
