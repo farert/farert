@@ -44,7 +44,7 @@ static void test_route(void)
 	const static TCHAR *route_def[] = {
 		_T("c‰ïŽÐü‚ðŠÜ‚ÞŒo˜H"),
 			_T("‰¡•l,“ŒŠC“¹ü,•iì,ŽRŽèü,Vh,’†‰›“Œü,¼‘•ªŽ›,•‘ –ìü,“ì‰Y˜a,“Œ–kü,‘å‹{,“Œ–kVŠ²ü,·‰ª,IGR‚¢‚í‚Ä‹â‰ÍEÂ‚¢X“S“¹,–ì•Ó’n,‘å–©ü,‰º–k"),
-			_T("‰¡•l,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,“ì‰Y˜a,“Œ–kü,‘å‹{,“Œ–kVŠ²ü,·‰ª,IGR‚¢‚í‚Ä‹â‰ÍEÂ‚¢X“S“¹,ÂX,’ÃŒyü,ŠI“c,ŠC‹¬ü,–ØŒÃ“à,]·ü,ŒÜ—ÅŠs,”ŸŠÙü,’·–œ•”,Žº—–ü,Àƒm’[,çÎü,”’Î(”Ÿ),”ŸŠÙü,ŽD–y"),
+			_T("‰¡•l,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,é‹žü,•‘ ‰Y˜a,•‘ –ìü,“ì‰Y˜a,“Œ–kü,‘å‹{,“Œ–kVŠ²ü,·‰ª,IGR‚¢‚í‚Ä‹â‰ÍEÂ‚¢X“S“¹,ÂX,’ÃŒyü,ŠI“c,ŠC‹¬ü,–ØŒÃ“à,]·ü,ŒÜ—ÅŠs,”ŸŠÙü,’·–œ•”,Žº—–ü,Àƒm’[,çÎü,”’Î(”Ÿ),”ŸŠÙü,ŽD–y"),
 			_T("‰¡•l,“ŒŠC“¹ü,ŽR‰È,ŒÎ¼ü,‹ß]‰–’Ã,–k—¤ü,“Ö‰ê,¬•lü,“Œ•‘’ß,•‘’ßü,¼•‘’ß,‹{’Ãü,‹{’Ã,‹{•Ÿü,•Ÿ’mŽR,•Ÿ’mŽRü,’Jì,‰ÁŒÃìü,‰ÁŒÃì"),
 		_T("cJRŠeŽÐŒ×‚¬"),
 			_T("Z,ŽR‰Aü,–L‰ª,‹{’Ãü,‹{’Ã,‹{•Ÿü,•Ÿ’mŽR,ŽR‰Aü,ˆ»•”"),
@@ -91,15 +91,15 @@ static void test_route(void)
 			_T("Î‘q,”ŸŠÙü,X,”ŸŠÙü(»Œ´ü),‘åÀ,”ŸŠÙü,”ŸŠÙ"),				/***/
 			_T("Î‘q,”ŸŠÙü,”ŸŠÙ"),											/***/
 			_T("–Ô‘–, Î–kü, Vˆ®ì, @’Jü, ˆ®ì, ”ŸŠÙü, X, ”ŸŠÙü(»Œ´ü), ‘åÀ, ”ŸŠÙü, ŒÜ—ÅŠs"),
-/* 10 */	_T("‰F“s‹{,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,í”Öü,…ŒË,…ŒSü,‰º›’J"),
-			_T("‰F“s‹{,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,“Œ‹ž,‹ž—tü,‘h‰ä,ŠO–[ü,–ÎŒ´"),
-			_T("‰F“s‹{,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,V¼ŒË,í”Öü,‘o—t"),
-			_T("‰F“s‹{,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,•{’†–{’¬,“ì•ü,ìè"),
-			_T("‰F“s‹{,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),Ô‰H,“Œ–kü,“ì‰Y˜a,•‘ –ìü,•‘ ‰Y˜a"),
-			_T("ã–ì,“Œ–kü,Ô‰H,“Œ–kü(é‹žü),‘å‹{,ì‰zü,‚—íì,”ª‚ü,”q“‡"),
-			_T("ã–ì,“Œ–kü,Ô‰H,“Œ–kü(é‹žü),‘å‹{,“Œ–kü,–kã,–kãü,‚Ù‚Á‚Æ‚ä‚¾"),
+/* 10 */	_T("‰F“s‹{,“Œ–kü,‘å‹{,é‹žü,Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,í”Öü,…ŒË,…ŒSü,‰º›’J"),
+			_T("‰F“s‹{,“Œ–kü,‘å‹{,é‹žü,Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,“Œ‹ž,‹ž—tü,‘h‰ä,ŠO–[ü,–ÎŒ´"),
+			_T("‰F“s‹{,“Œ–kü,‘å‹{,é‹žü,•‘ ‰Y˜a,•‘ –ìü,V¼ŒË,í”Öü,‘o—t"),
+			_T("‰F“s‹{,“Œ–kü,‘å‹{,é‹žü,•‘ ‰Y˜a,•‘ –ìü,•{’†–{’¬,“ì•ü,ìè"),
+			_T("‰F“s‹{,“Œ–kü,‘å‹{,é‹žü,Ô‰H,“Œ–kü,“ì‰Y˜a,•‘ –ìü,•‘ ‰Y˜a"),
+			_T("ã–ì,“Œ–kü,Ô‰H,é‹žü,‘å‹{,ì‰zü,‚—íì,”ª‚ü,”q“‡"),
+			_T("ã–ì,“Œ–kü,Ô‰H,é‹žü,‘å‹{,“Œ–kü,–kã,–kãü,‚Ù‚Á‚Æ‚ä‚¾"),
 			_T("“Œ‹ž,“ŒŠC“¹ü,•iì,“ŒŠC“¹ü(¼‘åˆäŒo—R),’ßŒ©,“ŒŠC“¹ü,‰¡•l"),
-			_T("‰¡•l,“ŒŠC“¹ü,’ßŒ©,“ŒŠC“¹ü(¼‘åˆäŒo—R),•iì,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H"),	/***/
+			_T("‰¡•l,“ŒŠC“¹ü,’ßŒ©,“ŒŠC“¹ü(¼‘åˆäŒo—R),•iì,ŽRŽèü,’r‘Ü,é‹žü,Ô‰H"),	/***/
 			_T("“Œ‹ž,‹ž—tü,‘h‰ä,ŠO–[ü,Ÿ‰Y"),
 /* 20 */	_T("‘åã,“ŒŠC“¹ü,•ÄŒ´,–k—¤ü,•Ÿˆä"),
 			_T("”ö“¹,ŽR—zü,ŽOŒ´,Œàü,ŠC“cŽs,ŽR—zü,L“‡"),
@@ -151,7 +151,7 @@ static void test_route(void)
 			_T("’¼]’Ã,–k—¤ü,•ÄŒ´,“ŒŠC“¹ü,ŽR‰È"),
 			_T("‰ºŠÖ,ŽR—zü,Šâ‘,Šâ“¿ü,ŸŠÔ"),
 			_T("”ö“¹,ŽR—zü,‹ùƒ–•l,Šâ“¿ü,ŸŠÔ"),
-			_T("Î‘q,”ŸŠÙü,X,”ŸŠÙü(»Œ´ü),‘åÀ,”ŸŠÙü,ŒÜ—ÅŠs,]·ü,–ØŒÃ“à,ŠC‹¬ü,’†¬‘,’ÃŒyü,ÂX,IGR‚¢‚í‚Ä‹â‰ÍEÂ‚¢X“S“¹,·‰ª,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,_“c,’†‰›“Œü,”ª‰¤Žq,‰¡•lü,“Œ_“Þì,“ŒŠC“¹ü,’ßŒ©,“ŒŠC“¹ü(¼‘åˆäŒo—R),•iì,“ŒŠC“¹ü,“Œ‹ž,‹ž—tü,‘h‰ä,ŠO–[ü,–ÎŒ´"),				/***/
+			_T("Î‘q,”ŸŠÙü,X,”ŸŠÙü(»Œ´ü),‘åÀ,”ŸŠÙü,ŒÜ—ÅŠs,]·ü,–ØŒÃ“à,ŠC‹¬ü,’†¬‘,’ÃŒyü,ÂX,IGR‚¢‚í‚Ä‹â‰ÍEÂ‚¢X“S“¹,·‰ª,“Œ–kü,‘å‹{,é‹žü,Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,_“c,’†‰›“Œü,”ª‰¤Žq,‰¡•lü,“Œ_“Þì,“ŒŠC“¹ü,’ßŒ©,“ŒŠC“¹ü(¼‘åˆäŒo—R),•iì,“ŒŠC“¹ü,“Œ‹ž,‹ž—tü,‘h‰ä,ŠO–[ü,–ÎŒ´"),				/***/
 			_T("ã–ì,“Œ–kü,“ú•é—¢,“Œ–kü(”ö‹vŒo—R),Ô‰H,“Œ–kü,‘å‹{"),/***/
 			_T("_ŒË,“ŒŠC“¹ü,•ÄŒ´,–k—¤ü,•xŽR"),					/***/
 			_T("“òè,“ŒŠC“¹ü,•ÄŒ´,–k—¤ü,•xŽR"),					/***/
@@ -195,34 +195,34 @@ static void test_route(void)
 			_T("‚”ö,’†‰›“Œü,‰–K,’†‰›¼ü,‹àŽR(’†)"),
 			_T("•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,‰–K,’†‰›¼ü,‹àŽR(’†)"),
 			_T("Š—“c,“ŒŠC“¹ü,•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,‰–K,’†‰›¼ü,‹àŽR(’†)"),
-			_T("Š—“c,“ŒŠC“¹ü,•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,Œä’ƒƒm…,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,“c’[,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(é‹žü),‘å‹{,‚èü,‚è,ã‰zü,‹{“à,M‰zü(ŽÂƒmˆä-VŠƒ),V’Ã,‰H‰zü,H“c"),
-			_T("H“c,‰H‰zü,V’Ã,M‰zü(ŽÂƒmˆä-VŠƒ),‹{“à,ã‰zü,‚è,‚èü,‘å‹{,“Œ–kü(é‹žü),Ô‰H,Ô‰Hü(é‹žü),’r‘Ü,ŽRŽèü,“c’[,“Œ–kü,H—tŒ´,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),Œä’ƒƒm…,’†‰›“Œü,‘ãX–Ø,ŽRŽèü,•iì,“ŒŠC“¹ü,Š—“c"),
+			_T("Š—“c,“ŒŠC“¹ü,•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,Œä’ƒƒm…,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,“c’[,ŽRŽèü,’r‘Ü,é‹žü,‘å‹{,‚èü,‚è,ã‰zü,‹{“à,M‰zü(ŽÂƒmˆä-VŠƒ),V’Ã,‰H‰zü,H“c"),
+			_T("H“c,‰H‰zü,V’Ã,M‰zü(ŽÂƒmˆä-VŠƒ),‹{“à,ã‰zü,‚è,‚èü,‘å‹{,é‹žü,’r‘Ü,ŽRŽèü,“c’[,“Œ–kü,H—tŒ´,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),Œä’ƒƒm…,’†‰›“Œü,‘ãX–Ø,ŽRŽèü,•iì,“ŒŠC“¹ü,Š—“c"),
 			_T("Š—“c,“ŒŠC“¹ü,•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,Œä’ƒƒm…,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,·‰ª"),
 			_T("·‰ª,“Œ–kü,H—tŒ´,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),Œä’ƒƒm…,’†‰›“Œü,‘ãX–Ø,ŽRŽèü,•iì,“ŒŠC“¹ü,Š—“c"),
 			_T("Š—“c,“ŒŠC“¹ü,“Œ‹ž,“Œ–kü,·‰ª"),
 			_T("Ô‰H,“Œ–kü,·‰ª"),
-			_T("Ô‰H,“Œ–kü(é‹žü),‘å‹{,“Œ–kü,·‰ª"),
-			_T("Š—“c,“ŒŠC“¹ü,“Œ‹ž,’†‰›“Œü,¼‘•ªŽ›,•‘ –ìü,•‘ ‰Y˜a,“Œ–kü(é‹žü),‘å‹{,“Œ–kü,·‰ª"),
-			_T("•‚ŠÔM“n,“Œ–kü(é‹žü),Ô‰H,Ô‰Hü(é‹žü),’r‘Ü,ŽRŽèü,Vh,’†‰›“Œü,‰–K,ŽÂƒmˆäü,¼–{"),
-			_T("•‚ŠÔM“n,“Œ–kü(é‹žü),‘å‹{,“Œ–kü,·‰ª"),
-			_T("·‰ª,“Œ–kü,‘å‹{,“Œ–kü(é‹žü),•‚ŠÔM“n"),
-			_T("•‚ŠÔM“n,“Œ–kü(é‹žü),Ô‰H,“Œ–kü,·‰ª"),
-			_T("•‚ŠÔM“n,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,“ì‰Y˜a,“Œ–kü,·‰ª"),
-			_T("•‚ŠÔM“n,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,V¼ŒË,í”Öü,ŠâÀ,“Œ–kü,·‰ª"),
-			_T("”Â‹´,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®"),
-			_T("”Â‹´,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,H—tŒ´,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),Œä’ƒƒm…,’†‰›“Œü,‘ãX–Ø,ŽRŽèü,•iì,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®"),
+			_T("Ô‰H,é‹žü,‘å‹{,“Œ–kü,·‰ª"),
+			_T("Š—“c,“ŒŠC“¹ü,“Œ‹ž,’†‰›“Œü,¼‘•ªŽ›,•‘ –ìü,•‘ ‰Y˜a,é‹žü,‘å‹{,“Œ–kü,·‰ª"),
+			_T("•‚ŠÔM“n,é‹žü,’r‘Ü,ŽRŽèü,Vh,’†‰›“Œü,‰–K,ŽÂƒmˆäü,¼–{"),
+			_T("•‚ŠÔM“n,é‹žü,‘å‹{,“Œ–kü,·‰ª"),
+			_T("·‰ª,“Œ–kü,‘å‹{,é‹žü,•‚ŠÔM“n"),
+			_T("•‚ŠÔM“n,é‹žü,Ô‰H,“Œ–kü,·‰ª"),
+			_T("•‚ŠÔM“n,é‹žü,•‘ ‰Y˜a,•‘ –ìü,“ì‰Y˜a,“Œ–kü,·‰ª"),
+			_T("•‚ŠÔM“n,é‹žü,•‘ ‰Y˜a,•‘ –ìü,V¼ŒË,í”Öü,ŠâÀ,“Œ–kü,·‰ª"),
+			_T("”Â‹´,é‹žü,Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®"),
+			_T("”Â‹´,é‹žü,Ô‰H,“Œ–kü(”ö‹vŒo—R),“ú•é—¢,“Œ–kü,H—tŒ´,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),Œä’ƒƒm…,’†‰›“Œü,‘ãX–Ø,ŽRŽèü,•iì,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®"),
 			_T("Š—“c,“ŒŠC“¹ü,ìè,“ì•ü,—§ì,’†‰›“Œü,‰–K,ŽÂƒmˆäü,¼–{"),
 			_T("¼‘åˆä,“ŒŠC“¹ü(¼‘åˆäŒo—R),•‘ ¬™,“ì•ü,•{’†–{’¬,•‘ –ìü,V¼ŒË,í”Öü,ŠâÀ"),
 			_T("‚ ‚¢‚Ì—¢Œö‰€,ŽDÀü,ŒK‰€,”ŸŠÙü,ŒÜ—ÅŠs,]·ü,–ØŒÃ“à,ŠC‹¬ü,’†¬‘,’ÃŒyü,ÂX,‰œ‰Hü,VÂX,“Œ–kVŠ²ü, “Œ‹ž,‹ž—tü,Žsì‰–•l,‹ž—tü(Žsì‰–•l-¼‘D‹´),¼‘D‹´,‘•ü,‹ÑŽ…’¬"),
 			_T("a’J,ŽRŽèü,‚“c”nê"),
 			_T("¬”,¬ŠCü,ŠCK"),
 			_T("V\’Ãì,ŽDÀü,ŒK‰€,”ŸŠÙü,ŒÜ—ÅŠs,]·ü,–ØŒÃ“à,ŠC‹¬ü,’†¬‘,’ÃŒyü,ÂX,‰œ‰Hü,VÂX,“Œ–kVŠ²ü, “Œ‹ž,‹ž—tü,Žsì‰–•l,‹ž—tü(Žsì‰–•l-¼‘D‹´),¼‘D‹´,•‘ –ìü,“ì‰Y˜a"),
-			_T("¼‰¬ŒE,’†‰›“Œü,Vh,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü,“Œ‹ž,‹ž—tü,Š‹¼—ÕŠCŒö‰€"),
+			_T("¼‰¬ŒE,’†‰›“Œü,Vh,ŽRŽèü,’r‘Ü,é‹žü,Ô‰H,“Œ–kü,“Œ‹ž,‹ž—tü,Š‹¼—ÕŠCŒö‰€"),
 			_T("‰¡•l,“ŒŠC“¹ü,“Œ‹ž,‹ž—tü,‘h‰ä,ŠO–[ü,‘å–Ô,“Œ‹àü,¬“Œ,‘•ü,²‘q,¬“cü,¬“c,¬“cü(¬“c-‰ä‘·Žq),‰ä‘·Žq,í”Öü,ŠâÀ"),
 			_T("’·’Ã“c,‰¡•lü,V‰¡•l,“ŒŠC“¹VŠ²ü,–¼ŒÃ‰®"),
 			_T("’·’Ã“c,‰¡•lü,V‰¡•l,“ŒŠC“¹VŠ²ü,V‘åã, ŽR—zVŠ²ü, ŽOŒ´"),
 			_T("V‰¡•l,“ŒŠC“¹VŠ²ü,V‘åã, ŽR—zVŠ²ü,ŽOŒ´"),
-			_T("•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,Œä’ƒƒm…,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,“c’[,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(é‹žü),‘å‹{,“Œ–kü,·‰ª"),
+			_T("•iì,ŽRŽèü,‘ãX–Ø,’†‰›“Œü,Œä’ƒƒm…,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,“c’[,ŽRŽèü,’r‘Ü,é‹žü,‘å‹{,“Œ–kü,·‰ª"),
 			_T("‚ ‚¢‚Ì—¢Œö‰€,ŽDÀü,ŒK‰€,”ŸŠÙü,ŒÜ—ÅŠs,]·ü,–ØŒÃ“à,ŠC‹¬ü,’†¬‘,’ÃŒyü,ÂX,‰œ‰Hü,VÂX,“Œ–kVŠ²ü, “Œ‹ž"),
 			_T("‚ ‚¢‚Ì—¢Œö‰€,ŽDÀü,ŒK‰€,”ŸŠÙü,ŒÜ—ÅŠs,]·ü,–ØŒÃ“à,ŠC‹¬ü,’†¬‘,’ÃŒyü,ÂX,‰œ‰Hü,VÂX,“Œ–kVŠ²ü, “Œ‹ž,‹ž—tü,Žsì‰–•l,‹ž—tü(Žsì‰–•l-¼‘D‹´),¼‘D‹´,•‘ –ìü,“ì‰Y˜a"),
 			_T("“Œ‰Y˜a,•‘ –ìü,¼‘D‹´,‹ž—tü(Žsì‰–•l-¼‘D‹´),Žsì‰–•l,‹ž—tü,“Œ‹ž,“Œ–kVŠ²ü,VÂX,‰œ‰Hü,ÂX,’ÃŒyü,’†¬‘,ŠC‹¬ü,–ØŒÃ“à,]·ü,ŒÜ—ÅŠs,”ŸŠÙü,ŒK‰€,ŽDÀü,‚ ‚¢‚Ì—¢Œö‰€"),
@@ -244,7 +244,7 @@ static void test_route(void)
 			_T("‰¡•l,“ŒŠC“¹ü,•xŽm,g‰„ü,‘•ê"),
 			_T("‰¡•l,“ŒŠC“¹ü,•xŽm,g‰„ü,“ìb•{"),
 			_T("’·’Ã“c,‰¡•lü,“Œ_“Þì,“ŒŠC“¹ü,•xŽm,g‰„ü,“ìb•{"),
-			_T("ˆÀ‘P,’ßŒ©ü,•lìè,“ì•ü(•lìèŽxü),KŽè,“ì•ü,—§ì,Â”~ü,”q“‡,”ª‚ü,‘q‰ê–ì,‚èü,‚è,–k—¤’·–ìVŠ²ü,’·–ì"),	/***/
+			_T("ˆÀ‘P,’ßŒ©ü,•lìè,“ì•ü(•lìèŽxü),KŽè,“ì•ü,—§ì,Â”~ü,”q“‡,”ª‚ü,‘q‰ê–ì,‚èü,‚è,–k—¤VŠ²ü,’·–ì"),	/***/
 			_T("ˆÀ‘P,’ßŒ©ü,’ßŒ©,“ŒŠC“¹ü,“Œ_“Þì,‰¡•lü,V‰¡•l,“ŒŠC“¹VŠ²ü,V‘åã"),	/***/
 			_T("ˆÀ‘P,’ßŒ©ü,’ßŒ©,“ŒŠC“¹ü,“Œ_“Þì,‰¡•lü,”ª‰¤Žq,’†‰›“Œü,‰–K,ŽÂƒmˆäü,¼–{"),	/***/
 			_T("–{‹½‘ä,ªŠÝü,‘å‘D,“ŒŠC“¹ü,_ŒË"),	/***/
@@ -479,16 +479,16 @@ static void test_route(void)
 			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,‹ž—tü,Š‹¼—ÕŠCŒö‰€"),	/***/
 			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,‹ž—tü,‘h‰ä"),	/***/
 			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,‘å‹{,ã‰zVŠ²ü,‚è"),	/***/
-			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(é‹žü),‘å‹{,ã‰zVŠ²ü,‚è"),	/***/
+			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,é‹žü,‘å‹{,ã‰zVŠ²ü,‚è"),	/***/
 			_T("Š‹¼—ÕŠCŒö‰€,‹ž—tü,“Œ‹ž,’†‰›“Œü,”ª‰¤Žq"),	/***/
 			_T("‘h‰ä,‹ž—tü,“Œ‹ž,’†‰›“Œü,”ª‰¤Žq"),	/***/
 			_T("‘å–Ô,ŠO–[ü,ç—t,‘•ü,‹ÑŽ…’¬,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,“Œ‹ž,‹ž—tü,‘h‰ä"),	/***/
-			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,¼‘•ªŽ›"),	/***/
-			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,Ô‰Hü(é‹žü),Ô‰H,“Œ–kü(é‹žü),•‘ ‰Y˜a,•‘ –ìü,V¼ŒË"),	/***/
+			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,é‹žü,•‘ ‰Y˜a,•‘ –ìü,¼‘•ªŽ›"),	/***/
+			_T("‚¢‚í‚«,í”Öü,“ú•é—¢,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,•iì,ŽRŽèü,’r‘Ü,é‹žü,•‘ ‰Y˜a,•‘ –ìü,V¼ŒË"),	/***/
 			_T("å‘ä,“Œ–kü,“Œ‹ž,“ŒŠC“¹ü,–¼ŒÃ‰®"),	/***/
 			_T("å‘ä,“Œ–kü,“Œ‹ž"),	/***/
-			_T("å‘ä,“Œ–kü,Ô‰H,Ô‰Hü(é‹žü),’r‘Ü,ŽRŽèü,•iì,“ŒŠC“¹ü,–¼ŒÃ‰®"),	/***/
-			_T("‘å‹{,“Œ–kü(é‹žü),Ô‰H,“Œ–kü,“ì‰Y˜a"),	/***/
+			_T("å‘ä,“Œ–kü,Ô‰H,é‹žü,’r‘Ü,ŽRŽèü,•iì,“ŒŠC“¹ü,–¼ŒÃ‰®"),	/***/
+			_T("‘å‹{,é‹žü,Ô‰H,“Œ–kü,“ì‰Y˜a"),	/***/
 			_T("Š‹¼—ÕŠCŒö‰€,‹ž—tü,“Œ‹ž,‘•ü,¼‘D‹´"),	/***/
 			_T("Š‹¼—ÕŠCŒö‰€,‹ž—tü,“Œ‹ž,“Œ–kü,H—tŒ´,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),‹ÑŽ…’¬,‘•ü,¼‘D‹´"),	/***/
 			_T("Š‹¼—ÕŠCŒö‰€,‹ž—tü,“Œ‹ž,’†‰›“Œü,Œä’ƒƒm…,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),‹ÑŽ…’¬,‘•ü,¼‘D‹´"),	/***/
@@ -883,9 +883,9 @@ void test_hzl(void)
     _T("‘å‹{,‚èü,‚è,ã‰zVŠ²ü,o–{¯‘ˆî“c"),
     _T("‹{“à,ã‰zü,‚è,ã‰zVŠ²ü,o–{¯‘ˆî“c"),
     _T("‹{“à,ã‰zü,‚è,ã‰zVŠ²ü,o–{¯‘ˆî“c"),
-    _T("‚è,–k—¤’·–ìVŠ²ü,’·–ì,M‰zü(ŽÂƒmˆä-VŠƒ),o’¼]’Ã"),
-    _T("‚è,–k—¤’·–ìVŠ²ü,’·–ì,M‰zü(ŽÂƒmˆä-VŠƒ),oŽÂƒmˆä"),
-    _T("ŽÂƒmˆä,M‰zü(ŽÂƒmˆä-VŠƒ),’·–ì,–k—¤’·–ìVŠ²ü,oŒyˆä‘ò"),
+    _T("‚è,–k—¤VŠ²ü,’·–ì,M‰zü(ŽÂƒmˆä-VŠƒ),o’¼]’Ã"),
+    _T("‚è,–k—¤VŠ²ü,’·–ì,M‰zü(ŽÂƒmˆä-VŠƒ),oŽÂƒmˆä"),
+    _T("ŽÂƒmˆä,M‰zü(ŽÂƒmˆä-VŠƒ),’·–ì,–k—¤VŠ²ü,oŒyˆä‘ò"),
     _T("‘å‹{,ã‰zVŠ²ü,‰zŒã“’‘ò,ã‰zü,o˜Z“ú’¬"),
     _T("‘å‹{,ã‰zVŠ²ü,‰zŒã“’‘ò,ã‰zü,o…ã"),
     _T("VŠƒ,ã‰zVŠ²ü,‰zŒã“’‘ò,ã‰zü,x˜Z“ú’¬"),
@@ -1343,23 +1343,23 @@ void test_jctspecial()
 	_T("xj|‰zŒã“’‘ò ã‰zü ‚è ”ª‚ü ‚—íì"),
 	_T("xk|‰zŒã“’‘ò ã‰zVŠ²ü ‚è M‰zü(‚è-‰¡ì) ‰¡ì(M)"),
 	_T("xl|‰zŒã“’‘ò ã‰zü ‚è M‰zü(‚è-‰¡ì) ‰¡ì(M)"),
-	_T("x1|‰zŒã“’‘ò ã‰zVŠ²ü ‚è –k—¤’·–ìVŠ²ü ’·–ì"),
-	_T("xm|‰zŒã“’‘ò ã‰zü ‚è –k—¤’·–ìVŠ²ü ’·–ì"),
+	_T("x1|‰zŒã“’‘ò ã‰zVŠ²ü ‚è –k—¤VŠ²ü ’·–ì"),
+	_T("xm|‰zŒã“’‘ò ã‰zü ‚è –k—¤VŠ²ü ’·–ì"),
 	_T("xn|‰¡ì(M) M‰zü(‚è-‰¡ì) ‚è ”ª‚ü ‚—íì"),
-	_T("xo|’·–ì –k—¤’·–ìVŠ²ü ‚è ”ª‚ü ‚—íì"),
+	_T("xo|’·–ì –k—¤VŠ²ü ‚è ”ª‚ü ‚—íì"),
 	_T("xp|‰¡ì(M) M‰zü(‚è-‰¡ì) ‚è —¼–Ñü ¬ŽR"),
-	_T("xq|’·–ì –k—¤’·–ìVŠ²ü ‚è —¼–Ñü ¬ŽR"),
+	_T("xq|’·–ì –k—¤VŠ²ü ‚è —¼–Ñü ¬ŽR"),
 	_T("xr|¬ŽR —¼–Ñü ‚è ã‰zVŠ²ü ‘å‹{"),
 	_T("xs|¬ŽR —¼–Ñü ‚è ‚èü ‘å‹{"),
 	_T("xt|¬ŽR —¼–Ñü ‚è ã‰zVŠ²ü ‰zŒã“’‘ò"),
 	_T("xu|¬ŽR —¼–Ñü ‚è ã‰zü x‰zŒã“’‘ò"),
 	_T("xv|¬ŽR —¼–Ñü ‚è M‰zü(‚è-‰¡ì) ‰¡ì(M)"),
-	_T("xw|¬ŽR —¼–Ñü ‚è –k—¤’·–ìVŠ²ü ’·–ì"),
+	_T("xw|¬ŽR —¼–Ñü ‚è –k—¤VŠ²ü ’·–ì"),
 	_T("xx|¬ŽR —¼–Ñü ‚è ”ª‚ü ‚—íì"),
 	_T("xy|‚—íì ”ª‚ü ‚è ã‰zVŠ²ü ‘å‹{"),
 	_T("xz|‚—íì ”ª‚ü ‚è ‚èü x‘å‹{"),
 	_T("y0|‚—íì ”ª‚ü ‚è —¼–Ñü ¬ŽR"),
-	_T("y1|‚—íì ”ª‚ü ‚è –k—¤’·–ìVŠ²ü ’·–ì"),
+	_T("y1|‚—íì ”ª‚ü ‚è –k—¤VŠ²ü ’·–ì"),
 	_T("y2|‚—íì ”ª‚ü ‚è M‰zü(‚è-‰¡ì) ‰¡ì(M)"),
 	_T("y3|‚—íì ”ª‚ü ‚è ã‰zVŠ²ü ‰zŒã“’‘ò"),
 	_T("y4|‚—íì ”ª‚ü ‚è ã‰zü ‰zŒã“’‘ò"),
