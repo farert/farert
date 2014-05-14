@@ -224,7 +224,7 @@ class Dbreg:
 			fare5p		integer not null,
 			kind		integer not null,
 			
-			primary key (station_id1, station_id2)
+			primary key (station_id1, station_id2, kind)
 		);
 		""")
 		###########################################

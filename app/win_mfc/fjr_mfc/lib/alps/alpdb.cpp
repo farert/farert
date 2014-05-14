@@ -4816,7 +4816,7 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList, bool applied_rule/
 						(this->hokkaido_sales_km == this->hokkaido_calc_km) && 
 						(this->shikoku_sales_km == this->shikoku_calc_km));
 
-	if (MASK_URBNNO(this->flag) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
+	if ((MASK_URBAN & this->flag) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
 						/* “Á’è‹æŠÔ‚Ì”»’è */
 		int special_fare = FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);
 		if (0 < special_fare) {
@@ -4859,7 +4859,7 @@ err:
 //
 bool FARE_INFO::retr_fare()
 {
-	int fare;
+	int fare_tmp;
 	this->total_jr_sales_km = this->base_sales_km +
 								this->kyusyu_sales_km +
 								this->hokkaido_sales_km +
@@ -4910,27 +4910,27 @@ bool FARE_INFO::retr_fare()
 			// (i)<s>
 			TRACE("fare(sub)\n");
 
-			fare = FARE_INFO::Fare_sub_f(this->total_jr_sales_km);
+			fare_tmp = FARE_INFO::Fare_sub_f(this->total_jr_sales_km);
 			
-			if (MASK_URBNNO(this->flag) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
+			if (URBAN_ID(this->flag) == URB_TOKYO) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
 				ASSERT(companymask == (1 << (JR_EAST - 1)));  /* JR East only  */
 
-				this->fare_ic = fare;
+				this->fare_ic = fare_tmp;
 			}
-			this->fare = round(fare);
+			this->fare = round(fare_tmp);
 
 		} else { /* Š²ü‚Ì‚İ^Š²ü+’n•ûŒğ’Êü */
 			// (a) + this->calc_km‚ÅZo
 			TRACE("fare(basic)\n");
 
-			fare = FARE_INFO::Fare_basic_f(this->total_jr_calc_km);
+			fare_tmp = FARE_INFO::Fare_basic_f(this->total_jr_calc_km);
 
-			if (MASK_URBNNO(this->flag) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
+			if (URBAN_ID(this->flag) == URB_TOKYO) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
 				ASSERT(companymask == (1 << (JR_EAST - 1)));  /* JR East only  */
 
-				this->fare_ic = fare;
+				this->fare_ic = fare_tmp;
 			}
-			this->fare = round(fare);
+			this->fare = round(fare_tmp);
 		}
 
 		// JR–k‚ ‚è?
@@ -5000,7 +5000,8 @@ bool FARE_INFO::retr_fare()
 			/* (l) */
 			this->fare = FARE_INFO::Fare_table(this->total_jr_calc_km, this->total_jr_sales_km, 'k');
 
-		} else {
+		}
+		if (this->fare == 0) {
 			/* JR‹ãB Š²ü‚Ì‚İAŠ²ü{’n•ûŒğ’ÊüA’n•ûŒğ’Êü‚Ì‚İ ‚Ì(l), (n)”ñ“K—p */
 			// (h)<s><c>
 			TRACE("fare(kyusyu)\n");			// TRACE("fare(m, h)[9]\n");
@@ -5020,7 +5021,8 @@ bool FARE_INFO::retr_fare()
 			/* (k) */
 			this->fare = FARE_INFO::Fare_table(this->total_jr_calc_km, this->total_jr_sales_km, 's');
 
-		} else {
+		}
+		if (this->fare == 0) {
 			/* JRl‘ Š²ü‚Ì‚İAŠ²ü{’n•ûŒğ’ÊüA’n•ûŒğ’Êü‚Ì‚İ ‚Ì(l), (n)”ñ“K—p */
 			// (g)<s><c>
 			TRACE("fare(shikoku)[4]\n");		// TRACE("fare(m, g)[4]\n");
@@ -5118,7 +5120,7 @@ int	FARE_INFO::Fare_table(const char* tbl, char c, int km)
 	int fare;
 
 	sql = sqlite3_mprintf(
-	"select c_km, %c%u from t_fare%s where km<=? order by km desc limit(1)",
+	"select ckm, %c%u from t_fare%s where km<=? order by km desc limit(1)",
 	                      c, FARE_INFO::tax, tbl);
  
 	DBO dbo(DBS::getInstance()->compileSql(sql));
@@ -5147,16 +5149,12 @@ int	FARE_INFO::Fare_table(const char* tbl, char c, int km)
 //
 int FARE_INFO::Fare_table(int dkm, int skm, char c)
 {
-	int s8;
-	int k8;
-	int s5;
-	int k5;
-
 	int fare;
 
-	static const char tsql[] = 
+	char* sql = sqlite3_mprintf(
 #if 1
-	"select s8, k8, s5, k5 from t_farels where dkm=?2 and (skm=-1 or skm=?1)";
+	"select %c%u from t_farels where dkm=?2 and (skm=-1 or skm=?1)",
+	c, FARE_INFO::tax);
 #else
 "select k,l from t_farels where "
 "(-1=(select skm from t_farels where skm=(select max(skm) from t_farels where skm<=?1))"
@@ -5165,25 +5163,13 @@ int FARE_INFO::Fare_table(int dkm, int skm, char c)
 ") and dkm="
 "(select dkm from t_farels where dkm=(select max(dkm) from t_farels where dkm<=?2))";
 #endif
-	DBO dbo(DBS::getInstance()->compileSql(tsql));
+	DBO dbo(DBS::getInstance()->compileSql(sql));
+	sqlite3_free(sql);
+	
 	dbo.setParam(1, KM(skm));
 	dbo.setParam(2, KM(dkm));
 	if (dbo.moveNext()) {
-		s8 = dbo.getInt(0);
-		k8 = dbo.getInt(1);
-		s5 = dbo.getInt(2);
-		k5 = dbo.getInt(3);
-		if (c == 's') {
-			if (FARE_INFO::tax == 5) {
-				fare = s5;
-			} else {
-				fare = s8;
-			}
-		} else if (FARE_INFO::tax == 5) {
-			fare = k5;
-		} else {
-			fare = k8;
-		}
+		fare = dbo.getInt(0);
 	} else {
 		fare = 0;
 	}
@@ -5385,7 +5371,7 @@ int FARE_INFO::Fare_sub_f(int km)
 		return -1;
 	}
 	
-	c_km = Fare_table("lspekm", 'e', KM(km));
+	c_km = Fare_table("lspekm", 'e', km);
 	if (c_km == 0) {
 		ASSERT(FALSE);
 		return -1;
@@ -5679,7 +5665,7 @@ int FARE_INFO::Fare_hokkaido_basic(int km)
 	}
 
 	sprintf_s(tbl, NumOf(tbl), "h%u", FARE_INFO::tax);
-	fare = FARE_INFO::Fare_table("bsepkm", tbl, KM(km));
+	fare = FARE_INFO::Fare_table("bspekm", tbl, km);
 	if (0 != fare) {
 		return fare;
 	}
@@ -5753,7 +5739,7 @@ int FARE_INFO::Fare_hokkaido_sub(int km)
 		return -1;
 	}
 	
-	c_km = Fare_table("lspekm", 'h', KM(km));
+	c_km = Fare_table("lspekm", 'h', km);
 	if (c_km == 0) {
 		ASSERT(FALSE);
 		return -1;
@@ -5780,7 +5766,7 @@ int FARE_INFO::Fare_hokkaido_sub(int km)
 	return taxadd_ic(fare, FARE_INFO::tax);
 }
 
-//	g: JRl‘
+//	g: JRl‘ Š²ü
 //	calc_fare() => retr_fare() =>
 //
 //	@param [in] skm    ‰c‹ÆƒLƒ
@@ -5828,7 +5814,7 @@ int FARE_INFO::Fare_shikoku(int skm, int ckm)
 			return 210;
 		}
 	}
-	if (ckm < 101) {							// 7 to 10km
+	if (ckm < 101) {						// 7 to 10km
 		if (FARE_INFO::tax == 5) {
 			return 210;
 		} else {
@@ -5836,7 +5822,7 @@ int FARE_INFO::Fare_shikoku(int skm, int ckm)
 		}
 	}
 
-	fare = FARE_INFO::Fare_table("bsepkm", (FARE_INFO::tax == 5) ? "s5" : "s8", KM(ckm));
+	fare = FARE_INFO::Fare_table("bspekm", (FARE_INFO::tax == 5) ? "s5" : "s8", ckm);
 	if (0 != fare) {
 		return fare;
 	}
@@ -5850,6 +5836,7 @@ int FARE_INFO::Fare_shikoku(int skm, int ckm)
 	} else if (100 < ckm) {					// 10.1-50km‚Í5ƒLƒ‚İ
 		c_km = (ckm - 1) / 50 * 50 + 30;
 	} else {
+		/* 0-10km‚Íã‚ÅZoreturnÏ‚İ */
 		ASSERT(FALSE);
 		c_km = 0;
 	}
@@ -5861,6 +5848,7 @@ int FARE_INFO::Fare_shikoku(int skm, int ckm)
 	} else if (1000 < c_km) {
 		fare = 1821 * 1000 + 1620 * (c_km - 1000);
 	} else {
+		/* 10.1km - 100.0 km */
 		fare = 1821 * c_km;
 	}
 	
@@ -5873,7 +5861,7 @@ int FARE_INFO::Fare_shikoku(int skm, int ckm)
 	return taxadd(fare, FARE_INFO::tax);	// tax = +5%, lÌŒÜ“ü
 }
 
-//	h: JR‹ãB
+//	h: JR‹ãB Š²ü
 //	calc_fare() => retr_fare() =>
 //
 //	@param [in] skm    ‰c‹ÆƒLƒ
@@ -5920,15 +5908,15 @@ int FARE_INFO::Fare_kyusyu(int skm, int ckm)
 			return 220;
 		}
 	}
-	if (ckm < 101) {							// 7 to 10km
+	if (ckm < 101) {						// 7 to 10km
 		if (FARE_INFO::tax == 5) {
-			return 210;
+			return 220;
 		} else {
 			return 230;
 		}
 	}
 
-	fare = FARE_INFO::Fare_table("bsepkm", (FARE_INFO::tax == 5) ? "k5" : "k8", KM(ckm));
+	fare = FARE_INFO::Fare_table("bspekm", (FARE_INFO::tax == 5) ? "k5" : "k8", ckm);
 	if (0 != fare) {
 		return fare;
 	}
@@ -5942,6 +5930,7 @@ int FARE_INFO::Fare_kyusyu(int skm, int ckm)
 	} else if (100 < ckm) {					// 10.1-50km‚Í5ƒLƒ‚İ
 		c_km = (ckm - 1) / 50 * 50 + 30;
 	} else {
+		/* 0-10km‚Íã‚ÅZoreturnÏ‚İ */
 		ASSERT(FALSE);
 		c_km = 0;
 	}
@@ -5952,6 +5941,8 @@ int FARE_INFO::Fare_kyusyu(int skm, int ckm)
 	} else if (1000 < c_km) {
 		fare = 1775 * c_km;
 	} else {
+		/* 10.1-100.0km‚ÍDB‚Å’è‹` */
+		ASSERT(FALSE);
 		fare = 0;
 	}
 
@@ -6085,7 +6076,7 @@ ASSERT(FALSE);
 //		}
 	}
 
-	if ((MASK_URBNNO(fare_info.flag) != 0) && (MASK_FLAG_SHINKANSEN(fare_info.flag) == 0)) { 
+	if (((MASK_URBAN & fare_info.flag) != 0) && (MASK_FLAG_SHINKANSEN(fare_info.flag) == 0)) { 
 		 /* ‘SŒo˜H‚ª‹ßx‹æŠÔ“à‚ÅVŠ²ü–¢—˜—p‚Ì‚Æ‚«Å’Z‹——£‚ÅZo‰Â”\ */
 		_sntprintf_s(cb, MAX_BUF,
 			_T("‹ßx‹æŠÔ“à‚Å‚·‚Ì‚ÅÅ’ZŒo˜H‚Ì‰^’À‚Å—˜—p‰Â”\‚Å‚·(“r’†‰ºÔ•s‰ÂA—LŒø“ú”“–“úŒÀ‚è)\r\n"));
