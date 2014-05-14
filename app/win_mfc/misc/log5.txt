@@ -26,134 +26,134 @@
 'jrrfarec.exe': 'C:\Windows\SysWOW64\uxtheme.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Windows\SysWOW64\dwmapi.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Windows\SysWOW64\mfc100jpn.dll' を読み込みました。バイナリはデバッグ情報と一緒にビルドされませんでした。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x011fedb0 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x011ff000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01200000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01201000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01202000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01203000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01204000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01205000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01206000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01207000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01208000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01209000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0120a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0120b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0120c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0120d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0120e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0120f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01210000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01211000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01212000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01213000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01214000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01215000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01216000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01217000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01218000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01219000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0121a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0121b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0121c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0121d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0121e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0121f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01220000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01221000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01222000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01223000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01224000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01225000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01226000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01227000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01228000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01229000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0122a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0122b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0122c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0122d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0122e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0122f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01230000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01231000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01232000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01233000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01234000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01235000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01236000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01237000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01238000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01239000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0123a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0123b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0123c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0123d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0123e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0123f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01240000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01241000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01242000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01243000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01244000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01245000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01246000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01247000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01248000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01249000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0124a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0124b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0124c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0124d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0124e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0124f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01250000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01251000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01252000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01253000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01254000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01255000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01256000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01257000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01258000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01259000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0125a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0125b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0125c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0125d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0125e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0125f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01260000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01261000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01262000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01263000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01264000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01265000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01266000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01267000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01268000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01269000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0126a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0126b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0126c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0126d000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0126e000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0126f000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01270000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01271000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01272000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01273000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01274000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01275000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01276000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01277000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01278000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x01279000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0127a000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0127b000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0127c000 に書き込み中にアクセス違反が発生しました。
-jrrfarec.exe の 0x0118cc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0127d000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0025edb0 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0025f000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00260000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00261000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00262000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00263000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00264000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00265000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00266000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00267000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00268000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00269000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0026a000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0026b000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0026c000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0026d000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0026e000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0026f000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00270000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00271000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00272000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00273000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00274000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00275000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00276000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00277000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00278000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00279000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0027a000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0027b000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0027c000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0027d000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0027e000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0027f000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00280000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00281000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00282000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00283000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00284000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00285000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00286000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00287000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00288000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00289000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0028a000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0028b000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0028c000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0028d000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0028e000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0028f000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00290000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00291000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00292000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00293000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00294000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00295000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00296000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00297000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00298000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x00299000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0029a000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0029b000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0029c000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0029d000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0029e000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x0029f000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a0000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a1000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a2000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a3000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a4000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a5000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a6000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a7000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a8000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002a9000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002aa000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ab000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ac000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ad000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ae000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002af000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b0000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b1000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b2000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b3000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b4000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b5000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b6000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b7000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b8000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002b9000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ba000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002bb000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002bc000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002bd000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002be000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002bf000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c0000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c1000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c2000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c3000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c4000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c5000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c6000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c7000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c8000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002c9000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ca000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002cb000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002cc000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002cd000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002ce000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002cf000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d0000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d1000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d2000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d3000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d4000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d5000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d6000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d7000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d8000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002d9000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002da000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002db000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002dc000 に書き込み中にアクセス違反が発生しました。
+jrrfarec.exe の 0x001ecc8a で初回の例外が発生しました: 0xC0000005: 場所 0x002dd000 に書き込み中にアクセス違反が発生しました。
 'jrrfarec.exe': 'C:\Windows\SysWOW64\apphelp.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Windows\SysWOW64\IMJP14.IME' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Windows\SysWOW64\IMJP14.IME' をアンロード
@@ -171,12 +171,12 @@ clear-all mask.
 'jrrfarec.exe': 'C:\Windows\SysWOW64\oleacc.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMETIP.DLL' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMECFM.DLL' を読み込みました。Cannot find or open the PDB file
-'jrrfarec.exe': 'C:\Windows\SysWOW64\cryptsp.dll' を読み込みました。Cannot find or open the PDB file
 clear-all mask.
 test_exec(route): 1********************** ^A-0 *********************
 名古屋,中央西線,恵那
 clear-all mask.
 add-begin 名古屋(1551)
+'jrrfarec.exe': 'C:\Windows\SysWOW64\cryptsp.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Windows\SysWOW64\rsaenh.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Windows\SysWOW64\RpcRtRemote.dll' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMECMPS.DLL' を読み込みました。Cannot find or open the PDB file
@@ -9009,7 +9009,6 @@ add 日豊線(187)-城野(4125), 西小倉(4012)
   add-mask on: 西小倉(4012,273)
 added continue.
 added last(0).
-スレッド 'Win32 スレッド' (0xe40) はコード 0 (0x0) で終了しました。
 add 鹿児島線(179)-西小倉(4012), 小倉(4011)
   add-mask on: 西小倉(4012,273)
   add-mask on: 小倉(4011,272)
@@ -9616,6 +9615,8 @@ test_exec(route): 245********************** jsb01 *********************
 吉塚 鹿児島線 博多 山陽新幹線 x小倉
 clear-all mask.
 add-begin 吉塚(4038)
+スレッド 'Win32 スレッド' (0xe14) はコード 0 (0x0) で終了しました。
+スレッド 'Win32 スレッド' (0xdbc) はコード 0 (0x0) で終了しました。
 add 鹿児島線(179)-吉塚(4038), 博多(3749)
   add-mask on: 吉塚(4038,276)
   add-mask on: 博多(3749,258)
@@ -15370,7 +15371,6 @@ add 九州新幹線(6)-鹿児島中央(4099), 筑後船小屋(4059)
   add-mask on: 筑後船小屋(4059,280)
 added continue.
 added last(0).
-スレッド 'Win32 スレッド' (0xf60) はコード 0 (0x0) で終了しました。
 add 鹿児島線(179)-筑後船小屋(4059), 西牟田(4057)
   add-mask on: 筑後船小屋(4059,280)
 added continue.
@@ -16066,6 +16066,7 @@ clear-all mask.
 新幹線<->在来線乗り換え: 東京,東北線,大宮,東北新幹線,x上野
 clear-all mask.
 add-begin 東京(467)
+スレッド 'Win32 スレッド' (0x7b0) はコード 0 (0x0) で終了しました。
 add 東北線(26)-東京(467), 大宮(488)
   add-mask on: 東京(467,24)
   add-mask on: 神田(468,25)
@@ -18898,7 +18899,6 @@ add 宇野線(149)-岡山(3095), 茶屋町(3298)
   add-mask on: 茶屋町(3298,241)
 added continue.
 added last(0).
-スレッド 'Win32 スレッド' (0x404) はコード 0 (0x0) で終了しました。
 add 本四備讃線(150)-茶屋町(3298), 宇多津(3310)
   add-mask on: 茶屋町(3298,241)
   add-mask on: 宇多津(3310,242)
@@ -20187,6 +20187,7 @@ add-begin 長崎(4413)
 > 山陽線 櫛ケ浜
 > 岩徳線 岩国
 > 山陽線 広島
+スレッド 'Win32 スレッド' (0xdd8) はコード 0 (0x0) で終了しました。
 add 長崎線(191)-長崎(4413), 鳥栖(4053)
   add-mask on: 浦上(4412,305)
   add-mask on: 喜々津(4408,304)
@@ -33878,7 +33879,7 @@ added continue.
 added last(0).
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 阪和線:和歌山-日根野
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 関西空港線(日根野-関西空港):日根野-関西空港
-CheckSpecificFarePass found: 日根野, 関西空港, +220
+CheckSpecificFarePass found: 日根野, 関西空港, +210
 fare(basic)
 c69 line_id=138, station_id1=2613, station_id2=3045
 c69 line_id=140, station_id1=3045, station_id2=3056
@@ -33888,7 +33889,7 @@ RuleSpecific:chk 0x0, 0 -> 0
 no applied for rule86/87
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 阪和線:和歌山-日根野
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 関西空港線(日根野-関西空港):日根野-関西空港
-CheckSpecificFarePass found: 日根野, 関西空港, +220
+CheckSpecificFarePass found: 日根野, 関西空港, +210
 fare(basic)
 clear-all mask.
 clear-all mask.
@@ -33904,7 +33905,7 @@ added continue.
 added last(0).
 reverse route
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 関西空港線(日根野-関西空港):関西空港-日根野
-CheckSpecificFarePass found: 日根野, 関西空港, +220
+CheckSpecificFarePass found: 日根野, 関西空港, +210
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 阪和線:日根野-和歌山
 fare(basic)
 c69 line_id=140, station_id1=3056, station_id2=3045
@@ -33914,7 +33915,7 @@ Rule70 not applied.
 RuleSpecific:chk 0x0, 0 -> 0
 no applied for rule86/87
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 関西空港線(日根野-関西空港):関西空港-日根野
-CheckSpecificFarePass found: 日根野, 関西空港, +220
+CheckSpecificFarePass found: 日根野, 関西空港, +210
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 阪和線:日根野-和歌山
 fare(basic)
 clear-all mask.
@@ -34146,7 +34147,7 @@ added continue.
 added last(0).
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:渋谷-品川
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:品川-横浜
-SpecficFareLine found: 渋谷 - 横浜, +388
+SpecficFareLine found: 渋谷 - 横浜, +380
 specific fare section replace for Metro.
 c69 line_id=41, station_id1=898, station_id2=893
 c69 line_id=76, station_id1=893, station_id2=1466
@@ -34174,7 +34175,7 @@ Rule 69(4) applied 0times.
 no applied for rule86/87(sales_km=288)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:渋谷-品川
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:品川-横浜
-SpecficFareLine found: 渋谷 - 横浜, +388
+SpecficFareLine found: 渋谷 - 横浜, +380
 specific fare section replace for Metro.
 clear-all mask.
 clear-all mask.
@@ -34194,7 +34195,7 @@ added last(0).
 reverse route
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:横浜-品川
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:品川-渋谷
-SpecficFareLine found: 横浜 - 渋谷, +388
+SpecficFareLine found: 横浜 - 渋谷, +380
 specific fare section replace for Metro.
 c69 line_id=76, station_id1=1466, station_id2=893
 c69 line_id=41, station_id1=893, station_id2=898
@@ -34222,7 +34223,7 @@ Rule 69(4) applied 0times.
 no applied for rule86/87(sales_km=288)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:横浜-品川
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:品川-渋谷
-SpecficFareLine found: 横浜 - 渋谷, +388
+SpecficFareLine found: 横浜 - 渋谷, +380
 specific fare section replace for Metro.
 clear-all mask.
 test_exec(route): 28*************************************************
@@ -34238,7 +34239,7 @@ add 中央東線(31)-新宿(696), 八王子(715)
 added continue.
 added last(0).
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 中央東線:新宿-八王子
-SpecficFareLine found: 新宿 - 八王子, +474
+SpecficFareLine found: 新宿 - 八王子, +460
 specific fare section replace for Metro.
 c69 line_id=31, station_id1=696, station_id2=715
 Rule 69 applied 0times.
@@ -34250,7 +34251,7 @@ c69 line_id=31, station_id1=468, station_id2=715
 Rule 69(2) applied 0times.
 no applied for rule86/87(sales_km=474)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 中央東線:新宿-八王子
-SpecficFareLine found: 新宿 - 八王子, +474
+SpecficFareLine found: 新宿 - 八王子, +460
 specific fare section replace for Metro.
 clear-all mask.
 clear-all mask.
@@ -34264,7 +34265,7 @@ added continue.
 added last(0).
 reverse route
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 中央東線:八王子-新宿
-SpecficFareLine found: 八王子 - 新宿, +474
+SpecficFareLine found: 八王子 - 新宿, +460
 specific fare section replace for Metro.
 c69 line_id=31, station_id1=715, station_id2=696
 Rule 69 applied 0times.
@@ -34276,7 +34277,7 @@ c69 line_id=26, station_id1=468, station_id2=467
 Rule 69(2) applied 0times.
 no applied for rule86/87(sales_km=474)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 中央東線:八王子-新宿
-SpecficFareLine found: 八王子 - 新宿, +474
+SpecficFareLine found: 八王子 - 新宿, +460
 specific fare section replace for Metro.
 clear-all mask.
 test_exec(route): 29*************************************************
@@ -42216,7 +42217,7 @@ added continue.
 added last(0).
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:北新地-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:尼崎-神戸
-SpecficFareLine found: 北新地 - 神戸, +410
+SpecficFareLine found: 北新地 - 神戸, +390
 specific fare section replace for Metro.
 c69 line_id=136, station_id1=2983, station_id2=1602
 c69 line_id=76, station_id1=1602, station_id2=1615
@@ -42241,7 +42242,7 @@ Rule 69(4) applied 0times.
 no applied for rule86/87(sales_km=421)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:北新地-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:尼崎-神戸
-SpecficFareLine found: 北新地 - 神戸, +410
+SpecficFareLine found: 北新地 - 神戸, +390
 specific fare section replace for Metro.
 clear-all mask.
 clear-all mask.
@@ -42258,7 +42259,7 @@ added last(0).
 reverse route
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:神戸-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:尼崎-北新地
-SpecficFareLine found: 神戸 - 北新地, +410
+SpecficFareLine found: 神戸 - 北新地, +390
 specific fare section replace for Metro.
 c69 line_id=76, station_id1=1615, station_id2=1602
 c69 line_id=136, station_id1=1602, station_id2=2983
@@ -42283,7 +42284,7 @@ Rule 69(4) applied 0times.
 no applied for rule86/87(sales_km=421)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:神戸-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:尼崎-北新地
-SpecficFareLine found: 神戸 - 北新地, +410
+SpecficFareLine found: 神戸 - 北新地, +390
 specific fare section replace for Metro.
 clear-all mask.
 test_exec(route): 126*************************************************
@@ -42301,7 +42302,7 @@ added continue.
 added last(0).
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:北新地-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 福知山線:尼崎-宝塚
-SpecficFareLine found: 北新地 - 宝塚, +330
+SpecficFareLine found: 北新地 - 宝塚, +320
 specific fare section replace for Metro.
 c69 line_id=136, station_id1=2983, station_id2=1602
 c69 line_id=133, station_id1=1602, station_id2=2924
@@ -42316,7 +42317,7 @@ Rule 69(2) applied 0times.
 no applied for rule86/87(sales_km=345)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:北新地-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 福知山線:尼崎-宝塚
-SpecficFareLine found: 北新地 - 宝塚, +330
+SpecficFareLine found: 北新地 - 宝塚, +320
 specific fare section replace for Metro.
 clear-all mask.
 clear-all mask.
@@ -42332,7 +42333,7 @@ added last(0).
 reverse route
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 福知山線:宝塚-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:尼崎-北新地
-SpecficFareLine found: 宝塚 - 北新地, +330
+SpecficFareLine found: 宝塚 - 北新地, +320
 specific fare section replace for Metro.
 c69 line_id=133, station_id1=2924, station_id2=1602
 c69 line_id=136, station_id1=1602, station_id2=2983
@@ -42347,7 +42348,7 @@ Rule 69(2) applied 0times.
 no applied for rule86/87(sales_km=345)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 福知山線:宝塚-尼崎
 multicompany line none detect X: 0, 0, comp1,2=4, 4, JR東西線:尼崎-北新地
-SpecficFareLine found: 宝塚 - 北新地, +330
+SpecficFareLine found: 宝塚 - 北新地, +320
 specific fare section replace for Metro.
 clear-all mask.
 clear-all mask.
@@ -49847,7 +49848,7 @@ fare(basic)
 multicompany line none detect X: 0, 0, comp1,2=2, 3, 東海道線:横浜-富士
 multicompany line none detect X: 0, 0, comp1,2=3, 3, 身延線:富士-甲斐住吉
 fare(basic)
-Rule 114 Applied(4000->3670)
+Rule 114 Applied(3890->3570)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 横浜線:長津田-東神奈川
 multicompany line none detect X: 0, 0, comp1,2=2, 3, 東海道線:東神奈川-富士
 multicompany line none detect X: 0, 0, comp1,2=3, 3, 身延線:富士-国母
@@ -49900,7 +49901,7 @@ fare(basic)
 multicompany line none detect X: 0, 0, comp1,2=3, 3, 身延線:甲斐住吉-富士
 multicompany line none detect X: 0, 0, comp1,2=3, 2, 東海道線:富士-横浜
 fare(basic)
-Rule 114 Applied(4000->3670)
+Rule 114 Applied(3890->3570)
 multicompany line none detect X: 0, 0, comp1,2=3, 3, 身延線:国母-富士
 multicompany line none detect X: 0, 0, comp1,2=3, 2, 東海道線:富士-東神奈川
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 横浜線:東神奈川-長津田
@@ -63669,7 +63670,6 @@ add 筑豊線(185)-折尾(4020), 原田(4048)
   add-mask on: 原田(4048,277)
 added continue.
 added last(0).
-スレッド 'Win32 スレッド' (0xd4c) はコード 0 (0x0) で終了しました。
 add 鹿児島線(179)-原田(4048), 八代(4086)
   add-mask on: 原田(4048,277)
   add-mask on: 鳥栖(4053,278)
@@ -64667,6 +64667,7 @@ add 篠栗線(182)-桂川(4116), 長者原(4110)
   add-mask on: 長者原(4110,288)
 added continue.
 added last(0).
+スレッド 'Win32 スレッド' (0x7e0) はコード 0 (0x0) で終了しました。
 add 香椎線(181)-長者原(4110), 香椎(4035)
   add-mask on: 長者原(4110,288)
   add-mask on: 香椎(4035,275)
@@ -72679,7 +72680,7 @@ multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽線:広島-吉永
 fare(basic)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽線:広島-三石
 fare(basic)
-Rule 114 Applied(4000->3670)
+Rule 114 Applied(3890->3570)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 芸備線:井原市-広島
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽線:広島-吉永
 fare(basic)
@@ -72719,7 +72720,7 @@ multicompany line none detect X: 0, 0, comp1,2=4, 4, 芸備線:広島-井原市
 fare(basic)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽線:三石-広島
 fare(basic)
-Rule 114 Applied(4000->3670)
+Rule 114 Applied(3890->3570)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽線:吉永-広島
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 芸備線:広島-井原市
 fare(basic)
@@ -72894,7 +72895,7 @@ multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:仙台-那須塩原
 fare(basic)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:仙台-野崎
 fare(basic)
-Rule 114 Applied(4000->3670)
+Rule 114 Applied(3890->3570)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 仙山線:作並-仙台
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:仙台-那須塩原
 fare(basic)
@@ -72933,7 +72934,7 @@ multicompany line none detect X: 0, 0, comp1,2=2, 2, 仙山線:仙台-作並
 fare(basic)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:野崎-仙台
 fare(basic)
-Rule 114 Applied(4000->3670)
+Rule 114 Applied(3890->3570)
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:那須塩原-仙台
 multicompany line none detect X: 0, 0, comp1,2=2, 2, 仙山線:仙台-作並
 fare(basic)
@@ -75556,7 +75557,7 @@ added continue.
 added last(0).
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道新幹線:京都-新大阪
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:新大阪-大阪
-SpecficFareLine found: 京都 - 大阪, +560
+SpecficFareLine found: 京都 - 大阪, +540
 specific fare section replace for Metro.
 c69 line_id=4, station_id1=1585, station_id2=1599
 c69 line_id=76, station_id1=1599, station_id2=1600
@@ -75577,7 +75578,7 @@ Rule 69(4) applied 0times.
 no applied for rule86/87(sales_km=390)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道新幹線:京都-新大阪
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:新大阪-大阪
-SpecficFareLine found: 京都 - 大阪, +560
+SpecficFareLine found: 京都 - 大阪, +540
 specific fare section replace for Metro.
 clear-all mask.
 clear-all mask.
@@ -75595,7 +75596,7 @@ added last(0).
 reverse route
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:大阪-新大阪
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道新幹線:新大阪-京都
-SpecficFareLine found: 大阪 - 京都, +560
+SpecficFareLine found: 大阪 - 京都, +540
 specific fare section replace for Metro.
 c69 line_id=76, station_id1=1600, station_id2=1599
 c69 line_id=4, station_id1=1599, station_id2=1585
@@ -75616,7 +75617,7 @@ Rule 69(4) applied 0times.
 no applied for rule86/87(sales_km=390)
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:大阪-新大阪
 multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道新幹線:新大阪-京都
-SpecficFareLine found: 大阪 - 京都, +560
+SpecficFareLine found: 大阪 - 京都, +540
 specific fare section replace for Metro.
 clear-all mask.
 test_exec(route): 436*************************************************
@@ -76973,15 +76974,15 @@ multicompany line none detect X: 0, 0, comp1,2=5, 5, 鹿児島線:西小倉-博多
 fare(kyusyu)
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMESEARCHDLL.DLL' を読み込みました。Cannot find or open the PDB file
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMECFM.DLL' をアンロード
-スレッド 'Win32 スレッド' (0x454) はコード 1 (0x1) で終了しました。
+スレッド 'Win32 スレッド' (0xcf0) はコード 1 (0x1) で終了しました。
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMETIP.DLL' をアンロード
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\IMEJP\IMJPTIP.DLL' をアンロード
 'jrrfarec.exe': 'C:\Windows\SysWOW64\oleacc.dll' をアンロード
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMESEARCHDLL.DLL' をアンロード
 'jrrfarec.exe': 'C:\Program Files (x86)\Common Files\microsoft shared\IME14\SHARED\IMECMPS.DLL' をアンロード
 'jrrfarec.exe': 'C:\Windows\SysWOW64\dwmapi.dll' をアンロード
+スレッド 'Win32 スレッド' (0x414) はコード 2 (0x2) で終了しました。
 スレッド 'Win32 スレッド' (0xe88) はコード 2 (0x2) で終了しました。
-スレッド 'Win32 スレッド' (0xa24) はコード 2 (0x2) で終了しました。
-スレッド 'Win32 スレッド' (0xe6c) はコード 2 (0x2) で終了しました。
-スレッド 'Win32 スレッド' (0x708) はコード 2 (0x2) で終了しました。
-プログラム '[3192] jrrfarec.exe: ネイティブ' はコード 2 (0x2) で終了しました。
+スレッド 'Win32 スレッド' (0x798) はコード 2 (0x2) で終了しました。
+スレッド 'Win32 スレッド' (0xa14) はコード 2 (0x2) で終了しました。
+プログラム '[3292] jrrfarec.exe: ネイティブ' はコード 2 (0x2) で終了しました。
