@@ -204,8 +204,6 @@ public:
 	}
 };
 
-// 地方交通線のみか、地方交通線混じりかを判断する必要がある。
-// 両者の違いは？
 class FARE_INFO {
 public:
 	FARE_INFO() { reset(); if (FARE_INFO::tax <= 0) { FARE_INFO::tax = g_tax; }}
@@ -237,7 +235,7 @@ public:
 	int flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 	bool ret_dis;					//***/* 往復割引*/
 	int fare;						//***
-	int fare_ic;					//***
+	int fare_ic;					//*** 0以外で有効
 	int avail_days;					//***
 	static int tax;					/* 消費税 */
 	int companymask;
@@ -292,6 +290,7 @@ public:
 	static int		SpecficFareLine(int station_id1, int station_id2);
 	static vector<int> GetDistanceEx(int line_id, int station_id1, int station_id2);
 	static int		Retrieve70Distance(int station_id1, int station_id2);
+	static bool     IsIC_area(int urban_id);
 };
 
 // 1レコードめのlineIdの定義

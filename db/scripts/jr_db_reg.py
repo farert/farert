@@ -340,6 +340,7 @@ class Dbreg:
 			't_farejrhla5p'	: self.reg_t_farejrhla,
 		}
 
+		self.num_of_line = 0
 		proc_stage = ''
 		for lin in open(fn, 'r', encoding='shift-jis'):
 			self.num_of_line += 1
@@ -449,9 +450,9 @@ class Dbreg:
 		# (新幹線のみ)
 		tmp = int(linitems[10])
 		if 10 <= tmp and tmp <= 13:
-			if 0 != int(linitems[16]):
-				print(self.num_of_line, lin)
-				raise ValueError
+#140516			if 0 != int(linitems[16]):			###!!!なんの意味があったのか？
+#				print(self.num_of_line, lin)
+#				raise ValueError
 			#lflg |= ((1 << 27) | ((tmp - 10) << 25))
 			lflg |= ((tmp - 10) << 19)
 
