@@ -4819,39 +4819,29 @@ bool FARE_INFO::calc_fare(const vector<RouteItem>& routeList, bool applied_rule/
 						(this->hokkaido_sales_km == this->hokkaido_calc_km) && 
 						(this->shikoku_sales_km == this->shikoku_calc_km));
 
-	if ((MASK_URBAN & this->flag) != 0) {  /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
-						/* “Á’è‹æŠÔ‚Ì”»’è */
-		int special_fare = FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);
-		if (0 < special_fare) {
-			TRACE("specific fare section replace for Metro.\n");
+	int special_fare = FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);
+	if (0 < special_fare) {
+		TRACE("specific fare section replace for Metro or Shikoku-Big-bridge\n");
 
-			if ((FARE_INFO::tax != 5) && 
-			    IsIC_area(URBAN_ID(this->flag)) &&   /* ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
-				(MASK_FLAG_SHINKANSEN(this->flag) == 0)) {
-               
-				ASSERT(companymask == (1 << (JR_EAST - 1)));  /* JR East only  */
+		if ((FARE_INFO::tax != 5) && 
+		    IsIC_area(URBAN_ID(this->flag)) &&     /* “Œ‹ ‹ßx‹æŠÔ(Å’Z‹——£‚ÅZo‰Â”\) */
+           (MASK_FLAG_SHINKANSEN(this->flag) == 0)) {
 
-				this->fare_ic = special_fare;
-				this->fare = round_up(special_fare);	/* ‘å“ss“Á’è‹æŠÔ‰^’À(“Œ‹)(\10’PˆÊØ‚èã‚°) */
+			ASSERT(companymask == (1 << (JR_EAST - 1)));  /* JR East only  */
 
-			} else {
-				this->fare = special_fare;	/* ‘å“ss“Á’è‹æŠÔ‰^’À */
-			}
+			this->fare_ic = special_fare;
+			this->fare = round_up(special_fare);	/* ‘å“ss“Á’è‹æŠÔ‰^’À(“Œ‹)(\10’PˆÊØ‚èã‚°) */
 
-			this->total_jr_sales_km = this->base_sales_km;
-			ASSERT(this->kyusyu_sales_km + this->hokkaido_sales_km + this->shikoku_sales_km == 0);
-
-			this->total_jr_calc_km =this->base_calc_km;
-			ASSERT(this->kyusyu_calc_km + this->hokkaido_calc_km + this->shikoku_calc_km == 0);
-
-			ASSERT(this->company_fare == 0);	// ‰ïĞü‚Í’Ê‚Á‚Ä‚¢‚È‚¢
-			
-			ASSERT((companymask == (1 << (JR_EAST - 1))) || (companymask == (1 << (JR_WEST - 1))));  /* JR East or JR West only  */
-			
-			return true;	// >>>>>>>>>>>>>>>>>>>>
 		} else {
-			// “ss‹ßx‹æŠÔ“à‚Ì”­’…‚Å‚·‚Ì‚ÅÅ’ZŒo˜H‚Ì‰^’À‚Å‚²—˜—p‰Â”\‚Å‚·(“r’†‰ºÔ•s‰ÂA—LŒø“ú”“–“úŒÀ‚è)
+			this->fare = special_fare;	/* ‘å“ss“Á’è‹æŠÔ‰^’À */
 		}
+
+		this->total_jr_sales_km = this->base_sales_km;
+		this->total_jr_calc_km = this->base_calc_km;
+
+		ASSERT(this->company_fare == 0);	// ‰ïĞü‚Í’Ê‚Á‚Ä‚¢‚È‚¢
+		
+		return true;	// >>>>>>>>>>>>>>>>>>>>
 	}
 	/* ‰^’ÀŒvZ */
 	if (retr_fare()) {
@@ -5344,7 +5334,7 @@ int FARE_INFO::Fare_basic_f(int km)
 		c_km = 0;
 	}
 	if (6000 <= c_km) {
-		fare = 1620 * 3000 + 1285 * 3000 + 705 * (c_km - 6000);
+		fare = 1620 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
 	} else if (3000 < c_km) {
 		fare = 1620 * 3000 + 1285 * (c_km - 3000);
 	} else {
@@ -5409,7 +5399,7 @@ int FARE_INFO::Fare_sub_f(int km)
 	c_km *= 10;
 
 	if (5460 <= c_km) {
-		fare = 1780 * 2730 + 1410 * 2730 + 770 * (c_km - 5460);
+		fare = 1780 * 2730 + 1410 * (5460 - 2730) + 770 * (c_km - 5460);
 	} else if (2730 < c_km) {
 		fare = 1780 * 2730 + 1410 * (c_km - 2730);
 	} else {
@@ -5710,9 +5700,9 @@ int FARE_INFO::Fare_hokkaido_basic(int km)
 	}
 	
 	if (6000 < c_km) {
-		fare = 1785 * 2000 + 1620 * 1000 + 1285 * 3000 + 705 * (c_km - 6000);
+		fare = 1785 * 2000 + 1620 * (3000 - 2000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
 	} else if (3000 < c_km) {
-		fare = 1785 * 2000 + 1620 * 1000 + 1285 * (c_km - 3000);
+		fare = 1785 * 2000 + 1620 * (3000 - 2000) + 1285 * (c_km - 3000);
 	} else if (2000 < c_km) {
 		fare = 1785 * 2000 + 1620 * (c_km - 2000);
 	} else {
@@ -5730,7 +5720,7 @@ int FARE_INFO::Fare_hokkaido_basic(int km)
 //	JR–kŠC“¹’n•ûŒğ’Êü
 //	calc_fare() => retr_fare() =>
 //
-//	@param [in] km    ŒvZƒLƒ
+//	@param [in] km    ‰c‹ÆƒLƒ
 //	@return ‰^’ÀŠz
 //
 int FARE_INFO::Fare_hokkaido_sub(int km)
@@ -5777,11 +5767,13 @@ int FARE_INFO::Fare_hokkaido_sub(int km)
 	c_km *= 10;
 
 	if (5460 <= c_km) {
-		fare = 1780 * 2730 + 1410 * 2730 + 770 * (c_km - 5460);
+		fare = 1960 * 1820 + 1780 * (2730 - 1820) + 1410 * (5460 - 2730) + 770 * (c_km - 5460);
 	} else if (2730 < c_km) {
-		fare = 1780 * 2730 + 1410 * (c_km - 2730);
-	} else {
-		fare = 1780 * c_km;
+		fare = 1960 * 1820 + 1780 * (2730 - 1820) + 1410 * (c_km - 2730);
+	} else if (1820 < c_km) {
+		fare = 1960 * 1820 + 1780 * (c_km - 1820);
+	} else { /* <= 182km */
+		fare = 1960 * c_km;
 	}
 	if (c_km <= 1000) {						// 100kmˆÈ‰º‚ÍØ‚èã‚°
 		// 1‚ÌˆÊ‚ğØ‚èã‚°
@@ -5789,7 +5781,7 @@ int FARE_INFO::Fare_hokkaido_sub(int km)
 	} else {				// 100‡q‰z‚¦‚ÍlÌŒÜ“ü
 		fare = (fare + 50000) / 100000 * 100;
 	}
-	return taxadd_ic(fare, FARE_INFO::tax);
+	return taxadd(fare, FARE_INFO::tax);
 }
 
 //	g: JRl‘ Š²ü
@@ -5868,9 +5860,9 @@ int FARE_INFO::Fare_shikoku(int skm, int ckm)
 	}
 	
 	if (6000 <= c_km) {
-		fare = 1821 * 1000 + 1620 * 2000 + 1285 * 3000 + 705 * (c_km - 6000);
+		fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
 	} else if (3000 < c_km) {
-		fare = 1821 * 1000 + 1620 * 2000 + 1285 * (c_km - 3000);
+		fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
 	} else if (1000 < c_km) {
 		fare = 1821 * 1000 + 1620 * (c_km - 1000);
 	} else {
@@ -5961,7 +5953,7 @@ int FARE_INFO::Fare_kyusyu(int skm, int ckm)
 		c_km = 0;
 	}
 	if (6000 <= c_km) {
-		fare = 1775 * 3000 + 1285 * 3000 + 705 * (c_km - 6000);
+		fare = 1775 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
 	} else if (3000 < c_km) {
 		fare = 1775 * 3000 + 1285 * (c_km - 3000);
 	} else if (1000 < c_km) {
