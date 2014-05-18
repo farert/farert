@@ -336,8 +336,8 @@ class Dbreg:
 			't_fareadd'		: self.reg_t_fareadd,
 			't_fareadd5p'	: self.reg_t_fareadd,
 			't_farespp'		: self.reg_t_farespp,
-			't_farejrhla'	: self.reg_t_farejrhla,
-			't_farejrhla5p'	: self.reg_t_farejrhla,
+			't_farehla'		: self.reg_t_farehla,
+			't_farehla5p'	: self.reg_t_farehla,
 		}
 
 		self.num_of_line = 0
@@ -719,9 +719,9 @@ insert into t_farespp values(
 			 int(linitems[4].replace(',', ''))])
 		# station_id1, station_id2, fare, kind
 #------------------------------------------------------------------------------
-	def reg_t_farejrhla(self, label, linitems, lin):
-		# t_farejrhla : 本州3社+JR北地方交通線会社加算
-		# t_farejrhla5p : 本州3社+JR北地方交通線会社加算(消費税5%版)
+	def reg_t_farehla(self, label, linitems, lin):
+		# t_farehla : 本州3社+JR北地方交通線会社加算
+		# t_farehla5p : 本州3社+JR北地方交通線会社加算(消費税5%版)
 		
 		self.con.execute("insert into " + label + " values(?, ?)",
 		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', ''))])
