@@ -1878,13 +1878,13 @@ tstring Route::route_script()
 	
 	vector<RouteItem>::const_iterator pos = routeList->cbegin();
 
-	result_str = Route::StationName(pos->stationId);
+	result_str = Route::StationNameEx(pos->stationId);
 
 	for (pos++; pos != routeList->cend() ; pos++) {
 		result_str += _T(",");
 		result_str += LineName(pos->lineId);
 		result_str += _T(",");
-		result_str += Route::StationName(pos->stationId);
+		result_str += Route::StationNameEx(pos->stationId);
 	}
 	result_str += _T("\n\n");
 	return result_str;
