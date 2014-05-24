@@ -96,6 +96,9 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #define KM(kmx10) ((kmx10 + 9) / 10)	/* km単位で端数は切り上げ */
 
+/* discount */
+#define fare_discount(fare, per) ((fare) / 10 * (10 - (per)) / 10 * 10)
+
 #define CSTART	1
 #define CEND	2
 
@@ -108,7 +111,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define JR_WEST		4	
 #define JR_KYUSYU	5	
 #define JR_SHIKOKU	6	
-
+#define JR_GROUP_MASK   ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0))
 
 #define	LINE_TOHOKU_SINKANSEN	1	// 東北新幹線
 #define	LINE_JYOETSU_SINKANSEN	2	// 上越新幹線
@@ -207,7 +210,7 @@ public:
 class FARE_INFO {
 public:
 	FARE_INFO() { reset(); if (FARE_INFO::tax <= 0) { FARE_INFO::tax = g_tax; }}
-
+private:
 	int sales_km;			//*** 有効日数計算用(会社線含む)
 
 	int base_sales_km;		//*** JR本州3社
@@ -233,7 +236,6 @@ public:
 
 	int company_fare;				/* 会社線料金 */
 	int flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
-	bool ret_dis;					//***/* 往復割引*/
 	int fare;						//***
 	int fare_ic;					//*** 0以外で有効
 	int avail_days;					//***
@@ -241,6 +243,7 @@ public:
 	int companymask;
 	bool retr_fare();
 	int aggregate_fare_info(int line_id, int station_id1, int station_id2, int before_staion_id1);
+public:
 	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);	//***
 	void reset() {				//***
 		companymask = 0;
@@ -271,6 +274,26 @@ public:
 		fare_ic = 0;
 		avail_days = 0;
 	}
+	int 	roundTripFareWithComapnyLine(bool& return_discount);
+	bool 	isUrbanArea();
+	int 	getTotalSalesKm();
+	int		getJRSalesKm();
+	int		getJRCalcKm();
+	int		getCompanySalesKm();
+	int		getSalesKmForHokkaido();
+	int		getSalesKmForShikoku();
+	int		getSalesKmForKyusyu();
+	int		getCalcKmForHokkaido();
+	int		getCalcKmForShikoku();
+	int		getCalcKmForKyusyu();
+	int		getTicketAvailDays();
+	int		getFareForCompanyline();
+	int		getFareForJR();
+	int 	getFareStockDistount(int index, tstring& title);
+	int		getAcademicDiscount();
+	int		getFareForIC();
+
+private:
 	static int	 	Fare_basic_f(int km);
 	static int	 	Fare_sub_f(int km);
 	static int	 	Fare_tokyo_f(int km);
@@ -507,6 +530,7 @@ public:
 	int				fareCalcOption();
 	
 	tstring 		show_route(bool cooked);
+	tstring         route_script();
 
 	int				setup_route(LPCTSTR route_str);
 
@@ -536,7 +560,7 @@ public:
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int lineId, int cityId);
 	static int 		Retrieve_SpecificCoreStation(int cityId);
 	static int		Retreive_SpecificCoreAvailablePoint(int km, int km_offset, int line_id, int station_id);
-	static int		CheckAndApplyRule43_2j(const vector<RouteItem> &route, FARE_INFO* fare_inf);
+	static int		CheckAndApplyRule43_2j(const vector<RouteItem> &route);
 	static bool		CheckOfRule114j(const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int kind, int* result);
 	static int		CheckOfRule88j(vector<RouteItem> *route);
 	static int		CheckOfRule89j(const vector<RouteItem> &route);
