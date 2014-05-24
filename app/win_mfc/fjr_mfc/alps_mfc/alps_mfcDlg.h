@@ -77,5 +77,9 @@ public:
 	afx_msg void OnBnClickedCheckSpecialCity();
 	afx_msg void OnBnClickedCheckRuleapply();
 	afx_msg void OnBnClickedButtonReverse();
+	afx_msg void OnBnClickedButtonRoutecopy();
+	afx_msg void OnBnClickedButtonRoutein();
+	afx_msg void OnBnClickedButtonResultcopy();
+	afx_msg void OnBnClickedButtonRsltopen();
 };
 
