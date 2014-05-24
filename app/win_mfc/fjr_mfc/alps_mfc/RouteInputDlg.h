@@ -22,6 +22,5 @@ public:
 //	CString routeString;
 	CString routeString;
 	virtual BOOL OnInitDialog();
-	afx_msg void OnBnClickedButtonRouteOpen();
 	afx_msg void OnBnClickedButtonExplorer();
 };
