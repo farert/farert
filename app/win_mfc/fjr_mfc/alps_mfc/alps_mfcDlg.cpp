@@ -94,6 +94,7 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTEIN, &Calps_mfcDlg::OnBnClickedButtonRoutein)
 	ON_BN_CLICKED(IDC_BUTTON_RESULTCOPY, &Calps_mfcDlg::OnBnClickedButtonResultcopy)
 	ON_BN_CLICKED(IDC_BUTTON_RSLTOPEN, &Calps_mfcDlg::OnBnClickedButtonRsltopen)
+	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &Calps_mfcDlg::OnBnClickedButtonRouteOpen)
 END_MESSAGE_MAP()
 
 
@@ -142,7 +143,9 @@ BOOL Calps_mfcDlg::OnInitDialog()
 	ResetContent();	// 発駅、着駅、経路 => 全消去 IDC_BUTTON_ALL_CLEAR [X] Button pushed.
 
 //////////////////////////////////////#####################
+#ifdef _DEBUG
 	test_exec();	// 単体テストを実行(結果はtest_result.txt)
+#endif
 //////////////////////////////////////#####################
 
 	DragAcceptFiles();
@@ -965,13 +968,38 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 void Calps_mfcDlg::OnBnClickedButtonRoutecopy()
 {
 	tstring s = m_route.route_script();
+
+	if (s.empty() || (0 == s.compare(m_lastRouteString))) {
+		return;
+	}
+
 	CStdioFile file;
 
 	if (file.Open(_T("route.txt"), CFile::modeCreate |CFile::modeReadWrite | CFile::modeNoTruncate)) {
 		file.SeekToEnd();
 		file.WriteString(s.c_str());
+		m_lastRouteString.assign(s);
 	} else {
 		AfxMessageBox(_T("ファイルオープンエラー"));
+	}
+}
+
+//	[経路開く]
+//
+void Calps_mfcDlg::OnBnClickedButtonRouteOpen()
+{
+	CString s;
+	CFileDialog dlg(TRUE);
+	HINSTANCE hInst =
+	ShellExecute(NULL, _T("open"), _T("route.txt"), NULL, NULL, SW_SHOW);
+
+	if (hInst <= (HINSTANCE)32) {
+		s.Format(_T("経路記録ファイルのオープンに失敗しました. %d"), hInst);
+		AfxMessageBox(s);
+		
+		if (IDYES == dlg.DoModal()) {
+			ShellExecute(NULL, _T("open"), dlg.GetFileName(), NULL, NULL, SW_SHOW);
+		}
 	}
 }
 
@@ -990,6 +1018,7 @@ void Calps_mfcDlg::OnBnClickedButtonRoutein()
 void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 {
 	tstring s;
+	tstring result_string;
 	CStdioFile file;
 	int opt;
 	int flag;
@@ -1008,24 +1037,26 @@ void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 	}
 	/* 規則適用か? */
 	flag |=	((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
+	result_string = m_route.showFare(flag).c_str();
 	
-	s = m_route.showFare(flag).c_str();
-	if (s == _T("")) {
-		return;
-	}
 	int rp;
 	do {
-		rp = s.find(_T("\r\n"));
+		rp = result_string.find(_T("\r\n"));
 		if (rp == string::npos) {
 			break;
 		}
-		s.replace(rp, 2, _T("\n"));
+		result_string.replace(rp, 2, _T("\n"));
 	} while (true);
 
-	s += _T("\n------------------------------------------------\n");
+	if (result_string.empty() || (0 == result_string.compare(m_lastResultString))) {
+		return;
+	}
+	
+	s = result_string + _T("\n------------------------------------------------\n");
 	if (file.Open(_T("result.txt"), CFile::modeCreate |CFile::modeReadWrite | CFile::modeNoTruncate)) {
 		file.SeekToEnd();
 		file.WriteString(s.c_str());
+		m_lastResultString.assign(result_string);
 	} else {
 		AfxMessageBox(_T("ファイルオープンエラー"));
 	}
@@ -1407,3 +1438,5 @@ void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 		}
 	}
 }
+
+
