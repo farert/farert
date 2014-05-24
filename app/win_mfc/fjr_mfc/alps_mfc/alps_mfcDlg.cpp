@@ -90,6 +90,10 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CHECK_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedCheckSpecialCity)
 	ON_BN_CLICKED(IDC_CHECK_RULEAPPLY, &Calps_mfcDlg::OnBnClickedCheckRuleapply)
 	ON_BN_CLICKED(IDC_BUTTON_REVERSE, &Calps_mfcDlg::OnBnClickedButtonReverse)
+	ON_BN_CLICKED(IDC_BUTTON_ROUTECOPY, &Calps_mfcDlg::OnBnClickedButtonRoutecopy)
+	ON_BN_CLICKED(IDC_BUTTON_ROUTEIN, &Calps_mfcDlg::OnBnClickedButtonRoutein)
+	ON_BN_CLICKED(IDC_BUTTON_RESULTCOPY, &Calps_mfcDlg::OnBnClickedButtonResultcopy)
+	ON_BN_CLICKED(IDC_BUTTON_RSLTOPEN, &Calps_mfcDlg::OnBnClickedButtonRsltopen)
 END_MESSAGE_MAP()
 
 
@@ -955,6 +959,78 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 	}
 }
 
+
+// [経路記録]
+//
+void Calps_mfcDlg::OnBnClickedButtonRoutecopy()
+{
+	tstring s = m_route.route_script();
+	CStdioFile file;
+
+	if (file.Open(_T("route.txt"), CFile::modeCreate |CFile::modeReadWrite | CFile::modeNoTruncate)) {
+		file.SeekToEnd();
+		file.WriteString(s.c_str());
+	} else {
+		AfxMessageBox(_T("ファイルオープンエラー"));
+	}
+}
+
+// [経路入力]
+//
+void Calps_mfcDlg::OnBnClickedButtonRoutein()
+{
+	CRouteInputDlg dlg;
+	if (IDOK == dlg.DoModal()) {
+		parseAndSetupRoute(dlg.routeString);
+	}
+}
+
+// [結果記録]
+//
+void Calps_mfcDlg::OnBnClickedButtonResultcopy()
+{
+	tstring s;
+	CStdioFile file;
+	int opt;
+	int flag;
+	bool ui_sel;
+
+	flag = 0;
+
+	/* 単駅選択可能な特定都区市内発着か? */
+	opt = m_route.fareCalcOption();
+	if ((opt == 1) || (opt == 2)) {
+		/* 単駅指定 */
+		ui_sel = (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SPECIAL_CITY));
+		if (((opt == 1) && !ui_sel) || ((opt == 2) && ui_sel)) {
+			flag = APPLIED_START;
+		}
+	}
+	/* 規則適用か? */
+	flag |=	((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
+	
+	s = m_route.showFare(flag).c_str();
+	if (s == _T("")) {
+		return;
+	}
+	int rp;
+	do {
+		rp = s.find(_T("\r\n"));
+		if (rp == string::npos) {
+			break;
+		}
+		s.replace(rp, 2, _T("\n"));
+	} while (true);
+
+	s += _T("\n------------------------------------------------\n");
+	if (file.Open(_T("result.txt"), CFile::modeCreate |CFile::modeReadWrite | CFile::modeNoTruncate)) {
+		file.SeekToEnd();
+		file.WriteString(s.c_str());
+	} else {
+		AfxMessageBox(_T("ファイルオープンエラー"));
+	}
+}
+
 //	m_routeの内容でIDC_LIST_ROUTEを作成しなおす
 //	@return IDC_LIST_ROUTEの行数を返す
 //
@@ -1195,7 +1271,7 @@ void Calps_mfcDlg::showFare()
 	if ((opt == 1) || (opt == 2)) {
 		/* 単駅指定 */
 		ui_sel = (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SPECIAL_CITY));
-		if (((opt == 1) && !opt) || ((opt == 2) && opt)) {
+		if (((opt == 1) && !ui_sel) || ((opt == 2) && ui_sel)) {
 			flag = APPLIED_START;
 		}
 	}
@@ -1311,4 +1387,23 @@ int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 		ResetContent();
 	}
 	return 0;
+}
+
+//	[結果を開く]
+//
+void Calps_mfcDlg::OnBnClickedButtonRsltopen()
+{
+	CString s;
+	CFileDialog dlg(TRUE);
+	HINSTANCE hInst =
+	ShellExecute(NULL, _T("open"), _T("result.txt"), NULL, NULL, SW_SHOW);
+
+	if (hInst <= (HINSTANCE)32) {
+		s.Format(_T("結果記録ファイルのオープンに失敗しました. %d"), hInst);
+		AfxMessageBox(s);
+		
+		if (IDYES == dlg.DoModal()) {
+			ShellExecute(NULL, _T("open"), dlg.GetFileName(), NULL, NULL, SW_SHOW);
+		}
+	}
 }
