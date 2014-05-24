@@ -57,6 +57,9 @@ private:
 	Calps_mfcDlg::SELMODE m_selMode;
 	int		m_curStationId;
 
+	tstring m_lastRouteString;
+	tstring m_lastResultString;
+
 protected:
 	afx_msg void OnBnClickedButtonStartsel();
 	afx_msg void OnBnClickedButtonEndsel();
@@ -81,5 +84,6 @@ public:
 	afx_msg void OnBnClickedButtonRoutein();
 	afx_msg void OnBnClickedButtonResultcopy();
 	afx_msg void OnBnClickedButtonRsltopen();
+	afx_msg void OnBnClickedButtonRouteOpen();
 };
 

@@ -31,7 +31,6 @@ void CRouteInputDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CRouteInputDlg, CDialogEx)
-	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &CRouteInputDlg::OnBnClickedButtonRouteOpen)
 	ON_BN_CLICKED(IDC_BUTTON_EXPLORER, &CRouteInputDlg::OnBnClickedButtonExplorer)
 END_MESSAGE_MAP()
 
@@ -49,23 +48,6 @@ BOOL CRouteInputDlg::OnInitDialog()
 	// 例外 : OCX プロパティ ページは必ず FALSE を返します。
 }
 
-
-void CRouteInputDlg::OnBnClickedButtonRouteOpen()
-{
-	CString s;
-	CFileDialog dlg(TRUE);
-	HINSTANCE hInst =
-	ShellExecute(NULL, _T("open"), _T("route.txt"), NULL, NULL, SW_SHOW);
-
-	if (hInst <= (HINSTANCE)32) {
-		s.Format(_T("経路記録ファイルのオープンに失敗しました. %d"), hInst);
-		AfxMessageBox(s);
-		
-		if (IDYES == dlg.DoModal()) {
-			ShellExecute(NULL, _T("open"), dlg.GetFileName(), NULL, NULL, SW_SHOW);
-		}
-	}
-}
 
 
 void CRouteInputDlg::OnBnClickedButtonExplorer()
