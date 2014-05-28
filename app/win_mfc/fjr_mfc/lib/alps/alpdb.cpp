@@ -1359,7 +1359,7 @@ ASSERT(first_station_id1 = stationId1);
 
 	if (rc != 0) {
 		if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
-			TRACE(_T("？？？西小倉・吉塚.\n"), rc);
+			TRACE(_T("？？？西小倉・吉塚.rc=%d\n"), rc);
 			return 1;	/* 西小倉、吉塚 */
 		} else {
 			return 0;
@@ -5776,7 +5776,7 @@ int	FARE_INFO::Fare_company(int station_id1, int station_id2)
 " where "
 " ((station_id1=?1 and station_id2=?2) or" 
 "  (station_id1=?2 and station_id2=?1))";
-	char* tbl[] = { "t_clinfar", "t_clinfar5p"};
+	const char* const tbl[] = { "t_clinfar", "t_clinfar5p"};
 
 	sqlite3_snprintf(sizeof(sql), sql, tsql, tbl[(FARE_INFO::tax == 5) ? 1 : 0]);
 	DBO dbo(DBS::getInstance()->compileSql(sql));
