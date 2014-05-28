@@ -1348,7 +1348,7 @@ ASSERT(first_station_id1 = stationId1);
 		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 	} else if (rc == 1) {
 		BIT_ON(last_flag, BLF_TRACKMARKCTL);
-	} else if (rc = 2) {
+	} else if (rc == 2) {
 		BIT_OFF(last_flag, BLF_TRACKMARKCTL);	/* ŽŸ‚ÉremoveTail‚ÅlastItem‚Ì’Ê‰ßƒ}ƒXƒN‚ðOff‚·‚é(typeO‚Å‚àP‚Å‚à‚È‚¢‚Ì‚Å) */
 	} else {
 		ASSERT(FALSE);
