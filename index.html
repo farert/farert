@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Farert : Show fare of the pass of the JR Line（任意経路指定JR運賃・営業キロ表示ツール）" />
+    <meta name="description" content="Farert : Show fare of the pass of the JR Line（任意経路指定JR運賃・営業キロ表示ツール）ソースコード一式" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/farert/farert">View on GitHub</a>
 
           <h1 id="project_title">Farert</h1>
-          <h2 id="project_tagline">Show fare of the pass of the JR Line（任意経路指定JR運賃・営業キロ表示ツール）</h2>
+          <h2 id="project_tagline">Show fare of the pass of the JR Line（任意経路指定JR運賃・営業キロ表示ツール）ソースコード一式</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/farert/farert/zipball/master">Download this project as a .zip file</a>
@@ -32,43 +32,19 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <p>farert　JR経路運賃提示アプリ　　　2014-4-29 Sutezo
-                                       Version 1.0</p>
+                                       Version 1.0
+Copyright(C) 2014 Sutezo</p>
 
-<h2>
-<a name="copyrightc-2014-sutezo" class="anchor" href="#copyrightc-2014-sutezo"><span class="octicon octicon-link"></span></a>Copyright(C) 2014 Sutezo</h2>
+<p>実行形式（Windows2000/XP/Vista/7/8)は、ベクターで公開中です。</p>
 
-<p>1 ソフトの概要</p>
+<p>ソフトの概要</p>
 
 <p>本ソフトウェアはJRグループの指定経路の運賃と営業キロを表示するものです。
 2014年4月導入の消費税8%版のものです(オプションで5%も可)。</p>
 
-<p>機能はそれだけです。ですので、一般の方には役に立たないソフトですので通常、
-既にWebサイト上に多数出回っております経路計算ソフトをご使用ください。
-本ソフトウェアは、ある程度の旅客営業規則・旅客営業取扱基準規定の知識を持
+<p>本ソフトウェアは、ある程度の旅客営業規則・旅客営業取扱基準規定の知識を持
 った人を対象としております。
-本ソフトウェアの使い方は、</p>
-
-<ul>
-<li>脳内旅行をしながら、予算を立てる</li>
-<li>青春18きっぷで旅行にいってどれだけ得をすることができたか
-または、普通に乗車券を購入したほうが良いかの判定</li>
-<li>途中分割で運賃が安くなるか</li>
-<li>目的地の前後の値段を知る</li>
-<li>営業キロ、計算キロを調べる
-・・以上しか思い浮かびませんが、他に利用方法があったらお知らせいただければ、
- 幸いです。</li>
-</ul><p>2 作者への連絡先(メールアドレス、掲示板 等)</p>
-
-<p>　作者への E-Mail: sutezo666 @ gmail.com</p>
-
-<p>3 取り扱い種別(フリーソフト、シェアウェア 等)</p>
-
-<p>　フリーウェアです。
-  制限なくご利用可能です。</p>
-
-<p>著作権: Copyright(C) 2014 Sutezo</p>
-
-<p>4 動作環境</p>
+動作環境</p>
 
 <p>Windows Vista, 7, 8. 等の Windowsプラットフォームで動作可能です。
   .NETフレームワークは利用しておりません。</p>
@@ -85,39 +61,7 @@
 　- Twofish
     Copyright 1998, Hi/fn and Counterpane Systems.  All rights reserved.</p>
 
-<p>5 インストール・アンインストール方法</p>
-
-<p>farert ファイル一本を任意のフォルダへ配置し、実行してください。</p>
-
-<p>実行し、経路を指定するとhistory.txtファイルを作成します.
-history.txtはfarertと同一フォルダに作成されます。
-その他、経路（route.txt)ファイル、結果(result.txt)ファイルも同様です。
-任意のフォルダに作成したい場合、一般的な方法ですが、
-ショーカットファイルを作成し、ショートカットファイルの「プロパティ」
-－「ショートカット」タブの－「作業フォルダー（S)」を任意のフォルダを
-指定してください。</p>
-
-<ul>
-<li>history.txt        「発駅」、「着駅」指定時に追記される</li>
-<li>route.txt　　　　　「経路 保持」ボタンをクリック時に追記される</li>
-<li>result.txt　　　　 「結果 保持」ボタンをクリック時に追記される</li>
-</ul><p>上記のファイルはテキストファイルです。
-いつでも削除や書き換えをしても問題ありません。
-また、肥大化しないように定期的に削除・移動・リネーム等するよう
-推奨します。</p>
-
-<p>アンインストールは、farert.exe と上記のファイルを削除してください。</p>
-
-<p>6 ご注意点・免責</p>
-
-<p>本ソフトウェアを使用しての損害はいかなる場面において作者は一切責任を負いません。
-本ソフトウェアはJRグループとはなんの関係もありません。
-本ソフトウェアにて算出される経路・金額は実際に旅行される際に発券される金額とは
-異なる場合があります。
-実際に旅行される場合はご理解のうえ、参考程度にご利用いただければと思います。
-著作者は、不具合の修正義務、バージョンアップの義務をおいません。</p>
-
-<p>7 アプリケーション詳細・その他</p>
+<p>アプリケーション詳細・その他</p>
 
 <p>起動引数に、-tax 5 と指定すると消費税5%で計算されます。
 但し、東京近郊区間の範囲が2014年4月以降に定められた範囲で計算がおこなわれます。</p>
@@ -172,9 +116,10 @@ UI操作での経路に指定時、分岐特例（規則）を考慮した指定
 <li>臨時駅には対応していません。不正確な金額が表示されます。</li>
 <li>会社線による通過連絡運輸に対応しておりますが、JRグループでは通常2社を2路線以上
 （あおい森鉄道、IGRいわてを除く）は発券しません。が、本アプリでは計算可能です。</li>
-</ul><p>Issueでバグ報告等を受け付けております。</p>
-
-<p>以上</p>
+<li>データベース（Excel)は、配布を取りやめました。ご要望の方にはご連絡頂ければ、
+　個別にメールでお送りします。</li>
+</ul><p>Issueでバグ報告等を受け付けております。
+作者の今後は、iOS版の開発にシフトしてゆきます。</p>
       </section>
     </div>
 
