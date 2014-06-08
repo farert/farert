@@ -208,7 +208,7 @@ static tstring num_str_yen(int num)
 Route::Route()
 {
 	JctMaskClear();
-	endStationId = 0;
+	end_station_id = 0;
 	fare_info.reset();
 }
 
@@ -809,9 +809,9 @@ first_station_id1 = stationId1;
 
 	/* ’…‰w‚ª”­‰w`Å‰‚Ì•ªŠò‰wŠÔ‚É‚ ‚é‚©? */
 	/* (’…‰w–¢w’è, ”­‰w=’…‰w‚Íœ‚­) */
-	if ((num == 1) && (0 < endStationId) && (endStationId != start_station_id) && 
-	(endStationId != stationId2) &&
-	(0 != Route::InStation(endStationId, line_id, stationId1, stationId2))) {
+	if ((num == 1) && (0 < end_station_id) && (end_station_id != start_station_id) && 
+	(end_station_id != stationId2) &&
+	(0 != Route::InStation(end_station_id, line_id, stationId1, stationId2))) {
 		return -1;	/* <t> already passed error  */
 	}
 
@@ -1281,8 +1281,8 @@ ASSERT(first_station_id1 = stationId1);
 	if (jnum <= i) {	// •œæ‚È‚µ
 		if (((2 <= route_list_raw.size()) && (start_station_id != stationId2) &&
 			(0 != Route::InStation(start_station_id, line_id, stationId1, stationId2))) ||
-			(((0 < endStationId) && (endStationId != stationId2) && (2 <= route_list_raw.size())) &&
-			(0 != Route::InStation(endStationId, line_id, stationId1, stationId2)))) {
+			(((0 < end_station_id) && (end_station_id != stationId2) && (2 <= route_list_raw.size())) &&
+			(0 != Route::InStation(end_station_id, line_id, stationId1, stationId2)))) {
 			rc = -1;	/* <v> <p> <l> <w> */
 		} else if (start_station_id == stationId2) {
 			rc = 2;		/* <f> */
@@ -1295,8 +1295,8 @@ ASSERT(first_station_id1 = stationId1);
 			(!STATION_IS_JUNCTION(stationId2)) ||
 			((2 <= num) && (start_station_id != stationId2) && 
 			 (0 != Route::InStation(start_station_id, line_id, stationId1, stationId2))) ||
-			(((0 < endStationId) && (endStationId != stationId2) && (2 <= num)) &&
-			(0 != Route::InStation(endStationId, line_id, stationId1, stationId2))) 
+			(((0 < end_station_id) && (end_station_id != stationId2) && (2 <= num)) &&
+			(0 != Route::InStation(end_station_id, line_id, stationId1, stationId2))) 
 			// ||
 			// /*BIT_CHK(lflg1, BSRJCTSP) || */ BIT_CHK(lflg2, BSRJCTSP) ||	// E-12
 			// BIT_CHK(route_list_raw.back().flag, BSRJCTHORD) ||				// E-14
@@ -1938,7 +1938,7 @@ void Route::removeAll(bool bWithStart /* =true */, bool bWithEnd /* =true */)
 	fare_info.reset();
 
 	if (bWithEnd) {
-		endStationId = 0;
+		end_station_id = 0;
 	}
 	if (!bWithStart) {
 		begin_station_id = startStationId();
@@ -2035,7 +2035,7 @@ void Route::terminate(int stationId)
 		}
 		ASSERT((newLastIndex<=1) || route_list_raw[newLastIndex - 1].stationId == stationIdFrom);
 		add(line_id, /*stationIdFrom,*/ stationId);
-		endStationId = stationId;
+		end_station_id = stationId;
 	}
 }
 
@@ -4564,8 +4564,8 @@ vector<PAIRIDENT> Route::GetNeerNode(int station_id)
 int Route::changeNeerest(bool useBulletTrain)
 {
 	ASSERT(0 < startStationId());
-	ASSERT(0 < endStationId);
-	ASSERT(startStationId() != endStationId);
+	ASSERT(0 < end_station_id);
+	ASSERT(startStationId() != end_station_id);
 
 	IDENT startNode;
 	IDENT lastNode;
@@ -4595,7 +4595,7 @@ int Route::changeNeerest(bool useBulletTrain)
 		stationId = startStationId();
 	}
 
-	if (stationId == endStationId) {
+	if (stationId == end_station_id) {
 		return 0;			/* already routed */
 	}
 
@@ -4608,19 +4608,19 @@ int Route::changeNeerest(bool useBulletTrain)
 	}
 
 	startNode = Route::Id2jctId(stationId);
-	lastNode = Route::Id2jctId(endStationId);
+	lastNode = Route::Id2jctId(end_station_id);
 	if (startNode == 0) { /* ŠJn‰w‚Í”ñ•ªŠò‰w */
 		lid = Route::LineIdFromStationId(stationId);
-		if ((lastNode == 0) & (lid == Route::LineIdFromStationId(endStationId))) {  /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü (A) */
-		//if (0 < Route::InStationOnLine(lid, endStationId)) { /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü (B) */
+		if ((lastNode == 0) & (lid == Route::LineIdFromStationId(end_station_id))) {  /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü (A) */
+		//if (0 < Route::InStationOnLine(lid, end_station_id)) { /* ”­‰w‚Æ’…‰w‚Í“¯ˆê˜Hü (B) */
 			// ‘åè-“c’[‚ÍRèü‚æ‚è“ŒŠC“¹E“Œ–küŒo—R‚Ì‚Ù‚¤‚ª‹ß‚­‚»‚¿‚ç‚ª‘I‘ğ‚³‚ê‚é(A)‚É‚µ‚½
 			// !!!‚¾‚ª•sŠ®‘SB‘¼‚Ì—á‚ÍH(‘åè-‹î‚ªRèüŒo—R‚Ì•û‚ª’Z‚¢‚Ì‚Í‹ô‘R))
-			///km = Route::Get_node_distance(lid, stationId, endStationId);
+			///km = Route::Get_node_distance(lid, stationId, end_station_id);
 			// a’J-Œ´h‚È‚Ç >>>>>>>>>>>>>>>>>>>>>
 			if (1 < route_list_raw.size() && route_list_raw.back().lineId == lid) {
 				removeTail();
 			}
-			return add(lid, /*stationId,*/ endStationId);
+			return add(lid, /*stationId,*/ end_station_id);
 		}
 		
 		// ‰w‚Ì—¼—×‚ÌÅŠñ•ªŠò‰wID‚Æ‚»‚Ì‰w‚Ü‚Å‚ÌŒvZƒLƒ‚ğ“¾‚é
@@ -4656,7 +4656,7 @@ int Route::changeNeerest(bool useBulletTrain)
 
 	if (lastNode == 0) { /* I—¹‰w‚Í”ñ•ªŠò‰w ? */
 		// ‰w‚Ì—¼—×‚ÌÅŠñ•ªŠò‰wID‚Æ‚»‚Ì‰w‚Ü‚Å‚ÌŒvZƒLƒ‚ğ“¾‚é
-		vector<PAIRIDENT> neer_node = Route::GetNeerNode(endStationId);
+		vector<PAIRIDENT> neer_node = Route::GetNeerNode(end_station_id);
 
 		// dijkstra‚Ì‚ ‚Æ‚Åg—p‚Ì‚½‚ß‚É•Ï”‚ÉŠi”[
 		// I—¹‰w‚Ì—¼—×‚Ì•ªŠò‰w‚É‚Â‚¢‚Ä‚Íadd()‚ÅƒGƒ‰[‚Æ‚È‚é‚Ì‚Å•s—v(‚©‚Ç‚¤‚©Hj
@@ -4851,9 +4851,9 @@ int Route::changeNeerest(bool useBulletTrain)
 	route_rev.clear();
 
 	if (lastNode == 0) {	// ’…‰w‚Í”ñ•ªŠò‰w?
-		lid = Route::LineIdFromStationId(endStationId); // ’…‰wŠ‘®˜HüID
+		lid = Route::LineIdFromStationId(end_station_id); // ’…‰wŠ‘®˜HüID
 		// ÅI•ªŠò‰w`’…‰w‚Ü‚Å‚Ì‰c‹ÆƒLƒA‰^’ÀŒvZƒLƒ‚ğæ“¾
-		//km = Route::Get_node_distance(lid, endStationId, Route::Jct2id(a));
+		//km = Route::Get_node_distance(lid, end_station_id, Route::Jct2id(a));
 		//km += minCost[route.back()];	// ÅŒã‚Ì•ªŠò‰w‚Ü‚Å‚Ì—İÏŒvZƒLƒ‚ğXV
 		if (lid == line_id[route.back()]) { // ’…‰w‚ÌÅŠñ•ªŠò‰w‚Ì˜Hü=ÅŒã‚Ì•ªŠò‰w?
 			route.pop_back();	// if   a’J-Vh-¼‘•ª›-‘—§
@@ -4887,7 +4887,7 @@ int Route::changeNeerest(bool useBulletTrain)
 		if (a == 0) {
 			return -1000;
 		}
-		a = add(lid, /*stationId,*/ endStationId);
+		a = add(lid, /*stationId,*/ end_station_id);
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
@@ -5955,7 +5955,7 @@ int FARE_INFO::CheckSpecficFarePass(int line_id, int station_id1, int station_id
 //	calc_fare() =>
 //
 //	@param [in] station_id1 ‰w1(startStationId)
-//	@param [in] station_id2 ‰w2(endStationId)
+//	@param [in] station_id2 ‰w2(end_station_id)
 //
 //	@return “Á•Ê‹æŠÔ‰^’À
 //
