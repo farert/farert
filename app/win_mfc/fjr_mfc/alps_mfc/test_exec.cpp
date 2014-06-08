@@ -1193,7 +1193,7 @@ void test_autoroute(void)
 		if (b_fail) {
 			++p;
 		}
-		route.endStationId = Route::GetStationId(p);
+		route.setEndStationId(Route::GetStationId(p));
 		_ftprintf(os, _T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
 
 		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
@@ -1214,7 +1214,7 @@ void test_autoroute(void)
 		_tcscpy_s<1024>(buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
-		route.endStationId = Route::GetStationId(p);
+		route.setEndStationId(Route::GetStationId(p));
 		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
 		if (route.changeNeerest(true) < 0) {
 			_ftprintf(os, _T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));

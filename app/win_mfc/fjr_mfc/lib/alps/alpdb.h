@@ -445,12 +445,14 @@ class Route
 	vector<RouteItem> route_list_cooked;
 	FARE_INFO fare_info;
 private:
+	int end_station_id;
 	SPECIFICFLAG last_flag;	// add() - removeTail() work
 public:
 	int startStationId() 
 	{ return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId; }
 
-	int endStationId;
+	int endStationId() const { return end_station_id; }
+	void setEndStationId(int stataion_id) { end_station_id = stataion_id; }
 
 	enum LINE_DIR {
 		LDIR_ASC  = 1,		// ‰º‚è
