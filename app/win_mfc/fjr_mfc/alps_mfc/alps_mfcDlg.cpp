@@ -20,7 +20,7 @@ using namespace std;
 
 // ルート選択[完了]か?
 #define isComplete()	((0 < m_route.routeList().size()) && \
-						 (m_route.endStationId == m_curStationId))
+						 (m_route.endStationId() == m_curStationId))
 
 
 
@@ -232,7 +232,7 @@ void Calps_mfcDlg::OnBnClickedButtonStartsel()
 		startStationId = dlg.getStationId();
 		if (startStationId != m_route.startStationId()) {
 			// 開始駅=終着駅は盲腸線でないことを確認
-			if (m_route.endStationId  == startStationId) {
+			if (m_route.endStationId()  == startStationId) {
 				if (Route::NumOfNeerNode(startStationId) <= 1) {
 					CantSameStartAndEnd();	// "指定した発駅＝着駅の経路は指定不可能です"
 					return;
@@ -270,7 +270,7 @@ void Calps_mfcDlg::OnBnClickedButtonEndsel()
 		return;
 	}
 	endStationId = dlg.getStationId();
-	if (endStationId == m_route.endStationId) {
+	if (endStationId == m_route.endStationId()) {
 		return;
 	}
 	ASSERT(0 < endStationId);
@@ -320,7 +320,7 @@ _T("着駅挿入、経路短縮"),
 			GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(TRUE);			// [+] button
 			m_selMode = SEL_JUNCTION;
 		}
-		m_route.endStationId = endStationId;	/* 終着駅更新 */
+		m_route.setEndStationId(endStationId);	/* 終着駅更新 */
 		if (m_selMode != SEL_LINE) {
 			// 選択リストが「路線の分岐駅一覧」or 「路線の駅一覧」表示中だった場合
 			// 「(着駅)」と表示されたリストを更新する為、駅選択リストを更新
@@ -403,7 +403,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 			return;
 		}
 		if (0 == rslt) {	/* fin */
-			if (m_route.endStationId != selId) {
+			if (m_route.endStationId() != selId) {
 				if ((m_selMode != SEL_TERMINATE) &&
 				(IDYES != MessageBox(
 				_T("経路が片道条件に達しました. 着駅として終了しますか？"), _T("経路終端"),
@@ -418,7 +418,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 					return;
 				}
 				m_route.end();
-				m_route.endStationId = selId;				// 着駅変更
+				m_route.setEndStationId(selId);				// 着駅変更
 				SetDlgItemText(IDC_EDIT_END, selTitle);
 				GetDlgItem(IDC_BUTTON_TERM_CLEAR)->EnableWindow(TRUE);
 			}
@@ -430,10 +430,10 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		} else { 				/* rslt == 1 */
 			setupForLinelistByStation(selId, curLineId);
 
-			if ((m_selMode == SEL_TERMINATE) || (selId == m_route.endStationId)) {
+			if ((m_selMode == SEL_TERMINATE) || (selId == m_route.endStationId())) {
 				/* 着駅指定 */
-				if (selId != m_route.endStationId) {
-					m_route.endStationId = selId;		/* 着駅:強制書き換え */
+				if (selId != m_route.endStationId()) {
+					m_route.setEndStationId(selId);		/* 着駅:強制書き換え */
 					SetDlgItemText(IDC_EDIT_END, selTitle);						// 着駅表示
 					GetDlgItem(IDC_BUTTON_TERM_CLEAR)->EnableWindow(TRUE);		// 
 				}
@@ -533,7 +533,7 @@ void Calps_mfcDlg::OnBnClickedButtonBs()
 	if (m_selMode == SEL_LINE) {
 		/* 路線リスト表示中 */
 		ASSERT(2 <= m_route.routeList().size());
-		ASSERT((m_curStationId == m_route.endStationId) || (m_curStationId == IDENT2(pLRoute->GetItemData(numList - 1))));
+		ASSERT((m_curStationId == m_route.endStationId()) || (m_curStationId == IDENT2(pLRoute->GetItemData(numList - 1))));
 		if (2 <= numList) {			/* Routeリストに分岐駅は2行以上? */
 			m_curStationId = IDENT2(pLRoute->GetItemData(numList - 2)); // 最終行の分岐駅
 		} else {
@@ -600,7 +600,7 @@ void Calps_mfcDlg::OnBnClickedButtonTermClear()
 		GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(TRUE);			// [+] button
 		m_selMode = SEL_JUNCTION;
 	}
-	m_route.endStationId = 0;
+	m_route.setEndStationId(0);
 	if (m_selMode != SEL_LINE) {
 		// 「(着駅)」と表示されたリストを更新する為、駅選択リストを更新
 		setupForStationlistByLine(IDENT1(pLRoute->GetItemData(numList - 1)), m_curStationId);
@@ -615,12 +615,12 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 {
 	int rc;
 	
-	if ((m_route.startStationId ()<= 0) || (m_route.endStationId <= 0)) {
+	if ((m_route.startStationId ()<= 0) || (m_route.endStationId() <= 0)) {
 		MessageBox(_T("開始駅、終了駅を指定しないと最短経路は算出しません."),
 										_T("確認"), MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
-	if (m_route.startStationId()== m_route.endStationId) {
+	if (m_route.startStationId()== m_route.endStationId()) {
 		MessageBox(_T("開始駅=終了駅では最短経路は算出しません."),
 										_T("確認"), MB_OK | MB_ICONEXCLAMATION);
 		return;
@@ -632,7 +632,7 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 		CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 		int numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		if (0 < numList) {
-			ASSERT(m_curStationId == m_route.endStationId);
+			ASSERT(m_curStationId == m_route.endStationId());
 			//m_selMode = SEL_LINE;				/* for [-] button */
 			//int curLineId = IDENT1(pLRoute->GetItemData(numList - 1));	// last line
 			//ASSERT(0 < curLineId);
@@ -760,7 +760,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId /* =0 
 
 	DBO dbo;
 	if (m_selMode == SEL_JUNCTION) {
-		dbo = Route::Enum_junction_of_lineId(lineId, m_route.endStationId);
+		dbo = Route::Enum_junction_of_lineId(lineId, m_route.endStationId());
 	} else if (m_selMode == SEL_TERMINATE) {
 		dbo = Route::Enum_station_of_lineId(lineId);
 	} else {
@@ -780,7 +780,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId /* =0 
 		int stationId = dbo.getInt(1);
 
 		stationName.Format(_T("%s%s"), 
-			(stationId == curStationId) ? _T("- ") : ((stationId == m_route.endStationId) ? _T("(着駅)") : _T("")), 
+			(stationId == curStationId) ? _T("- ") : ((stationId == m_route.endStationId()) ? _T("(着駅)") : _T("")), 
 			dbo.getText(0).c_str());
 
 		CString jctLines;
@@ -930,15 +930,15 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 	int rc;
 	int endStationId;
 
-	endStationId = m_route.endStationId;
+	endStationId = m_route.endStationId();
 
 	if (m_route.routeList().size() <= 1) {
-		if ((0 < m_route.endStationId) && (0 < m_route.startStationId())) {
-			m_route.endStationId = m_route.startStationId();
+		if ((0 < m_route.endStationId()) && (0 < m_route.startStationId())) {
+			m_route.setEndStationId(m_route.startStationId());
 			m_curStationId = endStationId;
 			m_route.add(endStationId);
 			GetDlgItem(IDC_EDIT_START)->SetWindowText(Route::StationName(m_route.startStationId()).c_str());	// 発駅表示
-			GetDlgItem(IDC_EDIT_END)->SetWindowText(Route::StationName(m_route.endStationId).c_str());	// 着駅表示
+			GetDlgItem(IDC_EDIT_END)->SetWindowText(Route::StationName(m_route.endStationId()).c_str());	// 着駅表示
 
 			setupForLinelistByStation(m_curStationId);				// 発駅の所属路線一覧の表示
 		}
@@ -954,7 +954,7 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 			if (endStationId == m_route.startStationId()) {
 				endStationId = (m_route.routeList().cend() - 1)->stationId;
 			}
-			m_route.endStationId = endStationId;
+			m_route.setEndStationId(endStationId);
 			GetDlgItem(IDC_EDIT_END)->SetWindowText(Route::StationName(endStationId).c_str());	// 着駅表示
 		}
 	} else if (rc < 0) {
@@ -1093,7 +1093,7 @@ int Calps_mfcDlg::UpdateRouteList()
 		 *
 		 */
 		stationId = pos->stationId;
-		if (stationId != m_route.endStationId) {
+		if (stationId != m_route.endStationId()) {
 			stationName = Route::StationName(stationId).c_str();
 		}
 		lineId = pos->lineId;
@@ -1205,7 +1205,7 @@ int Calps_mfcDlg::ModifyRouteList()
 		 *
 		 */
 		stationId = rpos->stationId;
-		if (stationId != m_route.endStationId) {
+		if (stationId != m_route.endStationId()) {
 			stationName = Route::StationName(stationId).c_str();
 		}
 		lineId = rpos->lineId;
