@@ -48,15 +48,22 @@ class Dbreg:
 	def create_table(self):
 		###########################################
 		sql = """
+		create table t_coreareac (
+			name text not null primary key
+		);
+		"""
+		self.con.execute(sql)
+		###########################################
+		sql = """
 		create table t_company (
-			name char(11) not null primary key
+			name text not null primary key
 		);
 		"""
 		self.con.execute(sql)
 		###########################################
 		sql = """
 		create table t_prefect(
-			name char(12) not null primary key
+			name text not null primary key
 		);
 		"""
 		self.con.execute(sql)
@@ -262,6 +269,22 @@ class Dbreg:
 		self.con.executemany('insert into t_prefect values(?)', prefects)
 		print("registered t_prefect {0} affected.".format(len(prefects)))
 
+		coreAreaNames = [  
+						['東京都区内[区]'],	
+						['横浜市内[浜]'],	
+						['名古屋市内[名]'],	
+						['京都市内[京]'],	
+						['大阪市内[阪]'],	
+						['神戸市内[神]'],	
+						['広島市内[広]'],	
+						['北九州市内[九]'],	
+						['福岡市内[福]'],	
+						['仙台市内[仙]'],	
+						['札幌市内[札]'],	
+						['山手線内[山]'], 	
+						['大阪・新大阪']] 	
+		self.con.executemany('insert into t_coreareac values(?)', coreAreaNames)
+		print("registered t_coreareac {0} affected.".format(len(coreAreaNames)))
 
 		###########
 		# 1 pass
