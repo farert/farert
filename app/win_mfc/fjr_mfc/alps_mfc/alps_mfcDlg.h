@@ -56,7 +56,6 @@ private:
 	Route	m_route;
 	Calps_mfcDlg::SELMODE m_selMode;
 	int		m_curStationId;
-
 	tstring m_lastRouteString;
 	tstring m_lastResultString;
 
@@ -85,5 +84,6 @@ public:
 	afx_msg void OnBnClickedButtonResultcopy();
 	afx_msg void OnBnClickedButtonRsltopen();
 	afx_msg void OnBnClickedButtonRouteOpen();
+	afx_msg void OnBnClickedButtonSpecialCity();
 };
 
