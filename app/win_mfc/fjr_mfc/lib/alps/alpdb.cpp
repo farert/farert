@@ -898,8 +898,12 @@ first_station_id1 = stationId1;
 			JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 2).stationId));
 			TRACE("b#14021205-1\n");
 		}
-	} else if ((1 <= num) && BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
-		(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId)) {
+	} else if ((2 <= num) && BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
+		(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.at(num - 1).lineId) &&
+		(Route::DirLine(route_list_raw.at(num - 1).lineId, 
+		                route_list_raw.at(num - 2).stationId,   
+		                route_list_raw.at(num - 1).stationId)  
+		!= Route::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2))) {
 		JctMaskOff(Route::Id2jctId(route_list_raw.at(num - 1).stationId));
 		TRACE("b#14021205-2\n");
 		BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
