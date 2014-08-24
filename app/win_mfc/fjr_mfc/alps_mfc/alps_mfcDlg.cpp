@@ -87,7 +87,6 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_AUTOROUTE, &Calps_mfcDlg::OnBnClickedButtonAutoroute)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_DROPFILES()
-	ON_BN_CLICKED(IDC_CHECK_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedCheckSpecialCity)
 	ON_BN_CLICKED(IDC_CHECK_RULEAPPLY, &Calps_mfcDlg::OnBnClickedCheckRuleapply)
 	ON_BN_CLICKED(IDC_BUTTON_REVERSE, &Calps_mfcDlg::OnBnClickedButtonReverse)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTECOPY, &Calps_mfcDlg::OnBnClickedButtonRoutecopy)
@@ -95,6 +94,7 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_RESULTCOPY, &Calps_mfcDlg::OnBnClickedButtonResultcopy)
 	ON_BN_CLICKED(IDC_BUTTON_RSLTOPEN, &Calps_mfcDlg::OnBnClickedButtonRsltopen)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &Calps_mfcDlg::OnBnClickedButtonRouteOpen)
+	ON_BN_CLICKED(IDC_BUTTON_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedButtonSpecialCity)
 END_MESSAGE_MAP()
 
 
@@ -886,7 +886,7 @@ void Calps_mfcDlg::ResetContent()
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
 	CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [“Á—á“K—p]ƒ{ƒ^ƒ“‰Ÿ‰º‚°ó‘Ô */
-	GetDlgItem(IDC_CHECK_SPECIAL_CITY)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
 }
 
 //	’…‰w‚Ü‚Å‚ÌŽw’èŠ®—¹
@@ -910,8 +910,22 @@ void Calps_mfcDlg::routeEnd()
 
 //	[”­‰w‚ð’P‰w‚ÉŽw’è^’…‰w‚ð’P‰w‚ÉŽw’è]
 //
-void Calps_mfcDlg::OnBnClickedCheckSpecialCity()
+void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 {
+	/* ’P‰w‘I‘ð‰Â”\‚È“Á’è“s‹æŽs“à”­’…‚©? */
+	int opt = m_route.fareCalcOption();
+	ASSERT(opt == 1 || opt == 2);
+	if ((opt == 1) || (opt == 2)) {
+		/* ’P‰wŽw’è */
+		CString cap;
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
+
+		if (0 <= cap.Find(_T("”­‰w"))) { // ”­‰w=“s‹æŽs“à
+			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("’…‰w‚ð’P‰w‚ÉŽw’è"));
+		} else {		// ’…‰w=“s‹æŽs“à
+			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("”­‰w‚ð’P‰w‚ÉŽw’è"));
+		}
+	}
 	showFare();
 }
 
@@ -1020,20 +1034,16 @@ void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 	tstring s;
 	tstring result_string;
 	CStdioFile file;
-	int opt;
 	int flag;
-	bool ui_sel;
 
 	flag = 0;
 
+	CString cap;
+	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
+
 	/* ’P‰w‘I‘ð‰Â”\‚È“Á’è“s‹æŽs“à”­’…‚©? */
-	opt = m_route.fareCalcOption();
-	if ((opt == 1) || (opt == 2)) {
-		/* ’P‰wŽw’è */
-		ui_sel = (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SPECIAL_CITY));
-		if (((opt == 1) && !ui_sel) || ((opt == 2) && ui_sel)) {
-			flag = APPLIED_START;
-		}
+	if (0 <= cap.Find(_T("”­‰w"))) {
+		flag = APPLIED_START;	// ”­‰w‚ð“s‹æŽs“à‚É(“K—p‚Íu™–{’¬-‘å‚v—Þ—á‚Ì‚Ý)
 	}
 	/* ‹K‘¥“K—p‚©? */
 	flag |=	((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
@@ -1297,13 +1307,11 @@ void Calps_mfcDlg::showFare()
 
 	flag = 0;
 
-	/* ’P‰w‘I‘ð‰Â”\‚È“Á’è“s‹æŽs“à”­’…‚©? */
-	opt = m_route.fareCalcOption();
-	if ((opt == 1) || (opt == 2)) {
-		/* ’P‰wŽw’è */
-		ui_sel = (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SPECIAL_CITY));
-		if (((opt == 1) && !ui_sel) || ((opt == 2) && ui_sel)) {
-			flag = APPLIED_START;
+	if (GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->IsWindowEnabled()) {
+		CString cap;
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
+		if (0 <= cap.Find(_T("”­‰w"))) {
+			flag = APPLIED_START;	// ”­‰w‚ð“s‹æŽs“à‚É(“K—p‚Íu™–{’¬-‘å‚v—Þ—á‚Ì‚Ý)
 		}
 	}
 	/* ‹K‘¥“K—p‚©? */
@@ -1315,14 +1323,14 @@ void Calps_mfcDlg::showFare()
 	if ((opt == 1) || (opt == 2)) {
 		//case 1:		// u”­‰w‚ð’P‰w‚ÉŽw’èv
 		//case 2:		// u’…‰w‚ð’P‰w‚ÉŽw’èv
-		GetDlgItem(IDC_CHECK_SPECIAL_CITY)->EnableWindow(TRUE);
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(TRUE);
 		if (opt == 1) {
-			SetDlgItemText(IDC_CHECK_SPECIAL_CITY, _T("”­‰w‚ð’P‰w‚ÉŽw’è"));
+			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("”­‰w‚ð’P‰w‚ÉŽw’è"));
 		} else {
-			SetDlgItemText(IDC_CHECK_SPECIAL_CITY, _T("’…‰w‚ð’P‰w‚ÉŽw’è"));
+			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("’…‰w‚ð’P‰w‚ÉŽw’è"));
 		}
 	} else {
-		GetDlgItem(IDC_CHECK_SPECIAL_CITY)->EnableWindow(FALSE);
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
 	}
 }
 
@@ -1438,5 +1446,4 @@ void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 		}
 	}
 }
-
 
