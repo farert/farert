@@ -1301,7 +1301,6 @@ void Calps_mfcDlg::showFare()
 {
 	int opt;
 	int flag;
-	bool ui_sel;
 	
 	/*	‰^’À•\¦ğŒƒtƒ‰ƒOæ“¾ */
 
