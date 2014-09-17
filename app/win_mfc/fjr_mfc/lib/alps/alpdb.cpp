@@ -380,10 +380,10 @@ Route::~Route()
 DBO Route::Enum_company_prefect()
 {
 	const static char tsql[] = 
-"/**/select name, rowid from t_company where name like 'JR%'"
+"select name, rowid from t_company where name like 'JR%'"
 " union"
 " select name, rowid*65536 from t_prefect order by rowid;";
-	return DBS::getInstance()->compileSql(tsql, true);
+	return DBS::getInstance()->compileSql(tsql, false);
 }
 
 // static
@@ -395,7 +395,7 @@ DBO Route::Enum_lines_from_company_prefect(int32_t id)
 {
 	char sql[300];
 	const char tsql[] = 
-"/**/select n.name, line_id, lflg from t_line n"
+"select n.name, line_id, lflg from t_line n"
 " left join t_lines l on n.rowid=l.line_id"
 " left join t_station t on t.rowid=l.station_id"
 " where %s=%d"
@@ -412,7 +412,7 @@ DBO Route::Enum_lines_from_company_prefect(int32_t id)
 	sqlite3_snprintf(sizeof(sql), sql, tsql, 
 	(0x10000 <= (PAIRIDENT)id) ? "prefect_id" : "company_id", ident);
 
-	return DBS::getInstance()->compileSql(sql, true);
+	return DBS::getInstance()->compileSql(sql, false);
 }
 
 
@@ -466,7 +466,7 @@ DBO Route::Enum_station_match(LPCTSTR station)
 								bKana ? "kana" : "name", stationName.c_str());
 #endif
 	}
-	return DBS::getInstance()->compileSql(sql, true);
+	return DBS::getInstance()->compileSql(sql, false);
 }
 
 // static
@@ -519,7 +519,7 @@ DBO Route::Enum_station_located_in_prefect_or_company_and_line(int32_t prefectOr
 	sqlite3_snprintf(sizeof(sql), sql, tsql,
 	(0x10000 <= prefectOrCompanyId) ? "prefect_id" : "company_id");
 
-	DBO dbo = DBS::getInstance()->compileSql(sql, true);
+	DBO dbo = DBS::getInstance()->compileSql(sql);
 
 	dbo.setParam(1, lineId);
 	dbo.setParam(2, ident);
@@ -564,7 +564,7 @@ DBO Route::Enum_line_of_stationId(int32_t stationId)
 //" where station_id=? and (lflg&((1<<31)|(1<<17)))=0 and sales_km>=0";
 " where station_id=? and (lflg&(1<<17))=0";
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	dbo.setParam(1, stationId);
 
 	return dbo;
@@ -607,7 +607,7 @@ DBO Route::Enum_junction_of_lineId(int32_t lineId, int32_t stationId)
 #endif
 
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	dbo.setParam(1, lineId);
 	dbo.setParam(2, stationId);
 
@@ -629,7 +629,7 @@ DBO Route::Enum_station_of_lineId(int32_t lineId)
 " and (lflg&((1<<31)|(1<<17)))=0"
 " order by l.sales_km";
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	dbo.setParam(1, lineId);
 
 	return dbo;
@@ -676,7 +676,7 @@ DBO Route::Enum_neer_node(int32_t stationId)
 "					  and	0<=y.sales_km and (1<<15)=(y.lflg&((1<<31)|(1<<17)|(1<<15)))"
 "					  and	x.station_id=?1"
 "					  and	x.sales_km<y.sales_km))";
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	dbo.setParam(1, stationId);
 
 	return dbo;
@@ -719,7 +719,7 @@ vector<vector<int32_t>> Route::Node_next(int32_t jctId)
 	
 	vector<vector<int32_t>> result;
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, jctId);
 		
@@ -767,7 +767,7 @@ int32_t Route::InStation(int32_t stationId, int32_t lineId, int32_t b_stationId,
 "			and (station_id=?2 or "
 "				 station_id=?3))";
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, lineId);
 		dbo.setParam(2, b_stationId);
@@ -822,7 +822,7 @@ DBO Route::Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int
 " then sales_km"
 " end asc";
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, line_id);
 		dbo.setParam(2, begin_station_id);
@@ -862,7 +862,7 @@ int32_t Route::RetrieveOut70Station(int32_t line_id)
 "	(t1.lflg&65535)=?1 and"
 "	(t2.lflg&65535)=?2";
 #endif
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, line_id);
 	}
@@ -1682,7 +1682,7 @@ ASSERT(FALSE);
 			}
 			sResult += sWork;
 			sResult += _T("\r\n経由：");
-			sResult += Route::show_route(true);
+			sResult += Route::Show_route(route_list_cooked);
 			
 			///////////////////////////////////////////////////
 			// calc fare
@@ -1701,7 +1701,7 @@ ASSERT(FALSE);
 		sWork = Route::StationNameEx(route_list_raw.back().stationId);
 		sResult += sWork;
 		sResult += _T("\r\n経由：");
-		sResult += Route::show_route(false);
+		sResult += Route::Show_route(route_list_raw);
 		
 		///////////////////////////////////////////////////
 		// calc fare
@@ -2151,68 +2151,6 @@ ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11));
 	return rc;
 }
 
-/*	ルート表示
- *	@param [in]  cooked : true/false  = 規則適用/非適用
- *	@return ルート文字列
- *
- *	@remark showFare()の呼び出し後にのみ有効
- */
-tstring Route::show_route(bool cooked)
-{
-	tstring lineName;
-	tstring stationName;
-	const vector<RouteItem>* routeList;
-#define MAX_BUF 1024
-	//TCHAR buf[MAX_BUF];
-	tstring result_str;
-	
-	if (cooked && 1 < route_list_cooked.size()) {
-		routeList = &route_list_cooked;	/* 規則適用 */
-	} else {
-		routeList = &route_list_raw;	/* 規則非適用 */
-	}
-	
-	if (routeList->size() == 0) {	/* 経路なし(AutoRoute) */
-		return _T("");
-	}
-	
-	vector<RouteItem>::const_iterator pos = routeList->cbegin();
-
-	result_str = _T("");
-
-	for (pos++; pos != routeList->cend() ; pos++) {
-
-		lineName = LineName(pos->lineId);
-
-		if ((pos + 1) != routeList->cend()) {
-			/* 中間駅 */
-			if (!IS_FLG_HIDE_LINE(pos->flag)) {
-				if (ID_L_RULE70 != pos->lineId) {
-					result_str += _T("<");
-					result_str += lineName;
-					result_str += _T(">");
-				} else {
-					result_str += _T(",");
-				}
-			}
-			if (!IS_FLG_HIDE_STATION(pos->flag)) {
-				stationName = Route::StationName(pos->stationId);
-				result_str += stationName;
-			}
-		} else {
-			/* 着駅 */
-			if (!IS_FLG_HIDE_LINE(pos->flag)) {
-				result_str += _T("<");
-				result_str += lineName;
-				result_str += _T(">");
-			}
-			//result_str += stationName;	// 着駅
-			result_str += _T("\r\n");
-		}
-		//result_str += buf;
-	}
-	return result_str;
-}
 
 // static version
 tstring Route::Show_route(const vector<RouteItem>& routeList)
@@ -2677,7 +2615,7 @@ SPECIFICFLAG Route::AttrOfStationOnLineLine(int32_t line_id, int32_t station_id)
 {
 	DBO ctx = DBS::getInstance()->compileSql(
 	//  "select lflg, sflg from t_lines where line_id=?1 and station_id=?2", true);
-		"select sflg, lflg from t_station t left join t_lines on t.rowid=station_id where line_id=?1 and station_id=?2", true);
+		"select sflg, lflg from t_station t left join t_lines on t.rowid=station_id where line_id=?1 and station_id=?2");
 	if (ctx.isvalid()) {
 		int32_t s;
 		int32_t l;
@@ -2699,7 +2637,7 @@ SPECIFICFLAG Route::AttrOfStationOnLineLine(int32_t line_id, int32_t station_id)
 int32_t Route::InStationOnLine(int32_t line_id, int32_t station_id)
 {
 	DBO ctx = DBS::getInstance()->compileSql(
-		"select count(*) from t_lines where line_id=?1 and station_id=?2", true);
+		"select count(*) from t_lines where line_id=?1 and station_id=?2");
 	if (ctx.isvalid()) {
 
 		ctx.setParam(1, line_id);
@@ -2933,7 +2871,7 @@ vector<int32_t> Route::GetDistance(int32_t line_id, int32_t station_id1, int32_t
 	int32_t calc_km;
 	vector<int32_t> v;
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, line_id);
 		dbo.setParam(2, station_id1);
@@ -2982,7 +2920,7 @@ int32_t Route::Get_node_distance(int32_t line_id, int32_t station_id1, int32_t s
 " and ((l1.station_id=?2 and l2.station_id=?3)" 
 " or (l1.station_id=?3 and l2.station_id=?2))";
 #endif
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, line_id);
 		dbo.setParam(2, station_id1);
@@ -3204,7 +3142,7 @@ bool Route::Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_
 
 	TRACE(_T("c69 line_id=%d, station_id1=%d, station_id2=%d\n"), line_id, station_id1, station_id2);
 
-	DBO ctx = DBS::getInstance()->compileSql(tsql, true);
+	DBO ctx = DBS::getInstance()->compileSql(tsql);
 	if (ctx.isvalid()) {
 		ctx.setParam(1, line_id);
 		ctx.setParam(2, station_id1);
@@ -3281,7 +3219,7 @@ bool Route::Query_rule69t(const vector<RouteItem>& in_route_list, const RouteIte
 
 	results->clear();
 	
-	DBO ctx = DBS::getInstance()->compileSql(tsql, true);
+	DBO ctx = DBS::getInstance()->compileSql(tsql);
 	if (ctx.isvalid()) {
 		ctx.setParam(1, ident);
 		while (ctx.moveNext()) {
@@ -3595,7 +3533,7 @@ int32_t Route::InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1,
 "			where line_id=?1"
 "			and (station_id=?2 or "
 "				 station_id=?3))";
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, lineId);
 		dbo.setParam(2, stationId1);
@@ -3909,7 +3847,7 @@ vector<Station> Route::SpecificCoreAreaFirstTransferStationBy(int32_t lineId, in
 	int32_t line_id;
 	vector<Station> firstTransferStation;
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, lineId);
 		dbo.setParam(2, cityId);
@@ -3938,7 +3876,7 @@ int32_t Route::Retrieve_SpecificCoreStation(int32_t cityId)
 "select rowid from t_station where"
 " (sflg & (1 << 4))!=0 and (sflg & 15)=?1";
 
-	DBO dbo = DBS::getInstance()->compileSql(tsql, true);
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, cityId);
 		if (dbo.moveNext()) {
@@ -5694,7 +5632,7 @@ vector<int32_t> FARE_INFO::GetDistanceEx(int32_t line_id, int32_t station_id1, i
 "	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
 "	((select 2147483648*(1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3) + "
 "	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
-, true);
+);
 //	2147483648 = 0x80000000
 	DbidOf dbid;
 
@@ -5738,7 +5676,7 @@ int32_t FARE_INFO::Retrieve70Distance(int32_t station_id1, int32_t station_id2)
 " ((station_id1=?1 and station_id2=?2) or" 
 "  (station_id1=?2 and station_id2=?1))";
 
-	DBO dbo(DBS::getInstance()->compileSql(tsql, true));
+	DBO dbo(DBS::getInstance()->compileSql(tsql));
 	dbo.setParam(1, station_id1);
 	dbo.setParam(2, station_id2);
 
@@ -6322,7 +6260,7 @@ int32_t	FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2)
 	const char* const tbl[] = { "t_clinfar", "t_clinfar5p"};
 
 	sqlite3_snprintf(sizeof(sql), sql, tsql, tbl[(FARE_INFO::tax == 5) ? 1 : 0]);
-	DBO dbo(DBS::getInstance()->compileSql(sql));
+	DBO dbo(DBS::getInstance()->compileSql(sql, false));
 	dbo.setParam(1, station_id1);
 	dbo.setParam(2, station_id2);
 

@@ -620,7 +620,7 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 										_T("確認"), MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
-	if (m_route.startStationId()== m_route.endStationId()) {
+	if (m_route.routeList().back().stationId == m_route.endStationId()) {
 		MessageBox(_T("開始駅=終了駅では最短経路は算出しません."),
 										_T("確認"), MB_OK | MB_ICONEXCLAMATION);
 		return;

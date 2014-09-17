@@ -593,7 +593,6 @@ public:
 	int32_t 			beginStationId(bool applied_agree);
 	int32_t 			endStationId(bool applied_agree);
 	
-	tstring 		show_route(bool cooked);
     static tstring  Show_route(const vector<RouteItem>& routeList);
 	tstring         route_script();
     static tstring  Route_script(const vector<RouteItem>& routeList);
