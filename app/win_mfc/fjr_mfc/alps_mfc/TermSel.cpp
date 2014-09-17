@@ -22,8 +22,7 @@ CTermSel::CTermSel(bool bTerm, CWnd* pParent /*=NULL*/)
 
 CTermSel::~CTermSel()
 {
-	DBS::cache_cleanup(true);	/* SQL Cacheをクリアする */
-							/* SQL文の行頭がコメントになっているもののみ */
+	DBS::cache_cleanup();	/* SQL Cacheをクリアする */
 }
 
 void CTermSel::DoDataExchange(CDataExchange* pDX)
