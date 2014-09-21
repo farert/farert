@@ -1543,6 +1543,7 @@ ASSERT(first_station_id1 = stationId1);
 			TRACE(_T("HHH¼¬‘qE‹g’Ë.rc=%d\n"), rc);
 			return 1;	/* ¼¬‘qA‹g’Ë */
 		} else {
+			BIT_ON(last_flag, BLF_END);
 			return 0;
 		}
 	} else {
@@ -3582,15 +3583,15 @@ int32_t Route::InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1,
 //	----o ’Êí
 //	o---o ‚È‚µ(æÔ‰w‚Ü‚½‚Í•ªŠò‰w`•ªŠò‰w‚Ü‚½‚Í~Ô‰w‚ª“s‹æs“à‚¾‚ªŠÔ‚É”ñ“s‹æs“à‚ªŠÜ‚Ü‚ê‚é—á‚Í‚È‚µB
 //
-int32_t Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, Station* entr, PAIRIDENT* cityId_pair)
+uint32_t Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, Station* entr, PAIRIDENT* cityId_pair)
 {
 	DbidOf dbid;
 	vector<RouteItem>::const_iterator fite;
 	vector<RouteItem>::const_reverse_iterator rite;
-	int32_t city_no_s;
-	int32_t city_no_e;
-	int32_t c;
-	int32_t r;
+	SPECIFICFLAG city_no_s;
+	SPECIFICFLAG city_no_e;
+	uint32_t c;
+	uint32_t r;
 	Station in_line;
 	Station out_line;
 	int32_t stationId = 0;
@@ -3606,7 +3607,7 @@ int32_t Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* ex
 	if ((city_no_s == CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == fite->stationId)) {
 		city_no_s = 0;
 	}
-	
+
 	rite = in_route_list.crbegin();
 	if (rite == in_route_list.crend()) {
 		ASSERT(FALSE);
@@ -3625,7 +3626,7 @@ int32_t Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* ex
 		c = 0;
 		stationId = fite->stationId;	// ”­ 
 		for (fite++; fite != in_route_list.cend(); fite++) {
-			int32_t cno = MASK_CITYNO(fite->flag);
+			uint32_t cno = MASK_CITYNO(fite->flag);
 			if (c == 0) {
 				if (cno != city_no_s) {
 					c = 1;			// ”²‚¯‚½
@@ -3676,7 +3677,7 @@ int32_t Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* ex
 		c = 0;
 		in_line.set(*rite);
 		for (rite++; rite != in_route_list.crend(); rite++) {
-			int32_t cno = MASK_CITYNO(rite->flag);
+			uint32_t cno = MASK_CITYNO(rite->flag);
 			if (c == 0) {
 				if (cno != city_no_e) {
 					c = 1;			// 
@@ -3729,12 +3730,12 @@ int32_t Route::CheckOfRule86(const vector<RouteItem>& in_route_list, Station* ex
 //		 0x83  : ”­’…‰wRèü“à
 //		    4  : ‘S‰w‰wRèü“à
 //
-int32_t Route::CheckOfRule87(const vector<RouteItem>& in_route_list)
+uint32_t Route::CheckOfRule87(const vector<RouteItem>& in_route_list)
 {
 	vector<RouteItem>::const_iterator fite;
 	vector<RouteItem>::const_reverse_iterator rite;
-	int32_t c;
-	int32_t r;
+	uint32_t c;
+	uint32_t r;
 	
 	r = 0;
 
@@ -4034,6 +4035,25 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 	}
 }
 
+//static
+//	Œo˜H‚Í‹ßx‹æŠÔ“à‚É‚ ‚é‚©(115ğ2€check)
+//
+uint8_t Route::InRouteUrban(const vector<RouteItem>& route_list)
+{
+	uint16_t urban;
+	
+	vector<RouteItem>::const_iterator ite = route_list.cbegin();
+	urban = (uint16_t)(ite->flag & MASK_URBAN);
+	while (route_list.cend() != ite) {
+		if (urban != (MASK_URBAN & ite->flag)) {
+			urban = 0;
+			break;
+		}
+		++ite;
+	}
+	return URBAN_ID(urban);
+}
+
 //public
 //	86A87ğA69ğ”»’è•Œo˜HZo
 //	showFare() =>
@@ -4060,10 +4080,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	int32_t n;
 	int32_t sk;         /* 114 check 90km or 190km */
 	int32_t sk2 = 0;	/* begin and arrive point as city, 101km or 201km */
-	int32_t chk;        /* 86 applied flag */
-	int32_t rtky;       /* 87 applied flag */
+	uint32_t chk;        /* 86 applied flag */
+	uint32_t rtky;       /* 87 applied flag */
 	bool is114;
-	int32_t flg;
+	uint32_t flg;
 	int32_t aply88;
 
 	// 69‚ğ“K—p‚µ‚½‚à‚Ì‚ğroute_list_tmp2‚Ö
@@ -4080,10 +4100,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88 for start.\n");
-			route_list_tmp2.at(0).lineId = short(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
+			route_list_tmp2.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
 		} else if ((aply88 & 2) != 0) {
 			TRACE("Apply to rule88 for arrive.\n");
-			route_list_tmp2.at(0).lineId = short(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
+			route_list_tmp2.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
 		}
 	}
 
@@ -4113,10 +4133,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88(2) for start.\n");
-			route_list_tmp.at(0).lineId = short(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
+			route_list_tmp.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
 		} else if ((aply88 & 2) != 0) {
 			TRACE("Apply to rule88(2) for arrive.\n");
-			route_list_tmp.at(0).lineId = short(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
+			route_list_tmp.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
 		}
 	}
 
@@ -4131,11 +4151,11 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	/* compute of sales_km by route_list_cooked */
 	sales_km = Route::Get_route_distance(route_list_tmp3).at(0);
 	
-	if (2000 < sales_km) {
+	if ((2000 < sales_km) && ((InRouteUrban(route_list_raw) != URB_TOKYO) || (2000 < Route::Get_route_distance(route_list_raw).at(0)))) {
 		/* <<<“s‹æs“à“K—p>>> */
 		/* 201km <= sales_km */
 		/* enable */
-		route_list_tmp3.at(0).lineId = short(B1LID_MARK | (chk & 0x03));	// B1LID_BEGIN_CITY, B1LID_FIN_CITY
+		route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | (chk & 0x03));	// B1LID_BEGIN_CITY, B1LID_FIN_CITY
 		TRACE("applied for rule86(%d)\n", chk & 0x03);
 
 		// route_list_cooked = route_list_tmp3
@@ -4147,10 +4167,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	/* 101km - 200km : Rèü”­’… or 200kmˆÈ‰º‚Ì“s‹æs“àŠÔ(–¼ŒÃ‰®-‘åã‚È‚Ç)ƒ`ƒFƒbƒN */
 	rtky = Route::CheckOfRule87(route_list_tmp2);
 	if ((3 & rtky) != 0) {
-		/* apply to 87 */
-		if (1000 < sales_km) {
+		/* apply to 87 */  /* “s‹æ“à‚ÉŒÀ‚èÅ’Z‚ª100kmˆÈ‰º‚Í”ñ“K—p(Šî115-2) */
+		if ((1000 < sales_km) && ((InRouteUrban(route_list_raw) != URB_TOKYO) || (1000 < Route::Get_route_distance(route_list_raw).at(0)))) {
 			/* Rèü“à”­’… enable */
-			route_list_tmp3.at(0).lineId = short(B1LID_MARK | ((rtky & 0x03) << 2));	// B1LID_BEGIN_YAMATE, B1LID_FIN_YAMATE
+			route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | ((rtky & 0x03) << 2));	// B1LID_BEGIN_YAMATE, B1LID_FIN_YAMATE
 			TRACE("applied for rule87\n");
 
 			// route_list_cooked = route_list_tmp3
@@ -4218,10 +4238,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 					/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª”­‰w‚Ì‚İ“s‹æs“à“K—p */
 					if (sk == 900) {
 						TRACE("applied for rule87(start)\n");
-						route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE) | MASK(B1LID_BEGIN_CITY_OFF));
+						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE) | MASK(B1LID_BEGIN_CITY_OFF));
 					} else {
 						TRACE("applied for rule86(start)\n");
-						route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_BEGIN_CITY) | MASK(B1LID_BEGIN_CITY_OFF));
+						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_CITY) | MASK(B1LID_BEGIN_CITY_OFF));
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -4231,10 +4251,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 					/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª’…‰w‚Ì‚İ“s‹æs“à“K—p */
 					if (sk == 900) {
 						TRACE("applied for rule87(end)\n");
-						route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_FIN_YAMATE) | MASK(B1LID_FIN_CITY_OFF));
+						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_YAMATE) | MASK(B1LID_FIN_CITY_OFF));
 					} else {
 						TRACE("applied for rule86(end)\n");
-						route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_FIN_CITY) | MASK(B1LID_FIN_CITY_OFF));
+						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_CITY) | MASK(B1LID_FIN_CITY_OFF));
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -4253,10 +4273,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 				/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª”­‰w‚Ì‚İ“s‹æs“à“K—p */
 				if (sk == 900) {
 					TRACE("applied for rule87(start)\n");
-					route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE));
+					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE));
 				} else {
 					TRACE("applied for rule86(start)\n");
-					route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_BEGIN_CITY));
+					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_CITY));
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -4265,10 +4285,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 				/* ”­‰wE’…‰w“Á’è“s‹æs“à‚¾‚ª’…‰w‚Ì‚İ“s‹æs“à“K—p */
 				if (sk == 900) {
 					TRACE("applied for rule87(end)\n");
-					route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_FIN_YAMATE));
+					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_YAMATE));
 				} else {
 					TRACE("applied for rule86(end)\n");
-					route_list_tmp3.at(0).lineId = short(B1LID_MARK | MASK(B1LID_FIN_CITY));
+					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_CITY));
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -5031,6 +5051,9 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 		return 0;			/* already routed */
 	}
     
+    if (BIT_CHK(last_flag, BLF_END)) {
+		return -1;
+    }
 	/* ƒ_ƒCƒNƒXƒgƒ‰•Ï”‰Šú‰» */
 	for (i = 0; i < MAX_JCT; i++) {
 		minCost[i] = -1;
@@ -5190,8 +5213,8 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 		// ‚Ç‚¿‚ç‚ª’Z‚¢‚©H
         
 		if ((2 == nLastNode) &&
-            ((minCost[lastNode2 - 1] + lastNode2_distance) <
-             (minCost[lastNode1 - 1] + lastNode1_distance))) {
+            (!IsJctMask(lastNode2) && ((minCost[lastNode2 - 1] + lastNode2_distance) <
+              (minCost[lastNode1 - 1] + lastNode1_distance)))) {
                 id = lastNode2;		// ’Z‚¢•û‚ğÅŒã‚Ì•ªŠò‰w‚Æ‚·‚é
             } else {
                 id = lastNode1;
@@ -5199,7 +5222,6 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 	} else {
 		id = lastNode;
 	}
-	//‚±‚Ì”»’è‚É‚æ‚è–ØŒÃ“à(”ŸŠÙ)->‘åÀ‚ÌÅ’ZŒo˜H‚ª¸”s‚·‚é14.8.30
 	//fromNode‚ª‘S0‚Å‰º‚Ìwhileƒ‹[ƒv‚Å‰i‹vƒ‹[ƒv‚ÉŠ×‚é
 	if (fromNode[id - 1] == 0) {
 		TRACE( _T("can't lowcost route.###\n"));
