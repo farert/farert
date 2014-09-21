@@ -4,6 +4,9 @@
 
 typedef unsigned int uint32_t;
 typedef int int32_t;
+typedef unsigned char  uint8_t;
+typedef unsigned short uint16_t;
+typedef short int16_t;
 
 extern int g_tax;	/* in alps_mfc.cpp */
 
@@ -61,6 +64,9 @@ typedef unsigned int SPECIFICFLAG;
 
 #define HWORD_BIT	16		/* Number of bit in half word(unsigned short) */
 
+#if !defined LOBYTE
+#define LOBYTE(b) ((b)&0xff)
+#endif
 /* --------------------------------------- */
 #define MAX_STATION     4590
 #define MAX_LINE        209
@@ -520,7 +526,7 @@ public:
 	vector<RouteItem>& routeList() { return route_list_raw; }
 	vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
 	bool isModified() {
-		return (last_flag & (1 << 6)) != 0;
+		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
 	}
 	void end()		{ BIT_ON(last_flag, BLF_END); }
 
@@ -536,10 +542,11 @@ private:
 
 	static int32_t	 	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
 	static int32_t  	ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
-	static bool 	Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
-	static bool 	Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
-	static int32_t  	CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
-	static int32_t  	CheckOfRule87(const vector<RouteItem>& in_route_list);
+	static bool 	    Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
+	static bool 	    Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
+	static uint32_t  	CheckOfRule86(const vector<RouteItem>& in_route_list, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
+	static uint32_t  	CheckOfRule87(const vector<RouteItem>& in_route_list);
+	static uint8_t      InRouteUrban(const vector<RouteItem>& route_list);
 
 	static void  	ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
 

@@ -1602,6 +1602,7 @@ int test_exec(void)
 	CTime t = CTime::GetCurrentTime();
 	
 	fopen_s(&os, "test_result.txt", "w");
+
 	_ftprintf(os, _T("timestamp: %s\n"), t.Format("%y.%m.%d %H:%M"));
 	
 	_ftprintf(os, _T("\n#---shinkansen  -------------------------------------------\n"));
