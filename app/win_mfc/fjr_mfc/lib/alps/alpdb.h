@@ -1,4 +1,4 @@
-#if !defined _ALPDB_H__
+ï»¿#if !defined _ALPDB_H__
 
 #define _ALPDB_H__
 
@@ -19,7 +19,7 @@ using namespace std;
 extern bool isKanaString(LPCTSTR szStr);
 extern void conv_to_kana2hira(tstring& kana_str);
 
-#define iskana(c) (_T('ƒ@') <= (c)) && ((c) <= _T('ƒ“'))
+#define iskana(c) (_T('ã‚¡') <= (c)) && ((c) <= _T('ãƒ³'))
 
 typedef short IDENT;
 typedef unsigned int PAIRIDENT;
@@ -31,14 +31,14 @@ typedef unsigned int SPECIFICFLAG;
 
 #define FLG_HIDE_LINE					(1<<19)
 #define FLG_HIDE_STATION				(1<<18)
-#define IS_FLG_HIDE_LINE(lflg)			(0!=(lflg&FLG_HIDE_LINE))		// ˜Hü”ñ•\¦
-#define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// ‰w”ñ•\¦
+#define IS_FLG_HIDE_LINE(lflg)			(0!=(lflg&FLG_HIDE_LINE))		// è·¯ç·šéè¡¨ç¤º
+#define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// é§…éè¡¨ç¤º
 
-#define BSRJCTSP		31		// •ªŠò“Á—á
-#define	BSRJCTHORD		31		// …•½Œ^ŒŸ’mƒtƒ‰ƒO
+#define BSRJCTSP		31		// åˆ†å²ç‰¹ä¾‹
+#define	BSRJCTHORD		31		// æ°´å¹³å‹æ¤œçŸ¥ãƒ•ãƒ©ã‚°
 
-#define BSRNOTYET_NA	30		// •sŠ®‘Sƒ‹[ƒg
-#define BSRJCTSP_B		29		// •ªŠò“Á—áB
+#define BSRNOTYET_NA	30		// ä¸å®Œå…¨ãƒ«ãƒ¼ãƒˆ
+#define BSRJCTSP_B		29		// åˆ†å²ç‰¹ä¾‹B
 
 #define BSR69TERM		24
 #define BSR69CONT		23
@@ -70,11 +70,11 @@ typedef unsigned int SPECIFICFLAG;
 /* --------------------------------------- */
 #define MAX_STATION     4590
 #define MAX_LINE        209
-#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=7))	/* VŠ²ü‚Í«—ˆ“I‚É‚à10‚Ü‚½‚Í15ˆÈ“à */
+#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=7))	/* æ–°å¹¹ç·šã¯å°†æ¥çš„ã«ã‚‚10ã¾ãŸã¯15ä»¥å†… */
 #define IS_COMPANY_LINE_OF(id)     (202<(id))
 //#define MAX_JCT 311
 
-// ‰w‚Í•ªŠò‰w‚©
+// é§…ã¯åˆ†å²é§…ã‹
 #define STATION_IS_JUNCTION(sid)	(0 != (Route::AttrOfStationId(sid) & (1<<12)))
 #define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
 
@@ -90,22 +90,22 @@ typedef unsigned int SPECIFICFLAG;
 #define MAX_COREAREA_CHR 26
 
 #define MAX_NUM_JCT_STATION	103
-#define MAX_JCT_NUM			6		// “Œ‹‰wæ‚è“ü‚ê˜Hü”‚ªÅ‘å‚Å6
+#define MAX_JCT_NUM			6		// æ±äº¬é§…ä¹—ã‚Šå…¥ã‚Œè·¯ç·šæ•°ãŒæœ€å¤§ã§6
 #define MAX_JCT				320		// 311
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 
-/* Á”ïÅ(lÌŒÜ“ü)‰ÁZ */
+/* æ¶ˆè²»ç¨(å››æ¨äº”å…¥)åŠ ç®— */
 #define taxadd(fare, tax)    (fare + ((fare * 1000 * tax / 100000) + 5) / 10 * 10)
 #define taxadd_ic(fare, tax) (fare + (fare * 1000 * tax / 100000))
 
 /* round up on 5 */
-#define round(d) 		(((d) + 5) / 10 * 10)	/* 10‰~–¢–lÌŒÜ“ü */ 
-#define round_up(d)     (((d) + 9) / 10 * 10)	/* 10‰~–¢–Ø‚èã‚° */
-#define round_down(d)   ((d) / 10 * 10)			/* 10‰~–¢–Ø‚èÌ‚Ä */
+#define round(d) 		(((d) + 5) / 10 * 10)	/* 10å††æœªæº€å››æ¨äº”å…¥ */ 
+#define round_up(d)     (((d) + 9) / 10 * 10)	/* 10å††æœªæº€åˆ‡ã‚Šä¸Šã’ */
+#define round_down(d)   ((d) / 10 * 10)			/* 10å††æœªæº€åˆ‡ã‚Šæ¨ã¦ */
 
-#define KM(kmx10) ((kmx10 + 9) / 10)	/* km’PˆÊ‚Å’[”‚ÍØ‚èã‚° */
+#define KM(kmx10) ((kmx10 + 9) / 10)	/* kmå˜ä½ã§ç«¯æ•°ã¯åˆ‡ã‚Šä¸Šã’ */
 
 /* discount */
 #define fare_discount(fare, per) ((fare) / 10 * (10 - (per)) / 10 * 10)
@@ -113,8 +113,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define CSTART	1
 #define CEND	2
 
-// DB ŒÅ’è’è‹`(DB•ÏX‚Ì‚È‚¢‘O’ñ‚ÌDB’l’è‹`)
-//	‘¬“xl—¶‚µSQL‚Åæ“¾‚µ‚È‚¢
+// DB å›ºå®šå®šç¾©(DBå¤‰æ›´ã®ãªã„å‰æã®DBå€¤å®šç¾©)
+//	é€Ÿåº¦è€ƒæ…®ã—SQLã§å–å¾—ã—ãªã„
 //
 #define JR_HOKKAIDO	1	
 #define JR_EAST		2	
@@ -124,28 +124,28 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define JR_SHIKOKU	6	
 #define JR_GROUP_MASK   ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0))
 
-#define	LINE_TOHOKU_SINKANSEN	1	// “Œ–kVŠ²ü
-#define	LINE_JYOETSU_SINKANSEN	2	// ã‰zVŠ²ü
-#define	LINE_HOKURIKU_SINKANSEN	3	// –k—¤’·–ìVŠ²ü
-#define	LINE_TOKAIDO_SINKANSEN	4	// “ŒŠC“¹VŠ²ü
-#define	LINE_SANYO_SINKANSEN	5	// R—zVŠ²ü
-#define	LINE_KYUSYU_SINKANSEN	6	// ‹ãBVŠ²ü
-#define	LINE_HOKKAIDO_SINKANSEN	7	// –kŠC“¹VŠ²ü
+#define	LINE_TOHOKU_SINKANSEN	1	// æ±åŒ—æ–°å¹¹ç·š
+#define	LINE_JYOETSU_SINKANSEN	2	// ä¸Šè¶Šæ–°å¹¹ç·š
+#define	LINE_HOKURIKU_SINKANSEN	3	// åŒ—é™¸é•·é‡æ–°å¹¹ç·š
+#define	LINE_TOKAIDO_SINKANSEN	4	// æ±æµ·é“æ–°å¹¹ç·š
+#define	LINE_SANYO_SINKANSEN	5	// å±±é™½æ–°å¹¹ç·š
+#define	LINE_KYUSYU_SINKANSEN	6	// ä¹å·æ–°å¹¹ç·š
+#define	LINE_HOKKAIDO_SINKANSEN	7	// åŒ—æµ·é“æ–°å¹¹ç·š
 
 
-#define CITYNO_TOKYO		1		// “Œ‹“s‹æ“à[‹æ]
-#define CITYNO_YOKOHAMA		2		// ‰¡•ls“à[•l]
-#define CITYNO_NAGOYA		3		// –¼ŒÃ‰®s“à[–¼]
-#define CITYNO_KYOUTO		4		// ‹“ss“à[‹]
-#define CITYNO_OOSAKA		5		// ‘åãs“à[ã]
-#define CITYNO_KOUBE		6		// _ŒËs“à[_]
-#define CITYNO_HIROSIMA		7		// L“‡s“à[L]
-#define CITYNO_KITAKYUSYU	8		// –k‹ãBs“à[‹ã]
-#define CITYNO_FUKUOKA		9		// •Ÿ‰ªs“à[•Ÿ]
-#define CITYNO_SENDAI		10		// å‘äs“à[å]
-#define CITYNO_SAPPORO		11		// D–ys“à[D]
-#define CITYNO_YAMATE       12      // Rèü“à[R]
-#define CITYNO_SHINOOSAKA   13      // ‘åãEV‘åã
+#define CITYNO_TOKYO		1		// æ±äº¬éƒ½åŒºå†…[åŒº]
+#define CITYNO_YOKOHAMA		2		// æ¨ªæµœå¸‚å†…[æµœ]
+#define CITYNO_NAGOYA		3		// åå¤å±‹å¸‚å†…[å]
+#define CITYNO_KYOUTO		4		// äº¬éƒ½å¸‚å†…[äº¬]
+#define CITYNO_OOSAKA		5		// å¤§é˜ªå¸‚å†…[é˜ª]
+#define CITYNO_KOUBE		6		// ç¥æˆ¸å¸‚å†…[ç¥]
+#define CITYNO_HIROSIMA		7		// åºƒå³¶å¸‚å†…[åºƒ]
+#define CITYNO_KITAKYUSYU	8		// åŒ—ä¹å·å¸‚å†…[ä¹]
+#define CITYNO_FUKUOKA		9		// ç¦å²¡å¸‚å†…[ç¦]
+#define CITYNO_SENDAI		10		// ä»™å°å¸‚å†…[ä»™]
+#define CITYNO_SAPPORO		11		// æœ­å¹Œå¸‚å†…[æœ­]
+#define CITYNO_YAMATE       12      // å±±æ‰‹ç·šå†…[å±±]
+#define CITYNO_SHINOOSAKA   13      // å¤§é˜ªãƒ»æ–°å¤§é˜ª
 
 #define URB_TOKYO			1
 #define URB_NIGATA			2
@@ -155,31 +155,31 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #define BSHINKANSEN					16
 #define FLAG_FARECALC_INITIAL		(1<<15)				
-#define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:“Œ–kVŠ²ü
-#define FLAG_JYOETSU_SHINKANSEN		(2<<BSHINKANSEN)				// 2:ã‰zVŠ²ü
-#define FLAG_HOKURIKU_SHINKANSEN	(3<<BSHINKANSEN)				// 3:–k—¤’·–ìVŠ²ü
-#define FLAG_TOKAIDO_SHINKANSEN		(4<<BSHINKANSEN)				// 4:“ŒŠC“¹VŠ²ü
-#define FLAG_SANYO_SHINKANSEN		(5<<BSHINKANSEN)				// 5:R—zVŠ²ü
-#define FLAG_KYUSYU_SHINKANSEN		(6<<BSHINKANSEN)				// 6:‹ãBVŠ²ü
-#define FLAG_HOKKAIDO_SHINKANSEN	(7<<BSHINKANSEN)				// 7:–kŠC“¹VŠ²ü
-#define FLAG_SHINKANSEN				0x000f0000			// VŠ²ü	aggregate_fare_info()‚ÌÅŒã‚Åİ’è
-#define MASK_SHINKANSEN				0x0f				// VŠ²ü	aggregate_fare_info()‚ÌÅŒã‚Åİ’è
-#define MASK_FLAG_SHINKANSEN(flg)	((flg)&FLAG_SHINKANSEN)	// VŠ²ü	aggregate_fare_info()‚ÌÅŒã‚Åİ’è
+#define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:æ±åŒ—æ–°å¹¹ç·š
+#define FLAG_JYOETSU_SHINKANSEN		(2<<BSHINKANSEN)				// 2:ä¸Šè¶Šæ–°å¹¹ç·š
+#define FLAG_HOKURIKU_SHINKANSEN	(3<<BSHINKANSEN)				// 3:åŒ—é™¸é•·é‡æ–°å¹¹ç·š
+#define FLAG_TOKAIDO_SHINKANSEN		(4<<BSHINKANSEN)				// 4:æ±æµ·é“æ–°å¹¹ç·š
+#define FLAG_SANYO_SHINKANSEN		(5<<BSHINKANSEN)				// 5:å±±é™½æ–°å¹¹ç·š
+#define FLAG_KYUSYU_SHINKANSEN		(6<<BSHINKANSEN)				// 6:ä¹å·æ–°å¹¹ç·š
+#define FLAG_HOKKAIDO_SHINKANSEN	(7<<BSHINKANSEN)				// 7:åŒ—æµ·é“æ–°å¹¹ç·š
+#define FLAG_SHINKANSEN				0x000f0000			// æ–°å¹¹ç·š	aggregate_fare_info()ã®æœ€å¾Œã§è¨­å®š
+#define MASK_SHINKANSEN				0x0f				// æ–°å¹¹ç·š	aggregate_fare_info()ã®æœ€å¾Œã§è¨­å®š
+#define MASK_FLAG_SHINKANSEN(flg)	((flg)&FLAG_SHINKANSEN)	// æ–°å¹¹ç·š	aggregate_fare_info()ã®æœ€å¾Œã§è¨­å®š
 #define MASK_CITYNO(flg)			((flg)&0x0f)
-/* ‹ßx‹æŠÔ */
+/* è¿‘éƒŠåŒºé–“ */
 #define BCSUBURB					7
 #define MASK_URBAN		0x380
 #define URBAN_ID(flg)		(((int32_t)(flg)>>7)&7)
-#define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* ‘åã“dÔ“Á’è‹æŠÔ ?*/
-#define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* “Œ‹“dÔ“Á’è‹æŠÔ ?*/
-#define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* R“_ü“à^‘åãŠÂóü“à ?*/
+#define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* å¤§é˜ªé›»è»Šç‰¹å®šåŒºé–“ ?*/
+#define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* æ±äº¬é›»è»Šç‰¹å®šåŒºé–“ ?*/
+#define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* å±±ç‚¹ç·šå†…ï¼å¤§é˜ªç’°çŠ¶ç·šå†… ?*/
 
 #define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
 
 #if 0
-  vector<RouteItem> æ“ª‚ÌlineId
-  0x01 ”­‰w‚ª“s‹æs“à
-  0x02 ’…‰w‚ª“s‹æs“à
+  vector<RouteItem> å…ˆé ­ã®lineId
+  0x01 ç™ºé§…ãŒéƒ½åŒºå¸‚å†…
+  0x02 ç€é§…ãŒéƒ½åŒºå¸‚å†…
 
 
 #endif
@@ -228,9 +228,9 @@ class FARE_INFO {
 public:
 	FARE_INFO() { reset(); if (FARE_INFO::tax <= 0) { FARE_INFO::tax = g_tax; }}
 private:
-	int32_t sales_km;			//*** —LŒø“ú”ŒvZ—p(‰ïĞüŠÜ‚Ş)
+	int32_t sales_km;			//*** æœ‰åŠ¹æ—¥æ•°è¨ˆç®—ç”¨(ä¼šç¤¾ç·šå«ã‚€)
 
-	int32_t base_sales_km;		//*** JR–{B3Ğ
+	int32_t base_sales_km;		//*** JRæœ¬å·3ç¤¾
 	int32_t base_calc_km;		//***
 
 	int32_t kyusyu_sales_km;	//***
@@ -242,21 +242,21 @@ private:
 	int32_t shikoku_sales_km;
 	int32_t shikoku_calc_km;
 
-	bool local_only;				/* True: ’n•ûŒğ’Êü‚Ì‚İ (0 < base_sales_km‚Ì‚İ—LŒø)*/
-	bool local_only_as_hokkaido;	/* True: –kŠC“¹˜Hü’n•ûŒğ’Êü‚Ì‚İ(0 < hokkaidou_sales_km‚Ì‚İ—LŒø) */
-	//Š²ü‚Ì‚İ
+	bool local_only;				/* True: åœ°æ–¹äº¤é€šç·šã®ã¿ (0 < base_sales_kmæ™‚ã®ã¿æœ‰åŠ¹)*/
+	bool local_only_as_hokkaido;	/* True: åŒ—æµ·é“è·¯ç·šåœ°æ–¹äº¤é€šç·šã®ã¿(0 < hokkaidou_sales_kmæ™‚ã®ã¿æœ‰åŠ¹) */
+	//å¹¹ç·šã®ã¿
 	// (base_sales_km == base_calc_km) && (kyusyu_sales_km == kyusyu_calc_km) && 
 	// (hokkaido_sales_km == hokkaido_calc_km) && (shikoku_sales_km == shikoku_calc_km)
-	bool major_only;				/* Š²ü‚Ì‚İ */
+	bool major_only;				/* å¹¹ç·šã®ã¿ */
 	int32_t total_jr_sales_km;			//***
 	int32_t total_jr_calc_km;			//***
 
-	int32_t company_fare;				/* ‰ïĞü—¿‹à */
-	int32_t flag;						//***/* IDENT1: ‘St_station.sflg‚Ì˜_—Ï IDENT2: bit16-22: shinkansen ride mask  */
+	int32_t company_fare;				/* ä¼šç¤¾ç·šæ–™é‡‘ */
+	int32_t flag;						//***/* IDENT1: å…¨t_station.sflgã®è«–ç†ç© IDENT2: bit16-22: shinkansen ride mask  */
 	int32_t fare;						//***
-	int32_t fare_ic;					//*** 0ˆÈŠO‚Å—LŒø
+	int32_t fare_ic;					//*** 0ä»¥å¤–ã§æœ‰åŠ¹
 	int32_t avail_days;					//***
-	static int32_t tax;					/* Á”ïÅ */
+	static int32_t tax;					/* æ¶ˆè²»ç¨ */
 	int32_t companymask;
 
     /* 114 */
@@ -349,7 +349,7 @@ public:
         rule114_sales_km = 0;
         rule114_calc_km = 0;
     }
-    bool	isRoundTripDiscount() const { /* roundTripFareWithComapnyLine() ‚ğ‘O‚ÉŒÄ‚ñ‚Å‚¢‚é‚±‚Æ */ return roundTripDiscount; }
+    bool	isRoundTripDiscount() const { /* roundTripFareWithComapnyLine() ã‚’å‰ã«å‘¼ã‚“ã§ã„ã‚‹ã“ã¨ */ return roundTripDiscount; }
     int32_t getBeginTerminalId() const { return beginTerminalId;}
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
@@ -376,8 +376,8 @@ private:
 	static bool     IsIC_area(int32_t urban_id);
 };
 
-// 1ƒŒƒR[ƒh‚ß‚ÌlineId‚Ì’è‹`
-#define B1LID_MARK				0x8000		// line_id‚Æ‚Ì‹æ•Ê‚Å•‰”‚É‚È‚é‚æ‚¤‚É
+// 1ãƒ¬ã‚³ãƒ¼ãƒ‰ã‚ã®lineIdã®å®šç¾©
+#define B1LID_MARK				0x8000		// line_idã¨ã®åŒºåˆ¥ã§è² æ•°ã«ãªã‚‹ã‚ˆã†ã«
 #define B1LID_BEGIN_CITY		0
 #define B1LID_FIN_CITY			1
 #define B1LID_BEGIN_YAMATE		2
@@ -462,35 +462,35 @@ class DbidOf
 {
 public:
 	DbidOf();
-	static int32_t StationIdOf_SHINOSAKA;	// V‘åã
-	static int32_t StationIdOf_OSAKA;    	// ‘åã
-	static int32_t StationIdOf_KOUBE;     	// _ŒË
-	static int32_t StationIdOf_HIMEJI;    	// •P˜H
-	static int32_t StationIdOf_NISHIAKASHI; // ¼–¾Î
-	static int32_t LineIdOf_TOKAIDO;       	// “ŒŠC“¹ü
-	static int32_t LineIdOf_SANYO;        	// R—zü
-	static int32_t LineIdOf_SANYOSHINKANSEN; // R—zVŠ²ü
-	static int32_t LineIdOf_HAKATAMINAMISEN; // ”‘½“ìü
+	static int32_t StationIdOf_SHINOSAKA;	// æ–°å¤§é˜ª
+	static int32_t StationIdOf_OSAKA;    	// å¤§é˜ª
+	static int32_t StationIdOf_KOUBE;     	// ç¥æˆ¸
+	static int32_t StationIdOf_HIMEJI;    	// å§«è·¯
+	static int32_t StationIdOf_NISHIAKASHI; // è¥¿æ˜çŸ³
+	static int32_t LineIdOf_TOKAIDO;       	// æ±æµ·é“ç·š
+	static int32_t LineIdOf_SANYO;        	// å±±é™½ç·š
+	static int32_t LineIdOf_SANYOSHINKANSEN; // å±±é™½æ–°å¹¹ç·š
+	static int32_t LineIdOf_HAKATAMINAMISEN; // åšå¤šå—ç·š
 
-	static int32_t StationIdOf_KITASHINCHI; 	// –kV’n
-	static int32_t StationIdOf_AMAGASAKI;		// “òè
+	static int32_t StationIdOf_KITASHINCHI; 	// åŒ—æ–°åœ°
+	static int32_t StationIdOf_AMAGASAKI;		// å°¼å´
 
-	static int32_t StationIdOf_KOKURA;  		// ¬‘q
-	static int32_t StationIdOf_NISHIKOKURA;  	// ¼¬‘q
-	static int32_t StationIdOf_HAKATA;  		// ”‘½
-	static int32_t StationIdOf_YOSHIZUKA;	  	// ‹g’Ë
+	static int32_t StationIdOf_KOKURA;  		// å°å€‰
+	static int32_t StationIdOf_NISHIKOKURA;  	// è¥¿å°å€‰
+	static int32_t StationIdOf_HAKATA;  		// åšå¤š
+	static int32_t StationIdOf_YOSHIZUKA;	  	// å‰å¡š
 };
 
 typedef struct 
 {
-	int32_t		jctSpMainLineId;		// •ªŠò“Á—á:–{ü(b)
-	int32_t		jctSpStationId;			// •ªŠò“Á—á:•ªŠò‰w(c)
-	int32_t		jctSpMainLineId2;		// •ªŠò“Á—á:–{ü(b)
-	int32_t		jctSpStationId2;		// •ªŠò“Á—á:•ªŠò‰w(c)
+	int32_t		jctSpMainLineId;		// åˆ†å²ç‰¹ä¾‹:æœ¬ç·š(b)
+	int32_t		jctSpStationId;			// åˆ†å²ç‰¹ä¾‹:åˆ†å²é§…(c)
+	int32_t		jctSpMainLineId2;		// åˆ†å²ç‰¹ä¾‹:æœ¬ç·š(b)
+	int32_t		jctSpStationId2;		// åˆ†å²ç‰¹ä¾‹:åˆ†å²é§…(c)
 } JCTSP_DATA;
 
 /* last_flag */
-#define BLF_TRACKMARKCTL		5
+#define BLF_TRACKMARKCTL		5	// æ¬¡ã«removeTailã§lastItemã®é€šéãƒã‚¹ã‚¯ã‚’Offã™ã‚‹(typeOã§ã‚‚Pã§ã‚‚ãªã„ã®ã§)
 #define BLF_JCTSP_ROUTE_CHANGE	6
 #define BLF_END					16
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
@@ -514,8 +514,8 @@ public:
 	void setEndStationId(int32_t stataion_id) { end_station_id = stataion_id; }
 
 	enum LINE_DIR {
-		LDIR_ASC  = 1,		// ‰º‚è
-		LDIR_DESC = 2		// ã‚è
+		LDIR_ASC  = 1,		// ä¸‹ã‚Š
+		LDIR_DESC = 2		// ä¸Šã‚Š
 	};
 
 public:
@@ -567,6 +567,7 @@ public:
 	static int32_t		InStationOnLine(int32_t line_id, int32_t station_id);
 
 	static int32_t		LineIdFromStationId(int32_t station_id);
+	static int32_t		LineIdFromStationId2(int32_t station_id1, int32_t station_id2);
 
 	static int32_t 		GetStationId(LPCTSTR stationName);
 	static int32_t 		GetLineId(LPCTSTR lineName);
@@ -615,7 +616,9 @@ public:
 	int32_t				reverse();
 	bool 			checkPassStation(int32_t stationId);
 	void 			terminate(int32_t stationId);
-	int32_t				changeNeerest(bool useBulletTrain);
+	static bool		IsSameNode(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t  NeerJunction(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	int32_t			changeNeerest(bool useBulletTrain);
 
 	static DBO	 	Enum_junction_of_lineId(int32_t lineId, int32_t stationId);
 	static DBO	 	Enum_station_of_lineId(int32_t lineId);
