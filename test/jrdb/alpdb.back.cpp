@@ -5022,82 +5022,6 @@ vector<PAIRIDENT> Route::GetNeerNode(int32_t station_id)
 	return result;
 }
 
-//static
-//	二つの駅は、同一ノード内にあるか
-//
-//	@param [in] line_id    line
-//	@param [in] station_id1  station_id 1
-//	@param [in] station_id2  station_id 2
-//	@return true : 同一ノード
-//	@return fase : 同一ノードではない
-//
-bool Route::IsSameNode(int32_t line_id, int32_t station_id1, int32_t station_id2)
-{
-	const static char tsql[] =
-	" select count(*)"
-	" from t_lines"
-	" where line_id=?1"
-	" and (lflg&(1<<15))!=0"
-	" and (lflg&((1<<31)|(1<<17)))=0"
-	" and sales_km>"
-	" 		(select min(sales_km)"
-	" 		from t_lines"
-	" 		where line_id=?1"
-	" 		and (station_id=?2 or"
-	" 			 station_id=?3))"
-	" and sales_km<"
-	" 		(select max(sales_km)"
-	" 		from t_lines"
-	" 		where line_id=?1"
-	" 		and (station_id=?2 or" 
-	" 			 station_id=?3));";
-
-	DBO dbo(DBS::getInstance()->compileSql(tsql));
-
-	dbo.setParam(1, line_id);
-	dbo.setParam(2, station_id1);
-	dbo.setParam(3, station_id2);
-
-	if (dbo.moveNext()) {
-		return dbo.getInt(0) <= 0;
-	}
-	return false;
-}
-
-//static
-//	路線の駅1から駅2方向の最初の分岐駅
-//  (neerestで使おうと思ったが不要になった-残念)
-//	@param [in] line_id    line
-//	@param [in] station_id1  station_id 1(from)
-//	@param [in] station_id2  station_id 2(to)
-//	@return station_id : first function(contains to station_id1 or station_id2)
-//
-int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t station_id2)
-{
-	const static char tsql[] =
-"select station_id from t_lines where line_id=?1 and"
-" case when"
-" (select sales_km from t_lines where line_id=?1 and station_id=?3)<"
-" (select sales_km from t_lines where line_id=?1 and station_id=?2) then"
-" sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&((1<<17)|(1<<31)))=0 and"
-" sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?2) and (lflg&((1<<17)|(1<<31)))=0 and (lflg&(1<<15))!=0)"
-" else"
-" sales_km=(select min(sales_km) from t_lines where line_id=?1 and (lflg&((1<<17)|(1<<31)))=0 and "
-" sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?3) and (lflg&((1<<17)|(1<<31)))=0 and (lflg&(1<<15))!=0)"
-" end;";
-
-	DBO dbo(DBS::getInstance()->compileSql(tsql));
-
-	dbo.setParam(1, line_id);
-	dbo.setParam(2, station_id1);
-	dbo.setParam(3, station_id2);
-
-	if (dbo.moveNext()) {
-		return dbo.getInt(0);
-	}
-	return 0;
-}
-
 //public:
 //
 //	最短経路に変更(raw immidiate)
@@ -5117,8 +5041,6 @@ int32_t Route::changeNeerest(bool useBulletTrain)
     
 	IDENT startNode;
 	IDENT lastNode = 0;
-	IDENT excNode1 = 0;
-	IDENT excNode2 = 0;
 	IDENT lastNode1 = 0;
 	IDENT lastNode1_distance = 0;
 	IDENT lastNode2 = 0;
@@ -5142,22 +5064,12 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 	
 	/* 途中追加か、最初からか */
 	if (1 < route_list_raw.size()) {
-		do {
-			stationId = route_list_raw.back().stationId;
-		    if (0 == Route::Id2jctId(stationId)) {
-		    	removeTail();
-		    } else {
-		    	break;
-		    }
-		} while (1 < route_list_raw.size());
-
 		stationId = route_list_raw.back().stationId;
-
 	} else {
 		stationId = startStationId();
 	}
     
-	if ((stationId == end_station_id) || (end_station_id <= 0)) {
+	if (stationId == end_station_id) {
 		return 0;			/* already routed */
 	}
     
@@ -5192,13 +5104,13 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 				fromNode[b - 1] = -1;
 				line_id[b - 1] = lid;
 			} else if (IsJctMask(a)) {
-				TRACE(_T("Autoroute:発駅の両隣の分岐駅は既に通過済み"));
+				TRACE("Autoroute:発駅の両隣の分岐駅は既に通過済み");
 				return -10;								// >>>>>>>>>>>>>>>>>>>>>>>
 			}
 		} else {
 			/* 盲腸線 */
 			if (IsJctMask(a)) {
-				TRACE(_T("Autoroute:盲腸線で通過済み."));
+				TRACE("Autoroute:盲腸線で通過済み.");
 				return -11;								// >>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			b = 0;
@@ -5207,9 +5119,7 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 		minCost[startNode - 1] = 0;
 		a = b = 0;
 	}
-
-	loopRoute = false;
-
+    
 	if (lastNode == 0) { /* 終了駅は非分岐駅 ? */
 		// 駅の両隣の最寄分岐駅IDとその駅までの計算キロを得る
 		neer_node = Route::GetNeerNode(end_station_id);
@@ -5226,52 +5136,76 @@ int32_t Route::changeNeerest(bool useBulletTrain)
 			lastNode2_distance = IDENT2(neer_node.at(1));
 			nLastNode = 2;
 		} else {
-			/* 着駅=閉塞線 */
 			lastNode2 = 0;
-			lastNode2_distance = (IDENT)0xffff;
+			lastNode2_distance = 0xffff;
 			nLastNode = 1;
 		}
-		TRACE(_T("Last target=%s, %s\n"), StationName(Jct2id(lastNode1)).c_str(), StationName(Jct2id(lastNode2)).c_str());
 	} else {
 		nLastNode = 0;
 		lastNode1 = lastNode2 = 0;
 	}
 
-	if ((2 == route_list_raw.size()) && 
-				Route::IsSameNode(route_list_raw.back().lineId, 
-				                  route_list_raw.front().stationId,
-				                  route_list_raw.back().stationId)) {
-		id = Route::Id2jctId(startStationId());
-		if (id == 0) {
-			neer_node = Route::GetNeerNode(startStationId());
-			if (neer_node.size() == 2) {
-				excNode1 = Route::Id2jctId(IDENT1(neer_node.at(0)));		/* 渋谷 品川 代々木 */
-				excNode2 = Route::Id2jctId(IDENT1(neer_node.at(1)));		/* 渋谷 品川 新宿 */
-TRACE(_T("******** loopRouteX **%s, %s******\n"), StationName(Jct2id(excNode1)).c_str(), StationName(Jct2id(excNode2)).c_str());
-				loopRoute = true;
-			} else {
-				/* 逗子 大船 磯子 */
-			}
-		} else {
-			excNode1 = id;
-			excNode2 = Id2jctId(route_list_raw.back().stationId);
-			if (excNode2 == 0) {
-				neer_node = Route::GetNeerNode(route_list_raw.back().stationId);
-				if (neer_node.size() == 2) {
-					excNode1 = Route::Id2jctId(IDENT1(neer_node.at(0)));
-					excNode2 = Route::Id2jctId(IDENT1(neer_node.at(1)));
-					ASSERT((id == excNode1) || (id == excNode2));
-					loopRoute = true;		/* 代々木 品川 代々木 */
-				} else {
-					ASSERT(FALSE);	/* 先頭で途中追加の最終ノードは分岐駅のみとしているのであり得ない */
-					                /* 大船 鎌倉 横須賀などは、鎌倉がremoveTail() され大船 横須賀となる*/
-				}
-			} else {
-				loopRoute = true;
-			}
-TRACE(_T("******** loopRouteY **%s, %s******\n"), StationName(Jct2id(excNode1)).c_str(), StationName(Jct2id(excNode2)).c_str());
+	/* #140930 >>> */
+#if 0
+		i = route_list_raw.size();
+		neer_node = Route::GetNeerNode(startStationId());
+		if (0 == Route::Id2jctId(startStationId())) && 
+		loopRoute = false;
+#endif
+	if ((a != 0) && (a == lastNode1) && (b == lastNode2)) {
+		lid = Route::LineIdFromStationId2(stationId, end_station_id);
+		ASSERT(0 < lid);
+	    ASSERT(route_list_raw.back().stationId == stationId);
+
+		/* 渋谷－－恵比寿、代々木－－渋谷, 渋谷－恵比寿－－大崎 */
+		if (2 <= route_list_raw.size()) {
+			ASSERT(route_list_raw.back().lineId == lid);
+			/* 渋谷－恵比寿－－大崎 */
+			removeTail();	/* 恵比寿→大崎 */
 		}
+		i = add(lid, /*stationId,*/ end_station_id);
+		ASSERT(0 <= i);
+		return i;				/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 	}
+#if 0
+		if ((i <= 1) ||
+		   (Route::DirLine(lid, route_list_raw.at(i - 2).stationId, stationId) !=
+		    Route::DirLine(lid, stationId, end_station_id))) {
+	
+			/* 渋谷－－恵比寿、代々木－－渋谷, 渋谷－恵比寿－－大崎 */
+
+			if (2 <= route_list_raw.size()) {
+				ASSERT(route_list_raw.back().lineId == lid);
+				/* 渋谷－恵比寿－－大崎 */
+				removeTail();	/* 恵比寿→大崎 */
+			}
+			i = add(lid, /*stationId,*/ end_station_id);
+			ASSERT(0 <= i);
+			return i;				/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+
+		} else {
+			/* 渋谷－品川－－渋谷 */
+			/* 渋谷－品川－－代々木 */
+		}
+		ASSERT(FALSE);
+		loopRoute = true;
+
+	} else {
+
+		loopRoute = false;
+	}
+#endif
+
+
+            //if (0 < Route::InStationOnLine(lid, end_station_id))  /* 発駅と着駅は同一路線 (B) */
+
+
+            //if (0 < Route::InStationOnLine(lid, end_station_id))  /* 発駅と着駅は同一路線 (B) */
+			// 大崎-田端は山手線より東海道・東北線経由のほうが近くそちらが選択される(A)にした
+			// !!!だが不完全。他の例は？(大崎-駒込が山手線経由の方が短いのは偶然))
+			///km = Route::Get_node_distance(lid, stationId, end_station_id);
+			// 渋谷-原宿など 
+	/* <<< #140930 */
 
 	/* dijkstra */
 	for (;;) {
@@ -5317,11 +5251,11 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), StationName(Jct2id(excNode1)).
             
 			a = ite->at(0) - 1;	// jctId
             
-			if ((!IsJctMask(a + 1) /**/|| ((nLastNode == 0) && (lastNode == (a + 1))) ||
+			if ((!IsJctMask(a + 1) || ((nLastNode == 0) && (lastNode == (a + 1))) ||
                  ((0 < nLastNode) && (lastNode1 == (a + 1))) ||
-                 ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ && 
+                 ((1 < nLastNode) && (lastNode2 == (a + 1)))) && 
 			    (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
-                /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
+                
 				/* 新幹線でない */
 				cost = minCost[doneNode] + ite->at(1); // cost
                 
@@ -5330,10 +5264,15 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), StationName(Jct2id(excNode1)).
 				// ノードtoの最小コストを更新
 				if ((((minCost[a] < 0) || (cost <= minCost[a])) &&
 					((cost != minCost[a]) || IS_SHINKANSEN_LINE(ite->at(2)))) 
-					&& 
-					(!loopRoute || 
-						((((doneNode + 1) != excNode1) && ((doneNode + 1) != excNode2)) ||
-						 ((excNode1 != (a + 1)) && (excNode2 != (a + 1)))))) {
+/* #140930 渋谷－品川－－渋谷 における品川－代々木 */
+					&& (!loopRoute || (((doneNode + 1) != lastNode1) && ((doneNode + 1) != lastNode2)) ||
+					                  (((a + 1) != lastNode1) && ((a + 1) != lastNode2)))) {
+/*#140925001*/
+//					&& 
+//					( !IsJctMask(startNode) || (startNode != (doneNode + 1)) || 
+//					((nLastNode == 0) || ((nLastNode <= 1) && (lastNode1 != (a + 1))) ||
+//					((2 <= nLastNode) && (lastNode1 != (a + 1)) && (lastNode2 != (a + 1)))))  
+
 					/* ↑ 同一距離に2線ある場合新幹線を採用 */
 					minCost[a] = cost;
 					fromNode[a] = doneNode + 1;
@@ -5342,13 +5281,18 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), StationName(Jct2id(excNode1)).
 				} else {
 					TRACE(_T("-<%s>"), Route::StationName(Jct2id(a + 1)).c_str());
 				}
-			} else {
-TRACE(_T("x(%s)"), StationName(Jct2id(a + 1)).c_str());
 			}
 		}
 		TRACE("\n");
 	}
+#if 0
+代々木－渋谷－品川－川崎  OK
+代々木－渋谷－品川－代々木 NG
 
+品川   大森  川崎
+
+#endif
+    
 	vector<IDENT> route;
 	int32_t lineid = 0;
 	int32_t idb;
@@ -5361,43 +5305,47 @@ TRACE(_T("x(%s)"), StationName(Jct2id(a + 1)).c_str());
 		if ((2 == nLastNode) &&
             (!IsJctMask(lastNode2) && ((minCost[lastNode2 - 1] + lastNode2_distance) <
               (minCost[lastNode1 - 1] + lastNode1_distance)))) {
-            id = lastNode2;		// 短い方を最後の分岐駅とする
+                id = lastNode2;		// 短い方を最後の分岐駅とする
         } else {
-            id = lastNode1;
+                id = lastNode1;
+
         }
+	  //  if (((nLastNode == 2) && (lastNode2 == startNode)) ||
+	  //      (lastNode1 == startNode)) {
+   //   		/* 品川―大森 */
+   //   		lid = Route::LineIdFromStationId(end_station_id);
+			//if (lid == Route::LineIdFromStationId(stationId)) {
+   //        		return add(lid, /*stationId,*/ end_station_id);
+			//}
+   //     }
 	} else {
 		id = lastNode;
 	}
-
-TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).c_str(), StationName(Jct2id(fromNode[id - 1])).c_str(), fromNode[id - 1], (int)lastNode, (int)lastNode1, (int)lastNode2);
-
 	//fromNodeが全0で下のwhileループで永久ループに陥る
 	if (fromNode[id - 1] == 0) {
+#if 1	/* #140930 */
 	    if ((lastNode == 0) &&
 			(((nLastNode == 2) && (lastNode2 == startNode)) ||
-	                              (lastNode1 == startNode))) {
+	        (lastNode1 == startNode))) {
       		/* 品川―大森 */
       		lid = Route::LineIdFromStationId(end_station_id);
 			if (0 < Route::InStationOnLine(lid, stationId)) {
 				TRACE( _T("short-cut route.###\n"));
-           		i = add(lid, /*stationId,*/ end_station_id);
-           		if (0 <= a) {
-           			route_list_cooked.clear();
-           		}
-           		return a;	//>>>>>>>>>>>>>>>>>>>>>>>>>
+           		return add(lid, /*stationId,*/ end_station_id);
 			}
         }
+#endif
 		TRACE( _T("can't lowcost route.###\n"));
 		return -1002;
 	}
-//------------------------------------------
+    
 	// 発駅(=分岐駅)でなく最初の分岐駅(-1+1=0)でない間
 	// 最後の分岐駅からfromをトレース >> route[]
 	while ((id != startNode) && (0 < id)) {
 		TRACE( _T("  %s, %s, %s."), Route::LineName(lineid).c_str(), Route::LineName(line_id[id - 1]).c_str(), Route::StationName(Jct2id(id)).c_str());
 		if (lineid != line_id[id - 1]) {
 			if (IS_SHINKANSEN_LINE(lineid)) {
-				//TRACE("@@@@->%d\n", lineid);
+				//printf("@@@@->%d\n", lineid);
                 /* 新幹線→並行在来線 */
 				int32_t zline = Route::GetHZLine(lineid, Route::Jct2id(id));
 				for (idb = id; (idb != startNode) && (line_id[idb - 1] == zline);
@@ -5406,7 +5354,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).
 					;
 				}
 				if (line_id[idb - 1] == lineid) { /* もとの新幹線に戻った ? */
-					//TRACE(".-.-.-");
+					//printf(".-.-.-");
 					id = idb;
 					continue;
 				} else if (idb == startNode) { /* 発駅？ */
@@ -5415,7 +5363,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).
 						continue;
 					}
 					/* thru */
-					//TRACE("*-*-*-");
+					//printf("*-*-*-");
 				} else if (idb != id) { /* 他路線の乗り換えた ? */
 					TRACE( _T("%sはそうだが、%sにも新幹線停車するか?"), Route::StationName(Jct2id(id)).c_str(), Route::StationName(Jct2id(idb)).c_str());
 					if (zline == Route::GetHZLine(lineid, Route::Jct2id(idb))) {
@@ -5425,11 +5373,11 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).
 					/* thru */
 					TRACE( _T("+-+-+-: %s(%s) : "), Route::LineName(line_id[idb - 1]).c_str(), Route::LineName(lineid).c_str());
 				} else {
-					//TRACE("&");
+					//printf("&");
 				}
 			} else { /* 前回新幹線でないなら */
 				/* thru */
-				//TRACE("-=-=-=");
+				//printf("-=-=-=");
 			}
             // 次の新幹線でも並行在来線でもない路線への分岐駅に新幹線分岐駅でない場合(金山)最初の在来線切り替えを有効にする（三河安城）
             // 新幹線に戻ってきている場合(花巻→盛岡）、花巻まで（北上から）無効化にする
@@ -5445,7 +5393,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).
 	
 	//// 発駅=分岐駅
 	
-	TRACE( _T("----------[%s]------\n"), Route::StationName(Jct2id(id)).c_str());
+	TRACE( _T("----------%s------\n"), Route::StationName(Jct2id(id)).c_str());
     
 	vector<IDENT> route_rev;
 	vector<IDENT>::const_reverse_iterator ritr = route.crbegin();
@@ -5462,45 +5410,35 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).
 		bid = *ritr;
 		++ritr;
 	}
-	/* reverse(route_rev->route) */
 	route.assign(route_rev.cbegin(), route_rev.cend());
-	route_rev.clear();	/* release */
-   
+	route_rev.clear();
+    
 	if (lastNode == 0) {	// 着駅は非分岐駅?
-TRACE(_T("last: %s\n"), LineName(line_id[route.back()]).c_str());
 		lid = Route::LineIdFromStationId(end_station_id); // 着駅所属路線ID
 		// 最終分岐駅～着駅までの営業キロ、運賃計算キロを取得
 		//km = Route::Get_node_distance(lid, end_station_id, Route::Jct2id(a));
 		//km += minCost[route.back()];	// 最後の分岐駅までの累積計算キロを更新
-		if ((lid == line_id[route.back()]) ||
-		    IsAbreastShinkansen(lid, line_id[route.back()], 
-		                        Jct2id(route.back() + 1), 
-		                        end_station_id)) { 
-			route.pop_back();	// if   着駅の最寄分岐駅の路線=最後の分岐駅?
-								//      (渋谷-新宿-西国分寺-国立)
-								// or   平行在来線の新幹線 #141002001
+		if (lid == line_id[route.back()]) { // 着駅の最寄分岐駅の路線=最後の分岐駅?
+			route.pop_back();	// if   渋谷-新宿-西国分寺-国立
             // else 渋谷-新宿-三鷹
 		}
 	} else {
 		lid = 0;
 	}
-
+	
 	if ((1 < route_list_raw.size()) && (1 < route.size()) && (route_list_raw.back().lineId == line_id[route[0]])) {
-TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), LineName(route_list_raw.back().lineId).c_str(), StationName(route_list_raw.back().stationId).c_str());
 		removeTail();
 		ASSERT(0 < route_list_raw.size()); /* route_list_raw.size() は0か2以上 */
 		//stationId = route_list_raw.back().stationId;
 	}
-
+    
 	for (i = 0; i < (int32_t)route.size(); i++) {
-TRACE(_T("route[] add: %s\n"), StationName(Route::Jct2id(route[i] + 1)).c_str());
 		a = add(line_id[route[i]], /*stationId,*/ Route::Jct2id(route[i] + 1));
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
-TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
+			printf("####%d####¥n", a);
 			if ((a < 0) || ((i + 1) < (int32_t)route.size())) {
-				route_list_cooked.clear();
 				return a;	/* error */
 			} else {
 				break;
@@ -5508,23 +5446,19 @@ TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
 		}
 		//stationId = Route::Jct2id(route[i] + 1);
 	}
-
-	route_list_cooked.clear();
-
 	if (lastNode == 0) {
-TRACE(_T("fin last:%s\n"), LineName(lid).c_str());
 		ASSERT(0 < lid);
 		if (a == 0) {
-			// 立川 八王子 拝島 西国立
 			return -1000;
 		}
 		a = add(lid, /*stationId,*/ end_station_id);
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
-			//ASSERT(0 == a);
+			ASSERT(FALSE);
 			return a;
 		}
 	}
+	route_list_cooked.clear();
 	return 1;
 }
 
@@ -5923,7 +5857,7 @@ int32_t FARE_INFO::aggregate_fare_info(int32_t line_id, int32_t station_id1, int
 
 TRACE(_T("multicompany line none detect X: %d, %d, comp1,2=%d, %d, %s:%s-%s\n"), d.at(2), d.at(3), company_id1, company_id2, Route::LineName(line_id).c_str(), Route::StationName(station_id1).c_str(), Route::StationName(station_id2).c_str());
 	if (d.at(2) == -1) {		/* station_id1が境界駅の場合 */
-		TRACE(_T("multicompany line detect 1: %d, %d(com1 <- com2)\n", d.at(2), d.at(3)));
+		TRACE("multicompany line detect 1: %d, %d(com1 <- com2)\n", d.at(2), d.at(3));
 		company_id1 = company_id2;
 	}
 	if (d.at(3) == -1) {		/* station_id2が境界駅の場合 */
@@ -7358,7 +7292,7 @@ bool FARE_INFO::IsIC_area(int32_t urban_id)
 void assertion_function(int32_t cond)
 {
     if (!cond) {
-        TRACE("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n");
+        printf("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n");
         //for (;;);
     }
 }

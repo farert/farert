@@ -19,7 +19,7 @@ using namespace std;
 #include <vector>
 
 // ƒ‹[ƒg‘I‘ğ[Š®—¹]‚©?
-#define isComplete()	((0 < m_route.routeList().size()) && \
+#define isComplete()	((1 < m_route.routeList().size()) && \
 						 (m_route.endStationId() == m_curStationId))
 
 
