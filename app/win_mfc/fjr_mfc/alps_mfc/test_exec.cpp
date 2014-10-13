@@ -14,19 +14,6 @@ Route route;
 static int test_setup_route(TCHAR* buffer);
 
 
-static tstring num_str_yen(int num)
-{
-	TCHAR cb[16];
-	tstring s;
-	int ll;
-	
-	_sntprintf_s(cb, 16, _T("%u"), num);
-	s = cb;
-	for (ll = s.size() - 3; 0 < ll; ll -= 3) {
-		s.insert(ll, _T(","));
-	}
-	return s;
-}
 
 static tstring cr_remove(tstring s)
 {
@@ -1556,7 +1543,7 @@ void test_jctspecial()
 	_T("JSBX005|’¼]’Ã M‰zü(ŽÂƒmˆä-VŠƒ) ’·‰ª ã‰zVŠ²ü ‰zŒã“’‘ò"),
 	_T("JSBHX001|VŠƒ ã‰zVŠ²ü ’·‰ª ã‰zü ‰zŒã“’‘ò"),
 	_T("JSBHX002|VŠƒ ã‰zVŠ²ü ’·‰ª ã‰zü ‹{“à"),
-	_T(""),
+	_T("*|‰¡•l,“ŒŠC“¹ü,“Œ‹ž,‹ž—tü,Žsì‰–•l,‹ž—tü(Žsì‰–•l-¼‘D‹´),¼‘D‹´,‘•ü,‹ÑŽ…’¬,‘•ü(‹ÑŽ…’¬-Œä’ƒƒm…),H—tŒ´,“Œ–kü,‰F“s‹{"),
 	_T(""),
 	};
 	TCHAR buffer[1024];
