@@ -163,7 +163,7 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_)
 char* strcpy_s(char* dst, int32_t maxlen, const char* src)
 {
     int32_t l;
-    l = strlen(src);
+    l = (int32_t)strlen(src);
     if (maxlen <= l) {
         l = maxlen - 1;
         strncpy(dst, src, l);
@@ -179,8 +179,8 @@ char* strcat_s(char* dst, int32_t maxlen, const char* src)
 {
     int32_t l;
     int32_t l2;
-    l = strlen(src);
-    l2 = strlen(dst);
+    l = (int32_t)strlen(src);
+    l2 = (int32_t)strlen(dst);
     if (maxlen < l2) {
         ASSERT(FALSE);
         return dst;     /* error */
@@ -322,7 +322,7 @@ tstring num_str_km(int32_t num)
 	
 	_sntprintf_s(cb, 16, _T("%u"), num / 10);
 	s = cb;
-	for (ll = s.size() - 3; 0 < ll; ll -= 3) {
+	for (ll = (int32_t)s.size() - 3; 0 < ll; ll -= 3) {
 		s.insert(ll, _T(","));
 	}
 	c = _T('0') + (num % 10);
@@ -345,7 +345,7 @@ tstring num_str_yen(int32_t num)
 	
 	_sntprintf_s(cb, 16, _T("%u"), num);
 	s = cb;
-	for (ll = s.size() - 3; 0 < ll; ll -= 3) {
+	for (ll = (int32_t)s.size() - 3; 0 < ll; ll -= 3) {
 		s.insert(ll, _T(","));
 	}
 	return s;
@@ -431,7 +431,7 @@ DBO Route::Enum_station_match(LPCTSTR station)
 	tstring sameName;
 	tstring stationName(station);		// WIN32 str to C++ string
 
-	int32_t pos = stationName.find('(');
+	int32_t pos = (int32_t)stationName.find('(');
 	if (0 <= pos) {
 		sameName = stationName.substr(pos);
 		stationName = stationName.substr(0, pos);
@@ -446,7 +446,7 @@ DBO Route::Enum_station_match(LPCTSTR station)
 #else
 		sqlite3_snprintf(sizeof(sql), sql, tsql,
 								"name", stationName.c_str());
-		sqlite3_snprintf(sizeof(sql) - strlen(sql), sql + strlen(sql), tsql_s,
+		sqlite3_snprintf((int32_t)sizeof(sql) - (int32_t)strlen(sql), sql + (int32_t)strlen(sql), tsql_s,
 								sameName.c_str());
 #endif
 	} else {
@@ -954,7 +954,7 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 
 	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_JCTSP_ROUTE_CHANGE));
 
-	num = route_list_raw.size();
+	num = (int32_t)route_list_raw.size();
 	if (num <= 0) {
 		ASSERT(FALSE);	// bug. must be call to add(station);
 		return -3;
@@ -1445,7 +1445,7 @@ ASSERT(first_station_id1 = stationId1);
 		junctions.push_back(dbo.getInt(0));
 	}
 
-	jnum = junctions.size();
+	jnum = (int32_t)junctions.size();
 
 	for (i = 0; i < jnum; i++) {
 		jct_on = junctions[i];
@@ -1566,7 +1566,9 @@ void Route::removeTail(bool begin_off/* = false*/)
 	int32_t i;
 	vector<int32_t> junctions;	// 分岐駅リスト
 
-	route_num = route_list_raw.size();
+	TRACE(_T("Enter removeTail\n"));
+
+	route_num = (int32_t)route_list_raw.size();
 	if (route_num < 2) {
 		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 		return;
@@ -1589,7 +1591,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	while (dbo.moveNext()) {
 		junctions.push_back(dbo.getInt(0));
 	}
-	jct_num = junctions.size();
+	jct_num = (int32_t)junctions.size();
 	if (!begin_off) {
 		jct_num -= 1;		/* 開始駅はOffしない(前路線の着駅なので) */
 	}
@@ -1601,7 +1603,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 		}
 	}
 
-	last_flag &= ((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
+	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
 	route_list_raw.pop_back();
 }
 
@@ -2104,7 +2106,7 @@ int32_t Route::setup_route(LPCTSTR route_str)
 	
 	removeAll();
 
-	len = _tcslen(route_str) + 1;
+	len = (int32_t)_tcslen(route_str) + 1;
 	TCHAR *rstr = new TCHAR [len];
 	if (rstr == NULL) {
 		return -1;
@@ -2279,7 +2281,7 @@ void Route::routePassOff(int32_t line_id, int32_t to_station_id, int32_t begin_s
 		junctions.push_back(dbo.getInt(0));
 	}
 
-	jct_num = junctions.size();
+	jct_num = (int32_t)junctions.size();
 
 	for (i = 1; i < jct_num; i++) {
 		JctMaskOff(junctions[i]);
@@ -2705,7 +2707,7 @@ int32_t Route::GetStationId(LPCTSTR station)
 	tstring sameName;
 	tstring stationName(station);
 
-	int32_t pos = stationName.find(_T('('));
+	int32_t pos = (int32_t)stationName.find(_T('('));
 	if (0 <= pos) {
 		sameName = stationName.substr(pos);
 		stationName = stationName.substr(0, pos);
@@ -3385,7 +3387,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 							if ((route_item - a69list.size())->stationId == IDENT1(a69list.front())) {
 								// c) in-in
 #if 1
-								int32_t j = a69list.size() - 1;
+								int32_t j = (int32_t)a69list.size() - 1;
 								route_item -= j;
 								for ( ; 0 < j; j--) {
 									route_item = out_route_list->erase(route_item);
@@ -3396,7 +3398,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 #endif
 							} else { // d) out-in
 								if (2 < a69list.size()) {
-									int32_t j = a69list.size() - 2;
+									int32_t j = (int32_t)a69list.size() - 2;
 									route_item -= j;
 									for ( ; 0 < j; j--) {
 										route_item = out_route_list->erase(route_item);
@@ -3414,7 +3416,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 							(route_item - 1)->stationId = IDENT2(a69list.back());
 							if (2 < a69list.size()) {
 #if 1
-								int32_t j = a69list.size() - 2;
+								int32_t j = (int32_t)a69list.size() - 2;
 								route_item -= j;
 								for ( ; 0 < j; j--) {
 									route_item = out_route_list->erase(route_item);
@@ -3432,7 +3434,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 							(route_item - a69list.size())->stationId = IDENT1(a69list.front());
 							if (2 < a69list.size()) {
 #if 1
-								int32_t j = a69list.size() - 1;
+								int32_t j = (int32_t)a69list.size() - 1;
 								route_item -= j;
 								j--;
 								for ( ; 0 < j; j--) {
@@ -3760,7 +3762,8 @@ uint32_t Route::CheckOfRule87(const vector<RouteItem>& in_route_list)
 	r = 0;
 
 	fite = in_route_list.cbegin();
-	if ((fite != in_route_list.cend()) && (((fite->flag & ((1 << 10) | (1 << 5))) == ((1 << 10)|(1 << 5))))) {
+	if ((fite != in_route_list.cend()) && /* 発駅適用 ？ */
+	    (((fite->flag & ((1 << 10) | (1 << 5))) == ((1 << 10)|(1 << 5))))) {
 		// start=山手線
 		c = 0;
 		for (fite++; fite != in_route_list.cend(); fite++) {
@@ -3804,29 +3807,24 @@ uint32_t Route::CheckOfRule87(const vector<RouteItem>& in_route_list)
 		}
 	}
 	rite = in_route_list.crbegin();
-	if ((rite != in_route_list.crend()) && (((rite->flag & ((1 << 10) | (1 << 5))) == ((1 << 10)|(1 << 5))))) {
+	if ((rite != in_route_list.crend()) && /* 着駅適用 ? */
+		(((rite->flag & ((1 << 10) | (1 << 5))) == ((1 << 10)|(1 << 5))))) {
 		// 着駅=山手線内
 		c = 0;
 		for (rite++; rite != in_route_list.crend(); rite++) {
-			if (c == 0) {
-				if (((rite->flag & ((1 << 10) | (1 << 5))) != ((1 << 10)|(1 << 5)))) {
-					c = 1;			// 離れた
+			if (((rite->flag & ((1 << 10) | (1 << 5))) == ((1 << 10)|(1 << 5)))) {
+						/* 山手線内 */
+				if (c == 0) {
+					// continue (c == 0)
 				} else {
-					//
+					c = 3;
+					break;
 				}
-			} else {
-				if (((fite->flag & ((1 << 10) | (1 << 5))) == ((1 << 10)|(1 << 5)))) {
-									// 山手線内
-					if (c == 1) {
-						c = 2;
-					} else {
-						ASSERT(c == 2);
-					}
-				} else {
-					if (c == 2) {
-						c = 3;
-						break;
-					}
+			} else {	/* 山手線外 */
+				if (c == 0) {
+					c = 1;		/* take */
+				} else {	// c == 1
+					// continue
 				}
 			}
 		}
@@ -4479,7 +4477,7 @@ int32_t Route::CheckOfRule88j(vector<RouteItem> *route)
 	static int32_t chk_distance1 = 0;
 	static int32_t chk_distance2 = 0;
 	
-	lastIndex = route->size() - 1;
+	lastIndex = (int32_t)route->size() - 1;
 
 	if (!chk_distance1) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
 		chk_distance1 = Route::GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, dbid.StationIdOf_HIMEJI)[0];
@@ -4610,7 +4608,7 @@ int32_t Route::CheckOfRule89j(const vector<RouteItem>& route)
 	int32_t lastIndex;
 	static int32_t distance = 0;
 	
-	lastIndex = route.size() - 1;
+	lastIndex = (int32_t)route.size() - 1;
 	if (lastIndex < 2) {
 		return 0;
 	}
@@ -5219,7 +5217,7 @@ int32_t Route::changeNeerest(bool useBulletTrain)
         
 		lastNode1 = Route::Id2jctId(IDENT1(neer_node.at(0)));
 		lastNode1_distance = IDENT2(neer_node.at(0));
-		nLastNode = neer_node.size();
+		nLastNode = (int32_t)neer_node.size();
 		ASSERT((nLastNode == 1) || (nLastNode == 2));  /* 野辺地の大湊線はASSERT*/
 		if (2 <= nLastNode) {
 			lastNode2 = Route::Id2jctId(IDENT1(neer_node.at(1)));
@@ -5923,7 +5921,7 @@ int32_t FARE_INFO::aggregate_fare_info(int32_t line_id, int32_t station_id1, int
 
 TRACE(_T("multicompany line none detect X: %d, %d, comp1,2=%d, %d, %s:%s-%s\n"), d.at(2), d.at(3), company_id1, company_id2, Route::LineName(line_id).c_str(), Route::StationName(station_id1).c_str(), Route::StationName(station_id2).c_str());
 	if (d.at(2) == -1) {		/* station_id1が境界駅の場合 */
-		TRACE(_T("multicompany line detect 1: %d, %d(com1 <- com2)\n", d.at(2), d.at(3)));
+		TRACE("multicompany line detect 1: %d, %d(com1 <- com2)\n", d.at(2), d.at(3));
 		company_id1 = company_id2;
 	}
 	if (d.at(3) == -1) {		/* station_id2が境界駅の場合 */
@@ -6097,6 +6095,7 @@ TRACE(_T("multicompany line none detect X: %d, %d, comp1,2=%d, %d, %s:%s-%s\n"),
 		flag &= ~MASK_URBAN;				/* 近郊区間 OFF */
 	}
 	this->flag &= (flag | FLAG_SHINKANSEN);	/* b11,10,5(大阪/東京電車特定区間, 山手線／大阪環状線内) */
+											/* ~(反転）不要 */
 	this->flag |= FLAG_FARECALC_INITIAL;	/* 次回から駅1は不要 */
 	if (IS_SHINKANSEN_LINE(line_id)) {
 		this->flag |= ((line_id & MASK_SHINKANSEN) << BSHINKANSEN);	/* make flag for MASK_FLAG_SHINKANSEN() */
