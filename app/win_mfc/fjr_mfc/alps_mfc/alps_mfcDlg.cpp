@@ -40,6 +40,8 @@ public:
 // 実装
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnNMClickSyslink1(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -52,6 +54,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK1, &CAboutDlg::OnNMClickSyslink1)
 END_MESSAGE_MAP()
 
 
@@ -1446,3 +1449,11 @@ void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 	}
 }
 
+
+
+void CAboutDlg::OnNMClickSyslink1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	ShellExecuteW(m_hWnd, L"open", L"http://farert.blogspot.jp", NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
+}

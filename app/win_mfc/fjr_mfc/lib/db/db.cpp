@@ -76,6 +76,7 @@ bool DBS::open(LPCTSTR dbpath)
 	return true;
 }
 
+
 //static 
 void DBS::cache_cleanup(void)
 {
@@ -90,7 +91,7 @@ void DBS::cache_cleanup(void)
 
 void DBS::cache_restrict(const char* sql)
 {
-	if (MAX_STMT_POOL <= cache_pool.size()) {
+	while (MAX_STMT_POOL <= cache_pool.size()) {
 		unsigned int current = get_time_msec();
 		unsigned int history = 0;
 		string key;
@@ -106,7 +107,7 @@ void DBS::cache_restrict(const char* sql)
 			itr++;
 		}
 		if (key == "") {
-			ASSERT(FALSE);
+			ASSERT(FALSE);	/* OK */
 		} else {
 			delete cache_pool[key];
 			cache_pool.erase(key);

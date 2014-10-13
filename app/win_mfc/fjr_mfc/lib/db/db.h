@@ -215,6 +215,7 @@ public:
 	operator sqlite3*() { return m_db; }
 
 	bool open(LPCTSTR dbpath);
+    void close(void) { cleanup(); }
 
 #if 0
 	compileSql()の戻されたDBOはテンポラリです。デストラクタ実行でクローズされます.
