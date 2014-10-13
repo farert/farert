@@ -1,3 +1,14 @@
+2014-10-12 alpdb.cpp ReRouteRule86j87j, SpecificCoreAreaFirstTransferStationByのあとのASSERT
+片道条件に達した後の経路戻りがおかしい
+横浜、東神奈川、橋本、茅ケ崎、横浜と指定して、YES/NOでも、
+removeTailすると茅ケ崎が消えないため、画面は茅ケ崎が消えるが、再度茅ケ崎を指定すると、
+茅ケ崎が最終駅として終わってしまう。
+
+→ &= xxx　となってた。&= ~xxxにすべきなのに。
+removeTail(): last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
+に修正
+
+
 2014-10-6 DB 吾妻線の距離変更、臨時駅を整理
 2014-10-6 Autoroute 全般改善
 
