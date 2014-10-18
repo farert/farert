@@ -1,4 +1,5 @@
 
+
 経路運賃営業キロ計算アプリ
 JR運賃、営業キロ表示、経路編集ソフト Farert       　　 2014-10-12
                                                        Version 1.1
@@ -45,8 +46,9 @@ http://www.vector.co.jp/soft/winnt/home/se506752.html
 
 0 同梱物
 
-farert.exe      ソフトウェア本体
-readme.txt      このファイル
+farert.exe                    ソフトウェア本体
+readme.txt                    このファイル
+はじめにお読みください.txt    実行に関して
 
 
 
