@@ -1,8 +1,8 @@
 
 
 経路運賃営業キロ計算アプリ
-JR運賃、営業キロ表示、経路編集ソフト Farert       　　 2014-10-12
-                                                       Version 1.1
+JR運賃、営業キロ表示、経路編集ソフト Farert       　　 2014-10-30
+                                                       Version 1.2
                                               Copyright(C) 2014 Sutezo
 
 サポートサイト
@@ -112,10 +112,11 @@ readme.txt                    このファイル
 
   Windows XP, Vista, 7, 8. 等の Windowsプラットフォームで動作可能です。
   .NETフレームワークは利用しておりません。
-  
+
   開発環境は、MacbookAir(2013-Dec) 上の VMware Fusion6上のWindows7 64bit 上の
   Visual Studio 2010(SP1) です。
-
+　動作確認は、Windows8.1Pro.で確認しております。
+  
   使用ライブラリは以下のものを利用しております。ランタイムライブラリ
 　として、「Microsoft Visual C++ 2010 SP1 再頒布可能パッケージ (x86)」
 　が必要になるかもしれません。
@@ -125,7 +126,7 @@ readme.txt                    このファイル
 　- Twofish
     Copyright 1998, Hi/fn and Counterpane Systems.  All rights reserved.
 
-  本ソフトウェアは、ネットワーク接続はLAN、WAN問わず一切していません。
+  本ソフトウェアは、ネットワークアクセスはLAN、WAN問わず一切していません。
   
   
   
@@ -269,4 +270,12 @@ iPhone(iPod, iPADでも互換表示実行可)バージョンを2014年9月にリリースしました。
            - SQLite3 Version 3.7.5 -> Version 3.8.6
            - iOS版とソース統一化
            - いくつかの不具合の修正
-        
+2014/10/24 Ver1.2
+           DB:田子倉駅の削除
+           DB:吾妻線全線が東京近郊区間になっていなかったのを追加
+           DB:川口が都区内駅とされていたのを修正
+
+※ DB: とあるのはデータベースの変更のみで、ソースコードの変更をしていないものを
+   指します
+
+
