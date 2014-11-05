@@ -20,7 +20,7 @@ def sqlexec(sql, param):
 # True|False = f(line_id)
 #
 def is_shinkansen(line_id):
-	return 0 < line_id and line_id <= 6
+	return 0 < line_id and line_id <= 15  # 15:Maximum shinkansen ID
 
 
 #	並行在来線を得る

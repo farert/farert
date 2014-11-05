@@ -466,6 +466,10 @@ class Dbreg:
 		
 		# BCSUBURB: 近郊区間
 		tmp = int(linitems[11])
+		if (10 < tmp):	# 新幹線を含む近郊区間
+			sflg |= (1 << 13)
+			tmp -= 10
+
 		tmp &= 0x07
 		sflg |= (tmp << 7)	# bit9-7
 
