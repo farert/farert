@@ -505,8 +505,8 @@ DBO Route::Enum_station_located_in_prefect_or_company_and_line(int32_t prefectOr
 //"select t.name, station_id from t_lines l left join t_station t on t.rowid=l.station_id "
 //" where line_id=? and %s=? order by sales_km";
 "/**/select t.name, station_id from t_station t left join t_lines l on t.rowid=l.station_id"
-" where line_id=? and %s=? and (l.lflg&((1<<18)|(1<<31)|(1<<16)))=0 order by sales_km";
-
+" where line_id=? and %s=? and (l.lflg&((1<<18)|(1<<31)|(1<<17)))=0 order by sales_km";
+// 18:Company, 17:virtual junction for Shinkansen
 	char sql[256];
 	int32_t ident;
 
@@ -5035,8 +5035,7 @@ bool Route::IsSameNode(int32_t line_id, int32_t station_id1, int32_t station_id2
 	" select count(*)"
 	" from t_lines"
 	" where line_id=?1"
-	" and (lflg&(1<<15))!=0"
-	" and (lflg&((1<<31)|(1<<17)))=0"
+	" and (lflg&((1<<31)|(1<<17)|(1<<15)))=(1<<15)"
 	" and sales_km>"
 	" 		(select min(sales_km)"
 	" 		from t_lines"
@@ -5078,10 +5077,10 @@ int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t statio
 " (select sales_km from t_lines where line_id=?1 and station_id=?3)<"
 " (select sales_km from t_lines where line_id=?1 and station_id=?2) then"
 " sales_km=(select max(sales_km) from t_lines where line_id=?1 and (lflg&((1<<17)|(1<<31)))=0 and"
-" sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?2) and (lflg&((1<<17)|(1<<31)))=0 and (lflg&(1<<15))!=0)"
+" sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?2) and (lflg&((1<<17)|(1<<31)|(1<<15)))=(1<<15))"
 " else"
 " sales_km=(select min(sales_km) from t_lines where line_id=?1 and (lflg&((1<<17)|(1<<31)))=0 and "
-" sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?3) and (lflg&((1<<17)|(1<<31)))=0 and (lflg&(1<<15))!=0)"
+" sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?3) and (lflg&((1<<17)|(1<<31)|(1<<15)))=(1<<15))"
 " end;";
 
 	DBO dbo(DBS::getInstance()->compileSql(tsql));
@@ -5826,7 +5825,7 @@ vector<int32_t> FARE_INFO::GetDistanceEx(int32_t line_id, int32_t station_id1, i
 "	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// 3
 "	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
 "	((select 2147483648*(1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3) + "
-"	(select sflg&8191 from t_station where rowid=?2) + (select sflg&8191 from t_station where rowid=?3) * 65536)"		// 5
+"	(select sflg&16383 from t_station where rowid=?2) + (select sflg&16383 from t_station where rowid=?3) * 65536)"		// 5
 );
 //	2147483648 = 0x80000000
 	DbidOf dbid;
@@ -5879,6 +5878,51 @@ int32_t FARE_INFO::Retrieve70Distance(int32_t station_id1, int32_t station_id2)
 		return dbo.getInt(0);
 	}
 	return 0;
+}
+
+//static
+//	@brief 近郊区間でない新幹線乗車駅が中間にあるか？
+//
+//	@param [in] line_id
+//	@param [in] station_id1		駅1
+//	@param [in] station_id2		駅2
+//
+//	@return true if 近郊区間
+//
+bool FARE_INFO::IsNotBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2)
+{
+	static const char tsql[] =
+"select count(*)"
+"	from t_station where (sflg&(1<<13))=0 and rowid in"
+" (select station_id from t_lines"
+"	where line_id=?1"
+"	and (lflg&((1<<31)|(1<<17)))=0"
+"	and sales_km>="
+"			(select min(sales_km)"
+"			from t_lines"
+"			where line_id=?1"
+"			and (station_id=?2 or"
+"				 station_id=?3))"
+"	and sales_km<="
+"			(select max(sales_km)"
+"			from t_lines"
+"			where line_id=?1"
+"			and (station_id=?2 or "
+"				 station_id=?3)))";
+
+	int32_t rsd = -1;
+	
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
+	if (dbo.isvalid()) {
+		dbo.setParam(1, line_id);
+		dbo.setParam(2, station_id1);
+		dbo.setParam(3, station_id2);
+
+		if (dbo.moveNext()) {
+			rsd = dbo.getInt(0);
+		}
+	}
+	return rsd == 0;
 }
 
 
@@ -6097,7 +6141,9 @@ TRACE(_T("multicompany line none detect X: %d, %d, comp1,2=%d, %d, %s:%s-%s\n"),
 	this->flag &= (flag | FLAG_SHINKANSEN);	/* b11,10,5(大阪/東京電車特定区間, 山手線／大阪環状線内) */
 											/* ~(反転）不要 */
 	this->flag |= FLAG_FARECALC_INITIAL;	/* 次回から駅1は不要 */
-	if (IS_SHINKANSEN_LINE(line_id)) {
+	if (IS_SHINKANSEN_LINE(line_id) && (((0 == (IDENT1(d.at(5)) & (1<<BCBULARB))) ||
+	                                     (0 == (IDENT2(d.at(5)) & (1<<BCBULARB)))) ||
+			!IsNotBulletInUrban(line_id, station_id1, station_id2))) {
 		this->flag |= ((line_id & MASK_SHINKANSEN) << BSHINKANSEN);	/* make flag for MASK_FLAG_SHINKANSEN() */
 	}
 	/* flag(sflg)は、b11,10,5, 7-9 のみ使用で他はFARE_INFOでは使用しない */
@@ -6307,7 +6353,7 @@ bool FARE_INFO::retr_fare()
 
 			fare_tmp = FARE_INFO::Fare_basic_f(this->total_jr_calc_km);
 
-			if ((FARE_INFO::tax != 5) && 
+			if ((FARE_INFO::tax != 5) && /* IC運賃導入 */
 			    IsIC_area(URBAN_ID(this->flag)) &&   /* 近郊区間(最短距離で算出可能) */
 				(MASK_FLAG_SHINKANSEN(this->flag) == 0)) {
 
