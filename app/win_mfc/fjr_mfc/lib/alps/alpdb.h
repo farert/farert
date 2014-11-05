@@ -72,12 +72,13 @@ typedef unsigned int SPECIFICFLAG;
 #if !defined LOBYTE
 #define LOBYTE(b) ((b)&0xff)
 #endif
-/* --------------------------------------- */
+/* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
-#define MAX_LINE        209
-#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=7))	/* 新幹線は将来的にも10または15以内 */
-#define IS_COMPANY_LINE_OF(id)     (202<(id))
+#define MAX_LINE        216
+#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))	/* 新幹線は将来的にも10または15以内 !! */
+#define IS_COMPANY_LINE_OF(id)     (209<(id))			/* !!!!!!!!!!!!! */
 //#define MAX_JCT 311
+/* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
 #define STATION_IS_JUNCTION(sid)	(0 != (Route::AttrOfStationId(sid) & (1<<12)))
@@ -96,7 +97,7 @@ typedef unsigned int SPECIFICFLAG;
 
 #define MAX_NUM_JCT_STATION	103
 #define MAX_JCT_NUM			6		// 東京駅乗り入れ路線数が最大で6
-#define MAX_JCT				320		// 311
+#define MAX_JCT				320		// 319
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
@@ -136,6 +137,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define	LINE_SANYO_SINKANSEN	5	// 山陽新幹線
 #define	LINE_KYUSYU_SINKANSEN	6	// 九州新幹線
 #define	LINE_HOKKAIDO_SINKANSEN	7	// 北海道新幹線
+#define	LINE_YAMAGATA_SINKANSEN	8	// 山形新幹線
+#define	LINE_NAGASAKI_SINKANSEN	9	// 長崎新幹線
 
 
 #define CITYNO_TOKYO		1		// 東京都区内[区]
@@ -160,6 +163,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #define BSHINKANSEN					16
 #define FLAG_FARECALC_INITIAL		(1<<15)				
+#if 0
 #define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:東北新幹線
 #define FLAG_JYOETSU_SHINKANSEN		(2<<BSHINKANSEN)				// 2:上越新幹線
 #define FLAG_HOKURIKU_SHINKANSEN	(3<<BSHINKANSEN)				// 3:北陸長野新幹線
@@ -167,6 +171,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define FLAG_SANYO_SHINKANSEN		(5<<BSHINKANSEN)				// 5:山陽新幹線
 #define FLAG_KYUSYU_SHINKANSEN		(6<<BSHINKANSEN)				// 6:九州新幹線
 #define FLAG_HOKKAIDO_SHINKANSEN	(7<<BSHINKANSEN)				// 7:北海道新幹線
+#endif
 #define FLAG_SHINKANSEN				0x000f0000			// 新幹線	aggregate_fare_info()の最後で設定
 #define MASK_SHINKANSEN				0x0f				// 新幹線	aggregate_fare_info()の最後で設定
 #define MASK_FLAG_SHINKANSEN(flg)	((flg)&FLAG_SHINKANSEN)	// 新幹線	aggregate_fare_info()の最後で設定
@@ -180,6 +185,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
 
 #define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
+
+#define BCBULARB                    13
 
 #if 0
   vector<RouteItem> 先頭のlineId
@@ -378,6 +385,8 @@ private:
 	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
+	static bool 		IsNotBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
 	static bool     IsIC_area(int32_t urban_id);
 };
 
