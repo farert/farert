@@ -47,6 +47,7 @@ typedef unsigned int SPECIFICFLAG;
 
 #define BSR69TERM		24
 #define BSR69CONT		23
+#define BSRJCT			15
 
 #define JCTSP				 	1
 #define JCTSP_2L			 	2
@@ -82,7 +83,9 @@ typedef unsigned int SPECIFICFLAG;
 
 // 駅は分岐駅か
 #define STATION_IS_JUNCTION(sid)	(0 != (Route::AttrOfStationId(sid) & (1<<12)))
-#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
+//#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))	
+// sflg.12は特例乗り換え駅もONなのでlflg.15にした
+#define STATION_IS_JUNCTION_F(flg)		(0 != (flg & (1<<15)))
 
 	/* ID for line_id on t_lines */
 #define ID_L_RULE70		-10
@@ -161,32 +164,20 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define URB_FUKUOKA			4
 #define URB_SENDAI			5
 
-#define BSHINKANSEN					16
 #define FLAG_FARECALC_INITIAL		(1<<15)				
-#if 0
-#define FLAG_TOHOKU_SHINKANSEN		(1<<BSHINKANSEN)				// 1:東北新幹線
-#define FLAG_JYOETSU_SHINKANSEN		(2<<BSHINKANSEN)				// 2:上越新幹線
-#define FLAG_HOKURIKU_SHINKANSEN	(3<<BSHINKANSEN)				// 3:北陸長野新幹線
-#define FLAG_TOKAIDO_SHINKANSEN		(4<<BSHINKANSEN)				// 4:東海道新幹線
-#define FLAG_SANYO_SHINKANSEN		(5<<BSHINKANSEN)				// 5:山陽新幹線
-#define FLAG_KYUSYU_SHINKANSEN		(6<<BSHINKANSEN)				// 6:九州新幹線
-#define FLAG_HOKKAIDO_SHINKANSEN	(7<<BSHINKANSEN)				// 7:北海道新幹線
-#endif
-#define FLAG_SHINKANSEN				0x000f0000			// 新幹線	aggregate_fare_info()の最後で設定
-#define MASK_SHINKANSEN				0x0f				// 新幹線	aggregate_fare_info()の最後で設定
-#define MASK_FLAG_SHINKANSEN(flg)	((flg)&FLAG_SHINKANSEN)	// 新幹線	aggregate_fare_info()の最後で設定
 #define MASK_CITYNO(flg)			((flg)&0x0f)
+
 /* 近郊区間 */
 #define BCSUBURB					7
-#define MASK_URBAN		0x380
-#define URBAN_ID(flg)		(((int32_t)(flg)>>7)&7)
+#define MASK_URBAN					0x380
+#define URBAN_ID(flg)				(((int32_t)(flg)>>7)&7)
 #define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
 
 #define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
 
-#define BCBULARB                    13
+#define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
 #if 0
   vector<RouteItem> 先頭のlineId
@@ -285,7 +276,7 @@ private:
 	bool retr_fare();
 	int32_t aggregate_fare_info(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t before_staion_id1);
 public:
-	bool calc_fare(const vector<RouteItem>& routeList, bool applied_rule = true);	//***
+	bool calc_fare(const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
     void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList);
 	void reset() {				//***
 		companymask = 0;
@@ -385,7 +376,7 @@ private:
 	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
-	static bool 		IsNotBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 	static bool     IsIC_area(int32_t urban_id);
 };
@@ -485,6 +476,7 @@ public:
 	static int32_t LineIdOf_SANYO;        	// 山陽線
 	static int32_t LineIdOf_SANYOSHINKANSEN; // 山陽新幹線
 	static int32_t LineIdOf_HAKATAMINAMISEN; // 博多南線
+	static int32_t LineIdOf_OOSAKAKANJYOUSEN; // 大阪環状線
 
 	static int32_t StationIdOf_KITASHINCHI; 	// 北新地
 	static int32_t StationIdOf_AMAGASAKI;		// 尼崎
@@ -644,6 +636,7 @@ public:
 	static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
 	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t				GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t sales_km);
 	static int32_t				Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>		Get_route_distance(const vector<RouteItem>& route);
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);

@@ -45,7 +45,7 @@ class Dbreg:
 		self.num_of_line = 0
 
 
-	def create_table(self):
+	def create_tables(self):
 		###########################################
 		sql = """
 		create table t_coreareac (
@@ -381,9 +381,12 @@ class Dbreg:
 			elif proc_stage in dispatch:
 				dispatch[proc_stage](proc_stage, linitems, lin)
 
+		self.reg_last_line()
 
-
-
+	#
+	#
+	#
+	#
 	def reg_line(self, label, linitems, lin):
 	# 路線
 		if 0 <= linitems[1].find("branch"):
@@ -400,8 +403,13 @@ class Dbreg:
 			raise ValueError
 
 		# BSRJCTFLG: 分岐フラグ
-		sflg = 0 if linitems[7].strip() == '' else (1 << 12)	# jctflg
-		lflg = 0 if linitems[7].strip() == '' else (1 << 15)	# jctflg
+		tmp = linitems[7].strip()
+		sflg = 0
+		lflg = 0
+		if (tmp == 'x'):
+			sflg = (1 << 14)	 	# jctflg
+		elif (tmp != ''):
+			lflg = (1 << 15)		# jctflg
 
 		# 規則69条 t_rule69.id
 		# BSR69NOMASK, BSR69TERM, BSR69CONT
@@ -755,7 +763,8 @@ insert into t_farespp values(
 		# km, ha
 #------------------------------------------------------------------------------
 
-	def last_regist(self):
+	def reg_last_line(self):
+		# 分岐特例
 		for bitem in self.branch:
 			#		self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
 			#					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg])
@@ -805,10 +814,30 @@ insert into t_farespp values(
 			[bitem[0], bitem[1], bitem[5], bitem[3], bitem[7]])
 			# b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb15のみ使用される
 			# 0xffffff00=4294967040
+		
+		# 分岐フラグ(lflg.b15=純粋な分岐駅(Excel8列の乗換路線欄空欄でもxでもない駅), sflg.b12=分岐特例も含めた分岐駅)
+		# lflg.b15の方は既に設定済み、sflg.b12は仮値として複数路線に所属するが分岐駅としたくない駅(新今宮)はonに設定されているのでここでoffする
+		# edit jct_flg
+		cur2 = self.con.cursor()
+		cur3 = self.con.cursor()
+		self.cur.execute("select rowid from t_line") 
+		for rec in self.cur:
+			lineid = rec[0]
+			cur2.execute("""select station_id from t_lines where 
+			                line_id=?1 and (lflg&(1<<17))=0 and station_id in 
+			                (select station_id from t_lines where line_id!=?1)""", [lineid])
+			for rec2 in cur2:
+				stationid = rec2[0]
+				cur3.execute("select sflg from t_station where rowid=?", [stationid])
+				sflg = cur3.fetchone()[0]
+				if 0 == (sflg & ((1 << 12) | (1 << 14))):	# 'x':新今宮を除く
+					sflg |= (1 << 12)     # 分岐特例の含めた分岐駅
+					self.con.execute("update t_station set sflg=?1 where rowid=?2", [sflg, stationid])
+
 		# make t_jct
 		self.con.execute("""
 		insert into t_jct(station_id) select rowid from t_station 
-		where (sflg & (1 << 12))!=0
+		where rowid in (select station_id from t_lines where (lflg & (1 << 15))!=0)
 		""")
 		# select id from t_jct j join t_station s on s.rowid=j.station_id where name='森';
 
@@ -816,6 +845,9 @@ insert into t_farespp values(
 		##self.con.execute('create view same_station as select name, count(*) as ''num'' from t_station where sameflg=1 group by name')
 		##self.con.execute('create view junctions as select p.name as prefect, c.name as company, n.name as line, s.name as station, s.kana as station_kana, sales_km, calc_km, spe_route, jctflg, sameflg, cityflg from t_lines l join t_station s on s.rowid=l.station_id join t_line n on n.rowid=l.line_id join t_prefect p on p.rowid=s.prefect_id join t_company c on c.rowid=s.company_id where jctflg=1 order by line_id, sales_km')
 		##self.con.execute('create view jct_station as select name, cityflg from t_station where jctflg=1')
+
+#------------------------------------------------------------------------------
+	def last_regist(self):
 
 		self.con.commit()
 
@@ -878,7 +910,7 @@ insert into t_farespp values(
 		"""
 
 dbreg = Dbreg('jr.db')
-dbreg.create_table()
+dbreg.create_tables()
 dbreg.first_regist()
 dbreg.second_regist()
 dbreg.last_regist()
