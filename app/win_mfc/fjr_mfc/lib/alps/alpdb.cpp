@@ -3,6 +3,7 @@
 
 /*!	@file alpdb.cpp core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
+ *  Visual C++ Version2010 and Objective-C(X-code5.0)
  */
 #if 0
 'Farert'
@@ -207,6 +208,8 @@ char* strcat_s(char* dst, int32_t maxlen, const char* src)
 // 	@retval false 文字列はひらがな、カタカナ以外の文字が含まれている
 //
 #ifndef _WINDOWS   /* UTF-8 */
+/* UTF-8が文字列で使用できるのはC11(Visual C++ 2013)から
+ */
 bool isKanaString(LPCTSTR szStr)
 {
     unsigned char lead;
@@ -2639,8 +2642,8 @@ SPECIFICFLAG Route::AttrOfStationOnLineLine(int32_t line_id, int32_t station_id)
 		ctx.setParam(2, station_id);
 
 		if (ctx.moveNext()) {
-			s = 0x0000ffff & ctx.getInt(0);
-			l = 0xffff0000 & ctx.getInt(1);
+			s = 0x00007fff & ctx.getInt(0);
+			l = 0xffff8000 & ctx.getInt(1);	// b15はSTATION_IS_JUNCTION_F(lflg)で必要なので注意
 			return s | l;
 		}
 	}
