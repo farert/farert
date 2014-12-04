@@ -2945,13 +2945,7 @@ int32_t Route::GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, i
 	int32_t km = 0;
 #if defined _WINDOWS
 	const TCHAR tsql[] =
-_T("select")
-_T(" (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ")
-_T("  ((station_id=(select rowid from t_station where name='新今宮')) or")
-_T("   (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+")
-_T(" (select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+")
-_T(" (select max(sales_km)-min(sales_km) from t_lines where line_id=")
-_T("  (select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
+_T("select  (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ((station_id=(select rowid from t_station where name='新今宮')) or (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+(select max(sales_km)-min(sales_km) from t_lines where line_id=(select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
 #ifdef UNICODE
 	CT2A usql(tsql, CP_UTF8);
 	DBO dbo = DBS::getInstance()->compileSql(usql);
