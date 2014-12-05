@@ -5564,7 +5564,7 @@ TRACE(_T("route[] add: %s\n"), StationName(Route::Jct2id(route[i] + 1)).c_str())
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
-TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
+TRACE(_T("####%d##%d, %u##\n"), a, i, route.size());
 			if ((a < 0) || ((i + 1) < (int32_t)route.size())) {
 				route_list_cooked.clear();
 				return a;	/* error */
