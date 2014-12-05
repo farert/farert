@@ -10,7 +10,7 @@ typedef short int16_t;
 
 extern int g_tax;	/* in alps_mfc.cpp */
 
-#include "stdafx.h"
+#include <stdafx.h>
 using namespace std;
 #include <vector>
 
