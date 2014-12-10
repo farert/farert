@@ -47,11 +47,7 @@ using namespace std;
 #define JctMaskClear()   	memset(jct_mask, 0, sizeof(jct_mask))
 #define IsJctMask(jctid)	((jct_mask[(jctid) / 8] & (1 << ((jctid) % 8))) != 0)
 
-#ifndef _WINDOWS
-////////////////////////////////////////////
-//  global
-int32_t g_tax = 8;
-#endif
+
 ////////////////////////////////////////////
 //	static member
 
