@@ -24,7 +24,7 @@ uint32_t get_time_msec(void);
 
 typedef std::basic_string<TCHAR> tstring;
 
-#ifndef _WINDOWS
+#if !defined _WINDOWS || defined TEST
 #define READ_ONLY_FILE_DIRECT
 #else
 #undef READ_ONLY_FILE_DIRECT
