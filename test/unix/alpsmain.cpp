@@ -1,10 +1,15 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 extern int test_exec(void);
 
+int g_tax = 8;
+
 int main(int argc, char** argv)
 {
-	if (! DBS::getInstance()->open("../../db/jr.db")) {
+#if defined _WINDOWS
+	_tsetlocale(LC_ALL, _T(""));	// tstring
+#endif
+	if (! DBS::getInstance()->open(_T("../../db/jr.db"))) {
 		printf("Can't db open\n");
 		return -1;
 	}

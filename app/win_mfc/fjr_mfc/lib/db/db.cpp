@@ -20,7 +20,12 @@ map<string, STMT_CACHE*> DBS::cache_pool;
 bool DBS::open(LPCTSTR dbpath) 
 {
 #ifdef READ_ONLY_FILE_DIRECT
+#ifdef _WIN32
+	CT2A sjispath(dbpath);
+	if (0 != sqlite3_open_v2(sjispath, &m_db, SQLITE_OPEN_READONLY, 0)) {
+#else
 	if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY, 0)) {
+#endif
 		TRACE("Database can't open\n");
 		cleanup();
 		return false;
