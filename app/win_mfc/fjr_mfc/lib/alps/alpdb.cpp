@@ -48,11 +48,6 @@ using namespace std;
 #define JctMaskClear()   	memset(jct_mask, 0, sizeof(jct_mask))
 #define IsJctMask(jctid)	((jct_mask[(jctid) / 8] & (1 << ((jctid) % 8))) != 0)
 
-#ifndef _WINDOWS
-////////////////////////////////////////////
-//  global
-int32_t g_tax = 8;
-#endif
 ////////////////////////////////////////////
 //	static member
 
@@ -163,43 +158,6 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_)
 
 
 //////////////////////////////////////////////////////
-#ifndef _WINDOWS
-char* strcpy_s(char* dst, int32_t maxlen, const char* src)
-{
-    int32_t l;
-    l = (int32_t)strlen(src);
-    if (maxlen <= l) {
-        l = maxlen - 1;
-        strncpy(dst, src, l);
-        dst[l] = (char)0;
-    } else {
-        strcpy(dst, src);
-    }
-    return dst;
-}
-
-
-char* strcat_s(char* dst, int32_t maxlen, const char* src)
-{
-    int32_t l;
-    int32_t l2;
-    l = (int32_t)strlen(src);
-    l2 = (int32_t)strlen(dst);
-    if (maxlen < l2) {
-        ASSERT(FALSE);
-        return dst;     /* error */
-    }
-    if (maxlen <= (l + l2)) {
-        l = maxlen - l2 - 1;
-        strncpy(dst, src, l);
-        dst[l] = (char)0;
-    } else {
-        strcpy(dst + l2, src);
-    }
-    return dst;
-}
-#endif	/* !_WINDOWS */
-
 // 	文字列は「漢字」か「かな」か？
 //	「かな」ならTrueを返す
 // 
