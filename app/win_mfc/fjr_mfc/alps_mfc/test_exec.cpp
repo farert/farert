@@ -1,6 +1,8 @@
 ﻿#include <stdafx.h>
 
-#if defined _DEBUG || !defined _WINDOWS
+
+#if defined _DEBUG || !defined _WINDOWS || defined TEST
+
 
 FILE *os;
 Route route;
@@ -10,11 +12,6 @@ Route route;
 #define LID(s)	Route::GetLineId(_T(#s))
 
 static int test_setup_route(TCHAR* buffer);
-
-#define _ftprintf fprintf
-#define _tcschr strchr
-
-typedef char* LPTSTR;
 
 
 static tstring cr_remove(tstring s)
@@ -26,6 +23,11 @@ static tstring cr_remove(tstring s)
 	return s;
 }
 
+#if defined _WIN32
+#define STRCPY(l, d, s)	_tcscpy_s<l>(d, s)
+#else
+#define STRCPY(l, d, s)  strcpy_s(l, d, s)
+#endif
 /////////////////////////////////////////////////////////////////////////////////////
 
 static void test_route(void)
@@ -576,7 +578,7 @@ static void test_route(void)
 			t++;
 			continue;
 		}
-		strcpy(buffer, route_def[i]);
+		STRCPY(1024, buffer, route_def[i]);
 		_ftprintf(os, _T("!****<%02d>: ******************* %s **********************\n<%s>\n"), i - t + 1, psz_title, buffer);
 
 		TRACE(_T("test_exec(route): %d*************************************************\n%s\n"), i - t + 1, buffer);
@@ -1028,7 +1030,7 @@ void test_hzl(void)
 	int i;
 	for (i = 0; '\0' != *route_def[i]; i++) {
 		route.removeAll();
-		strcpy(buffer, route_def[i]);
+		STRCPY(1024, buffer, route_def[i]);
 
 
 		TCHAR* p;
@@ -1107,7 +1109,7 @@ static void test_hzl2()
 		int ip0, ip1, ip2, ip3;
 		TCHAR* ctx = NULL;
 		int t;
-		strcpy(buffer, param[i]);
+		STRCPY(1024, buffer, param[i]);
 		p0 = _tcstok_s(buffer, _T(", \t"), &ctx);
 		p1 = _tcstok_s(NULL, _T(", \t"), &ctx);
 		p2 = _tcstok_s(NULL, _T(", \t"), &ctx);
@@ -1242,9 +1244,9 @@ void test_autoroute(void)
 		LPCTSTR p;
 		
 		_ftprintf(os, _T("!===<%02d>: auto route ==================\n\n"), i / 2);
-		TRACE("test_exec(auto route): %d*************************************************\n", i / 2);
+		TRACE(_T("test_exec(auto route): %d*************************************************\n"), i / 2);
 		route.removeAll();
-		strcpy(buffer, route_def[i]);
+		STRCPY(1024, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 
@@ -1271,7 +1273,7 @@ void test_autoroute(void)
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		}
 		route.removeAll();
-		strcpy(buffer, route_def[i]);
+		STRCPY(1024, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		route.setEndStationId(Route::GetStationId(p));
@@ -1575,7 +1577,7 @@ void test_jctspecial()
 
 	for (i = 0; '\0' != *route_def[i]; i++) {
 		route.removeAll();
-		strcpy(buffer, route_def[i]);
+		STRCPY(1024, buffer, route_def[i]);
 		pbuffer = _tcschr(buffer, '|');
 		*pbuffer = _T('\0');
 		pbuffer++;
@@ -1658,9 +1660,12 @@ void show_time(time_t time)
     struct tm date_time;
 	
     memset(&date_time, 0, sizeof(struct tm));
+#if defined _WINDOWS
+	localtime_s(&date_time, (const time_t*)&time);
+#else
     localtime_r((const time_t*)&time, &date_time);
-    
-    _ftprintf(os, "%04u-%u-%u %u:%02u:%02u\n", 
+#endif
+	_ftprintf(os, _T("%04u-%u-%u %u:%02u:%02u\n"), 
     								  date_time.tm_year + 1900, 
                                       date_time.tm_mon + 1, 
                                       date_time.tm_mday,
@@ -1680,10 +1685,13 @@ int test_exec(void)
     time_t end;
 
     time(&now);		// current time
-	
-	os = fopen("test_result.txt", "w");
 
-	_ftprintf(os, "timestamp: ");
+#if	defined _WINDOWS
+	fopen_s(&os, "test_result.txt", "w");
+#else
+	os = _tfopen(_T("test_result.txt"), _T("w"));
+#endif
+	_ftprintf(os, _T("timestamp: "));
 	show_time(now);
 
 	_ftprintf(os, _T("\n#---shinkansen  -------------------------------------------\n"));
