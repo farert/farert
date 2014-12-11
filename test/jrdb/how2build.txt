@@ -1,2 +1,0 @@
- g++ -o alp -std=c++11 alpsmain.cpp db.cpp alpdb.cpp sqlite3.o -lpthread -ldl
-
