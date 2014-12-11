@@ -1,14 +1,8 @@
 #include "stdafx.h"
-#include "alpdb.h"
-#include <stdarg.h>
+
+#define DBPATH "../../db/jr.db"
 
 Route route;
-//FILE *os;
-#define os stdout
-
-bool logflg = true;
-
-#define	_ftprintf	fprintf
 
 static tstring cr_remove(tstring s)
 {
@@ -135,7 +129,7 @@ void test_autoroute(void)
 		bool b_fail;
 		LPCTSTR p;
 		
-		_ftprintf(os, _T("!===<%02d>: auto route ==================\n\n"), i / 2);
+		TRACE(_T("!===<%02d>: auto route ==================\n\n"), i / 2);
 		TRACE("test_exec(auto route): %d*************************************************\n", i / 2);
 		route.removeAll();
 		strcpy(buffer, route_def[i]);
@@ -148,23 +142,23 @@ void test_autoroute(void)
 			++p;
 		}
 		route.setEndStationId(Route::GetStationId(p));
-		_ftprintf(os, _T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
+		TRACE(_T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
 
-		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
+		TRACE(_T("* auto route(新幹線未使用) >>>>>>>\n"));
 		if (route.changeNeerest(false) < 0) {
 printf("! ! ! changeNeerest E r r o r ! ! !\n");
-			_ftprintf(os, _T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));
+			TRACE(_T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));
 			ASSERT(b_fail == true);
 		} else {
 printf("o o o changeNeerest S u c c e s s   o o o\n");
 			ASSERT(b_fail == false);
 			tstring s = route.showFare(RULE_NO_APPLIED);
 			s = cr_remove(s);
-			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+			TRACE(_T("///非適用\n%s\n"), s.c_str());
 #if 1
 			s = route.showFare(RULE_APPLIED);
 			s = cr_remove(s);
-			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+			TRACE(_T("///適用\n%s\n"), s.c_str());
 #endif
 		}
 #if 1
@@ -173,24 +167,27 @@ printf("o o o changeNeerest S u c c e s s   o o o\n");
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		route.setEndStationId(Route::GetStationId(p));
-		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
+		TRACE(_T("* auto route(新幹線使用) >>>>>>>\n"));
 		if (route.changeNeerest(true) < 0) {
-			_ftprintf(os, _T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));
+			TRACE(_T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));
 			ASSERT(b_fail == true);
 		} else {
 			ASSERT(b_fail == false);
 			tstring s = route.showFare(RULE_NO_APPLIED);
 			s = cr_remove(s);
-			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+			TRACE(_T("///非適用\n%s\n"), s.c_str());
 
 			s = route.showFare(RULE_APPLIED);
 			s = cr_remove(s);
-			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+			TRACE(_T("///適用\n%s\n"), s.c_str());
 		}
 #endif
 	}
 
 }
+
+
+
 #if 0
 a 渋谷 山手線 品川 蒲田
 a 渋谷 山手線 品川 東北線 川崎 蒲田
@@ -205,20 +202,12 @@ int main(int argc, char** argv)
 	int rc;
 	int bullet = 0;
 	
-	if (! DBS::getInstance()->open("jr.db")) {
+	if (! DBS::getInstance()->open(DBPATH)) {
 		printf("Can't db open\n");
 		return -1;
 	}
 	
-	logflg = true;
 	if (2 <= argc) {
-		if (strcmp("-n", *(argv + 1)) == 0) {
-			++argv;
-			--argc;
-			logflg = false;
-		}
-	}
-	if (3 <= argc) {
 		for (i = 1; i < argc; i++) {
 			++argv;
 			if ((i % 2) != 0) {
@@ -274,16 +263,5 @@ int main(int argc, char** argv)
 		test_autoroute();
 	}
 	return 0;
-}
-
-
-void logout(const char* fmt, ...)
-{
-	if (logflg) {
-	    va_list ap;
-	    va_start(ap, fmt);
-	    vfprintf(stdout, fmt, ap);
-	    va_end (ap);
-	}
 }
 
