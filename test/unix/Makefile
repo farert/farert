@@ -8,9 +8,9 @@ vpath %h ../../app/win_mfc/fjr_mfc/lib/db
 vpath %c ../../app/win_mfc/fjr_mfc/lib/db
 
 OBJS = $(patsubst %.c,%.o,$(wildcard ./*.c)) $(patsubst %.cpp,%.o,$(wildcard ./*.cpp)) test_exec.o \
-       db.o sqlite3.o alpdb.o alpsmain.o
+       db.o sqlite3.o alpdb.o testmain.o
 
-alp: 
+test : 
 
  .c.o:
 	gcc -I. -I../../app/win_mfc/fjr_mfc/lib/db -c $< -o $@
@@ -19,9 +19,9 @@ alp:
 	g++ -I. -I../../app/win_mfc/fjr_mfc/lib/db -I../../app/win_mfc/fjr_mfc/lib/alps -std=c++11 -c $< -o $@
 
 
-alp: $(OBJS)
+test : $(OBJS)
 	g++ -o $@ -std=c++11 $^ -lpthread -ldl
 
 clean:
-	rm -f *.o alp
+	rm -f *.o test
 
