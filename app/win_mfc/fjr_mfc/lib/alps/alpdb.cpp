@@ -677,6 +677,7 @@ int32_t Route::NumOfNeerNode(int32_t stationId)
 	return c;
 }
 
+//static
 // 駅ID(分岐駅)の最寄りの分岐駅を得る(全路線）
 // [jct_id, calc_km, line_id][N] = f(jct_id)
 //
@@ -997,13 +998,13 @@ first_station_id1 = stationId1;
 
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B)) {
 		 /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので
-		  * t_jctspcl.type retrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
+		  * t_jctspcl.type Route::RetrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
 		if ((LDIR_DESC == Route::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2)) &&
 		    ((num < 2) || ((2 <= num) && 
 		    (LDIR_ASC  == Route::DirLine(route_list_raw.at(num - 1).lineId,
 		                                 route_list_raw.at(num - 2).stationId, 
 		                                 route_list_raw.at(num - 1).stationId)))) &&
-			(JCTSP_B_NAGAOKA == retrieveJunctionSpecific(route_list_raw.at(num - 1).lineId, 
+			(JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(route_list_raw.at(num - 1).lineId, 
 			                                             route_list_raw.at(num - 1).stationId, &jctspdt))) {
 			if (stationId2 == jctspdt.jctSpStationId2) { /* 宮内止まり？ */
 				TRACE("JSBH004\n");
@@ -1108,7 +1109,7 @@ first_station_id1 = stationId1;
 #ifdef _DEBUG
 ASSERT(original_line_id = line_id);
 #endif
-			type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+			type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 			ASSERT(0 < type);
 			TRACE("JCT: detect step-horiz:%u\n", type);
 			if (jctspdt.jctSpStationId2 != 0) {
@@ -1121,7 +1122,7 @@ ASSERT(original_line_id = line_id);
 ASSERT(first_station_id1 = stationId1);
 #endif
 		// retrieve from a, d to b, c
-		type = retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+		type = Route::RetrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 		ASSERT(0 < type);
 		TRACE("JCT: detect step:%u\n", type);
 		if (stationId2 != jctspdt.jctSpStationId) {
@@ -1298,7 +1299,7 @@ ASSERT(first_station_id1 = stationId1);
 ASSERT(original_line_id = line_id);
 ASSERT(first_station_id1 = stationId1);
 #endif
-		type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
+		type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt);
 		ASSERT(0 < type);
 		TRACE("JCT:%u\n", type);
 		if (stationId1 == jctspdt.jctSpStationId) {
@@ -1368,7 +1369,7 @@ ASSERT(first_station_id1 = stationId1);
 	
 	// 長岡周りの段差型
 	if ((2 <= num) && BIT_CHK(lflg1, BSRJCTSP_B)) {
-		if (JCTSP_B_NAGAOKA == retrieveJunctionSpecific(line_id, 
+		if (JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(line_id, 
 		                                                route_list_raw.at(num - 1).stationId, &jctspdt)) {
 		 	/* 信越線下り(直江津→長岡方面) && 新幹線|上越線上り(長岡-大宮方面)? */
 			if ((LDIR_ASC == Route::DirLine(route_list_raw.at(num - 1).lineId, 
@@ -2772,7 +2773,7 @@ tstring Route::CompanyName(int32_t id)
 //
 //	@return type 0: usual, 1-3:type B
 //
-int32_t Route::retrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt)
+int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt)
 {
 	const char tsql[] =
 	//"select calc_km>>16, calc_km&65535, (lflg>>16)&32767, lflg&32767 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
