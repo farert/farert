@@ -393,8 +393,19 @@ private:
 #define B1LID_FIN_CITY_OFF		7
 #define B1LID_BEGIN_OOSAKA		8
 #define B1LID_FIN_OOSAKA		9
-
+#define B1LID_CITY_MASK         0x3ff
 #define BCRULE70	6
+
+// 10-12
+//                                      0 なにもなし　　　 1回目 2回目
+#define B1LID_OSAKAKAN_1F	(1 << 10)   // 1 大阪環状線1回通過（正・－）
+#define B1LID_OSAKAKAN_1R	(2 << 10)   // 2 大阪環状線1回通過（逆・－）
+#define B1LID_OSAKAKAN_2FF	(3 << 10)   // 3 大阪環状線2回通過（正・正）
+#define B1LID_OSAKAKAN_2FR	(4 << 10)   // 4 大阪環状線2回通過（正・逆）
+#define B1LID_OSAKAKAN_2RF	(5 << 10)   // 5 大阪環状線2回通過（逆・正）
+#define B1LID_OSAKAKAN_2RR	(6 << 10)   // 6 大阪環状線2回通過（逆・逆）
+#define B1LID_OSAKAKAN_MASK    (0x07 << 10)
+#define B1LID_OSAKAKAN_PASS(flg, val) (((flg) & B1LID_OSAKAKAN_MASK) == val)
 
 /* cooked flag for shoFare(), show_route() */
 #define	RULE_NO_APPLIED			0x8000
@@ -539,6 +550,7 @@ public:
 private:
 	bool				checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114);
 	static DBO	 		Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int32_t to_station_id);
+	       DBO          enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 private:
 	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
