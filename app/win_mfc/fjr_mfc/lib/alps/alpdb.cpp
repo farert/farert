@@ -805,6 +805,44 @@ DBO Route::Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int
 	return dbo;
 }
 
+DBO Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2)
+{
+	if (line_id != DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
+		return Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
+	}
+	if (!IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0)) {
+	}
+}
+#if 0
+if 始めての大阪環状線
+     If 強制ではなく最短距離で経路を
+        選択で経路重複エラー？
+           If 大回り経路で経路重複エラー？
+                Abort Failure //
+           Else
+               ( 大阪環状線内の分岐駅から
+                発して戻ってきたケース)
+                   Ok,Flagは3        Check!
+           Endif
+      Else
+             Flagを1.      ほぼ多くの場合
+      Endif
+Else If 2回目の大阪環状線
+      If 2回目最短距離で経路重複
+           If 1回目を逆回りしてみて2回目最短距離は重複？
+                Abort failure//
+            Else
+                 Flagは3でok
+            End if          
+     Else
+           Flagは3でok
+     End
+Else if 3回目以上の大阪環状線 == flag 3
+   Abort failure 
+Else (大阪環状線ではない)
+  通常通り
+End
+#endif
 //static
 //	70条進入路線、脱出路線から進入、脱出境界駅と営業キロ、路線IDを返す
 //
@@ -1915,11 +1953,11 @@ int32_t Route::fareCalcOption()
 	if ((route_list_raw.size() <= 1) || (route_list_cooked.size() <= 1)) {
 		return 0;
 	}
-	if ((B1LID_MARK | (1 << B1LID_BEGIN_CITY_OFF)) == (route_list_cooked.at(0).lineId & 
+	if ((B1LID_MARK | (1 << B1LID_BEGIN_CITY_OFF)) == (route_list_cooked.front().lineId & 
 	    (B1LID_MARK | (1 << B1LID_BEGIN_CITY_OFF)))) {
 		return 1;
 	}
-	if ((B1LID_MARK | (1 << B1LID_FIN_CITY_OFF)) == (route_list_cooked.at(0).lineId & 
+	if ((B1LID_MARK | (1 << B1LID_FIN_CITY_OFF)) == (route_list_cooked.front().lineId & 
 	    (B1LID_MARK | (1 << B1LID_FIN_CITY_OFF)))) {
 		return 2;
 	}
@@ -4146,10 +4184,12 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88 for start.\n");
-			route_list_tmp2.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
+			route_list_tmp2.front().lineId &= ~B1LID_CITY_MASK;
+			route_list_tmp2.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
 		} else if ((aply88 & 2) != 0) {
 			TRACE("Apply to rule88 for arrive.\n");
-			route_list_tmp2.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
+			route_list_tmp2.front().lineId &= ~B1LID_CITY_MASK;
+			route_list_tmp2.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
 		}
 	}
 
@@ -4179,10 +4219,12 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88(2) for start.\n");
-			route_list_tmp.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
+			route_list_tmp.front().lineId &= ~B1LID_CITY_MASK;
+			route_list_tmp.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_OOSAKA));
 		} else if ((aply88 & 2) != 0) {
 			TRACE("Apply to rule88(2) for arrive.\n");
-			route_list_tmp.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
+			route_list_tmp.front().lineId &= ~B1LID_CITY_MASK;
+			route_list_tmp.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
 		}
 	}
 
@@ -4201,7 +4243,8 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 		/* <<<都区市内適用>>> */
 		/* 201km <= sales_km */
 		/* enable */
-		route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | (chk & 0x03));	// B1LID_BEGIN_CITY, B1LID_FIN_CITY
+		route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+		route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | (chk & 0x03));	// B1LID_BEGIN_CITY, B1LID_FIN_CITY
 		TRACE("applied for rule86(%d)\n", chk & 0x03);
 
 		// route_list_cooked = route_list_tmp3
@@ -4216,7 +4259,8 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 		/* apply to 87 */  /* 都区内に限り最短が100km以下は非適用(基115-2) */
 		if ((1000 < sales_km) && ((InRouteUrban(route_list_raw) != URB_TOKYO) || (1000 < Route::Get_route_distance(route_list_raw).at(0)))) {
 			/* 山手線内発着 enable */
-			route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | ((rtky & 0x03) << 2));	// B1LID_BEGIN_YAMATE, B1LID_FIN_YAMATE
+			route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+			route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | ((rtky & 0x03) << 2));	// B1LID_BEGIN_YAMATE, B1LID_FIN_YAMATE
 			TRACE("applied for rule87\n");
 
 			// route_list_cooked = route_list_tmp3
@@ -4284,10 +4328,12 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 					/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
 					if (sk == 900) {
 						TRACE("applied for rule87(start)\n");
-						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE) | MASK(B1LID_BEGIN_CITY_OFF));
+						route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+						route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE) | MASK(B1LID_BEGIN_CITY_OFF));
 					} else {
 						TRACE("applied for rule86(start)\n");
-						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_CITY) | MASK(B1LID_BEGIN_CITY_OFF));
+						route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+						route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_CITY) | MASK(B1LID_BEGIN_CITY_OFF));
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -4297,10 +4343,12 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
 					if (sk == 900) {
 						TRACE("applied for rule87(end)\n");
-						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_YAMATE) | MASK(B1LID_FIN_CITY_OFF));
+						route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+						route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_YAMATE) | MASK(B1LID_FIN_CITY_OFF));
 					} else {
 						TRACE("applied for rule86(end)\n");
-						route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_CITY) | MASK(B1LID_FIN_CITY_OFF));
+						route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+						route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_CITY) | MASK(B1LID_FIN_CITY_OFF));
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -4319,10 +4367,12 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 				/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
 				if (sk == 900) {
 					TRACE("applied for rule87(start)\n");
-					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE));
+					route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+					route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_YAMATE));
 				} else {
 					TRACE("applied for rule86(start)\n");
-					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_CITY));
+					route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+					route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_BEGIN_CITY));
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
@@ -4331,10 +4381,12 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 				/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
 				if (sk == 900) {
 					TRACE("applied for rule87(end)\n");
-					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_YAMATE));
+					route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+					route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_YAMATE));
 				} else {
 					TRACE("applied for rule86(end)\n");
-					route_list_tmp3.at(0).lineId = (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_CITY));
+					route_list_tmp3.front().lineId &= ~B1LID_CITY_MASK;
+					route_list_tmp3.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_CITY));
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
