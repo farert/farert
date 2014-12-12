@@ -1,3 +1,35 @@
+2014-12-11
+iOS側で使用するメソッドリスト
+
+- RouteDataController: 
+    initWithAssign(イニシャライザ) route.assign(route&)
+
+- ResultView(entity)
+  routeScript
+  showFare
+  autoRoute
+  addRoute
+  resetStartStation resetRoute removeAll()
+  lastStationId lastRouteItemStationId route->routeList().back().stationId
+  startStationId startStationId startStationId()
+  calcFare
+
+- MainView(edit route)
+  getRouteCount
+  removeTail
+  calcFare
+  resetStartStation
+  reverseRoute
+  autoRoute
+  setupRoute
+  startStationId
+  getRouteItem
+  addRoute
+  lastLineId
+  routeScript
+
+
+
 2014-11-3
 sflg 13-15 reserve
 のうち13を使用 「BCBULARB:新幹線利用も含む近郊区間フラグ」として使用
