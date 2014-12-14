@@ -405,7 +405,7 @@ private:
 #define B1LID_OSAKAKAN_2RF	(5 << 10)   // 5 大阪環状線2回通過（逆・正）
 #define B1LID_OSAKAKAN_2RR	(6 << 10)   // 6 大阪環状線2回通過（逆・逆）
 #define B1LID_OSAKAKAN_MASK    (0x07 << 10)
-#define B1LID_OSAKAKAN_PASS(flg, val) (((flg) & B1LID_OSAKAKAN_MASK) == val)
+#define IS_B1LID_OSAKAKAN_PASS(flg, val) (((flg) & B1LID_OSAKAKAN_MASK) == val)
 
 /* cooked flag for shoFare(), show_route() */
 #define	RULE_NO_APPLIED			0x8000
