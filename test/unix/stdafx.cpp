@@ -1,6 +1,6 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 
-// ƒ\[ƒX‘¤‚Åg—p‚µ‚Ä‚¢‚é TRACEƒ}ƒNƒ‚ÅA•¶š—ñ‚É _T()‚ğ‚Â‚¯‚½‚è‚Â‚¯‚È‚©‚Á‚½‚è‚µ‚½‚Ì‚Å
+// ã‚½ãƒ¼ã‚¹å´ã§ä½¿ç”¨ã—ã¦ã„ã‚‹ TRACEãƒã‚¯ãƒ­ã§ã€æ–‡å­—åˆ—ã« _T()ã‚’ã¤ã‘ãŸã‚Šã¤ã‘ãªã‹ãƒ»ï½½ã‚Šã—ãŸã®ã§
 
 #if defined _WINDOWS
 void TRACE(const char* fmt, ...)
@@ -18,7 +18,7 @@ void TRACE(const wchar_t* fmt, ...)
 }
 #endif
 
-#if !defined_WINDOWS
+#if !defined _WINDOWS
 char* strcpy_s(char* dst, int32_t maxlen, const char* src)
 {
     int32_t l;
