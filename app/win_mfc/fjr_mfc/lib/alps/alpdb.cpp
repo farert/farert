@@ -808,9 +808,17 @@ DBO Route::Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int
 DBO Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	if (line_id != DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		return Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
+		return Route::Enum_junctions_of_line(line_id, station_id1, station_id2);
 	}
 	if (!IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0)) {
+		// 始めての大阪環状線
+		
+	} else if () {
+		// 2回目の大阪環状線
+	} else if () {
+		// 3回目以上の大阪環状線 == flag 3
+	} else {
+		ASSERT(FALSE);
 	}
 }
 #if 0
