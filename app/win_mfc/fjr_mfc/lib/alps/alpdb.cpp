@@ -805,52 +805,89 @@ DBO Route::Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int
 	return dbo;
 }
 
-DBO Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2)
+// 1<<15: 分岐駅
+
+正転距離を算出
+逆転距離を算出
+
+新今宮～（新今宮に近いほうの駅）（新今宮だったら新今宮）＋
+天王寺側に近い駅の天王寺からの距離 + 
+新今宮～天王寺の距離
+＾逆回りの距離を得る（逆が正かは、発駅、着駅の関係で逆転するので、しないように常に同一定義の呼称として正廻りは天王寺ー新今宮、逆回りは天王寺関西線今宮
+
+
+	Route::GetDistance(line_id, station_id1, station_id2);
+
+    _T("select"
+    _T(" (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and "
+    _T("  ((station_id=(select rowid from t_station where name='新今宮')) or"
+    _T("   (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+"
+    _T(" (select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+"
+    _T(" (select max(sales_km)-min(sales_km) from t_lines where line_id="
+    _T("  (select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))";
+
+
+vector<int32_t> Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
+	vectir<int32_t> junctions;
+	
 	if (line_id != DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		return Route::Enum_junctions_of_line(line_id, station_id1, station_id2);
+		DBO dbo = Route::Enum_junctions_of_line(line_id, station_id1, station_id2);
+		while (dbo.moveNext()) {
+			junctions.push_back(dbo.getInt(0));
+		}
+		junctions.push_back(0); /* last = result code(normal) */
+		return junctions;
 	}
-	if (!IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0)) {
+	if (IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0) ||
+	    IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, B1LID_OSAKAKAN_1R)) {
 		// 始めての大阪環状線
-		
+		if () {
+			// 最短距離/大回り経路で経路重複エラー？
+			if () {
+            	TRACE("Osaka-kan: aa\n");
+				// 大回り経路で経路重複エラー？
+        	} else {
+            	TRACE("Osaka-kan: ab\n");
+        		// 大阪環状線内の分岐駅から発して戻ってきたケース
+             	// Ok,Flagは3        Check!
+        	}
+		} else {
+			// ほとんどの場合、ここ
+            // Flagを1.      ほぼ多くの場合
+            TRACE("Osaka-kan: ac\n");
+		}
 	} else if () {
 		// 2回目の大阪環状線
+		if () {
+		    // 2回目最短距離で経路重複
+		    if () {
+            	TRACE("Osaka-kan: ca\n");
+			   // 1回目を逆回りしてみて2回目最短距離は重複
+			   // Abort failure
+		    } else {
+            	TRACE("Osaka-kan: cb\n");
+               // Flag=3 OK
+		    }
+		} else {
+            TRACE("Osaka-kan: bb\n");
+           // Flag=3 OK
+		}
 	} else if () {
+        TRACE("Osaka-kan: da\n");
 		// 3回目以上の大阪環状線 == flag 3
+		// abort failure
+		// thrue 
 	} else {
+        TRACE("Osaka-kan: db\n");
+		// 0回,4回以上なんてありえない
 		ASSERT(FALSE);
 	}
+	TRACE("Osaka-kan: failure!!!\n");
+	return NULL;	/* Failure */
 }
-#if 0
-if 始めての大阪環状線
-     If 強制ではなく最短距離で経路を
-        選択で経路重複エラー？
-           If 大回り経路で経路重複エラー？
-                Abort Failure //
-           Else
-               ( 大阪環状線内の分岐駅から
-                発して戻ってきたケース)
-                   Ok,Flagは3        Check!
-           Endif
-      Else
-             Flagを1.      ほぼ多くの場合
-      Endif
-Else If 2回目の大阪環状線
-      If 2回目最短距離で経路重複
-           If 1回目を逆回りしてみて2回目最短距離は重複？
-                Abort failure//
-            Else
-                 Flagは3でok
-            End if          
-     Else
-           Flagは3でok
-     End
-Else if 3回目以上の大阪環状線 == flag 3
-   Abort failure 
-Else (大阪環状線ではない)
-  通常通り
-End
-#endif
+
+
 //static
 //	70条進入路線、脱出路線から進入、脱出境界駅と営業キロ、路線IDを返す
 //
@@ -1452,20 +1489,26 @@ ASSERT(first_station_id1 = stationId1);
 	}
 	
 
-	DBO dbo = Route::Enum_junctions_of_line(line_id, stationId1, stationId2);
-	if (!dbo.isvalid()) {
-		TRACE(_T("DB error(add-junction-enum)\n"));
-		TRACE(_T("add_abort\n"));
-		return -100;		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	}
-
 	vector<int32_t> junctions;
+	junctions = Route::enum_junctions_of_line_for_add(line_id, stationId1, stationId2);
+	jnum = (int32_t)junctions.size();
+	if (jnum <= 1) {
+		if (jnum < 1) {
+			TRACE(_T("DB error(add-junction-enum)\n"));
+			TRACE(_T("add_abort\n"));
+			return -100;		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-	while (dbo.moveNext()) {
-		junctions.push_back(dbo.getInt(0));
+		} else if (junctions.back() != 0) {
+			/* 大阪環状線 */
+
+
+
+
+
+			return xxx;
+		}
 	}
 
-	jnum = (int32_t)junctions.size();
 
 	for (i = 0; i < jnum; i++) {
 		jct_on = junctions[i];
@@ -2911,29 +2954,29 @@ vector<int32_t> Route::GetDistance(int32_t line_id, int32_t station_id1, int32_t
 " and ((l1.station_id=?2 and l2.station_id=?3)" 
 " or (l1.station_id=?3 and l2.station_id=?2))";
 #endif
-	int32_t sales_km = 0;
-	int32_t calc_km = 0;
 	vector<int32_t> v;
 
-	{	DBO dbo = DBS::getInstance()->compileSql(tsql);
-		if (dbo.isvalid()) {
-			dbo.setParam(1, line_id);
-			dbo.setParam(2, station_id1);
-			dbo.setParam(3, station_id2);
-			if (dbo.moveNext()) {
-				sales_km = dbo.getInt(0);
-				calc_km = dbo.getInt(1);
-			}
+	DBO dbo = DBS::getInstance()->compileSql(tsql);
+	if (dbo.isvalid()) {
+		dbo.setParam(1, line_id);
+		dbo.setParam(2, station_id1);
+		dbo.setParam(3, station_id2);
+		if (dbo.moveNext()) {
+			v.push_back(dbo.getInt(0));
+			v.push_back(dbo.getInt(1));
 		}
 	}
-	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		sales_km = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2, sales_km);
-		calc_km = sales_km;
-	}
-	v.push_back(sales_km);
-	v.push_back(calc_km);
 	return v;
 }
+
+vector<int32_t> Route::GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t flag)
+{
+	if ((line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) &&  {
+		sales_km = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2, sales_km);
+		calc_km = sales_km;
+	} else {
+		return Route::GetDistance(line_id, station_id1, station_id2);
+	}
 
 //static
 //	営業キロを算出（大阪環状線内特例)
@@ -2950,7 +2993,7 @@ int32_t Route::GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, i
 	int32_t km = 0;
 #if defined _WINDOWS
 	const TCHAR tsql[] =
-_T("select  (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ((station_id=(select rowid from t_station where name='新今宮')) or (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+(select max(sales_km)-min(sales_km) from t_lines where line_id=(select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
+_T("select (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ((station_id=(select rowid from t_station where name='新今宮')) or (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+(select max(sales_km)-min(sales_km) from t_lines where line_id=(select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
 #ifdef UNICODE
 	CT2A usql(tsql, CP_UTF8);
 	DBO dbo = DBS::getInstance()->compileSql(usql);
@@ -7521,16 +7564,4 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 	}
 	return taxadd(fare, FARE_INFO::tax);	// tax = +5%, 四捨五入
 }
-
-
-#ifndef _WINDOWS
-//extern
-void assertion_function(int32_t cond)
-{
-    if (!cond) {
-        TRACE("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n");
-        //for (;;);
-    }
-}
-#endif
 
