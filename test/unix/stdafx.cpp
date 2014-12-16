@@ -16,9 +16,9 @@ void TRACE(const wchar_t* fmt, ...)
 	va_start(ap, fmt);
 	vwprintf(fmt, ap);
 }
-#endif
 
-#if !defined _WINDOWS
+#else
+
 char* strcpy_s(char* dst, int32_t maxlen, const char* src)
 {
     int32_t l;
@@ -53,4 +53,15 @@ char* strcat_s(char* dst, int32_t maxlen, const char* src)
     }
     return dst;
 }
+
+
+//extern
+void assertion_function(int32_t cond)
+{
+    if (!cond) {
+        TRACE("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n");
+        //for (;;);
+    }
+}
+
 #endif	/* !_WINDOWS */
