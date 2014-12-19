@@ -375,6 +375,7 @@ private:
 	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t> GetDistanceEx(bool pass_osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
@@ -407,7 +408,6 @@ private:
 #define B1LID_OSAKAKAN_2RR		(7 << 10)   	// 6 大阪環状線2回通過（逆・逆）
 #define B1LID_OSAKAKAN_MASK   	(0x07 << 10)
 #define IS_B1LID_OSAKAKAN_PASS(flg, val) (((flg) & B1LID_OSAKAKAN_MASK) == val)
-
 
 /* cooked flag for shoFare(), show_route() */
 #define	RULE_NO_APPLIED			0x8000
@@ -513,6 +513,7 @@ typedef struct
 #define BLF_JCTSP_ROUTE_CHANGE	6
 #define BLF_END					16
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
+
 
 /*   route
  *
