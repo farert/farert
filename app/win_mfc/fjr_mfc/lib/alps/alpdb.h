@@ -274,7 +274,8 @@ private:
     int32_t endTerminalId;
 
 	bool retr_fare();
-	int32_t aggregate_fare_info(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t before_staion_id1);
+	int32_t aggregate_fare_info(const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
+	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 public:
 	bool calc_fare(const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
     void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList);
@@ -375,7 +376,7 @@ private:
 	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t> GetDistanceEx(bool pass_osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t> GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
@@ -399,15 +400,18 @@ private:
 
 // 10-12
 //                               0       	       0 なにもなし　　　 1回目 2回目
-#define B1LID_OSAKAKAN_1F		(1 << 10)   	// 1 大阪環状線1回通過（正・－）
-#define B1LID_OSAKAKAN_1R		(2 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理前)
-#define B1LID_OSAKAKAN_1RE		(3 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理後）
-#define B1LID_OSAKAKAN_2FF		(4 << 10)   	// 3 大阪環状線2回通過（正・正）
-#define B1LID_OSAKAKAN_2FR		(5 << 10)   	// 4 大阪環状線2回通過（正・逆）
-#define B1LID_OSAKAKAN_2RF		(6 << 10)   	// 5 大阪環状線2回通過（逆・正）
-#define B1LID_OSAKAKAN_2RR		(7 << 10)   	// 6 大阪環状線2回通過（逆・逆）
-#define B1LID_OSAKAKAN_MASK   	(0x07 << 10)
+#define D1LID_OSAKAKAN_1F		(1 << 10)   	// 1 大阪環状線1回通過（正・－）
+#define D1LID_OSAKAKAN_1R		(2 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理前)
+#define D1LID_OSAKAKAN_1RE		(3 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理後）
+#define D1LID_OSAKAKAN_2FF		(4 << 10)   	// 3 大阪環状線2回通過（正・正）
+#define D1LID_OSAKAKAN_2FR		(5 << 10)   	// 4 大阪環状線2回通過（正・逆）
+#define D1LID_OSAKAKAN_2RF		(6 << 10)   	// 5 大阪環状線2回通過（逆・正）
+#define D1LID_OSAKAKAN_2RR		(7 << 10)   	// 6 大阪環状線2回通過（逆・逆）
+#define D1LID_OSAKAKAN_MASK   	(0x07 << 10)
 #define IS_B1LID_OSAKAKAN_PASS(flg, val) (((flg) & B1LID_OSAKAKAN_MASK) == val)
+
+#define B1LID_OSAKAKAN_PASS		13 	// 1 大阪環状線1回通過(FARE_INFO::aggregate_fare_info()関数ローカル
+
 
 /* cooked flag for shoFare(), show_route() */
 #define	RULE_NO_APPLIED			0x8000
@@ -651,6 +655,7 @@ public:
 	static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
 	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t flag);
 	static int32_t				GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t sales_km);
 	static int32_t				Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>		Get_route_distance(const vector<RouteItem>& route);
