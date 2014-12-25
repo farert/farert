@@ -2930,7 +2930,7 @@ int32_t Route::getBsrjctSpType(int32_t line_id, int32_t station_id)
 
 //static
 //	運賃計算キロと営業キロを返す
-//
+//	(大阪環状線は新今宮を通らない経路)
 //	@param [in] line_id     路線
 //	@param [in] station_id1 発
 //	@param [in] station_id2 至
@@ -2977,7 +2977,7 @@ vector<int32_t> Route::GetDistance(int32_t line_id, int32_t station_id1, int32_t
 	return v;
 }
 
-// TODO
+// TODO TODO
 
 #if 0
 vector<int32_t> FARE_INFO::GetDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2)
@@ -2986,12 +2986,12 @@ vector<int32_t> FARE_INFO::GetDistanceEx(int32_t line_id, int32_t station_id1, i
 
 showFare() -> calc_fare() -> aggregate_fare_info()* -> GetDistanceEx()
 
-GetDistance(lineId, stationId1, stationId2)
+vector GetDistance(lineId, stationId1, stationId2)
   used: CheckOfRule114j()
         CheckOfRule89j()
         CheckOfRule88j()
         CheckAndApplyRule43_2j()
-        Get_route_distance()*
+        Get_route_distance()*  これ以外 vectorで返す必要なし
 
   Get_route_distance() used: CheckOfRule114j(), 
                              checkOfRuleSpecificCoreLine()
@@ -3007,37 +3007,47 @@ GetDistance(lineId, stationId1, stationId2)
 //	@param [in] line_id     路線
 //	@param [in] station_id1 発
 //	@param [in] station_id2 至
+//	@param [in] flag        b1lid flag
 //  
 //	@retuen [0]:営業キロ, [1]:計算キロ
 //
-vector<int32_t> Route::GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t flag)
+vector<int32_t> Route::GetDistance(int32_t b1lidflag, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	vector<int32_t> d;
+	int32_t sales_km_1;
+	int32_t sales_km_2;
 
-    d = Route::GetDistance(line_id, station_id1, station_id2);
+    sales_km_1 = Route::GetDistance(line_id, station_id1, station_id2)[0];
 
-	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN)  {
-		d.clear();
-		int32_t sales_km = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2, d[0]);
+	if (line_id != DbidOf::LineIdOf_OOSAKAKANJYOUSEN)  {
+		ASSERT(FALSE);
+		return sales_km_1;
+	}
+	sales_km_2 = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2);
+
+	if (sales_km_1 < sales_km_2) {
+		if ((IS_B1LID_OSAKAKAN_PASS(b1lidflag, D1LID_OSAKAKAN_1F) ||
+		     b1lidflag, (1 << B1LID_OSAKAKAN_PASS)) ||
+
 		d.push_back(sales_km);
 		d.push_back(sales_km);	// TODO
+
+	} else {
 	}
 	return d;	/* other */
 }
 
 //static
-//	営業キロを算出（大阪環状線内特例)
+//	営業キロを算出（大阪環状線 新今宮を通る経路)
 //
 //	@param [in] line_id     大阪環状線line id
 //	@param [in] station_id1 発
 //	@param [in] station_id2 至
-//	@param [in] sales_km    通常(GetDistance())で得た比較元営業キロ
 //  
 //	@retuen 営業キロ
 //
-int32_t Route::GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t sales_km)
+int32_t Route::GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
-	int32_t km = 0;
 #if defined _WINDOWS
 	const TCHAR tsql[] =
 _T("select (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ((station_id=(select rowid from t_station where name='新今宮')) or (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+(select max(sales_km)-min(sales_km) from t_lines where line_id=(select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
@@ -3048,6 +3058,8 @@ _T("select (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 #endif
 #else
+	// 新今宮までの距離(近いほう) + 天王寺までの距離(近いほう) + 新今宮～天王寺
+
     const char tsql[] =
     u8"select"
     u8" (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and "
@@ -3058,19 +3070,20 @@ _T("select (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and
     u8"  (select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))";
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 #endif
+	int32_t km;
+	
 	if (dbo.isvalid()) {
 		dbo.setParam(1, line_id);
 		dbo.setParam(2, station_id1);
 		dbo.setParam(3, station_id2);
 		if (dbo.moveNext()) {
 			km = dbo.getInt(0);
+			ASSERT(0 < km);
+			return km;
 		}
 	}
-	if ((km == 0) || (sales_km < km)) {
-		return sales_km;
-	} else {
-		return km;
-	}
+	ASSERT(FALSE);
+	return 0;
 }
 
 //static
@@ -4090,13 +4103,13 @@ vector<int32_t> Route::Get_route_distance(const vector<RouteItem>& route)
 	total_sales_km = 0;
 	total_calc_km = 0;
 	stationId = 0;
-	b1lid_flag = it->lineId;	/* 大阪環状線flag */
+	b1lid_flag = it->lineId & ~(1 << B1LID_OSAKAKAN_PASS);	/* 大阪環状線flag */
 	while (it != route.cend()) {
 		if (stationId != 0) {
 			vector<int32_t> km;
 			if (it->lineId == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
 				km = Route::GetDistance(b1lid_flag, it->lineId, stationId, it->stationId);
-				/////////! todo b1lid_flag on
+				b1lid_flag |= (1 << B1LID_OSAKAKAN_PASS);
 			} else {
 				km = Route::GetDistance(it->lineId, stationId, it->stationId);
 			}
@@ -5976,25 +5989,25 @@ vector<int32_t> FARE_INFO::GetDistanceEx(int32_t line_id, int32_t station_id1, i
 	DBO ctx = DBS::getInstance()->compileSql(
 "select"
 "	(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
-"	(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 0
+"	(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// [0]
 "	(select max(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
-"	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// 1
+"	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// [1]
 "	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?2)"
 "	then -1 else"
 "	abs((select sales_km from t_lines where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
-"	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// 2
+"	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// [2]
 "	case when exists (select * from t_lines"
 "	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?3)"
 "	then -1 else"
 "	abs((select calc_km from t_lines where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
-"	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// 3
-"	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// 4
+"	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end,"							// [3]
+"	((select company_id from t_station where rowid=?2) + (65536 * (select company_id from t_station where rowid=?3))),"	// [4]
 "	((select 2147483648*(1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3) + "
-"	(select sflg&4095 from t_station where rowid=?2) + (select sflg&4095 from t_station where rowid=?3) * 65536)"		// 5
+"	(select sflg&4095 from t_station where rowid=?2) + (select sflg&4095 from t_station where rowid=?3) * 65536)"		// [5]
 );
 //	2147483648 = 0x80000000
 	if (ctx.isvalid()) {
@@ -6029,12 +6042,12 @@ vector<int32_t> FARE_INFO::GetDistanceEx(uint32_t osakakan_aggregate, int32_t li
 	vector<int32_t> result;
 	int32_t rslt = 0;
 	
-	result = Route::GetDistance(line_id, station_id1, station_id2);
-	result.push_back(0);	// sales_km for in company as station_id1
-	result.push_back(0);	// calc_km  for in company as station_id1
-	result.push_back(MAKEPAIR(JR_WEST, JR_WEST));	// IDENT1(駅ID1の会社ID) + IDENT2(駅ID2の会社ID)
+	result = Route::GetDistance(line_id, station_id1, station_id2); // [0][1]
+	result.push_back(0);	// sales_km for in company as station_id1 [2]
+	result.push_back(0);	// calc_km  for in company as station_id1 [3]
+	result.push_back(MAKEPAIR(JR_WEST, JR_WEST));	// IDENT1(駅ID1の会社ID) + IDENT2(駅ID2の会社ID) [4]
 	DBO ctx = DBS::getInstance()->compileSql("select"
-" (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)"		// 5
+" (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)"		// [5]
 		);
 	if (ctx.isvalid()) {
 		ctx.setParam(1, station_id1);
@@ -6186,9 +6199,6 @@ int32_t FARE_INFO::aggregate_fare_info(const vector<RouteItem>& routeList_raw, c
 //ASSERT((ite->flag) == 0);
 		if (station_id1 != 0) {
 							/* 会社別営業キロ、計算キロの取得 */
-			int32_t company_id1;
-			int32_t company_id2;
-			int32_t flag;
 
 			if (ite->lineId == ID_L_RULE70) {
 				int32_t sales_km;
@@ -6202,7 +6212,9 @@ int32_t FARE_INFO::aggregate_fare_info(const vector<RouteItem>& routeList_raw, c
 				fare_add = 0;
 
 			} else {
-
+				int32_t company_id1;
+				int32_t company_id2;
+				int32_t flag;
 				vector<int32_t> d;
 
 				if (ite->lineId != DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
