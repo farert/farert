@@ -655,8 +655,8 @@ public:
 	static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
 	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t flag);
-	static int32_t				GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t sales_km);
+	static vector<int32_t>		GetDistance(int32_t b1lidflag, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t				GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t				Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>		Get_route_distance(const vector<RouteItem>& route);
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
