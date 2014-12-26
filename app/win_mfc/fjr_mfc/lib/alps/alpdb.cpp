@@ -833,6 +833,12 @@ DBO Route::Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int
 
 #endif
 
+	sales_km_1 = Route::GetDistance(line_id, station_id1, station_id2);
+	sales_km_2 = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2);
+	if (sales_km_1 - sales_km_2)
+	
+	select id from t_jct where station_id in (select station_id from t_lines where line_id=?1
+
 vector<int32_t> Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	vector<int32_t> junctions;
@@ -862,6 +868,7 @@ vector<int32_t> Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t s
 			// ほとんどの場合、ここ
             // Flagを1.      ほぼ多くの場合
             TRACE("Osaka-kan: ac\n");
+            route_list_raw.front().lineId 
 		}
 	} else if (false) {
 		// 2回目の大阪環状線
@@ -3027,7 +3034,7 @@ vector<int32_t> Route::GetDistance(int32_t b1lidflag, int32_t line_id, int32_t s
 
 	if (sales_km_1 < sales_km_2) {
 		if ((IS_B1LID_OSAKAKAN_PASS(b1lidflag, D1LID_OSAKAKAN_1F) ||
-		     b1lidflag, (1 << B1LID_OSAKAKAN_PASS)) ||
+		     BIT_CHK(b1lidflag, B1LID_OSAKAKAN_PASS)) ||
 
 		d.push_back(sales_km);
 		d.push_back(sales_km);	// TODO
@@ -6042,7 +6049,7 @@ vector<int32_t> FARE_INFO::GetDistanceEx(uint32_t osakakan_aggregate, int32_t li
 	vector<int32_t> result;
 	int32_t rslt = 0;
 	
-	result = Route::GetDistance(line_id, station_id1, station_id2); // [0][1]
+	result = Route::GetDistance(osakakan_aggregate, line_id, station_id1, station_id2); // [0][1]
 	result.push_back(0);	// sales_km for in company as station_id1 [2]
 	result.push_back(0);	// calc_km  for in company as station_id1 [3]
 	result.push_back(MAKEPAIR(JR_WEST, JR_WEST));	// IDENT1(駅ID1の会社ID) + IDENT2(駅ID2の会社ID) [4]
