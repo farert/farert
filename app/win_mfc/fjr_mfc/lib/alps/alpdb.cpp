@@ -3999,6 +3999,8 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 	vector<RouteItem>::const_iterator itr;
 	vector<RouteItem> work_route_list;
 	vector<Station> firstTransferStation;
+	int32_t c;   // work counter
+	int32_t n;   // work counter
 	
 	if ((mode & 1) != 0) {
 		/* 発駅-脱出: exit 有効*/		/* ex) [[東北線、日暮里]] = (常磐線, [区]) */
@@ -4043,15 +4045,24 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 	if ((mode & 2) != 0) {
 		/* 着駅-進入: entr 有効 */
 		itr = work_route_list.cbegin();
+		c = 0;
 		while (itr != work_route_list.cend()) {
+			c++;
 			if (enter.is_equal(*itr)) {
-				break;
-			} else {
-				out_route_list->push_back(*itr);
+				// 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
+				n = c;
 			}
 			++itr;
 		}
-
+		itr = work_route_list.cbegin();
+		c = 0;
+		while (itr != work_route_list.cend()) {
+			c++;
+			if (c < n) {
+				out_route_list->push_back(*itr);
+			}
+			itr++;
+		}
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
 		if (firstTransferStation.size() <= 0) {
 			ASSERT(FALSE);
