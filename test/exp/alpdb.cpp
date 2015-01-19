@@ -4045,23 +4045,17 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 	if ((mode & 2) != 0) {
 		/* 着駅-進入: entr 有効 */
 		itr = work_route_list.cbegin();
-		c = 0;
-		while (itr != work_route_list.cend()) {
-			c++;
+		for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
 			if (enter.is_equal(*itr)) {
 				// 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
 				n = c;
 			}
-			++itr;
 		}
 		itr = work_route_list.cbegin();
-		c = 0;
-		while (itr != work_route_list.cend()) {
-			c++;
+		for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
 			if (c < n) {
 				out_route_list->push_back(*itr);
 			}
-			itr++;
 		}
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
 		if (firstTransferStation.size() <= 0) {
