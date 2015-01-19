@@ -48,11 +48,6 @@ using namespace std;
 #define JctMaskClear()   	memset(jct_mask, 0, sizeof(jct_mask))
 #define IsJctMask(jctid)	((jct_mask[(jctid) / 8] & (1 << ((jctid) % 8))) != 0)
 
-#ifndef _WINDOWS
-////////////////////////////////////////////
-//  global
-int32_t g_tax = 8;
-#endif
 ////////////////////////////////////////////
 //	static member
 
@@ -75,6 +70,14 @@ int32_t g_tax = 8;
 /*static */ int32_t DbidOf::StationIdOf_HAKATA = 0;  		// 博多
 /*static */ int32_t DbidOf::StationIdOf_YOSHIZUKA = 0;  	// 吉塚
 
+static tstring cr_remove(tstring s)
+{
+	tstring::size_type idx = 0;
+	while (tstring::npos != (idx = s.find(_T('\r'), idx))) {
+		s.replace(idx, 1, _T(" "), 1, 1);
+	}
+	return s;
+}
 
 ////////////////////////////////////////////
 //	DbidOf
@@ -163,42 +166,6 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_)
 
 
 //////////////////////////////////////////////////////
-#ifndef _WINDOWS
-char* strcpy_s(char* dst, int32_t maxlen, const char* src)
-{
-    int32_t l;
-    l = (int32_t)strlen(src);
-    if (maxlen <= l) {
-        l = maxlen - 1;
-        strncpy(dst, src, l);
-        dst[l] = (char)0;
-    } else {
-        strcpy(dst, src);
-    }
-    return dst;
-}
-
-
-char* strcat_s(char* dst, int32_t maxlen, const char* src)
-{
-    int32_t l;
-    int32_t l2;
-    l = (int32_t)strlen(src);
-    l2 = (int32_t)strlen(dst);
-    if (maxlen < l2) {
-        ASSERT(FALSE);
-        return dst;     /* error */
-    }
-    if (maxlen <= (l + l2)) {
-        l = maxlen - l2 - 1;
-        strncpy(dst, src, l);
-        dst[l] = (char)0;
-    } else {
-        strcpy(dst + l2, src);
-    }
-    return dst;
-}
-#endif	/* !_WINDOWS */
 
 // 	文字列は「漢字」か「かな」か？
 //	「かな」ならTrueを返す
@@ -4046,7 +4013,8 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 	vector<RouteItem>::const_iterator itr;
 	vector<RouteItem> work_route_list;
 	vector<Station> firstTransferStation;
-	
+tstring s;
+TRACE("@@@@@@@@@@@@@ %x @@@@@@@@@@@@@@@\n", mode);
 	if ((mode & 1) != 0) {
 		/* 発駅-脱出: exit 有効*/		/* ex) [[東北線、日暮里]] = (常磐線, [区]) */
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(exit.lineId, IDENT1(cityId));
@@ -4057,9 +4025,11 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 			vector<Station>::const_reverse_iterator sta_ite;
 			sta_ite = firstTransferStation.crbegin();
 			if (exit.lineId == sta_ite->lineId) {
+TRACE("s1 ");
 				work_route_list.push_back(RouteItem(0, sta_ite->stationId));	/* 発駅:都区市内代表駅 */
 				// ASSERT(sta_ite->stationId == Route::Retrieve_SpecificCoreStation(IDENT(cityId))); (新横浜とか新神戸があるので)
 			} else {
+TRACE(_T("s2 %s, %s "), LineName(exit.lineId).c_str(), LineName(sta_ite->lineId).c_str());
 				coreStationId = Route::Retrieve_SpecificCoreStation(IDENT1(cityId));
 				ASSERT(0 < coreStationId);
 				work_route_list.push_back(RouteItem(0, coreStationId));			/* 発駅:都区市内代表駅 */
@@ -4069,6 +4039,9 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 				}
 			}
 		}
+s = Route::Show_route(work_route_list);
+s = cr_remove(s);
+TRACE("|||||%s\n", s.c_str());
 		for (skip = true, itr = out_route_list->cbegin(); itr != out_route_list->cend(); ++itr) {
 			if (skip) {
 				if (exit.is_equal(*itr)) {
@@ -4080,8 +4053,12 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 			}
 		}
 		TRACE("start station is re-route rule86/87\n");
+s = Route::Show_route(work_route_list);
+s = cr_remove(s);
+TRACE("|||||%s\n", s.c_str());
 	} else {
 		work_route_list.assign(out_route_list->cbegin(), out_route_list->cend());
+		TRACE("start station no apply city\n");
 	}
 
 	firstTransferStation.clear();
@@ -4099,6 +4076,9 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 			++itr;
 		}
 
+s = Route::Show_route(work_route_list);
+s = cr_remove(s);
+TRACE("+++++%s\n", s.c_str());
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
 		if (firstTransferStation.size() <= 0) {
 			ASSERT(FALSE);
@@ -4110,7 +4090,9 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 			if (enter.lineId == sta_ite->lineId) {
 				out_route_list->push_back(RouteItem(sta_ite->lineId, sta_ite->stationId));
 				// ASSERT(sta_ite->stationId == Route::Retrieve_SpecificCoreStation(IDENT2(cityId))); 新横浜とかあるので
+TRACE("e1 ");
 			} else {
+TRACE("e2 ");
 				out_route_list->push_back(RouteItem(enter.lineId, sta_ite->stationId));
 				lineId = sta_ite->lineId;
 				while (++sta_ite != firstTransferStation.cend()) {
@@ -4122,10 +4104,17 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 				out_route_list->push_back(RouteItem(lineId, coreStationId));
 			}
 			TRACE("end station is re-route rule86/87\n");
+s = Route::Show_route(work_route_list);
+s = cr_remove(s);
+TRACE("+++++%s\n", s.c_str());
 		}
 	} else {
 		out_route_list->assign(work_route_list.cbegin(), work_route_list.cend());
+		TRACE("end station no apply city\n");
 	}
+s = Route::Show_route(*out_route_list);
+s = cr_remove(s);
+TRACE("%s\n", s.c_str());
 }
 
 //static
@@ -4254,6 +4243,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 		// route_list_cooked = route_list_tmp3
 		route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
+TRACE(_T("<<<都区市内適用>>>\n"));
 		return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 	
@@ -4282,6 +4272,8 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 	/* 発着とも都区市内? */
 	if ((0x03 & (rtky | chk)) == 3) { /* 名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
 							/*  [区]-[区], [名]-[名], [山]-[区], ... */
+TRACE("xxxxxxxxxxe1");
+
 		for (sk2 = 2000; true; sk2 = 1000) {
 			flg = 0;
 
@@ -4395,6 +4387,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 		}
 		/* passthru */
 	}
+TRACE("xxxxxxxxxxe2");
 
 	/* route_list_tmp	x
 	 * route_list_tmp2	70-88-69適用
@@ -5570,7 +5563,7 @@ TRACE(_T("route[] add: %s\n"), StationName(Route::Jct2id(route[i] + 1)).c_str())
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
-TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
+TRACE(_T("####%d##%d, %d##\n"), a, i, route.size());
 			if ((a < 0) || ((i + 1) < (int32_t)route.size())) {
 				route_list_cooked.clear();
 				return a;	/* error */
@@ -7508,16 +7501,4 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 	}
 	return taxadd(fare, FARE_INFO::tax);	// tax = +5%, 四捨五入
 }
-
-
-#ifndef _WINDOWS
-//extern
-void assertion_function(int32_t cond)
-{
-    if (!cond) {
-        TRACE("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n");
-        //for (;;);
-    }
-}
-#endif
 
