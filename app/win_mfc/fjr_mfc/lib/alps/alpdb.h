@@ -399,7 +399,7 @@ private:
 #define BCRULE70	6
 
 // 10-12
-//                               0       	       0 なにもなし　　　 1回目 2回目
+//                               0       	       0 なにもなし      1回目 2回目
 #define D1LID_OSAKAKAN_1F		(1 << 10)   	// 1 大阪環状線1回通過（正・－）
 #define D1LID_OSAKAKAN_1R		(2 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理前)
 #define D1LID_OSAKAKAN_1RE		(3 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理後）
@@ -412,13 +412,31 @@ private:
 
 #define B1LID_OSAKAKAN_PASS		13 	// 1 大阪環状線1回通過(FARE_INFO::aggregate_fare_info()関数ローカル
 
+// 1回目 0: → D1LID_OSAKAKAN_1F
+// 結果表示時、D1LID_OSAKAKAN_1Fのときのみ、D1LID_OSAKAKAN_1RE に、外側（メニュー操作）で設定可能
+// 1回目 D1LID_OSAKAKAN_1RE → D1LID_OSAKAKAN_1R
+// D1LID_OSAKAKAN_1F or D1LID_OSAKAKAN_1R(2回目): 
+// 
+// 
 
+// 000 normal
+// 100 n/a(disable)
+// 001 1pass(short)
+// 011 2pass(short-short/long)
+// 111 n/a(disable)
+// 101 1pass(long) 001で外部から「逆回り」を指定したとき(001→101)
+// 111 2pass(long-short/long)
+// 010 n/a
+
+
+/**** public ****/
 /* cooked flag for shoFare(), show_route() */
-#define	RULE_NO_APPLIED			0x8000
-#define	RULE_APPLIED			0
-#define APPLIED_START			0x0010
-#define APPLIED_TERMINAL		0x0000
-
+#define	RULE_NO_APPLIED				0x8000
+#define	RULE_APPLIED				0
+#define B_APPLIED_START_TERMINAL	1
+#define APPLIED_START				1
+#define APPLIED_TERMINAL			0
+/****************/
 
 // station_id & line_id
 //
@@ -516,6 +534,9 @@ typedef struct
 #define BLF_TRACKMARKCTL		5	// 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
 #define BLF_JCTSP_ROUTE_CHANGE	6
 #define BLF_END					16
+
+#define BLF_MEIHANCITYFLAG		3	// ON:APPLIED_START / OFF:APPLIED_TERMINAL
+
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
 
 
@@ -555,7 +576,7 @@ public:
 	void end()			{ BIT_ON(last_flag, BLF_END); }
 
 private:
-	bool				checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114);
+	bool				checkOfRuleSpecificCoreLine(int32_t* rule114);
 	static DBO	 		Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int32_t to_station_id);
 	vector<int32_t>     enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
