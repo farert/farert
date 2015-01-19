@@ -832,6 +832,15 @@ DBO Route::Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int
 
 
 #endif
+	static const char tsql[] = 
+"select id from t_jct where station_id in ( "
+"select station_id from t_lines where line_id=?1 and (lflg&((1<<31)|(1<<15)))=(1<<15) and sales_km<=(select min(sales_km) from t_lines where "
+"line_id=?1 and (station_id=?2 or station_id=?3)) union all "
+"select station_id from t_lines where line_id=?1 and (lflg&((1<<31)|(1<<15)))=(1<<15) and sales_km>=(select max(sales_km) from t_lines where "
+"line_id=?1 and (station_id=?2 or station_id=?3)))";
+
+
+DbidOf::LineIdOf_OOSAKAKANJYOUSEN, 
 
 	sales_km_1 = Route::GetDistance(line_id, station_id1, station_id2);
 	sales_km_2 = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2);
@@ -854,8 +863,9 @@ vector<int32_t> Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t s
 	if (IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0) ||
 	    IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, D1LID_OSAKAKAN_1R)) {
 		// 始めての大阪環状線
+		// 最短距離/大回り経路で経路重複エラー？
 		if (false) {
-			// 最短距離/大回り経路で経路重複エラー？
+			// 最短距離/大回り経路で経路重複エラー
 			if (false) {
             	TRACE("Osaka-kan: aa\n");
 				// 大回り経路で経路重複エラー？
@@ -865,6 +875,7 @@ vector<int32_t> Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t s
              	// Ok,Flagは3        Check!
         	}
 		} else {
+			// Success
 			// ほとんどの場合、ここ
             // Flagを1.      ほぼ多くの場合
             TRACE("Osaka-kan: ac\n");
@@ -1503,8 +1514,7 @@ ASSERT(first_station_id1 = stationId1);
 	}
 	
 
-	vector<int32_t> junctions;
-	junctions = Route::enum_junctions_of_line_for_add(line_id, stationId1, stationId2);
+	vector<int32_t> junctions = Route::enum_junctions_of_line_for_add(line_id, stationId1, stationId2);
 	jnum = (int32_t)junctions.size();
 	if (jnum <= 1) {
 		if (jnum < 1) {
@@ -1689,8 +1699,9 @@ void Route::removeTail(bool begin_off/* = false*/)
 //public:
 //	運賃表示
 //	@param [in]  cooked : bit15=0/1  = 規則適用/非適用
-//						: bit0=0/1 = 発・着が特定都区市内で発-着が100/200km以下のとき、着のみ都区市内有効(APPLIED_TERMINAL)
-//						: bit1=0/1 = 発・着が特定都区市内で発-着が100/200km以下のとき、発のみ都区市内有効(APPLIED_START)
+//						: bit B_APPLIED_START_TERMINAL
+//							= 1: 発・着が特定都区市内で発-着が100/200km以下のとき、着のみ都区市内有効
+//							= 0: 発・着が特定都区市内で発-着が100/200km以下のとき、発のみ都区市内有効
 //							(本関数が抜けた後、開始駅のlineIdのビット7, 6を参照してUIにより決める)
 //	@return 運賃、営業キロ情報 表示文字列
 //
@@ -1715,7 +1726,12 @@ tstring Route::showFare(int32_t cooked)
 	if (RULE_APPLIED == (RULE_NO_APPLIED & cooked)) {
 		/* 規則適用 */
 		/* 86, 87, 69, 70条 114条適用かチェック */
-		if (!checkOfRuleSpecificCoreLine(cooked, rule114)) {	// route_list_raw -> route_list_cooked
+		if (BIT_CHK(cooked, B_APPLIED_START_TERMINAL)) {
+			BIT_ON(last_flag, BLF_MEIHANCITYFLAG);
+		} else {
+			BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);
+		}
+		if (!checkOfRuleSpecificCoreLine(rule114)) {	// route_list_raw -> route_list_cooked
 			sExt = _T("");
             fare_info.clrRule114();
 		} else {
@@ -1773,6 +1789,7 @@ ASSERT(FALSE);
 		}
 	} else {
 		/* 規則非適用 */
+		BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);
 		sResult = _T("");
 
 		/* 単駅 */
@@ -1945,7 +1962,12 @@ int32_t Route::calcFare(int32_t cooked, FARE_INFO* fare_info)
 	if (RULE_APPLIED == (RULE_NO_APPLIED & cooked)) {
 		/* 規則適用 */
 		/* 86, 87, 69, 70条 114条適用かチェック */
-		if (!checkOfRuleSpecificCoreLine(cooked, rule114)) {	// route_list_raw -> route_list_cooked
+		if (BIT_CHK(cooked, B_APPLIED_START_TERMINAL)) {
+			BIT_ON(last_flag, BLF_MEIHANCITYFLAG);
+		} else {
+			BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);
+		}
+		if (!checkOfRuleSpecificCoreLine(rule114)) {	// route_list_raw -> route_list_cooked
             memset(rule114, 0, sizeof(rule114));
 		}
 		// 仮↑
@@ -1975,6 +1997,7 @@ ASSERT(FALSE);
 		/* 規則非適用 */
 		/* 単駅 */
 		///////////////////////////////////////////////////
+		BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);
 		// calc fare
 		if (!fare_info->calc_fare(route_list_raw, vector<RouteItem>())) {
 			return -3;
@@ -2002,8 +2025,8 @@ void Route::assign(const Route& source_route, int32_t count)
 {
     route_list_raw.assign(source_route.route_list_raw.cbegin(), source_route.route_list_raw.cbegin() + count);
     route_list_cooked.clear();
-    last_flag = 0;
-    end_station_id = 0;
+    last_flag = source_route.last_flag;
+    end_station_id = source_route.end_station_id;
 }
 
 //public:
@@ -4271,12 +4294,12 @@ uint8_t Route::InRouteUrban(const vector<RouteItem>& route_list)
 //
 //	後半でB1LID_xxx(route[0].lineId)を設定します
 //
-//	@param [in]  dis_cityflag     bit0:1 = 発駅:着駅 無効(0)/有効(1)
+//	@param [in]  last_flag   BLF_MEIHANCITYFLAG = 発駅:着駅 無効(0)/有効(1)
 //	@param [out] rule114	 [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
 //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
 //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
 //
-bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
+bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 {
 	PAIRIDENT cityId;
 	int32_t sales_km;
@@ -4440,7 +4463,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 				flg |= 0x02;
 			}
 			if (flg == 0x03) {	/* 発・着とも200km越えだが、都区市内間は200km以下 */
-				if (0 != (dis_cityflag & APPLIED_START)) {
+				if (BIT_CHK(last_flag, BLF_MEIHANCITYFLAG)) {
 					/* 発のみ都区市内適用 */
 					/* route_list_tmp = route_list_tmp2 */
 					route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
