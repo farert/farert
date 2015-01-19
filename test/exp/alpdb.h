@@ -10,7 +10,7 @@ typedef short int16_t;
 
 extern int g_tax;	/* in alps_mfc.cpp */
 
-#include "stdafx.h"
+#include <stdafx.h>
 using namespace std;
 #include <vector>
 
@@ -544,7 +544,7 @@ private:
 	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
 	static int32_t		RetrieveOut70Station(int32_t line_id);
 	
-	vector<vector<int32_t>> Node_next(int32_t jctId);
+	static vector<vector<int32_t>> Node_next(int32_t jctId);
 
 	static int32_t	 	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
 	static int32_t  	ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
@@ -592,7 +592,7 @@ public:	// termsel
 
 private:
 	void		    routePassOff(int32_t line_id, int32_t to_station_id, int32_t begin_station_id);
-	static int32_t 	retrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt);
+	static int32_t 	RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt);
 	int32_t			getBsrjctSpType(int32_t line_id, int32_t station_id);
 	int32_t			junctionStationExistsInRoute(int32_t stationId);
 
