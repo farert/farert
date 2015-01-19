@@ -70,14 +70,6 @@ using namespace std;
 /*static */ int32_t DbidOf::StationIdOf_HAKATA = 0;  		// 博多
 /*static */ int32_t DbidOf::StationIdOf_YOSHIZUKA = 0;  	// 吉塚
 
-static tstring cr_remove(tstring s)
-{
-	tstring::size_type idx = 0;
-	while (tstring::npos != (idx = s.find(_T('\r'), idx))) {
-		s.replace(idx, 1, _T(" "), 1, 1);
-	}
-	return s;
-}
 
 ////////////////////////////////////////////
 //	DbidOf
@@ -166,7 +158,6 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_)
 
 
 //////////////////////////////////////////////////////
-
 // 	文字列は「漢字」か「かな」か？
 //	「かな」ならTrueを返す
 // 
@@ -686,6 +677,7 @@ int32_t Route::NumOfNeerNode(int32_t stationId)
 	return c;
 }
 
+//static
 // 駅ID(分岐駅)の最寄りの分岐駅を得る(全路線）
 // [jct_id, calc_km, line_id][N] = f(jct_id)
 //
@@ -1006,13 +998,13 @@ first_station_id1 = stationId1;
 
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B)) {
 		 /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので
-		  * t_jctspcl.type retrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
+		  * t_jctspcl.type Route::RetrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
 		if ((LDIR_DESC == Route::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2)) &&
 		    ((num < 2) || ((2 <= num) && 
 		    (LDIR_ASC  == Route::DirLine(route_list_raw.at(num - 1).lineId,
 		                                 route_list_raw.at(num - 2).stationId, 
 		                                 route_list_raw.at(num - 1).stationId)))) &&
-			(JCTSP_B_NAGAOKA == retrieveJunctionSpecific(route_list_raw.at(num - 1).lineId, 
+			(JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(route_list_raw.at(num - 1).lineId, 
 			                                             route_list_raw.at(num - 1).stationId, &jctspdt))) {
 			if (stationId2 == jctspdt.jctSpStationId2) { /* 宮内止まり？ */
 				TRACE("JSBH004\n");
@@ -1117,7 +1109,7 @@ first_station_id1 = stationId1;
 #ifdef _DEBUG
 ASSERT(original_line_id = line_id);
 #endif
-			type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+			type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 			ASSERT(0 < type);
 			TRACE("JCT: detect step-horiz:%u\n", type);
 			if (jctspdt.jctSpStationId2 != 0) {
@@ -1130,7 +1122,7 @@ ASSERT(original_line_id = line_id);
 ASSERT(first_station_id1 = stationId1);
 #endif
 		// retrieve from a, d to b, c
-		type = retrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+		type = Route::RetrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 		ASSERT(0 < type);
 		TRACE("JCT: detect step:%u\n", type);
 		if (stationId2 != jctspdt.jctSpStationId) {
@@ -1307,7 +1299,7 @@ ASSERT(first_station_id1 = stationId1);
 ASSERT(original_line_id = line_id);
 ASSERT(first_station_id1 = stationId1);
 #endif
-		type = retrieveJunctionSpecific(line_id, stationId2, &jctspdt);
+		type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt);
 		ASSERT(0 < type);
 		TRACE("JCT:%u\n", type);
 		if (stationId1 == jctspdt.jctSpStationId) {
@@ -1377,7 +1369,7 @@ ASSERT(first_station_id1 = stationId1);
 	
 	// 長岡周りの段差型
 	if ((2 <= num) && BIT_CHK(lflg1, BSRJCTSP_B)) {
-		if (JCTSP_B_NAGAOKA == retrieveJunctionSpecific(line_id, 
+		if (JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(line_id, 
 		                                                route_list_raw.at(num - 1).stationId, &jctspdt)) {
 		 	/* 信越線下り(直江津→長岡方面) && 新幹線|上越線上り(長岡-大宮方面)? */
 			if ((LDIR_ASC == Route::DirLine(route_list_raw.at(num - 1).lineId, 
@@ -2781,7 +2773,7 @@ tstring Route::CompanyName(int32_t id)
 //
 //	@return type 0: usual, 1-3:type B
 //
-int32_t Route::retrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt)
+int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt)
 {
 	const char tsql[] =
 	//"select calc_km>>16, calc_km&65535, (lflg>>16)&32767, lflg&32767 from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2";
@@ -2912,13 +2904,7 @@ int32_t Route::GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, i
 	int32_t km = 0;
 #if defined _WINDOWS
 	const TCHAR tsql[] =
-_T("select")
-_T(" (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ")
-_T("  ((station_id=(select rowid from t_station where name='新今宮')) or")
-_T("   (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+")
-_T(" (select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+")
-_T(" (select max(sales_km)-min(sales_km) from t_lines where line_id=")
-_T("  (select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
+_T("select  (select max(sales_km)-min(sales_km) from t_lines where line_id=?1 and ((station_id=(select rowid from t_station where name='新今宮')) or (sales_km=(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))))+(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))+(select max(sales_km)-min(sales_km) from t_lines where line_id=(select rowid from t_line where name='関西線') and station_id in (select rowid from t_station where name='新今宮' or name='天王寺'))");
 #ifdef UNICODE
 	CT2A usql(tsql, CP_UTF8);
 	DBO dbo = DBS::getInstance()->compileSql(usql);
@@ -4013,8 +3999,9 @@ void  Route::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& ex
 	vector<RouteItem>::const_iterator itr;
 	vector<RouteItem> work_route_list;
 	vector<Station> firstTransferStation;
-tstring s;
-TRACE("@@@@@@@@@@@@@ %x @@@@@@@@@@@@@@@\n", mode);
+	int32_t c;   // work counter
+	int32_t n;   // work counter
+	
 	if ((mode & 1) != 0) {
 		/* 発駅-脱出: exit 有効*/		/* ex) [[東北線、日暮里]] = (常磐線, [区]) */
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(exit.lineId, IDENT1(cityId));
@@ -4025,11 +4012,9 @@ TRACE("@@@@@@@@@@@@@ %x @@@@@@@@@@@@@@@\n", mode);
 			vector<Station>::const_reverse_iterator sta_ite;
 			sta_ite = firstTransferStation.crbegin();
 			if (exit.lineId == sta_ite->lineId) {
-TRACE("s1 ");
 				work_route_list.push_back(RouteItem(0, sta_ite->stationId));	/* 発駅:都区市内代表駅 */
 				// ASSERT(sta_ite->stationId == Route::Retrieve_SpecificCoreStation(IDENT(cityId))); (新横浜とか新神戸があるので)
 			} else {
-TRACE(_T("s2 %s, %s "), LineName(exit.lineId).c_str(), LineName(sta_ite->lineId).c_str());
 				coreStationId = Route::Retrieve_SpecificCoreStation(IDENT1(cityId));
 				ASSERT(0 < coreStationId);
 				work_route_list.push_back(RouteItem(0, coreStationId));			/* 発駅:都区市内代表駅 */
@@ -4039,9 +4024,6 @@ TRACE(_T("s2 %s, %s "), LineName(exit.lineId).c_str(), LineName(sta_ite->lineId)
 				}
 			}
 		}
-s = Route::Show_route(work_route_list);
-s = cr_remove(s);
-TRACE("|||||%s\n", s.c_str());
 		for (skip = true, itr = out_route_list->cbegin(); itr != out_route_list->cend(); ++itr) {
 			if (skip) {
 				if (exit.is_equal(*itr)) {
@@ -4053,12 +4035,8 @@ TRACE("|||||%s\n", s.c_str());
 			}
 		}
 		TRACE("start station is re-route rule86/87\n");
-s = Route::Show_route(work_route_list);
-s = cr_remove(s);
-TRACE("|||||%s\n", s.c_str());
 	} else {
 		work_route_list.assign(out_route_list->cbegin(), out_route_list->cend());
-		TRACE("start station no apply city\n");
 	}
 
 	firstTransferStation.clear();
@@ -4067,18 +4045,18 @@ TRACE("|||||%s\n", s.c_str());
 	if ((mode & 2) != 0) {
 		/* 着駅-進入: entr 有効 */
 		itr = work_route_list.cbegin();
-		while (itr != work_route_list.cend()) {
+		for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
 			if (enter.is_equal(*itr)) {
-				break;
-			} else {
+				// 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
+				n = c;
+			}
+		}
+		itr = work_route_list.cbegin();
+		for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
+			if (c < n) {
 				out_route_list->push_back(*itr);
 			}
-			++itr;
 		}
-
-s = Route::Show_route(work_route_list);
-s = cr_remove(s);
-TRACE("+++++%s\n", s.c_str());
 		firstTransferStation = Route::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
 		if (firstTransferStation.size() <= 0) {
 			ASSERT(FALSE);
@@ -4090,9 +4068,7 @@ TRACE("+++++%s\n", s.c_str());
 			if (enter.lineId == sta_ite->lineId) {
 				out_route_list->push_back(RouteItem(sta_ite->lineId, sta_ite->stationId));
 				// ASSERT(sta_ite->stationId == Route::Retrieve_SpecificCoreStation(IDENT2(cityId))); 新横浜とかあるので
-TRACE("e1 ");
 			} else {
-TRACE("e2 ");
 				out_route_list->push_back(RouteItem(enter.lineId, sta_ite->stationId));
 				lineId = sta_ite->lineId;
 				while (++sta_ite != firstTransferStation.cend()) {
@@ -4104,17 +4080,10 @@ TRACE("e2 ");
 				out_route_list->push_back(RouteItem(lineId, coreStationId));
 			}
 			TRACE("end station is re-route rule86/87\n");
-s = Route::Show_route(work_route_list);
-s = cr_remove(s);
-TRACE("+++++%s\n", s.c_str());
 		}
 	} else {
 		out_route_list->assign(work_route_list.cbegin(), work_route_list.cend());
-		TRACE("end station no apply city\n");
 	}
-s = Route::Show_route(*out_route_list);
-s = cr_remove(s);
-TRACE("%s\n", s.c_str());
 }
 
 //static
@@ -4243,7 +4212,6 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t dis_cityflag, int32_t* rule114)
 		// route_list_cooked = route_list_tmp3
 		route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
-TRACE(_T("<<<都区市内適用>>>\n"));
 		return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 	
@@ -4272,8 +4240,6 @@ TRACE(_T("<<<都区市内適用>>>\n"));
 	/* 発着とも都区市内? */
 	if ((0x03 & (rtky | chk)) == 3) { /* 名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
 							/*  [区]-[区], [名]-[名], [山]-[区], ... */
-TRACE("xxxxxxxxxxe1");
-
 		for (sk2 = 2000; true; sk2 = 1000) {
 			flg = 0;
 
@@ -4387,7 +4353,6 @@ TRACE("xxxxxxxxxxe1");
 		}
 		/* passthru */
 	}
-TRACE("xxxxxxxxxxe2");
 
 	/* route_list_tmp	x
 	 * route_list_tmp2	70-88-69適用
@@ -5563,7 +5528,7 @@ TRACE(_T("route[] add: %s\n"), StationName(Route::Jct2id(route[i] + 1)).c_str())
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
-TRACE(_T("####%d##%d, %d##\n"), a, i, route.size());
+TRACE(_T("####%d##%d, %u##\n"), a, i, route.size());
 			if ((a < 0) || ((i + 1) < (int32_t)route.size())) {
 				route_list_cooked.clear();
 				return a;	/* error */
@@ -7501,4 +7466,3 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 	}
 	return taxadd(fare, FARE_INFO::tax);	// tax = +5%, 四捨五入
 }
-
