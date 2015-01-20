@@ -27,8 +27,8 @@ extern tstring num_str_yen(int32_t num);
 #define iskana(c) (_T('ァ') <= (c)) && ((c) <= _T('ン'))
 
 typedef short IDENT;
-typedef unsigned int PAIRIDENT;
-typedef unsigned int SPECIFICFLAG;
+typedef uint32_t PAIRIDENT;
+typedef uint32_t SPECIFICFLAG;
 
 #define MAKEPAIR(ident1, ident2) ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
 #define IDENT1(ident) ((IDENT)(0xffff & ident))

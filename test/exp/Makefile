@@ -4,14 +4,14 @@ OBJS = $(patsubst %.c,%.o,$(wildcard ./*.c)) $(patsubst %.cpp,%.o,$(wildcard ./*
 test : 
 
  .c.o:
-	gcc -I. -c $< -o $@
+	gcc -I. -Wall -c $< -o $@
 
 .cpp.o:
-	g++ -I. -std=c++11 -c $< -o $@
+	g++ -I. -Wall -std=c++11 -c $< -o $@
 
 
 test : $(OBJS)
-	g++ -o $@ -std=c++11 $^ -lpthread -ldl
+	g++ -o $@ -Wall -std=c++11 $^ -lpthread -ldl
 
 clean:
 	rm -f *.o test
