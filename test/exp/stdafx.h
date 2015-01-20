@@ -11,8 +11,6 @@
 
 
 
-#define ASSERT(cond) if (!(cond)) {  printf("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", __FILE__, __LINE__); }
-
 
 #if !defined _WINDOWS
 
@@ -95,4 +93,7 @@ typedef std::basic_string<TCHAR> tstring;
 #include "alpdb.h"
 
 extern int g_tax;
+
+#define ASSERT(cond) if (!(cond)) {  TRACE("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", __FILE__, __LINE__); }
+
 #endif	// CP_stdafx_h

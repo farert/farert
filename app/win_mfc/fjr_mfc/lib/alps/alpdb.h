@@ -27,8 +27,8 @@ extern tstring num_str_yen(int32_t num);
 #define iskana(c) (_T('ァ') <= (c)) && ((c) <= _T('ン'))
 
 typedef short IDENT;
-typedef unsigned int PAIRIDENT;
-typedef unsigned int SPECIFICFLAG;
+typedef uint32_t PAIRIDENT;
+typedef uint32_t SPECIFICFLAG;
 
 #define MAKEPAIR(ident1, ident2) ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
 #define IDENT1(ident) ((IDENT)(0xffff & ident))
@@ -384,49 +384,22 @@ private:
 };
 
 // 1レコードめのlineIdの定義
+// bit0-9
 #define B1LID_MARK				0x8000		// line_idとの区別で負数になるように
-#define B1LID_BEGIN_CITY		0
+#define B1LID_BEGIN_CITY		0	// [区][浜][名][京][阪][神][広][九][福][仙][札]
 #define B1LID_FIN_CITY			1
-#define B1LID_BEGIN_YAMATE		2
+#define B1LID_BEGIN_YAMATE		2	// [山]
 #define B1LID_FIN_YAMATE		3
 #define B1LID_BEGIN_2CITY		4	// not used
 #define B1LID_FIN_2CITY			5	// not used
 #define B1LID_BEGIN_CITY_OFF	6
 #define B1LID_FIN_CITY_OFF		7
-#define B1LID_BEGIN_OOSAKA		8
+#define B1LID_BEGIN_OOSAKA		8	// 大阪・新大阪
 #define B1LID_FIN_OOSAKA		9
 #define B1LID_CITY_MASK         0x3ff
 #define BCRULE70	6
+// bit10- reserve
 
-// 10-12
-//                               0       	       0 なにもなし      1回目 2回目
-#define D1LID_OSAKAKAN_1F		(1 << 10)   	// 1 大阪環状線1回通過（正・－）
-#define D1LID_OSAKAKAN_1R		(2 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理前)
-#define D1LID_OSAKAKAN_1RE		(3 << 10)   	// 2 大阪環状線1回通過（逆・－）(経路追加処理後）
-#define D1LID_OSAKAKAN_2FF		(4 << 10)   	// 3 大阪環状線2回通過（正・正）
-#define D1LID_OSAKAKAN_2FR		(5 << 10)   	// 4 大阪環状線2回通過（正・逆）
-#define D1LID_OSAKAKAN_2RF		(6 << 10)   	// 5 大阪環状線2回通過（逆・正）
-#define D1LID_OSAKAKAN_2RR		(7 << 10)   	// 6 大阪環状線2回通過（逆・逆）
-#define D1LID_OSAKAKAN_MASK   	(0x07 << 10)
-#define IS_B1LID_OSAKAKAN_PASS(flg, val) (((flg) & B1LID_OSAKAKAN_MASK) == val)
-
-#define B1LID_OSAKAKAN_PASS		13 	// 1 大阪環状線1回通過(FARE_INFO::aggregate_fare_info()関数ローカル
-
-// 1回目 0: → D1LID_OSAKAKAN_1F
-// 結果表示時、D1LID_OSAKAKAN_1Fのときのみ、D1LID_OSAKAKAN_1RE に、外側（メニュー操作）で設定可能
-// 1回目 D1LID_OSAKAKAN_1RE → D1LID_OSAKAKAN_1R
-// D1LID_OSAKAKAN_1F or D1LID_OSAKAKAN_1R(2回目): 
-// 
-// 
-
-// 000 normal
-// 100 n/a(disable)
-// 001 1pass(short)
-// 011 2pass(short-short/long)
-// 111 n/a(disable)
-// 101 1pass(long) 001で外部から「逆回り」を指定したとき(001→101)
-// 111 2pass(long-short/long)
-// 010 n/a
 
 
 /**** public ****/
@@ -538,6 +511,21 @@ typedef struct
 #define BLF_MEIHANCITYFLAG		3	// ON:APPLIED_START / OFF:APPLIED_TERMINAL
 
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
+
+// bit0 - 2: 大阪環状線
+// T bit val: description
+// 0 000 0: normal
+// 1 100 4: n/a(disable)
+// 2 001 1: 1pass(short)       1回通過
+// 3 011 3: 2pass(short-short/long)     2回通過（1回目近回り／2回目近回りか大回りのどちらか）
+// 4 110 6: n/a(disable)                あり得ない
+// 5 101 5: 1pass(long)                 001状態時外部から「逆回り」を指定したとき(001→101)
+// 6 111 7: 2pass(long-short/long)
+// 7 010 2: n/a
+
+#define BLF_OSAKAKAN_PASS	0	// 大阪環状線 1回以上通過
+#define BLF_OSAKAKAN_2PASS  1	// 大阪環状線 2回通過
+#define BLF_OSAKAKAN_DETOUR 2   // 大阪環状線 1回目遠回り
 
 
 /*   route

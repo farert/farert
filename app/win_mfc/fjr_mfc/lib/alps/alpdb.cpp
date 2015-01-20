@@ -175,7 +175,7 @@ bool isKanaString(LPCTSTR szStr)
     int32_t pt;
     string str(szStr);
     
-    for (pt = 0; pt < str.size(); pt += cs) {
+    for (pt = 0; pt < (int32_t)str.size(); pt += cs) {
         lead = str[pt];
         if (lead < 0x80) {
             cs = 1;
@@ -860,8 +860,8 @@ vector<int32_t> Route::enum_junctions_of_line_for_add(int32_t line_id, int32_t s
 		junctions.push_back(0); /* last = result code(normal) */
 		return junctions;
 	}
-	if (IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0) ||
-	    IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, D1LID_OSAKAKAN_1R)) {
+	if (xxxxxxxxxxxxx IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, 0) ||
+	    xxxxxxxxxxxxxx IS_B1LID_OSAKAKAN_PASS(route_list_raw.front().lineId, D1LID_OSAKAKAN_1R)) {
 		// 始めての大阪環状線
 		// 最短距離/大回り経路で経路重複エラー？
 		if (false) {
@@ -2482,7 +2482,7 @@ void Route::terminate(int32_t stationId)
 	int32_t stationIdFrom = 0;
 	int32_t newLastIndex = 0x7fffffff;
 	int32_t line_id = -1;
-	int32_t stationIdTo;
+	//int32_t stationIdTo;
 	
 	for (i = 0; i < (int32_t)route_list_raw.size(); i++) {
 		if (stationIdFrom != 0) {
@@ -2491,7 +2491,7 @@ void Route::terminate(int32_t stationId)
 			if (0 != Route::InStation(stationId, route_list_raw[i].lineId, stationIdFrom, route_list_raw[i].stationId)) {
 				newLastIndex = i;
 				line_id = route_list_raw[i].lineId;
-				stationIdTo = route_list_raw[i].stationId;
+				//stationIdTo = route_list_raw[i].stationId;
 				break;
 			}
 		} else {
@@ -3056,8 +3056,8 @@ vector<int32_t> Route::GetDistance(int32_t b1lidflag, int32_t line_id, int32_t s
 	sales_km_2 = Route::GetDistanceOfOsakaKanjyou(line_id, station_id1, station_id2);
 
 	if (sales_km_1 < sales_km_2) {
-		if ((IS_B1LID_OSAKAKAN_PASS(b1lidflag, D1LID_OSAKAKAN_1F) ||
-		     BIT_CHK(b1lidflag, B1LID_OSAKAKAN_PASS)) ||
+		xxxxxxxxxx if ((IS_B1LID_OSAKAKAN_PASS(b1lidflag, D1LID_OSAKAKAN_1F) ||
+		xxxxxxxxxx     BIT_CHK(b1lidflag, B1LID_OSAKAKAN_PASS)) ||
 
 		d.push_back(sales_km);
 		d.push_back(sales_km);	// TODO
@@ -3662,7 +3662,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 					// 69条 「…かつこ内の両線路にまたがる場合を除いて」の場合
 				} else if (2 == trule69list.size()) {
 					/* 置換処理2 */
-					if (IDENT1(a69list.at(0)) == trule69list.at(0).at(1)) {
+					if ((PAIRIDENT)IDENT1(a69list.at(0)) == trule69list.at(0).at(1)) {
 						// 下り線
 						route_item->lineId = trule69list.at(1).at(0);
 						route_item = out_route_list->insert(route_item, RouteItem(trule69list.at(0).at(0), trule69list.at(0).at(2)));
@@ -4133,13 +4133,13 @@ vector<int32_t> Route::Get_route_distance(const vector<RouteItem>& route)
 	total_sales_km = 0;
 	total_calc_km = 0;
 	stationId = 0;
-	b1lid_flag = it->lineId & ~(1 << B1LID_OSAKAKAN_PASS);	/* 大阪環状線flag */
+	xxxxxxxxxxxxxx  TODO b1lid_flag = it->lineId & ~(1 << B1LID_OSAKAKAN_PASS);	/* 大阪環状線flag */
 	while (it != route.cend()) {
 		if (stationId != 0) {
 			vector<int32_t> km;
-			if (it->lineId == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
+			xxxxxxxxxxxx if (it->lineId == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
 				km = Route::GetDistance(b1lid_flag, it->lineId, stationId, it->stationId);
-				b1lid_flag |= (1 << B1LID_OSAKAKAN_PASS);
+				xxxxxxxxxx b1lid_flag |= (1 << B1LID_OSAKAKAN_PASS);
 			} else {
 				km = Route::GetDistance(it->lineId, stationId, it->stationId);
 			}
@@ -6215,7 +6215,7 @@ int32_t FARE_INFO::aggregate_fare_info(const vector<RouteItem>& routeList_raw, c
 
 	this->local_only = true;
 	this->local_only_as_hokkaido = true;
-	osakakan_aggregate = routeList.front().lineId & ~(1 << B1LID_OSAKAKAN_PASS);
+	xxxxxxxxxxxxxxx TODO osakakan_aggregate = routeList.front().lineId & ~(1 << B1LID_OSAKAKAN_PASS);
 
 	/* 近郊区間ではない条件となる新幹線乗車があるか */
 	for (ite = routeList_raw.cbegin(); ite != routeList_raw.cend(); ite++) {
@@ -6257,7 +6257,7 @@ int32_t FARE_INFO::aggregate_fare_info(const vector<RouteItem>& routeList_raw, c
 					d = FARE_INFO::GetDistanceEx(ite->lineId, station_id1, ite->stationId);
 				} else {
 					d = FARE_INFO::GetDistanceEx(osakakan_aggregate, ite->lineId, station_id1, ite->stationId);
-					osakakan_aggregate |= (1 << B1LID_OSAKAKAN_PASS);
+					xxxxxxxxxxxxx TODO osakakan_aggregate |= (1 << B1LID_OSAKAKAN_PASS);
 				}
 
 				if (6 != d.size()) {
