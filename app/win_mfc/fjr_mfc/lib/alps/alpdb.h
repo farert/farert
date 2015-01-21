@@ -404,11 +404,21 @@ private:
 
 /**** public ****/
 /* cooked flag for shoFare(), show_route() */
+// bit 15
+#define AVAIL_RULE_APPLIED          0x8000
 #define	RULE_NO_APPLIED				0x8000
 #define	RULE_APPLIED				0
-#define B_APPLIED_START_TERMINAL	1
-#define APPLIED_START				1
-#define APPLIED_TERMINAL			0
+
+// bit 0
+#define AVAIL_APPLIED_START_TERMINAL	1
+#define APPLIED_START					1
+#define APPLIED_TERMINAL				0
+
+// bit 1
+#define AVAIL_OSAKAKAN_DETOUR       2
+#define OSAKAKAN_DETOUR             0x2
+
+
 /****************/
 
 // station_id & line_id
@@ -475,16 +485,16 @@ class DbidOf
 {
 public:
 	DbidOf();
-	static int32_t StationIdOf_SHINOSAKA;	// 新大阪
-	static int32_t StationIdOf_OSAKA;    	// 大阪
-	static int32_t StationIdOf_KOUBE;     	// 神戸
-	static int32_t StationIdOf_HIMEJI;    	// 姫路
-	static int32_t StationIdOf_NISHIAKASHI; // 西明石
-	static int32_t LineIdOf_TOKAIDO;       	// 東海道線
-	static int32_t LineIdOf_SANYO;        	// 山陽線
-	static int32_t LineIdOf_SANYOSHINKANSEN; // 山陽新幹線
-	static int32_t LineIdOf_HAKATAMINAMISEN; // 博多南線
-	static int32_t LineIdOf_OOSAKAKANJYOUSEN; // 大阪環状線
+	static int32_t StationIdOf_SHINOSAKA;		// 新大阪
+	static int32_t StationIdOf_OSAKA;    		// 大阪
+	static int32_t StationIdOf_KOUBE;     		// 神戸
+	static int32_t StationIdOf_HIMEJI;    		// 姫路
+	static int32_t StationIdOf_NISHIAKASHI; 	// 西明石
+	static int32_t LineIdOf_TOKAIDO;       		// 東海道線
+	static int32_t LineIdOf_SANYO;        		// 山陽線
+	static int32_t LineIdOf_SANYOSHINKANSEN; 	// 山陽新幹線
+	static int32_t LineIdOf_HAKATAMINAMISEN; 	// 博多南線
+	static int32_t LineIdOf_OOSAKAKANJYOUSEN; 	// 大阪環状線
 
 	static int32_t StationIdOf_KITASHINCHI; 	// 北新地
 	static int32_t StationIdOf_AMAGASAKI;		// 尼崎
@@ -508,15 +518,13 @@ typedef struct
 #define BLF_JCTSP_ROUTE_CHANGE	6
 #define BLF_END					16
 
-#define BLF_MEIHANCITYFLAG		3	// ON:APPLIED_START / OFF:APPLIED_TERMINAL
-
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
 
 // bit0 - 2: 大阪環状線
 // T bit val: description
 // 0 000 0: normal
 // 1 100 4: n/a(disable)
-// 2 001 1: 1pass(short)       1回通過
+// 2 001 1: 1pass(short)                1回通過
 // 3 011 3: 2pass(short-short/long)     2回通過（1回目近回り／2回目近回りか大回りのどちらか）
 // 4 110 6: n/a(disable)                あり得ない
 // 5 101 5: 1pass(long)                 001状態時外部から「逆回り」を指定したとき(001→101)
@@ -525,8 +533,15 @@ typedef struct
 
 #define BLF_OSAKAKAN_PASS	0	// 大阪環状線 1回以上通過
 #define BLF_OSAKAKAN_2PASS  1	// 大阪環状線 2回通過
-#define BLF_OSAKAKAN_DETOUR 2   // 大阪環状線 1回目遠回り
+#define BLF_OSAKAKAN_DETOUR 2   // 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
+#define LF_OSAKAKAN_MASK    0x03
 
+
+
+
+// bit3 -
+#define BLF_MEIHANCITYFLAG		3	// ON: APPLIED_START / OFF:APPLIED_TERMINAL
+#define BLF_NO_RULE             4   // ON: 特例非適用
 
 /*   route
  *
@@ -626,10 +641,11 @@ private:
 
 public:
 	// alps_mfcDlg
-	tstring 		showFare(int32_t cooked);
-    int32_t         calcFare(int32_t cooked, FARE_INFO* fare_info);
-    int32_t         calcFare(int32_t cooked, int32_t count, FARE_INFO* fare_info);
-	int32_t			fareCalcOption();
+	void            setFareOption(uint16_t cooked, uint16_t availbit);
+	tstring 		showFare();
+    int32_t         calcFare(FARE_INFO* fare_info);
+    int32_t         calcFare(int32_t count, FARE_INFO* fare_info);
+	uint32_t		getFareOption();
 	tstring 		beginStationName(bool applied_agree);
 	tstring 		endStationName(bool applied_agree);
 	int32_t 		beginStationId(bool applied_agree);
