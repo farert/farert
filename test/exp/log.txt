@@ -1,0 +1,640 @@
+clear-all mask.
+clear-all mask.
+add-begin 京都(1578)
+add 東海道線(84)-京都(1578), 山科(1577)
+  add-mask on: 京都(1578,133)
+  add-mask on: 山科(1577,132)
+added continue.
+added fin.(0).
+add 湖西線(135)-山科(1577), 近江塩津(2686)
+  add-mask on: 山科(1577,132)
+  add-mask on: 近江塩津(2686,201)
+added continue.
+added fin.(0).
+add 北陸線(128)-近江塩津(2686), 富山(2467)
+  add-mask on: 近江塩津(2686,201)
+  add-mask on: 敦賀(2688,202)
+  add-mask on: 越前花堂(2698,203)
+  add-mask on: 津幡(2722,204)
+  add-mask on: 高岡(2727,205)
+  add-mask on: 富山(2467,186)
+added continue.
+added fin.(0).
+add 高山線(121)-富山(2467), 岐阜(1550)
+  add-mask on: 富山(2467,186)
+  add-mask on: 美濃太田(2430,185)
+  add-mask on: 岐阜(1550,128)
+added continue.
+added fin.(0).
+add 東海道線(84)-岐阜(1550), 山科(1577)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 大垣(1553,129)
+  add-mask on: 米原(1559,130)
+  add-mask on: 草津(1571,131)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1577
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 4 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:京都-山科
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 湖西線:山科-近江塩津
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 北陸線:近江塩津-富山
+multicompany line none detect X: 366, 403, comp1,2=4, 3, 高山線:富山-岐阜
+multicompany line none detect X: 496, 0, comp1,2=3, 4, 東海道線:岐阜-京都
+fare(basic)
+京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科
+京都市内[京] -> 京都市内[京]
+経由：[東海道線]山科[湖西線]近江塩津[北陸線]富山[高山線]岐阜[東海道線]
+営業キロ： 627.3 km    計算キロ： 649.9 km
+運賃： \9,830        往復： \17,680(割)
+
+有効日数：   5日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 南浦和(479)
+add 武蔵野線(41)-南浦和(479), 府中本町(754)
+  add-mask on: 南浦和(479,31)
+  add-mask on: 武蔵浦和(762,67)
+  add-mask on: 西国分寺(705,58)
+  add-mask on: 府中本町(754,66)
+added continue.
+added fin.(0).
+add 南武線(42)-府中本町(754), 川崎(777)
+  add-mask on: 府中本町(754,66)
+  add-mask on: 武蔵小杉(783,71)
+  add-mask on: 尻手(778,70)
+  add-mask on: 川崎(777,69)
+added continue.
+added fin.(0).
+add 東海道線(84)-川崎(777), 山科(1577)
+  add-mask on: 川崎(777,69)
+  add-mask on: 鶴見(1456,109)
+  add-mask on: 東神奈川(1458,110)
+  add-mask on: 横浜(1459,111)
+  add-mask on: 大船(1463,112)
+  add-mask on: 茅ケ崎(1466,113)
+  add-mask on: 国府津(1470,114)
+  add-mask on: 小田原(1472,115)
+  add-mask on: 熱海(1477,116)
+  add-mask on: 三島(1479,117)
+  add-mask on: 沼津(1480,118)
+  add-mask on: 富士(1485,119)
+  add-mask on: 静岡(1494,120)
+  add-mask on: 掛川(1504,121)
+  add-mask on: 浜松(1510,122)
+  add-mask on: 豊橋(1518,123)
+  add-mask on: 三河安城(1531,124)
+  add-mask on: 大府(1536,125)
+  add-mask on: 金山(1542,126)
+  add-mask on: 名古屋(1544,127)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 大垣(1553,129)
+  add-mask on: 米原(1559,130)
+  add-mask on: 草津(1571,131)
+  add-mask on: 山科(1577,132)
+added continue.
+added fin.(0).
+
+
+setup()=1
+c69 line_id=41, station_id1=479, station_id2=754
+c69 line_id=42, station_id1=754, station_id2=777
+c69 line_id=84, station_id1=777, station_id2=1577
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 4
+end station is re-route rule86/87
+c69 line_id=41, station_id1=479, station_id2=754
+c69 line_id=42, station_id1=754, station_id2=777
+c69 line_id=84, station_id1=777, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 武蔵野線:南浦和-府中本町
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 南武線:府中本町-川崎
+multicompany line none detect X: 595, 0, comp1,2=2, 4, 東海道線:川崎-京都
+fare(basic)
+南浦和 武蔵野線 府中本町 南武線 川崎 東海道線 山科
+南浦和 -> 京都市内[京]
+経由：[武蔵野線]府中本町[南武線]川崎[東海道線]
+営業キロ： 555.0 km    計算キロ： 555.0 km
+運賃： \8,750        往復： \17,500
+
+有効日数：   4日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 山科(1577)
+add 東海道線(84)-山科(1577), 岐阜(1550)
+  add-mask on: 山科(1577,132)
+  add-mask on: 草津(1571,131)
+  add-mask on: 米原(1559,130)
+  add-mask on: 大垣(1553,129)
+  add-mask on: 岐阜(1550,128)
+added continue.
+added fin.(0).
+add 高山線(121)-岐阜(1550), 富山(2467)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 美濃太田(2430,185)
+  add-mask on: 富山(2467,186)
+added continue.
+added fin.(0).
+add 北陸線(128)-富山(2467), 近江塩津(2686)
+  add-mask on: 富山(2467,186)
+  add-mask on: 高岡(2727,205)
+  add-mask on: 津幡(2722,204)
+  add-mask on: 越前花堂(2698,203)
+  add-mask on: 敦賀(2688,202)
+  add-mask on: 近江塩津(2686,201)
+added continue.
+added fin.(0).
+add 湖西線(135)-近江塩津(2686), 山科(1577)
+  add-mask on: 近江塩津(2686,201)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=84, station_id1=1577, station_id2=1550
+c69 line_id=121, station_id1=1550, station_id2=2467
+c69 line_id=128, station_id1=2467, station_id2=2686
+c69 line_id=135, station_id1=2686, station_id2=1577
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 4 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1550
+c69 line_id=121, station_id1=1550, station_id2=2467
+c69 line_id=128, station_id1=2467, station_id2=2686
+c69 line_id=135, station_id1=2686, station_id2=1577
+c69 line_id=84, station_id1=1577, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 677, 0, comp1,2=4, 3, 東海道線:京都-岐阜
+multicompany line none detect X: 1892, 2081, comp1,2=3, 4, 高山線:岐阜-富山
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 北陸線:富山-近江塩津
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 湖西線:近江塩津-山科
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:山科-京都
+fare(basic)
+山科 東海道線 岐阜 高山線 富山 北陸線 近江塩津 湖西線 山科
+京都市内[京] -> 京都市内[京]
+経由：[東海道線]岐阜[高山線]富山[北陸線]近江塩津[湖西線]山科[東海道線]
+営業キロ： 627.3 km    計算キロ： 649.9 km
+運賃： \9,830        往復： \17,680(割)
+
+有効日数：   5日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 京都(1578)
+add 東海道線(84)-京都(1578), 山科(1577)
+  add-mask on: 京都(1578,133)
+  add-mask on: 山科(1577,132)
+added continue.
+added fin.(0).
+add 湖西線(135)-山科(1577), 近江塩津(2686)
+  add-mask on: 山科(1577,132)
+  add-mask on: 近江塩津(2686,201)
+added continue.
+added fin.(0).
+add 北陸線(128)-近江塩津(2686), 富山(2467)
+  add-mask on: 近江塩津(2686,201)
+  add-mask on: 敦賀(2688,202)
+  add-mask on: 越前花堂(2698,203)
+  add-mask on: 津幡(2722,204)
+  add-mask on: 高岡(2727,205)
+  add-mask on: 富山(2467,186)
+added continue.
+added fin.(0).
+add 高山線(121)-富山(2467), 岐阜(1550)
+  add-mask on: 富山(2467,186)
+  add-mask on: 美濃太田(2430,185)
+  add-mask on: 岐阜(1550,128)
+added continue.
+added fin.(0).
+add 東海道線(84)-岐阜(1550), 名古屋(1544)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 名古屋(1544,127)
+added continue.
+added fin.(0).
+add 関西線(127)-名古屋(1544), 天王寺(2674)
+  add-mask on: 名古屋(1544,127)
+  add-mask on: 河原田(2642,193)
+  add-mask on: 亀山(2511,188)
+  add-mask on: 柘植(2648,194)
+  add-mask on: 木津(2657,195)
+  add-mask on: 奈良(2659,196)
+  add-mask on: 王寺(2663,197)
+  add-mask on: 久宝寺(2670,198)
+  add-mask on: 天王寺(2674,199)
+added continue.
+added fin.(0).
+add 大阪環状線(138)-天王寺(2674), 大阪(1593)
+  add-mask on: 天王寺(2674,199)
+  add-mask on: 京橋(2890,209)
+  add-mask on: 大阪(1593,135)
+added continue.
+added fin.(0).
+add 東海道線(84)-大阪(1593), 京都(1578)
+  add-mask on: 大阪(1593,135)
+  add-mask on: 新大阪(1592,134)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1544
+c69 line_id=127, station_id1=1544, station_id2=2674
+c69 line_id=138, station_id1=2674, station_id2=1593
+c69 line_id=84, station_id1=1593, station_id2=1578
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 4 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1544
+c69 line_id=127, station_id1=1544, station_id2=2674
+c69 line_id=138, station_id1=2674, station_id2=1593
+c69 line_id=84, station_id1=1593, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:京都-山科
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 湖西線:山科-近江塩津
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 北陸線:近江塩津-富山
+multicompany line none detect X: 366, 403, comp1,2=4, 3, 高山線:富山-岐阜
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:岐阜-名古屋
+multicompany line none detect X: 599, 0, comp1,2=3, 4, 関西線:名古屋-天王寺
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 大阪環状線:天王寺-大阪
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:大阪-京都
+fare(basic)
+京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 名古屋 関西線 天王寺 大阪環状線 大阪 東海道線 京都
+京都市内[京] -> 京都市内[京]
+経由：[東海道線]山科[湖西線]近江塩津[北陸線]富山[高山線]岐阜[東海道線]名古屋[関西線]天王寺[大阪環状線]大阪[東海道線]
+営業キロ： 765.2 km    計算キロ： 787.8 km
+運賃： \10,800        往復： \19,440(割)
+
+有効日数：   5日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 京都(1578)
+add 東海道線(84)-京都(1578), 山科(1577)
+  add-mask on: 京都(1578,133)
+  add-mask on: 山科(1577,132)
+added continue.
+added fin.(0).
+add 湖西線(135)-山科(1577), 近江塩津(2686)
+  add-mask on: 山科(1577,132)
+  add-mask on: 近江塩津(2686,201)
+added continue.
+added fin.(0).
+add 北陸線(128)-近江塩津(2686), 富山(2467)
+  add-mask on: 近江塩津(2686,201)
+  add-mask on: 敦賀(2688,202)
+  add-mask on: 越前花堂(2698,203)
+  add-mask on: 津幡(2722,204)
+  add-mask on: 高岡(2727,205)
+  add-mask on: 富山(2467,186)
+added continue.
+added fin.(0).
+add 高山線(121)-富山(2467), 岐阜(1550)
+  add-mask on: 富山(2467,186)
+  add-mask on: 美濃太田(2430,185)
+  add-mask on: 岐阜(1550,128)
+added continue.
+added fin.(0).
+add 東海道線(84)-岐阜(1550), 保土ケ谷(1460)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 名古屋(1544,127)
+  add-mask on: 金山(1542,126)
+  add-mask on: 大府(1536,125)
+  add-mask on: 三河安城(1531,124)
+  add-mask on: 豊橋(1518,123)
+  add-mask on: 浜松(1510,122)
+  add-mask on: 掛川(1504,121)
+  add-mask on: 静岡(1494,120)
+  add-mask on: 富士(1485,119)
+  add-mask on: 沼津(1480,118)
+  add-mask on: 三島(1479,117)
+  add-mask on: 熱海(1477,116)
+  add-mask on: 小田原(1472,115)
+  add-mask on: 国府津(1470,114)
+  add-mask on: 茅ケ崎(1466,113)
+  add-mask on: 大船(1463,112)
+added continue.
+added fin.(0).
+
+
+setup()=1
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1460
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 4 -> 2
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1459
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:京都-山科
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 湖西線:山科-近江塩津
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 北陸線:近江塩津-富山
+multicompany line none detect X: 366, 403, comp1,2=4, 3, 高山線:富山-岐阜
+multicompany line none detect X: 3186, 0, comp1,2=3, 2, 東海道線:岐阜-横浜
+fare(basic)
+京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 保土ケ谷
+京都市内[京] -> 横浜市内[浜]
+経由：[東海道線]山科[湖西線]近江塩津[北陸線]富山[高山線]岐阜[東海道線]
+営業キロ： 877.5 km    計算キロ： 900.1 km
+運賃： \11,660        往復： \20,980(割)
+
+有効日数：   6日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 山科(1577)
+add 湖西線(135)-山科(1577), 近江塩津(2686)
+  add-mask on: 山科(1577,132)
+  add-mask on: 近江塩津(2686,201)
+added continue.
+added fin.(0).
+add 北陸線(128)-近江塩津(2686), 富山(2467)
+  add-mask on: 近江塩津(2686,201)
+  add-mask on: 敦賀(2688,202)
+  add-mask on: 越前花堂(2698,203)
+  add-mask on: 津幡(2722,204)
+  add-mask on: 高岡(2727,205)
+  add-mask on: 富山(2467,186)
+added continue.
+added fin.(0).
+add 高山線(121)-富山(2467), 岐阜(1550)
+  add-mask on: 富山(2467,186)
+  add-mask on: 美濃太田(2430,185)
+  add-mask on: 岐阜(1550,128)
+added continue.
+added fin.(0).
+add 東海道線(84)-岐阜(1550), 山科(1577)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 大垣(1553,129)
+  add-mask on: 米原(1559,130)
+  add-mask on: 草津(1571,131)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1577
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 4 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1577
+c69 line_id=135, station_id1=1577, station_id2=2686
+c69 line_id=128, station_id1=2686, station_id2=2467
+c69 line_id=121, station_id1=2467, station_id2=1550
+c69 line_id=84, station_id1=1550, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:京都-山科
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 湖西線:山科-近江塩津
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 北陸線:近江塩津-富山
+multicompany line none detect X: 366, 403, comp1,2=4, 3, 高山線:富山-岐阜
+multicompany line none detect X: 496, 0, comp1,2=3, 4, 東海道線:岐阜-京都
+fare(basic)
+山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科
+京都市内[京] -> 京都市内[京]
+経由：[東海道線]山科[湖西線]近江塩津[北陸線]富山[高山線]岐阜[東海道線]
+営業キロ： 627.3 km    計算キロ： 649.9 km
+運賃： \9,830        往復： \17,680(割)
+
+有効日数：   5日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 京都(1578)
+add 東海道線(84)-京都(1578), 名古屋(1544)
+  add-mask on: 京都(1578,133)
+  add-mask on: 山科(1577,132)
+  add-mask on: 草津(1571,131)
+  add-mask on: 米原(1559,130)
+  add-mask on: 大垣(1553,129)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 名古屋(1544,127)
+added continue.
+added fin.(0).
+add 関西線(127)-名古屋(1544), 木津(2657)
+  add-mask on: 名古屋(1544,127)
+  add-mask on: 河原田(2642,193)
+  add-mask on: 亀山(2511,188)
+  add-mask on: 柘植(2648,194)
+  add-mask on: 木津(2657,195)
+added continue.
+added fin.(0).
+add 奈良線(137)-木津(2657), 京都(1578)
+  add-mask on: 木津(2657,195)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=84, station_id1=1578, station_id2=1544
+c69 line_id=127, station_id1=1544, station_id2=2657
+c69 line_id=137, station_id1=2657, station_id2=1578
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 4 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1544
+c69 line_id=127, station_id1=1544, station_id2=2657
+c69 line_id=137, station_id1=2657, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 677, 0, comp1,2=4, 3, 東海道線:京都-名古屋
+multicompany line none detect X: 599, 0, comp1,2=3, 4, 関西線:名古屋-木津
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 奈良線:木津-京都
+fare(basic)
+京都 東海道線 名古屋 関西線 木津 奈良線 京都
+京都市内[京] -> 京都市内[京]
+経由：[東海道線]名古屋[関西線]木津[奈良線]
+営業キロ： 309.2 km    計算キロ： 309.2 km
+運賃： \5,400        往復： \10,800
+
+有効日数：   3日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 京都(1578)
+add 東海道線(84)-京都(1578), 名古屋(1544)
+  add-mask on: 京都(1578,133)
+  add-mask on: 山科(1577,132)
+  add-mask on: 草津(1571,131)
+  add-mask on: 米原(1559,130)
+  add-mask on: 大垣(1553,129)
+  add-mask on: 岐阜(1550,128)
+  add-mask on: 名古屋(1544,127)
+added continue.
+added fin.(0).
+add 関西線(127)-名古屋(1544), 天王寺(2674)
+  add-mask on: 名古屋(1544,127)
+  add-mask on: 河原田(2642,193)
+  add-mask on: 亀山(2511,188)
+  add-mask on: 柘植(2648,194)
+  add-mask on: 木津(2657,195)
+  add-mask on: 奈良(2659,196)
+  add-mask on: 王寺(2663,197)
+  add-mask on: 久宝寺(2670,198)
+  add-mask on: 天王寺(2674,199)
+added continue.
+added fin.(0).
+add 大阪環状線(138)-天王寺(2674), 大阪(1593)
+  add-mask on: 天王寺(2674,199)
+  add-mask on: 京橋(2890,209)
+  add-mask on: 大阪(1593,135)
+added continue.
+added fin.(0).
+add 東海道線(84)-大阪(1593), 京都(1578)
+  add-mask on: 大阪(1593,135)
+  add-mask on: 新大阪(1592,134)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=84, station_id1=1578, station_id2=1544
+c69 line_id=127, station_id1=1544, station_id2=2674
+c69 line_id=138, station_id1=2674, station_id2=1593
+c69 line_id=84, station_id1=1593, station_id2=1578
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 4 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=84, station_id1=1578, station_id2=1544
+c69 line_id=127, station_id1=1544, station_id2=2674
+c69 line_id=138, station_id1=2674, station_id2=1593
+c69 line_id=84, station_id1=1593, station_id2=1578
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 677, 0, comp1,2=4, 3, 東海道線:京都-名古屋
+multicompany line none detect X: 599, 0, comp1,2=3, 4, 関西線:名古屋-天王寺
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 大阪環状線:天王寺-大阪
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 東海道線:大阪-京都
+fare(basic)
+京都 東海道線 名古屋 関西線 天王寺 大阪環状線 大阪 東海道線 京都
+京都市内[京] -> 京都市内[京]
+経由：[東海道線]名古屋[関西線]天王寺[大阪環状線]大阪[東海道線]
+営業キロ： 372.5 km    計算キロ： 372.5 km
+運賃： \6,260        往復： \12,520
+
+有効日数：   3日
+
+----------------------------------------------------------------
+clear-all mask.
+clear-all mask.
+add-begin 仙台(553)
+add 東北線(34)-仙台(553), 福島(534)
+  add-mask on: 仙台(553,42)
+  add-mask on: 岩沼(547,41)
+  add-mask on: 福島(534,40)
+added continue.
+added fin.(0).
+add 奥羽線(107)-福島(534), 横手(1257)
+  add-mask on: 福島(534,40)
+  add-mask on: 米沢(1989,164)
+  add-mask on: 高畠(1991,165)
+  add-mask on: 赤湯(1992,166)
+  add-mask on: かみのやま温泉(1995,167)
+  add-mask on: 山形(1998,168)
+  add-mask on: 北山形(1999,169)
+  add-mask on: 羽前千歳(1154,94)
+  add-mask on: 天童(2003,170)
+  add-mask on: さくらんぼ東根(2006,171)
+  add-mask on: 村山(2008,172)
+  add-mask on: 大石田(2010,173)
+  add-mask on: 新庄(2014,174)
+  add-mask on: 横手(1257,98)
+added continue.
+added fin.(0).
+add 北上線(74)-横手(1257), 北上(582)
+  add-mask on: 横手(1257,98)
+  add-mask on: 北上(582,46)
+added continue.
+added fin.(0).
+add 東北線(34)-北上(582), 仙台(553)
+  add-mask on: 北上(582,46)
+  add-mask on: 一ノ関(574,45)
+  add-mask on: 小牛田(564,44)
+  add-mask on: 岩切(555,43)
+added fin.(1).
+
+
+setup()=0
+c69 line_id=34, station_id1=553, station_id2=534
+c69 line_id=107, station_id1=534, station_id2=1257
+c69 line_id=74, station_id1=1257, station_id2=582
+c69 line_id=34, station_id1=582, station_id2=553
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x83, 10 -> 10
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=34, station_id1=553, station_id2=534
+c69 line_id=107, station_id1=534, station_id2=1257
+c69 line_id=74, station_id1=1257, station_id2=582
+c69 line_id=34, station_id1=582, station_id2=553
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:仙台-福島
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 奥羽線:福島-横手
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 北上線:横手-北上
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:北上-仙台
+fare(basic)
+仙台 東北線 福島(北) 奥羽線 横手 北上線 北上 東北線 仙台
+仙台市内[仙] -> 仙台市内[仙]
+経由：[東北線]福島[奥羽線]横手[北上線]北上[東北線]
+営業キロ： 504.1 km    計算キロ： 510.2 km
+運賃： \8,210        往復： \16,420
+JR東日本 株主優待2割： \6,560
+JR東日本 株主優待4割： \4,920
+有効日数：   4日
+
+----------------------------------------------------------------
