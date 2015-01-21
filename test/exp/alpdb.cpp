@@ -175,7 +175,7 @@ bool isKanaString(LPCTSTR szStr)
     int32_t pt;
     string str(szStr);
     
-    for (pt = 0; pt < str.size(); pt += cs) {
+    for (pt = 0; pt < (int32_t)str.size(); pt += cs) {
         lead = str[pt];
         if (lead < 0x80) {
             cs = 1;
@@ -2356,7 +2356,7 @@ void Route::terminate(int32_t stationId)
 	int32_t stationIdFrom = 0;
 	int32_t newLastIndex = 0x7fffffff;
 	int32_t line_id = -1;
-	int32_t stationIdTo;
+	//int32_t stationIdTo;
 	
 	for (i = 0; i < (int32_t)route_list_raw.size(); i++) {
 		if (stationIdFrom != 0) {
@@ -2365,7 +2365,7 @@ void Route::terminate(int32_t stationId)
 			if (0 != Route::InStation(stationId, route_list_raw[i].lineId, stationIdFrom, route_list_raw[i].stationId)) {
 				newLastIndex = i;
 				line_id = route_list_raw[i].lineId;
-				stationIdTo = route_list_raw[i].stationId;
+				//stationIdTo = route_list_raw[i].stationId;
 				break;
 			}
 		} else {
@@ -3483,7 +3483,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 					// 69条 「…かつこ内の両線路にまたがる場合を除いて」の場合
 				} else if (2 == trule69list.size()) {
 					/* 置換処理2 */
-					if (IDENT1(a69list.at(0)) == trule69list.at(0).at(1)) {
+					if ((PAIRIDENT)IDENT1(a69list.at(0)) == trule69list.at(0).at(1)) {
 						// 下り線
 						route_item->lineId = trule69list.at(1).at(0);
 						route_item = out_route_list->insert(route_item, RouteItem(trule69list.at(0).at(0), trule69list.at(0).at(2)));
@@ -3501,7 +3501,7 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
 				change++;
 			}
  			if (continue_flag) {
- 				ASSERT(2 <= dbrecord.size() && i == (dbrecord.size() - 2));
+ 				ASSERT((2 <= dbrecord.size()) && (i == (int32_t)(dbrecord.size() - 2)));
 				a69list.push_back(MAKEPAIR(dbrecord[i], dbrecord[i + 1]));
  			}
 		}
@@ -4855,7 +4855,7 @@ int32_t Route::Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset
 	} else {		/* 下り */
 		sqlite3_snprintf(sizeof(sql_buf), sql_buf, tsql_asc, km_offset, km - km_offset);
 	}
-	int32_t akm;
+//	int32_t akm;
 	int32_t aStationId;
 	DBO dbo(DBS::getInstance()->compileSql(sql_buf));
 
@@ -4863,7 +4863,7 @@ int32_t Route::Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset
 	dbo.setParam(2, station_id);
 
 	if (dbo.moveNext()) {
-		akm = dbo.getInt(0);		// 未使用(営業キロじゃ貰っても要らん)
+//		akm = dbo.getInt(0);		// 未使用(営業キロじゃ貰っても要らん)
 		aStationId = dbo.getInt(1);
 		return aStationId;
 	}
