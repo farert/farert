@@ -98,6 +98,7 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_RSLTOPEN, &Calps_mfcDlg::OnBnClickedButtonRsltopen)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &Calps_mfcDlg::OnBnClickedButtonRouteOpen)
 	ON_BN_CLICKED(IDC_BUTTON_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedButtonSpecialCity)
+	ON_BN_CLICKED(IDC_BUTTON_OSAKAKAN, &Calps_mfcDlg::OnBnClickedButtonOsakaKan)
 END_MESSAGE_MAP()
 
 
@@ -889,7 +890,10 @@ void Calps_mfcDlg::ResetContent()
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
 	CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
+	SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
 	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
+	SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
+	GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
 }
 
 //	着駅までの指定完了
@@ -916,7 +920,9 @@ void Calps_mfcDlg::routeEnd()
 void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 {
 	/* 単駅選択可能な特定都区市内発着か? */
-	int opt = m_route.fareCalcOption();
+	int opt = m_route.getFareOption();
+	
+	// TODO
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
 		/* 単駅指定 */
@@ -927,6 +933,29 @@ void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
 		} else {		// 着駅=都区市内
 			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("発駅を単駅に指定"));
+		}
+	}
+	showFare();
+}
+
+//	[大阪環状線遠回り／大阪環状線近回り]
+//
+void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
+{
+	/* 単駅選択可能な特定都区市内発着か? */
+	int opt = m_route.getFareOption();
+	
+	// TODO
+	ASSERT(opt == 1 || opt == 2);
+	if ((opt == 1) || (opt == 2)) {
+		/*  */
+		CString cap;
+		GetDlgItem(IDC_BUTTON_OSAKAKAN)->GetWindowText(cap);
+
+		if (0 <= cap.Find(_T("近"))) {
+			SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
+		} else {		// 着駅=都区市内
+			SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
 		}
 	}
 	showFare();
@@ -1044,6 +1073,8 @@ void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 	CString cap;
 	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
 
+
+TODO
 	/* 単駅選択可能な特定都区市内発着か? */
 	if (0 <= cap.Find(_T("発駅"))) {
 		flag = APPLIED_START;	// 発駅を都区市内に(適用は「杉本町-大高」類例のみ)
@@ -1302,13 +1333,13 @@ void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
  */
 void Calps_mfcDlg::showFare()
 {
-	int opt;
-	int flag;
+	int16_t s_opt;
+	int16_t avail_mask;
 	
 	/*	運賃表示条件フラグ取得 */
 
 	flag = 0;
-
+TODO
 	if (GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->IsWindowEnabled()) {
 		CString cap;
 		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
@@ -1316,12 +1347,17 @@ void Calps_mfcDlg::showFare()
 			flag = APPLIED_START;	// 発駅を都区市内に(適用は「杉本町-大高」類例のみ)
 		}
 	}
+
 	/* 規則適用か? */
-	flag |=	((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
-	
+	s_opt |= ((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? FAREOPT_RULE_APPLIED : FAREOPT_RULE_NO_APPLIED);
+	avail_mask |= FAREOPT_AVAIL_RULE_APPLIED;
+
+	m_route.setFareOption(s_opt, avail_mask);
+
 	SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(flag).c_str());
-	
-	opt = m_route.fareCalcOption();
+
+	opt = m_route.getFareOption();
+TODO
 	if ((opt == 1) || (opt == 2)) {
 		//case 1:		// 「発駅を単駅に指定」
 		//case 2:		// 「着駅を単駅に指定」
