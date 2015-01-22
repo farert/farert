@@ -405,18 +405,18 @@ private:
 /**** public ****/
 /* cooked flag for shoFare(), show_route() */
 // bit 15
-#define AVAIL_RULE_APPLIED          0x8000
-#define	RULE_NO_APPLIED				0x8000
-#define	RULE_APPLIED				0
+#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000
+#define	FAREOPT_RULE_NO_APPLIED					0x8000
+#define	FAREOPT_RULE_APPLIED					0
 
 // bit 0
-#define AVAIL_APPLIED_START_TERMINAL	1
-#define APPLIED_START					1
-#define APPLIED_TERMINAL				0
+#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1
+#define FAREOPT_APPLIED_START					1
+#define FAREOPT_APPLIED_TERMINAL				0
 
 // bit 1
-#define AVAIL_OSAKAKAN_DETOUR       2
-#define OSAKAKAN_DETOUR             0x2
+#define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2
+#define FAREOPT_OSAKAKAN_DETOUR             	0x2
 
 
 /****************/
