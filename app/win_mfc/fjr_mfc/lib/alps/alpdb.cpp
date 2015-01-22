@@ -2060,13 +2060,16 @@ uint32_t Route::getFareOption()
 //							= 0: 大阪環状線近回り(規定)
 //
 //  @param [in] availbit : 有効フラグ
-//			    AVAIL_OSAKAKAN_DETOUR, AVAIL_APPLIED_START_TERMINAL, AVAIL_RULE_APPLIED
+//			    FAREOPT_AVAIL_OSAKAKAN_DETOUR, FAREOPT_AVAIL_APPLIED_START_TERMINAL, FAREOPT_AVAIL_RULE_APPLIED
 //
 void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 {
+	uint32_t opt = getFareOption();
+
 	/* 規則適用 */
-	if (0 != (AVAIL_RULE_APPLIED & availbit)) {
-		if (RULE_APPLIED == (RULE_NO_APPLIED & cooked)) {
+	if (0 != (FAREOPT_AVAIL_RULE_APPLIED & availbit)) {
+		if (0 != (opt & 
+		if (FAREOPT_RULE_APPLIED == (FAREOPT_RULE_NO_APPLIED & cooked)) {
 			last_flag |= (1 << BLF_NO_RULE);    /* 非適用 */
 		} else {
 			last_flag &= ~(1 << BLF_NO_RULE);   /* 適用 */
@@ -2074,8 +2077,8 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 	}
 
 	/* 名古屋市内[名] - 大阪市内[阪] 発駅を単駅とするか着駅を単駅とするか */
-	if (0 != (AVAIL_APPLIED_START_TERMINAL & availbit)) {
-		if (0 != (cooked & APPLIED_START_TERMINAL)) {
+	if (0 != (FAREOPT_AVAIL_APPLIED_START_TERMINAL & availbit)) {
+		if (0 != (cooked & FAREOPT_APPLIED_START_TERMINAL)) {
 			BIT_ON(last_flag, BLF_MEIHANCITYFLAG);   /* 発駅=単駅、着駅市内駅 */
 		} else {
 			BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);  /* 着駅=単駅、発駅市内駅 */
@@ -2083,10 +2086,10 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 	}
 
 	// 大阪環状線 近回り(規定)／遠回り
-	if ((0 != (AVAIL_OSAKAKAN_DETOUR & availbit)) && (
+	if ((0 != (FAREOPT_AVAIL_OSAKAKAN_DETOUR & availbit)) && (
 	((LF_OSAKAKAN_MASK & last_flag) == (1 << BLF_OSAKAKAN_PASS)) ||
 	((LF_OSAKAKAN_MASK & last_flag) == ((1 << BLF_OSAKAKAN_PASS) | (1 << BLF_OSAKAKAN_DETOUR))))) {
-		if (0 != (cooked & OSAKAKAN_DETOUR)) {
+		if (0 != (cooked & FAREOPT_OSAKAKAN_DETOUR)) {
 			last_flag |= (1 << BLF_OSAKAKAN_DETOUR);
 		} else {
 			last_flag &= ~(1 << BLF_OSAKAKAN_DETOUR);
