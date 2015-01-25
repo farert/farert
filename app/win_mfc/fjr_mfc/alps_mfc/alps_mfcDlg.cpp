@@ -920,22 +920,24 @@ void Calps_mfcDlg::routeEnd()
 void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 {
 	/* 単駅選択可能な特定都区市内発着か? */
-	int opt = m_route.getFareOption();
+	int opt = 0x03 & m_route.getFareOption();
 	
-	// TODO
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
 		/* 単駅指定 */
 		CString cap;
 		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
 
-		if (0 <= cap.Find(_T("発駅"))) { // 発駅=都区市内
+		if (1 != opt) { // 発駅=都区市内
 			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
 		} else {		// 着駅=都区市内
 			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("発駅を単駅に指定"));
 		}
+		showFare();
+	} else {
+		/* showFare()の後でおこなっているため普通は不要(安全策)*/
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
 	}
-	showFare();
 }
 
 //	[大阪環状線遠回り／大阪環状線近回り]
@@ -943,22 +945,24 @@ void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
 {
 	/* 単駅選択可能な特定都区市内発着か? */
-	int opt = m_route.getFareOption();
+	int opt = 0x03 & (m_route.getFareOption() >> 2);
 	
-	// TODO
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
 		/*  */
 		CString cap;
 		GetDlgItem(IDC_BUTTON_OSAKAKAN)->GetWindowText(cap);
 
-		if (0 <= cap.Find(_T("近"))) {
+		if (1 != opt) {
 			SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
 		} else {		// 着駅=都区市内
 			SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
 		}
+		showFare();
+	} else {
+		/* showFare()の後でおこなっているため普通は不要(安全策)*/
+		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
 	}
-	showFare();
 }
 
 //	[特例適用]チェックボタン
@@ -1356,7 +1360,7 @@ TODO
 
 	SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(flag).c_str());
 
-	opt = m_route.getFareOption();
+	opt = m_route.getFareOption() & 0x03;
 TODO
 	if ((opt == 1) || (opt == 2)) {
 		//case 1:		// 「発駅を単駅に指定」
