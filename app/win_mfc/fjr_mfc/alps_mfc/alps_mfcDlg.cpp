@@ -924,19 +924,13 @@ void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 	
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
-		/* 単駅指定 */
-		CString cap;
-		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
-
-		if (1 != opt) { // 発駅=都区市内
-			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
-		} else {		// 着駅=都区市内
-			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("発駅を単駅に指定"));
-		}
+		m_route.setFareOption((opt == 1) ? FAREOPT_APPLIED_START : FAREOPT_APPLIED_TERMINAL, 
+		                      FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 		showFare();
 	} else {
 		/* showFare()の後でおこなっているため普通は不要(安全策)*/
 		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
+		m_route.setFareOption(0, FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 	}
 }
 
@@ -944,21 +938,18 @@ void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 //
 void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
 {
-	/* 単駅選択可能な特定都区市内発着か? */
+	/* 大阪環状線1回だけ通っている? */
 	int opt = 0x03 & (m_route.getFareOption() >> 2);
 	
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
-		/*  */
-		CString cap;
-		GetDlgItem(IDC_BUTTON_OSAKAKAN)->GetWindowText(cap);
-
-		if (1 != opt) {
-			SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
-		} else {		// 着駅=都区市内
-			SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
-		}
+		// 近回り時に押されたら遠回り(FAREOPT_OSAKAKAN_DETOUR)に : 
+		// 遠回り時に押されたら近回り(0)に
+		m_route.setFareOption((opt == 1) ? FAREOPT_OSAKAKAN_DETOUR : 0, 
+		                      FAREOPT_AVAIL_OSAKAKAN_DETOUR);
 		showFare();
+		// optは逆転する
+		// または無効となりこのボタンは押せなくなる
 	} else {
 		/* showFare()の後でおこなっているため普通は不要(安全策)*/
 		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
@@ -969,6 +960,11 @@ void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
 //
 void Calps_mfcDlg::OnBnClickedCheckRuleapply()
 {
+	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) {
+		m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	} else {
+		m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	}
 	showFare();
 }
 
@@ -1070,23 +1066,9 @@ void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 	tstring s;
 	tstring result_string;
 	CStdioFile file;
-	int flag;
 
-	flag = 0;
+	result_string = m_route.showFare().c_str();
 
-	CString cap;
-	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
-
-
-TODO
-	/* 単駅選択可能な特定都区市内発着か? */
-	if (0 <= cap.Find(_T("発駅"))) {
-		flag = APPLIED_START;	// 発駅を都区市内に(適用は「杉本町-大高」類例のみ)
-	}
-	/* 規則適用か? */
-	flag |=	((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? RULE_APPLIED : RULE_NO_APPLIED);
-	result_string = m_route.showFare(flag).c_str();
-	
 	int rp;
 	do {
 		rp = result_string.find(_T("\r\n"));
@@ -1337,42 +1319,45 @@ void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
  */
 void Calps_mfcDlg::showFare()
 {
-	int16_t s_opt;
-	int16_t avail_mask;
+	int16_t opt;
 	
 	/*	運賃表示条件フラグ取得 */
 
-	flag = 0;
-TODO
-	if (GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->IsWindowEnabled()) {
-		CString cap;
-		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->GetWindowText(cap);
-		if (0 <= cap.Find(_T("発駅"))) {
-			flag = APPLIED_START;	// 発駅を都区市内に(適用は「杉本町-大高」類例のみ)
-		}
-	}
+	SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare().c_str());
 
-	/* 規則適用か? */
-	s_opt |= ((BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) ? FAREOPT_RULE_APPLIED : FAREOPT_RULE_NO_APPLIED);
-	avail_mask |= FAREOPT_AVAIL_RULE_APPLIED;
+	opt = m_route.getFareOption();
 
-	m_route.setFareOption(s_opt, avail_mask);
-
-	SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare(flag).c_str());
-
-	opt = m_route.getFareOption() & 0x03;
-TODO
-	if ((opt == 1) || (opt == 2)) {
-		//case 1:		// 「発駅を単駅に指定」
-		//case 2:		// 「着駅を単駅に指定」
-		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(TRUE);
-		if (opt == 1) {
-			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("発駅を単駅に指定"));
-		} else {
-			SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
-		}
-	} else {
+	switch (opt & 0x03) {
+	case 0:
 		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
+		break;
+	case 1:	// 「発駅を単駅に指定」
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(TRUE);
+		SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("発駅を単駅に指定"));
+		break;
+	case 2:		// 「着駅を単駅に指定」
+		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(TRUE);
+		SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
+		break;
+	default:
+		ASSERT(FALSE);
+		break;
+	}
+	switch ((opt >> 2) & 0x03) {
+	case 0:
+		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
+		break;
+	case 1:
+		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(TRUE);
+		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
+		break;
+	case 2:
+		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(TRUE);
+		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
+		break;
+	default:
+		ASSERT(FALSE);
+		break;
 	}
 }
 
@@ -1493,7 +1478,6 @@ void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 
 void CAboutDlg::OnNMClickSyslink1(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 	ShellExecuteW(m_hWnd, L"open", L"http://farert.blogspot.jp", NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
