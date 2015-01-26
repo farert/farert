@@ -398,25 +398,24 @@ private:
 #define B1LID_FIN_OOSAKA		9
 #define B1LID_CITY_MASK         0x3ff
 #define BCRULE70	6
-// bit10- reserve
-
+// bit10-14 reserve
 
 
 /**** public ****/
 /* cooked flag for shoFare(), show_route() */
 // bit 15
-#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000
-#define	FAREOPT_RULE_NO_APPLIED					0x8000
-#define	FAREOPT_RULE_APPLIED					0
+#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000	// 有効ビットマスク
+#define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
+#define	FAREOPT_RULE_APPLIED					0		// 通常
 
 // bit 0
-#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1
-#define FAREOPT_APPLIED_START					1
-#define FAREOPT_APPLIED_TERMINAL				0
+#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
+#define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
+#define FAREOPT_APPLIED_TERMINAL				0	// 名阪間 着駅を市内駅に適用
 
 // bit 1
-#define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2
-#define FAREOPT_OSAKAKAN_DETOUR             	0x2
+#define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2 // 有効ビットマスク
+#define FAREOPT_OSAKAKAN_DETOUR             	0x2	// 大阪環状線 遠回り
 
 
 /****************/
@@ -521,15 +520,19 @@ typedef struct
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
 
 // bit0 - 2: 大阪環状線
-// T bit val: description
+//                            bit 0 BLF_OSAKAKAN_PASS	
+//                                1 BLF_OSAKAKAN_2PASS  
+// T bit val: description         2 BLF_OSAKAKAN_DETOUR 
 // 0 000 0: normal
 // 1 100 4: n/a(disable)
-// 2 001 1: 1pass(short)                1回通過
+// 2 001 1: 1pass(short)                1回通過(近回り)
 // 3 011 3: 2pass(short-short/long)     2回通過（1回目近回り／2回目近回りか大回りのどちらか）
 // 4 110 6: n/a(disable)                あり得ない
 // 5 101 5: 1pass(long)                 001状態時外部から「逆回り」を指定したとき(001→101)
 // 6 111 7: 2pass(long-short/long)
 // 7 010 2: n/a
+//        計算時は、bit 2 BLF_OSAKAKAN_DETOUR のみ使用し、
+//		  計算の過程では、ローカル変数フラグ使用
 
 #define BLF_OSAKAKAN_PASS	0	// 大阪環状線 1回以上通過
 #define BLF_OSAKAKAN_2PASS  1	// 大阪環状線 2回通過
@@ -543,12 +546,14 @@ typedef struct
 #define BLF_MEIHANCITYFLAG		3	// ON: APPLIED_START / OFF:APPLIED_TERMINAL
 #define BLF_NO_RULE             4   // ON: 特例非適用
 
+#define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
+
 /*   route
  *
  */
 class Route
 {
-	BYTE jct_mask[(MAX_JCT + 7)/ 8];	// about 40byte
+	static BYTE jct_mask[JCTMASKSIZE];	// about 40byte
 	vector<RouteItem> route_list_raw;
 	vector<RouteItem> route_list_cooked;
 private:
@@ -570,6 +575,7 @@ public:
 	Route();
 	~Route();
     void assign(const Route& source_route, int32_t count);
+	void build_jct_mask();
 
 	vector<RouteItem>& routeList() { return route_list_raw; }
 	vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
@@ -578,10 +584,30 @@ public:
 	}
 	void end()			{ BIT_ON(last_flag, BLF_END); }
 
+
 private:
 	bool				checkOfRuleSpecificCoreLine(int32_t* rule114);
-	static DBO	 		Enum_junctions_of_line(int32_t line_id, int32_t begin_station_id, int32_t to_station_id);
-	vector<int32_t>     enum_junctions_of_line_for_add(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	class RoutePass
+	{
+	friend class Route;
+        BYTE*   _jct_mask;	// [JCTMASKSIZE] about 40byte
+        int32_t _line_id;
+        int32_t _station_id1;
+        int32_t _station_id2;
+        
+        RoutePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
+        ~RoutePass() { delete [] jct_mask; }
+        int32_t check(BYTE* jct_mask);
+        void off(int32_t jid);
+        void off(BYTE* jct_mask);
+        void on(BYTE* jct_mask);
+
+	    int32_t		enum_junctions_of_line_for_oskk(int32_t dir);
+	    int32_t		enum_junctions_of_line_for_oskk_rev();
+	    int32_t     enum_junctions_of_line_for_osakakan();
+	    int32_t		enum_junctions_of_line();
+	};
+    int32_t             DirOsakaKanLine(int32_t station_id1, int32_t station_id2);
 
 private:
 	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
