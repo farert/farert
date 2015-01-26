@@ -2068,7 +2068,6 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 
 	/* 規則適用 */
 	if (0 != (FAREOPT_AVAIL_RULE_APPLIED & availbit)) {
-		if (0 != (opt & 
 		if (FAREOPT_RULE_APPLIED == (FAREOPT_RULE_NO_APPLIED & cooked)) {
 			last_flag |= (1 << BLF_NO_RULE);    /* 非適用 */
 		} else {
