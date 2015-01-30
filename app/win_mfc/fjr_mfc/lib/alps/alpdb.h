@@ -524,13 +524,20 @@ typedef struct
 //                                1 BLF_OSAKAKAN_2PASS  
 // T bit val: description         2 BLF_OSAKAKAN_DETOUR 
 // 0 000 0: normal
-// 1 100 4: n/a(disable)
+// 1 100 4: - n/a(disable)
 // 2 001 1: 1pass(short)                1回通過(近回り)
 // 3 011 3: 2pass(short-short/long)     2回通過（1回目近回り／2回目近回りか大回りのどちらか）
-// 4 110 6: n/a(disable)                あり得ない
+// 4 110 6: - n/a(disable)                あり得ない
 // 5 101 5: 1pass(long)                 001状態時外部から「逆回り」を指定したとき(001→101)
 // 6 111 7: 2pass(long-short/long)
-// 7 010 2: n/a
+// 7 010 2: 2pass                       始点が大阪環状線内駅発
+
+0000
+0001
+0010
+0110 
+
+
 //        計算時は、bit 2 BLF_OSAKAKAN_DETOUR のみ使用し、
 //		  計算の過程では、ローカル変数フラグ使用
 
@@ -591,17 +598,25 @@ private:
 	class RoutePass
 	{
 	//friend class Route;
-        BYTE*   _jct_mask;	// [JCTMASKSIZE] about 40byte
+        BYTE   _jct_mask[JCTMASKSIZE];	// [JCTMASKSIZE] about 40byte
         int32_t _line_id;
         int32_t _station_id1;
         int32_t _station_id2;
+        int32_t _num;		// number of junction
+		SPECIFICFLAG _last_flag;	// add() - removeTail() work
     public:
-        RoutePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
-        ~RoutePass() { delete [] jct_mask; }
+        RoutePass(SPECIFICFLAG* last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
+        ~RoutePass() {  }
         int32_t check(BYTE* jct_mask);
         void off(int32_t jid);
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
+        SPECIFICFLAG update_flag(SPECIFICFLAG source_flg) const { 
+            source_flg &= LF_OSAKAKAN_MASK;
+            source_flg |= (LF_OSAKAKAN_MASK & _last_flag);
+            return source_flg;
+        }
+		int32_t num_of_junction() const { return _num; }
 
     private:
 	    int32_t		enum_junctions_of_line();
