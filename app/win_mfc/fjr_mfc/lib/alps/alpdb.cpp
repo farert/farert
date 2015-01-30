@@ -764,20 +764,20 @@ int32_t Route::InStation(int32_t stationId, int32_t lineId, int32_t b_stationId,
 //	@param [in]  station_id1	 発 or 至
 //	@param [in]  station_id2     至 or 発
 //
-RoutePass::RoutePass(int32_t line_id, int32_t station_id1, int32_t station_id2)
+RoutePass::RoutePass(SPECIFICFLAG* last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
-    _jct_mask = new BYTE [JCTMASKSIZE];
-
 	JctMaskClear(_jct_mask);
 	
 	_line_id = line_id;
 	_station_id1 = station_id1;
 	_station_id2 = station_id2;
 
+	_last_flag = last_flag;
+
 	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		return enum_junctions_of_line_for_osakakan();
+		_num = enum_junctions_of_line_for_osakakan();
 	} else {
-		return enum_junctions_of_line();
+		_num = enum_junctions_of_line();
 	}
 }
 
@@ -869,7 +869,7 @@ int32_t RoutePass::enum_junctions_of_line_for_oskk_rev()
 
 //	路線のbegin_station_id駅からto_station_id駅までの分岐駅リストを返す(大阪環状線)
 //
-//	@param [in]  dir              大阪環状線回り方向
+//	@param [in]  dir      大阪環状線回り方向
 //
 //	@return 分岐点数
 //
@@ -892,37 +892,33 @@ int32_t RoutePass::enum_junctions_of_line_for_oskk(int32_t dir)
 //
 int32_t RoutePass::enum_junctions_of_line_for_osakakan()
 {
+	int32_t dir;
+	int32_t jnum;
+
 	ASSERT(line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
+	ASSERT( ((_last_flag & LF_OSAKAKAN_MASK) != 1) && 
+	        ((_last_flag & LF_OSAKAKAN_MASK) != 4) &&
+	        ((_last_flag & LF_OSAKAKAN_MASK) != 7) );
 TODO
-	if (!BIT_CHK(last_flag, BLF_OSAKAKAN_PASS)) {
+	dir = Route::DirOsakaKanLine(_station_id1, _station_id2);
+
+	if (!BIT_CHK(_last_flag, BLF_OSAKAKAN_PASS)) {
 		// 始めての大阪環状線
-		if (BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR)) {
-			if (0 == Route::DirOsakaKanLine(_station_id1, _station_id2)) {
-
-
+		if (BIT_CHK(_last_flag, BLF_OSAKAKAN_DETOUR)) {
+			// 大回り指定
+			dir ^= 1;
+		} // else  通常(大回り指定なし)
+		for (dir &= 0x03; (dir & 0x80) == 0; dir ^= 0x81) {
+			/* DB定義上の順廻り（内回り) : 外回り */
+			jnum = (dir == 0) ? enum_junctions_of_line() : 
+		    	                enum_junctions_of_line_for_oskk_rev();
+			if ((0x01 & check()) == 0) {
+				break; /* OK */
 			}
-		}
 		
-		// 最短距離/大回り経路で経路重複エラー？
-		if (false) {
-			// 最短距離/大回り経路で経路重複エラー
-			if (false) {
-            	TRACE("Osaka-kan: aa\n");
-				// 大回り経路で経路重複エラー？
-        	} else {
-            	TRACE("Osaka-kan: ab\n");
-        		// 大阪環状線内の分岐駅から発して戻ってきたケース
-             	// Ok,Flagは3        Check!
-        	}
-		} else {
-			// Success
-			// ほとんどの場合、ここ
-            // Flagを1.      ほぼ多くの場合
-            TRACE("Osaka-kan: ac\n");
-            route_list_raw.front().lineId 
-		}
-	} else if ((last_flag & BLF_OSAKAKAN_MASK) == LF_OSAKAKAN_MASK) {
-	
+		} /* NG */
+		return jnum;
+
 	} else if (false) {
 		// 2回目の大阪環状線
 		if (false) {
@@ -1010,6 +1006,10 @@ void RoutePass::on(BYTE* jct_mask)
 //	分岐駅リストの乗車マスクをOff
 //
 //	@param [in]  jct_mask   分岐mask
+//	@retval 0 = success
+//	@retval 1 = already passed.
+//	@retval 3 = already passed and last arrive point passed.
+//	@retval 2 = last arrive point.
 //
 int32_t RoutePass::check(BYTE* jct_mask)
 {
@@ -1663,8 +1663,15 @@ ASSERT(first_station_id1 = stationId1);
 	    }
 	}
 	
-	RoutePass route_pass(line_id, stationId1, stationId2);
-	if (rc <= 0) {
+	if (!BIT_CHK(last_flag, BLF_OSAKAKAN_2PASS) && 
+	    (line_id != dbid.LineIdOf_OOSAKAKANJYOUSEN) &&
+	    (0 != Route::InStationOnLine(line_id, stationId1))) {
+
+	    BIT_ON(last_flag, BLF_OSAKAKAN_2PASS);
+    }
+    
+	RoutePass route_pass(last_flag, line_id, stationId1, stationId2);
+	if (route_pass.num_of_junction() <= 0) {
 		TRACE(_T("DB error(add-junction-enum)\n"));
 		TRACE(_T("add_abort\n"));
 		return -100;		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1720,6 +1727,9 @@ ASSERT(first_station_id1 = stationId1);
 	// normality
 	// 通過bit ON(maskをマージ)
 	route_pass.on(jct_mask);
+
+	// 大阪環状線通過フラグを設定
+	last_flag = route_pass.update_flag(last_flat); /* update last_flag LF_OSAKAKAN_MASK */
 
 	/* 追加か置換か */
 	if (replace_flg) {
@@ -1795,7 +1805,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	line_id = route_list_raw[i - 1].lineId;
 	begin_station_id = route_list_raw[i - 2].stationId;	// tail - 1
 
-	RoutePass route_pass(line_id, to_station_id, begin_station_id);
+	RoutePass route_pass(last_flag, line_id, to_station_id, begin_station_id);
 
 	if (!begin_off) {
 		/* 開始駅はOffしない(前路線の着駅なので) */
@@ -1813,6 +1823,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	
 	route_pass.off(jct_mask);
 	
+	last_flag = route_pass.update_flag(last_flat); /* update last_flag LF_OSAKAKAN_MASK */
 	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
 	route_list_raw.pop_back();
 }
@@ -2546,8 +2557,9 @@ tstring Route::Route_script(const vector<RouteItem>& routeList)
 //
 void Route::routePassOff(int32_t line_id, int32_t to_station_id, int32_t begin_station_id)
 {
-	RoutePass route_pass(line_id, to_station_id, begin_station_id);
+	RoutePass route_pass(last_flag, line_id, to_station_id, begin_station_id);
 	route_pass.off();
+	last_flag = route_pass.update_flag(last_flat); /* update last_flag LF_OSAKAKAN_MASK */
 }
 
 
