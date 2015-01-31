@@ -45,13 +45,13 @@ using namespace std;
 // 経路マスクビットパターンマスク
 #define JctMaskOn(bit, jctid)  	bit[(jctid) / 8] |= (1 << ((jctid) % 8))
 #define JctMaskOff(bit, jctid) 	bit[(jctid) / 8] &= ~(1 << ((jctid) % 8))
-#define JctMaskClear(bit)   	memset(bit, 0, sizeof(Route::jct_mask))
+#define JctMaskClear(bit)   	memset(bit, 0, JCTMASKSIZE)
 #define IsJctMask(bit, jctid)	((bit[(jctid) / 8] & (1 << ((jctid) % 8))) != 0)
 
 ////////////////////////////////////////////
 //	static member
 
-/*static*/ BYTE Route::jct_mask[JCTMASKSIZE];	// about 40byte
+///*static*/ BYTE Route::jct_mask[JCTMASKSIZE];	// about 40byte
 
 /*static */ int32_t DbidOf::StationIdOf_SHINOSAKA = 0;		// 新大阪
 /*static */ int32_t DbidOf::StationIdOf_OSAKA = 0;    		// 大阪
@@ -325,7 +325,7 @@ tstring num_str_yen(int32_t num)
 
 Route::Route()
 {
-	JctMaskClear(Route::jct_mask);
+	JctMaskClear(jct_mask);
 	end_station_id = 0;
 }
 
@@ -757,14 +757,35 @@ int32_t Route::InStation(int32_t stationId, int32_t lineId, int32_t b_stationId,
 	return 0;
 }
 
+//public
+// 経路マークリストコンストラクタ
+//
+//	@param [in]  line_id          路線
+//	@param [in]  station_id1	 発 or 至
+//	@param [in]  station_id2     至 or 発
+//
+RoutePass::RoutePass(int32_t line_id, int32_t station_id1, int32_t station_id2)
+{
+    _jct_mask = new BYTE [JCTMASKSIZE];
+
+	JctMaskClear(_jct_mask);
+	
+	_line_id = line_id;
+	_station_id1 = station_id1;
+	_station_id2 = station_id2;
+
+	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
+		return enum_junctions_of_line_for_osakakan();
+	} else {
+		return enum_junctions_of_line();
+	}
+}
+
+
 //	路線のbegin_station_id駅からto_station_id駅までの分岐駅リストを返す
 //
 //	注： lflg&(1<<17)を含めていないため、新幹線内分岐駅、たとえば、
 //	     東海道新幹線 京都 米原間に草津駅は存在するとして返します.
-//
-//	@param [in]  line_id          路線
-//	@param [in]  begin_station_id 発
-//	@param [in]  to_station_id    至
 //
 //	@return 分岐点数
 //
@@ -816,10 +837,6 @@ int32_t RoutePass::enum_junctions_of_line()
 
 //	路線のbegin_station_id駅からto_station_id駅までの分岐駅リストを返す(大阪環状線)
 //
-//	@param [in]  line_id          路線(大阪環状線)
-//	@param [in]  begin_station_id 発
-//	@param [in]  to_station_id    至
-//
 //	@return 分岐点数
 //
 int32_t RoutePass::enum_junctions_of_line_for_oskk_rev()
@@ -867,44 +884,12 @@ int32_t RoutePass::enum_junctions_of_line_for_oskk(int32_t dir)
 	}
 }
 
-//static
-//	大阪環状線最短廻り方向を返す
+
+
+//	大阪環状線の乗車経路の分岐駅リストを返す
 //
-//	@param [in]  station_id1   発
-//	@param [in]  station_id2   至
-// 	@retval 0 = 内回り(DB定義上の順廻り)が最短
-// 	@retval 1 = 外回りが最短
+//	@return 分岐点数
 //
-int32_t Route::DirOsakaKanLine(int32_t station_id1, int32_t station_id2)
-{
-	int32_t sales_km_1;
-	int32_t sales_km_2;
-
-	sales_km_1 = Route::GetDistance(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2);
-	sales_km_2 = Route::GetDistanceOfOsakaKanjyou(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2);
-
-	return (sales_km_1 <= sales_km_2) ? 0 : 1;
-}
-
-
-// 経路マークリスト
-//
-int32_t RoutePass::RoutePass(int32_t line_id, int32_t station_id1, int32_t station_id2)
-{
-    _jct_mask = new BYTE [JCTMASKSIZE];
-
-	memset(_jct_mask, 0, JCTMASKSIZE);
-	_line_id = line_id;
-	_station_id1 = station_id1;
-	_station_id2 = station_id2;
-
-	if (line_id != DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		return enum_junctions_of_line_for_osakakan();
-	} else {
-		return Route::Enum_junctions_of_line();
-	}
-}
-
 int32_t RoutePass::enum_junctions_of_line_for_osakakan()
 {
 	ASSERT(line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
@@ -912,7 +897,9 @@ TODO
 	if (!BIT_CHK(last_flag, BLF_OSAKAKAN_PASS)) {
 		// 始めての大阪環状線
 		if (BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR)) {
-			if (0 == Route::DirOsakaKanLine(station_id1, station_id2)) {
+			if (0 == Route::DirOsakaKanLine(_station_id1, _station_id2)) {
+
+
 			}
 		}
 		
@@ -965,6 +952,116 @@ TODO
 	TRACE("Osaka-kan: failure!!!\n");
 
 	return 0x01;	/* Failure */
+}
+
+//public
+//	分岐駅リストの指定分岐idの乗車マスクをOff
+//
+//	@param [in]  jid   分岐id
+//
+void RoutePass::off(int jid)
+{
+	JctMaskOff(_jct_mask, jid);
+}
+
+//public
+//	分岐駅リストの乗車マスクをOff
+//
+//	@param [in]  jct_mask   分岐mask
+//
+void RoutePass::off(BYTE* jct_mask)
+{
+	int32_t i;
+
+	for (i = 0; i < JCTMASKSIZE; i++) {
+		jct_mask &= ~_jct_mask[i];
+#if defined _DEBUG
+		for (int j = 0; j < 8; j++) {
+			if ((_jct_mask[i] & (1 << j)) != 0) {
+				TRACE(_T("removed.  : %s\n"), Route::JctName(i * 8 + j).c_str());
+			}
+		}
+#endif
+	}
+}
+
+//public
+//	分岐駅リストの乗車マスクをOff
+//
+//	@param [in]  jct_mask   分岐mask
+//
+void RoutePass::on(BYTE* jct_mask)
+{
+	int32_t i;
+
+	for (i = 0; i < JCTMASKSIZE; i++) {
+		jct_mask[i] |= _jct_mask[i];
+#if defined _DEBUG
+		for (j = 0; j <= 8; j++) {
+			if (((1 << j) & _jct_mask[i]) != 0) {
+				TRACE(_T("  add-mask on: %s(%d,%d)\n"), Route::JctName((i * 8) + j).c_str(), Route::Jct2id((i * 8) + j), (i * 8) + j);
+			}
+		}
+#endif
+	}
+}
+
+//public
+//	分岐駅リストの乗車マスクをOff
+//
+//	@param [in]  jct_mask   分岐mask
+//
+int32_t RoutePass::check(BYTE* jct_mask)
+{
+	int32_t i;
+	int32_t j;
+	int32_t k;
+	int32_t l;
+	int32_t rc;
+
+	rc = 0;
+	for (i = 0; i < JCTMASKSIZE; i++) {
+		k = (jct_mask[i] & _jct_mask[i]);
+		if (0 != k) {
+			for (j = 0; j < 8; j++) {
+				if ((k & (1 << j)) != 0) {
+					l = (i * 8) + j;
+					if (Route::Jct2id(l) == stationId2) {
+						rc |= 2;   /* 終了駅 */
+					} else if (Route::Jct2id(l) != stationId1) {
+						rc |= 1;	/* 既に通過済み */
+						TRACE(_T("  already passed error: %s(%d,%d)\n"), Route::JctName(l).c_str(), Route::Jct2id(l), l);
+						break;
+					}
+				}
+			}
+			if ((rc & 1) != 0) {
+				break;   /* 既に通過済み */
+			}
+		}
+	}
+	return rc;
+}
+
+
+
+//static
+//	大阪環状線最短廻り方向を返す
+//
+//	@param [in]  station_id1   発
+//	@param [in]  station_id2   至
+// 	@retval 0 = 内回り(DB定義上の順廻り)が最短
+// 	@retval 1 = 外回りが最短
+//
+int32_t Route::DirOsakaKanLine(int32_t station_id1, int32_t station_id2)
+{
+	int32_t sales_km_1;
+	int32_t sales_km_2;
+
+	sales_km_1 = Route::GetDistance(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2);
+	sales_km_2 = Route::GetDistanceOfOsakaKanjyou(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2);
+
+	return (sales_km_1 <= sales_km_2) ? 0 : 1;
 }
 
 
@@ -1193,7 +1290,7 @@ first_station_id1 = stationId1;
 				// stationId2 : 宮内～長岡
 			}
 		} else if ((2 <= num) && (dbid.LineIdOf_SANYOSHINKANSEN == line_id)) { /* b#14021205 add */
-			JctMaskOff(Route::jct_mask, Route::Id2jctId(route_list_raw.at(num - 2).stationId));
+			JctMaskOff(jct_mask, Route::Id2jctId(route_list_raw.at(num - 2).stationId));
 			TRACE("b#14021205-1\n");
 		}
 	} else if ((2 <= num) && BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
@@ -1202,7 +1299,7 @@ first_station_id1 = stationId1;
                                route_list_raw.at(num - 2).stationId,
                                route_list_raw.at(num - 1).stationId)
                 != Route::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2))) {
-		JctMaskOff(Route::jct_mask, Route::Id2jctId(route_list_raw.at(num - 1).stationId));
+		JctMaskOff(jct_mask, Route::Id2jctId(route_list_raw.at(num - 1).stationId));
 		TRACE("b#14021205-2\n");
 		BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
 	}
@@ -1546,7 +1643,7 @@ ASSERT(first_station_id1 = stationId1);
 					return -1;			// >>>>>>>>>>>>>>>>>>>>>
 				}
 				// 長岡Off
-				JctMaskOff(Route::jct_mask, Route::Id2jctId(route_list_raw.at(num - 1).stationId));
+				JctMaskOff(jct_mask, Route::Id2jctId(route_list_raw.at(num - 1).stationId));
 
 				// 長岡->宮内へ置換
 				route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
@@ -1667,76 +1764,6 @@ ASSERT(first_station_id1 = stationId1);
 	} else {
 		return 1;	/* OK - Can you continue */
 	}
-}
-
-//
-void RoutePass::off(int jid)
-{
-	JctMaskOff(_jct_mask, jid);
-}
-
-void RoutePass::off(BYTE* jct_mask)
-{
-	int32_t i;
-
-	for (i = 0; i < JCTMASKSIZE; i++) {
-		jct_mask &= ~_jct_mask[i];
-#if defined _DEBUG
-		for (int j = 0; j < 8; j++) {
-			if ((_jct_mask[i] & (1 << j)) != 0) {
-				TRACE(_T("removed.  : %s\n"), Route::JctName(i * 8 + j).c_str());
-			}
-		}
-#endif
-	}
-}
-
-void RoutePass::on(BYTE* jct_mask)
-{
-	int32_t i;
-
-	for (i = 0; i < JCTMASKSIZE; i++) {
-		jct_mask[i] |= _jct_mask[i];
-#if defined _DEBUG
-		for (j = 0; j <= 8; j++) {
-			if (((1 << j) & _jct_mask[i]) != 0) {
-				TRACE(_T("  add-mask on: %s(%d,%d)\n"), Route::JctName((i * 8) + j).c_str(), Route::Jct2id((i * 8) + j), (i * 8) + j);
-			}
-		}
-#endif
-	}
-}
-
-int32_t RoutePass::check(BYTE* jct_mask)
-{
-	int32_t i;
-	int32_t j;
-	int32_t k;
-	int32_t l;
-	int32_t rc;
-
-	rc = 0;
-	for (i = 0; i < JCTMASKSIZE; i++) {
-		k = (Route::jct_mask[i] & _jct_mask[i]);
-		if (0 != k) {
-			for (j = 0; j < 8; j++) {
-				if ((k & (1 << j)) != 0) {
-					l = (i * 8) + j;
-					if (Route::Jct2id(l) == stationId2) {
-						rc |= 2;   /* 終了駅 */
-					} else if (Route::Jct2id(l) != stationId1) {
-						rc |= 1;	/* 既に通過済み */
-						TRACE(_T("  already passed error: %s(%d,%d)\n"), Route::JctName(l).c_str(), Route::Jct2id(l), l);
-						break;
-					}
-				}
-			}
-			if ((rc & 1) != 0) {
-				break;   /* 既に通過済み */
-			}
-		}
-	}
-	return rc;
 }
 
 
@@ -2538,7 +2565,7 @@ void Route::removeAll(bool bWithStart /* =true */, bool bWithEnd /* =true */)
 {
 	int32_t begin_station_id = 0;
 	
-	JctMaskClear(Route::jct_mask);
+	JctMaskClear(jct_mask);
 
 	if (bWithEnd) {
 		end_station_id = 0;
@@ -5545,24 +5572,24 @@ int32_t Route::changeNeerest(bool useBulletTrain)
         lid = Route::LineIdFromStationId(stationId);
 		// 発駅～最初の分岐駅までの計算キロを最初の分岐駅までの初期コストとして初期化
 		a = Route::Id2jctId(IDENT1(neer_node.at(0)));
-		if (!IsJctMask(Route::jct_mask, a)) {
+		if (!IsJctMask(jct_mask, a)) {
 			minCost[a - 1] = IDENT2(neer_node.at(0));
 			fromNode[a - 1] = -1;	// from駅を-1(分岐駅でないので存在しない分岐駅)として初期化
 			line_id[a - 1] = lid;
 		}
 		if (2 <= neer_node.size()) {
 			b = Route::Id2jctId(IDENT1(neer_node.at(1)));
-			if (!IsJctMask(Route::jct_mask, b)) {
+			if (!IsJctMask(jct_mask, b)) {
 				minCost[b - 1] = IDENT2(neer_node.at(1));
 				fromNode[b - 1] = -1;
 				line_id[b - 1] = lid;
-			} else if (IsJctMask(Route::jct_mask, a)) {
+			} else if (IsJctMask(jct_mask, a)) {
 				TRACE(_T("Autoroute:発駅の両隣の分岐駅は既に通過済み"));
 				return -10;								// >>>>>>>>>>>>>>>>>>>>>>>
 			}
 		} else {
 			/* 盲腸線 */
-			if (IsJctMask(Route::jct_mask, a)) {
+			if (IsJctMask(jct_mask, a)) {
 				TRACE(_T("Autoroute:盲腸線で通過済み."));
 				return -11;								// >>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
@@ -5650,7 +5677,7 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), StationName(Jct2id(excNode1)).
 			/*  確定したノード番号が-1かノードiの現時点の最小コストが小さいとき
 			 *  確定ノード番号更新する
 			 */
-			if ((doneNode < 0) || (!IsJctMask(Route::jct_mask, i + 1) && (minCost[i] < minCost[doneNode]))) {
+			if ((doneNode < 0) || (!IsJctMask(jct_mask, i + 1) && (minCost[i] < minCost[doneNode]))) {
 				doneNode = i;
 			}
 		}
@@ -5682,7 +5709,7 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), StationName(Jct2id(excNode1)).
             
 			a = ite->at(0) - 1;	// jctId
             
-			if ((!IsJctMask(Route::jct_mask, a + 1) /**/|| ((nLastNode == 0) && (lastNode == (a + 1))) ||
+			if ((!IsJctMask(jct_mask, a + 1) /**/|| ((nLastNode == 0) && (lastNode == (a + 1))) ||
                  ((0 < nLastNode) && (lastNode1 == (a + 1))) ||
                  ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ && 
 			    (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
@@ -5724,7 +5751,7 @@ TRACE(_T("x(%s)"), StationName(Jct2id(a + 1)).c_str());
 		// 計算キロ＋2つの最後の分岐駅候補までの計算キロは、
 		// どちらが短いか？
 		if ((2 == nLastNode) &&
-            (!IsJctMask(Route::jct_mask, lastNode2) && ((minCost[lastNode2 - 1] + lastNode2_distance) <
+            (!IsJctMask(jct_mask, lastNode2) && ((minCost[lastNode2 - 1] + lastNode2_distance) <
               (minCost[lastNode1 - 1] + lastNode1_distance)))) {
             id = lastNode2;		// 短い方を最後の分岐駅とする
         } else {
