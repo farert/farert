@@ -553,7 +553,7 @@ typedef struct
  */
 class Route
 {
-	static BYTE jct_mask[JCTMASKSIZE];	// about 40byte
+	/*static 迷ってる*/BYTE jct_mask[JCTMASKSIZE];	// about 40byte
 	vector<RouteItem> route_list_raw;
 	vector<RouteItem> route_list_cooked;
 private:
@@ -587,14 +587,15 @@ public:
 
 private:
 	bool				checkOfRuleSpecificCoreLine(int32_t* rule114);
+
 	class RoutePass
 	{
-	friend class Route;
+	//friend class Route;
         BYTE*   _jct_mask;	// [JCTMASKSIZE] about 40byte
         int32_t _line_id;
         int32_t _station_id1;
         int32_t _station_id2;
-        
+    public:
         RoutePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
         ~RoutePass() { delete [] jct_mask; }
         int32_t check(BYTE* jct_mask);
@@ -602,11 +603,13 @@ private:
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
 
+    private:
+	    int32_t		enum_junctions_of_line();
 	    int32_t		enum_junctions_of_line_for_oskk(int32_t dir);
 	    int32_t		enum_junctions_of_line_for_oskk_rev();
 	    int32_t     enum_junctions_of_line_for_osakakan();
-	    int32_t		enum_junctions_of_line();
 	};
+
     int32_t             DirOsakaKanLine(int32_t station_id1, int32_t station_id2);
 
 private:
