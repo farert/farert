@@ -9,13 +9,14 @@ JR運賃、営業キロ表示、経路編集ソフト Farert       　　 2014-11-15
 http://farert.blogspot.jp
 
 
+Windows版
+Vectorサイト：
+http://www.vector.co.jp/soft/winnt/home/se506752.html
+
 iOS版
 Appleサイト：
 https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=916517676&mt=8
 
-Windows版
-Vectorサイト：
-http://www.vector.co.jp/soft/winnt/home/se506752.html
 
 
 ----------------------------------------------------------------------
@@ -118,7 +119,7 @@ readme.txt                    このファイル
 
   開発環境は、MacbookAir(2013-Dec) 上の VMware Fusion6上のWindows7 64bit 上の
   Visual Studio 2010(SP1) です。
-　動作確認は、Windows8.1Pro.で確認しております。
+　動作確認はWindows8.1Pro.で確認しております。
   
   使用ライブラリは以下のものを利用しております。ランタイムライブラリ
 　として、「Microsoft Visual C++ 2010 SP1 再頒布可能パッケージ (x86)」
@@ -249,12 +250,16 @@ UI操作での経路に指定時、分岐特例（規則）を考慮した指定をした際に自動補正します。
 　実装しただけです。ソースコードを公開していますので良い方法があれば、GitHubのissueか
   Pullリクください。
 
+- 臨時駅には対応していません。JRではその先の駅までの区間で計算することになっております
+　のでそのようにご対応ください。
+　
 - その他詳細は  http://farert.blogspot.jp を参照ください。
+
 
 ソースコードをGitHubにて公開中です。
 GitHubのIssueでも要望・バグ報告等を受け付けております。
 GitHubサイトより、farert で検索してください。
-iPhone(iPod, iPADでも互換表示実行可)バージョンを2014年9月にリリースしました。
+iOS版(iPhone, iPod, iPADでも実行可)を2014年9月にリリースしています。
 併せてご利用頂ければ幸いです。
 
 
@@ -293,7 +298,7 @@ iPhone(iPod, iPADでも互換表示実行可)バージョンを2014年9月にリリースしました。
            - 大阪環状線廻りの運賃計算の不具合を修正（旅客営業規則第69条の(7)）
 
 
-※ DB: とあるのはデータベースの変更のみで、ソースコードの変更をしていないものを
-   指します
+※ DB: とあるのはデータベースの変更のみで、ソースコード（ロジックなど）の変更
+　をしていないものを指します
 
 
