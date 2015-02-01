@@ -896,13 +896,11 @@ int32_t RoutePass::enum_junctions_of_line_for_osakakan()
 	int32_t jnum;
 
 	ASSERT(line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
-	ASSERT( ((_last_flag & LF_OSAKAKAN_MASK) != 1) && 
-	        ((_last_flag & LF_OSAKAKAN_MASK) != 4) &&
-	        ((_last_flag & LF_OSAKAKAN_MASK) != 7) );
+
 TODO
 	dir = Route::DirOsakaKanLine(_station_id1, _station_id2);
 
-	if (!BIT_CHK(_last_flag, BLF_OSAKAKAN_PASS)) {
+	if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_NOPASS)) {
 		// 始めての大阪環状線
 		if (BIT_CHK(_last_flag, BLF_OSAKAKAN_DETOUR)) {
 			// 大回り指定
@@ -919,7 +917,7 @@ TODO
 		} /* NG */
 		return jnum;
 
-	} else if (false) {
+	} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
 		// 2回目の大阪環状線
 		if (false) {
 		    // 2回目最短距離で経路重複
@@ -935,15 +933,10 @@ TODO
             TRACE("Osaka-kan: bb\n");
            // Flag=3 OK
 		}
-	} else if (false) {
-        TRACE("Osaka-kan: da\n");
-		// 3回目以上の大阪環状線 == flag 3
-		// abort failure
-		// thrue 
 	} else {
-        TRACE("Osaka-kan: db\n");
-		// 0回,4回以上なんてありえない
-		ASSERT(FALSE);
+		// 既に2回通っているので無条件で通過済みエラー
+        TRACE("Osaka-kan: 3time\n");
+
 	}
 	TRACE("Osaka-kan: failure!!!\n");
 
@@ -1048,10 +1041,12 @@ int32_t RoutePass::check(BYTE* jct_mask)
 //static
 //	大阪環状線最短廻り方向を返す
 //
-//	@param [in]  station_id1   発
-//	@param [in]  station_id2   至
+//	@param [in]  station_id1   発or至
+//	@param [in]  station_id2   発or至
 // 	@retval 0 = 内回り(DB定義上の順廻り)が最短
 // 	@retval 1 = 外回りが最短
+//
+//	@note station_id1, station_id2は区別はなし
 //
 int32_t Route::DirOsakaKanLine(int32_t station_id1, int32_t station_id2)
 {
