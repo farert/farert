@@ -513,45 +513,69 @@ typedef struct
 } JCTSP_DATA;
 
 /* last_flag */
-#define BLF_TRACKMARKCTL		5	// 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
-#define BLF_JCTSP_ROUTE_CHANGE	6
-#define BLF_END					16
-
 #define LASTFLG_OFF				0   // all bit clear at removeAll()
 
-// bit0 - 2: 大阪環状線
-//                            bit 0 BLF_OSAKAKAN_PASS	
-//                                1 BLF_OSAKAKAN_2PASS  
-// T bit val: description         2 BLF_OSAKAKAN_DETOUR 
-// 0 000 0: normal
-// 1 100 4: - n/a(disable)
-// 2 001 1: 1pass(short)                1回通過(近回り)
-// 3 011 3: 2pass(short-short/long)     2回通過（1回目近回り／2回目近回りか大回りのどちらか）
-// 4 110 6: - n/a(disable)                あり得ない
-// 5 101 5: 1pass(long)                 001状態時外部から「逆回り」を指定したとき(001→101)
-// 6 111 7: 2pass(long-short/long)
-// 7 010 2: 2pass                       始点が大阪環状線内駅発
+// 大阪環状線 通過制御フラグ定義
+// ※ ここでいう「内回り」「外回り」は駅1-駅2間の進行方向ではなくDB定義上の
+//    順廻り／大回りのことを指す
+//                                    from  ex.
+// 0) 初期状態
+// 1) 近回り1回目 内回り                0 大阪→天王寺
+// 2) 近回り1回目 外回り                0 天王寺→西九条
+// 3) 近回り2回目 内回り - 内回り       1 今宮→大阪 … 京橋→天王寺
+// 4) 近回り2回目 外回り - 内回り       2 西九条→天王寺 … 京橋→大阪
+// 5) 近回り2回目 内回り - 外回り       1 大阪→京橋 … 天王寺→西九条
+// 6) 近回り2回目 外回り - 外回り       2 N/A(ありえへん)
+// 7) 遠回り指定 近回り1回目 内回り     1 大阪→天王寺 (1の時にUI指定した直後の状態)
+// 8) 遠回り指定 近回り1回目 外回り     2 天王寺→西九条 (1の時にUI指定した直後の状態)
+// 9) 遠回り指定 遠回り1回目 内回り     8 今宮→→京橋 (順廻りが遠回りの例)
+// a) 遠回り指定 遠回り1回目 外回り     7 大阪→→天王寺(福島軽油)
+// b) 遠回り指定 2回目 内回り - 内回り  9 今宮→→京橋 … 天王寺→京橋
+// c) 遠回り指定 2回目 外回り - 内回り  a 西九条→→京橋 … 大阪→西九条
+// d) 遠回り指定 2回目 内回り - 外回り  9 今宮→→京橋 … 天王寺→今宮
+// e) 遠回り指定 2回目 外回り - 外回り  a ありえへん？
+//
+// 遠回り指定は、UIから。1,2,9,aのみ許可(7,8はあり得ない)
+// 1,2は遠回りへ。 9,aは近回りへ
 
-0000
-0001
-0010
-0110 
+
+// bit0-1: 回数 2ビット 0～2
+//        00=初期
+//        01=1回目
+//        10=2回目
+//        11=n/a
+// bit2: 1回目 内回り/外回り
+// bit3: 2回目 内回り/外回り
+// bit4: 遠回り指定
 
 
 //        計算時は、bit 2 BLF_OSAKAKAN_DETOUR のみ使用し、
 //		  計算の過程では、ローカル変数フラグ使用
 
-#define BLF_OSAKAKAN_PASS	0	// 大阪環状線 1回以上通過
-#define BLF_OSAKAKAN_2PASS  1	// 大阪環状線 2回通過
-#define BLF_OSAKAKAN_DETOUR 2   // 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
-#define LF_OSAKAKAN_MASK    0x03
+// bit0-1
+#define LF_OSAKAKAN_MASK    	0x03
+#define LF_OSAKAKAN_NOPASS		0	// 初期状態(大阪環状線未通過)
+#define LF_OSAKAKAN_1PASS   	1	// 大阪環状線 1回通過
+#define LF_OSAKAKAN_2PASS   	2	// 大阪環状線 2回通過
 
+#define IS_LF_OSAKAKAN_PASS(m, pass) (pass == ((m) & LF_OSAKAKAN_MASK))
 
+// bit 2-
+#define BLF_OSAKAKAN_1DIR   	2	// 大阪環状線 1回目方向
+#define BLF_OSAKAKAN_2DIR   	3	// 大阪環状線 2回目方向
+#define BLF_OSAKAKAN_DETOUR 	4   // 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
 
+#define BLF_TRACKMARKCTL		5	// 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
+#define BLF_JCTSP_ROUTE_CHANGE	6	// 分岐特例(add内部使用)
 
-// bit3 -
-#define BLF_MEIHANCITYFLAG		3	// ON: APPLIED_START / OFF:APPLIED_TERMINAL
-#define BLF_NO_RULE             4   // ON: 特例非適用
+// bit7 - 大高-杉本町とかで、[名][阪]をどっちに適用するか
+#define BLF_MEIHANCITYFLAG		7	// ON: APPLIED_START / OFF:APPLIED_TERMINAL
+#define BLF_NO_RULE             8   // ON: 特例非適用
+
+#define BLF_END					16	// arrive to end.
+
+// end of last_flag
+
 
 #define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
 
