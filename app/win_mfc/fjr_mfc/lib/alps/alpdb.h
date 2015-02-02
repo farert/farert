@@ -553,7 +553,7 @@ typedef struct
 //		  計算の過程では、ローカル変数フラグ使用
 
 // bit0-1
-#define LF_OSAKAKAN_MASK    	0x03
+#define LF_OSAKAKAN_PASSMASK   	0x03
 #define LF_OSAKAKAN_NOPASS		0	// 初期状態(大阪環状線未通過)
 #define LF_OSAKAKAN_1PASS   	1	// 大阪環状線 1回通過
 #define LF_OSAKAKAN_2PASS   	2	// 大阪環状線 2回通過
@@ -563,7 +563,10 @@ typedef struct
 // bit 2-
 #define BLF_OSAKAKAN_1DIR   	2	// 大阪環状線 1回目方向
 #define BLF_OSAKAKAN_2DIR   	3	// 大阪環状線 2回目方向
+
 #define BLF_OSAKAKAN_DETOUR 	4   // 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
+
+#define LF_OSAKAKAN_MASK    	0x07
 
 #define BLF_TRACKMARKCTL		5	// 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
 #define BLF_JCTSP_ROUTE_CHANGE	6	// 分岐特例(add内部使用)
@@ -623,15 +626,20 @@ private:
 	{
 	//friend class Route;
         BYTE   _jct_mask[JCTMASKSIZE];	// [JCTMASKSIZE] about 40byte
+        BYTE*   _source_jct_mask;
         int32_t _line_id;
         int32_t _station_id1;
         int32_t _station_id2;
-        int32_t _num;		// number of junction
+        int32_t _num;		        // number of junction
 		SPECIFICFLAG _last_flag;	// add() - removeTail() work
+		RoutePass::RoutePass(const RoutePass& rp) // copy constructor
+		             { memcpy(this, &rp, sizeof(*this)); }
+		void clear() { memset(_jct_mask, 0, JCTMASKSIZE); }
+		RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
     public:
-        RoutePass(SPECIFICFLAG* last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
+        RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
         ~RoutePass() {  }
-        int32_t check(BYTE* jct_mask);
+        int32_t check();
         void off(int32_t jid);
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
@@ -644,7 +652,6 @@ private:
 
     private:
 	    int32_t		enum_junctions_of_line();
-	    int32_t		enum_junctions_of_line_for_oskk(int32_t dir);
 	    int32_t		enum_junctions_of_line_for_oskk_rev();
 	    int32_t     enum_junctions_of_line_for_osakakan();
 	};
@@ -749,7 +756,7 @@ public:
 	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
 	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>		GetDistance(int32_t b1lidflag, int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t				GetDistanceOfOsakaKanjyou(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t				GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t				Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>		Get_route_distance(const vector<RouteItem>& route);
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
