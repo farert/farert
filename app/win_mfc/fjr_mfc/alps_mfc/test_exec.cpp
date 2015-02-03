@@ -600,31 +600,36 @@ static void test_route(void)
 			} else {
 				_ftprintf(os, _T("\n"));
 			}
-			tstring s = route.showFare(RULE_NO_APPLIED);
+
+			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = route.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 
-			s = route.showFare(RULE_APPLIED);
+			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = route.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 
-			opt = route.fareCalcOption();
-			if (opt == 2) {
-				s = route.showFare(RULE_APPLIED | APPLIED_START);
+			opt = route.getFareOption();
+			if ((opt & 0x03) == 2) {
+				route.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+				s = route.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 
-				opt = route.fareCalcOption();
-				ASSERT(opt == 1);
+				opt = route.getFareOption();
+				ASSERT((opt & 0x03) == 1);
 
-				s = route.showFare(RULE_APPLIED);
+				route.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+				s = route.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 
-				opt = route.fareCalcOption();
-				ASSERT(opt == 2);
+				opt = route.getFareOption();
+				ASSERT((opt & 0x03) == 2);
 			} else {
-				ASSERT(opt == 0);	/* opt=1はあり得ない */
+				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
 			}
 		}
 	}
@@ -1268,11 +1273,13 @@ void test_autoroute(void)
 			ASSERT(b_fail == true);
 		} else {
 			ASSERT(b_fail == false);
-			tstring s = route.showFare(RULE_NO_APPLIED);
+			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = route.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 
-			s = route.showFare(RULE_APPLIED);
+			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = route.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		}
@@ -1287,11 +1294,12 @@ void test_autoroute(void)
 			ASSERT(b_fail == true);
 		} else {
 			ASSERT(b_fail == false);
-			tstring s = route.showFare(RULE_NO_APPLIED);
+			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = route.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
-
-			s = route.showFare(RULE_APPLIED);
+			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = route.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		}
@@ -1590,7 +1598,7 @@ void test_jctspecial()
 		rc = test_setup_route(pbuffer);
 		ASSERT(0 <= rc);
 
-		tstring s = route.showFare(RULE_APPLIED);
+		tstring s = route.showFare();
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
