@@ -274,10 +274,10 @@ private:
     int32_t endTerminalId;
 
 	bool retr_fare();
-	int32_t aggregate_fare_info(const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
+	int32_t aggregate_fare_info(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
 	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 public:
-	bool calc_fare(const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
+	bool calc_fare(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
     void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList);
 	void reset() {				//***
 		companymask = 0;
@@ -396,10 +396,11 @@ private:
 #define B1LID_FIN_CITY_OFF		7
 #define B1LID_BEGIN_OOSAKA		8	// 大阪・新大阪
 #define B1LID_FIN_OOSAKA		9
-#define B1LID_CITY_MASK         0x3ff
-#define BCRULE70	6
+#define M1LID_CITY             0x3ff
 // bit10-14 reserve
 
+
+#define BCRULE70	            6		/* DB:lflag */
 
 /**** public ****/
 /* cooked flag for shoFare(), show_route() */
@@ -553,14 +554,15 @@ typedef struct
 //		  計算の過程では、ローカル変数フラグ使用
 
 // bit0-1
-#define LF_OSAKAKAN_PASSMASK   	0x03
+#define MLF_OSAKAKAN_PASS   	0x03
 #define LF_OSAKAKAN_NOPASS		0	// 初期状態(大阪環状線未通過)
 #define LF_OSAKAKAN_1PASS   	1	// 大阪環状線 1回通過
 #define LF_OSAKAKAN_2PASS   	2	// 大阪環状線 2回通過
+#define BLF_OSAKAKAN_1PASS   	0	// 大阪環状線 1回通過
 
 #define IS_LF_OSAKAKAN_PASS(m, pass) (pass == ((m) & LF_OSAKAKAN_MASK))
 
-// bit 2-
+// bit 2-3
 #define BLF_OSAKAKAN_1DIR   	2	// 大阪環状線 1回目方向
 #define BLF_OSAKAKAN_2DIR   	3	// 大阪環状線 2回目方向
 
@@ -632,14 +634,16 @@ private:
         int32_t _station_id2;
         int32_t _num;		        // number of junction
 		SPECIFICFLAG _last_flag;	// add() - removeTail() work
-		RoutePass::RoutePass(const RoutePass& rp) // copy constructor
+		RoutePass(const RoutePass& rp) // copy constructor
 		             { memcpy(this, &rp, sizeof(*this)); }
 		void clear() { memset(_jct_mask, 0, JCTMASKSIZE); }
+		void update(const RoutePass& rp) 
+		             { memcpy(this, &rp, sizeof(*this)); }
 		RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
     public:
         RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
         ~RoutePass() {  }
-        int32_t check();
+        int32_t check() const;
         void off(int32_t jid);
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
@@ -755,15 +759,15 @@ public:
 	static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
 	static vector<int32_t>		GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t>		GetDistance(int32_t b1lidflag, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t>		GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t				GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t				Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t>		Get_route_distance(const vector<RouteItem>& route);
+	       vector<int32_t>		get_route_distance(const vector<RouteItem>& route);
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
 	static int32_t 	Retrieve_SpecificCoreStation(int32_t cityId);
 	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
-	static bool		CheckOfRule114j(const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind, int32_t* result);
+	static bool		checkOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind, int32_t* result);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
 

@@ -890,6 +890,8 @@ void Calps_mfcDlg::ResetContent()
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
 	CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
+	m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+
 	SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
 	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
 	SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
@@ -961,9 +963,9 @@ void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
 void Calps_mfcDlg::OnBnClickedCheckRuleapply()
 {
 	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) {
-		m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	} else {
 		m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	} else {
+		m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 	}
 	showFare();
 }
@@ -1326,6 +1328,10 @@ void Calps_mfcDlg::showFare()
 	SetDlgItemText(IDC_EDIT_RESULT, m_route.showFare().c_str());
 
 	opt = m_route.getFareOption();
+
+	if ((opt & 0x80) != 0) {
+		CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
+	}
 
 	switch (opt & 0x03) {
 	case 0:
