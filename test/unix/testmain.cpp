@@ -16,22 +16,25 @@ static tstring cr_remove(tstring s)
 	return s;
 }
 
-void setup(int argc, char**argv)
+void setup(int argc, TCHAR**argv)
 {
 	int i;
 	TCHAR* p = buffer;
 	
 	for (i = 1; i < argc; i++) {
-		strcpy(p, *++argv);
-		p += strlen(*argv);
+		_tcscpy(p, *++argv);
+		p += _tcslen(*argv);
 		if ((i + 1) < argc) {
 			*p++ = _T(' ');
 			*p = _T('\0');
 		}
 	}
 }
-
+#ifdef _WINDOWS
+int _tmain(int argc, TCHAR** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
 	tstring s;
 	int32_t rc;
@@ -51,7 +54,7 @@ int main(int argc, char** argv)
 	route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 	s = route.showFare();
 	s = cr_remove(s);
-	printf("%s\n", s.c_str());
+	_tprintf(_T("%s\n"), s.c_str());
 
 	return 0;
 }
