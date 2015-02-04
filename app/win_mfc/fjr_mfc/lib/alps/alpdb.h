@@ -560,7 +560,7 @@ typedef struct
 #define LF_OSAKAKAN_2PASS   	2	// 大阪環状線 2回通過
 #define BLF_OSAKAKAN_1PASS   	0	// 大阪環状線 1回通過
 
-#define IS_LF_OSAKAKAN_PASS(m, pass) (pass == ((m) & LF_OSAKAKAN_MASK))
+#define IS_LF_OSAKAKAN_PASS(m, pass) (pass == ((m) & MLF_OSAKAKAN_PASS))
 
 // bit 2-3
 #define BLF_OSAKAKAN_1DIR   	2	// 大阪環状線 1回目方向
@@ -628,7 +628,7 @@ private:
 	{
 	//friend class Route;
         BYTE   _jct_mask[JCTMASKSIZE];	// [JCTMASKSIZE] about 40byte
-        BYTE*   _source_jct_mask;
+        const BYTE*   _source_jct_mask;
         int32_t _line_id;
         int32_t _station_id1;
         int32_t _station_id2;
@@ -659,8 +659,9 @@ private:
 	    int32_t		enum_junctions_of_line_for_oskk_rev();
 	    int32_t     enum_junctions_of_line_for_osakakan();
 	};
-
-    int32_t             DirOsakaKanLine(int32_t station_id1, int32_t station_id2);
+public:
+	/* for RoutePass */
+    static int32_t      DirOsakaKanLine(int32_t station_id1, int32_t station_id2);
 
 private:
 	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
@@ -762,12 +763,12 @@ public:
 	static vector<int32_t>		GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t				GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t				Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	       vector<int32_t>		get_route_distance(const vector<RouteItem>& route);
+	static vector<int32_t>		Get_route_distance(SPECIFICFLAG last_flag, const vector<RouteItem>& route);
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
 	static int32_t 	Retrieve_SpecificCoreStation(int32_t cityId);
 	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
-	static bool		checkOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind, int32_t* result);
+	static bool		CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind, int32_t* result);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
 
