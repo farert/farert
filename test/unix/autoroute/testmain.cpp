@@ -152,11 +152,13 @@ printf("! ! ! changeNeerest E r r o r ! ! !\n");
 		} else {
 printf("o o o changeNeerest S u c c e s s   o o o\n");
 			ASSERT(b_fail == false);
-			tstring s = route.showFare(RULE_NO_APPLIED);
+			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = route.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///非適用\n%s\n"), s.c_str());
 #if 1
-			s = route.showFare(RULE_APPLIED);
+			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = route.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///適用\n%s\n"), s.c_str());
 #endif
@@ -173,11 +175,13 @@ printf("o o o changeNeerest S u c c e s s   o o o\n");
 			ASSERT(b_fail == true);
 		} else {
 			ASSERT(b_fail == false);
-			tstring s = route.showFare(RULE_NO_APPLIED);
+			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = route.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///非適用\n%s\n"), s.c_str());
 
-			s = route.showFare(RULE_APPLIED);
+			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = route.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///適用\n%s\n"), s.c_str());
 		}
