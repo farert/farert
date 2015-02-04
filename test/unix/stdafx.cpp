@@ -60,6 +60,7 @@ void assertion_function(int32_t cond)
 {
     if (!cond) {
         TRACE("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n");
+		exit(0);
         //for (;;);
     }
 }
