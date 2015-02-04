@@ -1,7 +1,7 @@
 # Windows
 
 #COPT=/Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D "WIN32" /D "_WINDOWS" /D "NDEBUG" /D "_UNICODE" /D "UNICODE" /Gm- /EHsc /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Gd /analyze-
-COPT=/Zi /nologo /W3 /WX- /MT /O2 /Oi /Oy- /DTEST /D "WIN32" /D "_WINDOWS" /D "NDEBUG" /D "_UNICODE" /D "UNICODE" /Gm- /EHsc /fp:precise /Zc:wchar_t 
+COPT=/Zi /nologo /W3 /WX- /MT /O2 /Oi /Oy- /DTEST /D "WIN32" /D "_WINDOWS" /D "NDEBUG" /D "_UNICODE" /D "UNICODE" /D "_CRT_SECURE_NO_WARNINGS" /Gm- /EHsc /fp:precise /Zc:wchar_t 
 
 
 OBJS = test_exec.obj db.obj sqlite3.obj alpdb.obj testmain.obj stdafx.obj

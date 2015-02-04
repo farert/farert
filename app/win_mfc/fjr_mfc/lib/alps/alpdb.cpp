@@ -1013,8 +1013,6 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				enum_junctions_of_line_for_oskk_rev(); // safety
 		ASSERT((check() & 0x01) != 0);
 	}
-	TRACE("Osaka-kan: failure!!!\n");
-
 	return jnum;	/* Failure */
 }
 
