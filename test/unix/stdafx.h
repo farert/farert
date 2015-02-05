@@ -11,7 +11,7 @@
 
 
 
-#define ASSERT(cond) if (!(cond)) {  printf("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", __FILE__, __LINE__); }
+#define ASSERT(cond) if (!(cond)) {  printf("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", __FILE__, __LINE__); for (;;); }
 
 
 #if !defined _WINDOWS
@@ -68,8 +68,10 @@ typedef unsigned char BYTE;
 #define sprintf_s snprintf
 #else	// _WINDOWS
 //------------------------------------------------------------------- windows >>
+
 #include <AtlBase.h>
 #include <AtlConv.h>
+
 //#include <tchar.h>
 //#include <stdlib.h>
 #include <time.h>
