@@ -611,7 +611,6 @@ public:
 	Route();
 	~Route();
     void assign(const Route& source_route, int32_t count);
-	void build_jct_mask();
 
 	vector<RouteItem>& routeList() { return route_list_raw; }
 	vector<RouteItem>& cookedRouteList() { return route_list_cooked; }

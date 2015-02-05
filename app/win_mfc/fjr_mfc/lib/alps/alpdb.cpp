@@ -884,7 +884,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	int32_t dir;
 	int32_t jnum = -1;
 	uint8_t  check_result = 0;
-	RoutePass rp(*this);
+	RoutePass farRoutePass(*this);
 
 	ASSERT(_line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
 
@@ -918,39 +918,56 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		    jnum = enum_junctions_of_line_for_oskk_rev();
         	TRACE("Osaka-kan: 2b\n");
 		}
-		
-		check_result = (uint8_t)check();
+
+		// 大阪環状線内駅が始発ポイントか見るため.
+		// (始発ポイントなら1回通過でなく2回通過とするため)
+
+		check_result = (uint8_t)(check() & 0x01);
 		if (((0x01 & check_result) == 0) || !BIT_CHK(_last_flag, BLF_OSAKAKAN_DETOUR)) {
+			// 近回りがOK または 
+			// 近回りNGだが遠回り指定でない場合(大阪環状線内駅が始発ポイントである)
 			// a, c, e, f, g, h
 			if ((0x01 & dir) == 0) {
-			    i = rp.enum_junctions_of_line_for_oskk_rev();
+				// 順廻り(DB上の. 実際には逆回り)が近回り.
+				// ...のときは遠回りを見てみる
+			    i = farRoutePass.enum_junctions_of_line_for_oskk_rev();
         		TRACE("Osaka-kan: 3a\n");
 			} else {
-				i = rp.enum_junctions_of_line();
+				// 逆回りが近回り
+				// ...のときは遠回りを見てみる
+				i = farRoutePass.enum_junctions_of_line();
         		TRACE("Osaka-kan: 3b\n");
 			}
 		} else {
 			// b, d
+			// 遠回り指定がNG
 			ASSERT(FALSE);
 			return jnum;
 		}
-		check_result |= (uint8_t)(rp.check() << 4);
+		check_result |= (uint8_t)((farRoutePass.check() & 0x01) << 4);
 		if ((0x11 & check_result) == 0) {
 			// a, e
 			/* 両方向OK */
 			_last_flag &= ~MLF_OSAKAKAN_PASS;
 			_last_flag |= LF_OSAKAKAN_1PASS;
-			_last_flag &= ~(1 << BLF_OSAKAKAN_1DIR);
-        	TRACE("Osaka-kan: 5a\n");
+			if ((0x01 & dir) == 0) {
+				_last_flag &= ~(1 << BLF_OSAKAKAN_1DIR);
+        		TRACE("Osaka-kan: 5a\n");
+			} else {
+				_last_flag |= (1 << BLF_OSAKAKAN_1DIR);
+	        	TRACE("Osaka-kan: 5b\n");
+			}
 		} else if ((0x11 & check_result) != 0x11) {
 			// c, f, g
+			// 近回りか遠回りのどっちかダメ
 			_last_flag &= ~MLF_OSAKAKAN_PASS;
 			_last_flag |= LF_OSAKAKAN_2PASS; /* 大阪環状線駅始発 */
-			if ((0x10 & check_result) == 0x10) {
+			if ((0x11 & check_result) == 0x01) {
+				// 近回りがNG
 				// f
 				dir ^= 1;                        /* 戻す */
 				jnum = i;
-				update(rp);
+				update(farRoutePass);
 	        	TRACE("Osaka-kan: 6a\n");
 			} else {
 				// c, g
@@ -964,9 +981,11 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	        	TRACE("Osaka-kan:7b\n");
 			}
 		} else {
+			// どっち廻りもダメ(1回目でそれはない)
 			// h
 			// thru
         	TRACE("Osaka-kan:8\n");
+        	ASSERT(FALSE);
 		}
 	} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
 
@@ -1013,6 +1032,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				enum_junctions_of_line_for_oskk_rev(); // safety
 		ASSERT((check() & 0x01) != 0);
 	}
+TRACE("\n\n%d\n\n", check());
 	return jnum;	/* Failure */
 }
 
@@ -1741,7 +1761,16 @@ ASSERT(first_station_id1 = stationId1);
 
 	// Route passed check
 	rc = route_pass.check();
-	if (rc == 0) {	// 復乗なし
+
+	if (line_id == dbid.LineIdOf_OOSAKAKANJYOUSEN) {
+		if ((rc & 1) == 0) {
+			rc = 0;
+		} else if ((rc & 0x02) != 0) {
+			rc = 2;
+		} else {
+			rc = -1;
+		}
+	} else if (rc == 0) {	// 復乗なし
 		if (((2 <= route_list_raw.size()) && (start_station_id != stationId2) &&
 			(0 != Route::InStation(start_station_id, line_id, stationId1, stationId2))) ||
 			(((0 < end_station_id) && (end_station_id != stationId2) && (2 <= route_list_raw.size())) &&
@@ -1780,7 +1809,7 @@ ASSERT(first_station_id1 = stationId1);
 	if (rc < 0) {
 		// 不正ルートなのでmaskを反映しないで破棄する
 		
-		TRACE(_T("add_abort\n"));
+		TRACE(_T("add_abort(%d)\n"), rc);
 		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
 		// E-12, 6, b, c, d, e 
 		return -1;	/* already passed error >>>>>>>>>>>>>>>>>>>> */
@@ -1889,6 +1918,19 @@ void Route::removeTail(bool begin_off/* = false*/)
 	last_flag = route_pass.update_flag(last_flag); /* update last_flag LF_OSAKAKAN_MASK */
 	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
 	route_list_raw.pop_back();
+	
+	/* 大阪環状線 */
+	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
+		if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
+			last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR) | (1 << BLF_OSAKAKAN_2DIR) | (1 << BLF_OSAKAKAN_DETOUR));
+		} else if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_2PASS)) {
+			last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR));
+			last_flag |= LF_OSAKAKAN_1PASS;
+		} else {
+			TRACE("osaka-kan pass flag is not 1 or 2 (%d)\n", last_flag & MLF_OSAKAKAN_PASS);
+			ASSERT(FALSE);
+		}
+	}
 }
 
 //public:
@@ -2209,9 +2251,59 @@ void Route::assign(const Route& source_route, int32_t count)
 }
 
 
-void Route::build_jct_mask(void)
+//public:
+//	経路を逆転
+//
+//	@retval 1   sucess
+//	@retval 0   sucess(empty)
+//	@retval -1	failure(6の字を逆転すると9になり経路重複となるため)
+//
+int32_t Route::reverse()
 {
-	// TODO なににつかうんだっけ？いるんだっけか？
+	int32_t station_id;
+	int32_t line_id;
+	vector<RouteItem> route_list_rev;
+	vector<RouteItem>::const_reverse_iterator rev_pos;
+	vector<RouteItem>::const_iterator pos;
+
+	if (route_list_raw.size() <= 1) {
+		return 0;
+	}
+
+	for (rev_pos = route_list_raw.crbegin(); rev_pos != route_list_raw.crend(); rev_pos++) {
+		route_list_rev.push_back(*rev_pos);
+	}
+
+	removeAll();	/* clear route_list_raw */
+
+	pos = route_list_rev.cbegin();
+	station_id = pos->stationId;
+	add(station_id);
+	line_id = pos->lineId;
+	for (pos++; pos != route_list_rev.cend(); pos++) {
+		int32_t rc = add(line_id, /*station_id,*/ pos->stationId);
+		if (rc < 0) {
+			/* error */
+			/* restore */
+	
+			removeAll();	/* clear route_list_raw */
+
+			rev_pos = route_list_rev.crbegin();
+			station_id = rev_pos->stationId;
+			add(station_id);
+			for (rev_pos++; rev_pos != route_list_rev.crend(); rev_pos++) {
+				rc = add(rev_pos->lineId, /*station_id,*/ rev_pos->stationId, 1<<8);
+				ASSERT(0 <= rc);
+				station_id = rev_pos->stationId;
+			}
+			TRACE(_T("cancel reverse route\n"));
+			return -1;
+		}
+		station_id = pos->stationId;
+		line_id = pos->lineId;
+	}
+	TRACE(_T("reverse route\n"));
+	return 1;
 }
 
 
@@ -2389,61 +2481,6 @@ int32_t Route::endStationId(bool applied_agree)
             return stid + 10000;
         }
     }
-}
-
-//public:
-//	経路を逆転
-//
-//	@retval 1   sucess
-//	@retval 0   sucess(empty)
-//	@retval -1	failure(6の字を逆転すると9になり経路重複となるため)
-//
-int32_t Route::reverse()
-{
-	int32_t station_id;
-	int32_t line_id;
-	vector<RouteItem> route_list_rev;
-	vector<RouteItem>::const_reverse_iterator rev_pos;
-	vector<RouteItem>::const_iterator pos;
-
-	if (route_list_raw.size() <= 1) {
-		return 0;
-	}
-
-	for (rev_pos = route_list_raw.crbegin(); rev_pos != route_list_raw.crend(); rev_pos++) {
-		route_list_rev.push_back(*rev_pos);
-	}
-
-	removeAll();	/* clear route_list_raw */
-
-	pos = route_list_rev.cbegin();
-	station_id = pos->stationId;
-	add(station_id);
-	line_id = pos->lineId;
-	for (pos++; pos != route_list_rev.cend(); pos++) {
-		int32_t rc = add(line_id, /*station_id,*/ pos->stationId);
-		if (rc < 0) {
-			/* error */
-			/* restore */
-	
-			removeAll();	/* clear route_list_raw */
-
-			rev_pos = route_list_rev.crbegin();
-			station_id = rev_pos->stationId;
-			add(station_id);
-			for (rev_pos++; rev_pos != route_list_rev.crend(); rev_pos++) {
-				rc = add(rev_pos->lineId, /*station_id,*/ rev_pos->stationId, 1<<8);
-				ASSERT(0 <= rc);
-				station_id = rev_pos->stationId;
-			}
-			TRACE(_T("cancel reverse route\n"));
-			return -1;
-		}
-		station_id = pos->stationId;
-		line_id = pos->lineId;
-	}
-	TRACE(_T("reverse route\n"));
-	return 1;
 }
 
 
@@ -3287,8 +3324,10 @@ vector<int32_t> Route::GetDistance(int32_t oskkflg, int32_t line_id, int32_t sta
 	if ( ((oskkflg & ((1 << BLF_OSAKAKAN_1PASS) | (1 << BLF_OSAKAKAN_1DIR))) == (1 << BLF_OSAKAKAN_1DIR)) ||
 	     ((oskkflg & ((1 << BLF_OSAKAKAN_1PASS) | (1 << BLF_OSAKAKAN_2DIR))) == ((1 << BLF_OSAKAKAN_1PASS) | (1 << BLF_OSAKAKAN_2DIR)))) {
 		sales_km = Route::GetDistanceOfOsakaKanjyouRvrs(line_id, station_id1, station_id2);
+		TRACE(_T("Osaka-kan reverse\n"));
 	} else {
    		sales_km = Route::GetDistance(line_id, station_id1, station_id2)[0];
+		TRACE(_T("Osaka-kan forward\n"));
 	}
 
 	d.push_back(sales_km);
@@ -7961,5 +8000,4 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 	return taxadd(fare, FARE_INFO::tax);	// tax = +5%, 四捨五入
 }
 
-// todo removetailでOSAKAKAN フラグ戻しも必要
 
