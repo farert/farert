@@ -6512,6 +6512,8 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 	osakakan_aggregate = last_flag;
 	BIT_OFF(osakakan_aggregate, BLF_OSAKAKAN_1PASS);
 
+	station_id1 = 0;
+
 	/* 近郊区間ではない条件となる新幹線乗車があるか */
 	for (ite = routeList_raw.cbegin(); ite != routeList_raw.cend(); ite++) {
 		if (station_id1 != 0) {
