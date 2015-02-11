@@ -555,7 +555,7 @@ DBO Route::Enum_junction_of_lineId(int32_t lineId, int32_t stationId)
 //#else
 "select t.name, station_id, lflg&(1<<15)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
-" where line_id=?1 and (lflg&(1<<17))=0 and (sflg&(1<<12))!=0 or station_id=?2"
+" where line_id=?1 and (lflg&(1<<17))=0 and (sflg&(1<<12))!=0 or (station_id=?2 and line_id=?1)"
 " order by l.sales_km";
 //#endif
 #else
@@ -575,7 +575,7 @@ DBO Route::Enum_junction_of_lineId(int32_t lineId, int32_t stationId)
 #else
 "select t.name, station_id, sflg&(1<<12)"
 " from t_lines l left join t_station t on t.rowid=l.station_id"
-" where line_id=?1 and ((sflg & (1<<12))<>0 or station_id=?2)"
+" where line_id=?1 and ((sflg & (1<<12))<>0 or (station_id=?2 and line_id=?1))"
 //" and (lflg&((1<<31)|(1<<17)))=0 and sales_km>=0"
 " and (lflg&(1<<17))=0"
 " order by l.sales_km";
@@ -760,7 +760,7 @@ int32_t Route::InStation(int32_t stationId, int32_t lineId, int32_t b_stationId,
 //public
 // 経路マークリストコンストラクタ
 //
-//	@param [in]  jct_mask        分岐マーク
+//	@param [in]  jct_mask        分岐マーク(used check()) NULLはremoveTail()用
 //	@param [in]  last_flag       制御フラグ
 //	@param [in]  line_id         路線
 //	@param [in]  station_id1	 発 or 至
@@ -888,6 +888,33 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 
 	ASSERT(_line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
 
+	if (_source_jct_mask == NULL) {
+		/* removeTail() */
+		if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_2PASS)) {
+			if (BIT_CHK(_last_flag, BLF_OSAKAKAN_2DIR)) {
+			    jnum = enum_junctions_of_line_for_oskk_rev();
+			} else {
+				jnum = enum_junctions_of_line();
+			}
+			_last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR));
+			_last_flag |= LF_OSAKAKAN_1PASS;
+
+		} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
+			if (BIT_CHK(_last_flag, BLF_OSAKAKAN_1DIR)) {
+			    jnum = enum_junctions_of_line_for_oskk_rev();
+			} else {
+				jnum = enum_junctions_of_line();
+			}
+			_last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR) | (1 << BLF_OSAKAKAN_2DIR) | (1 << BLF_OSAKAKAN_DETOUR));
+
+		} else {
+			/* 一回も通っていないはあり得ない */
+			TRACE("osaka-kan pass flag is not 1 or 2 (%d)\n", _last_flag & MLF_OSAKAKAN_PASS);
+			ASSERT(FALSE);
+		}
+		return jnum;
+	}
+
 	dir = Route::DirOsakaKanLine(_station_id1, _station_id2);
 
 	if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_NOPASS)) {
@@ -967,7 +994,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				// f
 				dir ^= 1;                        /* 戻す */
 				jnum = i;
-				update(farRoutePass);
+				update(farRoutePass);	// 遠回りを採用
 	        	TRACE("Osaka-kan: 6a\n");
 			} else {
 				// c, g
@@ -990,8 +1017,11 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
 
 		// 2回目の大阪環状線
-		
+		// 最初近回りで試行しダメなら遠回りで。
 		for (i = 0; i < 2; i++) {
+		    if (0 < i) {
+		    	clear();
+			}
 			if ((0x01 & dir) == 0) {
 				jnum = enum_junctions_of_line();
 	        	TRACE("Osaka-kan: 9a\n");
@@ -1032,7 +1062,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				enum_junctions_of_line_for_oskk_rev(); // safety
 		ASSERT((check() & 0x01) != 0);
 	}
-TRACE("\n\n%d\n\n", check());
+	TRACE("\ncheck:%d, far=%d\n", check(), farRoutePass.check());
 	return jnum;	/* Failure */
 }
 
@@ -1105,6 +1135,9 @@ int32_t Route::RoutePass::check() const
 	int32_t jctid;
 	int32_t rc;
 
+	if (_source_jct_mask == NULL) {
+		return -1;	// for removeTail()
+	}
 	rc = 0;
 	for (i = 0; i < JCTMASKSIZE; i++) {
 		k = (_source_jct_mask[i] & _jct_mask[i]);
@@ -1135,17 +1168,17 @@ int32_t Route::RoutePass::check() const
 //static
 //	大阪環状線最短廻り方向を返す
 //
-//	@param [in]  station_id1   発or至
-//	@param [in]  station_id2   発or至
+//	@param [in]  station_id_a   発or至
+//	@param [in]  station_id_b   発or至
 // 	@retval 0 = 内回り(DB定義上の順廻り)が最短
 // 	@retval 1 = 外回りが最短
 //
-//	@note station_id1, station_id2は区別はなし
+//	@note station_id_a, station_id_bは区別はなし
 //
-int32_t Route::DirOsakaKanLine(int32_t station_id1, int32_t station_id2)
+int32_t Route::DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b)
 {
-	if (Route::GetDistance(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2)[0] <=
-	    Route::GetDistanceOfOsakaKanjyouRvrs(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2)) {
+	if (Route::GetDistance(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b)[0] <=
+	    Route::GetDistanceOfOsakaKanjyouRvrs(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b)) {
 	    return 0;
 	} else {
 		return 1;
@@ -1268,7 +1301,11 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 	int32_t original_line_id = line_id;
 	int32_t first_station_id1;
 #endif
+
+TRACE("last_flag=%x\n", last_flag);
+
 	if (BIT_CHK(last_flag, BLF_END)) {
+		TRACE(_T("route.add(): already terminated.\n"));
 		return	0;		/* already terminated. */
 	}
 
@@ -1763,12 +1800,22 @@ ASSERT(first_station_id1 = stationId1);
 	rc = route_pass.check();
 
 	if (line_id == dbid.LineIdOf_OOSAKAKANJYOUSEN) {
-		if ((rc & 1) == 0) {
-			rc = 0;
-		} else if ((rc & 0x02) != 0) {
-			rc = 2;
-		} else {
+		if ((rc & 0x01) != 0) {
 			rc = -1;
+		} else if ((rc & 0x02) != 0) {
+			/* 着駅終了*/
+			if (STATION_IS_JUNCTION_F(lflg2)) {
+				rc = 1;		/* BLF_TRACKMARKCTL をONにして、次のremoveTail()で削除しない */
+TRACE(_T("osaka-kan last point junction\n"));
+			} else {
+TRACE(_T("osaka-kan last point not junction\n"));
+				rc = 2;
+			}
+		} else if ((rc & 0x03) == 0) {
+			rc = 0;
+		} else {
+			ASSERT(FALSE);	// rc & 0x03 = 0x03
+			rc = -1;		// safety
 		}
 	} else if (rc == 0) {	// 復乗なし
 		if (((2 <= route_list_raw.size()) && (start_station_id != stationId2) &&
@@ -1861,6 +1908,7 @@ ASSERT(first_station_id1 = stationId1);
 			return 1;	/* 西小倉、吉塚 */
 		} else {
 			BIT_ON(last_flag, BLF_END);
+			TRACE(_T("detect finish.\n"));
 			return 0;
 		}
 	} else {
@@ -1893,11 +1941,13 @@ void Route::removeTail(bool begin_off/* = false*/)
 		removeAll(false, false);
 		return;
 	}
-	to_station_id = route_list_raw[i - 1].stationId;	// tail
+
 	line_id = route_list_raw[i - 1].lineId;
+
+	to_station_id = route_list_raw[i - 1].stationId;	// tail
 	begin_station_id = route_list_raw[i - 2].stationId;	// tail - 1
 
-	RoutePass route_pass(jct_mask, last_flag, line_id, to_station_id, begin_station_id);
+	RoutePass route_pass(NULL, last_flag, line_id, to_station_id, begin_station_id);
 
 	if (!begin_off) {
 		/* 開始駅はOffしない(前路線の着駅なので) */
@@ -1918,20 +1968,48 @@ void Route::removeTail(bool begin_off/* = false*/)
 	last_flag = route_pass.update_flag(last_flag); /* update last_flag LF_OSAKAKAN_MASK */
 	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
 	route_list_raw.pop_back();
-	
-	/* 大阪環状線 */
-	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
-			last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR) | (1 << BLF_OSAKAKAN_2DIR) | (1 << BLF_OSAKAKAN_DETOUR));
-		} else if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_2PASS)) {
-			last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR));
-			last_flag |= LF_OSAKAKAN_1PASS;
-		} else {
-			TRACE("osaka-kan pass flag is not 1 or 2 (%d)\n", last_flag & MLF_OSAKAKAN_PASS);
-			ASSERT(FALSE);
+}
+
+//public:
+//	経路再構成(uupdate rebuild last_flag)
+//
+//	@return 0 success(is last) 
+//	@retval 1 success
+//	@retval otherwise failued
+//
+int32_t Route::reBuild()
+{
+	Route routeWork;
+	int32_t rc;
+	vector<RouteItem>::const_iterator pos;
+
+	if (route_list_raw.size() <= 1) {
+		return 0;
+	}
+
+	pos = route_list_raw.cbegin();
+	routeWork.add(pos->stationId);
+
+	// add() の開始駅追加時removeAll()が呼ばれlast_flagがリセットされるため)
+	routeWork.last_flag |= last_flag & (1 << BLF_OSAKAKAN_DETOUR);
+
+	for (++pos; pos != route_list_raw.cend(); pos++) {
+		rc = routeWork.add(pos->lineId, pos->stationId);
+		if (rc != 1) {
+			/* error */
+			break;
 		}
 	}
+	if ((rc != 0) && ((rc != 1) || (pos != route_list_raw.cend()))) {
+		return -1;	/* error */
+	}
+	
+    last_flag = routeWork.last_flag;
+    memcpy(jct_mask, routeWork.jct_mask, sizeof(jct_mask));
+
+	return rc;
 }
+
 
 //public:
 //	運賃表示
@@ -2004,7 +2082,7 @@ tstring Route::showFare()
 			}
 			sResult += sWork;
 			sResult += _T("\r\n経由：");
-			sResult += Route::Show_route(route_list_cooked);
+			sResult += Route::Show_route(route_list_cooked, last_flag);
 			
 			///////////////////////////////////////////////////
 			// calc fare
@@ -2024,7 +2102,7 @@ tstring Route::showFare()
 		sWork = Route::StationNameEx(route_list_raw.back().stationId);
 		sResult += sWork;
 		sResult += _T("\r\n経由：");
-		sResult += Route::Show_route(route_list_raw);
+		sResult += Route::Show_route(route_list_raw, last_flag);
 		
 		///////////////////////////////////////////////////
 		// calc fare
@@ -2209,7 +2287,7 @@ ASSERT(FALSE);
 			}
             fare_info->setRoute(this->beginStationId(true),
                                 this->endStationId(true),
-                                this->route_list_cooked);
+                                this->route_list_cooked, last_flag);
 			// rule 114 applied
             fare_info->setRule114(rule114[0], rule114[1], rule114[2]);
 		}
@@ -2223,7 +2301,7 @@ ASSERT(FALSE);
 		}
         fare_info->setRoute(this->beginStationId(false),
                             this->endStationId(false),
-                            this->route_list_raw);
+                            this->route_list_raw, last_flag);
 	}
 	// success
 	return 1;
@@ -2556,13 +2634,20 @@ ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11));
 
 
 // static version
-tstring Route::Show_route(const vector<RouteItem>& routeList)
+//	@brief 経由文字列を返す
+//
+//	@param [in] routeList    route
+//	@param [in] last_flag    route flag.
+//	@retval 文字列
+//
+tstring Route::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag)
 {
 	tstring lineName;
 	tstring stationName;
 #define MAX_BUF 1024
 	//TCHAR buf[MAX_BUF];
 	tstring result_str;
+	int32_t station_id1;
 	
 	if (routeList.size() == 0) {	/* 経路なし(AutoRoute) */
 		return _T("");
@@ -2571,6 +2656,8 @@ tstring Route::Show_route(const vector<RouteItem>& routeList)
 	vector<RouteItem>::const_iterator pos = routeList.cbegin();
     
 	result_str = _T("");
+	station_id1 = pos->stationId;
+    last_flag &= ~MLF_OSAKAKAN_PASS;	// BIT_OFF(last_flag, BLF_OSAKAKAN_1PASS)
     
 	for (pos++; pos != routeList.cend() ; pos++) {
         
@@ -2582,13 +2669,18 @@ tstring Route::Show_route(const vector<RouteItem>& routeList)
 				if (ID_L_RULE70 != pos->lineId) {
 					result_str += _T("[");
 					result_str += lineName;
+					if (DbidOf::LineIdOf_OOSAKAKANJYOUSEN == pos->lineId) {
+						result_str += Route::RouteOsakaKanDir(station_id1, pos->stationId, last_flag);
+						BIT_ON(last_flag, BLF_OSAKAKAN_1PASS);
+					}
 					result_str += _T("]");
 				} else {
 					result_str += _T(",");
 				}
 			}
+			station_id1 = pos->stationId;
 			if (!IS_FLG_HIDE_STATION(pos->flag)) {
-				stationName = Route::StationName(pos->stationId);
+				stationName = Route::StationName(station_id1);
 				result_str += stationName;
 			}
 		} else {
@@ -2596,6 +2688,10 @@ tstring Route::Show_route(const vector<RouteItem>& routeList)
 			if (!IS_FLG_HIDE_LINE(pos->flag)) {
 				result_str += _T("[");
 				result_str += lineName;
+				if (DbidOf::LineIdOf_OOSAKAKANJYOUSEN == pos->lineId) {
+					result_str += Route::RouteOsakaKanDir(station_id1, pos->stationId, last_flag);
+					BIT_ON(last_flag, BLF_OSAKAKAN_1PASS);
+				}
 				result_str += _T("]");
 			}
 			//result_str += stationName;	// 着駅
@@ -2606,6 +2702,62 @@ tstring Route::Show_route(const vector<RouteItem>& routeList)
 	return result_str;
 }
 
+//static private
+//	@brief 大阪環状線 方向文字列を返す
+//
+//	@param [in] station_id1  発駅
+//	@param [in] station_id2  着駅
+//	@param [in] last_flag    route flag.
+//	@retval 文字列
+//
+tstring  Route::RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag)
+{
+	tstring result_str;
+	bool dir;		// true is spin of reverse
+	bool detour;	// true is detour
+	bool forward;	// true is 2nd passed
+	bool neerdir;
+	int  pass;
+
+	neerdir = DirOsakaKanLine(station_id1, station_id2) == 0;
+	detour = BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR);
+	pass = BIT_CHK(last_flag, BLF_OSAKAKAN_1PASS) ? BLF_OSAKAKAN_2DIR : BLF_OSAKAKAN_1DIR;
+	forward = BIT_CHK(last_flag,  pass);
+	dir = LDIR_ASC == Route::DirLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2);
+
+TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"), pass == BLF_OSAKAKAN_2DIR ? 2 : 1, StationName(station_id1).c_str(), detour ? _T(">>") : _T(">"), StationName(station_id2).c_str(), neerdir, detour, forward, dir);
+
+/*
+neerdir  1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0  順廻りが近道なら1
+detour   1 1 0 0 1 1 0 0 1 1 0 0 1 1 0 0  遠回り指定で1
+forward  1 1 1 1 0 0 0 0 1 1 1 1 0 0 0 0  逆回りで1
+dir      1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0  下り(反時計)廻りで1
+F/R      O   O O   I I   I     I   I O   0/1 neer/far
+         | | | | | | | | | | | | | | | +- 0 
+         | | | | | | | | | | | | | | +--- 0 1西九条 > 大阪    1天王寺 >> 大阪
+         | | | | | | | | | | | | | +----- 1 1寺田町 >> 大正
+         | | | | | | | | | | | | +------- 1 
+         | | | | | | | | | | | +--------- 0 1大正 > 寺田町
+         | | | | | | | | | | +----------- 0 
+         | | | | | | | | | +------------- 1 
+         | | | | | | | | +--------------- 1 1西九条 >> 大阪
+         | | | | | | | +----------------- 0 
+         | | | | | | +------------------- 0 1大阪 > 西九条      2天王寺 > 京橋 1/2天王寺 > 大阪
+         | | | | | +--------------------- 1 1寺田町 >> 大正
+         | | | | +----------------------- 1 
+         | | | +------------------------- 0 1寺田町 > 大正     2天王寺 > 今宮 2天王寺 > 西九条
+         | | +--------------------------- 0                    2天王寺 |> 大阪 
+         | +----------------------------- 1                    
+         +------------------------------- 1 1大阪 >> 西九条    1天王寺 >> 大阪
+         
+         > 近回り
+         >>一回目遠回り
+         |> 2回目 やむを得ず遠回り
+         1 1回目
+         2 2回目
+*/
+	return result_str;
+}
 
 /*	ルート表示
  *	@return ルート文字列
@@ -2800,7 +2952,7 @@ void Route::terminate(int32_t stationId)
 //
 //	@param [in] line_id     路線
 //	@param [in] station_id1 発
-//	@param [in] k 至
+//	@param [in] station_id2 至
 //
 //	@retval 1 下り(Route::LDIR_ASC)
 //	@retval 2 上り(Route::LDIR_DESC)
@@ -6870,11 +7022,11 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG last_flag, const vector<RouteItem>& route
 }
 
 
-void FARE_INFO::setRoute(int32_t begin_station_id, int32_t end_station_id, const vector<RouteItem>& routeList)
+void FARE_INFO::setRoute(int32_t begin_station_id, int32_t end_station_id, const vector<RouteItem>& routeList, SPECIFICFLAG last_flag)
 {
     beginTerminalId = begin_station_id;
     endTerminalId = end_station_id;
-    route_for_disp = Route::Show_route(routeList);
+    route_for_disp = Route::Show_route(routeList, last_flag);
 }
 
 

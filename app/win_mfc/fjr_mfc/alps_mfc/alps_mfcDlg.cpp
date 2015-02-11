@@ -386,6 +386,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 
 		/* 経路追加 */// last line
 		curLineId = IDENT1(pLRoute->GetItemData(nRoute - 1));	//(stationId is not yet strage in HIWORD)
+		TRACE(_T("[route.add(%s-%s)\n"), Route::LineName(curLineId).c_str(), Route::StationName(selId).c_str());
 		int rslt = m_route.add(curLineId, /*m_curStationId,*/selId);
 		if (m_route.isModified()) {
 			if (0 < ModifyRouteList()) {		// 経路表示更新
@@ -942,16 +943,46 @@ void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
 {
 	/* 大阪環状線1回だけ通っている? */
 	int opt = 0x03 & (m_route.getFareOption() >> 2);
+	int rc;
 	
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
 		// 近回り時に押されたら遠回り(FAREOPT_OSAKAKAN_DETOUR)に : 
-		// 遠回り時に押されたら近回り(0)に
-		m_route.setFareOption((opt == 1) ? FAREOPT_OSAKAKAN_DETOUR : 0, 
-		                      FAREOPT_AVAIL_OSAKAKAN_DETOUR);
-		showFare();
-		// optは逆転する
-		// または無効となりこのボタンは押せなくなる
+		// 遠回り時に押されたら近回り(0:FAREOPT_OSAKAKAN_SHORTCUT)に
+		m_route.setFareOption((opt == 1) ? FAREOPT_OSAKAKAN_DETOUR : FAREOPT_OSAKAKAN_SHORTCUT, 
+		                                   FAREOPT_AVAIL_OSAKAKAN_DETOUR);
+		rc = m_route.reBuild();
+		if (1 == rc) {
+			showFare();
+			// optは逆転する
+			// または無効となりこのボタンは押せなくなる
+		} else if (rc != 0) {
+			AfxMessageBox(_T("経路が重複しています"));
+		} else {
+			// rc == 0
+			int selId = m_route.routeList().back().stationId;
+
+			MessageBox(_T("経路が片道条件に達しました. "), _T("経路終端"), MB_ICONQUESTION);
+			ASSERT(m_route.is_end());
+			m_route.end();	// safety
+
+			m_route.setEndStationId(selId);				// 着駅変更
+			SetDlgItemText(IDC_EDIT_END, Route::StationName(selId).c_str());
+			GetDlgItem(IDC_BUTTON_TERM_CLEAR)->EnableWindow(TRUE);
+			
+			CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
+			int numList = pLRoute->GetItemCount();
+
+			// 2回目は既に空欄となっているので。ASSERT(selId == IDENT2(pLRoute->GetItemData(numList - 1)));	// last station
+			ASSERT(m_route.routeList().back().lineId == IDENT1(pLRoute->GetItemData(numList - 1)));	// last line
+
+			pLRoute->SetItemText(numList - 1, 1, _T(""));
+			pLRoute->SetItemData(numList - 1, MAKEPAIR(m_route.routeList().back().lineId, 0));
+
+			setupForLinelistByStation(selId, m_route.routeList().back().lineId);
+			showFare();
+			routeEnd();
+		}
 	} else {
 		/* showFare()の後でおこなっているため普通は不要(安全策)*/
 		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
@@ -1355,11 +1386,11 @@ void Calps_mfcDlg::showFare()
 		break;
 	case 1:
 		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(TRUE);
-		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
+		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
 		break;
 	case 2:
 		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(TRUE);
-		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
+		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
 		break;
 	default:
 		ASSERT(FALSE);
