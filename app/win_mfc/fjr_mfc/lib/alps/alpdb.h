@@ -278,7 +278,7 @@ private:
 	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 public:
 	bool calc_fare(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
-    void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList);
+    void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	void reset() {				//***
 		companymask = 0;
 		sales_km = 0;
@@ -417,6 +417,7 @@ private:
 // bit 1
 #define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2 // 有効ビットマスク
 #define FAREOPT_OSAKAKAN_DETOUR             	0x2	// 大阪環状線 遠回り
+#define FAREOPT_OSAKAKAN_SHORTCUT             	0x0	// 大阪環状線 近回り
 
 
 /****************/
@@ -568,7 +569,7 @@ typedef struct
 
 #define BLF_OSAKAKAN_DETOUR 	4   // 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
 
-#define LF_OSAKAKAN_MASK    	0x07
+#define LF_OSAKAKAN_MASK    	0x0f
 
 #define BLF_TRACKMARKCTL		5	// 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
 #define BLF_JCTSP_ROUTE_CHANGE	6	// 分岐特例(add内部使用)
@@ -618,6 +619,7 @@ public:
 		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
 	}
 	void end()			{ BIT_ON(last_flag, BLF_END); }
+	bool is_end() const { return BIT_CHK(last_flag, BLF_END); }
 
 
 private:
@@ -647,7 +649,7 @@ private:
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
         SPECIFICFLAG update_flag(SPECIFICFLAG source_flg) const { 
-            source_flg &= LF_OSAKAKAN_MASK;
+            source_flg &= ~LF_OSAKAKAN_MASK;
             source_flg |= (LF_OSAKAKAN_MASK & _last_flag);
             return source_flg;
         }
@@ -660,7 +662,7 @@ private:
 	};
 public:
 	/* for RoutePass */
-    static int32_t      DirOsakaKanLine(int32_t station_id1, int32_t station_id2);
+    static int32_t      DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
 
 private:
 	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
@@ -717,27 +719,30 @@ private:
 	static int32_t 	RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt);
 	int32_t			getBsrjctSpType(int32_t line_id, int32_t station_id);
 	int32_t			junctionStationExistsInRoute(int32_t stationId);
+	static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag);
 
 public:
 	// alps_mfcDlg
 	void            setFareOption(uint16_t cooked, uint16_t availbit);
 	tstring 		showFare();
+	int32_t         reBuild();
     int32_t         calcFare(FARE_INFO* fare_info);
     int32_t         calcFare(int32_t count, FARE_INFO* fare_info);
 	uint32_t		getFareOption();
-	tstring 		beginStationName(bool applied_agree);
-	tstring 		endStationName(bool applied_agree);
-	int32_t 		beginStationId(bool applied_agree);
-	int32_t 		endStationId(bool applied_agree);
-	
-    static tstring  Show_route(const vector<RouteItem>& routeList);
+
+    static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	tstring         route_script();
     static tstring  Route_script(const vector<RouteItem>& routeList);
 
 	int32_t			setup_route(LPCTSTR route_str);
+private:
+	tstring 		beginStationName(bool applied_agree);
+	tstring 		endStationName(bool applied_agree);
+	int32_t 		beginStationId(bool applied_agree);
+	int32_t 		endStationId(bool applied_agree);
 
 	bool			chk_jctsb_b(int32_t kind, int32_t num);
-
+public:
 	int32_t 		add(int32_t line_id, int32_t stationId2, int32_t ctlflg = 0);
 	int32_t 		add(int32_t stationId);
 	void 			removeTail(bool begin_off = false);
