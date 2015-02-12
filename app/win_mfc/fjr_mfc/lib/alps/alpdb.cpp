@@ -2601,6 +2601,10 @@ int32_t Route::setup_route(LPCTSTR route_str)
 			}
 			add(stationId1);
 		} else if (lineId == 0) {
+			if (*p == _T('r')) {	/* 大阪環状線 遠回り */
+				++p;
+				BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
+			}
 			lineId = Route::GetLineId(p);
 			if (lineId <= 0) {
 				rc = -300;		/* illegal line name */
@@ -2713,35 +2717,30 @@ tstring Route::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_
 tstring  Route::RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag)
 {
 	tstring result_str;
-	bool dir;		// true is spin of reverse
-	bool detour;	// true is detour
-	bool forward;	// true is 2nd passed
-	bool neerdir;
-	int  pass;
-
-	neerdir = DirOsakaKanLine(station_id1, station_id2) == 0;
-	detour = BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR);
-	pass = BIT_CHK(last_flag, BLF_OSAKAKAN_1PASS) ? BLF_OSAKAKAN_2DIR : BLF_OSAKAKAN_1DIR;
-	forward = BIT_CHK(last_flag,  pass);
-	dir = LDIR_ASC == Route::DirLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2);
-
-TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"), pass == BLF_OSAKAKAN_2DIR ? 2 : 1, StationName(station_id1).c_str(), detour ? _T(">>") : _T(">"), StationName(station_id2).c_str(), neerdir, detour, forward, dir);
-
+	TCHAR *result[] = {
+		_T(""),
+		_T("(内回り)"),
+		_T("(外回り)"),
+	};
+	uint8_t inner_outer[] = {
+		0, 2, 2, 0, 1, 0, 0, 1, 1, 1, 1, 0, 2, 2, 0, 2, 0,
+ //     1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
+	};
 /*
 neerdir  1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0  順廻りが近道なら1
 detour   1 1 0 0 1 1 0 0 1 1 0 0 1 1 0 0  遠回り指定で1
 forward  1 1 1 1 0 0 0 0 1 1 1 1 0 0 0 0  逆回りで1
 dir      1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0  下り(反時計)廻りで1
-F/R      O   O O   I I   I     I   I O   0/1 neer/far
+F/R      O   o O   I I i I     I   O O   0/1 neer/far
          | | | | | | | | | | | | | | | +- 0 
          | | | | | | | | | | | | | | +--- 0 1西九条 > 大阪    1天王寺 >> 大阪
-         | | | | | | | | | | | | | +----- 1 1寺田町 >> 大正
+         | | | | | | | | | | | | | +----- 1 1大正 >> 寺田町   1芦原橋 >> 天王寺
          | | | | | | | | | | | | +------- 1 
          | | | | | | | | | | | +--------- 0 1大正 > 寺田町
          | | | | | | | | | | +----------- 0 
          | | | | | | | | | +------------- 1 
          | | | | | | | | +--------------- 1 1西九条 >> 大阪
-         | | | | | | | +----------------- 0 
+         | | | | | | | +----------------- 0                     2芦原橋・天王寺 … 京橋 > 大正
          | | | | | | +------------------- 0 1大阪 > 西九条      2天王寺 > 京橋 1/2天王寺 > 大阪
          | | | | | +--------------------- 1 1寺田町 >> 大正
          | | | | +----------------------- 1 
@@ -2755,8 +2754,38 @@ F/R      O   O O   I I   I     I   I O   0/1 neer/far
          |> 2回目 やむを得ず遠回り
          1 1回目
          2 2回目
+
+遠回り指定、今宮経由が近道、  今宮経由、  上り 1010 x
+遠回り指定、非今宮経由が近道、非今宮経由、下り 1101 x
+遠回り指定、非今宮経由が近道、非今宮経由、上り 1100 x
+近回り、    非今宮経由が近道、今宮経由、  上り 0110 x
+近回り、　　非今宮経由が近道、今宮経由、  下り 0111 x
+近回り、　　今宮経由が近道、  非今宮経由、上り 0000 x
+遠回り指定、今宮経由が近道、  非今宮経由、上り 1000 O 1西九条 > 大阪    1天王寺 >> 大阪
+遠回り指定、今宮経由が近道、  今宮経由、  下り 1011 o                   2天王寺 |> 大阪 
+遠回り指定、非今宮経由が近道、今宮経由、  下り 1111 O 1大阪 >> 西九条    1天王寺 >> 大阪
+近回り、　　今宮経由が近道、  今宮経由、  下り 0011 O 1寺田町 > 大正     2天王寺 > 今宮 2天王寺 > 西九条
+近回り、　　非今宮経由が近道、非今宮経由、上り 0100 O 1大正 >> 寺田町   1芦原橋 >> 天王寺
+近回り、    今宮経由が近道、  非今宮経由、下り 0001 i 2-芦原橋 大阪環状線 天王寺 関西線 久宝寺 おおさか東線 放出 片町線 京橋 大阪環状線 大正
+遠回り指定、今宮経由が近道、  非今宮経由、下り 1001 I 1大阪 > 西九条      2天王寺 > 京橋 1/2天王寺 > 大阪
+遠回り指定、非今宮経由が近道、今宮経由、  上り 1110 I 1西九条 >> 大阪
+近回り、　　非今宮経由が近道、非今宮経由、下り 0101 I 1寺田町 >> 大正
+近回り、　　今宮経由が近道、  今宮経由、  上り 0010 I 1大正 > 寺田町
 */
-	return result_str;
+	int  pass;
+	uint8_t  c;
+
+	c = DirOsakaKanLine(station_id1, station_id2) == 0 ? 1 : 0;
+	c |= BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR) ? 0x02 : 0;
+	pass = BIT_CHK(last_flag, BLF_OSAKAKAN_1PASS) ? BLF_OSAKAKAN_2DIR : BLF_OSAKAKAN_1DIR;
+	c |= BIT_CHK(last_flag,  pass) ? 0x04 : 0;
+	c |= LDIR_ASC == Route::DirLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2) ? 0x08 : 0;
+TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"), pass == BLF_OSAKAKAN_2DIR ? 2 : 1, StationName(station_id1).c_str(), (c & 0x02) ? _T(">>") : _T(">"), StationName(station_id2).c_str(), 0x1 & c, 0x1 & (c >> 1), 0x01 & (c >> 2), 0x01 & (c >> 3));
+
+	if (NumOf(inner_outer) <= c) {
+		c = NumOf(inner_outer) - 1;
+	}
+	return result[inner_outer[c]];
 }
 
 /*	ルート表示
@@ -2782,6 +2811,8 @@ tstring Route::route_script()
 	for (pos++; pos != routeList->cend() ; pos++) {
 		result_str += _T(",");
 		result_str += LineName(pos->lineId);
+
+
 		result_str += _T(",");
 		result_str += Route::StationNameEx(pos->stationId);
 	}
