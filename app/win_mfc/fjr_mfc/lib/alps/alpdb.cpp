@@ -2717,7 +2717,7 @@ tstring Route::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_
 tstring  Route::RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag)
 {
 	tstring result_str;
-	TCHAR *result[] = {
+	const TCHAR * const result[] = {
 		_T(""),
 		_T("(内回り)"),
 		_T("(外回り)"),
@@ -2797,6 +2797,7 @@ tstring Route::route_script()
 {
 	const vector<RouteItem>* routeList;
 	tstring result_str;
+	bool oskk_flag;
 	
 	routeList = &route_list_raw;	/* 規則非適用 */
 
@@ -2808,11 +2809,16 @@ tstring Route::route_script()
 
 	result_str = Route::StationNameEx(pos->stationId);
 
+	oskk_flag = false;
 	for (pos++; pos != routeList->cend() ; pos++) {
 		result_str += _T(",");
+		if (!oskk_flag && (pos->lineId == DbidOf::LineIdOf_OOSAKAKANJYOUSEN)) {
+			if (BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR)) {
+				result_str += _T("r");
+			}
+			oskk_flag = true;
+		}
 		result_str += LineName(pos->lineId);
-
-
 		result_str += _T(",");
 		result_str += Route::StationNameEx(pos->stationId);
 	}
@@ -2820,11 +2826,14 @@ tstring Route::route_script()
 	return result_str;
 }
 
+#if 0	// 大阪環状線方向実装したしlast_flagどうするか困るし未使用だし
+// 
 // static 
 tstring Route::Route_script(const vector<RouteItem>& routeList)
 {
 	tstring result_str;
-	   
+	bool oskk_flag;
+
 	if (routeList.size() == 0) {	/* 経路なし(AutoRoute) */
 		return _T("");
 	}
@@ -2833,6 +2842,7 @@ tstring Route::Route_script(const vector<RouteItem>& routeList)
     
 	result_str = Route::StationNameEx(pos->stationId);
     
+	oskk_flag = false;
 	for (pos++; pos != routeList.cend() ; pos++) {
 		result_str += _T(",");
 		result_str += LineName(pos->lineId);
@@ -2842,6 +2852,7 @@ tstring Route::Route_script(const vector<RouteItem>& routeList)
 	result_str += _T("\n\n");
 	return result_str;
 }
+#endif
 
 //private:
 //	@brief	分岐マークOff
@@ -4598,6 +4609,9 @@ vector<int32_t> Route::Get_route_distance(SPECIFICFLAG last_flag, const vector<R
 			if (it->lineId == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
 				vkms = Route::GetDistance(oskk_flag, it->lineId, stationId, it->stationId);
 				BIT_ON(oskk_flag, BLF_OSAKAKAN_1PASS);
+			} else if (it->lineId == ID_L_RULE70) {
+				vkms.push_back(FARE_INFO::Retrieve70Distance(stationId, it->stationId));
+				vkms.push_back(vkms.at(0));
 			} else {
 				vkms = Route::GetDistance(it->lineId, stationId, it->stationId);
 			}

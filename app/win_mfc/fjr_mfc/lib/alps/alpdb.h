@@ -7,8 +7,10 @@ typedef int int32_t;
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
 typedef short int16_t;
+#if defined _WINDOWS
 typedef char int8_t;
 typedef unsigned char uint8_t;
+#endif
 
 extern int g_tax;	/* in alps_mfc.cpp */
 
@@ -359,6 +361,7 @@ public:
     int32_t getBeginTerminalId() const { return beginTerminalId;}
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
+	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
 private:
 	static int32_t	 	Fare_basic_f(int32_t km);
 	static int32_t	 	Fare_sub_f(int32_t km);
@@ -379,7 +382,6 @@ private:
 	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 	static bool     IsIC_area(int32_t urban_id);
@@ -734,7 +736,7 @@ public:
 
     static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	tstring         route_script();
-    static tstring  Route_script(const vector<RouteItem>& routeList);
+    //static tstring  Route_script(const vector<RouteItem>& routeList);
 
 	int32_t			setup_route(LPCTSTR route_str);
 private:
