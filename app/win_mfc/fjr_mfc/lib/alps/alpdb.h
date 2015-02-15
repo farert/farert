@@ -637,7 +637,9 @@ private:
         int32_t _line_id;
         int32_t _station_id1;
         int32_t _station_id2;
+        int32_t _start_station_id;
         int32_t _num;		        // number of junction
+        bool    _err;
 		SPECIFICFLAG _last_flag;	// add() - removeTail() work
 		RoutePass(const RoutePass& rp) // copy constructor
 		             { memcpy(this, &rp, sizeof(*this)); }
@@ -646,7 +648,7 @@ private:
 		             { memcpy(this, &rp, sizeof(*this)); }
 		RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
     public:
-        RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
+        RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id = 0);
         ~RoutePass() {  }
         int32_t check() const;
         void off(int32_t jid);
@@ -667,6 +669,7 @@ private:
 public:
 	/* for RoutePass */
     static int32_t      DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
+	static int32_t 		InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, int32_t station_id_a, int32_t station_id_b);
 
 private:
 	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
