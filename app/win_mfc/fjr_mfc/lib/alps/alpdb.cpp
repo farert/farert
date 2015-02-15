@@ -1022,9 +1022,9 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		// 2回目の大阪環状線
 		// 最初近回りで試行しダメなら遠回りで。
 		for (i = 0; i < 2; i++) {
-		    if (0 < i) {
-		    	clear();
-			}
+		    
+		    clear();
+		    
 			if ((0x01 & dir) == 0) {
 				jnum = enum_junctions_of_line();
 	        	TRACE("Osaka-kan: 9fwd\n");
@@ -1033,7 +1033,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	        	TRACE("Osaka-kan: 9rev\n");
 			}
 			if (((0x01 & check()) == 0) && 
-				 (STATION_IS_JUNCTION(_start_station_id) ||
+				 (STATION_IS_JUNCTION(_start_station_id) || (_start_station_id == _station_id2) ||
 					(Route::InStationOnLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, _start_station_id) <= 0) ||
 					(Route::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2) <= 0))) {
 			// 開始駅が大阪環状線なら、開始駅が通過範囲内にあるか ?
@@ -1044,6 +1044,8 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	        	TRACE("Osaka-kan: 9ok\n");
 				break; /* OK */
 			}
+//TRACE(_T("%d %d"), STATION_IS_JUNCTION(_start_station_id), _start_station_id);
+//TRACE(_T("Osaka-kan: @(%d, %d, %d)\n"), check(), Route::InStationOnLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, _start_station_id), Route::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
         	TRACE("Osaka-kan: 9x\n");
 		    dir ^= 0x1;	/* 方向を逆にしてみる */
 		} /* NG */
@@ -1073,7 +1075,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				enum_junctions_of_line_for_oskk_rev(); // safety
 		ASSERT((check() & 0x01) != 0);
 	}
-	TRACE("\ncheck:%d, far=%d\n", check(), farRoutePass.check());
+	TRACE("\ncheck:%d, far=%d, err=%d\n", check(), farRoutePass.check(), _err);
 	return jnum;	/* Failure */
 }
 
@@ -1223,8 +1225,6 @@ int32_t Route::InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, in
 "select station_id from t_lines where line_id=?1 and (lflg&(1<<31))=0 and sales_km>=(select max(sales_km) from t_lines where "
 "line_id=?1 and (station_id=?2 or station_id=?3))"
 ") where station_id=?4";
-
-		TRACE(_T("@@@@%d@@@@\n"), __LINE__);
 
 		DBO dbo = DBS::getInstance()->compileSql(tsql);
 		if (dbo.isvalid()) {
