@@ -766,7 +766,7 @@ int32_t Route::InStation(int32_t stationId, int32_t lineId, int32_t b_stationId,
 //	@param [in]  station_id1	 発 or 至
 //	@param [in]  station_id2     至 or 発
 //
-Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2)
+Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id /* =0 */)
 {
 	JctMaskClear(_jct_mask);
 	
@@ -774,8 +774,11 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
 	_line_id = line_id;
 	_station_id1 = station_id1;
 	_station_id2 = station_id2;
+	_start_station_id = start_station_id;
 
 	_last_flag = last_flag;
+
+	_err = false;
 
 	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
 		_num = enum_junctions_of_line_for_osakakan();
@@ -931,19 +934,19 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		if (BIT_CHK(_last_flag, BLF_OSAKAKAN_DETOUR)) {
 			// 大回り指定
 			dir ^= 1;
-        	TRACE("Osaka-kan: 1a\n");
+        	TRACE("Osaka-kan: 1far\n");
 		} else { 
 			// 通常(大回り指定なし)
-        	TRACE("Osaka-kan: 1b\n");
+        	TRACE("Osaka-kan: 1near\n");
 		}
 
 		/* DB定義上の順廻り（内回り) : 外回り */
 		if ((0x01 & dir) == 0) {
 			jnum = enum_junctions_of_line();
-        	TRACE("Osaka-kan: 2a\n");
+        	TRACE("Osaka-kan: 2fwd\n");
 		} else {
 		    jnum = enum_junctions_of_line_for_oskk_rev();
-        	TRACE("Osaka-kan: 2b\n");
+        	TRACE("Osaka-kan: 2rev\n");
 		}
 
 		// 大阪環状線内駅が始発ポイントか見るため.
@@ -958,12 +961,12 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				// 順廻り(DB上の. 実際には逆回り)が近回り.
 				// ...のときは遠回りを見てみる
 			    i = farRoutePass.enum_junctions_of_line_for_oskk_rev();
-        		TRACE("Osaka-kan: 3a\n");
+        		TRACE("Osaka-kan: 3rev\n");
 			} else {
 				// 逆回りが近回り
 				// ...のときは遠回りを見てみる
 				i = farRoutePass.enum_junctions_of_line();
-        		TRACE("Osaka-kan: 3b\n");
+        		TRACE("Osaka-kan: 3fwd\n");
 			}
 		} else {
 			// b, d
@@ -979,10 +982,10 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 			_last_flag |= LF_OSAKAKAN_1PASS;
 			if ((0x01 & dir) == 0) {
 				_last_flag &= ~(1 << BLF_OSAKAKAN_1DIR);
-        		TRACE("Osaka-kan: 5a\n");
+        		TRACE("Osaka-kan: 5fwd\n");
 			} else {
 				_last_flag |= (1 << BLF_OSAKAKAN_1DIR);
-	        	TRACE("Osaka-kan: 5b\n");
+	        	TRACE("Osaka-kan: 5rev\n");
 			}
 		} else if ((0x11 & check_result) != 0x11) {
 			// c, f, g
@@ -995,17 +998,17 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				dir ^= 1;                        /* 戻す */
 				jnum = i;
 				update(farRoutePass);	// 遠回りを採用
-	        	TRACE("Osaka-kan: 6a\n");
+	        	TRACE("Osaka-kan: 6far\n");
 			} else {
 				// c, g
-	        	TRACE("Osaka-kan: 6b\n");
+	        	TRACE("Osaka-kan: 6near\n");
 			}
 			if ((0x01 & dir) == 0) {
-	        	TRACE("Osaka-kan:7a\n");
+	        	TRACE("Osaka-kan:7fwd\n");
 				_last_flag &= ~(1 << BLF_OSAKAKAN_2DIR);
 			} else {
 				_last_flag |= (1 << BLF_OSAKAKAN_2DIR);
-	        	TRACE("Osaka-kan:7b\n");
+	        	TRACE("Osaka-kan:7rev\n");
 			}
 		} else {
 			// どっち廻りもダメ(1回目でそれはない)
@@ -1024,13 +1027,21 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 			}
 			if ((0x01 & dir) == 0) {
 				jnum = enum_junctions_of_line();
-	        	TRACE("Osaka-kan: 9a\n");
+	        	TRACE("Osaka-kan: 9fwd\n");
 			} else {
 			    jnum = enum_junctions_of_line_for_oskk_rev();
-	        	TRACE("Osaka-kan: 9b\n");
+	        	TRACE("Osaka-kan: 9rev\n");
 			}
-			if ((0x01 & check()) == 0) {
-	        	TRACE("Osaka-kan: 9c\n");
+			if (((0x01 & check()) == 0) && 
+				 (STATION_IS_JUNCTION(_start_station_id) ||
+					(Route::InStationOnLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, _start_station_id) <= 0) ||
+					(Route::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2) <= 0))) {
+			// 開始駅が大阪環状線なら、開始駅が通過範囲内にあるか ?
+			// 野田 大阪環状線 大阪 東海道線 尼崎 JR東西線 京橋 大阪環状線 福島(環)
+			// の2回目の大阪環状線は近回りの内回りは大阪でひっかかるが、外回りは分岐駅のみで判断
+			// すると通ってしまうので */
+	        	TRACE(_T("Osaka-kan: 9(%d, %d, %d)\n"), STATION_IS_JUNCTION(_start_station_id), Route::InStationOnLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, _start_station_id), Route::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
+	        	TRACE("Osaka-kan: 9ok\n");
 				break; /* OK */
 			}
         	TRACE("Osaka-kan: 9x\n");
@@ -1044,14 +1055,14 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 
 			if ((dir & 0x01) == 0) {
 				_last_flag &= ~(1 << BLF_OSAKAKAN_2DIR);
-	        	TRACE("Osaka-kan: 10a\n");
+	        	TRACE("Osaka-kan: 10ok_fwd\n");
 			} else {
 				_last_flag |= (1 << BLF_OSAKAKAN_2DIR);
-	        	TRACE("Osaka-kan: 10b\n");
+	        	TRACE("Osaka-kan: 10ok_rev\n");
 			}
 		} else {
 			/* NG */
-	       	TRACE("Osaka-kan: 11\n");
+	       	TRACE("Osaka-kan: 11x\n");
 		}
 
 	} else {
@@ -1136,6 +1147,7 @@ int32_t Route::RoutePass::check() const
 	int32_t rc;
 
 	if (_source_jct_mask == NULL) {
+		ASSERT(FALSE);
 		return -1;	// for removeTail()
 	}
 	rc = 0;
@@ -1159,6 +1171,10 @@ int32_t Route::RoutePass::check() const
 				break;   /* 既に通過済み */
 			}
 		}
+	}
+	if (((rc & 0x01) == 0) && _err) {
+		TRACE(_T("Osaka-kan Pass check error.\n"));
+		rc |= 1;
 	}
 	return rc;
 }
@@ -1185,6 +1201,45 @@ int32_t Route::DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b)
 	}
 }
 
+//static
+//	大阪環状線最短廻り方向を返す
+//
+//	@param [in]  station_id_a   発or至
+//	@param [in]  station_id_b   発or至
+// 	@retval 0 = 内回り(DB定義上の順廻り)が最短
+// 	@retval 1 = 外回りが最短
+//
+//	@note station_id_a, station_id_bは区別はなし
+//
+int32_t Route::InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, int32_t station_id_a, int32_t station_id_b)
+{
+	if ((dir & 0x01) == 0) {
+		return Route::InStation(start_station_id, DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b);
+	} else {
+		static const char tsql[] =
+"select count(*) from ("
+"select station_id from t_lines where line_id=?1 and (lflg&(1<<31))=0 and sales_km<=(select min(sales_km) from t_lines where "
+"line_id=?1 and (station_id=?2 or station_id=?3)) union all "
+"select station_id from t_lines where line_id=?1 and (lflg&(1<<31))=0 and sales_km>=(select max(sales_km) from t_lines where "
+"line_id=?1 and (station_id=?2 or station_id=?3))"
+") where station_id=?4";
+
+		TRACE(_T("@@@@%d@@@@\n"), __LINE__);
+
+		DBO dbo = DBS::getInstance()->compileSql(tsql);
+		if (dbo.isvalid()) {
+			dbo.setParam(1, DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
+			dbo.setParam(2, station_id_a);
+			dbo.setParam(3, station_id_b);
+			dbo.setParam(4, start_station_id);
+
+			if (dbo.moveNext()) {
+				return dbo.getInt(0);
+			}
+		}
+	}
+	return 0;
+}
 
 //static
 //	70条進入路線、脱出路線から進入、脱出境界駅と営業キロ、路線IDを返す
@@ -1788,7 +1843,7 @@ ASSERT(first_station_id1 = stationId1);
 	    }
 	}
 	
-	RoutePass route_pass(jct_mask, last_flag, line_id, stationId1, stationId2);
+	RoutePass route_pass(jct_mask, last_flag, line_id, stationId1, stationId2, start_station_id);
 	if (route_pass.num_of_junction() < 0) {
 		TRACE(_T("DB error(add-junction-enum)\n"));
 		TRACE(_T("add_abort\n"));
@@ -1812,7 +1867,23 @@ TRACE(_T("osaka-kan last point not junction\n"));
 				rc = 2;
 			}
 		} else if ((rc & 0x03) == 0) {
-			rc = 0;
+			if ((2 <= route_list_raw.size()) && (route_list_raw.at(1).lineId == line_id) &&
+			   !STATION_IS_JUNCTION(start_station_id) && (start_station_id != stationId2) &&
+				(0 != Route::InStation(stationId2, line_id, start_station_id, route_list_raw.at(1).stationId))) {
+TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
+				rc = -1;	/* error */
+			} else if (start_station_id == stationId2) {
+				rc = 1;
+			} else {
+#if defined _DEBUG
+try{
+TRACE(_T("!!!!@@@@%d, %d, %d, %d\n"), stationId2, line_id, start_station_id, route_list_raw.size());
+TRACE(_T("!!!!@@@@%d\n"), route_list_raw.at(1).stationId);
+TRACE(_T("!!!!@@@@%d\n"), Route::InStation(stationId2, line_id, start_station_id, route_list_raw.at(1).stationId));
+} catch (...) {}
+#endif
+				rc = 0;	/* OK */
+			}
 		} else {
 			ASSERT(FALSE);	// rc & 0x03 = 0x03
 			rc = -1;		// safety
@@ -2723,27 +2794,28 @@ tstring  Route::RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECI
 		_T("(外回り)"),
 	};
 	uint8_t inner_outer[] = {
-		0, 2, 2, 0, 1, 0, 0, 1, 1, 1, 1, 0, 2, 2, 0, 2, 0,
- //     1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
+		0, 2, 2, 2, 1, 1, 0, 1, 1, 1, 1, 1, 2, 2, 0, 2, 0,
+ //     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f 
 	};
 /*
+         f e d c b a 9 8 7 6 5 4 3 2 1 0
 neerdir  1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0  順廻りが近道なら1
 detour   1 1 0 0 1 1 0 0 1 1 0 0 1 1 0 0  遠回り指定で1
 forward  1 1 1 1 0 0 0 0 1 1 1 1 0 0 0 0  逆回りで1
 dir      1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0  下り(反時計)廻りで1
-F/R      O   o O   I I i I     I   O O   0/1 neer/far
+F/R      O   o O I I I i I   I I O O O   0/1 neer/far
          | | | | | | | | | | | | | | | +- 0 
          | | | | | | | | | | | | | | +--- 0 1西九条 > 大阪    1天王寺 >> 大阪
          | | | | | | | | | | | | | +----- 1 1大正 >> 寺田町   1芦原橋 >> 天王寺
-         | | | | | | | | | | | | +------- 1 
+         | | | | | | | | | | | | +------- 1                   2-大阪 >> 天王寺,,,京橋 > 鶴橋
          | | | | | | | | | | | +--------- 0 1大正 > 寺田町
-         | | | | | | | | | | +----------- 0 
+         | | | | | | | | | | +----------- 0                   2桃谷 大阪環状線 天王寺 関西線 ... 大阪 大阪環状線 天王寺
          | | | | | | | | | +------------- 1 
          | | | | | | | | +--------------- 1 1西九条 >> 大阪
-         | | | | | | | +----------------- 0                     2芦原橋・天王寺 … 京橋 > 大正
-         | | | | | | +------------------- 0 1大阪 > 西九条      2天王寺 > 京橋 1/2天王寺 > 大阪
+         | | | | | | | +----------------- 0                   2芦原橋・天王寺 … 京橋 > 大正
+         | | | | | | +------------------- 0 1大阪 > 西九条    2天王寺 > 京橋 1/2天王寺 > 大阪
          | | | | | +--------------------- 1 1寺田町 >> 大正
-         | | | | +----------------------- 1 
+         | | | | +----------------------- 1                    2-大阪 >> 天王寺,,,京橋 > 天満
          | | | +------------------------- 0 1寺田町 > 大正     2天王寺 > 今宮 2天王寺 > 西九条
          | | +--------------------------- 0                    2天王寺 |> 大阪 
          | +----------------------------- 1                    
@@ -2756,8 +2828,8 @@ F/R      O   o O   I I i I     I   O O   0/1 neer/far
          2 2回目
 
 遠回り指定、今宮経由が近道、  今宮経由、  上り 1010 x
-遠回り指定、非今宮経由が近道、非今宮経由、下り 1101 x
-遠回り指定、非今宮経由が近道、非今宮経由、上り 1100 x
+遠回り指定、非今宮経由が近道、非今宮経由、下り 1101 I                   2-大阪 >> 天王寺,,,京橋 > 天満
+遠回り指定、非今宮経由が近道、非今宮経由、上り 1100 O                   2-大阪 >> 天王寺,,,京橋 > 鶴橋
 近回り、    非今宮経由が近道、今宮経由、  上り 0110 x
 近回り、　　非今宮経由が近道、今宮経由、  下り 0111 x
 近回り、　　今宮経由が近道、  非今宮経由、上り 0000 x
@@ -2780,7 +2852,11 @@ F/R      O   o O   I I i I     I   O O   0/1 neer/far
 	pass = BIT_CHK(last_flag, BLF_OSAKAKAN_1PASS) ? BLF_OSAKAKAN_2DIR : BLF_OSAKAKAN_1DIR;
 	c |= BIT_CHK(last_flag,  pass) ? 0x04 : 0;
 	c |= LDIR_ASC == Route::DirLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2) ? 0x08 : 0;
-TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"), pass == BLF_OSAKAKAN_2DIR ? 2 : 1, StationName(station_id1).c_str(), (c & 0x02) ? _T(">>") : _T(">"), StationName(station_id2).c_str(), 0x1 & c, 0x1 & (c >> 1), 0x01 & (c >> 2), 0x01 & (c >> 3));
+TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"), 
+      pass == BLF_OSAKAKAN_2DIR ? 2 : 1, 
+      StationName(station_id1).c_str(), 
+      ((c & 0x02) && (pass != BLF_OSAKAKAN_2DIR)) ? _T(">>") : _T(">"), 
+      StationName(station_id2).c_str(), 0x1 & c, 0x1 & (c >> 1), 0x01 & (c >> 2), 0x01 & (c >> 3));
 
 	if (NumOf(inner_outer) <= c) {
 		c = NumOf(inner_outer) - 1;
