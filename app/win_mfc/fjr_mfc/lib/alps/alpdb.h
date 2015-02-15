@@ -643,7 +643,7 @@ private:
 		SPECIFICFLAG _last_flag;	// add() - removeTail() work
 		RoutePass(const RoutePass& rp) // copy constructor
 		             { memcpy(this, &rp, sizeof(*this)); }
-		void clear() { memset(_jct_mask, 0, JCTMASKSIZE); }
+		void clear() { memset(_jct_mask, 0, JCTMASKSIZE); _err = 0; }
 		void update(const RoutePass& rp) 
 		             { memcpy(this, &rp, sizeof(*this)); }
 		RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
