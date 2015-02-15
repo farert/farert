@@ -5,9 +5,10 @@ extern tstring cr_remove(tstring s);
 
 int g_tax = 8;
 
+
 extern void test_route(const TCHAR *route_def[]);
 
-const static TCHAR *test_tbl[] {
+static const TCHAR *test_tbl[] = {
 	//	_T("大阪 東海道線 草津 草津線 柘植 関西線 今宮 大阪環状線 鶴橋"),
 	//	_T("大阪 東海道線 草津 草津線 柘植 関西線 新今宮 大阪環状線 鶴橋"),
 		_T("大阪 東海道線 草津 草津線 柘植 関西線 天王寺 大阪環状線 鶴橋"),
