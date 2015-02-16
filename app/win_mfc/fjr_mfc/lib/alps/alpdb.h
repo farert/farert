@@ -736,6 +736,7 @@ public:
     int32_t         calcFare(FARE_INFO* fare_info);
     int32_t         calcFare(int32_t count, FARE_INFO* fare_info);
 	uint32_t		getFareOption();
+	void            setDetour(bool enabled = true);
 
     static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	tstring         route_script();
