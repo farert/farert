@@ -1365,7 +1365,11 @@ void test_route(const TCHAR *route_def[])
 		_ftprintf(os, _T("!****<%02d>: ******************* %s **********************\n<%s>\n"), i - t + 1, psz_title, buffer);
 
 		TRACE(_T("test_exec(route): %d*************************************************\n%s\n"), i - t + 1, buffer);
+#if 0		
 		rc = route.setup_route(buffer);
+#else
+		rc = test_setup_route(buffer);
+#endif		
 		ASSERT(0 <= rc);
 
 		for (int j = 0; j < 2; j++) {
@@ -1637,6 +1641,10 @@ static int test_setup_route(TCHAR* buffer)
 			ASSERT(0 < stationId1);
 			route.add(stationId1);
 		} else if (lineId == 0) {
+			if ('r' == *p) {
+				++p;
+				route.setDetour();
+			}
 			lineId = Route::GetLineId(p);
 			ASSERT(0 < lineId);
 		} else {

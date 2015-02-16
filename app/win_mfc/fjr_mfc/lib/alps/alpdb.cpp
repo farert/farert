@@ -1015,7 +1015,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 			// h
 			// thru
         	TRACE("Osaka-kan:8\n");
-        	ASSERT(FALSE);
+        	//ASSERT(FALSE); 大阪 東海道線 草津 草津線 柘植 関西線 今宮 大阪環状線 x鶴橋
 		}
 	} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
 
@@ -1043,6 +1043,8 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	        	TRACE(_T("Osaka-kan: 9(%d, %d, %d)\n"), STATION_IS_JUNCTION(_start_station_id), Route::InStationOnLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, _start_station_id), Route::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
 	        	TRACE("Osaka-kan: 9ok\n");
 				break; /* OK */
+			} else {
+				_err = true;	/* for jct_mask all zero and 0 < InStationOnOsakaKanjyou() */
 			}
 //TRACE(_T("%d %d"), STATION_IS_JUNCTION(_start_station_id), _start_station_id);
 //TRACE(_T("Osaka-kan: @(%d, %d, %d)\n"), check(), Route::InStationOnLine(DbidOf::LineIdOf_OOSAKAKANJYOUSEN, _start_station_id), Route::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
@@ -1215,8 +1217,10 @@ int32_t Route::DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b)
 //
 int32_t Route::InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, int32_t station_id_a, int32_t station_id_b)
 {
+	int32_t n = 0;
+	
 	if ((dir & 0x01) == 0) {
-		return Route::InStation(start_station_id, DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b);
+		n = Route::InStation(start_station_id, DbidOf::LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b);
 	} else {
 		static const char tsql[] =
 "select count(*) from ("
@@ -1234,11 +1238,11 @@ int32_t Route::InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, in
 			dbo.setParam(4, start_station_id);
 
 			if (dbo.moveNext()) {
-				return dbo.getInt(0);
+				n = dbo.getInt(0);
 			}
 		}
 	}
-	return 0;
+	return n;
 }
 
 //static
@@ -1872,6 +1876,7 @@ TRACE(_T("osaka-kan last point not junction\n"));
 				(0 != Route::InStation(stationId2, line_id, start_station_id, route_list_raw.at(1).stationId))) {
 TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 				rc = -1;	/* error */
+				rc = 0;
 			} else if (start_station_id == stationId2) {
 				rc = 1;
 			} else {
@@ -2554,6 +2559,18 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 		}
 	}
 }
+
+//	遠回り設定
+//
+void Route::setDetour(bool enabled)
+{
+	if (enabled) {
+		BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
+	} else {
+		BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
+	}
+}
+
 
 tstring Route::beginStationName(bool aplied_agree)
 {
