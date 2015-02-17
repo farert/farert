@@ -7,27 +7,60 @@ int g_tax = 8;
 
 extern void test_route(const TCHAR *route_def[]);
 
-const static TCHAR *test_tbl[] {
-	//	_T("大阪 東海道線 草津 草津線 柘植 関西線 今宮 大阪環状線 鶴橋"),
-	//	_T("大阪 東海道線 草津 草津線 柘植 関西線 新今宮 大阪環状線 鶴橋"),
-		_T("大阪 東海道線 草津 草津線 柘植 関西線 天王寺 大阪環状線 鶴橋"),
-		_T("弁天町 大阪環状線 京橋"),
-		_T("大阪 大阪環状線 京橋"),
-		_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 鶴橋"),
-		_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 天満"),
-		_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 大阪"),
-	//ok_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 福島(環)"),
-		_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 天王寺"),
-	//ok	_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 西九条"),
-		_T("大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 今宮"),
-		_T("今宮 大阪環状線 鶴橋"),
-		_T("新今宮 大阪環状線 鶴橋"),
-		_T("天王寺 大阪環状線 鶴橋"),
+static const TCHAR *test_tbl[] = {
+	_T("渋谷 山手線 恵比寿"),
 	_T(""),
 };
 
 TCHAR buffer[1024];
 extern Route route;
+
+static int test_setup_route(Route& route, TCHAR* buffer)
+{
+	TCHAR* p;
+	int lineId = 0;
+	int stationId1 = 0;
+	int stationId2 = 0;
+	TCHAR* ctx = NULL;
+	bool fail;
+	int rc;
+
+	for (p = _tcstok_s(buffer, _T(", \t"), &ctx); p; p = _tcstok_s(NULL, _T(", \t"), &ctx)) {
+		fail = false;
+		if (stationId1 == 0) {
+			stationId1 = Route::GetStationId(p);
+			ASSERT(0 < stationId1);
+			route.add(stationId1);
+		} else if (lineId == 0) {
+			if ('r' == *p) {
+				++p;
+				route.setDetour();
+			}
+			lineId = Route::GetLineId(p);
+			ASSERT(0 < lineId);
+		} else {
+			if ('x' == *p) {
+				++p;
+				fail = true;
+			} else {
+				fail = false;
+			}
+			stationId2 = Route::GetStationId(p);
+			ASSERT(0 < stationId2);
+			rc = route.add(lineId, /*stationId1,*/ stationId2);
+			if (fail) {
+				ASSERT(rc < 0);
+				TRACE(_T("Setup route: Failure OK (%d)\n"), rc);
+				return 1;
+			} else {
+				ASSERT(0 <= rc);
+			}
+			lineId = 0;
+			stationId1 = stationId2;
+		}
+	}
+	return 0;
+}
 
 static int setup(int argc, TCHAR**argv)
 {
@@ -63,17 +96,15 @@ int main(int argc, char** argv)
 	}
 	if (setup(argc, argv) < 1) {
 		test_route(test_tbl);
+	} else {
+		route.removeAll();
+		rc = test_setup_route(route, buffer);
+		ASSERT(0 <= rc);
+		route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+		s = route.showFare();
+		s = cr_remove(s);
+		TRACE(_T("%s\n"), s.c_str());
 	}
-
-	route.removeAll();
-	rc = route.setup_route(buffer);
-	ASSERT(0 <= rc);
-
-	route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	s = route.showFare();
-	s = cr_remove(s);
-	TRACE(_T("%s\n"), s.c_str());
-
 	return 0;
 }
 

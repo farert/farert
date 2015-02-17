@@ -971,7 +971,8 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		} else {
 			// b, d
 			// 遠回り指定がNG
-			ASSERT(FALSE);
+			//ASSERT(FALSE);
+			TRACE(_T("Osaka-kan Illegal detour flag.\n"));
 			return jnum;
 		}
 		check_result |= (uint8_t)((farRoutePass.check() & 0x01) << 4);
@@ -1005,9 +1006,9 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 			}
 			if ((0x01 & dir) == 0) {
 	        	TRACE("Osaka-kan:7fwd\n");
-				_last_flag &= ~(1 << BLF_OSAKAKAN_2DIR);
-			} else {
-				_last_flag |= (1 << BLF_OSAKAKAN_2DIR);
+				_last_flag &= ~(1 << BLF_OSAKAKAN_1DIR);
+			} else {                                      // 計算時の経路上では1回目なので、
+				_last_flag |= (1 << BLF_OSAKAKAN_1DIR);   // BLF_OSAKAKAN_2DIRでなく、BLF_OSAKAKAN_1DIR
 	        	TRACE("Osaka-kan:7rev\n");
 			}
 		} else {
