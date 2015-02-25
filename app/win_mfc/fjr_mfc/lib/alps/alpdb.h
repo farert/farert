@@ -2,6 +2,8 @@
 
 #define _ALPDB_H__
 
+#if defined __cplusplus
+
 typedef unsigned int uint32_t;
 typedef int int32_t;
 typedef unsigned char  uint8_t;
@@ -406,23 +408,6 @@ private:
 
 #define BCRULE70	            6		/* DB:lflag */
 
-/**** public ****/
-/* cooked flag for shoFare(), show_route() */
-// bit 15
-#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000	// 有効ビットマスク
-#define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
-#define	FAREOPT_RULE_APPLIED					0		// 通常
-
-// bit 0
-#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
-#define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
-#define FAREOPT_APPLIED_TERMINAL				0	// 名阪間 着駅を市内駅に適用
-
-// bit 1
-#define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2 // 有効ビットマスク
-#define FAREOPT_OSAKAKAN_DETOUR             	0x2	// 大阪環状線 遠回り
-#define FAREOPT_OSAKAKAN_SHORTCUT             	0x0	// 大阪環状線 近回り
-
 
 /****************/
 
@@ -739,6 +724,7 @@ public:
 	void            setDetour(bool enabled = true);
 
     static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+
 	tstring         route_script();
     //static tstring  Route_script(const vector<RouteItem>& routeList);
 
@@ -793,7 +779,40 @@ public:
 	static vector<PAIRIDENT> GetNeerNode(int32_t station_id);
 };
 
+#endif /* _cplusplus */
 
+/**** public ****/
+
+#define ADDRC_LAST  0   // add() return code
+#define ADDRC_OK    1
+// ADDRC_NG -1 to -N
+
+
+/* cooked flag for shoFare(), show_route() */
+// bit 15
+#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000	// 有効ビットマスク
+#define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
+#define	FAREOPT_RULE_APPLIED					0		// 通常
+
+// bit 0
+#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
+#define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
+#define FAREOPT_APPLIED_TERMINAL				0	// 名阪間 着駅を市内駅に適用
+
+// bit 1
+#define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2 // 有効ビットマスク
+#define FAREOPT_OSAKAKAN_DETOUR             	0x2	// 大阪環状線 遠回り
+#define FAREOPT_OSAKAKAN_SHORTCUT             	0x0	// 大阪環状線 近回り
+
+#define IS_RULE_APPLIED(flg) (((flg) & FAREOPT_RULE_NO_APPLIED) == 0)
+#define IS_OSAKAKAN_DETOUR_EN(flg) (((flg) & 0x0c) != 0)
+
+// TRUE: Detour / FALSE: Shortcut
+#define IS_OSAKAKAN_DETOUR_SHORTCUT(flg) (((flg) & 0x0c) == 0x08)
+
+#define IS_MAIHAN_CITY_START_TERMINAL_EN(flg) (((flg) & 0x03) != 0x00)
+#define IS_MAIHAN_CITY_START(flg)             (((flg) & 0x03) == 0x01)
+#define IS_MAIHAN_CITY_TERMINAL(flg)          (((flg) & 0x03) == 0x02)
 
 #endif	/* _ALPDB_H__ */
 
