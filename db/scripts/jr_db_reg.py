@@ -25,11 +25,13 @@ def same_staion(station_name):
 	return (name, same)
 
 
-if 1 < len(sys.argv):
-  fn = sys.argv[1] 
+if 5 != len(sys.argv):
+  fn = sys.argv[1]
+  db_name = sys.argv[2]
+  tax = sys.argv[5]
 else:
-  fn = 'jrdb.txt'
-
+  print("Usage:" + sys.argv[0] + " dbname.txt name year month tax")
+  exit(-1)
 
 class Dbreg:
 
@@ -53,6 +55,16 @@ class Dbreg:
 		);
 		"""
 		self.con.execute(sql)
+		###########################################
+		sql = """
+		create table t_dbsystem(
+			name text,
+			tax integer not null,
+			db_createdate text not null
+		);
+		"""
+		self.con.execute(sql)
+		self.con.executemany('insert into t_dbsystem values(?, ?, ?, datetime('now'))', db_name, tax)
 		###########################################
 		sql = """
 		create table t_company (
@@ -139,7 +151,7 @@ class Dbreg:
 			station_id2 integer not null references t_station(rowid),
 			line_id integer not null references t_line(rowid),
 			ord	integer not null default(0),
-			
+
 			primary key (id, station_id1)
 		);
 		""")
@@ -160,7 +172,7 @@ class Dbreg:
 			station_id integer not null references t_station(rowid),
 			line_id2 integer not null references t_line(rowid),
 			city_id integer not null,
-			
+
 			primary key (line_id1, city_id));
 		""")
 		###########################################
@@ -230,7 +242,7 @@ class Dbreg:
 			fare8p		integer not null,
 			fare5p		integer not null,
 			kind		integer not null,
-			
+
 			primary key (station_id1, station_id2, kind)
 		);
 		""")
@@ -260,29 +272,29 @@ class Dbreg:
 	def first_regist(self):
 		#県
 		prefects = [
-		['北海道'], ['青森県'], ['秋田県'], ['岩手県'], ['山形県'], ['宮城県'], ['福島県'], ['新潟県'], 
-		['栃木県'], ['群馬県'], ['茨城県'], ['千葉県'], ['埼玉県'], ['東京都'], ['神奈川県'], ['静岡県'], 
-		['山梨県'], ['長野県'], ['岐阜県'], ['富山県'], ['福井県'], ['石川県'], ['愛知県'], ['三重県'], 
-		['滋賀県'], ['京都府'], ['大阪府'], ['和歌山県'], ['奈良県'], ['兵庫県'], ['鳥取県'], ['島根県'], 
-		['岡山県'], ['広島県'], ['山口県'], ['香川県'], ['徳島県'], ['愛媛県'], ['高知県'], ['福岡県'], 
+		['北海道'], ['青森県'], ['秋田県'], ['岩手県'], ['山形県'], ['宮城県'], ['福島県'], ['新潟県'],
+		['栃木県'], ['群馬県'], ['茨城県'], ['千葉県'], ['埼玉県'], ['東京都'], ['神奈川県'], ['静岡県'],
+		['山梨県'], ['長野県'], ['岐阜県'], ['富山県'], ['福井県'], ['石川県'], ['愛知県'], ['三重県'],
+		['滋賀県'], ['京都府'], ['大阪府'], ['和歌山県'], ['奈良県'], ['兵庫県'], ['鳥取県'], ['島根県'],
+		['岡山県'], ['広島県'], ['山口県'], ['香川県'], ['徳島県'], ['愛媛県'], ['高知県'], ['福岡県'],
 		['佐賀県'], ['長崎県'], ['大分県'], ['熊本県'], ['宮崎県'], ['鹿児島県']]
 		self.con.executemany('insert into t_prefect values(?)', prefects)
 		print("registered t_prefect {0} affected.".format(len(prefects)))
 
-		coreAreaNames = [  
-						['東京都区内[区]'],	
-						['横浜市内[浜]'],	
-						['名古屋市内[名]'],	
-						['京都市内[京]'],	
-						['大阪市内[阪]'],	
-						['神戸市内[神]'],	
-						['広島市内[広]'],	
-						['北九州市内[九]'],	
-						['福岡市内[福]'],	
-						['仙台市内[仙]'],	
-						['札幌市内[札]'],	
-						['山手線内[山]'], 	
-						['大阪・新大阪']] 	
+		coreAreaNames = [
+						['東京都区内[区]'],
+						['横浜市内[浜]'],
+						['名古屋市内[名]'],
+						['京都市内[京]'],
+						['大阪市内[阪]'],
+						['神戸市内[神]'],
+						['広島市内[広]'],
+						['北九州市内[九]'],
+						['福岡市内[福]'],
+						['仙台市内[仙]'],
+						['札幌市内[札]'],
+						['山手線内[山]'],
+						['大阪・新大阪']]
 		self.con.executemany('insert into t_coreareac values(?)', coreAreaNames)
 		print("registered t_coreareac {0} affected.".format(len(coreAreaNames)))
 
@@ -377,7 +389,7 @@ class Dbreg:
 
 			if lin.startswith('*'):
 				proc_stage = re.match(r'\w+', linitems[0][1:]).group(0)
-			
+
 			elif proc_stage in dispatch:
 				dispatch[proc_stage](proc_stage, linitems, lin)
 
@@ -390,8 +402,8 @@ class Dbreg:
 	def reg_line(self, label, linitems, lin):
 	# 路線
 		if 0 <= linitems[1].find("branch"):
-			self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
-						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), 
+			self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(),
+						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(),
 						   linitems[7].strip(), 0 if linitems[7].strip() == '' else (1 << 15)])
 			return			# 分岐特例はあとで
 
@@ -450,7 +462,7 @@ class Dbreg:
 					self.con.execute('insert into t_hzline values((select rowid from t_line where name=?))', [tmp])
 					self.cur.execute('select rowid from t_hzline where line_id=(select rowid from t_line where name=?)', [tmp])
 					row = self.cur.fetchone()
-				
+
 			tmp = row[0]
 			tmp &= 0x0f
 			lflg |= (tmp << 19)		# BSRHZLIN: bit16-13 -> 22-19
@@ -471,7 +483,7 @@ class Dbreg:
 			sflg |= (1 << 10)	# BCTKMSP: 東京電車特定区間
 		elif 2 == tmp:
 			sflg |= (1 << 11)	# BCOSMSP: 大阪電車特定区間
-		
+
 		# BCSUBURB: 近郊区間
 		tmp = int(linitems[11])
 		if (10 < tmp):	# 新幹線を含む近郊区間
@@ -518,8 +530,8 @@ class Dbreg:
 
 			self.con.execute("""
 			insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
-			?1, 
-			(select case when (select rowid from t_line where name=?2) is null then 0 
+			?1,
+			(select case when (select rowid from t_line where name=?2) is null then 0
 			else              (select rowid from t_line where name=?2) end),
 			(select case when (select rowid from t_station where name=?3 and samename=?4) is null then 0
 			else              (select rowid from t_station where name=?3 and samename=?4) end),
@@ -527,8 +539,8 @@ class Dbreg:
 			else              (select rowid from t_line where name=?5) end),
 			(select case when (select rowid from t_station where name=?6 and samename=?7) is null then 0
 			else              (select rowid from t_station where name=?6 and samename=?7) end))
-			""", 
-			[tmps[0], tmps[1], same_staion(tmps[2])[0], same_staion(tmps[2])[1], 
+			""",
+			[tmps[0], tmps[1], same_staion(tmps[2])[0], same_staion(tmps[2])[1],
 			 tmps[3], same_staion(tmps[4])[0], same_staion(tmps[4])[1]])
 
 			self.cur.execute('select seq from sqlite_sequence where name=\'t_jctspcl\'')
@@ -670,7 +682,7 @@ insert into t_rule86 values(
 	# t_farebspekm: 3島会社幹線例外
 		self.con.execute("""
 insert into t_farebspekm values(?, ?, ?, ?, ?, ?, ?)""",
-		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')), 
+		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
 		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
 		 int(linitems[4].replace(',', '')), int(linitems[5].replace(',', '')),
 		 int(linitems[6].replace(',', ''))])
@@ -679,7 +691,7 @@ insert into t_farebspekm values(?, ?, ?, ?, ?, ?, ?)""",
 	# t_farelspekm:地方交通線例外
 		self.con.execute("""
 insert into t_farelspekm values(?, ?, ?, ?, ?, ?)""",
-		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')), 
+		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
 		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
 		 int(linitems[4].replace(',', '')), int(linitems[5].replace(',', ''))])
 #------------------------------------------------------------------------------
@@ -689,7 +701,7 @@ insert into t_farelspekm values(?, ?, ?, ?, ?, ?)""",
 			skm = int(linitems[1].replace(',', ''))
 		else:
 			skm = -1
-		
+
 		if linitems[2].replace(',', '').isdigit():
 			k = int(linitems[2].replace(',', ''))
 		else:
@@ -717,9 +729,9 @@ insert into t_farels values(?, ?, ?, ?, ?, ?)""",
 #------------------------------------------------------------------------------
 	def reg_t_fareadd(self, label, linitems, lin):
 	# t_fareadd: 本州3社+3島加算
-	
+
 		self.con.execute("insert into " + label + " values(?, ?, ?, ?)",
-		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')), 
+		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
 		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', ''))])
 		# km, ha, sa, ka
 
@@ -749,15 +761,15 @@ insert into t_farespp values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
  ?, ?, ?)""",
-			[station1, station1_s, station2, station2_s, 
-			 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')), 
+			[station1, station1_s, station2, station2_s,
+			 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
 			 int(linitems[4].replace(',', ''))])
 		# station_id1, station_id2, fare, kind
 #------------------------------------------------------------------------------
 	def reg_t_farehla(self, label, linitems, lin):
 		# t_farehla : 本州3社+JR北地方交通線会社加算
 		# t_farehla5p : 本州3社+JR北地方交通線会社加算(消費税5%版)
-		
+
 		self.con.execute("insert into " + label + " values(?, ?)",
 		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', ''))])
 		# km, ha
@@ -766,7 +778,7 @@ insert into t_farespp values(
 	def reg_last_line(self):
 		# 分岐特例
 		for bitem in self.branch:
-			#		self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(), 
+			#		self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(),
 			#					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg])
 			# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg
 
@@ -790,41 +802,41 @@ insert into t_farespp values(
 				self.con.execute("""
 				insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
 				2,
-				(select rowid from t_line where name=?), 
-				(select rowid from t_station where name=? and samename=?), 
-				(select rowid from t_line where name=?), 
-				(select rowid from t_station where name=? and samename=?)) 
-				""", 
+				(select rowid from t_line where name=?),
+				(select rowid from t_station where name=? and samename=?),
+				(select rowid from t_line where name=?),
+				(select rowid from t_station where name=? and samename=?))
+				""",
 				[bitem[4], bstation, bstation_same, bline2, bstation2, bstation2_same])
 			else:
 				self.con.execute("""
 				insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1) values(
 				1,
-				(select rowid from t_line where name=?), 
-				(select rowid from t_station where name=? and samename=?)) 
-				""", 
+				(select rowid from t_line where name=?),
+				(select rowid from t_station where name=? and samename=?))
+				""",
 				[bitem[4], bstation, bstation_same])
 
 			self.con.execute("""insert into t_lines values(
-			(select rowid from t_line where name=?), 
-			(select rowid from t_station where name=? and samename=?), 
+			(select rowid from t_line where name=?),
+			(select rowid from t_station where name=? and samename=?),
 			?,
-			(select seq from sqlite_sequence where name='t_jctspcl'), 
-			((1 << 31) | (4294967040 & ?) | (255 & (select seq from sqlite_sequence where name='t_jctspcl'))))""", 
+			(select seq from sqlite_sequence where name='t_jctspcl'),
+			((1 << 31) | (4294967040 & ?) | (255 & (select seq from sqlite_sequence where name='t_jctspcl'))))""",
 			[bitem[0], bitem[1], bitem[5], bitem[3], bitem[7]])
 			# b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb15のみ使用される
 			# 0xffffff00=4294967040
-		
+
 		# 分岐フラグ(lflg.b15=純粋な分岐駅(Excel8列の乗換路線欄空欄でもxでもない駅), sflg.b12=分岐特例も含めた分岐駅)
 		# lflg.b15の方は既に設定済み、sflg.b12は仮値として複数路線に所属するが分岐駅としたくない駅(新今宮)はonに設定されているのでここでoffする
 		# edit jct_flg
 		cur2 = self.con.cursor()
 		cur3 = self.con.cursor()
-		self.cur.execute("select rowid from t_line") 
+		self.cur.execute("select rowid from t_line")
 		for rec in self.cur:
 			lineid = rec[0]
-			cur2.execute("""select station_id from t_lines where 
-			                line_id=?1 and (lflg&(1<<17))=0 and station_id in 
+			cur2.execute("""select station_id from t_lines where
+			                line_id=?1 and (lflg&(1<<17))=0 and station_id in
 			                (select station_id from t_lines where line_id!=?1)""", [lineid])
 			for rec2 in cur2:
 				stationid = rec2[0]
@@ -836,7 +848,7 @@ insert into t_farespp values(
 
 		# make t_jct
 		self.con.execute("""
-		insert into t_jct(station_id) select rowid from t_station 
+		insert into t_jct(station_id) select rowid from t_station
 		where rowid in (select station_id from t_lines where (lflg & (1 << 15))!=0)
 		""")
 		# select id from t_jct j join t_station s on s.rowid=j.station_id where name='森';
@@ -903,15 +915,14 @@ insert into t_farespp values(
 		n = self.cur.fetchone()[0]
 		print("#define MAX_LINE_CHR	{0}".format((n+1)*2))
 
-		 
+
 		"""
 		select t.name from t_station where company_id in (select rowid from t_company name not like 'JR%')
 
 		"""
 
-dbreg = Dbreg('jr.db')
+dbreg = Dbreg(fn[0:fn.find(".")] + ".db")
 dbreg.create_tables()
 dbreg.first_regist()
 dbreg.second_regist()
 dbreg.last_regist()
-
