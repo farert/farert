@@ -2048,7 +2048,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	route_list_raw.pop_back();
 }
 
-//public:
+//private:
 //	大阪環状線経路変更による経路再構成(update rebuild last_flag)
 //
 //	@return 0 success(is last) 
@@ -2079,7 +2079,7 @@ int32_t Route::reBuild()
 		}
 	}
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
-        BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
+        last_flag ^= (1 << BLF_OSAKAKAN_DETOUR);
 		return -1;	/* error */
 	}
 	
@@ -2405,6 +2405,7 @@ void Route::assign(const Route& source_route, int32_t count)
     route_list_raw.assign(source_route.route_list_raw.cbegin(), source_route.route_list_raw.cbegin() + count);
     route_list_cooked.clear();
     last_flag = source_route.last_flag;
+    reBuild();
     end_station_id = source_route.end_station_id;
 }
 
@@ -2476,14 +2477,18 @@ int32_t Route::reverse()
 //	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
 //     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
 //     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
+//     & 0x30 = 0x10 : 特例あり;特例適用
+//     & 0x30 = 0x20 : 特例なし:特例非適用
 //
 uint32_t Route::getFareOption()
 {
     uint32_t rc = 0;
     
-	if (route_list_cooked.size() <= 1) {
+	if (route_list_cooked.size() <= 1) {    // bit 7
 		return 0x80;	/* showFare() or calcFare non called */
 	}
+    
+    // 名阪 都区市内 - 都区市内 bit 0-1
 	if ((B1LID_MARK | (1 << B1LID_BEGIN_CITY_OFF)) == (route_list_cooked.front().lineId & 
 	    (B1LID_MARK | (1 << B1LID_BEGIN_CITY_OFF)))) {
 		rc = 1;
@@ -2492,7 +2497,7 @@ uint32_t Route::getFareOption()
 		rc = 2;
 	}
 
-	// 大阪環状線 1回通過で近回り時
+	// 大阪環状線 1回通過で近回り時 bit 2-3
 	if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS) == LF_OSAKAKAN_1PASS) {
 		if (BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR)) {
 			rc |= 0x08;
@@ -2500,7 +2505,15 @@ uint32_t Route::getFareOption()
 		    rc |= 0x04;
 		}
 	}
-	return rc;
+    // 特例有無 bit 4-5
+    if (BIT_CHK(last_flag, BLF_RULE_EN)) {
+        if (BIT_CHK(last_flag, BLF_NO_RULE)) {
+            rc |= 0x30;     //
+        } else {
+            rc |= 0x10;     // default: Applied
+        }
+    }
+    return rc;
 }
 
 //public:
@@ -2509,9 +2522,10 @@ uint32_t Route::getFareOption()
 //						: bit 0
 //							= 1: 発・着が特定都区市内で発-着が100/200km以下のとき、着のみ都区市内有効
 //							= 0: 発・着が特定都区市内で発-着が100/200km以下のとき、発のみ都区市内有効
-//						: bit 1
-//							= 1: 大阪環状線遠回り
-//							= 0: 大阪環状線近回り(規定)
+//						x : bit 1
+//						x	= 1: 大阪環状線遠回り
+//						x	= 0: 大阪環状線近回り(規定)
+//                      x- shoud use setDetour()
 //
 //  @param [in] availbit : 有効フラグ
 //			    FAREOPT_AVAIL_OSAKAKAN_DETOUR, FAREOPT_AVAIL_APPLIED_START_TERMINAL, FAREOPT_AVAIL_RULE_APPLIED
@@ -2548,7 +2562,7 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 			return;
 		}
 	}
-
+#if 0
 	// 大阪環状線 近回り(規定)／遠回り
 	if (0 != (FAREOPT_AVAIL_OSAKAKAN_DETOUR & availbit)) {
 		if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
@@ -2562,17 +2576,23 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 			return;
 		}
 	}
+#endif
 }
 
-//	遠回り設定
+//	遠回り/近回り設定
 //
-void Route::setDetour(bool enabled)
+//	@return 0 success(is last)
+//	@retval 1 success
+//	@retval otherwise failued
+//
+int32_t Route::setDetour(bool enabled)
 {
 	if (enabled) {
 		BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
 	} else {
 		BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
 	}
+    return reBuild();
 }
 
 
@@ -3466,6 +3486,28 @@ tstring Route::CompanyName(int32_t id)
 	}
 	return name;
 }
+
+//static
+//	DB ver
+//
+bool Route::DbVer(DBsys* db_sys)
+{
+    memset(db_sys, 0, sizeof(DBsys));
+    
+    DBO ctx = DBS::getInstance()->compileSql(
+    "select name, tax, db_createdate from t_dbsystem limit(1)");
+    if (ctx.isvalid()) {
+        if (ctx.moveNext()) {
+            strcpy(db_sys->name, ctx.getText(0).c_str());
+            db_sys->tax = ctx.getInt(1);
+            strcpy(db_sys->createdate, ctx.getText(2).c_str());
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
 //Static
 //	@brief 分岐特例の分岐路線a+乗換駅dから本線bと分岐駅cを得る
@@ -4894,14 +4936,21 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 	uint32_t flg;
 	int32_t aply88;
 
+    BIT_OFF(last_flag, BLF_RULE_EN);    // initialize
+    
 	// 69を適用したものをroute_list_tmp2へ
 	n = Route::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
 	TRACE("Rule 69 applied %dtimes.\n", n);
-
+    if (0 < n) {
+        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+    }
 	// route_list_tmp2 = route_list_tmp
 	// 70を適用したものをroute_list_tmp2へ
 	n = Route::ReRouteRule70j(route_list_tmp, &route_list_tmp2);
 	TRACE(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
+    if (0 < n) {
+        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+    }
 
 	// 88を適用したものをroute_list_tmpへ
 	aply88 = Route::CheckOfRule88j(&route_list_tmp2);
@@ -4915,6 +4964,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 			route_list_tmp2.front().lineId &= ~M1LID_CITY;
 			route_list_tmp2.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
 		}
+        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 	}
 
 	/* 特定都区市内発着可否判定 */
@@ -4950,6 +5000,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 			route_list_tmp.front().lineId &= ~M1LID_CITY;
 			route_list_tmp.front().lineId |= (uint16_t)(B1LID_MARK | MASK(B1LID_FIN_OOSAKA));
 		}
+        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 	}
 
 	// 69を適用したものをroute_list_tmp3へ
@@ -4974,6 +5025,8 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 		// route_list_cooked = route_list_tmp3
 		route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
+        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+
 		return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 	
@@ -4989,7 +5042,10 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 
 			// route_list_cooked = route_list_tmp3
 			route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-			return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+            BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+
+            return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		}
 		sk = 900;	/* 90km */
 	} else {
@@ -5003,7 +5059,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 	/* 発着とも都区市内? */
 	if ((0x03 & (rtky | chk)) == 3) { /* 名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
 							/*  [区]-[区], [名]-[名], [山]-[区], ... */
-		for (sk2 = 2000; true; sk2 = 1000) {
+        for (sk2 = 2000; true; sk2 = 1000) {
 			flg = 0;
 
 			/* route_list_tmp = route_list_tmp2 */
@@ -5061,7 +5117,8 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-					return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				} else {
 					/* 着のみ都区市内適用 */
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
@@ -5076,6 +5133,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
+                    BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 					return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				}
 			} else if (flg == 0x01) {
@@ -5100,6 +5158,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
+                BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 				return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			} else if (flg == 0x02) {
 				/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
@@ -5114,6 +5173,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
+                BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 				return false;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			/* flg == 0 */
@@ -5121,9 +5181,9 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 				/* 87無効 or 営業キロ200km越え判定は済 */
 				break;
 			}
-		}
+		} /* sk2= 2000, 1000 */
 		/* passthru */
-	}
+	} /* ((0x03 & (rtky | chk)) == 3)  名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
 
 	/* route_list_tmp	x
 	 * route_list_tmp2	70-88-69適用
