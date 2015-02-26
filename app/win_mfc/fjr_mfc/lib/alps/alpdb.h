@@ -2,6 +2,13 @@
 
 #define _ALPDB_H__
 
+typedef struct {
+    char name[128];             // UTF-8 max 42character
+    int32_t tax;
+    char createdate[64];    // UTF-8 max 42character '2015/03/14 12:43:43'
+} DBsys;
+
+
 #if defined __cplusplus
 
 typedef unsigned int uint32_t;
@@ -14,7 +21,7 @@ typedef char int8_t;
 typedef unsigned char uint8_t;
 #endif
 
-extern int g_tax;	/* in alps_mfc.cpp */
+extern int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
 
 #include "stdafx.h"
 using namespace std;
@@ -235,7 +242,7 @@ public:
 
 class FARE_INFO {
 public:
-	FARE_INFO() { reset(); if (FARE_INFO::tax <= 0) { FARE_INFO::tax = g_tax; }}
+	FARE_INFO() { reset(); FARE_INFO::tax = g_tax; }
 private:
 	int32_t sales_km;			//*** 有効日数計算用(会社線含む)
 
@@ -565,14 +572,15 @@ typedef struct
 
 // bit7 - 大高-杉本町とかで、[名][阪]をどっちに適用するか
 #define BLF_MEIHANCITYFLAG		7	// ON: APPLIED_START / OFF:APPLIED_TERMINAL
-#define BLF_NO_RULE             8   // ON: 特例非適用
-
+#define BLF_NO_RULE             8   // ON: 特例非適用(User->System)
+#define BLF_RULE_EN             9   // ON: 特例適用(System->User)
 #define BLF_END					16	// arrive to end.
 
 // end of last_flag
 
 
 #define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
+
 
 /*   route
  *
@@ -675,7 +683,8 @@ private:
 	static int32_t		InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1, int32_t stationId2);
 
 public:
-	static int32_t 	Id2jctId(int32_t stationId);
+    static bool     DbVer(DBsys* dbsys);
+    static int32_t 	Id2jctId(int32_t stationId);
 	static int32_t 	Jct2id(int32_t jctId);
 	static tstring 	JctName(int32_t jctId);
 	static tstring 	StationName(int32_t id);
@@ -717,11 +726,13 @@ public:
 	// alps_mfcDlg
 	void            setFareOption(uint16_t cooked, uint16_t availbit);
 	tstring 		showFare();
-	int32_t         reBuild();
+private:
+    int32_t         reBuild();
+public:
     int32_t         calcFare(FARE_INFO* fare_info);
     int32_t         calcFare(int32_t count, FARE_INFO* fare_info);
 	uint32_t		getFareOption();
-	void            setDetour(bool enabled = true);
+	int32_t         setDetour(bool enabled = true);
 
     static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 
@@ -794,25 +805,25 @@ public:
 #define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
 #define	FAREOPT_RULE_APPLIED					0		// 通常
 
-// bit 0
+// bit 0-1
 #define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
 #define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
 #define FAREOPT_APPLIED_TERMINAL				0	// 名阪間 着駅を市内駅に適用
 
-// bit 1
-#define FAREOPT_AVAIL_OSAKAKAN_DETOUR       	0x2 // 有効ビットマスク
-#define FAREOPT_OSAKAKAN_DETOUR             	0x2	// 大阪環状線 遠回り
-#define FAREOPT_OSAKAKAN_SHORTCUT             	0x0	// 大阪環状線 近回り
-
-#define IS_RULE_APPLIED(flg) (((flg) & FAREOPT_RULE_NO_APPLIED) == 0)
-#define IS_OSAKAKAN_DETOUR_EN(flg) (((flg) & 0x0c) != 0)
-
-// TRUE: Detour / FALSE: Shortcut
-#define IS_OSAKAKAN_DETOUR_SHORTCUT(flg) (((flg) & 0x0c) == 0x08)
-
 #define IS_MAIHAN_CITY_START_TERMINAL_EN(flg) (((flg) & 0x03) != 0x00)
 #define IS_MAIHAN_CITY_START(flg)             (((flg) & 0x03) == 0x01)
 #define IS_MAIHAN_CITY_TERMINAL(flg)          (((flg) & 0x03) == 0x02)
+
+// bit 2-3
+#define IS_OSAKAKAN_DETOUR_EN(flg)            (((flg) & 0x0c) != 0)
+
+// TRUE: Detour / FALSE: Shortcut
+#define IS_OSAKAKAN_DETOUR_SHORTCUT(flg)      (((flg) & 0x0c) == 0x08)
+
+// bit 4-5
+#define IS_RULE_APPLIED_EN(flg)                  (((flg) & 0x30) != 0)
+#define IS_RULE_APPLIED(flg)                     (((flg) & 0x30) == 0x10)
+
 
 #endif	/* _ALPDB_H__ */
 
