@@ -5,7 +5,7 @@ import sqlite3
 
 	
 # database
-con = sqlite3.connect('jr.db')  # , isolation_level=None)
+#con = sqlite3.connect('jr.db')  # , isolation_level=None)
 
 # sql
 #

@@ -28,9 +28,9 @@ def same_staion(station_name):
 if 5 != len(sys.argv):
   fn = sys.argv[1]
   db_name = sys.argv[2]
-  tax = sys.argv[5]
+  tax = sys.argv[3]
 else:
-  print("Usage:" + sys.argv[0] + " dbname.txt name year month tax")
+  print("Usage:" + sys.argv[0] + " dbname.txt name tax")
   exit(-1)
 
 class Dbreg:
@@ -64,7 +64,7 @@ class Dbreg:
 		);
 		"""
 		self.con.execute(sql)
-		self.con.executemany('insert into t_dbsystem values(?, ?, ?, datetime('now'))', db_name, tax)
+		self.con.executemany("insert into t_dbsystem values(?, ?, datetime('now'))", [[db_name, tax]])
 		###########################################
 		sql = """
 		create table t_company (
@@ -413,6 +413,10 @@ class Dbreg:
 		if 20 != len(linitems):
 			print(self.num_of_line, lin)
 			raise ValueError
+
+##debug################################################
+#		print(self.num_of_line, lin)
+######################################################
 
 		# BSRJCTFLG: 分岐フラグ
 		tmp = linitems[7].strip()
