@@ -6889,13 +6889,13 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 				this->sales_km += d.at(0);			// total 営業キロ(会社線含む、有効日数計算用)
 				if (IS_COMPANY_LINE(d.at(5))) {	/* 会社線 */
 					if (0 < station_id_0) {
-						/* 2回連続で会社線の場合(タンゴ鉄道とか) */
+						/* 2回以上連続で会社線の場合(タンゴ鉄道とか) */
 						this->company_fare += FARE_INFO::Fare_company(station_id_0, ite->stationId);
 						this->company_fare -= FARE_INFO::Fare_company(station_id_0, station_id1);
 					} else {
 						this->company_fare += FARE_INFO::Fare_company(station_id1, ite->stationId);
+						station_id_0 = station_id1;
 					}
-					station_id_0 = station_id1;
 				} else {
 					station_id_0 = 0;
 					
