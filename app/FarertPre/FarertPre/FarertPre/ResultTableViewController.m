@@ -202,10 +202,10 @@
     } else if ([title rangeOfString:@"単駅"].location != NSNotFound) {
         if ([title rangeOfString:@"発駅"].location != NSNotFound) {
             // "発駅を単駅指定";
-            [_ds setFareOption:FAREOPT_APPLIED_START availMask:FAREOPT_AVAIL_APPLIED_START_TERMINAL];
-        } else {
-            // "発駅を単駅指定";
             [_ds setFareOption:FAREOPT_APPLIED_TERMINAL availMask:FAREOPT_AVAIL_APPLIED_START_TERMINAL];
+        } else {
+            // "着駅を単駅指定";
+            [_ds setFareOption:FAREOPT_APPLIED_START availMask:FAREOPT_AVAIL_APPLIED_START_TERMINAL];
         }
         [self reCalcFareInfo];
         [self.tableView reloadData];
