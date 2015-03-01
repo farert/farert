@@ -26,6 +26,8 @@
       <Filter>リソース ファイル</Filter>
     </None>
     <None Include="ClassDiagram1.cd" />
+    <None Include="res\jrdb2014.db.enc" />
+    <None Include="res\jrdb2015.db.enc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alps_mfc.h">

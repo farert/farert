@@ -90,7 +90,7 @@ BOOL Calps_mfcApp::InitInstance()
 	setlocale(LC_ALL, "");
 	
 	do {
-		HRSRC hRc = FindResource(m_hInstance, MAKEINTRESOURCE(IDR_DB), _T("DB"));
+		HRSRC hRc = FindResource(m_hInstance, MAKEINTRESOURCE(IDR_DB2014), _T("DB"));
 		if (hRc) {
 			HGLOBAL hGlbl = LoadResource(m_hInstance, hRc);
 			if (hGlbl) {

@@ -43,14 +43,14 @@ typedef short IDENT;
 typedef uint32_t PAIRIDENT;
 typedef uint32_t SPECIFICFLAG;
 
-#define MAKEPAIR(ident1, ident2) ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
-#define IDENT1(ident) ((IDENT)(0xffff & ident))
-#define IDENT2(ident) ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
+#define MAKEPAIR(ident1, ident2)    ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
+#define IDENT1(ident)               ((IDENT)(0xffff & ident))
+#define IDENT2(ident)               ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
 
-#define FLG_HIDE_LINE					(1<<19)
-#define FLG_HIDE_STATION				(1<<18)
-#define IS_FLG_HIDE_LINE(lflg)			(0!=(lflg&FLG_HIDE_LINE))		// 路線非表示
-#define IS_FLG_HIDE_STATION(lflg)		(0!=(lflg&FLG_HIDE_STATION))		// 駅非表示
+#define FLG_HIDE_LINE				(1<<19)
+#define FLG_HIDE_STATION			(1<<18)
+#define IS_FLG_HIDE_LINE(lflg)		(0!=(lflg&FLG_HIDE_LINE))		// 路線非表示
+#define IS_FLG_HIDE_STATION(lflg)	(0!=(lflg&FLG_HIDE_STATION))	// 駅非表示
 
 #define BSRJCTSP		31		// 分岐特例
 #define	BSRJCTHORD		31		// 水平型検知フラグ
@@ -70,16 +70,16 @@ typedef uint32_t SPECIFICFLAG;
 
 /* --------------------------------------- */
 /* util */
-#define NumOf(c)  (sizeof(c) / sizeof(c[0]))
-#define Min(a, b) ((a)>(b)?(b):(a))
-#define Max(a, b) ((a)>(b)?(a):(b))
+#define NumOf(c)                            (sizeof(c) / sizeof(c[0]))
+#define Min(a, b)                           ((a)>(b)?(b):(a))
+#define Max(a, b)                           ((a)>(b)?(a):(b))
 
-#define MASK(bdef)	(1 << bdef)
-#define BIT_CHK(flg, bdef) (0 != (flg & MASK(bdef)))
-#define BIT_CHK2(flg, bdef1, bdef2) (0 != (flg & (MASK(bdef1)|MASK(bdef2))))
-#define BIT_CHK3(flg, bdef1, bdef2, bdef3) (0 != (flg & (MASK(bdef1)|MASK(bdef2)|MASK(bdef3))))
-#define BIT_ON(flg, bdef)  (flg |= MASK(bdef))
-#define BIT_OFF(flg, bdef) (flg &= ~MASK(bdef))
+#define MASK(bdef)                          (1 << bdef)
+#define BIT_CHK(flg, bdef)                  (0 != (flg & MASK(bdef)))
+#define BIT_CHK2(flg, bdef1, bdef2)         (0 != (flg & (MASK(bdef1)|MASK(bdef2))))
+#define BIT_CHK3(flg, bdef1, bdef2, bdef3)  (0 != (flg & (MASK(bdef1)|MASK(bdef2)|MASK(bdef3))))
+#define BIT_ON(flg, bdef)                   (flg |= MASK(bdef))
+#define BIT_OFF(flg, bdef)                  (flg &= ~MASK(bdef))
 
 #define HWORD_BIT	16		/* Number of bit in half word(unsigned short) */
 
@@ -88,14 +88,14 @@ typedef uint32_t SPECIFICFLAG;
 #endif
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
-#define MAX_LINE        216
+#define MAX_LINE        223
 #define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))	/* 新幹線は将来的にも10または15以内 !! */
-#define IS_COMPANY_LINE_OF(id)     (209<(id))			/* !!!!!!!!!!!!! */
-//#define MAX_JCT 311
+#define IS_COMPANY_LINE_OF(id)     (211<(id))			/* !!!!!!!!!!!!! */
+//#define MAX_JCT 325
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
-#define STATION_IS_JUNCTION(sid)	(0 != (Route::AttrOfStationId(sid) & (1<<12)))
+#define STATION_IS_JUNCTION(sid)        (0 != (Route::AttrOfStationId(sid) & (1<<12)))
 //#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))	
 // sflg.12は特例乗り換え駅もONなのでlflg.15にした
 #define STATION_IS_JUNCTION_F(flg)		(0 != (flg & (1<<15)))
@@ -105,15 +105,15 @@ typedef uint32_t SPECIFICFLAG;
 
 
 // length define(UTF-8)
-#define MAX_STATION_CHR	64		// 38
-#define MAX_LINE_CHR	128
-#define MAX_COMPANY_CHR	64		// 
-#define MAX_PREFECT_CHR	16
-#define MAX_COREAREA_CHR 26
+#define MAX_STATION_CHR     64		// 38
+#define MAX_LINE_CHR        128
+#define MAX_COMPANY_CHR     64		//
+#define MAX_PREFECT_CHR     16
+#define MAX_COREAREA_CHR    26
 
 #define MAX_NUM_JCT_STATION	103
 #define MAX_JCT_NUM			6		// 東京駅乗り入れ路線数が最大で6
-#define MAX_JCT				320		// 319
+#define MAX_JCT				325		// 319
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
@@ -127,7 +127,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define round_up(d)     (((d) + 9) / 10 * 10)	/* 10円未満切り上げ */
 #define round_down(d)   ((d) / 10 * 10)			/* 10円未満切り捨て */
 
-#define KM(kmx10) ((kmx10 + 9) / 10)	/* km単位で端数は切り上げ */
+#define KM(kmx10)       ((kmx10 + 9) / 10)	/* km単位で端数は切り上げ */
 
 /* discount */
 #define fare_discount(fare, per) ((fare) / 10 * (10 - (per)) / 10 * 10)
@@ -800,15 +800,17 @@ public:
 
 
 /* cooked flag for shoFare(), show_route() */
-// bit 15
+// bit 15  (User->System)
 #define FAREOPT_AVAIL_RULE_APPLIED          	0x8000	// 有効ビットマスク
 #define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
 #define	FAREOPT_RULE_APPLIED					0		// 通常
 
-// bit 0-1
+// bit 0-1 (User->System)
 #define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
 #define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
-#define FAREOPT_APPLIED_TERMINAL				0	// 名阪間 着駅を市内駅に適用
+#define FAREOPT_APPLIED_TERMINAL				2	// 名阪間 着駅を市内駅に適用
+
+// (System->User)
 
 #define IS_MAIHAN_CITY_START_TERMINAL_EN(flg) (((flg) & 0x03) != 0x00)
 #define IS_MAIHAN_CITY_START(flg)             (((flg) & 0x03) == 0x01)
@@ -821,8 +823,12 @@ public:
 #define IS_OSAKAKAN_DETOUR_SHORTCUT(flg)      (((flg) & 0x0c) == 0x08)
 
 // bit 4-5
-#define IS_RULE_APPLIED_EN(flg)                  (((flg) & 0x30) != 0)
-#define IS_RULE_APPLIED(flg)                     (((flg) & 0x30) == 0x10)
+#define IS_RULE_APPLIED_EN(flg)               (((flg) & 0x30) != 0)
+#define IS_RULE_APPLIED(flg)                  (((flg) & 0x30) == 0x10)
+
+
+#define IS_FAREOPT_ENABLED(flg)               (((flg) & 0x3f) != 0)
+
 
 
 #endif	/* _ALPDB_H__ */
