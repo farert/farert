@@ -17,14 +17,14 @@ import re
 import time
 from collections import defaultdict
 
-if 2 != len(sys.argv):
+if 1 != len(sys.argv):
   dbfn = sys.argv[1]
 else:
   print("Usage:" + sys.argv[0] + " dbname.db")
   exit(-1)
 
 # database
-con = sqlite3.connect(dbfn)  # , isolation_level=None)
+jrdb.con = sqlite3.connect(dbfn)  # , isolation_level=None)
 
 n = 0
 items = []

@@ -1,8 +1,9 @@
 #include "stdafx.h"
 
-#define DBPATH "../../db/jr.db"
+#define DBPATH "../../db/jrdb2015.db"
 
-Route route;
+int g_tax = 8;
+extern Route route;
 
 static tstring cr_remove(tstring s)
 {
@@ -261,7 +262,7 @@ int main(int argc, char** argv)
 		} else {
 			fprintf(stderr, "##################\n");
 		}
-		tstring s = route.showFare(RULE_APPLIED);
+		tstring s = route.showFare();
 		printf("%s\n", s.c_str());
 	} else {
 		test_autoroute();
