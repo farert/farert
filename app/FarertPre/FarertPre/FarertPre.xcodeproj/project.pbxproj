@@ -1,0 +1,739 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2A0680FF1A92BAD000AFC755 /* SettingsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0680FE1A92BAD000AFC755 /* SettingsTableViewController.m */; };
+		2A1A6DC819977E3700554C78 /* ArchiveRouteTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A6DC719977E3700554C78 /* ArchiveRouteTableViewController.m */; };
+		2A2F84C01A157DE6003C9B3F /* FarertPre-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A36B2D5198C6EC90070E8E0 /* FarertPre-Info.plist */; };
+		2A36B2CE198C6EC90070E8E0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A36B2CD198C6EC90070E8E0 /* Foundation.framework */; };
+		2A36B2D0198C6EC90070E8E0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A36B2CF198C6EC90070E8E0 /* CoreGraphics.framework */; };
+		2A36B2D2198C6EC90070E8E0 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A36B2D1198C6EC90070E8E0 /* UIKit.framework */; };
+		2A36B2D8198C6EC90070E8E0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A36B2D6198C6EC90070E8E0 /* InfoPlist.strings */; };
+		2A36B2DA198C6EC90070E8E0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36B2D9198C6EC90070E8E0 /* main.m */; };
+		2A36B2DE198C6EC90070E8E0 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36B2DD198C6EC90070E8E0 /* AppDelegate.m */; };
+		2A36B2E1198C6EC90070E8E0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A36B2DF198C6EC90070E8E0 /* Main.storyboard */; };
+		2A36B2E6198C6EC90070E8E0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A36B2E5198C6EC90070E8E0 /* Images.xcassets */; };
+		2A36B2ED198C6EC90070E8E0 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A36B2EC198C6EC90070E8E0 /* XCTest.framework */; };
+		2A36B2EE198C6EC90070E8E0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A36B2CD198C6EC90070E8E0 /* Foundation.framework */; };
+		2A36B2EF198C6EC90070E8E0 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A36B2D1198C6EC90070E8E0 /* UIKit.framework */; };
+		2A36B2F7198C6EC90070E8E0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A36B2F5198C6EC90070E8E0 /* InfoPlist.strings */; };
+		2A36B2F9198C6EC90070E8E0 /* FarertPreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36B2F8198C6EC90070E8E0 /* FarertPreTests.m */; };
+		2A53AD601A9D66EA001E82CF /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A53AD5F1A9D66EA001E82CF /* DbSys.m */; };
+		2A58CE8B1A962C120017A298 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A58CE8A1A962C120017A298 /* stdafx.cpp */; };
+		2A590EFC19B2BAB4005A758C /* VersionInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A590EFB19B2BAB4005A758C /* VersionInfoViewController.m */; };
+		2A75FB8B198CAC110028A1D1 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB87198CAC110028A1D1 /* alpdb.cpp */; };
+		2A75FBAE198CAC480028A1D1 /* db.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB8D198CAC480028A1D1 /* db.cpp */; };
+		2A75FBAF198CAC480028A1D1 /* FarertTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB90198CAC480028A1D1 /* FarertTableViewCell.m */; };
+		2A75FBB2198CAC480028A1D1 /* MainTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB94198CAC480028A1D1 /* MainTableViewController.m */; };
+		2A75FBB3198CAC480028A1D1 /* obj_alpdb.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB96198CAC480028A1D1 /* obj_alpdb.mm */; };
+		2A75FBB4198CAC480028A1D1 /* ResultTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB98198CAC480028A1D1 /* ResultTableViewController.m */; };
+		2A75FBB5198CAC480028A1D1 /* RouteDataController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB9A198CAC480028A1D1 /* RouteDataController.m */; };
+		2A75FBB6198CAC480028A1D1 /* RouteItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB9C198CAC480028A1D1 /* RouteItem.m */; };
+		2A75FBB7198CAC480028A1D1 /* SelectLineTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FB9E198CAC480028A1D1 /* SelectLineTableViewController.m */; };
+		2A75FBB9198CAC480028A1D1 /* SelectStationTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FBA2198CAC480028A1D1 /* SelectStationTableViewController.m */; };
+		2A75FBBC198CAC480028A1D1 /* TableHeaderViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FBA9198CAC480028A1D1 /* TableHeaderViewCell.m */; };
+		2A75FBBD198CAC480028A1D1 /* TerminalHistoryTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FBAB198CAC480028A1D1 /* TerminalHistoryTableViewController.m */; };
+		2A75FBBE198CAC480028A1D1 /* TermSelectTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FBAD198CAC480028A1D1 /* TermSelectTableViewController.m */; };
+		2A75FBC0198CAEE60028A1D1 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A75FBBF198CAEE60028A1D1 /* libsqlite3.dylib */; };
+		2A75FBD0199466A50028A1D1 /* CSTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A75FBCF199466A50028A1D1 /* CSTableViewController.m */; };
+		2A9BE6FF1A9F57F70094B107 /* jrdb2014.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A9BE6FD1A9F57F70094B107 /* jrdb2014.db */; };
+		2A9BE7001A9F57F70094B107 /* jrdb2015.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A9BE6FE1A9F57F70094B107 /* jrdb2015.db */; };
+		2AB22A0D19A2C6E800A4BD38 /* RouteSelStationSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB22A0C19A2C6E800A4BD38 /* RouteSelStationSegue.m */; };
+		2AE9646D199CDE6100165457 /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE9646C199CDE6100165457 /* FareInfo.m */; };
+		2AED770619C5DC5E00C1F426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AED770519C5DC5E00C1F426 /* MessageUI.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2A36B2F0198C6EC90070E8E0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A36B2C2198C6EC90070E8E0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2A36B2C9198C6EC90070E8E0;
+			remoteInfo = FarertPre;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2A0680FD1A92BAD000AFC755 /* SettingsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsTableViewController.h; sourceTree = "<group>"; };
+		2A0680FE1A92BAD000AFC755 /* SettingsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SettingsTableViewController.m; sourceTree = "<group>"; };
+		2A1A6DC619977E3700554C78 /* ArchiveRouteTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ArchiveRouteTableViewController.h; sourceTree = "<group>"; };
+		2A1A6DC719977E3700554C78 /* ArchiveRouteTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ArchiveRouteTableViewController.m; sourceTree = "<group>"; };
+		2A36B2CA198C6EC90070E8E0 /* Farert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Farert.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A36B2CD198C6EC90070E8E0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		2A36B2CF198C6EC90070E8E0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		2A36B2D1198C6EC90070E8E0 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		2A36B2D5198C6EC90070E8E0 /* FarertPre-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "FarertPre-Info.plist"; sourceTree = "<group>"; };
+		2A36B2D7198C6EC90070E8E0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2A36B2D9198C6EC90070E8E0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2A36B2DB198C6EC90070E8E0 /* FarertPre-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FarertPre-Prefix.pch"; sourceTree = "<group>"; };
+		2A36B2DC198C6EC90070E8E0 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		2A36B2DD198C6EC90070E8E0 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		2A36B2E0198C6EC90070E8E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		2A36B2E5198C6EC90070E8E0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		2A36B2EB198C6EC90070E8E0 /* FarertPreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FarertPreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A36B2EC198C6EC90070E8E0 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		2A36B2F4198C6EC90070E8E0 /* FarertPreTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "FarertPreTests-Info.plist"; sourceTree = "<group>"; };
+		2A36B2F6198C6EC90070E8E0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2A36B2F8198C6EC90070E8E0 /* FarertPreTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FarertPreTests.m; sourceTree = "<group>"; };
+		2A36B302198C6F700070E8E0 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
+		2A36B303198C6F700070E8E0 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2A36B304198C6F700070E8E0 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2A53AD5E1A9D66EA001E82CF /* DbSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DbSys.h; sourceTree = "<group>"; };
+		2A53AD5F1A9D66EA001E82CF /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
+		2A58CE8A1A962C120017A298 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		2A590EFA19B2BAB4005A758C /* VersionInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionInfoViewController.h; sourceTree = "<group>"; };
+		2A590EFB19B2BAB4005A758C /* VersionInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VersionInfoViewController.m; sourceTree = "<group>"; };
+		2A75FB87198CAC110028A1D1 /* alpdb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = alpdb.cpp; sourceTree = "<group>"; };
+		2A75FB88198CAC110028A1D1 /* alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alpdb.h; sourceTree = "<group>"; };
+		2A75FB8D198CAC480028A1D1 /* db.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = db.cpp; sourceTree = "<group>"; };
+		2A75FB8E198CAC480028A1D1 /* db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = db.h; sourceTree = "<group>"; };
+		2A75FB8F198CAC480028A1D1 /* FarertTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FarertTableViewCell.h; sourceTree = "<group>"; };
+		2A75FB90198CAC480028A1D1 /* FarertTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FarertTableViewCell.m; sourceTree = "<group>"; };
+		2A75FB93198CAC480028A1D1 /* MainTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainTableViewController.h; sourceTree = "<group>"; };
+		2A75FB94198CAC480028A1D1 /* MainTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainTableViewController.m; sourceTree = "<group>"; };
+		2A75FB95198CAC480028A1D1 /* obj_alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_alpdb.h; sourceTree = "<group>"; };
+		2A75FB96198CAC480028A1D1 /* obj_alpdb.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = obj_alpdb.mm; sourceTree = "<group>"; };
+		2A75FB97198CAC480028A1D1 /* ResultTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResultTableViewController.h; sourceTree = "<group>"; };
+		2A75FB98198CAC480028A1D1 /* ResultTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResultTableViewController.m; sourceTree = "<group>"; };
+		2A75FB99198CAC480028A1D1 /* RouteDataController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteDataController.h; sourceTree = "<group>"; };
+		2A75FB9A198CAC480028A1D1 /* RouteDataController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteDataController.m; sourceTree = "<group>"; };
+		2A75FB9B198CAC480028A1D1 /* RouteItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteItem.h; sourceTree = "<group>"; };
+		2A75FB9C198CAC480028A1D1 /* RouteItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteItem.m; sourceTree = "<group>"; };
+		2A75FB9D198CAC480028A1D1 /* SelectLineTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectLineTableViewController.h; sourceTree = "<group>"; };
+		2A75FB9E198CAC480028A1D1 /* SelectLineTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SelectLineTableViewController.m; sourceTree = "<group>"; };
+		2A75FBA1198CAC480028A1D1 /* SelectStationTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectStationTableViewController.h; sourceTree = "<group>"; };
+		2A75FBA2198CAC480028A1D1 /* SelectStationTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SelectStationTableViewController.m; sourceTree = "<group>"; };
+		2A75FBA7198CAC480028A1D1 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		2A75FBA8198CAC480028A1D1 /* TableHeaderViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableHeaderViewCell.h; sourceTree = "<group>"; };
+		2A75FBA9198CAC480028A1D1 /* TableHeaderViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableHeaderViewCell.m; sourceTree = "<group>"; };
+		2A75FBAA198CAC480028A1D1 /* TerminalHistoryTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalHistoryTableViewController.h; sourceTree = "<group>"; };
+		2A75FBAB198CAC480028A1D1 /* TerminalHistoryTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalHistoryTableViewController.m; sourceTree = "<group>"; };
+		2A75FBAC198CAC480028A1D1 /* TermSelectTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TermSelectTableViewController.h; sourceTree = "<group>"; };
+		2A75FBAD198CAC480028A1D1 /* TermSelectTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TermSelectTableViewController.m; sourceTree = "<group>"; };
+		2A75FBBF198CAEE60028A1D1 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		2A75FBCE199466A50028A1D1 /* CSTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSTableViewController.h; sourceTree = "<group>"; };
+		2A75FBCF199466A50028A1D1 /* CSTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSTableViewController.m; sourceTree = "<group>"; };
+		2A9BE6FD1A9F57F70094B107 /* jrdb2014.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2014.db; sourceTree = "<group>"; };
+		2A9BE6FE1A9F57F70094B107 /* jrdb2015.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2015.db; sourceTree = "<group>"; };
+		2AB22A0B19A2C6E800A4BD38 /* RouteSelStationSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteSelStationSegue.h; sourceTree = "<group>"; };
+		2AB22A0C19A2C6E800A4BD38 /* RouteSelStationSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteSelStationSegue.m; sourceTree = "<group>"; };
+		2AE9646B199CDE6100165457 /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FareInfo.h; sourceTree = "<group>"; };
+		2AE9646C199CDE6100165457 /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
+		2AED770519C5DC5E00C1F426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2A36B2C7198C6EC90070E8E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2AED770619C5DC5E00C1F426 /* MessageUI.framework in Frameworks */,
+				2A75FBC0198CAEE60028A1D1 /* libsqlite3.dylib in Frameworks */,
+				2A36B2D0198C6EC90070E8E0 /* CoreGraphics.framework in Frameworks */,
+				2A36B2D2198C6EC90070E8E0 /* UIKit.framework in Frameworks */,
+				2A36B2CE198C6EC90070E8E0 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A36B2E8198C6EC90070E8E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A36B2ED198C6EC90070E8E0 /* XCTest.framework in Frameworks */,
+				2A36B2EF198C6EC90070E8E0 /* UIKit.framework in Frameworks */,
+				2A36B2EE198C6EC90070E8E0 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2A36B2C1198C6EC90070E8E0 = {
+			isa = PBXGroup;
+			children = (
+				2A36B2D3198C6EC90070E8E0 /* FarertPre */,
+				2A36B2F2198C6EC90070E8E0 /* FarertPreTests */,
+				2A36B2CC198C6EC90070E8E0 /* Frameworks */,
+				2A36B2CB198C6EC90070E8E0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2A36B2CB198C6EC90070E8E0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2A36B2CA198C6EC90070E8E0 /* Farert.app */,
+				2A36B2EB198C6EC90070E8E0 /* FarertPreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2A36B2CC198C6EC90070E8E0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2AED770519C5DC5E00C1F426 /* MessageUI.framework */,
+				2A75FBBF198CAEE60028A1D1 /* libsqlite3.dylib */,
+				2A36B2CD198C6EC90070E8E0 /* Foundation.framework */,
+				2A36B2CF198C6EC90070E8E0 /* CoreGraphics.framework */,
+				2A36B2D1198C6EC90070E8E0 /* UIKit.framework */,
+				2A36B2EC198C6EC90070E8E0 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2A36B2D3198C6EC90070E8E0 /* FarertPre */ = {
+			isa = PBXGroup;
+			children = (
+				2A75FBC4198CD0D20028A1D1 /* customview */,
+				2A75FBC3198CD0B60028A1D1 /* control */,
+				2A75FBC2198CD0A40028A1D1 /* model */,
+				2A75FBC1198CD0980028A1D1 /* view */,
+				2A36B2DF198C6EC90070E8E0 /* Main.storyboard */,
+				2A36B2E5198C6EC90070E8E0 /* Images.xcassets */,
+				2A36B2D4198C6EC90070E8E0 /* Supporting Files */,
+			);
+			path = FarertPre;
+			sourceTree = "<group>";
+		};
+		2A36B2D4198C6EC90070E8E0 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2A9BE6FD1A9F57F70094B107 /* jrdb2014.db */,
+				2A9BE6FE1A9F57F70094B107 /* jrdb2015.db */,
+				2A36B2D5198C6EC90070E8E0 /* FarertPre-Info.plist */,
+				2A36B2D6198C6EC90070E8E0 /* InfoPlist.strings */,
+				2A36B2D9198C6EC90070E8E0 /* main.m */,
+				2A36B2DB198C6EC90070E8E0 /* FarertPre-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2A36B2F2198C6EC90070E8E0 /* FarertPreTests */ = {
+			isa = PBXGroup;
+			children = (
+				2A36B2F8198C6EC90070E8E0 /* FarertPreTests.m */,
+				2A36B2F3198C6EC90070E8E0 /* Supporting Files */,
+			);
+			path = FarertPreTests;
+			sourceTree = "<group>";
+		};
+		2A36B2F3198C6EC90070E8E0 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2A36B2F4198C6EC90070E8E0 /* FarertPreTests-Info.plist */,
+				2A36B2F5198C6EC90070E8E0 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2A75FBC1198CD0980028A1D1 /* view */ = {
+			isa = PBXGroup;
+			children = (
+				2A590EFA19B2BAB4005A758C /* VersionInfoViewController.h */,
+				2A590EFB19B2BAB4005A758C /* VersionInfoViewController.m */,
+				2A1A6DC619977E3700554C78 /* ArchiveRouteTableViewController.h */,
+				2A1A6DC719977E3700554C78 /* ArchiveRouteTableViewController.m */,
+				2A75FBAA198CAC480028A1D1 /* TerminalHistoryTableViewController.h */,
+				2A75FBAB198CAC480028A1D1 /* TerminalHistoryTableViewController.m */,
+				2A75FBAC198CAC480028A1D1 /* TermSelectTableViewController.h */,
+				2A75FBAD198CAC480028A1D1 /* TermSelectTableViewController.m */,
+				2A75FB97198CAC480028A1D1 /* ResultTableViewController.h */,
+				2A75FB98198CAC480028A1D1 /* ResultTableViewController.m */,
+				2A75FB9D198CAC480028A1D1 /* SelectLineTableViewController.h */,
+				2A75FB9E198CAC480028A1D1 /* SelectLineTableViewController.m */,
+				2A75FBA1198CAC480028A1D1 /* SelectStationTableViewController.h */,
+				2A75FBA2198CAC480028A1D1 /* SelectStationTableViewController.m */,
+				2A75FBCE199466A50028A1D1 /* CSTableViewController.h */,
+				2A75FBCF199466A50028A1D1 /* CSTableViewController.m */,
+				2A75FB93198CAC480028A1D1 /* MainTableViewController.h */,
+				2A75FB94198CAC480028A1D1 /* MainTableViewController.m */,
+				2A0680FD1A92BAD000AFC755 /* SettingsTableViewController.h */,
+				2A0680FE1A92BAD000AFC755 /* SettingsTableViewController.m */,
+			);
+			name = view;
+			sourceTree = "<group>";
+		};
+		2A75FBC2198CD0A40028A1D1 /* model */ = {
+			isa = PBXGroup;
+			children = (
+				2A75FB9B198CAC480028A1D1 /* RouteItem.h */,
+				2A75FB9C198CAC480028A1D1 /* RouteItem.m */,
+				2A75FB99198CAC480028A1D1 /* RouteDataController.h */,
+				2A75FB9A198CAC480028A1D1 /* RouteDataController.m */,
+				2A75FB8D198CAC480028A1D1 /* db.cpp */,
+				2A75FB8E198CAC480028A1D1 /* db.h */,
+				2A75FB95198CAC480028A1D1 /* obj_alpdb.h */,
+				2A75FB96198CAC480028A1D1 /* obj_alpdb.mm */,
+				2AE9646B199CDE6100165457 /* FareInfo.h */,
+				2AE9646C199CDE6100165457 /* FareInfo.m */,
+				2A75FB87198CAC110028A1D1 /* alpdb.cpp */,
+				2A75FB88198CAC110028A1D1 /* alpdb.h */,
+				2A58CE8A1A962C120017A298 /* stdafx.cpp */,
+				2A75FBA7198CAC480028A1D1 /* stdafx.h */,
+				2A53AD5E1A9D66EA001E82CF /* DbSys.h */,
+				2A53AD5F1A9D66EA001E82CF /* DbSys.m */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		2A75FBC3198CD0B60028A1D1 /* control */ = {
+			isa = PBXGroup;
+			children = (
+				2A36B2DC198C6EC90070E8E0 /* AppDelegate.h */,
+				2A36B2DD198C6EC90070E8E0 /* AppDelegate.m */,
+			);
+			name = control;
+			sourceTree = "<group>";
+		};
+		2A75FBC4198CD0D20028A1D1 /* customview */ = {
+			isa = PBXGroup;
+			children = (
+				2AB22A0B19A2C6E800A4BD38 /* RouteSelStationSegue.h */,
+				2AB22A0C19A2C6E800A4BD38 /* RouteSelStationSegue.m */,
+				2A75FBA8198CAC480028A1D1 /* TableHeaderViewCell.h */,
+				2A75FBA9198CAC480028A1D1 /* TableHeaderViewCell.m */,
+				2A75FB8F198CAC480028A1D1 /* FarertTableViewCell.h */,
+				2A75FB90198CAC480028A1D1 /* FarertTableViewCell.m */,
+			);
+			name = customview;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2A36B2C9198C6EC90070E8E0 /* Farert */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A36B2FC198C6ECA0070E8E0 /* Build configuration list for PBXNativeTarget "Farert" */;
+			buildPhases = (
+				2A36B2C6198C6EC90070E8E0 /* Sources */,
+				2A36B2C7198C6EC90070E8E0 /* Frameworks */,
+				2A36B2C8198C6EC90070E8E0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Farert;
+			productName = FarertPre;
+			productReference = 2A36B2CA198C6EC90070E8E0 /* Farert.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2A36B2EA198C6EC90070E8E0 /* FarertPreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A36B2FF198C6ECA0070E8E0 /* Build configuration list for PBXNativeTarget "FarertPreTests" */;
+			buildPhases = (
+				2A36B2E7198C6EC90070E8E0 /* Sources */,
+				2A36B2E8198C6EC90070E8E0 /* Frameworks */,
+				2A36B2E9198C6EC90070E8E0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2A36B2F1198C6EC90070E8E0 /* PBXTargetDependency */,
+			);
+			name = FarertPreTests;
+			productName = FarertPreTests;
+			productReference = 2A36B2EB198C6EC90070E8E0 /* FarertPreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2A36B2C2198C6EC90070E8E0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "TAKEDA, Noriyuki";
+				TargetAttributes = {
+					2A36B2C9198C6EC90070E8E0 = {
+						DevelopmentTeam = W6SVZ3YCU5;
+					};
+					2A36B2EA198C6EC90070E8E0 = {
+						TestTargetID = 2A36B2C9198C6EC90070E8E0;
+					};
+				};
+			};
+			buildConfigurationList = 2A36B2C5198C6EC90070E8E0 /* Build configuration list for PBXProject "FarertPre" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				ja,
+			);
+			mainGroup = 2A36B2C1198C6EC90070E8E0;
+			productRefGroup = 2A36B2CB198C6EC90070E8E0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2A36B2C9198C6EC90070E8E0 /* Farert */,
+				2A36B2EA198C6EC90070E8E0 /* FarertPreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2A36B2C8198C6EC90070E8E0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A9BE7001A9F57F70094B107 /* jrdb2015.db in Resources */,
+				2A9BE6FF1A9F57F70094B107 /* jrdb2014.db in Resources */,
+				2A36B2E6198C6EC90070E8E0 /* Images.xcassets in Resources */,
+				2A36B2D8198C6EC90070E8E0 /* InfoPlist.strings in Resources */,
+				2A36B2E1198C6EC90070E8E0 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A36B2E9198C6EC90070E8E0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A2F84C01A157DE6003C9B3F /* FarertPre-Info.plist in Resources */,
+				2A36B2F7198C6EC90070E8E0 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2A36B2C6198C6EC90070E8E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A53AD601A9D66EA001E82CF /* DbSys.m in Sources */,
+				2A0680FF1A92BAD000AFC755 /* SettingsTableViewController.m in Sources */,
+				2A75FBBC198CAC480028A1D1 /* TableHeaderViewCell.m in Sources */,
+				2A75FBD0199466A50028A1D1 /* CSTableViewController.m in Sources */,
+				2A75FBB7198CAC480028A1D1 /* SelectLineTableViewController.m in Sources */,
+				2A590EFC19B2BAB4005A758C /* VersionInfoViewController.m in Sources */,
+				2A75FBB6198CAC480028A1D1 /* RouteItem.m in Sources */,
+				2A75FBB4198CAC480028A1D1 /* ResultTableViewController.m in Sources */,
+				2A75FBB2198CAC480028A1D1 /* MainTableViewController.m in Sources */,
+				2A75FBAE198CAC480028A1D1 /* db.cpp in Sources */,
+				2A75FBBD198CAC480028A1D1 /* TerminalHistoryTableViewController.m in Sources */,
+				2AE9646D199CDE6100165457 /* FareInfo.m in Sources */,
+				2A75FBAF198CAC480028A1D1 /* FarertTableViewCell.m in Sources */,
+				2A75FBB9198CAC480028A1D1 /* SelectStationTableViewController.m in Sources */,
+				2A75FBBE198CAC480028A1D1 /* TermSelectTableViewController.m in Sources */,
+				2AB22A0D19A2C6E800A4BD38 /* RouteSelStationSegue.m in Sources */,
+				2A36B2DE198C6EC90070E8E0 /* AppDelegate.m in Sources */,
+				2A1A6DC819977E3700554C78 /* ArchiveRouteTableViewController.m in Sources */,
+				2A75FBB3198CAC480028A1D1 /* obj_alpdb.mm in Sources */,
+				2A36B2DA198C6EC90070E8E0 /* main.m in Sources */,
+				2A58CE8B1A962C120017A298 /* stdafx.cpp in Sources */,
+				2A75FB8B198CAC110028A1D1 /* alpdb.cpp in Sources */,
+				2A75FBB5198CAC480028A1D1 /* RouteDataController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A36B2E7198C6EC90070E8E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A36B2F9198C6EC90070E8E0 /* FarertPreTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2A36B2F1198C6EC90070E8E0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2A36B2C9198C6EC90070E8E0 /* Farert */;
+			targetProxy = 2A36B2F0198C6EC90070E8E0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2A36B2D6198C6EC90070E8E0 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A36B2D7198C6EC90070E8E0 /* en */,
+				2A36B303198C6F700070E8E0 /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		2A36B2DF198C6EC90070E8E0 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A36B2E0198C6EC90070E8E0 /* Base */,
+				2A36B302198C6F700070E8E0 /* ja */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		2A36B2F5198C6EC90070E8E0 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A36B2F6198C6EC90070E8E0 /* en */,
+				2A36B304198C6F700070E8E0 /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2A36B2FA198C6ECA0070E8E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer: TAKEDA Noriyuki (9N27WKHKNZ)";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "eeef1a6f-d3e4-441e-ad6d-c46525add393";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Debug;
+		};
+		2A36B2FB198C6ECA0070E8E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: TAKEDA Noriyuki (W6SVZ3YCU5)";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2A36B2FD198C6ECA0070E8E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FarertPre/FarertPre-Prefix.pch";
+				INFOPLIST_FILE = "FarertPre/FarertPre-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "6ef08ebf-2541-401d-8b4d-9b0afdc47a22";
+				TARGETED_DEVICE_FAMILY = 1;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		2A36B2FE198C6ECA0070E8E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: TAKEDA Noriyuki (W6SVZ3YCU5)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FarertPre/FarertPre-Prefix.pch";
+				INFOPLIST_FILE = "FarertPre/FarertPre-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				TARGETED_DEVICE_FAMILY = 1;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		2A36B300198C6ECA0070E8E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/FarertPre.app/FarertPre";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FarertPre/FarertPre-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "FarertPreTests/FarertPreTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		2A36B301198C6ECA0070E8E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/FarertPre.app/FarertPre";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FarertPre/FarertPre-Prefix.pch";
+				INFOPLIST_FILE = "FarertPreTests/FarertPreTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+		2A6A2C8619BC7EEE00B9F373 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: TAKEDA Noriyuki (W6SVZ3YCU5)";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Distribution;
+		};
+		2A6A2C8719BC7EEE00B9F373 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: TAKEDA Noriyuki (W6SVZ3YCU5)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FarertPre/FarertPre-Prefix.pch";
+				INFOPLIST_FILE = "FarertPre/FarertPre-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				TARGETED_DEVICE_FAMILY = 1;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Distribution;
+		};
+		2A6A2C8819BC7EEE00B9F373 /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/FarertPre.app/FarertPre";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FarertPre/FarertPre-Prefix.pch";
+				INFOPLIST_FILE = "FarertPreTests/FarertPreTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Distribution;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2A36B2C5198C6EC90070E8E0 /* Build configuration list for PBXProject "FarertPre" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A36B2FA198C6ECA0070E8E0 /* Debug */,
+				2A36B2FB198C6ECA0070E8E0 /* Release */,
+				2A6A2C8619BC7EEE00B9F373 /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2A36B2FC198C6ECA0070E8E0 /* Build configuration list for PBXNativeTarget "Farert" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A36B2FD198C6ECA0070E8E0 /* Debug */,
+				2A36B2FE198C6ECA0070E8E0 /* Release */,
+				2A6A2C8719BC7EEE00B9F373 /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2A36B2FF198C6ECA0070E8E0 /* Build configuration list for PBXNativeTarget "FarertPreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A36B300198C6ECA0070E8E0 /* Debug */,
+				2A36B301198C6ECA0070E8E0 /* Release */,
+				2A6A2C8819BC7EEE00B9F373 /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2A36B2C2198C6EC90070E8E0 /* Project object */;
+}
