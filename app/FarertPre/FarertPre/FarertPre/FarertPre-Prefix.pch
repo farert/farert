@@ -1,0 +1,47 @@
+//
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_5_0
+#warning "This project uses features only available in iOS SDK 5.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+
+    #import "AppDelegate.h"
+    #define app (AppDelegate *)[[UIApplication sharedApplication] delegate]
+
+#else
+#include "stdafx.h"
+#endif
+
+#define MAX_HISTORY         20
+#define MAX_ARCHIVE_ROUTE   100
+#define CONTEXT_TERMINAL_VIEW    23900  // Terminal select series
+#define CONTEXT_AUTOROUTE_VIEW   23901  // End station select for Auto route select series
+#define CONTEXT_ROUTESELECT_VIEW 23902  // Route select
+#define CONTEXT_AUTOROUTE_ACTION 34392  // Action sheet
+#define CONTEXT_BEGIN_TERMINAL_ACTION 34393 
+#define CONTEXT_ROUTESETUP_VIEW      34394
+
+//#define CONTEXT_AUTOROUTE_BUTTON 23943  // Auto route barbutton
+//#define CONTEXT_JUNCTION_SWITCH_BUTTON 23945    // Arrive station barbutton
+
+#define FA_TRANSIT_HISTORY 3
+#define FA_TRANSIT_STA2JCT 0
+#define FA_TRANSIT_JCT2STA 1
+#define FA_TRANSIT_AUTOROUTE 2
+
+#ifdef __OBJC__
+/* cooked flag for shoFare(), show_route() in alps.h */
+/* used MainTableViewController, ResultTableViewController */
+
+#endif
+
+

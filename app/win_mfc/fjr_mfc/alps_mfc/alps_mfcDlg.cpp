@@ -927,7 +927,7 @@ void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
 	
 	ASSERT(opt == 1 || opt == 2);
 	if ((opt == 1) || (opt == 2)) {
-		m_route.setFareOption((opt == 1) ? FAREOPT_APPLIED_START : FAREOPT_APPLIED_TERMINAL, 
+		m_route.setFareOption((opt == 1) ? FAREOPT_APPLIED_TERMINAL : FAREOPT_APPLIED_START, 
 		                      FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 		showFare();
 	} else {
@@ -949,9 +949,7 @@ void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
 	if ((opt == 1) || (opt == 2)) {
 		// ‹ß‰ñ‚èŽž‚É‰Ÿ‚³‚ê‚½‚ç‰“‰ñ‚è(FAREOPT_OSAKAKAN_DETOUR)‚É : 
 		// ‰“‰ñ‚èŽž‚É‰Ÿ‚³‚ê‚½‚ç‹ß‰ñ‚è(0:FAREOPT_OSAKAKAN_SHORTCUT)‚É
-		m_route.setFareOption((opt == 1) ? FAREOPT_OSAKAKAN_DETOUR : FAREOPT_OSAKAKAN_SHORTCUT, 
-		                                   FAREOPT_AVAIL_OSAKAKAN_DETOUR);
-		rc = m_route.reBuild();
+		rc = m_route.setDetour((opt == 1) ? true : false);
 		if (1 == rc) {
 			showFare();
 			// opt‚Í‹t“]‚·‚é
@@ -1051,6 +1049,8 @@ void Calps_mfcDlg::OnBnClickedButtonRoutecopy()
 	if (s.empty() || (0 == s.compare(m_lastRouteString))) {
 		return;
 	}
+	
+	s += _T("\n\n");
 
 	CStdioFile file;
 
