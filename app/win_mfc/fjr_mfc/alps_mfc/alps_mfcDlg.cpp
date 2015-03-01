@@ -134,6 +134,15 @@ BOOL Calps_mfcDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// è¨Ç≥Ç¢ÉAÉCÉRÉìÇÃê›íË
 
 	//--
+	DBsys dbsys;
+	Route::DbVer(&dbsys);
+	CString s;
+
+	s.Format(_T(" - DB ver[%s]"), dbsys.name);
+	CString ss;
+	GetWindowText(ss);
+	SetWindowText(ss + s);
+
 	CListCtrl* pLSel = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_LINESTATIONS));
 	pLSel->SetColumnWidth(pLSel->InsertColumn(0, _T("")), LVSCW_AUTOSIZE);
 	pLSel->SetColumnWidth(pLSel->InsertColumn(1, _T("")), LVSCW_AUTOSIZE);
