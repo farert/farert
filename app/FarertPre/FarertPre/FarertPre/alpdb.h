@@ -2,12 +2,19 @@
 
 #define _ALPDB_H__
 
+#if !defined _WINDOWS
 typedef struct {
     char name[128];             // UTF-8 max 42character
     int32_t tax;
     char createdate[64];    // UTF-8 max 42character '2015/03/14 12:43:43'
 } DBsys;
-
+#else
+typedef struct {
+    TCHAR name[128];             // max 42character
+    int32_t tax;
+    TCHAR createdate[64];        // max 42character '2015/03/14 12:43:43'
+} DBsys;
+#endif
 
 #if defined __cplusplus
 
@@ -808,7 +815,7 @@ public:
 // bit 0-1 (User->System)
 #define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
 #define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
-#define FAREOPT_APPLIED_TERMINAL				0	// 名阪間 着駅を市内駅に適用
+#define FAREOPT_APPLIED_TERMINAL				2	// 名阪間 着駅を市内駅に適用
 
 // (System->User)
 

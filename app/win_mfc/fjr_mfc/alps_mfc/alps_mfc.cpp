@@ -61,15 +61,27 @@ BOOL Calps_mfcApp::InitInstance()
 
 	CWinApp::InitInstance();
 
-
+	int dbid = IDR_DB;
 	LPTSTR opt = _tcsstr(m_lpCmdLine, _T("-tax"));
 	if (NULL != opt) {
 		g_tax = _ttoi(opt + 4);
 		if (g_tax <= 0) {
 			g_tax = DEFAULT_TAX;
+		} else if (g_tax == 5) {
+			dbid = IDR_DB2014;
 		}
 	} else {
 		g_tax = DEFAULT_TAX;	/* default */
+	}
+
+	opt = _tcsstr(m_lpCmdLine, _T("2014"));
+	if (NULL != opt) {
+		dbid = IDR_DB2014;
+	} else {
+		opt = _tcsstr(m_lpCmdLine, _T("tax5"));
+		if (NULL != opt) {
+			dbid = IDR_DB2014;
+		}
 	}
 
 	AfxEnableControlContainer();
@@ -90,7 +102,7 @@ BOOL Calps_mfcApp::InitInstance()
 	setlocale(LC_ALL, "");
 	
 	do {
-		HRSRC hRc = FindResource(m_hInstance, MAKEINTRESOURCE(IDR_DB2014), _T("DB"));
+		HRSRC hRc = FindResource(m_hInstance, MAKEINTRESOURCE(dbid), _T("DB"));
 		if (hRc) {
 			HGLOBAL hGlbl = LoadResource(m_hInstance, hRc);
 			if (hGlbl) {
