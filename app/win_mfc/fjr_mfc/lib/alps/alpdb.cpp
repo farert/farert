@@ -3491,9 +3491,9 @@ bool Route::DbVer(DBsys* db_sys)
     "select name, tax, db_createdate from t_dbsystem limit(1)");
     if (ctx.isvalid()) {
         if (ctx.moveNext()) {
-            strcpy_s(db_sys->name, NumOf(db_sys->name), (char*)ctx.getText(0).c_str());
+            _tcscpy_s(db_sys->name, NumOf(db_sys->name), ctx.getText(0).c_str());
             db_sys->tax = ctx.getInt(1);
-            strcpy_s(db_sys->createdate, NumOf(db_sys->name), (char*)ctx.getText(2).c_str());
+            _tcscpy_s(db_sys->createdate, NumOf(db_sys->createdate), ctx.getText(2).c_str());
             return true;
         }
     }

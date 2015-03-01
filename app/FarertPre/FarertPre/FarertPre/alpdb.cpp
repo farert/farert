@@ -2545,10 +2545,10 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 	/* 名古屋市内[名] - 大阪市内[阪] 発駅を単駅とするか着駅を単駅とするか */
 	if (0 != (FAREOPT_AVAIL_APPLIED_START_TERMINAL & availbit)) {
 		if (((opt & 3) == 1) || ((opt & 3) == 2)) {
-			if (FAREOPT_APPLIED_START == (cooked & FAREOPT_APPLIED_START)) {
-				BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);   /* 着駅=単駅、発駅市内駅 */
+			if (IS_MAIHAN_CITY_START(cooked) == FAREOPT_APPLIED_START) {
+				BIT_ON(last_flag, BLF_MEIHANCITYFLAG);  /* 着駅=単駅、発駅市内駅 */
 			} else {
-				BIT_ON(last_flag, BLF_MEIHANCITYFLAG);  /* 発駅=単駅、着駅市内駅 */
+				BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);	/* 発駅=単駅、着駅市内駅 */
 			}
 		} else {
 			ASSERT(FALSE);
@@ -3491,9 +3491,9 @@ bool Route::DbVer(DBsys* db_sys)
     "select name, tax, db_createdate from t_dbsystem limit(1)");
     if (ctx.isvalid()) {
         if (ctx.moveNext()) {
-            strcpy_s(db_sys->name, NumOf(db_sys->name), (char*)ctx.getText(0).c_str());
+            _tcscpy_s(db_sys->name, NumOf(db_sys->name), ctx.getText(0).c_str());
             db_sys->tax = ctx.getInt(1);
-            strcpy_s(db_sys->createdate, NumOf(db_sys->name), (char*)ctx.getText(2).c_str());
+            _tcscpy_s(db_sys->createdate, NumOf(db_sys->createdate), ctx.getText(2).c_str());
             return true;
         }
     }
