@@ -1882,13 +1882,6 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 			} else if (start_station_id == stationId2) {
 				rc = 1;
 			} else {
-#if defined _DEBUG
-try{
-TRACE(_T("!!!!@@@@%d, %d, %d, %d\n"), stationId2, line_id, start_station_id, route_list_raw.size());
-TRACE(_T("!!!!@@@@%d\n"), route_list_raw.at(1).stationId);
-TRACE(_T("!!!!@@@@%d\n"), Route::InStation(stationId2, line_id, start_station_id, route_list_raw.at(1).stationId));
-} catch (...) {}
-#endif
 				rc = 0;	/* OK */
 			}
 		} else {
@@ -2552,10 +2545,10 @@ void Route::setFareOption(uint16_t cooked, uint16_t availbit)
 	/* 名古屋市内[名] - 大阪市内[阪] 発駅を単駅とするか着駅を単駅とするか */
 	if (0 != (FAREOPT_AVAIL_APPLIED_START_TERMINAL & availbit)) {
 		if (((opt & 3) == 1) || ((opt & 3) == 2)) {
-			if (FAREOPT_APPLIED_START == (cooked & FAREOPT_APPLIED_START)) {
-				BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);   /* 着駅=単駅、発駅市内駅 */
+			if (IS_MAIHAN_CITY_START(cooked) == FAREOPT_APPLIED_START) {
+				BIT_ON(last_flag, BLF_MEIHANCITYFLAG);  /* 着駅=単駅、発駅市内駅 */
 			} else {
-				BIT_ON(last_flag, BLF_MEIHANCITYFLAG);  /* 発駅=単駅、着駅市内駅 */
+				BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);	/* 発駅=単駅、着駅市内駅 */
 			}
 		} else {
 			ASSERT(FALSE);
@@ -2939,7 +2932,7 @@ tstring Route::route_script()
 		result_str += _T(",");
 		result_str += Route::StationNameEx(pos->stationId);
 	}
-	result_str += _T("\n\n");
+//	result_str += _T("\n\n");
 	return result_str;
 }
 
@@ -3498,9 +3491,9 @@ bool Route::DbVer(DBsys* db_sys)
     "select name, tax, db_createdate from t_dbsystem limit(1)");
     if (ctx.isvalid()) {
         if (ctx.moveNext()) {
-            strcpy(db_sys->name, ctx.getText(0).c_str());
+            strcpy_s(db_sys->name, NumOf(db_sys->name), (char*)ctx.getText(0).c_str());
             db_sys->tax = ctx.getInt(1);
-            strcpy(db_sys->createdate, ctx.getText(2).c_str());
+            strcpy_s(db_sys->createdate, NumOf(db_sys->name), (char*)ctx.getText(2).c_str());
             return true;
         }
     }
@@ -4948,7 +4941,7 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 	// 70を適用したものをroute_list_tmp2へ
 	n = Route::ReRouteRule70j(route_list_tmp, &route_list_tmp2);
 	TRACE(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
-    if (0 < n) {
+    if (0 == n) {
         BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
     }
 
@@ -6359,7 +6352,7 @@ TRACE(_T("route[] add: %s\n"), StationName(Route::Jct2id(route[i] + 1)).c_str())
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
-TRACE(_T("####%d##%d, %u##\n"), a, i, route.size());
+TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
 			if ((a < 0) || ((i + 1) < (int32_t)route.size())) {
 				route_list_cooked.clear();
 				return a;	/* error */

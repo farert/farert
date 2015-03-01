@@ -1513,14 +1513,15 @@ void test_route(const TCHAR *route_def[])
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 
 			opt = route.getFareOption();
-			if ((opt & 0x03) == 2) {
+			if ((opt & 0x03) != 0) {
+				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
 				route.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 				s = route.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 
 				opt = route.getFareOption();
-				ASSERT((opt & 0x03) == 1);
+				ASSERT(IS_MAIHAN_CITY_START(opt));
 
 				route.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 				s = route.showFare();
@@ -1528,7 +1529,7 @@ void test_route(const TCHAR *route_def[])
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 
 				opt = route.getFareOption();
-				ASSERT((opt & 0x03) == 2);
+				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
 			} else {
 				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
 			}
