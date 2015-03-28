@@ -277,7 +277,7 @@ void conv_to_kana2hira(tstring& kana_str)
 //	(1/10した小数点付き営業キロ表示用)
 //
 //	@param [in] num  数値
-//	@return 変換された文字列(ex. 43000 -> "4,300.0", 25793 -> "2,579.3")
+//	@return 変換された文字列(ex. 61000 -> "6,100.0", 25793 -> "2,579.3")
 //
 tstring num_str_km(int32_t num)
 {
@@ -301,7 +301,7 @@ tstring num_str_km(int32_t num)
 //	金額表示用
 //
 //	@param [in] num  数値
-//	@return 変換された文字列(ex. 43000 -> "\43,000", 3982003 -> "3,982,003")
+//	@return 変換された文字列(ex. 61000 -> "\61,000", 3982003 -> "3,982,003")
 //
 tstring num_str_yen(int32_t num)
 {
@@ -5242,13 +5242,13 @@ int32_t Route::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 				stage = 1;
 			} else if (ite->stationId == dbid.StationIdOf_HAKATA) {
 				if (ite->lineId == dbid.LineIdOf_SANYOSHINKANSEN) {
-					c = 4;
+					c = 4;			// 山陽新幹線
 				} else {
 					c = 2;
 				}
 				stage = 1;
 			} else if ((0 < ite->lineId) && (ite->stationId == dbid.StationIdOf_YOSHIZUKA)) {
-				c = 3;
+				c = 3;				// 吉塚
 				stage = 1;
 				break;
 			}
@@ -5260,7 +5260,7 @@ int32_t Route::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 				((ite + 1) != route.cend()) &&
 				((ite + 1)->lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
 				((ite + 1)->stationId == dbid.StationIdOf_HAKATA)) {
-					rl |= 1;
+					rl |= 1;	// 小倉 山陽新幹線 博多
 				}
 				break;
 			case 2:
