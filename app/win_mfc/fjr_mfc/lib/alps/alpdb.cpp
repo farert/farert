@@ -1801,7 +1801,10 @@ ASSERT(first_station_id1 = stationId1);
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
 					}
-					BIT_ON(jct_flg_on, BSRJCTHORD);	//b#14021202
+					if (stationId2 != dbid.StationIdOf_KOKURA) {
+						// b#15032701
+						BIT_ON(jct_flg_on, BSRJCTHORD);	//b#14021202
+					}
 				}
 			}
 			// b#14021202 BIT_ON(jct_flg_on, BSRJCTHORD);
