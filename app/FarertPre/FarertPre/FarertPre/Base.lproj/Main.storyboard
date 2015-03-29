@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="uRX-4k-74C">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6751" systemVersion="14C1514" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="uRX-4k-74C">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6736"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -291,10 +291,10 @@
                                     <action selector="gotoSupportURL:" destination="FtK-tj-hJd" eventType="touchUpInside" id="s4j-5r-xaV"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 15.03" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="flg-s2-p7f">
-                                <rect key="frame" x="152" y="250" width="110" height="21"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 15.03.02" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="flg-s2-p7f">
+                                <rect key="frame" x="135" y="250" width="144" height="21"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="110" id="3Jx-IZ-mHr"/>
+                                    <constraint firstAttribute="width" constant="144" id="3Jx-IZ-mHr"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -328,7 +328,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6VX-fL-VWf" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-124" y="1511"/>
+            <point key="canvasLocation" x="-108" y="1511"/>
         </scene>
         <!--設定-->
         <scene sceneID="4XX-g3-gX7">
@@ -711,7 +711,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="34"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="JR線" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="psa-Pq-t6W">
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="JR線" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="3" translatesAutoresizingMaskIntoConstraints="NO" id="psa-Pq-t6W">
                                             <rect key="frame" x="23" y="11" width="59" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -804,17 +804,17 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥534,540-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="feF-1l-L3Z">
-                                            <rect key="frame" x="151" y="0.0" width="70" height="18"/>
+                                            <rect key="frame" x="159" y="0.0" width="70" height="18"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="feF-1l-L3Z" firstAttribute="baseline" secondItem="dxG-f6-Sxg" secondAttribute="baseline" id="IWn-v3-pcs"/>
-                                        <constraint firstItem="feF-1l-L3Z" firstAttribute="leading" secondItem="dxG-f6-Sxg" secondAttribute="trailing" id="Jza-m7-DHg"/>
+                                        <constraint firstItem="feF-1l-L3Z" firstAttribute="leading" secondItem="dxG-f6-Sxg" secondAttribute="trailing" constant="8" id="Jza-m7-DHg"/>
                                         <constraint firstItem="dxG-f6-Sxg" firstAttribute="leading" secondItem="waY-Gq-FD0" secondAttribute="leading" constant="20" id="Ris-nq-X9m"/>
                                         <constraint firstItem="dxG-f6-Sxg" firstAttribute="top" secondItem="waY-Gq-FD0" secondAttribute="top" id="pxd-X9-xPs"/>
-                                        <constraint firstItem="feF-1l-L3Z" firstAttribute="leading" secondItem="dxG-f6-Sxg" secondAttribute="trailing" id="zlj-1K-IPB"/>
+                                        <constraint firstItem="feF-1l-L3Z" firstAttribute="leading" secondItem="dxG-f6-Sxg" secondAttribute="trailing" constant="8" id="zlj-1K-IPB"/>
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
