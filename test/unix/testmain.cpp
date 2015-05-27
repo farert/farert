@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 #if defined _WINDOWS
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
-	if (! DBS::getInstance()->open(_T("../../db/jr.db"))) {
+	if (! DBS::getInstance()->open(_T("../../db/jrdb2015.db"))) {
 		printf("Can't db open\n");
 		return -1;
 	}
