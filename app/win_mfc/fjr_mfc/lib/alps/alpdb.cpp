@@ -780,10 +780,14 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
 
 	_err = false;
 
-	if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
-		_num = enum_junctions_of_line_for_osakakan();
+	if (station_id1 == station_id2) {
+		_num = 0;
 	} else {
-		_num = enum_junctions_of_line();
+		if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
+			_num = enum_junctions_of_line_for_osakakan();
+		} else {
+			_num = enum_junctions_of_line();
+		}
 	}
 }
 
@@ -2305,7 +2309,7 @@ JR東日本 株主優待4： \123,456
 		if (0 < i) {
 			sWork += _T("\r\n");
 		}
-		_sntprintf_s(sb, NumOf(sb), _T("%s \\%s"), s.c_str(), num_str_yen(fareStock + company_fare).c_str());
+		_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s"), s.c_str(), num_str_yen(fareStock + company_fare).c_str());
 		sWork += sb;
 	}
 
@@ -3334,7 +3338,8 @@ SPECIFICFLAG Route::AttrOfStationOnLineLine(int32_t line_id, int32_t station_id)
 int32_t Route::InStationOnLine(int32_t line_id, int32_t station_id)
 {
 	DBO ctx = DBS::getInstance()->compileSql(
-		"select count(*) from t_lines where line_id=?1 and station_id=?2");
+//		"select count(*) from t_lines where line_id=?1 and station_id=?2");
+		"select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2");
 	if (ctx.isvalid()) {
 
 		ctx.setParam(1, line_id);
@@ -5193,18 +5198,23 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 
 	if (sk <= sales_km) {
 			/* 114条適用かチェック */
+			
+		route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+		route_list_tmp3.assign(route_list_tmp4.cbegin(), route_list_tmp4.cend());
+		Route::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
+		Route::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
 		if ((0x03 & chk) == 3) {
 			is114 =					/* 86,87適用前,   86,87適用後 */
-			(Route::CheckOfRule114j(last_flag, route_list_tmp2, route_list_tmp4,
+			(Route::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
 									0x01 | ((sk2 == 2000) ? 0 : 0x8000), 
 									rule114)) ||
-			(Route::CheckOfRule114j(last_flag, route_list_tmp2, route_list_tmp4,
+			(Route::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
 									0x02 | ((sk2 == 2000) ? 0 : 0x8000),
 									rule114));
 		} else {
 			ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
 			is114 =
-			Route::CheckOfRule114j(last_flag, route_list_tmp2, route_list_tmp4,
+			Route::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
 								   (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000),
 								   rule114);
 		}
@@ -5504,6 +5514,42 @@ int32_t Route::CheckOfRule89j(const vector<RouteItem>& route)
 }
 
 //static
+//	並行在来線へ変換
+//	114条判定用
+//  都区市内駅から200kmを超える場合は結果が正しくない場合がある
+//	(東北新幹線 仙台 八戸 など)この場合は前段でチェックされるので
+//  ここにくることはない(114条チェック候補から外れるため)。
+//
+//	@return true if changed.
+//
+bool Route::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
+{
+#if 0
+高久 東北線 東京 東海道新幹線 新横浜 横浜線 東神奈川  東海道線 横浜 根岸線 本郷台 
+
+	vector<RouteItem>::iterator ite = route->begin();
+	int32_t station_id1 = 0;
+	vector<int32_t> zline;
+
+	while (ite != route->end()) {
+		if ((station_id1 != 0) && (IS_SHINKANSEN_LINE(ite->lineId))) {
+			zline = Route::EnumHZLine(ite->lineId, station_id1, ite->stationId);
+			if (3 <= zline.size()) {
+				// 並行在来線
+				ite->lineId = zline_id;
+				
+			}
+		}
+		station_id1 = ite->stationId;
+		ite++;
+	}
+	return (0 < zline_id) && (zline_id < 32767);
+#else
+	return false;
+#endif
+}
+
+//static
 //public
 //	114条のチェック
 //
@@ -5709,10 +5755,36 @@ int32_t Route::Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset
 //
 bool Route::IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2)
 {
+	int32_t i;
+	int32_t w;
+
 	if (!IS_SHINKANSEN_LINE(line_id2)) {
 		return false;
 	}
-	return line_id1 == GetHZLine(line_id2, station_id1, station_id2);
+	vector<int32_t> hzl = Route::EnumHZLine(line_id2, station_id1, station_id2);
+	if (hzl.size() < 3) {
+		if (hzl.size() < 1) {
+			ASSERT(FALSE);
+		} else {
+			if (hzl[0] == line_id1) {
+				return 0 < InStationOnLine(line_id1, station_id2);
+			}
+		}
+		return false;
+	}
+	for (i = 0; i < (int32_t)hzl.size(); i++) {
+		if (0x10000 < hzl[i]) {
+			w = 0xffff & hzl[i];
+		} else {
+			w = hzl[i];
+		}
+		if (w == line_id1) {
+			return true;
+		} else if (0 != w) {
+			return false;
+		}
+	}
+	return false;
 }
 
 
@@ -5721,50 +5793,124 @@ bool Route::IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t stat
 //
 //	@param [in] line_id     路線(新幹線)
 //	@param [in] station_id	駅(並行在来線駅(新幹線接続駅)
-//
+//	@param [in] (optional)station_id2 至駅(方向)
 //	@retval not 0 並行在来線
 //	@retval 0xffff 並行在来線は2つあり、その境界駅である(上越新幹線 高崎)
 //
+//
 int32_t Route::GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id2 /* =-1 */)
 {
-// 新幹線-並行在来線取得クエリ(GetHZLine)
-const char tsql_hzl1[] = "select line_id from t_hzline where rowid=("
-	"	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2"
-	"	)";
-const char tsql_hzl2[] = "select line_id from t_hzline where line_id<32767 and rowid in ("
-	"	select ((lflg>>19)&15) from t_lines where ((lflg>>19)&15)!=0 and line_id=?1 and "
+	int32_t i;
+	int32_t w;
+	vector<int32_t> hzl = Route::EnumHZLine(line_id, station_id, station_id2);
+
+	if (hzl.size() < 3) {
+		//ASSERT(FALSE);
+		return 0;
+	}
+	for (i = 0; i < (int32_t)hzl.size(); i++) {
+		if (0x10000 < hzl[i]) {
+			w = 0xffff & hzl[i];
+		} else {
+			w = hzl[i];
+		}
+		if (0 != w) {
+			return w;
+		}
+		/* 着駅までは関知しない */
+	}
+	return 0;
+	
+	// 山陽新幹線 新大阪 姫路 は東海道線と山陽線だが東海道線を返す
+	// 山陽新幹線 姫路 新大阪なら山陽線を返す
+}
+
+
+
+vector<int32_t> Route::EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2)
+{
+// 新幹線-並行在来線取得クエリ
+const char tsql_hzl[] =
+	"select case when(select line_id from t_hzline where rowid=("
+	"	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2)) > 0 then"
+    "(select line_id from t_hzline where rowid=("
+	"	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2))"
+    " else 0 end,"
+    "(select count(*) from t_lines where line_id=?1 and station_id=?2 and 0=(lflg&((1<<31)|(1<<17))))"
+	" union all"
+	" select distinct line_id, 0 from t_hzline h join ("
+	"	select (lflg>>19)&15 as x from t_lines"
+	"	where ((lflg>>19)&15)!=0 and (lflg&((1<<31)|(1<<17)))=0	and line_id=?1 and "
 	"	case when (select sales_km from t_lines where line_id=?1 and station_id=?2)<"
 	"	          (select sales_km from t_lines where line_id=?1 and station_id=?3)"
 	"	then"
-	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+	"	sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
+	"	sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?3) "
 	"	else"
-	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+	"	sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
+	"	sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?3)"
 	"	end"
-	") limit(1);";
+	" order by"
+	" case when"
+	" (select sales_km from t_lines where line_id=?1 and station_id=?3) <"
+	" (select sales_km from t_lines where line_id=?1 and station_id=?2) then"
+	" sales_km"
+	" end desc,"
+	" case when"
+	" (select sales_km from t_lines where line_id=?1 and station_id=?3) >"
+	" (select sales_km from t_lines where line_id=?1 and station_id=?2) then"
+	" sales_km"
+	" end asc"
+	") as y on y.x=h.rowid "
+	" union all"
+	" select case when(select line_id from t_hzline where rowid=("
+	"	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?3)) > 0 then"
+    " (select line_id from t_hzline where rowid=("
+	"	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?3))"
+    " else 0 end,   "
+    " (select count(*) from t_lines where line_id=?1 and station_id=?3 and 0=(lflg&((1<<31)|(1<<17))))";
+/* 
+ 名古屋－＞新横浜の場合
+ 	東海道線	1
+ 	東海道線	0
+ 	0			1
+ 
+ 新潟->大宮の場合
+   信越線	1
+   信越線	0
+   信越線/宮内	0	loword(信越線) + hiword(宮内)
+   上越線	0
+   0/高崎	0		loword(0) + hiword(高崎)
+   高崎線	0
+   高崎線	1
+   
+   (着駅、発駅がどそっぽの駅の場合(新幹線にない駅）、
+   0		0
+   となる
+*/
 
-	int32_t lineId = 0;
-	DBO dbo(DBS::getInstance()->compileSql(tsql_hzl1));
+	vector<int32_t> rslt;
+	int32_t lineId;
+	int32_t flg;
+
+	DBO dbo(DBS::getInstance()->compileSql(tsql_hzl));
 
 	ASSERT(IS_SHINKANSEN_LINE(line_id));
 
 	dbo.setParam(1, line_id);
 	dbo.setParam(2, station_id);
+	dbo.setParam(3, station_id2);
 
-	if (dbo.moveNext()) {
+	while (dbo.moveNext()) {
 		lineId = dbo.getInt(0);
-		if (32767 < lineId) {
-			DBO dbo2(DBS::getInstance()->compileSql(tsql_hzl2));
-			dbo2.setParam(1, line_id);
-			dbo2.setParam(2, station_id);
-			dbo2.setParam(3, station_id2);
-			if (dbo2.moveNext()) {
-				lineId = dbo2.getInt(0);
-			}
-		}
+		flg = dbo.getInt(1);
+		if ((flg == 1) && (lineId == 0)) {
+			lineId = -1;	/* 新幹線駅だが在来線接続駅でない */
+		} /* else if ((flg == 0) && (lineId == 0)) 不正(新幹線にない駅) */
+		rslt.push_back(lineId);
 	}
-	return lineId;
+	return rslt;
 }
-
 
 
 //static
@@ -5789,18 +5935,20 @@ bool Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t 
 	int32_t local_line;
 	int32_t dir;
 	int32_t hzl;
-	
+
 	if (IS_SHINKANSEN_LINE(line_id2)) {
 		bullet_line = line_id2;		// 在来線->新幹線乗換
 		local_line = line_id1;
+		hzl = Route::GetHZLine(bullet_line, station_id2, station_id3);
+
 	} else if (IS_SHINKANSEN_LINE(line_id1)) {
 		bullet_line = line_id1;		// 新幹線->在来線乗換
 		local_line = line_id2;
+		hzl = Route::GetHZLine(bullet_line, station_id2, station_id1);
+
 	} else {
 		return true;				// それ以外は対象外
 	}
-	hzl = Route::GetHZLine(bullet_line, station_id2, 
-			(bullet_line == line_id2) ? station_id2 : station_id1);
 	if (local_line != hzl) {
 		return true;
 	}
@@ -6565,20 +6713,20 @@ int32_t FARE_INFO::countOfFareStockDistount() const
 int32_t FARE_INFO::getFareStockDistount(int32_t index, tstring& title) const
 {
 	const TCHAR* const titles[] = {
-		_T("JR東日本 株主優待2割："),
-		_T("JR東日本 株主優待4割："),
-		_T("JR西日本 株主優待5割："), 
-		_T("JR東海   株主優待1割："), 
+		_T("JR東日本 株主優待2割"),
+		_T("JR東日本 株主優待4割"),
+		_T("JR西日本 株主優待5割"),
+		_T("JR東海   株主優待1割"),
 	};
 
 	if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
 		if (index == 0) {
 			title = titles[0];
-			return fare_discount(fare, 2);
+			return fare_discount(this->fare, 2);
 		} else if (index == 1) {
 			/* JR東4割(2枚使用) */
 			title = titles[1];
-			return fare_discount(fare, 4);
+			return fare_discount(this->fare, 4);
 		} else {
 			return 0;
 		}
@@ -6588,15 +6736,40 @@ int32_t FARE_INFO::getFareStockDistount(int32_t index, tstring& title) const
 	}
 	if ((JR_GROUP_MASK & companymask) == (1 << (JR_WEST - 1))) {
 		title = titles[2];
-		return fare_discount(fare, 5);
+		return fare_discount(this->fare, 5);
 
 	} else if ((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1))) {
 		title = titles[3];
-		return fare_discount(fare, 1);
+		return fare_discount(this->fare, 1);
 	} else {
 		return 0;
 	}
 	// 通過連絡運輸も株優は有効らしい
+}
+
+int32_t FARE_INFO::getFareStockDistount(int32_t index, int32_t normal_fare) const
+{
+    if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
+        if (index == 0) {
+            return fare_discount(normal_fare, 2);
+        } else if (index == 1) {
+            /* JR東4割(2枚使用) */
+            return fare_discount(normal_fare, 4);
+        } else {
+            return 0;
+        }
+    }
+    if (index != 0) {
+        return 0;
+    }
+    if ((JR_GROUP_MASK & companymask) == (1 << (JR_WEST - 1))) {
+        return fare_discount(normal_fare, 5);
+        
+    } else if ((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1))) {
+        return fare_discount(normal_fare, 1);
+    } else {
+        return 0;
+    }
 }
 
 /**	学割運賃を返す(会社線+JR線=全線)

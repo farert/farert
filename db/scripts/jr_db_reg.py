@@ -247,9 +247,14 @@ class Dbreg:
 		);
 		""")
 		###########################################
+		#self.con.execute("""
+		#create table t_hzline(
+		#	line_id	integer not null references t_line(rowid)
+		#);
+		#""")
 		self.con.execute("""
 		create table t_hzline(
-			line_id	integer not null references t_line(rowid)
+			line_id	integer not null
 		);
 		""")
 		###########################################
@@ -452,13 +457,34 @@ class Dbreg:
 		tmp = linitems[15].strip()
 		if tmp[0] != '!' and tmp != "":
 			if tmp.startswith('-'):
+				tmp = tmp[1:]
+				ix = tmp.find('/')   # 路線あり
+				if 0 <= ix:
+					stationId = tmp[:ix]
+					lineId = tmp[ix + 1:]  # 路線(長岡における信越線(直江津-新潟)とか）
+				else:
+					lineId = ""
+					stationId = tmp
+
+				#print("####{0}, {1}###".format(stationId, lineId));
 				# bit16-13	境界駅=高崎
-				self.cur.execute('select rowid from t_hzline where line_id=65535')
-				row = self.cur.fetchone()
-				if None == row:
-					self.con.execute('insert into t_hzline values(65535)')
-					self.cur.execute('select rowid from t_hzline where line_id=65535')
+				if lineId == "":
+					self.cur.execute('select rowid from t_hzline where line_id=(select 65536*rowid from t_station where name=?)', [stationId])
 					row = self.cur.fetchone()
+					if None == row:
+						self.con.execute('insert into t_hzline (line_id) values((select 65536*rowid from t_station where name=?))', [stationId])
+						self.cur.execute('select rowid from t_hzline where line_id=(select 65536*rowid from t_station where name=?)', [stationId])
+						row = self.cur.fetchone()
+				else:
+					self.cur.execute(
+					'select rowid from t_hzline where line_id=(select (select rowid from t_line where name=?1) + (select rowid * 65536 from t_station where name=?2))', [lineId, stationId])
+					row = self.cur.fetchone()
+					if None == row:
+						self.con.execute(
+						'insert into t_hzline values((select (select rowid from t_line where name=?1) + (select rowid * 65536 from t_station where name=?2)))', [lineId, stationId])
+						self.cur.execute(
+						'select rowid from t_hzline where line_id=(select (select rowid from t_line where name=?1) + (select rowid * 65536 from t_station where name=?2))', [lineId, stationId])
+						row = self.cur.fetchone()
 			else:
 				self.cur.execute('select rowid from t_hzline where line_id=(select rowid from t_line where name=?)', [tmp])
 				row = self.cur.fetchone()
