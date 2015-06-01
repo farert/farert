@@ -1,82 +1,49 @@
 ﻿#include "stdafx.h"
 
-extern int test_exec(void);
-extern tstring cr_remove(tstring s);
-
 int g_tax = 8;
+extern Route route;
 
-extern void test_route(const TCHAR *route_def[]);
-
-static const TCHAR *test_tbl[] = {
-	_T("渋谷 山手線 恵比寿"),
+static const char *test_tbl[] = {
+	_T("上野 東北新幹線 盛岡"),
 	_T(""),
 };
 
-TCHAR buffer[1024];
-extern Route route;
 
-static int test_setup_route(Route& route, TCHAR* buffer)
+static tstring cr_remove(tstring s)
 {
-	TCHAR* p;
-	int lineId = 0;
-	int stationId1 = 0;
-	int stationId2 = 0;
-	TCHAR* ctx = NULL;
-	bool fail;
-	int rc;
-
-	for (p = _tcstok_s(buffer, _T(", \t"), &ctx); p; p = _tcstok_s(NULL, _T(", \t"), &ctx)) {
-		fail = false;
-		if (stationId1 == 0) {
-			stationId1 = Route::GetStationId(p);
-			ASSERT(0 < stationId1);
-			route.add(stationId1);
-		} else if (lineId == 0) {
-			if ('r' == *p) {
-				++p;
-				route.setDetour();
-			}
-			lineId = Route::GetLineId(p);
-			ASSERT(0 < lineId);
-		} else {
-			if ('x' == *p) {
-				++p;
-				fail = true;
-			} else {
-				fail = false;
-			}
-			stationId2 = Route::GetStationId(p);
-			ASSERT(0 < stationId2);
-			rc = route.add(lineId, /*stationId1,*/ stationId2);
-			if (fail) {
-				ASSERT(rc < 0);
-				TRACE(_T("Setup route: Failure OK (%d)\n"), rc);
-				return 1;
-			} else {
-				ASSERT(0 <= rc);
-			}
-			lineId = 0;
-			stationId1 = stationId2;
-		}
+	tstring::size_type idx = 0;
+	while (tstring::npos != (idx = s.find(_T('\r'), idx))) {
+		s.replace(idx, 1, _T(" "), 1, 1);
 	}
-	return 0;
+	return s;
 }
 
-static int setup(int argc, TCHAR**argv)
+/////////////////////////////////////////////////////////////////
+void test(void)
 {
-	int i;
-	TCHAR* p = buffer;
+	int32_t rc;
+	int32_t i;
+	tstring s;
 	
-	for (i = 1; i < argc; i++) {
-		_tcscpy(p, *++argv);
-		p += _tcslen(*argv);
-		if ((i + 1) < argc) {
-			*p++ = _T(' ');
-			*p = _T('\0');
+	for (i = 0; '\0' != *test_tbl[i]; i++) {
+		rc = route.setup_route(test_tbl[i]);
+		if ((rc != 0) && (rc != 1)) {
+			TRACE("Error!!!!(%d) test_tbl[%d](%s)\n", rc, i, test_tbl[i]);
+			return;
 		}
+		s = route.showFare();
+		s = cr_remove(s);
+		TRACE(_T("%s\n"), s.c_str());
+
+		vector<RouteItem>& r = route.routeList();
+		Route::ConvertShinkansen2ZairaiFor114Judge(&r);
+		s = Route::Show_route(r, 0);
+		s = cr_remove(s);
+		TRACE(_T("%s\n-------------\n"), s.c_str());
 	}
-	return i - 1;
 }
+
+////////////////////////////////////////////////////////////////
 
 
 #ifdef _WINDOWS
@@ -85,8 +52,6 @@ int _tmain(int argc, TCHAR** argv)
 int main(int argc, char** argv)
 #endif
 {
-	tstring s;
-	int32_t rc;
 #if defined _WINDOWS
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
@@ -94,17 +59,8 @@ int main(int argc, char** argv)
 		printf("Can't db open\n");
 		return -1;
 	}
-	if (setup(argc, argv) < 1) {
-		test_route(test_tbl);
-	} else {
-		route.removeAll();
-		rc = test_setup_route(route, buffer);
-		ASSERT(0 <= rc);
-		route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-		s = route.showFare();
-		s = cr_remove(s);
-		TRACE(_T("%s\n"), s.c_str());
-	}
+	printf("----------");
+	test();
 	return 0;
 }
 
