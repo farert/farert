@@ -4,44 +4,46 @@ int g_tax = 8;
 extern Route route;
 
 static const char *test_tbl[] = {
-	_T("東北新幹線 上野 盛岡"),
-	_T("東北新幹線 上野 仙台"),
-	_T("東北新幹線 上野 白石蔵王"),
+	_T("上野 東北新幹線 盛岡"),
 	_T(""),
 };
 
 
+static tstring cr_remove(tstring s)
+{
+	tstring::size_type idx = 0;
+	while (tstring::npos != (idx = s.find(_T('\r'), idx))) {
+		s.replace(idx, 1, _T(" "), 1, 1);
+	}
+	return s;
+}
+
+/////////////////////////////////////////////////////////////////
 void test(void)
 {
-	int zline_id;
-	int line_id;
-	int station_id1;
-	int station_id2;
-	int i;
+	int32_t rc;
+	int32_t i;
+	tstring s;
 	
-	for (i = 0; *test_tbl[i] != '\0'; i++) {
-		char* p;
-		TCHAR* ctx = NULL;
-
-		printf("%s", test_tbl[i]);
-		p = _tcstok_s((char*)test_tbl[i], _T(", \t"), &ctx);
-
-		line_id = Route::GetLineId(p);
-		p = _tcstok_s(NULL, _T(", \t"), &ctx);
-
-		station_id1 = Route::GetStationId(p);
-		p = _tcstok_s(NULL, _T(", \t"), &ctx);
-
-		station_id2 = Route::GetStationId(p);
-
-		zline_id = Route::GetHZLine(line_id, station_id1, station_id2);
-		if ((0 < zline_id) && (zline_id < 32767)) {
-			printf("OK: %s\n", Route::LineName(zline_id).c_str());
-		} else {
-			printf("Error\n");
+	for (i = 0; '\0' != *test_tbl[i]; i++) {
+		rc = route.setup_route(test_tbl[i]);
+		if ((rc != 0) && (rc != 1)) {
+			TRACE("Error!!!!(%d) test_tbl[%d](%s)\n", rc, i, test_tbl[i]);
+			return;
 		}
+		s = route.showFare();
+		s = cr_remove(s);
+		TRACE(_T("%s\n"), s.c_str());
+
+		vector<RouteItem>& r = route.routeList();
+		Route::ConvertShinkansen2ZairaiFor114Judge(&r);
+		s = Route::Show_route(r, 0);
+		s = cr_remove(s);
+		TRACE(_T("%s\n-------------\n"), s.c_str());
 	}
 }
+
+////////////////////////////////////////////////////////////////
 
 
 #ifdef _WINDOWS
