@@ -1793,9 +1793,9 @@ static int test_setup_route(TCHAR* buffer)
 
 void test_shinkanzen()
 {
-	ASSERT(Route::IsAbreastShinkansen(LID(東海道線), LID(東海道新幹線), TID(小田原), TID(新富士)));
-	ASSERT(Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(越後湯沢), TID(新富士)));
-	ASSERT(Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(高崎), TID(上毛高原)));
+	ASSERT(Route::IsAbreastShinkansen(LID(東海道線), LID(東海道新幹線), TID(小田原), Route::GetStationId(_T("新富士(東)"))));
+	ASSERT(!Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(越後湯沢), Route::GetStationId(_T("新富士(東)"))));
+	ASSERT(!Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(高崎), TID(上毛高原)));
 	ASSERT(Route::IsAbreastShinkansen(LID(高崎線), LID(上越新幹線), TID(高崎), TID(熊谷)));
 }
 
