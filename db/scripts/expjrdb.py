@@ -8,6 +8,9 @@
 import sys
 import os
 import jrdb
+import sqlite3
+
+jrdb.con = sqlite3.connect('../jrdb2015.db')  # , isolation_level=None)
 
 sql = """
 select station_id from t_lines where line_id=?

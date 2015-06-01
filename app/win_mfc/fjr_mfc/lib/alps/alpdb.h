@@ -355,6 +355,7 @@ public:
 	int32_t		getFareForJR() const;
 	int32_t 	countOfFareStockDistount() const;
 	int32_t 	getFareStockDistount(int32_t index, tstring& title) const;
+    int32_t 	getFareStockDistount(int32_t index, int32_t normal_fare) const;
 	int32_t		getAcademicDiscount() const;
 	int32_t		getFareForIC() const;
     bool     getRule114(int32_t* fare, int32_t* sales_km, int32_t* calc_km) const {
@@ -605,7 +606,12 @@ public:
 	{ return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId; }
 
 	int32_t endStationId() { return end_station_id; }
-	void setEndStationId(int32_t stataion_id) { end_station_id = stataion_id; }
+	void setEndStationId(int32_t stataion_id) {
+        end_station_id = stataion_id;
+        if (end_station_id <= 0) {
+            BIT_OFF(last_flag, BLF_END);
+        }
+    }
 
 	enum LINE_DIR {
 		LDIR_ASC  = 1,		// 下り
@@ -784,6 +790,8 @@ public:
 	static int32_t 	Retrieve_SpecificCoreStation(int32_t cityId);
 	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
+	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+
 	static bool		CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind, int32_t* result);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
@@ -791,6 +799,7 @@ public:
 	static tstring  CoreAreaNameByCityId(int32_t startEndFlg, int32_t flg, SPECIFICFLAG flags);
 	static bool		IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2);
 	static int32_t  GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id2 = -1);
+	static vector<int32_t>  EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2);
 	static bool		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
 	static int32_t	NextShinkansenTransferTerm(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
