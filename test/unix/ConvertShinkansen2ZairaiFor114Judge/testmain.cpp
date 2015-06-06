@@ -64,8 +64,6 @@ static const TCHAR *test_tbl[] = {
 	_T("新花巻 東北新幹線 いわて沼宮内"),						// aj			@東北線, 
 	_T("いわて沼宮内 東北新幹線 新花巻"),						// aj			@東北線, 
 	_T("水沢江刺 東北新幹線 くりこま高原"),						// aj			@東北線, 
-	_T("東京 東海道新幹線 新横浜"),						// aj			@東北線, 
-	_T("新横浜 東海道新幹線 東京"),						// aj			@東北線, 
 	_T(""),
 };
 
@@ -266,7 +264,6 @@ static void xxx(vector<RouteItem>& route)
 }
 
 /////////////////////////////////////////////////////////////////
-//#define SIMPLE_LOG
 void test(void)
 {
 	int32_t rc;
@@ -283,21 +280,17 @@ void test(void)
 		TRACE(_T("%s\n"), test_tbl[i]);
 		s = route.showFare();
 		s = cr_remove(s);
-#if !defined SIMPLE_LOG
 		TRACE(_T("%s\n"), s.c_str());
-#endif
+
 		vector<RouteItem>& r = route.routeList();
 		ConvertShinkansen2ZairaiFor114Judge(&r);
 //		s = Route::Show_route(r, 0);
 //		s = cr_remove(s);
 //		TRACE(_T("\n%s-------------\n"), s.c_str());
-#if !defined SIMPLE_LOG
 		s = route.showFare();
 		s = cr_remove(s);
+//		xxx(route.routeList());
 		TRACE(_T("---------------\n%s\n"), s.c_str());
-#else
-		xxx(route.routeList());
-#endif
 	}
 }
 
