@@ -799,7 +799,7 @@ public:
 	static tstring  CoreAreaNameByCityId(int32_t startEndFlg, int32_t flg, SPECIFICFLAG flags);
 	static bool		IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2);
 	static int32_t  GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id2 = -1);
-	static vector<int32_t>  EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2);
+	static vector<uint32_t>  EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2);
 	static bool		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
 	static int32_t	NextShinkansenTransferTerm(int32_t line_id, int32_t station_id1, int32_t station_id2);
 

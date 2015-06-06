@@ -3,7 +3,7 @@
 int g_tax = 8;
 extern Route route;
 
-static const char *test_tbl[] = {
+static const TCHAR *test_tbl[] = {
 	_T("上野 東北新幹線 盛岡"),
 	_T(""),
 };
