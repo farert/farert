@@ -76,6 +76,14 @@ for inf in rslt:
 		print("Error query:", len(inf))
 		exit(-1)
 
+	if inf[0] == 0 and inf[1] == 1:
+		print("-1")
+
+	lid = inf[0] & 0xffff
+	sid = inf[0] >> 16
+	print("{0}({1}) - {2}({3})  {4}".format(jrdb.line_name(lid), lid, jrdb.station_name(sid), sid, inf[1]))
+
+"""
 	if 0 < inf[1]:
 		# 発／着
 		if inf[0] <= 0:
@@ -101,6 +109,6 @@ for inf in rslt:
 				print("|{0}({1})/{2}({3})".format(jrdb.line_name(l), l, jrdb.station_name(h), h))
 		else:
 			print("|{0}({1})".format(jrdb.line_name(inf[0]), inf[0]))
-
+"""
 print("fin")
 
