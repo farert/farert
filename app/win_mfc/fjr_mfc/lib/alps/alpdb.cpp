@@ -5529,7 +5529,7 @@ bool Route::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 
 	vector<RouteItem>::iterator ite = route->begin();
 	int32_t station_id1 = 0;
-	vector<int32_t> zline;
+	vector<uint32_t> zline;
 
 	while (ite != route->end()) {
 		if ((station_id1 != 0) && (IS_SHINKANSEN_LINE(ite->lineId))) {
@@ -5761,7 +5761,7 @@ bool Route::IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t stat
 	if (!IS_SHINKANSEN_LINE(line_id2)) {
 		return false;
 	}
-	vector<int32_t> hzl = Route::EnumHZLine(line_id2, station_id1, station_id2);
+	vector<uint32_t> hzl = Route::EnumHZLine(line_id2, station_id1, station_id2);
 	if (hzl.size() < 3) {
 		if (hzl.size() < 1) {
 			ASSERT(FALSE);
@@ -5802,7 +5802,7 @@ int32_t Route::GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id
 {
 	int32_t i;
 	int32_t w;
-	vector<int32_t> hzl = Route::EnumHZLine(line_id, station_id, station_id2);
+	vector<uint32_t> hzl = Route::EnumHZLine(line_id, station_id, station_id2);
 
 	if (hzl.size() < 3) {
 		//ASSERT(FALSE);
@@ -5827,7 +5827,7 @@ int32_t Route::GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id
 
 
 
-vector<int32_t> Route::EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2)
+vector<uint32_t> Route::EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2)
 {
 // 新幹線-並行在来線取得クエリ
 const char tsql_hzl[] =
@@ -5889,7 +5889,7 @@ const char tsql_hzl[] =
    となる
 */
 
-	vector<int32_t> rslt;
+	vector<uint32_t> rslt;
 	int32_t lineId;
 	int32_t flg;
 
