@@ -158,6 +158,10 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_)
 	flag |= (flag_ & MASK_ROUTE_FLAG_LFLG);
 }
 
+void RouteItem::refresh() 
+{
+	flag = Route::AttrOfStationId((int32_t)stationId) & MASK_ROUTE_FLAG_SFLG;
+}
 
 //////////////////////////////////////////////////////
 // 	文字列は「漢字」か「かな」か？
@@ -1497,7 +1501,8 @@ first_station_id1 = stationId1;
 	// 水平型検知
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD)) {
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
-		if (Route::IsAbreastShinkansen(route_list_raw.at(num - 1).lineId, line_id, stationId1, stationId2)) {
+		if ((DbidOf::StationIdOf_HAKATA != stationId1) &&
+		Route::IsAbreastShinkansen(route_list_raw.at(num - 1).lineId, line_id, stationId1, stationId2)) {
 			// 	line_idは新幹線
 			//	route_list_raw.at(num - 1).lineIdは並行在来線
 			// 
@@ -4990,7 +4995,6 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 
 	/* 変換 -> route_list_tmp:86適用(仮) 
 	   88変換したものは対象外(=山陽新幹線 新大阪着時、非表示フラグが消えてしまうのを避ける効果あり) */
-TRACE("(%d)\n", __LINE__);
 	Route::ReRouteRule86j87j(cityId, chk & ~aply88, exit, enter, &route_list_tmp);
 
 	// 88を適用
@@ -5070,7 +5074,6 @@ TRACE("(%d)\n", __LINE__);
 			/* route_list_tmp = route_list_tmp2 */
 			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 			/* 発駅のみ特定都区市内着経路に変換 */
-TRACE("(%d)\n", __LINE__);
 			Route::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
 			// 69を適用したものをroute_list_tmp3へ
@@ -5087,7 +5090,6 @@ TRACE("(%d)\n", __LINE__);
 			/* route_list_tmp = route_list_tmp2 */
 			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 			/* 着駅のみ特定都区市内着経路に変換仮適用 */
-TRACE("(%d)\n", __LINE__);
 			Route::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp);
 
 			// 69を適用したものをroute_list_tmp3へ
@@ -5106,7 +5108,6 @@ TRACE("(%d)\n", __LINE__);
 					/* route_list_tmp = route_list_tmp2 */
 					route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 					/* 発駅のみ特定都区市内着経路に変換 */
-TRACE("(%d)\n", __LINE__);
 					Route::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
 					// 69を適用したものをroute_list_tmp3へ
@@ -5148,7 +5149,6 @@ TRACE("(%d)\n", __LINE__);
 				/* route_list_tmp = route_list_tmp2 */
 				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 				/* 発駅のみ特定都区市内着経路に変換 */
-TRACE("(%d)\n", __LINE__);
 				Route::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
 				// 69を適用したものをroute_list_tmp3へ
@@ -5611,38 +5611,52 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 							z_station_id = Route::NextShinkansenTransferTerm(bline_id, station_id1, station_id1n);
 							if (0 < z_station_id) {
 								ite->stationId = z_station_id;
+								ite->refresh();
 								++ite;
 								ite = route->insert(ite, RouteItem(zroute[0], station_id1n));
 							} else {
-								// 新横浜から品川方面を得ようとして失敗した(0を返した)
-								// TODO
+								// 新横浜→品川、本庄早稲田→熊谷
+								goto n1;
 							}
 						} else {
+							z_station_id = 0;
 							ite->lineId = zroute[0];
 						}
 
-						ite->stationId = zroute[1];
-						for (i = 2; i < zroute.size() - 1; i += 2) {
-							ite++;
-							ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
-						}
-						if (i < zroute.size()) {
-							ite++;
-							ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
+						if (1 < zroute.size()) {
+							ite->stationId = zroute[1];
+							ite->refresh();
+							for (i = 2; i < zroute.size() - 1; i += 2) {
+								ite++;
+								ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
+							}
+							if (i < zroute.size()) {
+								ite++;
+								ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
+							}
 						}
 						if (0xffffffff == zline.back()) {
-							ite->stationId = Route::NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
-							if (z_station_id == ite->stationId) {
-								ite = route->erase(ite - 1);
-								*ite = RouteItem(bline_id, station_id1n);
-								--replace;
-
+							station_id2 = Route::NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
+							if (0 < station_id2) {
+								if (z_station_id == station_id2) {
+									// いわて沼宮内 - 新花巻
+									ite = route->erase(ite - 1);
+									*ite = RouteItem(bline_id, station_id1n);
+									--replace;
+								} else {
+									ite->stationId = station_id2;
+									ite->refresh();
+									ite++;
+									ite = route->insert(ite, RouteItem(bline_id, station_id1n));
+								}
 							} else {
-								ite++;
-								ite = route->insert(ite, RouteItem(bline_id, station_id1n));
+								// 品川-新横浜
+								*ite = RouteItem(bline_id, station_id1n);
+								ite->refresh();
 							}
 						} else {
 							ite->stationId = station_id1n;
+							ite->refresh();
 						}
 						++replace;
 					} else {
@@ -5656,6 +5670,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 							ite->lineId = zroute[0];
 							if (1 < zroute.size()) {
 								ite->stationId = zroute[1];
+								ite->refresh();
 								for (i = 2; i < zroute.size() - 1; i += 2) {
 									ite++;
 									ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
@@ -5678,6 +5693,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 						if (0 < zroute.size()) {
 							//  x, y, ag
 							ite->stationId = j_station_id;
+							ite->refresh();
 							for (i = 0; i < zroute.size() - 1; i += 2) {
 								ite++;
 								ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
@@ -5708,6 +5724,7 @@ TRACE(_T("\n;;%15s(%d)\t%s(%d)\n"), Route::LineName(route->back().lineId).c_str(
 			}
 //TRACE(_T("---------------------------------\n"));
 		}
+n1:
 		station_id1 = station_id1n;
 		ite++;
 	}
