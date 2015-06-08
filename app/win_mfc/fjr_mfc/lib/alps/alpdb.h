@@ -235,6 +235,8 @@ public:
 //        salesKm = fare = 0;
 		return *this;
 	}
+	
+	void refresh();
 	bool operator==(const RouteItem& item_) const { 
 		return lineId == item_.lineId && 
 			   stationId == item_.stationId /* && 
