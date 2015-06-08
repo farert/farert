@@ -1,18 +1,28 @@
 ﻿#include "stdafx.h"
 FILE *out = stderr;
 
+
 static void result_text(const TCHAR* fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	static bool b = false;
 	if (!b) {
+#ifdef _WINDOWS
 		fopen_s(&out, "test_exp_result.txt", "w");
+#else
+		out = fopen("test_exp_result.txt", "w");
+#endif
 		b = true;
 	}
+#ifdef _WINDOWS
 	_vftprintf(out, fmt, ap);
+#else
+	vfprintf(out, fmt, ap);
+#endif
 }
 
+#undef TRACE
 #define TRACE result_text
 
 int g_tax = 8;
@@ -64,6 +74,19 @@ static const TCHAR *test_tbl[] = {
 	_T("新花巻 東北新幹線 いわて沼宮内"),						// aj			@東北線, 
 	_T("いわて沼宮内 東北新幹線 新花巻"),						// aj			@東北線, 
 	_T("水沢江刺 東北新幹線 くりこま高原"),						// aj			@東北線, 
+	_T("東京 東海道新幹線 新横浜"),						// aj			@東北線, 
+	_T("新横浜 東海道新幹線 東京"),						// aj			@東北線, 
+	_T("品川 東海道新幹線 新横浜"),						// aj			@東北線, 
+	_T("本庄早稲田 上越新幹線 熊谷"),
+	_T("新横浜 東海道新幹線 品川"),						// aj			@東北線, 
+	_T("新神戸 山陽新幹線 新大阪"),
+	_T("新大阪 山陽新幹線 新神戸"),
+	_T("西明石 山陽新幹線 姫路"),
+	_T("姫路 山陽新幹線 西明石"),
+	_T("姫路 山陽新幹線 新大阪"),
+	_T("新大阪 山陽新幹線 姫路"),
+	_T("東広島 山陽新幹線 新倉敷"),
+	_T("新倉敷 山陽新幹線 東広島"),
 	_T(""),
 };
 
@@ -82,8 +105,8 @@ static bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 	uint32_t i;
 	vector<uint32_t> zline;
 	vector<uint32_t> zroute;
-	bool replaced = false;
-
+	int32_t replace = 0;
+	
 	while (ite != route->end()) {
 		station_id1n = ite->stationId;
 		if ((station_id1 != 0) && IS_SHINKANSEN_LINE(ite->lineId)) {
@@ -147,35 +170,56 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 						bline_id = ite->lineId;
 						if (0xffffffff == zline.front()) {
 							z_station_id = Route::NextShinkansenTransferTerm(bline_id, station_id1, station_id1n);
-							ASSERT(0 < z_station_id);
-							ite->stationId = z_station_id;
-							++ite;
-							ite = route->insert(ite, RouteItem(zroute[0], station_id1n));
+							if (0 < z_station_id) {
+								ite->stationId = z_station_id;
+								ite->refresh();
+								++ite;
+								ite = route->insert(ite, RouteItem(zroute[0], station_id1n));
+							} else {
+								// 新横浜→品川、本庄早稲田→熊谷
+								goto n1;
+							}
 						} else {
+							z_station_id = 0;
 							ite->lineId = zroute[0];
 						}
 
-						ite->stationId = zroute[1];
-						for (i = 2; i < zroute.size() - 1; i += 2) {
-							ite++;
-							ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
-						}
-						if (i < zroute.size()) {
-							ite++;
-							ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
+						if (1 < zroute.size()) {
+							ite->stationId = zroute[1];
+							ite->refresh();
+							for (i = 2; i < zroute.size() - 1; i += 2) {
+								ite++;
+								ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
+							}
+							if (i < zroute.size()) {
+								ite++;
+								ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
+							}
 						}
 						if (0xffffffff == zline.back()) {
-							ite->stationId = Route::NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
-							if (z_station_id == ite->stationId) {
-								ite = route->erase(ite - 1);
-								*ite = RouteItem(bline_id, station_id1n);
+							station_id2 = Route::NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
+							if (0 < station_id2) {
+								if (z_station_id == station_id2) {
+									// いわて沼宮内 - 新花巻
+									ite = route->erase(ite - 1);
+									*ite = RouteItem(bline_id, station_id1n);
+									--replace;
+								} else {
+									ite->stationId = station_id2;
+									ite->refresh();
+									ite++;
+									ite = route->insert(ite, RouteItem(bline_id, station_id1n));
+								}
 							} else {
-								ite++;
-								ite = route->insert(ite, RouteItem(bline_id, station_id1n));
+								// 品川-新横浜
+								*ite = RouteItem(bline_id, station_id1n);
+								ite->refresh();
 							}
 						} else {
 							ite->stationId = station_id1n;
+							ite->refresh();
 						}
+						++replace;
 					} else {
 						ASSERT(FALSE);
 					}
@@ -187,6 +231,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 							ite->lineId = zroute[0];
 							if (1 < zroute.size()) {
 								ite->stationId = zroute[1];
+								ite->refresh();
 								for (i = 2; i < zroute.size() - 1; i += 2) {
 									ite++;
 									ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
@@ -195,6 +240,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 									ite++;
 									ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
 								}
+								++replace;
 							} else {
 								// n, o
 								// DO NOTHING
@@ -208,6 +254,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 						if (0 < zroute.size()) {
 							//  x, y, ag
 							ite->stationId = j_station_id;
+							ite->refresh();
 							for (i = 0; i < zroute.size() - 1; i += 2) {
 								ite++;
 								ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
@@ -216,6 +263,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 								ite++;
 								ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
 							}
+							++replace;
 						} // else // r, t, v, w
 					}
 				}
@@ -237,10 +285,11 @@ TRACE(_T("\n;;%15s(%d)\t%s(%d)\n"), Route::LineName(route->back().lineId).c_str(
 			}
 //TRACE(_T("---------------------------------\n"));
 		}
+n1:
 		station_id1 = station_id1n;
 		ite++;
 	}
-	return (0 < zline_id) && (zline_id < 32767);
+	return 0 < replace;
 }
 
 static tstring cr_remove(tstring s)
@@ -264,6 +313,7 @@ static void xxx(vector<RouteItem>& route)
 }
 
 /////////////////////////////////////////////////////////////////
+#define SIMPLE_LOG
 void test(void)
 {
 	int32_t rc;
@@ -280,17 +330,21 @@ void test(void)
 		TRACE(_T("%s\n"), test_tbl[i]);
 		s = route.showFare();
 		s = cr_remove(s);
+#if !defined SIMPLE_LOG
 		TRACE(_T("%s\n"), s.c_str());
-
+#endif
 		vector<RouteItem>& r = route.routeList();
 		ConvertShinkansen2ZairaiFor114Judge(&r);
 //		s = Route::Show_route(r, 0);
 //		s = cr_remove(s);
 //		TRACE(_T("\n%s-------------\n"), s.c_str());
+#if !defined SIMPLE_LOG
 		s = route.showFare();
 		s = cr_remove(s);
-//		xxx(route.routeList());
 		TRACE(_T("---------------\n%s\n"), s.c_str());
+#else
+		xxx(route.routeList());
+#endif
 	}
 }
 

@@ -1234,6 +1234,7 @@ const static TCHAR *test_route_tbl[] = {
 			_T("井原市,芸備線,広島,山陽線,三石"),	/***/
 			_T("作並,仙山線,仙台,東北線,野崎(北)"),	/***/
 			_T("作並,仙山線,仙台,東北線,那須塩原"),	/***/
+			_T("作並,仙山線,仙台,東北新幹線,那須塩原"),	/***/
 		_T("c70条の経路"),
 			_T("川崎,東海道線,東京,中央東線,八王子"),	/***/
 			_T("八王子,中央東線,御茶ノ水,総武線(錦糸町-御茶ノ水),錦糸町,総武線,東京,東海道線,川崎"),	/***/
@@ -1335,6 +1336,7 @@ const static TCHAR *test_route_tbl[] = {
 		_T("c114条の経路"),
 		_T("本郷台 根岸線 横浜 東海道線 東神奈川 横浜線 新横浜 東海道新幹線 東京 東北線 高久"),
 		_T("本郷台 根岸線 横浜 東海道線 東神奈川 横浜線 新横浜 東海道新幹線 東京 東北線 黒田原"),
+		_T("若松 筑豊線 折尾 鹿児島線 西小倉 日豊線 佐伯"),
 _T("c大阪環状線関連"),
 		_T("大阪 東海道線 草津 草津線 柘植 関西線 今宮 大阪環状線 x鶴橋"),
 		_T("大阪 東海道線 草津 草津線 柘植 関西線 新今宮 大阪環状線 x鶴橋"),
@@ -1862,13 +1864,14 @@ void test_shin2zai(void)
 		rc = route.setup_route(test_shin2_zai_tbl[i]);
 		if ((rc != 0) && (rc != 1)) {
 			TRACE(_T("Error!!!!(%d) test_shin2_zai_tbl[%d](%s)\n"), rc, i, test_shin2_zai_tbl[i]);
+			ASSERT(FALSE);
 			return;
 		}
-		TRACE(_T("/////////////////////////////////////////////////////////////////////////\n"));
-		TRACE(_T("%s\n"), test_shin2_zai_tbl[i]);
+		TRACE(_T("------------------------------------------------\n"));
+		_ftprintf(os, _T("%s\n"), test_shin2_zai_tbl[i]);
 		s = route.showFare();
 		s = cr_remove(s);
-		TRACE(_T("%s\n"), s.c_str());
+		_ftprintf(os, _T("%s\n"), s.c_str());
 
 		vector<RouteItem>& r = route.routeList();
 		Route::ConvertShinkansen2ZairaiFor114Judge(&r);
@@ -1878,7 +1881,7 @@ void test_shin2zai(void)
 		s = route.showFare();
 		s = cr_remove(s);
 //		xxx(route.routeList());
-		TRACE(_T("---------------\n%s\n"), s.c_str());
+		_ftprintf(os, _T("---------------\n%s\n"), s.c_str());
 	}
 }
 
@@ -1890,11 +1893,16 @@ void test_temp()
 	int32_t rc;
 	tstring s;
 
-	rc = route.setup_route(_T("高久 東北線 東京 東海道新幹線 新横浜"));
+	//rc = route.setup_route(_T("高久 東北線 東京 東海道新幹線 新横浜"));
+	//rc = route.setup_route(_T("高久 東北線 東京 東海道新幹線 新横浜 横浜線 東神奈川 東海道線 横浜 根岸線 本郷台 "));
+	//rc = route.setup_route(_T("本郷台 根岸線 横浜 東海道線 東神奈川 横浜線 新横浜 東海道新幹線 東京 東北線 高久"));
+	//rc = route.setup_route(_T("篠栗 篠栗線 博多 山陽新幹線 厚狭"));
+	rc = route.setup_route(_T("城野 日豊線 西小倉 鹿児島線 小倉 山陽新幹線 博多"));
 	if ((rc != 0) && (rc != 1)) {
 		TRACE(_T("Error!!!!(%d)\n"), rc);
 		return;
 	}
+	route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 	s = route.showFare();
 	s = cr_remove(s);
 	TRACE(_T("%s\n"), s.c_str());
@@ -1941,8 +1949,8 @@ int test_exec(void)
 	_ftprintf(os, _T("timestamp: "));
 	show_time(now);
 
-test_temp();		//臨時特設テスト
-
+//test_temp();		//臨時特設テスト
+//exit(-1);
 	_ftprintf(os, _T("\n#---shinkansen  -------------------------------------------\n"));
 	test_shinkanzen();
 
@@ -1958,6 +1966,9 @@ test_temp();		//臨時特設テスト
 
 	_ftprintf(os, _T("\n#---specificial route-------------------------------------------\n"));
 	test_route(test_route_tbl);
+
+	_ftprintf(os, _T("\n#---shinkansen convert-------------------------------------------\n"));
+	test_shin2zai();
 
     time(&end);
     end -= now;
