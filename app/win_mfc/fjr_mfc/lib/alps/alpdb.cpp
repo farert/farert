@@ -5663,6 +5663,38 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 						ASSERT(FALSE);
 					}
 				} else {
+#if 1
+					if (0 < zroute.size()) {
+						if (station_id1 == j_station_id) {
+							// 高崎発
+							// k
+							ite->lineId = zroute[0];
+							if (1 < zroute.size()) {
+								ite->stationId = zroute[1];
+							}
+							i = 2;
+						} else {
+							// 高崎の隣の非在来線駅発高崎通過
+							//  x, y, ag
+							ite->stationId = j_station_id;
+							i = 0;
+						}
+						ite->refresh();
+						for (; i < zroute.size() - 1; i += 2) {
+							ite++;
+							ite = route->insert(ite, RouteItem(zroute[i], zroute[i + 1]));
+						}
+						if (i < zroute.size()) {
+							ite++;
+							ite = route->insert(ite, RouteItem(zroute[i], station_id1n));
+						}
+						++replace;
+						// n, o
+						// DO NOTHING
+						// l, m, 
+						// DO NOTHING
+					}
+#else
 					if (station_id1 == j_station_id) {
 						// 高崎発
 						if (0 < zroute.size()) {
@@ -5705,6 +5737,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), Route::LineName(zline_id).c_str(), zline_id, R
 							++replace;
 						} // else // r, t, v, w
 					}
+#endif
 				}
 #if 0
 TRACE(_T("\n;;%15s(%d)\t%s(%d)\n"), Route::LineName(route->back().lineId).c_str(), 
