@@ -97,7 +97,7 @@ typedef uint32_t SPECIFICFLAG;
 #define MAX_STATION     4590
 #define MAX_LINE        223
 #define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))	/* 新幹線は将来的にも10または15以内 !! */
-#define IS_COMPANY_LINE_OF(id)     (211<(id))			/* !!!!!!!!!!!!! */
+//#define IS_COMPANY_LINE_OF(id)     (211<(id))			/* !!!!!!!!!!!!! */
 //#define MAX_JCT 325
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
@@ -340,9 +340,12 @@ public:
         endTerminalId = 0;
         route_for_disp.clear();
 	}
-	int32_t 	roundTripFareWithComapnyLine(bool& return_discount) const;
-	bool 	isUrbanArea() const;
+	int32_t 	roundTripFareWithCompanyLine(bool& return_discount) const;
+    int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
+	bool 		isUrbanArea() const;
 	int32_t 	getTotalSalesKm() const;
+	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
+	int32_t		getRule114CalcKm() const  { return rule114_calc_km;  }
 	int32_t		getJRSalesKm() const;
 	int32_t		getJRCalcKm() const;
 	int32_t		getCompanySalesKm() const;
@@ -355,10 +358,11 @@ public:
 	int32_t		getTicketAvailDays() const;
 	int32_t		getFareForCompanyline() const;
 	int32_t		getFareForJR() const;
-	int32_t 	countOfFareStockDistount() const;
-	int32_t 	getFareStockDistount(int32_t index, tstring& title) const;
-    int32_t 	getFareStockDistount(int32_t index, int32_t normal_fare) const;
+	int32_t 	countOfFareStockDiscount() const;
+	int32_t 	getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 = false) const;
 	int32_t		getAcademicDiscount() const;
+	int32_t		getFareForDisplay() const;
+    int32_t     getFareForDisplayPriorRule114() const;
 	int32_t		getFareForIC() const;
     bool     getRule114(int32_t* fare, int32_t* sales_km, int32_t* calc_km) const {
         *fare = rule114_fare;
@@ -376,7 +380,8 @@ public:
         rule114_sales_km = 0;
         rule114_calc_km = 0;
     }
-    bool	isRoundTripDiscount() const { /* roundTripFareWithComapnyLine() を前に呼んでいること */ return roundTripDiscount; }
+    bool	isRule114() const { return 0 != rule114_fare; }
+    bool	isRoundTripDiscount() const { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
     int32_t getBeginTerminalId() const { return beginTerminalId;}
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
