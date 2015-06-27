@@ -2084,12 +2084,13 @@ int32_t Route::reBuild()
 		}
 	}
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
-        last_flag ^= (1 << BLF_OSAKAKAN_DETOUR);
+        BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
 		return -1;	/* error */
 	}
 	
     // 経路自体は変わらない。フラグのみ
-    last_flag = routeWork.last_flag;
+	// 特例適用、発着駅を単駅指定フラグは保持(大阪環状線廻りは既に持っている)
+    last_flag = routeWork.last_flag | (last_flag & ((1 << BLF_MEIHANCITYFLAG) | (1 << BLF_NO_RULE) | (1 << BLF_RULE_EN)));
     memcpy(jct_mask, routeWork.jct_mask, sizeof(jct_mask));
 
     return rc;
@@ -2121,19 +2122,8 @@ tstring Route::showFare()
 		/* 規則適用 */
 		/* 86, 87, 69, 70条 114条適用かチェック */
 		if (!checkOfRuleSpecificCoreLine(rule114)) {	// route_list_raw -> route_list_cooked
-			sExt = _T("");
-            fare_info.clrRule114();
-		} else {
-			// rule 114 applied
-            fare_info.setRule114(rule114[0], rule114[1], rule114[2]);
-
-			_sntprintf_s(cb, MAX_BUF, _T("規程114条適用運賃：\\%s 営業キロ：%s km / 計算キロ：%s km\r\n"),
-						 num_str_yen(rule114[0]).c_str(),
-						 num_str_km(rule114[1]).c_str(),
-						 num_str_km(rule114[2]).c_str());
-			sExt = cb;
-		}
-
+            memset(rule114, 0, sizeof(rule114));
+	    }
 		if (route_list_cooked.size() <= 1) {
 			ASSERT(FALSE);
 			// Don't come here
@@ -2195,6 +2185,9 @@ tstring Route::showFare()
 			return tstring(_T(""));
 		}
 	}
+
+	// rule 114 applied
+    fare_info.setRule114(rule114[0], rule114[1], rule114[2]);
 
 	ASSERT(100<=fare_info.getFareForJR());
 
@@ -2271,8 +2264,8 @@ JR東日本 株主優待4： \123,456
 
 	bool return_discount_flg;
 	int32_t company_fare = fare_info.getFareForCompanyline();
-	int32_t normal_fare = fare_info.getFareForJR() + company_fare;
-	int32_t fareW = fare_info.roundTripFareWithComapnyLine(return_discount_flg);
+	int32_t normal_fare = fare_info.getFareForDisplay();
+	int32_t fareW = fare_info.roundTripFareWithCompanyLine(return_discount_flg);
 	int32_t fare_ic = fare_info.getFareForIC();
 
 	if (0 < company_fare) {
@@ -2282,22 +2275,32 @@ JR東日本 株主優待4： \123,456
 	} else {
 		sWork = _T("");
 	}
-
+	if (fare_info.isRule114()) {
+		_sntprintf_s(cb, MAX_BUF, _T("規程114条適用 営業キロ： {%s km} 計算キロ：{%s km}\r\n"),
+					 num_str_km(fare_info.getRule114SalesKm()).c_str(),
+					 num_str_km(fare_info.getRule114CalcKm()).c_str());
+		sResult += cb;
+	}
 	if (fare_ic == 0) {
 		_sntprintf_s(cb, MAX_BUF, _T("運賃： \\%-5s   %s     往復： \\%-5s"),
 		                              num_str_yen(normal_fare).c_str(),
 		                              sWork.c_str(),
 		                              num_str_yen(fareW).c_str());
 		if (return_discount_flg) {
-			_tcscat_s(cb, NumOf(cb), _T("(割)"));
+			_tcscat_s(cb, NumOf(cb), _T("(割)\r\n"));
+		} else if (fare_info.isRule114()) {
+			sResult += cb;
+			_sntprintf_s(cb, MAX_BUF, _T("\r\n規定114条 適用前運賃： {\\%-5s} 往復： {\\%-5s}\r\n"),
+		                              num_str_yen(fare_info.getFareForDisplayPriorRule114()).c_str(),
+		                              num_str_yen(fare_info.roundTripFareWithCompanyLinePriorRule114()).c_str());
+		} else {
+			_tcscat_s(cb, NumOf(cb), _T("\r\n"));
 		}
-		_tcscat_s(cb, NumOf(cb), _T("\r\n"));
-
 	} else {
 		ASSERT(!return_discount_flg);
 		ASSERT(company_fare == 0);
-		ASSERT(normal_fare  *  2 == fare_info.roundTripFareWithComapnyLine(return_discount_flg));
-		_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： \\%s(\\%s)  %s    往復： \\%s(\\%s)\r\n"), 
+		ASSERT(normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine(return_discount_flg));
+		_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： \\%s(\\%s)  %s    往復： \\%s(\\%s)\r\n"),
 		             num_str_yen(normal_fare).c_str(), num_str_yen(fare_ic).c_str(),
 	                 sWork.c_str(),
 		             num_str_yen(normal_fare * 2).c_str(), num_str_yen(fare_ic * 2).c_str());
@@ -2307,14 +2310,24 @@ JR東日本 株主優待4： \123,456
 	for (int32_t i = 0; true; i++) {
 		tstring s;
 		TCHAR sb[64];
-		int32_t fareStock = fare_info.getFareStockDistount(i, s);
+		int32_t fareStock = fare_info.getFareStockDiscount(i, s);
 		if (fareStock <= 0) {
 			break;
 		}
 		if (0 < i) {
 			sWork += _T("\r\n");
 		}
-		_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s"), s.c_str(), num_str_yen(fareStock + company_fare).c_str());
+		if (fare_info.isRule114() != 0) {
+			_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s{\\%s}"), 
+						 s.c_str(), 
+						 num_str_yen(fare_info.getFareStockDiscount(i, sExt, true) + 
+						             company_fare).c_str(),
+						 num_str_yen(fareStock + company_fare).c_str());
+		} else {
+			_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s"), 
+						 s.c_str(), 
+						 num_str_yen(fareStock + company_fare).c_str());
+		}
 		sWork += sb;
 	}
 
@@ -5981,7 +5994,7 @@ bool Route::IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t stat
 		if (hzl.size() < 1) {
 			ASSERT(FALSE);
 		} else {
-			if (hzl[0] == line_id1) {
+			if (hzl[0] == (uint32_t)line_id1) {
 				return 0 < InStationOnLine(line_id1, station_id2);
 			}
 		}
@@ -6718,7 +6731,7 @@ TRACE(_T("route[] add: %s\n"), StationName(Route::Jct2id(route[i] + 1)).c_str())
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if (a <= 0) {
 			//ASSERT(FALSE);
-TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
+TRACE(_T("####%d##%d, %d##\n"), a, i, route.size());
 			if ((a < 0) || ((i + 1) < (int32_t)route.size())) {
 				route_list_cooked.clear();
 				return a;	/* error */
@@ -6762,7 +6775,7 @@ int32_t FARE_INFO::tax = 0;
  *	@paramm discount [out]  true=割引あり
  *	@retval [円]
  */
-int32_t 	FARE_INFO::roundTripFareWithComapnyLine(bool& return_discount) const
+int32_t 	FARE_INFO::roundTripFareWithCompanyLine(bool& return_discount) const
 {
 	int32_t fareW;
 	
@@ -6772,13 +6785,31 @@ int32_t 	FARE_INFO::roundTripFareWithComapnyLine(bool& return_discount) const
 		ASSERT(this->roundTripDiscount == true);
 	} else {
 		return_discount = false;
-		fareW = fare * 2 + company_fare * 2;
+		if (rule114_fare != 0) {
+			fareW = rule114_fare * 2 + company_fare * 2;
+		} else {
+			fareW = fare * 2 + company_fare * 2;
+		}
 		ASSERT(this->roundTripDiscount == false);
 	}
 	return fareW;
 }
 
-/**	総営業キロを返す	
+int32_t 	FARE_INFO::roundTripFareWithCompanyLinePriorRule114() const
+{
+    int32_t fareW;
+    
+    if (6000 < total_jr_calc_km) {	/* 往復割引 */
+        ASSERT(FALSE);
+    }
+    if (rule114_fare == 0) {
+        ASSERT(FALSE);
+    }
+    fareW = fare * 2 + company_fare * 2;
+    return fareW;
+}
+
+/**	総営業キロを返す
  *
  *	@retval 営業キロ
  */
@@ -6895,13 +6926,37 @@ int32_t		FARE_INFO::getFareForJR() const
 	return fare;
 }
 
+/**	JR線の運賃額を返す
+ *
+ *	@retval	[円]
+ */
+int32_t		FARE_INFO::getFareForDisplay() const
+{
+	if (rule114_fare != 0) {
+		return getFareForCompanyline() + rule114_fare;
+	} else {
+		return getFareForCompanyline() + getFareForJR();
+	}
+}
+
+int32_t		FARE_INFO::getFareForDisplayPriorRule114() const
+{
+    if (rule114_fare != 0) {
+        return getFareForCompanyline() + rule114_fare;
+    } else {
+        ASSERT(FALSE);
+        return 0;
+    }
+}
+
+
 /**	株主優待割引有効数を返す
  *
  *	@param index      [in]  0から1 JR東日本のみ 0は2割引、1は4割引を返す
  *	@param idCompany [out]  0:JR東海1割/1:JR西日本5割/2:JR東日本2割/3:JR東日本4割
  *	@retval	[円](無割引、無効は0)
  */
-int32_t FARE_INFO::countOfFareStockDistount() const
+int32_t FARE_INFO::countOfFareStockDiscount() const
 {
 	// 通過連絡運輸も株優は有効らしい
 
@@ -6922,10 +6977,12 @@ int32_t FARE_INFO::countOfFareStockDistount() const
 /**	株主優待割引運賃を返す
  *
  *	@param index      [in]  0から1 JR東日本のみ 0は2割引、1は4割引を返す
+ *	@param is114      [in]  true = 114条適用 / false = 114条適用前
  *	@param idCompany [out]  0:JR東海1割/1:JR西日本5割/2:JR東日本2割/3:JR東日本4割
  *	@retval	[円](無割引、無効は0)
  */
-int32_t FARE_INFO::getFareStockDistount(int32_t index, tstring& title) const
+int32_t FARE_INFO::getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 /* =false*/) 
+const
 {
 	const TCHAR* const titles[] = {
 		_T("JR東日本 株主優待2割"),
@@ -6933,15 +6990,28 @@ int32_t FARE_INFO::getFareStockDistount(int32_t index, tstring& title) const
 		_T("JR西日本 株主優待5割"),
 		_T("JR東海   株主優待1割"),
 	};
+	
+	int32_t cfare;
+	
+	if (applied_r114) {
+		if (isRule114()) {
+			cfare = rule114_fare;
+		} else {
+			ASSERT(FALSE);
+			return 0;		// >>>>>>>>>
+		}
+	} else {
+		cfare = fare;
+	}
 
 	if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
 		if (index == 0) {
 			title = titles[0];
-			return fare_discount(this->fare, 2);
+			return fare_discount(cfare, 2);
 		} else if (index == 1) {
 			/* JR東4割(2枚使用) */
 			title = titles[1];
-			return fare_discount(this->fare, 4);
+			return fare_discount(cfare, 4);
 		} else {
 			return 0;
 		}
@@ -6951,41 +7021,17 @@ int32_t FARE_INFO::getFareStockDistount(int32_t index, tstring& title) const
 	}
 	if ((JR_GROUP_MASK & companymask) == (1 << (JR_WEST - 1))) {
 		title = titles[2];
-		return fare_discount(this->fare, 5);
+		return fare_discount(cfare, 5);
 
 	} else if ((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1))) {
 		title = titles[3];
-		return fare_discount(this->fare, 1);
+		return fare_discount(cfare, 1);
 	} else {
 		return 0;
 	}
 	// 通過連絡運輸も株優は有効らしい
 }
 
-int32_t FARE_INFO::getFareStockDistount(int32_t index, int32_t normal_fare) const
-{
-    if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
-        if (index == 0) {
-            return fare_discount(normal_fare, 2);
-        } else if (index == 1) {
-            /* JR東4割(2枚使用) */
-            return fare_discount(normal_fare, 4);
-        } else {
-            return 0;
-        }
-    }
-    if (index != 0) {
-        return 0;
-    }
-    if ((JR_GROUP_MASK & companymask) == (1 << (JR_WEST - 1))) {
-        return fare_discount(normal_fare, 5);
-        
-    } else if ((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1))) {
-        return fare_discount(normal_fare, 1);
-    } else {
-        return 0;
-    }
-}
 
 /**	学割運賃を返す(会社線+JR線=全線)
  *
