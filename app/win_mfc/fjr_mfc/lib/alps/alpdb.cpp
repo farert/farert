@@ -2170,6 +2170,9 @@ tstring Route::showFare()
 		BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);
 		sResult = _T("");
 
+		// 114 off
+        memset(rule114, 0, sizeof(rule114));
+
 		/* 単駅 */
 		sWork = Route::StationNameEx(route_list_raw.front().stationId);
 		sResult += sWork;
@@ -4304,7 +4307,9 @@ int32_t Route::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<Rou
  			if (continue_flag) {
  				ASSERT((2 <= dbrecord.size()) && ((size_t)i == (dbrecord.size() - 2)));
 				a69list.push_back(MAKEPAIR(dbrecord[i], dbrecord[i + 1]));
- 			}
+ 			} else {
+				a69list.clear();
+			}
 		}
 		station_id1 = route_item->stationId;
 	}
