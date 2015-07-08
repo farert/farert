@@ -1,7 +1,7 @@
 経路運賃営業キロ計算アプリ
 JR運賃、営業キロ表示、経路編集ソフト Farert
 
-　　　　　　　　　　　　　　　　　　　　   Copyright(C) 2014 Sutezo
+　　　　　　　　　　　　　　　　　　　　   Copyright(C) 2014-2015 Sutezo
 　　　　　　　　　　　　　　　　　　　　   sutezo666@gmail.com
 
 　　　　　　　　サポートサイト
@@ -33,7 +33,8 @@ Windows 10 preview
 
 実行時エラーメッセージが表示され、実行できなかった場合以下のファイルを
 マイクロソフトのサイトからダウンロードしてインストールしてからあらためて
-実行してください（WindowsXP, Vista, 7, Windows8、32ビット、64ビット問わず）
+実行してください（WindowsXP, Vista, 7, Windows8、Windows10、
+エディションの種類、32ビット、64ビット問わず）
 
 Microsoft Visual C++ 2010 SP1 再頒布可能パッケージ (x86)
 http://www.microsoft.com/ja-jp/download/details.aspx?id=8328
