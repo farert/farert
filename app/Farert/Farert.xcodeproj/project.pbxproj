@@ -1,0 +1,625 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2A0412311B2F190A004BA042 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A0412301B2F190A004BA042 /* InfoPlist.strings */; };
+		2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */; };
+		2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0881AD6966500F7DED2 /* Main.storyboard */; };
+		2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08B1AD6966500F7DED2 /* Images.xcassets */; };
+		2A2BB08F1AD6966500F7DED2 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08D1AD6966500F7DED2 /* LaunchScreen.xib */; };
+		2A2BB09B1AD6966600F7DED2 /* FarertTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB09A1AD6966600F7DED2 /* FarertTests.swift */; };
+		2A2BB0AF1AD6970D00F7DED2 /* MainTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */; };
+		2A2BB0B01AD6970D00F7DED2 /* ResultTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */; };
+		2A2BB0B31AD6970D00F7DED2 /* RouteSelStationSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A81AD6970D00F7DED2 /* RouteSelStationSegue.swift */; };
+		2A2BB0B41AD6970D00F7DED2 /* SelectLineTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A91AD6970D00F7DED2 /* SelectLineTableViewController.swift */; };
+		2A2BB0B51AD6970D00F7DED2 /* SelectStationTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0AA1AD6970D00F7DED2 /* SelectStationTableViewController.swift */; };
+		2A2BB0B61AD6970D00F7DED2 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0AB1AD6970D00F7DED2 /* SettingsTableViewController.swift */; };
+		2A2BB0B71AD6970D00F7DED2 /* TerminalHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0AC1AD6970D00F7DED2 /* TerminalHistoryViewController.swift */; };
+		2A2BB0B81AD6970D00F7DED2 /* TerminalSelectTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0AD1AD6970D00F7DED2 /* TerminalSelectTableViewController.swift */; };
+		2A2BB0B91AD6970D00F7DED2 /* VersionInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0AE1AD6970D00F7DED2 /* VersionInfoViewController.swift */; };
+		2A2BB0C11AD6974400F7DED2 /* CSTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0BB1AD6974400F7DED2 /* CSTableViewController.swift */; };
+		2A2BB0C41AD6974400F7DED2 /* FarertDataObj.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0BE1AD6974400F7DED2 /* FarertDataObj.m */; };
+		2A2BB0C61AD6974400F7DED2 /* HeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */; };
+		2A2BB0C81AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */; };
+		2A2BB0DC1AD6BE8500F7DED2 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D01AD6BE8500F7DED2 /* alpdb.cpp */; };
+		2A2BB0DD1AD6BE8500F7DED2 /* db.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D21AD6BE8500F7DED2 /* db.cpp */; };
+		2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */; };
+		2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */; };
+		2A2BB0E01AD6BE8500F7DED2 /* obj_alpdb.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D71AD6BE8500F7DED2 /* obj_alpdb.mm */; };
+		2A2BB0E11AD6BE8500F7DED2 /* RouteDataController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D91AD6BE8500F7DED2 /* RouteDataController.m */; };
+		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
+		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
+		2A2BB0E81AD6BF2200F7DED2 /* RouteItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E71AD6BF2200F7DED2 /* RouteItem.m */; };
+		2A2BB0EE1AD6CDEA00F7DED2 /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A2BB0ED1AD6CDEA00F7DED2 /* libsqlite3.0.dylib */; };
+		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
+		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
+		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
+		2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754641ADCC2080020F59C /* CommonDefine.swift */; };
+		2AE754671ADF6A580020F59C /* DbUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754661ADF6A580020F59C /* DbUtil.swift */; };
+		2AE7546B1AE21E8B0020F59C /* FarertTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */; };
+		2AE928861B29CCA000122437 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5F1B059B690026A6CA /* Info.plist */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2A2BB0951AD6966600F7DED2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A2BB0771AD6966500F7DED2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2A2BB07E1AD6966500F7DED2;
+			remoteInfo = Farert;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2A0412301B2F190A004BA042 /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = ../InfoPlist.strings; sourceTree = "<group>"; };
+		2A2BB07F1AD6966500F7DED2 /* Farert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Farert.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2A2BB0891AD6966500F7DED2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		2A2BB08B1AD6966500F7DED2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		2A2BB08E1AD6966500F7DED2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		2A2BB0941AD6966600F7DED2 /* FarertTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FarertTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A2BB0991AD6966600F7DED2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2A2BB09A1AD6966600F7DED2 /* FarertTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FarertTests.swift; sourceTree = "<group>"; };
+		2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ResultTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		2A2BB0A81AD6970D00F7DED2 /* RouteSelStationSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteSelStationSegue.swift; sourceTree = "<group>"; };
+		2A2BB0A91AD6970D00F7DED2 /* SelectLineTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectLineTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0AA1AD6970D00F7DED2 /* SelectStationTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectStationTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0AB1AD6970D00F7DED2 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0AC1AD6970D00F7DED2 /* TerminalHistoryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalHistoryViewController.swift; sourceTree = "<group>"; };
+		2A2BB0AD1AD6970D00F7DED2 /* TerminalSelectTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalSelectTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0AE1AD6970D00F7DED2 /* VersionInfoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VersionInfoViewController.swift; sourceTree = "<group>"; };
+		2A2BB0BA1AD6974400F7DED2 /* Farert-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Farert-Bridging-Header.h"; sourceTree = "<group>"; };
+		2A2BB0BB1AD6974400F7DED2 /* CSTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0BE1AD6974400F7DED2 /* FarertDataObj.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FarertDataObj.m; sourceTree = "<group>"; };
+		2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeaderTableViewCell.swift; sourceTree = "<group>"; };
+		2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveRouteTableViewController.swift; sourceTree = "<group>"; };
+		2A2BB0D01AD6BE8500F7DED2 /* alpdb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = alpdb.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		2A2BB0D11AD6BE8500F7DED2 /* alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = alpdb.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		2A2BB0D21AD6BE8500F7DED2 /* db.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = db.cpp; sourceTree = "<group>"; };
+		2A2BB0D31AD6BE8500F7DED2 /* db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = db.h; sourceTree = "<group>"; };
+		2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2014.db; sourceTree = "<group>"; };
+		2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2015.db; sourceTree = "<group>"; };
+		2A2BB0D61AD6BE8500F7DED2 /* obj_alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_alpdb.h; sourceTree = "<group>"; };
+		2A2BB0D71AD6BE8500F7DED2 /* obj_alpdb.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = obj_alpdb.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		2A2BB0D81AD6BE8500F7DED2 /* RouteDataController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteDataController.h; sourceTree = "<group>"; };
+		2A2BB0D91AD6BE8500F7DED2 /* RouteDataController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteDataController.m; sourceTree = "<group>"; };
+		2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		2A2BB0DB1AD6BE8500F7DED2 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DbSys.h; sourceTree = "<group>"; };
+		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
+		2A2BB0E61AD6BF2200F7DED2 /* RouteItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteItem.h; sourceTree = "<group>"; };
+		2A2BB0E71AD6BF2200F7DED2 /* RouteItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteItem.m; sourceTree = "<group>"; };
+		2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = FarertTests/PrefixHeader.pch; sourceTree = SOURCE_ROOT; };
+		2A2BB0ED1AD6CDEA00F7DED2 /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
+		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		2A84DD181AF1DA8B005BA7D4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteListTableViewCell.swift; sourceTree = "<group>"; };
+		2ACE5A591AF785030026A6CA /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FareInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		2ACE5A5A1AF785030026A6CA /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
+		2ACE5A631B059E180026A6CA /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Base; path = Base.lproj/Info.plist; sourceTree = "<group>"; };
+		2AD5D5AE1B0AB20000F8E6AD /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/Info.plist; sourceTree = "<group>"; };
+		2AE754641ADCC2080020F59C /* CommonDefine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonDefine.swift; sourceTree = "<group>"; };
+		2AE754661ADF6A580020F59C /* DbUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DbUtil.swift; sourceTree = "<group>"; };
+		2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FarertTableViewCell.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2A2BB07C1AD6966500F7DED2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */,
+				2A2BB0EE1AD6CDEA00F7DED2 /* libsqlite3.0.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A2BB0911AD6966600F7DED2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2A2BB0761AD6966500F7DED2 = {
+			isa = PBXGroup;
+			children = (
+				2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */,
+				2A2BB0ED1AD6CDEA00F7DED2 /* libsqlite3.0.dylib */,
+				2A2BB0811AD6966500F7DED2 /* Farert */,
+				2A2BB0971AD6966600F7DED2 /* FarertTests */,
+				2A2BB0801AD6966500F7DED2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2A2BB0801AD6966500F7DED2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2A2BB07F1AD6966500F7DED2 /* Farert.app */,
+				2A2BB0941AD6966600F7DED2 /* FarertTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2A2BB0811AD6966500F7DED2 /* Farert */ = {
+			isa = PBXGroup;
+			children = (
+				2A2BB0CA1AD6980600F7DED2 /* model */,
+				2A2BB0C91AD697FA00F7DED2 /* view */,
+				2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */,
+				2AE754641ADCC2080020F59C /* CommonDefine.swift */,
+				2A2BB08B1AD6966500F7DED2 /* Images.xcassets */,
+				2A2BB08D1AD6966500F7DED2 /* LaunchScreen.xib */,
+				2A2BB0881AD6966500F7DED2 /* Main.storyboard */,
+				2A2BB0821AD6966500F7DED2 /* Supporting Files */,
+				2A2BB0BA1AD6974400F7DED2 /* Farert-Bridging-Header.h */,
+				2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */,
+				2AE754661ADF6A580020F59C /* DbUtil.swift */,
+			);
+			path = Farert;
+			sourceTree = "<group>";
+		};
+		2A2BB0821AD6966500F7DED2 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2A0412301B2F190A004BA042 /* InfoPlist.strings */,
+				2ACE5A5F1B059B690026A6CA /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2A2BB0971AD6966600F7DED2 /* FarertTests */ = {
+			isa = PBXGroup;
+			children = (
+				2A2BB09A1AD6966600F7DED2 /* FarertTests.swift */,
+				2A2BB0981AD6966600F7DED2 /* Supporting Files */,
+			);
+			path = FarertTests;
+			sourceTree = "<group>";
+		};
+		2A2BB0981AD6966600F7DED2 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2A2BB0991AD6966600F7DED2 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2A2BB0C91AD697FA00F7DED2 /* view */ = {
+			isa = PBXGroup;
+			children = (
+				2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */,
+				2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */,
+				2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */,
+				2A2BB0A91AD6970D00F7DED2 /* SelectLineTableViewController.swift */,
+				2A2BB0AA1AD6970D00F7DED2 /* SelectStationTableViewController.swift */,
+				2A2BB0AB1AD6970D00F7DED2 /* SettingsTableViewController.swift */,
+				2A2BB0AC1AD6970D00F7DED2 /* TerminalHistoryViewController.swift */,
+				2A2BB0AD1AD6970D00F7DED2 /* TerminalSelectTableViewController.swift */,
+				2A2BB0AE1AD6970D00F7DED2 /* VersionInfoViewController.swift */,
+				2A2BB0BB1AD6974400F7DED2 /* CSTableViewController.swift */,
+				2A2BB0CB1AD6986800F7DED2 /* custom */,
+			);
+			name = view;
+			sourceTree = "<group>";
+		};
+		2A2BB0CA1AD6980600F7DED2 /* model */ = {
+			isa = PBXGroup;
+			children = (
+				2ACE5A591AF785030026A6CA /* FareInfo.h */,
+				2ACE5A5A1AF785030026A6CA /* FareInfo.m */,
+				2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */,
+				2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */,
+				2A2BB0E61AD6BF2200F7DED2 /* RouteItem.h */,
+				2A2BB0E71AD6BF2200F7DED2 /* RouteItem.m */,
+				2A2BB0BE1AD6974400F7DED2 /* FarertDataObj.m */,
+				2A2BB0D01AD6BE8500F7DED2 /* alpdb.cpp */,
+				2A2BB0D11AD6BE8500F7DED2 /* alpdb.h */,
+				2A2BB0D21AD6BE8500F7DED2 /* db.cpp */,
+				2A2BB0D31AD6BE8500F7DED2 /* db.h */,
+				2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */,
+				2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */,
+				2A2BB0D61AD6BE8500F7DED2 /* obj_alpdb.h */,
+				2A2BB0D71AD6BE8500F7DED2 /* obj_alpdb.mm */,
+				2A2BB0D81AD6BE8500F7DED2 /* RouteDataController.h */,
+				2A2BB0D91AD6BE8500F7DED2 /* RouteDataController.m */,
+				2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */,
+				2A2BB0DB1AD6BE8500F7DED2 /* stdafx.h */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		2A2BB0CB1AD6986800F7DED2 /* custom */ = {
+			isa = PBXGroup;
+			children = (
+				2A2BB0A81AD6970D00F7DED2 /* RouteSelStationSegue.swift */,
+				2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */,
+				2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */,
+				2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */,
+			);
+			name = custom;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2A2BB07E1AD6966500F7DED2 /* Farert */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A2BB09E1AD6966600F7DED2 /* Build configuration list for PBXNativeTarget "Farert" */;
+			buildPhases = (
+				2A2BB07B1AD6966500F7DED2 /* Sources */,
+				2A2BB07C1AD6966500F7DED2 /* Frameworks */,
+				2A2BB07D1AD6966500F7DED2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Farert;
+			productName = Farert;
+			productReference = 2A2BB07F1AD6966500F7DED2 /* Farert.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2A2BB0931AD6966600F7DED2 /* FarertTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A2BB0A11AD6966600F7DED2 /* Build configuration list for PBXNativeTarget "FarertTests" */;
+			buildPhases = (
+				2A2BB0901AD6966600F7DED2 /* Sources */,
+				2A2BB0911AD6966600F7DED2 /* Frameworks */,
+				2A2BB0921AD6966600F7DED2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2A2BB0961AD6966600F7DED2 /* PBXTargetDependency */,
+			);
+			name = FarertTests;
+			productName = FarertTests;
+			productReference = 2A2BB0941AD6966600F7DED2 /* FarertTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2A2BB0771AD6966500F7DED2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = "TAKEDA, Noriyuki";
+				TargetAttributes = {
+					2A2BB07E1AD6966500F7DED2 = {
+						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = W6SVZ3YCU5;
+					};
+					2A2BB0931AD6966600F7DED2 = {
+						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = W6SVZ3YCU5;
+						TestTargetID = 2A2BB07E1AD6966500F7DED2;
+					};
+				};
+			};
+			buildConfigurationList = 2A2BB07A1AD6966500F7DED2 /* Build configuration list for PBXProject "Farert" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				ja,
+			);
+			mainGroup = 2A2BB0761AD6966500F7DED2;
+			productRefGroup = 2A2BB0801AD6966500F7DED2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2A2BB07E1AD6966500F7DED2 /* Farert */,
+				2A2BB0931AD6966600F7DED2 /* FarertTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2A2BB07D1AD6966500F7DED2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */,
+				2A0412311B2F190A004BA042 /* InfoPlist.strings in Resources */,
+				2A2BB08F1AD6966500F7DED2 /* LaunchScreen.xib in Resources */,
+				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
+				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,
+				2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */,
+				2AE928861B29CCA000122437 /* Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A2BB0921AD6966600F7DED2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2A2BB07B1AD6966500F7DED2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */,
+				2A2BB0DD1AD6BE8500F7DED2 /* db.cpp in Sources */,
+				2A2BB0C61AD6974400F7DED2 /* HeaderTableViewCell.swift in Sources */,
+				2A2BB0B01AD6970D00F7DED2 /* ResultTableViewController.swift in Sources */,
+				2AE754671ADF6A580020F59C /* DbUtil.swift in Sources */,
+				2A2BB0C41AD6974400F7DED2 /* FarertDataObj.m in Sources */,
+				2A2BB0E11AD6BE8500F7DED2 /* RouteDataController.m in Sources */,
+				2A2BB0E01AD6BE8500F7DED2 /* obj_alpdb.mm in Sources */,
+				2A2BB0B71AD6970D00F7DED2 /* TerminalHistoryViewController.swift in Sources */,
+				2AE7546B1AE21E8B0020F59C /* FarertTableViewCell.swift in Sources */,
+				2A2BB0B81AD6970D00F7DED2 /* TerminalSelectTableViewController.swift in Sources */,
+				2A2BB0E81AD6BF2200F7DED2 /* RouteItem.m in Sources */,
+				2A2BB0B31AD6970D00F7DED2 /* RouteSelStationSegue.swift in Sources */,
+				2A2BB0DC1AD6BE8500F7DED2 /* alpdb.cpp in Sources */,
+				2A2BB0B41AD6970D00F7DED2 /* SelectLineTableViewController.swift in Sources */,
+				2A2BB0B91AD6970D00F7DED2 /* VersionInfoViewController.swift in Sources */,
+				2A2BB0C81AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift in Sources */,
+				2A2BB0C11AD6974400F7DED2 /* CSTableViewController.swift in Sources */,
+				2A2BB0B61AD6970D00F7DED2 /* SettingsTableViewController.swift in Sources */,
+				2A2BB0AF1AD6970D00F7DED2 /* MainTableViewController.swift in Sources */,
+				2A2BB0B51AD6970D00F7DED2 /* SelectStationTableViewController.swift in Sources */,
+				2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */,
+				2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */,
+				2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */,
+				2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */,
+				2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A2BB0901AD6966600F7DED2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A2BB09B1AD6966600F7DED2 /* FarertTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2A2BB0961AD6966600F7DED2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2A2BB07E1AD6966500F7DED2 /* Farert */;
+			targetProxy = 2A2BB0951AD6966600F7DED2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2A2BB0881AD6966500F7DED2 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A2BB0891AD6966500F7DED2 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		2A2BB08D1AD6966500F7DED2 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A2BB08E1AD6966500F7DED2 /* Base */,
+				2A84DD181AF1DA8B005BA7D4 /* ja */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		2ACE5A5F1B059B690026A6CA /* Info.plist */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2ACE5A631B059E180026A6CA /* Base */,
+				2AD5D5AE1B0AB20000F8E6AD /* ja */,
+			);
+			name = Info.plist;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2A2BB09C1AD6966600F7DED2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "6ef08ebf-2541-401d-8b4d-9b0afdc47a22";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2A2BB09D1AD6966600F7DED2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: TAKEDA Noriyuki (W6SVZ3YCU5)";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2A2BB09F1AD6966600F7DED2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				INFOPLIST_FILE = "$(SRCROOT)/FarertTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "6ef08ebf-2541-401d-8b4d-9b0afdc47a22";
+				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2A2BB0A01AD6966600F7DED2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				INFOPLIST_FILE = "$(SRCROOT)/FarertTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		2A2BB0A21AD6966600F7DED2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = FarertTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Farert.app/Farert";
+			};
+			name = Debug;
+		};
+		2A2BB0A31AD6966600F7DED2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = FarertTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Farert.app/Farert";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2A2BB07A1AD6966500F7DED2 /* Build configuration list for PBXProject "Farert" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A2BB09C1AD6966600F7DED2 /* Debug */,
+				2A2BB09D1AD6966600F7DED2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2A2BB09E1AD6966600F7DED2 /* Build configuration list for PBXNativeTarget "Farert" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A2BB09F1AD6966600F7DED2 /* Debug */,
+				2A2BB0A01AD6966600F7DED2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2A2BB0A11AD6966600F7DED2 /* Build configuration list for PBXNativeTarget "FarertTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A2BB0A21AD6966600F7DED2 /* Debug */,
+				2A2BB0A31AD6966600F7DED2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2A2BB0771AD6966500F7DED2 /* Project object */;
+}
