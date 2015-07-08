@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Farert
+
+  Created by TAKEDA, Noriyuki on 2015/06/15.
+  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
+*/
+
+
+CFBundleDisplayName = "経路営業キロ";
