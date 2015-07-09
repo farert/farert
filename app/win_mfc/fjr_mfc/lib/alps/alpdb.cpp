@@ -2114,7 +2114,6 @@ tstring Route::showFare()
 	TCHAR cb[MAX_BUF];
 	tstring sResult;
 	tstring sWork;
-	tstring sExt;
 	int32_t rule114[3];	// [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
     FARE_INFO fare_info;
 
@@ -2319,6 +2318,7 @@ JR東日本 株主優待4： \123,456
 	sWork = _T("");
 	for (int32_t i = 0; true; i++) {
 		tstring s;
+		tstring dummy;
 		TCHAR sb[64];
 		int32_t fareStock = fare_info.getFareStockDiscount(i, s);
 		if (fareStock <= 0) {
@@ -2330,7 +2330,7 @@ JR東日本 株主優待4： \123,456
 		if (fare_info.isRule114() != 0) {
 			_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s{\\%s}"), 
 						 s.c_str(), 
-						 num_str_yen(fare_info.getFareStockDiscount(i, sExt, true) + 
+						 num_str_yen(fare_info.getFareStockDiscount(i, dummy, true) + 
 						             company_fare).c_str(),
 						 num_str_yen(fareStock + company_fare).c_str());
 		} else {
@@ -2346,7 +2346,8 @@ JR東日本 株主優待4： \123,456
 	_sntprintf_s(cb, MAX_BUF,
 				_T("\r\n有効日数：%4u日\r\n"),
 						fare_info.getTicketAvailDays());
-	return sExt + sResult + sWork + cb;
+	sResult += sWork + cb;
+	return sResult;
 }
 
 /*
@@ -6988,9 +6989,9 @@ int32_t FARE_INFO::countOfFareStockDiscount() const
 
 /**	株主優待割引運賃を返す
  *
- *	@param index      [in]  0から1 JR東日本のみ 0は2割引、1は4割引を返す
- *	@param is114      [in]  true = 114条適用 / false = 114条適用前
- *	@param idCompany [out]  0:JR東海1割/1:JR西日本5割/2:JR東日本2割/3:JR東日本4割
+ *	@param index      [in]   0から1 JR東日本のみ 0は2割引、1は4割引を返す
+ *	@param title      [out]  項目表示文字列
+ *	@param applied_r114  [in]  true = 114条適用 / false = 114条適用前
  *	@retval	[円](無割引、無効は0)
  */
 int32_t FARE_INFO::getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 /* =false*/) 
