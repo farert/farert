@@ -2,8 +2,20 @@
 
 経路運賃営業キロ計算アプリ
 JR運賃、営業キロ表示、経路編集ソフト Farert 15.06
-                                                　　 2015-06-30
-                                              Copyright(C) 2014 Sutezo
+                                                　　 2015-07-08
+                                              Copyright(C) 2014-2015 Sutezo
+
+ソフトウェアについて
+http://farert.blogspot.jp/p/main.html
+
+ダウンロード＆セットアップ
+http://farert.blogspot.jp/p/download.html
+
+詳細
+http://farert.blogspot.jp/p/detail.html
+
+問い合わせ
+http://farert.blogspot.jp/p/query.html
 
 サポートサイト
 http://farert.blogspot.jp
@@ -16,8 +28,6 @@ http://www.vector.co.jp/soft/winnt/home/se506752.html
 iOS版
 Appleサイト：
 https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=916517676&mt=8
-
-
 
 ----------------------------------------------------------------------
 
@@ -49,7 +59,6 @@ https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=916517676&mt=
 
 farert.exe                    ソフトウェア本体
 readme.txt                    このファイル
-はじめにお読みください.txt    実行に関して
 
 
 
@@ -80,7 +89,8 @@ readme.txt                    このファイル
 - 各種旅客営業規則
 - JR旅客会社６社全駅全路線
 - JR線が通過する会社線（青い森鉄道、IGRいわて銀河鉄道、北越急行、伊勢鉄道、
-  智頭急行、北近畿タンゴ鉄道、土佐くろしお鉄道）
+  智頭急行、京都丹後鉄道、土佐くろしお鉄道、IRいしかわ、えちごトキめき鉄道、
+  あいの風とやま鉄道）
 - IC運賃
 - 株主優待割引
 - 往復割引
@@ -117,6 +127,12 @@ readme.txt                    このファイル
   Windows XP, Vista, 7, 8, 10. 等の Windowsプラットフォームで動作可能です。
   .NETフレームワークは利用しておりません。
 
+  Windows 7 32bit / 64bit
+  Windows 8.1 32bit /64bit
+  Windows 10 preview 
+  での動作確認を行っています。
+  その他のOS(XP、Vista）でも動作可能です。
+
   開発環境は、MacbookAir(2013-Dec) 上の VMware Fusion6上のWindows7 64ビット版
   の Visual Studio 2010(SP1) です。
 　動作確認はWindows7の他に、Windows8.1Pro.(64ビット)で確認しております。
@@ -140,6 +156,26 @@ readme.txt                    このファイル
 
 
 farert ファイル一本を任意のフォルダへ配置し、実行してください。
+
+「経路運賃営業キロ計算アプリ」を実行するには、任意のフォルダを作成し
+（しなくても可）、farert.exe を移動またはコピーして実行してください。
+
+実行時エラーメッセージが表示され、実行できなかった場合以下のファイルを
+マイクロソフトのサイトからダウンロードしてインストールしてからあらためて
+実行してください（WindowsXP, Vista, 7, Windows8、Windows10、
+エディションの種類、32ビット、64ビット問わず）
+
+Microsoft Visual C++ 2010 SP1 再頒布可能パッケージ (x86)
+http://www.microsoft.com/ja-jp/download/details.aspx?id=8328
+
+
+Windows8以降のOSで、はじめて実行する際に「WindowsによってPCが保護されました」と
+表示される場合があります。このとき「実行」をクリックして問題ありません。
+（「実行」ボタンがない場合「詳細」ボタンをクリックしてから「実行」ボタン
+　をクリックしてください）
+
+
+
 
 実行し、経路を指定するとhistory.txtファイルを作成します.
 history.txtはfarertと同一フォルダに作成されます。
@@ -367,3 +403,10 @@ iOS版(iPhone, iPod, iPADでも実行可)を2014年9月にリリースしています。
           - 駅名読みの誤りを修正（申し訳ありませんでした、かなり多数ありました）
           - 旅客営業取扱基準規程第114条が適用された運賃を主表示に変更
           - 岩泉線、江差線（渡島鶴岡-江差）の廃止の反映
+
+以降の改版履歴と最新情報は下記サイトを参照ください。
+http://farert.blogspot.jp/
+「ラベル」-「リリース」をクリックしてください。
+
+
+
