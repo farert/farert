@@ -60,6 +60,7 @@ using namespace std;
 /*static */ int32_t DbidOf::StationIdOf_NISHIAKASHI = 0;    // 西明石
 /*static */ int32_t DbidOf::LineIdOf_TOKAIDO = 0;       	// 東海道線
 /*static */ int32_t DbidOf::LineIdOf_SANYO = 0;        		// 山陽線
+/*static */ int32_t DbidOf::LineIdOf_TOKAIDOSHINKANSEN = 0; // 東海道新幹線
 /*static */ int32_t DbidOf::LineIdOf_SANYOSHINKANSEN = 0; 	// 山陽新幹線
 /*static */ int32_t DbidOf::LineIdOf_HAKATAMINAMISEN = 0; 	// 博多南線
 /*static */ int32_t DbidOf::LineIdOf_OOSAKAKANJYOUSEN = 0; 	// 大阪環状線
@@ -86,6 +87,7 @@ DbidOf::DbidOf()
 		DbidOf::StationIdOf_NISHIAKASHI  = Route::GetStationId(_T("西明石"));
 		DbidOf::LineIdOf_TOKAIDO 		 = Route::GetLineId(_T("東海道線"));
 		DbidOf::LineIdOf_SANYO 			 = Route::GetLineId(_T("山陽線"));
+		DbidOf::LineIdOf_TOKAIDOSHINKANSEN = Route::GetLineId(_T("東海道新幹線"));
 		DbidOf::LineIdOf_SANYOSHINKANSEN = Route::GetLineId(_T("山陽新幹線"));
 		DbidOf::LineIdOf_HAKATAMINAMISEN = Route::GetLineId(_T("博多南線"));
 		DbidOf::LineIdOf_OOSAKAKANJYOUSEN = Route::GetLineId(_T("大阪環状線"));
@@ -105,6 +107,7 @@ DbidOf::DbidOf()
 	ASSERT(0 < DbidOf::StationIdOf_NISHIAKASHI);
 	ASSERT(0 < DbidOf::LineIdOf_TOKAIDO);
 	ASSERT(0 < DbidOf::LineIdOf_SANYO);
+	ASSERT(0 < DbidOf::LineIdOf_TOKAIDOSHINKANSEN);
 	ASSERT(0 < DbidOf::LineIdOf_SANYOSHINKANSEN);
 	ASSERT(0 < DbidOf::LineIdOf_HAKATAMINAMISEN);
 	ASSERT(0 < DbidOf::LineIdOf_OOSAKAKANJYOUSEN);
@@ -3518,6 +3521,27 @@ tstring Route::CompanyName(int32_t id)
 }
 
 //static
+//	駅の所属会社IDを得る
+//	(境界駅はあいまい)
+//
+//	@param [in] station_id   駅id
+//
+int32_t  Route::CompanyIdFromStation(int32_t station_id)
+{
+    DBO ctx = DBS::getInstance()->compileSql(
+				"select company_id from t_station where rowid=?");
+	if (ctx.isvalid()) {
+		ctx.setParam(1, station_id);	// station_id
+		if (ctx.moveNext()) {
+			return ctx.getInt(0);
+		}
+	}
+	ASSERT(FALSE);
+	return 0;
+}
+
+
+//static
 //	DB ver
 //
 bool Route::DbVer(DBsys* db_sys)
@@ -4972,6 +4996,19 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 	int32_t aply88;
 
     BIT_OFF(last_flag, BLF_RULE_EN);    // initialize
+    
+    // JR東海のみで東海道新幹線に乗るだけなら未適用
+    if ((route_list_raw.size() == 2) && 
+        (route_list_raw.at(1).lineId == DbidOf::LineIdOf_TOKAIDOSHINKANSEN)) {
+    	n = Route::CompanyIdFromStation(route_list_raw.at(0).stationId);
+    	if ((n != JR_CENTRAL) && (n != JR_EAST)) {
+    		n = Route::CompanyIdFromStation(route_list_raw.at(1).stationId);
+    	}
+    	if ((n == JR_CENTRAL) || (n == JR_EAST)) {
+			route_list_cooked.assign(route_list_raw.cbegin(), route_list_raw.cend());
+    		return false;
+    	}
+    }
     
 	// 69を適用したものをroute_list_tmp2へ
 	n = Route::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
@@ -7380,6 +7417,15 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 				}
 
 				/* 通過会社 */
+				if (ite->lineId == DbidOf::LineIdOf_TOKAIDOSHINKANSEN) {
+					if (company_id1 == JR_EAST) {
+						company_id1 = JR_CENTRAL;
+					}
+					if (company_id2 == JR_EAST) {
+						company_id2 = JR_CENTRAL;
+					}
+				}
+				
 				this->companymask |= ((1 << (company_id1 - 1)) | ((1 << (company_id2 - 1))));
 
 				if ((company_id1 == JR_CENTRAL) || (company_id1 == JR_WEST)) {
@@ -7438,6 +7484,17 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 	return fare_add;
 }
 
+//
+//	calc_fare() => aggregate_fare_info() -> *
+//	距離値積上集計(JRグループ)
+//
+//	@param [in] company_id1    会社1
+//	@param [in] company_id2    会社2
+//	@param [in] distance       GetDistanceEx()の戻り
+//
+//	@retval 0 success
+//	@retval -1 failure
+//
 int32_t FARE_INFO::aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance)
 {
 	if (company_id1 == company_id2) {		// 同一 1社
