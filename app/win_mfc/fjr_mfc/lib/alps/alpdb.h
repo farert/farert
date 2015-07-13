@@ -505,6 +505,7 @@ public:
 	static int32_t LineIdOf_TOKAIDO;       		// 東海道線
 	static int32_t LineIdOf_SANYO;        		// 山陽線
 	static int32_t LineIdOf_SANYOSHINKANSEN; 	// 山陽新幹線
+	static int32_t LineIdOf_TOKAIDOSHINKANSEN; 	// 東海道新幹線
 	static int32_t LineIdOf_HAKATAMINAMISEN; 	// 博多南線
 	static int32_t LineIdOf_OOSAKAKANJYOUSEN; 	// 大阪環状線
 
@@ -725,6 +726,7 @@ public:
 
     static tstring  PrefectName(int32_t id);
     static tstring  CompanyName(int32_t id);
+    static int32_t  CompanyIdFromStation(int32_t station_id);
 
 public:	// termsel
 	static DBO 		Enum_company_prefect();
