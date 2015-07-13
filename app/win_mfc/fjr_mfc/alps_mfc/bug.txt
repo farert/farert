@@ -1,3 +1,19 @@
+b#15071101
+新幹線で東京-熱海間乗車において、JR東とみなされ、株主優待が適用されてしまう。
+->
+新幹線で東京から熱海はJR東海となるのでそのようにする。
+また、87条も適用しないようにする。
+
+1) DbidOf::LineIdOf_TOKAIDOSHINKANSEN 追加
+2) bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
+の冒頭で、経路が1路線で新幹線で、発着駅がJR東かJR東海なら適用しない。
+3) aggregate_fare_info()で
+companymask の会社フラグをONにする箇所で
+路線が、DbidOf::LineIdOf_TOKAIDOSHINKANSENで、JR東なら、JR東海にする
+--
+
+
+
 セルに長い文字列は入らない場合の件で、
 ラインブレークをCharacter Wrapにする必要がある。
 
