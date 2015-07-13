@@ -2107,6 +2107,29 @@ int32_t Route::reBuild()
 }
 
 
+bool Route::isJrTokai() 
+{
+	vector<RouteItem>::const_iterator ite;
+	
+	int32_t station_id1 = 0;
+	int32_t id = 0;
+
+	/* JR東海以外 and JR東日本で新幹線でない場合false */
+	for (ite = route_list_raw.cbegin(); ite != route_list_raw.cend(); ite++) {
+		id = Route::CompanyIdFromStation(ite->stationId);
+		if ((id != JR_CENTRAL) && (id != JR_EAST)) {
+			return false;
+		}
+		if (id != JR_CENTRAL) {
+			if ((station_id1 != 0) && (ite->lineId != DbidOf::LineIdOf_TOKAIDOSHINKANSEN)) {
+				return false;
+			}
+		}
+		station_id1 = ite->stationId;
+	}
+	return true;
+}
+
 //public:
 //	運賃表示
 //	@return 運賃、営業キロ情報 表示文字列
@@ -2119,6 +2142,7 @@ tstring Route::showFare()
 	tstring sWork;
 	int32_t rule114[3];	// [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
     FARE_INFO fare_info;
+	bool   jrtokai;		/* JR東海 */
 
 	if (route_list_raw.size() <= 1) {
 		return tstring(_T(""));
@@ -2127,6 +2151,9 @@ tstring Route::showFare()
 	if (BIT_CHK(route_list_raw.back().flag, BSRNOTYET_NA)) {
 		return tstring(_T("--------------"));	//この経路の片道乗車券は購入できません."));
 	}
+	
+	jrtokai = isJrTokai();		// JR東海のみ(新幹線なら東京、品川も)
+
 	if (!BIT_CHK(last_flag, BLF_NO_RULE)) {
 		/* 規則適用 */
 		/* 86, 87, 69, 70条 114条適用かチェック */
@@ -2146,23 +2173,36 @@ tstring Route::showFare()
 			sResult = _T("");
 
 			/* 発駅 */
-			sWork = Route::CoreAreaNameByCityId(CSTART, 
-						 						  route_list_cooked.front().lineId, 
-						 						  route_list_cooked.front().flag);
-			if (sWork == _T("")) {
+			// JR東海のみで東京・品川・新横浜発は単駅に
+ 			if (jrtokai && ((CITYNO_TOKYO == MASK_CITYNO(route_list_cooked.front().flag)) || 
+ 			                (CITYNO_YOKOHAMA == MASK_CITYNO(route_list_cooked.front().flag)))) {
 				/* 単駅 */
 				sWork = Route::StationNameEx(route_list_cooked.front().stationId);
+			} else {
+ 				sWork = Route::CoreAreaNameByCityId(CSTART, 
+						 						  route_list_cooked.front().lineId, 
+						 						  route_list_cooked.front().flag);
+				if (sWork == _T("")) {
+					/* 単駅 */
+					sWork = Route::StationNameEx(route_list_cooked.front().stationId);
+				}
 			}
 			sResult += sWork;
 			sResult += _T(" -> ");
 
 			/* 着駅 */
-			sWork = Route::CoreAreaNameByCityId(CEND, 
-						 						route_list_cooked.front().lineId, 
-						 						route_list_cooked.back().flag);
-			if (sWork == _T("")) {
+ 			if (jrtokai && ((CITYNO_TOKYO == MASK_CITYNO(route_list_cooked.back().flag)) || 
+ 			                (CITYNO_YOKOHAMA == MASK_CITYNO(route_list_cooked.back().flag)))) {
 				/* 単駅 */
 				sWork = Route::StationNameEx(route_list_cooked.back().stationId);
+			} else {
+				sWork = Route::CoreAreaNameByCityId(CEND, 
+						 						route_list_cooked.front().lineId, 
+						 						route_list_cooked.back().flag);
+				if (sWork == _T("")) {
+					/* 単駅 */
+					sWork = Route::StationNameEx(route_list_cooked.back().stationId);
+				}
 			}
 			sResult += sWork;
 			sResult += _T("\r\n経由：");
@@ -2319,29 +2359,32 @@ JR東日本 株主優待4： \123,456
 	}
 
 	sWork = _T("");
-	for (int32_t i = 0; true; i++) {
-		tstring s;
-		tstring dummy;
-		TCHAR sb[64];
-		int32_t fareStock = fare_info.getFareStockDiscount(i, s);
-		if (fareStock <= 0) {
-			break;
-		}
-		if (0 < i) {
-			sWork += _T("\r\n");
-		}
-		if (fare_info.isRule114() != 0) {
-			_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s{\\%s}"), 
-						 s.c_str(), 
-						 num_str_yen(fare_info.getFareStockDiscount(i, dummy, true) + 
+	if (jrtokai || (JR_CENTRAL != fare_info.getStockDiscountCompany())) {
+		for (int32_t i = 0; true; i++) {
+			tstring s;
+			tstring dummy;
+			TCHAR sb[64];
+			int32_t fareStock = fare_info.getFareStockDiscount(i, s);
+
+			if (fareStock <= 0) {
+				break;
+			}
+			if (0 < i) {
+				sWork += _T("\r\n");
+			}
+			if (fare_info.isRule114() != 0) {
+				_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s{\\%s}"), 
+							 s.c_str(), 
+							 num_str_yen(fare_info.getFareStockDiscount(i, dummy, true) + 
 						             company_fare).c_str(),
-						 num_str_yen(fareStock + company_fare).c_str());
-		} else {
-			_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s"), 
-						 s.c_str(), 
-						 num_str_yen(fareStock + company_fare).c_str());
+						 	num_str_yen(fareStock + company_fare).c_str());
+			} else {
+				_sntprintf_s(sb, NumOf(sb), _T("%s： \\%s"), 
+							 s.c_str(), 
+							 num_str_yen(fareStock + company_fare).c_str());
+			}
+			sWork += sb;
 		}
-		sWork += sb;
 	}
 
 	sWork = cb + sWork;
@@ -4997,19 +5040,6 @@ bool Route::checkOfRuleSpecificCoreLine(int32_t* rule114)
 
     BIT_OFF(last_flag, BLF_RULE_EN);    // initialize
     
-    // JR東海のみで東海道新幹線に乗るだけなら未適用
-    if ((route_list_raw.size() == 2) && 
-        (route_list_raw.at(1).lineId == DbidOf::LineIdOf_TOKAIDOSHINKANSEN)) {
-    	n = Route::CompanyIdFromStation(route_list_raw.at(0).stationId);
-    	if ((n != JR_CENTRAL) && (n != JR_EAST)) {
-    		n = Route::CompanyIdFromStation(route_list_raw.at(1).stationId);
-    	}
-    	if ((n == JR_CENTRAL) || (n == JR_EAST)) {
-			route_list_cooked.assign(route_list_raw.cbegin(), route_list_raw.cend());
-    		return false;
-    	}
-    }
-    
 	// 69を適用したものをroute_list_tmp2へ
 	n = Route::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
 	TRACE("Rule 69 applied %dtimes.\n", n);
@@ -7083,6 +7113,21 @@ const
 }
 
 
+int32_t FARE_INFO::getStockDiscountCompany()
+{
+	if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
+		return JR_EAST;
+	}
+	if ((JR_GROUP_MASK & companymask) == (1 << (JR_WEST - 1))) {
+		return JR_WEST;
+	}
+	if ((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1))) {
+		return JR_CENTRAL;
+	}
+	return 0;
+}
+
+
 /**	学割運賃を返す(会社線+JR線=全線)
  *
  *	@retval	学割運賃[円]
@@ -7352,7 +7397,7 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 	for (ite = routeList_raw.cbegin(); ite != routeList_raw.cend(); ite++) {
 		if (station_id1 != 0) {
 			if (IsBulletInUrban(ite->lineId, station_id1, ite->stationId)) {
-				this->flag |= (1 << BCBULURB);
+				this->flag |= (1 << BCBULURB); // ONの場合大都市近郊区間特例無効(新幹線乗車している)
 				break;
 			}
 		}
