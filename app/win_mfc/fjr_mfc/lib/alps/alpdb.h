@@ -199,6 +199,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
+#define BCCITYCT					4
+
 #if 0
   vector<RouteItem> 先頭のlineId
   0x01 発駅が都区市内
@@ -360,6 +362,7 @@ public:
 	int32_t		getFareForJR() const;
 	int32_t 	countOfFareStockDiscount() const;
 	int32_t 	getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 = false) const;
+	int32_t     getStockDiscountCompany();
 	int32_t		getAcademicDiscount() const;
 	int32_t		getFareForDisplay() const;
     int32_t     getFareForDisplayPriorRule114() const;
@@ -762,6 +765,9 @@ public:
     //static tstring  Route_script(const vector<RouteItem>& routeList);
 
 	int32_t			setup_route(LPCTSTR route_str);
+
+	bool			isJrTokai();
+	
 private:
 	tstring 		beginStationName(bool applied_agree);
 	tstring 		endStationName(bool applied_agree);
@@ -780,6 +786,7 @@ public:
 	static bool		IsSameNode(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t  NeerJunction(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	int32_t			changeNeerest(bool useBulletTrain);
+
 
 	static DBO	 	Enum_junction_of_lineId(int32_t lineId, int32_t stationId);
 	static DBO	 	Enum_station_of_lineId(int32_t lineId);
