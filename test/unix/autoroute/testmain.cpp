@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#define DBPATH "../../db/jrdb2015.db"
+#define DBPATH "../../../db/jrdb2015.db"
 
 int g_tax = 8;
 extern Route route;
