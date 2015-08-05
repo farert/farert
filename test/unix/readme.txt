@@ -1,5 +1,5 @@
 testmain.cpp を、exp/ autoroute/ all/
-のいずれかのディレクトリからここへコピーしてmakeする
+この下の各ディレクトリ内でMake実行
 
 exp/ コマンドラインで実行
 autoroute/ コマンドラインで自動経路
