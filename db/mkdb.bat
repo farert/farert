@@ -6,6 +6,13 @@ rem 本バッチファイルを実行する
 rem mkdb jrdb2014 2014
 rem mkdb jrdb2015 2015
 
+if %1/==/ goto usage
+if %2/==/ goto usage
+goto next
+:usage
+echo ex.) mkdb jrdb2015 2015
+goto fin
+:next
 python scripts\jr_db_reg.py %1.txt %2 8
 if errorlevel 1 goto err
 python scripts\node_list.py %1.db > scripts\node_list.txt
