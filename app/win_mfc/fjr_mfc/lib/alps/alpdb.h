@@ -202,8 +202,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
-#define BCCITYCT					4
-
 #if 0
   vector<RouteItem> 先頭のlineId
   0x01 発駅が都区市内
@@ -305,9 +303,7 @@ private:
 	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 public:
 	bool calc_fare(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
-    void setRoute(int32_t beginDtationId, int32_t endStationId,
-        const vector<RouteItem>& routeList,
-        SPECIFICFLAG last_flag);
+    void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	void reset() {				//***
 		companymask = 0;
 		sales_km = 0;
@@ -778,11 +774,12 @@ public:
 
 	int32_t			setup_route(LPCTSTR route_str);
 
+private:
     bool            checkJrEastTokai();
 
-private:
 	int32_t 		beginStationId(bool applied_agree);
 	int32_t 		endStationId(bool applied_agree);
+public:
     tstring         BeginOrEndStationName(int32_t ident);
 
 	bool			chk_jctsb_b(int32_t kind, int32_t num);
