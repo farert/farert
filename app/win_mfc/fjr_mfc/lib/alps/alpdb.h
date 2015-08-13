@@ -88,6 +88,7 @@ typedef uint32_t SPECIFICFLAG;
 #define BIT_CHK3(flg, bdef1, bdef2, bdef3)  (0 != (flg & (MASK(bdef1)|MASK(bdef2)|MASK(bdef3))))
 #define BIT_ON(flg, bdef)                   (flg |= MASK(bdef))
 #define BIT_OFF(flg, bdef)                  (flg &= ~MASK(bdef))
+#define BIT_OFFN(flag, pattern)				(flag &= ~(pattern))
 
 #define HWORD_BIT	16		/* Number of bit in half word(unsigned short) */
 
@@ -139,6 +140,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 /* discount */
 #define fare_discount(fare, per) ((fare) / 10 * (10 - (per)) / 10 * 10)
+/* discount 5円の端数切上 */
+#define fare_discount5(fare, per) ((((fare) / 10 * (10 - (per))) + 5) / 10 * 10)
 
 #define CSTART	1
 #define CEND	2
@@ -280,8 +283,17 @@ private:
 	int32_t total_jr_calc_km;			//***
 
 	int32_t company_fare;				/* 会社線料金 */
+	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
+	int32_t company_fare_child;			/* 会社線小児運賃 */
+	int32_t result_flag;				/* 結果状態: BRF_xxx */
+#define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
+#define BRF_COMAPANY_END		1		/* 会社線で終了 */
+										/* 通常OFF-OFF, ON-ONは会社線のみ */
+#define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
+#define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
+
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
-	int32_t fare;						//***
+	int32_t jr_fare;					//***
 	int32_t fare_ic;					//*** 0以外で有効
 	int32_t avail_days;					//***
 	static int32_t tax;					/* 消費税 */
@@ -328,8 +340,10 @@ public:
 		total_jr_calc_km = 0;
 
 		company_fare = 0;
+		company_fare_ac_discount = 0;
+		company_fare_child = 0;
 		flag = 0;
-		fare = 0;
+		jr_fare = 0;
 		fare_ic = 0;
 		avail_days = 0;
 
@@ -342,10 +356,15 @@ public:
         beginTerminalId = 0;
         endTerminalId = 0;
 
+		result_flag = 0;
+
         route_for_disp.clear();
 	}
+	void		setResultIncompleteRoute() { BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE); }
+	int32_t		getResultFlag() const { return result_flag; }
 	int32_t 	roundTripFareWithCompanyLine(bool& return_discount) const;
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
+    int32_t 	roundTripChildFareWithCompanyLine() const;
 	bool 		isUrbanArea() const;
 	int32_t 	getTotalSalesKm() const;
 	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
@@ -361,16 +380,18 @@ public:
 	int32_t		getCalcKmForKyusyu() const;
 	int32_t		getTicketAvailDays() const;
 	int32_t		getFareForCompanyline() const;
-	int32_t		getFareForJR() const;
+	int32_t		getChildFareForDisplay() const;
+	int32_t		getFareForJR() const;	/* 114判定用 */
 	int32_t 	countOfFareStockDiscount() const;
 	int32_t 	getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 = false) const;
 	int32_t     getStockDiscountCompany() const;
-	int32_t		getAcademicDiscount() const;
+	int32_t		getAcademicDiscountFare() const;
+	int32_t		roundTripAcademicFareWithCompanyLine() const;
 	int32_t		getFareForDisplay() const;
     int32_t     getFareForDisplayPriorRule114() const;
 	int32_t		getFareForIC() const;
     bool     getRule114(int32_t* fare, int32_t* sales_km, int32_t* calc_km) const {
-        *fare = rule114_fare;
+		*fare = rule114_fare;
         *sales_km = rule114_sales_km;
         *calc_km = rule114_calc_km;
         return rule114_fare != 0;
@@ -390,8 +411,10 @@ public:
     int32_t getBeginTerminalId() const { return beginTerminalId;}
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
+    static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
 private:
+           int32_t      jrFare() const;
 	static int32_t	 	Fare_basic_f(int32_t km);
 	static int32_t	 	Fare_sub_f(int32_t km);
 	static int32_t	 	Fare_tokyo_f(int32_t km);
@@ -403,7 +426,7 @@ private:
 	static int32_t	 	Fare_shikoku(int32_t skm, int32_t ckm);
 	static int32_t	 	Fare_kyusyu(int32_t skm, int32_t ckm);
 	static int32_t		days_ticket(int32_t sales_km);
-	static int32_t		Fare_company(int32_t station_id1, int32_t station_id2);
+	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, vector<int32_t>& companyFare);
 	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
 	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
 	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
@@ -780,7 +803,7 @@ private:
 	int32_t 		beginStationId(bool applied_agree);
 	int32_t 		endStationId(bool applied_agree);
 public:
-    tstring         BeginOrEndStationName(int32_t ident);
+    static tstring  BeginOrEndStationName(int32_t ident);
 
 	bool			chk_jctsb_b(int32_t kind, int32_t num);
 public:
