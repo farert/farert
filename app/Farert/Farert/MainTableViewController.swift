@@ -307,7 +307,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     lbl.text = "経路が終端に達しました";
                     break;
                 case ROUTE_FARERESULT_ERR1:
-                    lbl.text = "不完全ルート：経路を追加または削除してください.";
+                    lbl.text = "続けて経路を追加または削除してください.";
                     break;
                 case ROUTE_FARERESULT_ERR2:
                     lbl.text = "会社線のみの運賃は表示できません.";
@@ -429,8 +429,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             lbl2.text = ""
             lbl3.text = ""
         } else {
-            lbl1.text = RouteDataController.fareNumStr(fareInfo!.fareForCompanyline + ((fareInfo!.rule114_salesKm != 0) ?
-                fareInfo!.rule114_fare : fareInfo!.fareForJR)) + "円"
+            lbl1.text = RouteDataController.fareNumStr(fareInfo!.fare) + "円"
             lbl2.text = RouteDataController.kmNumStr(fareInfo!.totalSalesKm) + "km"
             lbl3.text = "\(fareInfo!.ticketAvailDays)日間"
         }
@@ -716,10 +715,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     // action menu
     @IBAction func checkAction(sender: UIBarButtonItem) {
-        let flg : Int = ds.getFareOption()
-        
-        if DbUtil.IsOsakakanDetourEnable(flg) {
-            self.actionSheetController(DbUtil.IsOsakakanDetourShortcut(flg) ?
+ 
+        if ds.isOsakakanDetourEnable() {
+            self.actionSheetController(ds.isOsakakanDetourShortcut() ?
                 ["大阪環状線 近回り"] : ["大阪環状線 遠回り"],
                 title: "大阪環状線経由指定", message: "",
                 from: TAG_UIACTIONSHEET_OSAKAKANDETOUR)
@@ -875,8 +873,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     func fareResultSetting(rc: Int) {
 
-        var opt : Int
-    
         if (0 < rc) {
             switch (fareInfo?.result ?? 0) {
             case 0:
@@ -890,9 +886,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         }
         
-        opt = ds.getFareOption()
-        
-        if DbUtil.IsOsakakanDetourEnable(opt) {
+        if ds.isOsakakanDetourEnable() {
             self.actionBarButton.enabled = true
         } else {
             self.actionBarButton.enabled = false
