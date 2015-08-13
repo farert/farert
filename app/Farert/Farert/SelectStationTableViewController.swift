@@ -99,17 +99,20 @@ class SelectStationTableViewController: CSTableViewController {
         // Configure the cell...;
         cell!.textLabel?.text = RouteDataController.StationName(stationId)
         
-        var details : String = "(\(RouteDataController.StationNameKana(stationId)))"
-        if (RouteDataController.IsJunction(stationId)) {    /* junction(lflag.bit12 on) */
+        var details : String = "(\(RouteDataController.GetKanaFromStationId(stationId)))"
+        if (RouteDataController.IsJunction(stationId) &&
+            !RouteDataController.IsSpecificJunction(self.lineId, stationId: stationId)) {
+                /* junction(lflag.bit12 on) */
             var lid : Int
             for lid in RouteDataController.LineIdsFromStation(stationId) as! [Int] {
-                if ((lid != self.lineId) && !RouteDataController.IsSpecificJunction(lid, stationId: stationId)) {
-                    details += RouteDataController.LineName(lid) + "/"
+                if ((lid != self.lineId)  &&
+                    !RouteDataController.IsSpecificJunction(lid, stationId: stationId)) {
+                    details += "/" + RouteDataController.LineName(lid)
                 }
             }
-            if ("/" == details[details.endIndex.predecessor()]) {
-                details += RouteDataController.LineName(self.lineId)
-            }
+            //if ("/" == details[details.endIndex.predecessor()]) {
+            //    details += RouteDataController.LineName(self.lineId)
+            //}
         }
 
         cell.detailTextLabel?.text = details

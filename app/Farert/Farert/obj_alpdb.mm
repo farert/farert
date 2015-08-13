@@ -104,6 +104,7 @@
 
 //  キーワードに一致した駅名を返す
 //
+#if 0 // not used
 + (NSArray*)Match_stations:(NSString*)station_name_sub
 {
     NSMutableArray* stations = [NSMutableArray array];
@@ -123,6 +124,10 @@
     }
     return stations;
 }
+#endif
+
+//  キーワードに一致した駅名を返す
+//  ひらがな昇順ソート
 
 + (NSArray*)Match_stationIds:(NSString*)station_name_sub
 {
@@ -265,12 +270,12 @@
     return stations;
 }
 
-
+#if 0 // not used
 + (NSInteger)NumOfNeerNode:(NSInteger)baseStationId
 {
     return Route::NumOfNeerNode((int)baseStationId);
 }
-
+#endif
 
 + (NSInteger)GetStationId:(NSString*)name
 {
@@ -305,11 +310,7 @@
 
 + (NSString*)TerminalName:(NSInteger)ident
 {
-    if (ident < 10000) {
-        return [self StationNameEx:ident];
-    } else {
-        return [NSString stringWithUTF8String:Route::CoreAreaCenterName((int)ident).c_str()];
-    }
+    return [NSString stringWithUTF8String:Route::BeginOrEndStationName((int32_t)ident).c_str()];
 }
 
 + (BOOL)IsJunction:(NSInteger)station_id
@@ -319,7 +320,7 @@
 
 + (BOOL)IsSpecificJunction:(NSInteger)lineId stationId:(NSInteger)station_id
 {
-    return 0 != (Route::AttrOfStationOnLineLine((int)station_id, (int)lineId) & (1 << 31));
+    return 0 != (Route::AttrOfStationOnLineLine((int)lineId, (int)station_id) & (1 << 31));
 }
 
 
@@ -331,12 +332,13 @@
 ///////////////////////
 
 #pragma mark - instance method
-
+#if 0 // not used
 // ルート選択[完了]か?
 - (BOOL)isComplete:(NSInteger)curStationId
 {
     return (0 < route->routeList().size()) && (route->endStationId() == curStationId);
 }
+#endif
 
 // 開始駅id
 
@@ -367,26 +369,33 @@
     return route->add((int)lineId, (int)stationId);
 }
 
+#if 0 // not used
 - (BOOL)checkPassStation:(NSInteger)stationId
 {
     return route->checkPassStation((int)stationId);
 }
+#endif
 
+#if 0 // not used
 - (void)terminate:(NSInteger)stationId
 {
     route->terminate((int)stationId);
 }
+#endif
 
 - (void)removeTail
 {
     route->removeTail();
 }
 
+#if 0 // not used
 - (BOOL)isModified
 {
     return route->isModified();
 }
+#endif
 
+#if 0 // not used
 - (NSArray*)routeItems
 {
     NSMutableArray* items = [NSMutableArray array];
@@ -400,6 +409,7 @@
 	}
     return items;
 }
+#endif
 
 - (NSArray*)routeItemAtIndex:(NSInteger)index
 {
@@ -511,41 +521,44 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     string str1;
     string str2;
     string notused;
-    int w1;
+    int w1_notused;
     int w2;
     int w3;
+    bool b_notused;
 
     result = [[FareInfo alloc] init];
     
     result.result = fare_result;        /* calculate result */
     result.calcResultFlag = calcFlag;   /* calculate flag */
+    result.resultState = fi.getResultFlag();
 
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
     result.endStationId = fi.getEndTerminalId();
     
-    result.isBeginInCiry = 10000 < result.beginStationId;
-    result.isEndInCiry = 10000 < result.endStationId;
+    result.isBeginInCity = FARE_INFO::IsCityId(fi.getBeginTerminalId());
+    result.isEndInCity = FARE_INFO::IsCityId(fi.getEndTerminalId());
     
     /* route */
     result.routeList = [NSString stringWithUTF8String:fi.getRoute_string().c_str()];
     
     /* stock discount (114 no applied) */
-    w1 = fi.getFareStockDiscount(0, str1);
-    w2 = fi.getFareStockDiscount(1, str2);
-    [result setFareForStockDiscounts:w1 title1:[NSString stringWithUTF8String:str1.c_str()]
-                            Discount2:w2
+    w2 = fi.getFareStockDiscount(0, str1);
+    w3 = fi.getFareStockDiscount(1, str2);
+    [result setFareForStockDiscounts:w2 + fi.getFareForCompanyline()
+                              title1:[NSString stringWithUTF8String:str1.c_str()]
+                            Discount2:w3 + fi.getFareForCompanyline()
                                title2:[NSString stringWithUTF8String:str2.c_str()]];
     result.availCountForFareOfStockDiscount = fi.countOfFareStockDiscount();
     
     /* rule 114 */
-    if (!fi.getRule114(&w1, &w2, &w3)) {
-        w1 = w2 = w3 = 0;
-        result.rule114_fare = w1;
+    if (!fi.getRule114(&w1_notused, &w2, &w3)) {
+        w1_notused = w2 = w3 = 0;
         result.rule114_salesKm = w2;
         result.rule114_calcKm = w3;
+        result.isRule114Applied = NO;
     } else {
-        result.rule114_fare = w1;
+        result.isRule114Applied = YES;
         result.rule114_salesKm = w2;
         result.rule114_calcKm = w3;
 
@@ -553,7 +566,8 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
         w2 = fi.getFareStockDiscount(0, notused, true);
         w3 = fi.getFareStockDiscount(1, notused, true);
         
-        [result setFareForStockDiscountsForR114:w2 Discount2:w3];
+        [result setFareForStockDiscountsForR114:w2 + fi.getFareForCompanyline()
+                                      Discount2:w3 + fi.getFareForCompanyline()];
     }
     
     result.isArbanArea = fi.isUrbanArea();
@@ -585,17 +599,27 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     result.fareForCompanyline = fi.getFareForCompanyline();
     
     // 普通運賃
-    result.fareForJR = fi.getFareForJR();
-    
-    // 普通運賃は, fareForJR + fareForCompanyline;
+    result.fare = fi.getFareForDisplay();
+    result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
+
     // 往復
-    bool dmy;
-    result.roundTripFareWithCompanyLine = fi.roundTripFareWithCompanyLine(dmy);
+    result.roundTripFareWithCompanyLine = fi.roundTripFareWithCompanyLine(b_notused);
     result.roundTripFareWithCompanyLinePriorRule114 = fi.roundTripFareWithCompanyLinePriorRule114();
     
     // IC運賃
     result.fareForIC = fi.getFareForIC();
     
+    // 小児運賃
+    result.childFare = fi.getChildFareForDisplay();
+    
+    // 学割運賃
+    if (0 < (result.academicFare = fi.getAcademicDiscountFare())) {
+        result.isAcademicFare = TRUE;
+        result.roundtripAcademicFare = fi.roundTripAcademicFareWithCompanyLine();
+    } else {
+        result.isAcademicFare = FALSE;
+        result.roundtripAcademicFare = 0;
+    }
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
     

@@ -173,16 +173,31 @@ int g_tax; /* main.m */
     [alps setFareOption:fareFlag availMask:availMask];
 }
 
+/*
 - (NSInteger)getFareOption
 {
     return [alps getFareOption];
 }
+*/
 
 // 大阪環状線 遠回り／近回り
 - (NSInteger)setDetour:(BOOL)enabled
 {
     return [alps setDetour:enabled];
 }
+
+// 大阪環状線 遠回りか近回りか？
+- (BOOL)isOsakakanDetourShortcut
+{
+    return 0x08 == ([alps getFareOption] & 0x0c);
+}
+
+// 大阪環状線 遠回り設定か？
+- (BOOL)isOsakakanDetourEnable
+{
+    return 0x00 != ([alps getFareOption] & 0x0c);
+}
+
 
 //  経路再構築（大阪環状線周り変更）
 #if 0
@@ -258,11 +273,6 @@ int g_tax; /* main.m */
 + (NSString*)StationNameEx:(NSInteger)ident
 {
     return [obj_alpdb StationNameEx:ident];
-}
-
-+ (NSString*)StationNameKana:(NSInteger)ident
-{
-    return [obj_alpdb GetKanaFromStationId:ident];
 }
 
 + (NSString*)LineName:(NSInteger)ident

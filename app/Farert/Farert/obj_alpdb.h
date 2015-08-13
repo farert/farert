@@ -45,7 +45,7 @@ typedef void Route;
 + (NSString*)kmNumStr:(NSInteger)num;
 
 + (NSArray*)Company_and_prefect;
-+ (NSArray*)Match_stations:(NSString*)station_name_sub;
+// not used + (NSArray*)Match_stations:(NSString*)station_name_sub;
 + (NSArray*)Match_stationIds:(NSString*)station_name_sub;
 
 + (NSArray*)Lines_from_company_prefect:(NSInteger)ident;
@@ -58,7 +58,7 @@ typedef void Route;
 + (NSArray*)JunctionIdsOfLineId:(NSInteger)lineId stationId:(NSInteger)stationId;
 + (NSArray*)StationsIdsOfLineId:(NSInteger)lineId;
 
-+ (NSInteger)NumOfNeerNode:(NSInteger)baseStationId;
+// not used + (NSInteger)NumOfNeerNode:(NSInteger)baseStationId;
 
 + (NSInteger)GetStationId:(NSString*)name;
 + (NSString*)StationName:(NSInteger)ident;
@@ -72,7 +72,7 @@ typedef void Route;
 + (NSString*)PrectNameByStation:(NSInteger)stationId;
 
 
-- (BOOL)isComplete:(NSInteger)cur_stationId;
+// not used - (BOOL)isComplete:(NSInteger)cur_stationId;
 - (NSInteger)startStationId;
 - (void)setEndStation:(NSInteger)ident;
 
@@ -83,11 +83,11 @@ typedef void Route;
 - (NSInteger)add:(NSInteger)startStationId;
 - (NSInteger)add:(NSInteger)lineId stationId:(NSInteger)stationId;
 
-- (BOOL)checkPassStation:(NSInteger)stationId;
-- (void)terminate:(NSInteger)stationId;
+// not used - (BOOL)checkPassStation:(NSInteger)stationId;
+// not used - (void)terminate:(NSInteger)stationId;
 - (void)removeTail;
-- (BOOL)isModified;
-- (NSArray*)routeItems;
+// not used - (BOOL)isModified;
+// not used - (NSArray*)routeItems;
 - (NSInteger)lastRouteItemStationId;
 - (NSInteger)lastRouteItemLineId;
 - (NSInteger)changeNeerest:(BOOL)useBulletLine;

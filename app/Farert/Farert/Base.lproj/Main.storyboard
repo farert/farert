@@ -103,14 +103,8 @@
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
-                                            <variation key="heightClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="8" y="12" width="475" height="21"/>
-                                            </variation>
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="8" y="4" width="295" height="36"/>
-                                            </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="15" y="3" width="289" height="37"/>
                                             </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="999" verticalHuggingPriority="251" text="（追加）" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nu5-o4-nAT">
@@ -118,13 +112,7 @@
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.03529411927" green="0.85098046059999999" blue="0.97647064920000004" alpha="1" colorSpace="deviceRGB"/>
                                             <nil key="highlightedColor"/>
-                                            <variation key="heightClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="491" y="12" width="68" height="21"/>
-                                            </variation>
                                             <variation key="widthClass=compact" fixedFrame="YES">
-                                                <rect key="frame" x="291" y="11" width="68" height="21"/>
-                                            </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
                                                 <rect key="frame" x="291" y="11" width="68" height="21"/>
                                             </variation>
                                         </label>
@@ -154,9 +142,6 @@
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="20" y="0.0" width="68" height="21"/>
                                             </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="47" y="-11" width="68" height="43"/>
-                                            </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="102" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="営業キロ" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ocy-fG-4MC">
                                             <rect key="frame" x="18" y="22" width="68" height="21"/>
@@ -165,9 +150,6 @@
                                             <nil key="highlightedColor"/>
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="20" y="23" width="68" height="21"/>
-                                            </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="47" y="22" width="75" height="21"/>
                                             </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="103" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="有効日数" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="s2V-ex-ecO">
@@ -178,9 +160,6 @@
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="215" y="11" width="85" height="21"/>
                                             </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="232" y="0.0" width="68" height="43"/>
-                                            </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="40001" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" text="¥546,700-" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cfi-lJ-Nli">
                                             <rect key="frame" x="94" y="1" width="79" height="21"/>
@@ -189,9 +168,6 @@
                                             <nil key="highlightedColor"/>
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="109" y="0.0" width="89" height="21"/>
-                                            </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="130" y="0.0" width="94" height="21"/>
                                             </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="40002" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="99,900km" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4u6-IU-sd9">
@@ -202,9 +178,6 @@
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="109" y="23" width="89" height="21"/>
                                             </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="130" y="22" width="94" height="21"/>
-                                            </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="40003" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="99日間" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VWF-h7-46D">
                                             <rect key="frame" x="426" y="11" width="54" height="21"/>
@@ -213,9 +186,6 @@
                                             <nil key="highlightedColor"/>
                                             <variation key="widthClass=compact" fixedFrame="YES">
                                                 <rect key="frame" x="308" y="11" width="84" height="21"/>
-                                            </variation>
-                                            <variation key="widthClass=regular" fixedFrame="YES">
-                                                <rect key="frame" x="308" y="1" width="70" height="43"/>
                                             </variation>
                                         </label>
                                     </subviews>
@@ -338,7 +308,7 @@
                                     <segue destination="N50-Mj-u2D" kind="unwind" identifier="terminalSelectDoneSegue" unwindAction="doneTerminal:" id="8Ym-vJ-EHe"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="checkmark" indentationLevel="1" indentationWidth="10" reuseIdentifier="terminalStationCell2" textLabel="7ez-dG-5pW" detailTextLabel="ll7-ET-8Gs" style="IBUITableViewCellStyleSubtitle" id="E0U-rZ-WyM">
+                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="default" accessoryType="checkmark" indentationLevel="1" indentationWidth="10" reuseIdentifier="terminalStationCell2" textLabel="7ez-dG-5pW" detailTextLabel="ll7-ET-8Gs" style="IBUITableViewCellStyleSubtitle" id="E0U-rZ-WyM">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="E0U-rZ-WyM" id="oxA-oe-TjM">
                                     <autoresizingMask key="autoresizingMask"/>
@@ -483,7 +453,7 @@
         <scene sceneID="JFe-a9-y0E">
             <objects>
                 <tableViewController title="運賃詳細" id="ptT-uq-AW3" customClass="ResultTableViewController" customModule="Farert" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="3Fe-Zp-6QH">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" allowsSelection="NO" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="3Fe-Zp-6QH">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="556"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -617,6 +587,9 @@
                                             <variation key="widthClass=compact" misplaced="YES">
                                                 <rect key="frame" x="94" y="0.0" width="91" height="21"/>
                                             </variation>
+                                            <variation key="heightClass=regular-widthClass=compact" misplaced="YES">
+                                                <rect key="frame" x="117" y="2" width="81" height="18"/>
+                                            </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="99,999.9km" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="uyL-Y4-iqq">
                                             <rect key="frame" x="375" y="1" width="81" height="18"/>
@@ -638,7 +611,7 @@
                                         <constraint firstItem="ESf-i9-UkT" firstAttribute="leading" secondItem="Pge-Fn-vmq" secondAttribute="trailing" constant="7" id="FIK-Og-cfn"/>
                                         <constraint firstAttribute="centerY" secondItem="Pge-Fn-vmq" secondAttribute="centerY" id="jwn-MZ-Ggu"/>
                                         <constraint firstAttribute="centerX" secondItem="uyL-Y4-iqq" secondAttribute="leading" constant="-75" id="tbS-eq-ead">
-                                            <variation key="widthClass=regular" constant="-135"/>
+                                            <variation key="widthClass=regular" constant="-90"/>
                                         </constraint>
                                         <constraint firstAttribute="centerY" secondItem="ESf-i9-UkT" secondAttribute="centerY" id="uzx-2k-cXv"/>
                                         <constraint firstAttribute="centerY" secondItem="uyL-Y4-iqq" secondAttribute="centerY" id="xI8-Ni-p1L"/>
@@ -670,6 +643,9 @@
                                             <variation key="widthClass=compact" misplaced="YES">
                                                 <rect key="frame" x="94" y="0.0" width="91" height="21"/>
                                             </variation>
+                                            <variation key="heightClass=regular-widthClass=compact" misplaced="YES">
+                                                <rect key="frame" x="145" y="2" width="81" height="18"/>
+                                            </variation>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="99,999.9km" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="rFp-rP-VeU">
                                             <rect key="frame" x="375" y="1" width="81" height="18"/>
@@ -686,7 +662,7 @@
                                     </subviews>
                                     <constraints>
                                         <constraint firstAttribute="centerX" secondItem="rFp-rP-VeU" secondAttribute="leading" constant="-75" id="QNc-rd-6sX">
-                                            <variation key="widthClass=regular" constant="-135"/>
+                                            <variation key="widthClass=regular" constant="-90"/>
                                         </constraint>
                                         <constraint firstAttribute="centerY" secondItem="rFp-rP-VeU" secondAttribute="centerY" id="Qms-fy-Ba2"/>
                                         <constraint firstAttribute="centerX" secondItem="lLr-ph-qDH" secondAttribute="leading" constant="170" id="SPB-7e-b5L">
@@ -905,6 +881,63 @@
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
+                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="default" indentationLevel="1" indentationWidth="0.0" shouldIndentWhileEditing="NO" reuseIdentifier="rsPersonDiscountFareCell" rowHeight="24" id="30j-bp-vui">
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="30j-bp-vui" id="bZg-bX-qGj">
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="小児運賃：" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wcz-4y-o82">
+                                            <rect key="frame" x="150" y="3" width="84" height="18"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="84" id="UWn-Zt-7Fc"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                            <variation key="widthClass=compact" misplaced="YES">
+                                                <rect key="frame" x="16" y="3" width="185" height="18"/>
+                                            </variation>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥54,555-" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ecX-lD-0bs">
+                                            <rect key="frame" x="222" y="3" width="62" height="18"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                            <variation key="widthClass=compact" misplaced="YES">
+                                                <rect key="frame" x="209" y="1" width="100" height="21"/>
+                                            </variation>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="往復：" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0qP-tK-Seb">
+                                            <rect key="frame" x="315" y="3" width="55" height="18"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="55" id="psB-6J-9Oe"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥54,555-" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sFa-JY-7Wp">
+                                            <rect key="frame" x="376" y="3" width="62" height="18"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                            <variation key="widthClass=compact" misplaced="YES">
+                                                <rect key="frame" x="209" y="1" width="100" height="21"/>
+                                            </variation>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="0qP-tK-Seb" firstAttribute="leading" secondItem="Wcz-4y-o82" secondAttribute="trailing" constant="81" id="4aQ-dF-bQM"/>
+                                        <constraint firstAttribute="centerY" secondItem="0qP-tK-Seb" secondAttribute="centerY" id="7Yd-aT-noz"/>
+                                        <constraint firstAttribute="centerX" secondItem="0qP-tK-Seb" secondAttribute="centerX" constant="-42" id="A9V-Bf-LBr"/>
+                                        <constraint firstItem="0qP-tK-Seb" firstAttribute="leading" secondItem="ecX-lD-0bs" secondAttribute="trailing" constant="31" id="MwC-Ge-ObV"/>
+                                        <constraint firstAttribute="centerY" secondItem="sFa-JY-7Wp" secondAttribute="centerY" id="d6x-BC-ZXj"/>
+                                        <constraint firstAttribute="centerY" secondItem="Wcz-4y-o82" secondAttribute="centerY" id="keL-Ts-5Ck"/>
+                                        <constraint firstItem="sFa-JY-7Wp" firstAttribute="leading" secondItem="0qP-tK-Seb" secondAttribute="trailing" constant="6" id="sDl-D1-h1L"/>
+                                        <constraint firstAttribute="centerY" secondItem="ecX-lD-0bs" secondAttribute="centerY" id="ulM-G5-FXv"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
                             <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="default" indentationLevel="1" indentationWidth="0.0" shouldIndentWhileEditing="NO" reuseIdentifier="rsAvailDaysCell" rowHeight="44" id="74a-vb-hf9">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="74a-vb-hf9" id="Wsc-1w-ffg">
@@ -945,7 +978,7 @@
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="hSV-cF-JFt" id="3Uz-Pw-tpJ">
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="368" translatesAutoresizingMaskIntoConstraints="NO" id="eaZ-vd-oJI">
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)" textAlignment="center" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" preferredMaxLayoutWidth="368" translatesAutoresizingMaskIntoConstraints="NO" id="eaZ-vd-oJI">
                                             <rect key="frame" x="16" y="5" width="568" height="34"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -1016,7 +1049,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7YW-pH-jsh" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1506" y="-2133"/>
+            <point key="canvasLocation" x="-1313" y="-2111"/>
         </scene>
         <!--路線-->
         <scene sceneID="FjL-Ig-mQD">
@@ -1047,7 +1080,7 @@
                                     <segue destination="ScO-um-0Av" kind="show" identifier="termLineToStationSegue" id="aOL-hv-eGG"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" accessoryType="checkmark" indentationLevel="1" indentationWidth="10" reuseIdentifier="termLineCell2" textLabel="khu-J2-1OL" style="IBUITableViewCellStyleDefault" id="WZv-h2-QFQ">
+                            <tableViewCell userInteractionEnabled="NO" contentMode="scaleToFill" selectionStyle="blue" accessoryType="checkmark" indentationLevel="1" indentationWidth="10" reuseIdentifier="termLineCell2" textLabel="khu-J2-1OL" style="IBUITableViewCellStyleDefault" id="WZv-h2-QFQ">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="WZv-h2-QFQ" id="jhZ-Yi-vqq">
                                     <autoresizingMask key="autoresizingMask"/>
@@ -1105,9 +1138,6 @@
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="148" y="231" width="105" height="30"/>
                                 </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="348" y="249" width="105" height="30"/>
-                                </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="348" y="163" width="105" height="30"/>
                                 </variation>
@@ -1115,16 +1145,13 @@
                                     <action selector="gotoSupportURL:" destination="70O-gX-2JZ" eventType="touchUpInside" id="eX4-Ha-8G1"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 15.06" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 15.08" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
                                 <rect key="frame" x="254" y="127" width="93" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="142" y="80" width="117" height="21"/>
-                                </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="342" y="72" width="117" height="21"/>
                                 </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="342" y="70" width="117" height="21"/>
@@ -1138,8 +1165,8 @@
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="71" y="127" width="259" height="27"/>
                                 </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="271" y="125" width="259" height="27"/>
+                                <variation key="widthClass=regular" misplaced="YES">
+                                    <rect key="frame" x="291" y="148" width="220" height="27"/>
                                 </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="271" y="99" width="259" height="27"/>
@@ -1159,8 +1186,8 @@
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="60" y="184" width="281" height="21"/>
                                 </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="260" y="193" width="281" height="21"/>
+                                <variation key="widthClass=regular" misplaced="YES">
+                                    <rect key="frame" x="299" y="191" width="204" height="15"/>
                                 </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="260" y="134" width="281" height="21"/>
@@ -1187,9 +1214,6 @@
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="17" y="274" width="367" height="83"/>
                                 </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="146" y="328" width="508" height="64"/>
-                                </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="146" y="195" width="508" height="64"/>
                                 </variation>
@@ -1204,9 +1228,6 @@
                                 </variation>
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="87" y="488" width="227" height="21"/>
-                                </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="287" y="521" width="227" height="21"/>
                                 </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="287" y="337" width="227" height="21"/>
@@ -1223,9 +1244,6 @@
                                 </variation>
                                 <variation key="widthClass=compact" fixedFrame="YES">
                                     <rect key="frame" x="176" y="390" width="48" height="46"/>
-                                </variation>
-                                <variation key="widthClass=regular" fixedFrame="YES">
-                                    <rect key="frame" x="376" y="437" width="48" height="46"/>
                                 </variation>
                                 <variation key="heightClass=compact-widthClass=regular" fixedFrame="YES">
                                     <rect key="frame" x="376" y="267" width="48" height="46"/>
@@ -1264,7 +1282,7 @@
         <scene sceneID="ffH-EE-vM8">
             <objects>
                 <tableViewController id="wdT-gd-c3P" customClass="SettingsTableViewController" customModule="Farert" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="wBr-uV-lD8">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" allowsSelection="NO" showsSelectionImmediatelyOnTouchBegin="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="wBr-uV-lD8">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>

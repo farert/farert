@@ -112,7 +112,7 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
             }
             let ident : Int = self.termFilteredArray[indexPath.row]
             cell.textLabel?.text = RouteDataController.StationNameEx(ident)
-            cell.detailTextLabel?.text = "\(RouteDataController.StationNameKana(ident))(\(RouteDataController.PrectNameByStation(ident)))"
+            cell.detailTextLabel?.text = "\(RouteDataController.GetKanaFromStationId(ident))(\(RouteDataController.PrectNameByStation(ident)))"
         } else {
             cell = tableView.dequeueReusableCellWithIdentifier("termCompanyAndPrefectCell") as? UITableViewCell
             let ident : Int = self.termCompanyPrefectArray[indexPath.section][indexPath.row]

@@ -22,6 +22,10 @@
 -(void)setFareForStockDiscountsForR114:(NSInteger)discount1 Discount2:(NSInteger)discount2;
 
 @property (nonatomic) NSInteger result; /* 0: success, 1: KOKURA-pending, 2:Company only, -1: failure */
+
+/*
+ * getFareOption()
+ */
 @property (nonatomic) NSInteger calcResultFlag;
 //	calcResultFlag
 //     & 0x80 = 0    : 該当なし
@@ -32,17 +36,43 @@
 //	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
 //     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
 //     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
+// (System->User)
+- (BOOL)isMeihanCityStartTerminalEnable;
+- (BOOL)isMeihanCityStart;
+- (BOOL)isMeihanCityTerminal;
+
+// bit 2-3
+- (BOOL)isOsakakanDetourEnable;
+
+// TRUE: Detour / FALSE: Shortcut
+- (BOOL)isOsakakanDetourShortcut;
+
+// bit 4-5
+- (BOOL)isRuleAppliedEnable;
+- (BOOL)isRuleApplied;
+- (BOOL)isFareOptEnabled;
+
+
+
+@property (nonatomic) NSInteger resultState;
+// 1 会社線で始まっている
+// 2 会社線で終わっている
+// 3 会社線のみ
+// 4 会社線２回以上通過
+// 8 不完全経路（未使用というか前で弾く）
+- (BOOL)isResultCompanyBeginEnd;
+- (BOOL)isResultCompanyMultipassed;
 
 @property (nonatomic) NSInteger beginStationId;
 @property (nonatomic) NSInteger endStationId;
 
-@property (nonatomic) BOOL isBeginInCiry;
-@property (nonatomic) BOOL isEndInCiry;
+@property (nonatomic) BOOL isBeginInCity;
+@property (nonatomic) BOOL isEndInCity;
 
 @property (nonatomic) NSInteger availCountForFareOfStockDiscount;
-@property (nonatomic) NSInteger rule114_fare;
 @property (nonatomic) NSInteger rule114_salesKm;
 @property (nonatomic) NSInteger rule114_calcKm;
+@property (nonatomic) BOOL isRule114Applied;
 @property (nonatomic) BOOL isArbanArea;
 
 
@@ -71,7 +101,8 @@
 @property (nonatomic) NSInteger fareForCompanyline;
 
 // 普通運賃
-@property (nonatomic) NSInteger fareForJR;
+@property (nonatomic) NSInteger fare;
+@property (nonatomic) NSInteger farePriorRule114;
 
 // 普通運賃は, fareForJR + fareForCompanyline;
 // 往復
@@ -86,10 +117,20 @@
 
 -(NSString*)fareForStockDiscountTitle:(NSInteger)index;
 
+// 子供運賃
+@property (nonatomic) NSInteger childFare;
+
+// 学割運賃
+@property (nonatomic) BOOL isAcademicFare;
+@property (nonatomic) NSInteger academicFare;
+@property (nonatomic) NSInteger roundtripAcademicFare;
+
 // 有効日数
 @property (nonatomic) NSInteger ticketAvailDays;
 
 // 経路
 @property (nonatomic) NSString* routeList;
+
+
 
 @end
