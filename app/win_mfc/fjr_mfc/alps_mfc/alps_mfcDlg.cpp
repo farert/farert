@@ -138,7 +138,7 @@ BOOL Calps_mfcDlg::OnInitDialog()
 	Route::DbVer(&dbsys);
 	CString s;
 
-	s.Format(_T(" - DB ver[%s]"), dbsys.name);
+	s.Format(_T(" - DB ver[%s(è¡îÔê≈%d%%):%sGMT]"), dbsys.name, dbsys.tax, dbsys.createdate);
 	CString ss;
 	GetWindowText(ss);
 	SetWindowText(ss + s);
