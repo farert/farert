@@ -25,6 +25,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     var contentsForKm : [[String : String]] = []
     var contentsForFare : [[String : String]] = []
 
+    var contentsForMessage : [String] = []
+
     var fareInfo : FareInfo!
     
     // MARK: UI property
@@ -96,7 +98,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         if self.fareInfo.result == 0 {
-            return 5;
+            return 6;
         } else {
             return 1;
         }
@@ -114,7 +116,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             return num_of_km; /* sales, calc km */
         case 2:
             return num_of_fare; /* Fare */
-        case 3, 4:         /* route list */
+        case 3:
+            return self.contentsForMessage.count
+        case 4, 5:            /* route list */
             return 1;
         default:
             break;
@@ -139,7 +143,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             } else {
                 switch (self.fareInfo.result) {
                 case 1:
-                    cell.textLabel?.text = "経路が不完全のため運賃は表示できません"
+                    cell.textLabel?.text = "経路が不完全です.続けて指定してください"
                 case 2:
                     cell.textLabel?.text = "会社線のみ運賃は表示できません"
                 default:
@@ -210,7 +214,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             /* FARE */
             let dic : [String : String] = self.contentsForFare[indexPath.row]
             
-            if indexPath.row == 0 {
+            switch indexPath.row  {
+            case 0:
                 cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell", forIndexPath: indexPath) as! UITableViewCell
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
@@ -221,23 +226,44 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 lbl = cell.viewWithTag(4) as! UILabel
                 lbl.text = dic["subFare"]; /* company or IC */
                 
-            } else if indexPath.row == 1 {
+            case 1:
                 cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell2", forIndexPath: indexPath) as! UITableViewCell
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
 
                 lbl = cell.viewWithTag(4) as! UILabel
                 lbl.text = dic["subFare"];
-            } else {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsDiscountFareCell", forIndexPath: indexPath) as! UITableViewCell
-                var lbl : UILabel = cell.viewWithTag(1) as! UILabel
+                
+            default:
+                var lbl : UILabel
+                
+                if let subtitle = dic["subTitle"] {
+                    cell = tableView.dequeueReusableCellWithIdentifier("rsPersonDiscountFareCell", forIndexPath: indexPath) as! UITableViewCell
+
+                    lbl = cell.viewWithTag(3) as! UILabel
+                    lbl.text = subtitle
+                    
+                    lbl = cell.viewWithTag(4) as! UILabel
+                    lbl.text = dic["subFare"]
+                    
+                } else {
+                    cell = tableView.dequeueReusableCellWithIdentifier("rsDiscountFareCell", forIndexPath: indexPath) as! UITableViewCell
+                }
+                lbl = cell.viewWithTag(1) as! UILabel
                 lbl.text = dic["title"];
 
                 lbl = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
+                
+                break
             }
-            
         case 3:
+            let message : String = self.contentsForMessage[indexPath.row]
+            cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) as! UITableViewCell
+            let lbl : UILabel = cell.viewWithTag(1) as! UILabel
+            lbl.text = message
+            
+        case 4:
             /* avail days */
             if (false == self.fareInfo.isArbanArea) {
                 cell = tableView.dequeueReusableCellWithIdentifier("rsAvailDaysCell", forIndexPath: indexPath) as! UITableViewCell
@@ -246,11 +272,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 lbl = cell.viewWithTag(2) as! UILabel
                 if 1 < self.fareInfo.ticketAvailDays {
                     var str : String
-                    if (self.fareInfo.isBeginInCiry && self.fareInfo.isEndInCiry) {
+                    if (self.fareInfo.isBeginInCity && self.fareInfo.isEndInCity) {
                         str = "(発着駅都区市内の駅を除き"
-                    } else if (self.fareInfo.isBeginInCiry) {
+                    } else if (self.fareInfo.isBeginInCity) {
                         str = "(発駅都区市内の駅を除き"
-                    } else if (self.fareInfo.isEndInCiry) {
+                    } else if (self.fareInfo.isEndInCity) {
                         str = "(着駅都区市内の駅を除き"
                     } else {
                         str = "("
@@ -267,7 +293,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 }
             }
             
-        case 4:
+        case 5:
             /* ROUTE */
             let rcell : RouteListTableViewCell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) as! RouteListTableViewCell
             rcell.routeString.text = self.fareInfo.routeList!
@@ -330,18 +356,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         switch (section) {
         case 0:
             return "区間" /* section */
-
         case 1:
             return "キロ程" /* sales, calc km */
         case 2:
             return "運賃" /* Fare */
-
         case 3:
-            return "有効日数"
-
+            return ""
         case 4:
+            return "有効日数"
+        case 5:
             return "経由" /* route list */
-
         default:
             break
         }
@@ -395,8 +419,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 ident = "rsDiscountFareCell"
                 value = 24
             }
-
         case 3:
+                    ident = "rsMetroAvailDaysCell"
+                    value = 44
+        case 4:
             /* avail days */
             if !self.fareInfo.isArbanArea ?? false {
                 ident = "rsAvailDaysCell"
@@ -406,7 +432,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 value = 44
             }
 
-        case 4:
+        case 5:
             /* ROUTE */
             let cell : RouteListTableViewCell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell"/*, forIndexPath: indexPath  EXC_BAD_ACCESSになる*/) as! RouteListTableViewCell
             return cell.heightForTitle(self.fareInfo.routeList)
@@ -495,12 +521,12 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
         var items : [String] = Array<String>()
         
-        if DbUtil.IsRuleAppliedEnable(self.fareInfo.calcResultFlag) {
-            if DbUtil.IsRuleApplied(self.fareInfo.calcResultFlag) {
+        if self.fareInfo.isRuleAppliedEnable() {
+            if self.fareInfo.isRuleApplied() {
                 items.append("特例を適用しない")
 
-                if DbUtil.IsMaihanCityStartTerminalEnable(self.fareInfo.calcResultFlag) {
-                    if DbUtil.IsMaihanCityStart(self.fareInfo.calcResultFlag) {
+                if self.fareInfo.isMeihanCityStartTerminalEnable() {
+                    if self.fareInfo.isMeihanCityStart() {
                         // 発駅=都区市内
                         items.append("発駅を単駅指定")
                     } else  {
@@ -515,8 +541,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             items.append("最短経路算出")
         }
         
-        if DbUtil.IsOsakakanDetourEnable(self.fareInfo.calcResultFlag) {
-            if DbUtil.IsOsakakanDetourShortcut(self.fareInfo.calcResultFlag) {
+        if self.fareInfo.isOsakakanDetourEnable() {
+            if self.fareInfo.isOsakakanDetourShortcut() {
                 items.append("大阪環状線 近回り")
             } else {
                 items.append("大阪環状線 遠回り")
@@ -630,7 +656,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.tableView.reloadData()
         }
 
-        if DbUtil.IsFareOptEnabled(self.fareInfo.calcResultFlag) || self.fareInfo.isArbanArea {
+        if self.fareInfo.isFareOptEnabled() || self.fareInfo.isArbanArea {
             self.chgOptionButton.enabled = true
         } else {
             self.chgOptionButton.enabled = false
@@ -692,7 +718,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                                    "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForShikoku))km"]]
             }
         }
-        if (self.fareInfo.rule114_salesKm != 0) {
+        if (self.fareInfo.isRule114Applied) {
             num_of_km++;
             //if (self.fareInfo.rule114_salesKm != self.fareInfo.rule114_calcKm) && (0 != self.fareInfo.rule114_calcKm) {
             if (self.fareInfo.jrCalcKm != self.fareInfo.jrSalesKm) {
@@ -713,20 +739,19 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         
         /* FARE */
         
-        num_of_fare = 2;    /* normal + round */
+        num_of_fare = 3;    /* normal + round + child */
         
         /* 1行目 普通＋会社 or 普通 + IC */
         /* 2行目 (往復）同上 */
         var strFareOpt : String = (self.fareInfo.isRoundtripDiscount) ? " (割引)" : ""
 
-        let fareForJR : Int = (self.fareInfo.rule114_salesKm != 0) ? self.fareInfo.rule114_fare : self.fareInfo.fareForJR
-        if (self.fareInfo.rule114_salesKm != 0) {
+        if (self.fareInfo.isRule114Applied) {
             strFareOpt +=  "(¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)))"
         }
 
         if (self.fareInfo.fareForCompanyline != 0) {
             /* 1: 普通運賃＋会社線 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(fareForJR + self.fareInfo.fareForCompanyline))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
                                 "subTitle" : "うち会社線",
                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline))"]]
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
@@ -734,7 +759,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline * 2))"]]
         } else if (self.fareInfo.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(fareForJR))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
                                 "subTitle" : "IC運賃",
                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC))"]]
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
@@ -742,7 +767,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                                  "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC * 2))"]]
         } else {
             /* 1: 普通運賃 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(fareForJR))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
                                 "subTitle" : "", "subFare" : ""]]
             /* 2: 往復運賃(割引可否) */
             contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
@@ -750,11 +775,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
         
         /* 114 exception */
-        if (self.fareInfo.rule114_salesKm != 0) {
+        if (self.fareInfo.isRule114Applied) {
             num_of_fare++;
-            let fare_str : String = (self.fareInfo.availCountForFareOfStockDiscount <= 0) ?
-                "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForJR + self.fareInfo.fareForCompanyline))":
-                "(¥\(RouteDataController.fareNumStr(self.fareInfo.fareForJR + self.fareInfo.fareForCompanyline)))"
+            let fare_str : String = "(¥\(RouteDataController.fareNumStr(self.fareInfo.farePriorRule114)))"
             contentsForFare += [["title" : "規程114条 適用しない運賃",
                                  "fare" : fare_str]]
         }
@@ -764,12 +787,32 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         
         for (var i : Int = 0; i < self.fareInfo.availCountForFareOfStockDiscount; i++) {
             var fare_str : String
-            if (self.fareInfo.rule114_salesKm != 0) {
+            if (self.fareInfo.isRule114Applied) {
                 fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(2 + i)))(¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i))))"
             } else {
                 fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i)))"
             }
             contentsForFare += [["title" : self.fareInfo.fareForStockDiscountTitle(i), "fare" : fare_str]]
+        }
+        
+        // Child fare
+        contentsForFare += [["title" : "小児運賃",
+                             "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare))",
+                             "subTitle" : "往復",
+                             "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare * 2))"]]
+        if self.fareInfo.isAcademicFare {
+            num_of_fare += 1
+            contentsForFare += [["title" : "学割運賃",
+                "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.academicFare))",
+                "subTitle" : "往復",
+                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundtripAcademicFare))"]]
+        }
+
+        if self.fareInfo.isResultCompanyBeginEnd() {
+            contentsForMessage.append("会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.")
+        }
+        if self.fareInfo.isResultCompanyMultipassed() {
+            contentsForMessage.append("複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.")
         }
     }
     
@@ -843,8 +886,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         // メールビュー生成
         //_mailViewCtl = [[MFMailComposeViewController alloc] init];
         
-        if DbUtil.IsRuleAppliedEnable(self.fareInfo.calcResultFlag) {
-            if DbUtil.IsRuleApplied(self.fareInfo.calcResultFlag) {
+        if self.fareInfo.isRuleAppliedEnable() {
+            if self.fareInfo.isRuleApplied() {
                 body += "(特例適用)\n"
             } else {
                 body += "(特例未適用)\n"
