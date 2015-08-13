@@ -72,8 +72,11 @@
 
 // fare option
 - (void)setFareOption:(NSInteger)optMask availMask:(NSInteger) availMask;
-- (NSInteger)getFareOption;
+//- (NSInteger)getFareOption;
 - (NSInteger)setDetour:(BOOL)enabled;
+
+- (BOOL)isOsakakanDetourShortcut;
+- (BOOL)isOsakakanDetourEnable;
 
 //- (NSInteger)reBuild;
 
@@ -86,7 +89,6 @@
 + (NSInteger)GetStationId:(NSString*)name;
 + (NSString*)StationName:(NSInteger)ident;
 + (NSString*)StationNameEx:(NSInteger)ident;
-+ (NSString*)StationNameKana:(NSInteger)ident;
 + (NSString*)LineName:(NSInteger)ident;
 + (NSString*)CompanyOrPrefectName:(NSInteger)ident;
 
