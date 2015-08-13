@@ -69,4 +69,68 @@
 }
 
 
+/*
+ * getFareOption()
+ */
+
+// (System->User)
+- (BOOL)isMeihanCityStartTerminalEnable
+{
+    return (self.calcResultFlag & 0x03) != 0x00;
+}
+
+- (BOOL)isMeihanCityStart
+{
+    return (self.calcResultFlag & 0x03) == 0x01;
+}
+
+- (BOOL)isMeihanCityTerminal
+{
+    return (self.calcResultFlag & 0x03) == 0x02;
+}
+
+// bit 2-3
+- (BOOL)isOsakakanDetourEnable
+{
+    return (self.calcResultFlag & 0x0c) != 0x00;
+}
+
+// TRUE: Detour / FALSE: Shortcut
+- (BOOL)isOsakakanDetourShortcut
+{
+    return (self.calcResultFlag & 0x0c) == 0x08;
+}
+
+// bit 4-5
+- (BOOL)isRuleAppliedEnable
+{
+    return (self.calcResultFlag & 0x30) != 0x00;
+}
+
+- (BOOL)isRuleApplied
+{
+    return (self.calcResultFlag & 0x30) == 0x10;
+}
+
+- (BOOL)isFareOptEnabled
+{
+    return (self.calcResultFlag & 0x3f) != 0x00;
+}
+
+// 1 会社線で始まっている
+// 2 会社線で終わっている
+// 3 会社線のみ
+// 4 会社線２回以上通過
+// 8 不完全経路（未使用というか前で弾く）
+- (BOOL)isResultCompanyBeginEnd
+{
+    return (self.resultState & 0x3) != 0;
+}
+
+- (BOOL)isResultCompanyMultipassed
+{
+    return (self.resultState & 0x4) != 0;
+}
+
+
 @end
