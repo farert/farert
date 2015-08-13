@@ -127,6 +127,8 @@ class Dbreg:
 			station_id1 integer not null,
 			station_id2 intege not null,
 			fare integer not null,
+			child integer not null,
+			academic integer not null default(0),
 			-- line_id integer not null references t_line(rowid),
 			primary key (station_id1, station_id2)
 		);
@@ -138,6 +140,8 @@ class Dbreg:
 			station_id1 integer not null,
 			station_id2 intege not null,
 			fare integer not null,
+			child integer not null,
+			academic integer not null default(0),
 			-- line_id integer not null references t_line(rowid),
 			primary key (station_id1, station_id2)
 		);
@@ -627,9 +631,9 @@ class Dbreg:
 
 		sql = "insert into " + label + """
  values((select rowid from t_station where name=? and samename=?),
- 		(select rowid from t_station where name=? and samename=?), ?);
+ 		(select rowid from t_station where name=? and samename=?), ?, ?, ?);
 """
-		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2])])
+		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2]), int(linitems[4]), int(linitems[3])])
 
 #------------------------------------------------------------------------------
 	def reg_t_rule69(self, label, linitems, lin):
