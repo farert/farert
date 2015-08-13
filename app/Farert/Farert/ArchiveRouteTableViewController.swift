@@ -129,6 +129,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        allClearButton.enabled = false
         // Return NO if you do not want the specified item to be editable.
         return 0 < self.routeList.count
     }

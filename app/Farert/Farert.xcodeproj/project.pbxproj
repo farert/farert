@@ -40,7 +40,6 @@
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
 		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
 		2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754641ADCC2080020F59C /* CommonDefine.swift */; };
-		2AE754671ADF6A580020F59C /* DbUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754661ADF6A580020F59C /* DbUtil.swift */; };
 		2AE7546B1AE21E8B0020F59C /* FarertTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */; };
 		2AE928861B29CCA000122437 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5F1B059B690026A6CA /* Info.plist */; };
 /* End PBXBuildFile section */
@@ -105,7 +104,6 @@
 		2ACE5A631B059E180026A6CA /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Base; path = Base.lproj/Info.plist; sourceTree = "<group>"; };
 		2AD5D5AE1B0AB20000F8E6AD /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/Info.plist; sourceTree = "<group>"; };
 		2AE754641ADCC2080020F59C /* CommonDefine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonDefine.swift; sourceTree = "<group>"; };
-		2AE754661ADF6A580020F59C /* DbUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DbUtil.swift; sourceTree = "<group>"; };
 		2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FarertTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -162,7 +160,6 @@
 				2A2BB0821AD6966500F7DED2 /* Supporting Files */,
 				2A2BB0BA1AD6974400F7DED2 /* Farert-Bridging-Header.h */,
 				2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */,
-				2AE754661ADF6A580020F59C /* DbUtil.swift */,
 			);
 			path = Farert;
 			sourceTree = "<group>";
@@ -358,7 +355,6 @@
 				2A2BB0DD1AD6BE8500F7DED2 /* db.cpp in Sources */,
 				2A2BB0C61AD6974400F7DED2 /* HeaderTableViewCell.swift in Sources */,
 				2A2BB0B01AD6970D00F7DED2 /* ResultTableViewController.swift in Sources */,
-				2AE754671ADF6A580020F59C /* DbUtil.swift in Sources */,
 				2A2BB0C41AD6974400F7DED2 /* FarertDataObj.m in Sources */,
 				2A2BB0E11AD6BE8500F7DED2 /* RouteDataController.m in Sources */,
 				2A2BB0E01AD6BE8500F7DED2 /* obj_alpdb.mm in Sources */,
