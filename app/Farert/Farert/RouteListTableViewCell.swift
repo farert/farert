@@ -25,8 +25,7 @@ class RouteListTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         if ((UIDevice.currentDevice().systemVersion as NSString).floatValue) < 8.0 {
-            let bouds : CGRect = self.bounds
-            self.routeString?.preferredMaxLayoutWidth = bounds.size.width - 12 - 12
+            self.routeString?.preferredMaxLayoutWidth = self.bounds.size.width - 12 - 12
         }
         super.layoutSubviews()
     }

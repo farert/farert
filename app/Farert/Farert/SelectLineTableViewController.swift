@@ -50,7 +50,7 @@ class SelectLineTableViewController: UITableViewController {
     // 戻ってきたときにセルの選択を解除
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated);
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
     }
@@ -71,9 +71,9 @@ class SelectLineTableViewController: UITableViewController {
         let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         
         if ((apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) && (self.lastLineId == lineId)) {
-            cell = tableView.dequeueReusableCellWithIdentifier("termLineCell2", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("termLineCell2", forIndexPath: indexPath) 
         } else {
-            cell = tableView.dequeueReusableCellWithIdentifier("termLineCell", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("termLineCell", forIndexPath: indexPath) 
         }
         
         cell.textLabel?.text = RouteDataController.LineName(lineId)
@@ -138,7 +138,7 @@ class SelectLineTableViewController: UITableViewController {
             // 駅一覧テーブルビュー(to SelectStationTableView)
             let selStationViewController : SelectStationTableViewController = segue.destinationViewController as! SelectStationTableViewController
             selStationViewController.companyOrPrefectId = self.companyOrPrefectId;
-            selStationViewController.lineId = Int(self.lineList[self.tableView.indexPathForSelectedRow()?.row ?? 0])
+            selStationViewController.lineId = Int(self.lineList[self.tableView.indexPathForSelectedRow?.row ?? 0])
             selStationViewController.lastStationId = self.baseStationId
             selStationViewController.transit_state = FGD.FA_TRANSIT_STA2JCT
         } else if (segid  == "autoRouteSegue") {
