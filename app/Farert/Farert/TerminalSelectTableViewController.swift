@@ -49,7 +49,7 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
         //    [self.tableView setContentOffset:CGPointMake(0.0f, self.searchDisplayController.searchBar.frame.size.height)];
     
         // 戻ってきたときにセルの選択を解除
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
     }
@@ -106,17 +106,22 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
         var cell : UITableViewCell!
         
         if (tableView == self.searchDisplayController?.searchResultsTableView) {
-            cell = tableView.dequeueReusableCellWithIdentifier(cell_identifier) as? UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier(cell_identifier)
             if (cell == nil) {
                 cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: cell_identifier)
+                if (cell == nil) {
+                    return cell
+                }
             }
             let ident : Int = self.termFilteredArray[indexPath.row]
             cell.textLabel?.text = RouteDataController.StationNameEx(ident)
             cell.detailTextLabel?.text = "\(RouteDataController.GetKanaFromStationId(ident))(\(RouteDataController.PrectNameByStation(ident)))"
         } else {
-            cell = tableView.dequeueReusableCellWithIdentifier("termCompanyAndPrefectCell") as? UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("termCompanyAndPrefectCell")
             let ident : Int = self.termCompanyPrefectArray[indexPath.section][indexPath.row]
-            cell.textLabel?.text = RouteDataController.CompanyOrPrefectName(ident)
+            if cell != nil {
+                cell.textLabel?.text = RouteDataController.CompanyOrPrefectName(ident)
+            }
         }
         return cell;
     }
@@ -172,8 +177,8 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
             // 都道府県または会社に属する路線一覧
             let selectLineTblViewController : SelectLineTableViewController = segue.destinationViewController as! SelectLineTableViewController
             
-            let section : Int = self.tableView.indexPathForSelectedRow()?.section ?? 0
-            let row : Int = self.tableView.indexPathForSelectedRow()?.row ?? 0
+            let section : Int = self.tableView.indexPathForSelectedRow?.section ?? 0
+            let row : Int = self.tableView.indexPathForSelectedRow?.row ?? 0
             let iDs : [Int] = self.termCompanyPrefectArray[section] as [Int]
             selectLineTblViewController.companyOrPrefectId = iDs[row]
             selectLineTblViewController.baseStationId = 0
@@ -202,18 +207,19 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
     }
     
     // MARK: - UISearchDisplayController Delegate Methods
-    func searchDisplayController(controller : UISearchDisplayController, shouldReloadTableForSearchString searchString : String) -> Bool {
+    func searchDisplayController(controller : UISearchDisplayController, shouldReloadTableForSearchString searchString : String?) -> Bool {
         // Tells the table data source to reload when text changes
         
         let selidx : Int = self.searchDisplayController?.searchBar.selectedScopeButtonIndex ?? 0
         var scope_str : String
-        if let scope_titles : [String]? = self.searchDisplayController?.searchBar.scopeButtonTitles as? [String] {
+        if let scope_titles : [String]? = self.searchDisplayController?.searchBar.scopeButtonTitles {
             scope_str = scope_titles?[selidx] ?? ""
         } else {
             scope_str = ""
         }
-        self.filterContentForSearchText(searchString, scope: scope_str)
-
+        if searchString != nil {
+            self.filterContentForSearchText(searchString!, scope: scope_str)
+        }
         // Return YES to cause the search result table view to be reloaded.
 
         return true
