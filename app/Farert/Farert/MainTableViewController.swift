@@ -116,9 +116,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         } else {
             // 初回起動時
             // AlertView(iOS7, iOS8)
-            if objc_getClass("UIAlertController") != nil {
+            if #available(iOS 8, OSX 10.10, *) {
                 /* iOS8 */
-                var ac = UIAlertController(title: WELCOME_TITLE, message: WELCOME_MESSAGE, preferredStyle: .Alert)
+                let ac = UIAlertController(title: WELCOME_TITLE, message: WELCOME_MESSAGE, preferredStyle: .Alert)
                 let otherAction = UIAlertAction(title: "了解", style: .Default) {
                     action in
                 }
@@ -127,7 +127,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 
             } else {
                 /* iOS7 */
-                var av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
+                let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
                 av.show()
             }
             NSUserDefaults.standardUserDefaults().setBool(true, forKey: "HasLaunchedOnce")
@@ -166,14 +166,15 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             longTermFuncMode = LPROC_SETUPROUTE;
             let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
             dispatch_after(time, dispatch_get_main_queue(), {
-                NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
+                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
+                self.processDuringIndicatorAnimating(self.routeScript ?? "")
             })
         }
         viewContextMode = 0;
         // ここまでは ObjCまでは、viewWillApear にあったが、こっちに写してみた
 
         // セルの選択を解除
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
         
@@ -296,7 +297,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             /*
             * 最後の行
             */
-            let cell = tableView.dequeueReusableCellWithIdentifier("LastRouteCell") as! UITableViewCell
+            let cell = tableView.dequeueReusableCellWithIdentifier("LastRouteCell") as UITableViewCell!
             let lbl = cell.viewWithTag(201) as! UILabel
             if (routeStat != 0) {
                 switch (routeStat) {
@@ -517,7 +518,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             
         } else if segid == "fareInfoDetailSegue" {
             /* 運賃詳細ビュー */
-            let idx = self.tableView.indexPathForSelectedRow()?.row ?? 0
+            let idx = self.tableView.indexPathForSelectedRow?.row ?? 0
             let resultViewCtlr : ResultTableViewController = segue.destinationViewController as! ResultTableViewController
             resultViewCtlr.ds = RouteDataController(assign: self.ds, count: idx + 2)
             apd.context = 0;
@@ -621,7 +622,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         } else {
             //NSAssert(nil, @"bug");
-            println("Bug?? \(segue.identifier)")
+            print("Bug?? \(segue.identifier)")
         }
     }
 
@@ -633,14 +634,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     @IBAction func cancelTerminal(segue: UIStoryboardSegue) {
         self.navigationController?.popViewControllerAnimated(false)
 
-        println("canelTerminal segue=\(segue.identifier)")
+        print("canelTerminal segue=\(segue.identifier)")
     }
     
     // exit(unwind) segue
     //  from: VersionInfoViewController
     //
     @IBAction func closeModal(segue: UIStoryboardSegue) {
-        println("MainView: closeModal:")
+        print("MainView: closeModal:")
         if segue.identifier == "settingsSegue" {
             let view : SettingsTableViewController = segue.sourceViewController as! SettingsTableViewController
             if (0 < view.selectDbId) {  // is change DB
@@ -696,7 +697,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         // [self performSelector:@selector(processDuringIndicatorAnimating:) withObject:nil afterDelay:0.1];
         let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
         dispatch_after(time, dispatch_get_main_queue(), {
-            NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+            //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+            self.processDuringIndicatorAnimating(NSNull)
         })
     }
     
@@ -728,14 +730,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     // begin Action select menu.
     func actionSheetController(menu_list : [String], title : String, message : String, from : Int) {
         
-        if nil != objc_getClass("UIAlertController") {
+        if #available(iOS 8, OSX 10.10, *) {
             // iOS8
             let ac : UIAlertController = UIAlertController(title: title, message: message, preferredStyle: .ActionSheet)
             for item : String in menu_list {
-                ac.addAction(UIAlertAction(title: item, style: .Default, handler: { (action: UIAlertAction!) in self.actionSelectProcFrom(from, label: item)}))
+                ac.addAction(UIAlertAction(title: item, style: .Default, handler: { (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item)}))
             }
             if nil == menu_list.last!.rangeOfString("いいえ") {
-                ac.addAction(UIAlertAction(title: "キャンセル", style: .Cancel, handler: {(action: UIAlertAction!) in self.actionSelectProcFrom(from, label: "キャンセル")}))
+                ac.addAction(UIAlertAction(title: "キャンセル", style: .Cancel, handler: {(action: UIAlertAction) in self.actionSelectProcFrom(from, label: "キャンセル")}))
             }
             // for iPad
             ac.modalPresentationStyle = UIModalPresentationStyle.Popover
@@ -777,7 +779,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 case TAG_UIACTIONSHEET_OSAKAKANDETOUR:
                     actsheet.showFromBarButtonItem(self.actionBarButton, animated: true)
                 case TAG_UIACTIONSHEET_AUTOROUTE:
-                    actsheet.showFromRect(self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow()!), inView: self.view, animated: true)
+                    actsheet.showFromRect(self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow!), inView: self.view, animated: true)
                 case TAG_UIACTIONSHEET_QUERYSETUPROUTE:
                     actsheet.showFromRect(self.tableView.rectForHeaderInSection(0), inView: self.view, animated: true)
                 default:
@@ -788,7 +790,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
                 let win : UIWindow = apd.window!
                 
-                if contains(win.subviews as! [UIView], self.tableView as UIView) {
+                if (win.subviews ).contains(self.tableView as UIView) {
                     actsheet.showInView(self.view)
                 } else {
                     actsheet.showInView(win)
@@ -807,7 +809,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         if buttonIndex < 0 {
             actionSelectProcFrom(actionSheet.tag, label: "キャンセル")
         } else {
-            actionSelectProcFrom(actionSheet.tag, label: actionSheet.buttonTitleAtIndex(buttonIndex))
+            // <swift1> actionSelectProcFrom(actionSheet.tag, label: actionSheet.buttonTitleAtIndex(buttonIndex))
+            actionSelectProcFrom(actionSheet.tag, label: (actionSheet.buttonTitleAtIndex(buttonIndex))!)
         }
     }
     
@@ -835,7 +838,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             let selectIndex : Int = (nil != title.rangeOfString("使う")) ? 0 : 1
             let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
             dispatch_after(time, dispatch_get_main_queue(), {
-                NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: selectIndex)
+                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: selectIndex)
+                self.processDuringIndicatorAnimating(selectIndex)
             })
             
         } else if (from == TAG_UIACTIONSHEET_QUERYSETUPROUTE) {
@@ -918,7 +922,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     }
     
     func alertMessage(title : String, message : String) {
-        if nil != objc_getClass("UIAlertController") {
+        if #available(iOS 8, OSX 10.10, *) {
             // iOS8
             let ac : UIAlertController = UIAlertController(title: self.title!, message: message, preferredStyle: .Alert)
             ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))

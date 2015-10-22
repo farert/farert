@@ -47,7 +47,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.routeList = RouteDataController.loadStrageRoute() as! [String]
         
         if !self.currentRouteString.isEmpty {
-            if let idx = find(self.routeList, self.currentRouteString) {      // is exist ?
+            if let idx = self.routeList.indexOf(self.currentRouteString) {      // is exist ?
                 self.routeList.removeAtIndex(idx)
                 self.routeList.insert(self.currentRouteString, atIndex: 0)  // 入れ替え
                 RouteDataController.saveToRouteArray(self.routeList)   // して保存
@@ -76,7 +76,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     // 戻ってきたときにセルの選択を解除
     override func viewWillAppear(animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
     }
@@ -197,9 +197,9 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     override func tableView(tableView : UITableView, viewForHeaderInSection section : Int) -> UIView? {
 
         if (section == 0) && (self.routeList.count <= 0) {
-            let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("routeListEmptyCell") as! UITableViewCell
+            let cell = tableView.dequeueReusableCellWithIdentifier("routeListEmptyCell") as UITableViewCell!
+//          return cell.contentView
             return cell
-//            return cell.contentView
         } else {
             return nil
         }
@@ -211,7 +211,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     override func tableView(tableView : UITableView, heightForHeaderInSection section : NSInteger) -> CGFloat {
         if (section == 0) {
             if (self.routeList.count <= 0) {
-                let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("routeListEmptyCell") as! UITableViewCell
+                //let cell = tableView.dequeueReusableCellWithIdentifier("routeListEmptyCell") as! UITableViewCell
                 //return cell.contentView.bounds.size.height
                 return 44.0
             }
@@ -230,7 +230,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         // Pass the selected object to the new view controller.
         if segue.identifier == "unwindArchiveRouteSelectSegue" {
             // セル選択
-            if let selidx = self.tableView.indexPathForSelectedRow()?.row {
+            if let selidx = self.tableView.indexPathForSelectedRow?.row {
                 let str : String = self.routeList[selidx]
                 self.selectRouteString = str.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
             } else {
@@ -245,22 +245,26 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     //      Perform Segue (Select tableview row)
     //
     //
-    override func shouldPerformSegueWithIdentifier(identifier : String?, sender : AnyObject?) -> Bool {
+    override func shouldPerformSegueWithIdentifier(identifier : String, sender : AnyObject?) -> Bool {
 
         if identifier  == "unwindArchiveRouteSelectSegue" {
-            if self.saved || (self.tableView.indexPathForSelectedRow()?.row == 0) {
+            if true == self.allClearButton.enabled {
+                // 編集中は選択は無視する（何もしない）
+                return false
+            }
+            if self.saved || (self.tableView.indexPathForSelectedRow?.row == 0) {
                 return true
             } else {
 
-                if nil != objc_getClass("UIAlertController") {
-                    // iOS8
+                if #available(iOS 8, OSX 10.10, *) {
+    // iOS8
                     let ac : UIAlertController = UIAlertController(title: "経路は保存されていません.", message: nil, preferredStyle: .ActionSheet)
                     ac.addAction(UIAlertAction(title: "選択した経路を表示", style: .Default, handler: { (action) in self.actionSelectProc(0, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
                     ac.addAction(UIAlertAction(title: "経路選択画面へ元の経路を保持したまま戻る", style: .Default, handler: { (action) in self.actionSelectProc(1, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
                     ac.addAction(UIAlertAction(title: "キャンセル", style: UIAlertActionStyle.Cancel, handler:  { (action) in self.actionSelectProc(2, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
                     // for iPad
                     ac.modalPresentationStyle = UIModalPresentationStyle.Popover
-                    ac.popoverPresentationController?.sourceRect = self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow()!)
+                    ac.popoverPresentationController?.sourceRect = self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow!)
                     ac.popoverPresentationController?.sourceView = self.view
                     // end of for iPad
                     self.presentViewController(ac, animated: true, completion: nil)
@@ -281,12 +285,12 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                     if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
                         self.clearsSelectionOnViewWillAppear = false
                         self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
-                        actsheet.showFromRect(self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow()!), inView: self.view, animated: true)
+                        actsheet.showFromRect(self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow!), inView: self.view, animated: true)
                     } else {
                         let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
                         let win : UIWindow = apd.window!
                         
-                        if contains(win.subviews as! [UIView], self.tableView as UIView) {
+                        if (win.subviews ).contains(self.tableView as UIView) {
                             actsheet.showInView(self.view)
                         } else {
                             actsheet.showInView(win)
@@ -320,7 +324,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 self.dismissViewControllerAnimated(true, completion: nil)
             }
             // cancel
-            self.tableView.deselectRowAtIndexPath(tableView.indexPathForSelectedRow()!, animated: false)
+            self.tableView.deselectRowAtIndexPath(tableView.indexPathForSelectedRow!, animated: false)
         } else if tag == TAG_UIACTIONSHEET_QUERYCLEARALL {
             if selectIndex == 0 {
                 RouteDataController.saveToRouteArray([])
@@ -344,14 +348,16 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     // [Clear] button
     @IBAction func allClearButtonTapped(sender: AnyObject) {
         
-        if nil != objc_getClass("UIAlertController") {
+        if #available(iOS 8, OSX 10.10, *) {
             // iOS8
-            let ac : UIAlertController = UIAlertController(title: "全経路を破棄してよろしいですか？", message: nil, preferredStyle: .ActionSheet)
-            ac.addAction(UIAlertAction(title: "はい", style: .Default, handler: { (action: UIAlertAction!) in self.actionSelectProc(0, Tag: self.TAG_UIACTIONSHEET_QUERYCLEARALL)}))
-            ac.addAction(UIAlertAction(title: "いいえ", style: .Default, handler: { (action: UIAlertAction!) in self.actionSelectProc(1, Tag: self.TAG_UIACTIONSHEET_QUERYCLEARALL)}))
+            guard let ac : UIAlertController = UIAlertController(title: "全経路を破棄してよろしいですか？", message: nil, preferredStyle: .ActionSheet) else {
+                return
+            }
+            ac.addAction(UIAlertAction(title: "はい", style: .Default, handler: { (action: UIAlertAction) in self.actionSelectProc(0, Tag: self.TAG_UIACTIONSHEET_QUERYCLEARALL)}))
+            ac.addAction(UIAlertAction(title: "いいえ", style: .Default, handler: { (action: UIAlertAction) in self.actionSelectProc(1, Tag: self.TAG_UIACTIONSHEET_QUERYCLEARALL)}))
             // for iPad
             ac.modalPresentationStyle = UIModalPresentationStyle.Popover
-            ac.popoverPresentationController?.barButtonItem = sender as! UIBarButtonItem
+            ac.popoverPresentationController?.barButtonItem = sender as? UIBarButtonItem
             ac.popoverPresentationController?.sourceView = self.view
             // end of for iPad
             self.presentViewController(ac, animated: true, completion: nil)
@@ -376,7 +382,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
                 let win : UIWindow = apd.window!
                 
-                if contains(win.subviews as! [UIView], self.tableView as UIView) {
+                if (win.subviews ).contains(self.tableView as UIView) {
                     actsheet.showInView(self.view)
                 } else {
                     actsheet.showInView(win)

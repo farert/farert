@@ -84,7 +84,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     // 戻ってきたときにセルの選択を解除
     override func viewWillAppear(animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
     }
@@ -132,7 +132,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         var cell : UITableViewCell
         
         if (nil == self.fareInfo) || (self.fareInfo.result != 0) {    // error
-            cell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) as!UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) 
             //lbl = (UILabel*)[cell viewWithTag:1];
             //lbl.text = [self.fareInfo routeList];
             cell.textLabel?.font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
@@ -159,7 +159,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         switch indexPath.section {
         case 0:
             /* section */
-            cell = tableView.dequeueReusableCellWithIdentifier("rsTitleCell", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("rsTitleCell", forIndexPath: indexPath) 
 
             let lbl : UILabel = cell.viewWithTag(1) as! UILabel
             lbl.text = "\(RouteDataController.TerminalName(self.fareInfo.beginStationId)) → \(RouteDataController.TerminalName(self.fareInfo.endStationId))"
@@ -169,7 +169,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             let dic : [String : String] = self.contentsForKm[indexPath.row]
             
             if indexPath.row == 0 {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell1", forIndexPath:indexPath) as! UITableViewCell
+                cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell1", forIndexPath:indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["salesKm"]
                 if let str : String = dic["calcKm"] {
@@ -186,9 +186,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             } else {
                 if nil == dic["Company_salesKm"] {
                     if ((dic["title"]?.rangeOfString("114")) != nil) {
-                        cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell2x", forIndexPath:indexPath) as! UITableViewCell
+                        cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell2x", forIndexPath:indexPath) 
                     } else {
-                        cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell2", forIndexPath:indexPath) as! UITableViewCell
+                        cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell2", forIndexPath:indexPath) 
                     }
                     var lbl : UILabel = cell.viewWithTag(1) as! UILabel
                     lbl.text = dic["title"]
@@ -202,7 +202,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                         lbl.text = ""
                     }
                 } else {
-                    cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell3", forIndexPath: indexPath) as! UITableViewCell
+                    cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell3", forIndexPath: indexPath) 
                     var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                     lbl.text = dic["JR_salesKm"]
                     lbl = cell.viewWithTag(4) as! UILabel
@@ -216,7 +216,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             
             switch indexPath.row  {
             case 0:
-                cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell", forIndexPath: indexPath) as! UITableViewCell
+                cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell", forIndexPath: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
                 
@@ -227,7 +227,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 lbl.text = dic["subFare"]; /* company or IC */
                 
             case 1:
-                cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell2", forIndexPath: indexPath) as! UITableViewCell
+                cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell2", forIndexPath: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
 
@@ -238,7 +238,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 var lbl : UILabel
                 
                 if let subtitle = dic["subTitle"] {
-                    cell = tableView.dequeueReusableCellWithIdentifier("rsPersonDiscountFareCell", forIndexPath: indexPath) as! UITableViewCell
+                    cell = tableView.dequeueReusableCellWithIdentifier("rsPersonDiscountFareCell", forIndexPath: indexPath) 
 
                     lbl = cell.viewWithTag(3) as! UILabel
                     lbl.text = subtitle
@@ -247,7 +247,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     lbl.text = dic["subFare"]
                     
                 } else {
-                    cell = tableView.dequeueReusableCellWithIdentifier("rsDiscountFareCell", forIndexPath: indexPath) as! UITableViewCell
+                    cell = tableView.dequeueReusableCellWithIdentifier("rsDiscountFareCell", forIndexPath: indexPath) 
                 }
                 lbl = cell.viewWithTag(1) as! UILabel
                 lbl.text = dic["title"];
@@ -259,14 +259,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
         case 3:
             let message : String = self.contentsForMessage[indexPath.row]
-            cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) 
             let lbl : UILabel = cell.viewWithTag(1) as! UILabel
             lbl.text = message
             
         case 4:
             /* avail days */
             if (false == self.fareInfo.isArbanArea) {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsAvailDaysCell", forIndexPath: indexPath) as! UITableViewCell
+                cell = tableView.dequeueReusableCellWithIdentifier("rsAvailDaysCell", forIndexPath: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(1) as! UILabel
                 lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
                 lbl = cell.viewWithTag(2) as! UILabel
@@ -286,7 +286,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     lbl.text = "(途中下車前途無効)"
                 }
             } else {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) as! UITableViewCell
+                cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) 
                 if nil == self.fareInfo {
                     cell.textLabel?.text = "エラー"
                     assert(false)
@@ -299,7 +299,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             rcell.routeString.text = self.fareInfo.routeList!
             cell = rcell
         default:
-            cell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) 
             // provisional
             break;
         }
@@ -495,7 +495,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.showIndicate()
             self.navigationController?.view.userInteractionEnabled = false
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC))), dispatch_get_main_queue(), {
-                NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+                self.processDuringIndicatorAnimating(NSNull)
             })
             
         } else if nil != title.rangeOfString("回り") {
@@ -549,16 +550,15 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
         }
         
-        if nil != objc_getClass("UIAlertController") {
-            // iOS8
+        if #available(iOS 8, OSX 10.10, *) {            // iOS8
             let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .ActionSheet)
             for item in items {
-                ac.addAction(UIAlertAction(title: item, style: .Default, handler: { (action: UIAlertAction!) in self.actionSelectProc(action!.title)}))
+                ac.addAction(UIAlertAction(title: item, style: .Default, handler: { (action: UIAlertAction) in self.actionSelectProc(action.title!)}))
             }
             ac.addAction(UIAlertAction(title: "キャンセル", style: .Cancel, handler: nil))
             // for iPad
             ac.modalPresentationStyle = UIModalPresentationStyle.Popover
-            ac.popoverPresentationController?.barButtonItem = sender as! UIBarButtonItem
+            ac.popoverPresentationController?.barButtonItem = (sender as! UIBarButtonItem)
             ac.popoverPresentationController?.sourceView = self.view
             // end of for iPad
             self.presentViewController(ac, animated: true, completion: nil)
@@ -584,7 +584,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
                 let win : UIWindow = apd.window!
 
-                if contains(win.subviews as! [UIView], self.tableView as UIView) {
+                if (win.subviews ).contains(self.tableView as UIView) {
                     actsheet.showInView(self.view)
                 } else {
                     actsheet.showInView(win)
@@ -609,7 +609,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             return; // Canceled
         }
     
-        let title : String = actionSheet.buttonTitleAtIndex(buttonIndex)
+        let title : String = actionSheet.buttonTitleAtIndex(buttonIndex)!
         actionSelectProc(title)
     }
     
@@ -634,7 +634,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     // MARK: - local
     
     // FareInfo 再計算
-    func reCalcFareInfo(_ initial : Bool = false) {
+    func reCalcFareInfo(initial : Bool = false) {
         
         // initial = false : fareInfoは有効ではなくてはいけない
         // initial = true  : 初期化プロセスなのでfareInfoは無効で良い
@@ -848,7 +848,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         let subject : String = self.resultTitle()
         let shareText : String = self.resultMessage(subject)
         let activityItems : [AnyObject] = [shareText as AnyObject]
-        let excludeActivities : [AnyObject] = [UIActivityTypePostToWeibo]
+        let excludeActivities : [String]? = [UIActivityTypePostToWeibo]
         
         let activityController : UIActivityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
         
@@ -857,10 +857,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         
         activityController.setValue(subject, forKey: "subject")
         
-        if (UIDevice.currentDevice().systemVersion as NSString).floatValue >= 8.0 {
-            // for iPad(8.3)
+        if #available(iOS 8, OSX 10.10, *) {            // for iPad(8.3)
             activityController.popoverPresentationController?.sourceView = self.view
-            activityController.popoverPresentationController?.barButtonItem = from as! UIBarButtonItem
+            activityController.popoverPresentationController?.barButtonItem = (from as! UIBarButtonItem)
         }
         // modalで表示
         self.presentViewController(activityController, animated: true, completion: nil)
@@ -900,8 +899,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     }
     
     func ShowAlertView(title : String, message message_ : String) {
-        if nil != objc_getClass("UIAlertController") {
-            // iOS8 -
+        if #available(iOS 8, OSX 10.10, *) {            // iOS8 -
             let ac : UIAlertController = UIAlertController(title: self.title!, message: message_, preferredStyle: .Alert)
             ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
             self.presentViewController(ac, animated: true, completion: nil)
