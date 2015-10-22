@@ -91,9 +91,9 @@ class SelectStationTableViewController: CSTableViewController {
         let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         if ((apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) && (self.lastStationId == stationId)) {
             //インデント付き＋チェックマーク付き（起点駅)
-            cell = tableView.dequeueReusableCellWithIdentifier("terminalStationCell2", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("terminalStationCell2", forIndexPath: indexPath) 
         } else {
-            cell = tableView.dequeueReusableCellWithIdentifier("terminalStationCell", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableView.dequeueReusableCellWithIdentifier("terminalStationCell", forIndexPath: indexPath) 
         }
         
         // Configure the cell...;
@@ -103,7 +103,7 @@ class SelectStationTableViewController: CSTableViewController {
         if (RouteDataController.IsJunction(stationId) &&
             !RouteDataController.IsSpecificJunction(self.lineId, stationId: stationId)) {
                 /* junction(lflag.bit12 on) */
-            var lid : Int
+
             for lid in RouteDataController.LineIdsFromStation(stationId) as! [Int] {
                 if ((lid != self.lineId)  &&
                     !RouteDataController.IsSpecificJunction(lid, stationId: stationId)) {
@@ -124,7 +124,7 @@ class SelectStationTableViewController: CSTableViewController {
     // 戻ってきたときにセルの選択を解除
     override func viewWillAppear(animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
     }
@@ -139,7 +139,7 @@ class SelectStationTableViewController: CSTableViewController {
         
         if (segid == "terminalSelectDoneSegue") {
             let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-            apd.selectTerminalId = 0xffff & self.stations[self.tableView.indexPathForSelectedRow()!.row]
+            apd.selectTerminalId = 0xffff & self.stations[self.tableView.indexPathForSelectedRow!.row]
             apd.selectLineId = self.lineId;
             
         } else if (segid == "stationViewSegue") {

@@ -35,8 +35,8 @@
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A2BB0E81AD6BF2200F7DED2 /* RouteItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E71AD6BF2200F7DED2 /* RouteItem.m */; };
-		2A2BB0EE1AD6CDEA00F7DED2 /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A2BB0ED1AD6CDEA00F7DED2 /* libsqlite3.0.dylib */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
+		2AB4F1021BD8812500940548 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AB4F1011BD8812500940548 /* libsqlite3.tbd */; };
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
 		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
 		2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754641ADCC2080020F59C /* CommonDefine.swift */; };
@@ -95,9 +95,9 @@
 		2A2BB0E61AD6BF2200F7DED2 /* RouteItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteItem.h; sourceTree = "<group>"; };
 		2A2BB0E71AD6BF2200F7DED2 /* RouteItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteItem.m; sourceTree = "<group>"; };
 		2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = FarertTests/PrefixHeader.pch; sourceTree = SOURCE_ROOT; };
-		2A2BB0ED1AD6CDEA00F7DED2 /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		2A84DD181AF1DA8B005BA7D4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		2AB4F1011BD8812500940548 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteListTableViewCell.swift; sourceTree = "<group>"; };
 		2ACE5A591AF785030026A6CA /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FareInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2ACE5A5A1AF785030026A6CA /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
@@ -112,8 +112,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AB4F1021BD8812500940548 /* libsqlite3.tbd in Frameworks */,
 				2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */,
-				2A2BB0EE1AD6CDEA00F7DED2 /* libsqlite3.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,8 +130,8 @@
 		2A2BB0761AD6966500F7DED2 = {
 			isa = PBXGroup;
 			children = (
+				2AB4F1011BD8812500940548 /* libsqlite3.tbd */,
 				2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */,
-				2A2BB0ED1AD6CDEA00F7DED2 /* libsqlite3.0.dylib */,
 				2A2BB0811AD6966500F7DED2 /* Farert */,
 				2A2BB0971AD6966600F7DED2 /* FarertTests */,
 				2A2BB0801AD6966500F7DED2 /* Products */,
@@ -289,7 +289,9 @@
 		2A2BB0771AD6966500F7DED2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0620;
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "TAKEDA, Noriyuki";
 				TargetAttributes = {
 					2A2BB07E1AD6966500F7DED2 = {
@@ -447,6 +449,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -519,8 +522,9 @@
 				INFOPLIST_FILE = "$(SRCROOT)/FarertTests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "6ef08ebf-2541-401d-8b4d-9b0afdc47a22";
+				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -538,8 +542,9 @@
 				INFOPLIST_FILE = "$(SRCROOT)/FarertTests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
+				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -561,6 +566,7 @@
 				);
 				INFOPLIST_FILE = FarertTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Farert.app/Farert";
@@ -579,6 +585,7 @@
 				);
 				INFOPLIST_FILE = FarertTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Farert.app/Farert";

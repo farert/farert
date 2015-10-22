@@ -41,7 +41,7 @@ class TerminalHistoryViewController: CSTableViewController {
     // 戻ってきたときにセルの選択を解除
     override func viewWillAppear(animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow() {
+        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
             self.tableView.deselectRowAtIndexPath(idx, animated:false)
         }
     }
@@ -64,7 +64,7 @@ class TerminalHistoryViewController: CSTableViewController {
     
     override func tableView(tableView : UITableView, cellForRowAtIndexPath indexPath : NSIndexPath) -> UITableViewCell {
     
-        let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryCell", forIndexPath: indexPath) as! UITableViewCell
+        let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryCell", forIndexPath: indexPath) 
 
         if (indexPath.row < self.historyTerms.count) {
             cell.textLabel?.text = self.historyTerms[indexPath.row]
@@ -113,7 +113,9 @@ class TerminalHistoryViewController: CSTableViewController {
     override func tableView(tableView : UITableView, viewForHeaderInSection section : Int) -> UIView? {
 
         if (section == 0) && (self.historyTerms.count <= 0) {
-            let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryEmptyCell") as! UITableViewCell
+            guard let cell : UITableViewCell = (tableView.dequeueReusableCellWithIdentifier("termHistoryEmptyCell")) else {
+                return nil
+            }
             return cell
         } else {
             return nil
@@ -123,7 +125,8 @@ class TerminalHistoryViewController: CSTableViewController {
     override func  tableView(tableView : UITableView, heightForHeaderInSection section : Int) -> CGFloat {
         if (section == 0) {
             if self.historyTerms.count  <= 0 {
-                let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryEmptyCell") as! UITableViewCell
+                //guard let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryEmptyCell") else {
+                //}
                 return HEADER_HEIGHT
             }
         }
@@ -171,7 +174,7 @@ class TerminalHistoryViewController: CSTableViewController {
         
         if (segue.identifier == "doneTerminalHistorySegue") {
             let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-            if let idx : Int = self.tableView.indexPathForSelectedRow()?.row {
+            if let idx : Int = self.tableView.indexPathForSelectedRow?.row {
                 if idx < self.historyTerms.count {
                     let station : String  = self.historyTerms[idx]
                     apd.selectTerminalId = RouteDataController.GetStationId(station)
@@ -182,5 +185,19 @@ class TerminalHistoryViewController: CSTableViewController {
                 apd.selectTerminalId = 0
             }
         }
+    }
+    
+    //      Perform Segue (Select tableview row)
+    //
+    //
+    override func shouldPerformSegueWithIdentifier(identifier : String, sender : AnyObject?) -> Bool {
+        
+        if identifier  == "doneTerminalHistorySegue" {
+            if true == self.clerBarButtonItem.enabled {
+                // 編集中は選択は無視する（何もしない）
+                return false
+            }
+        }
+        return true
     }
 }
