@@ -2426,7 +2426,7 @@ JR東日本 株主優待4： \123,456
 	/* child fare */
 	_sntprintf_s(cb, MAX_BUF, _T("\r\n小児運賃： \\%-7s 往復： \\%-5s\r\n"),
 	                              num_str_yen(fare_info.getChildFareForDisplay()).c_str(),
-	                              num_str_yen(fare_info.getChildFareForDisplay() * 2).c_str());
+	                              num_str_yen(fare_info.roundTripChildFareWithCompanyLine()).c_str());
 	sWork += cb;
 
 	normal_fare = fare_info.getAcademicDiscountFare();

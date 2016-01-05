@@ -119,6 +119,7 @@
 
 // 子供運賃
 @property (nonatomic) NSInteger childFare;
+@property (nonatomic) NSInteger roundtripChildFare;
 
 // 学割運賃
 @property (nonatomic) BOOL isAcademicFare;
