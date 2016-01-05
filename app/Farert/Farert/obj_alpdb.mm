@@ -611,6 +611,7 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     
     // 小児運賃
     result.childFare = fi.getChildFareForDisplay();
+    result.roundtripChildFare = fi.roundTripChildFareWithCompanyLine();
     
     // 学割運賃
     if (0 < (result.academicFare = fi.getAcademicDiscountFare())) {
@@ -646,7 +647,7 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
 {
     vector<string>::const_iterator i = sqlstr.cbegin();
     while (i != sqlstr.cend()) {
-        NSLog(@"%s¥n", i->c_str());
+        NSLog(@"%s\n", i->c_str());
         ++i;
     }
 }
