@@ -497,20 +497,18 @@
 {
     FARE_INFO fi;
     int result;
-    int rc;
     
-    rc = route->calcFare(&fi);
-    if (rc == 0) {
-        return nil; /* empty or fail */
-    } else if (rc == -3) {  // 会社線のみ
-        result = 2;
-    } else if (rc == -2) { // 吉塚、西小倉における不完全ルート：この経路の片道乗車券は購入できません.
-        result = 1;
-    } else if (rc == 1) {
-        result = 0; // normal
-    } else {
-        // unknown fail
-        return nil;
+    fi = route->calcFare();
+    switch (fi.resultCode()) {
+        case 0:     // success, company begin/first or too many company
+            result = 0;
+            break;  // OK
+        case -1:    /* In completed (吉塚、西小倉における不完全ルート) */
+            result = 1;     //"この経路の片道乗車券は購入できません.続けて経路を指定してください."
+            break;
+        default:
+            return nil; /* -2:empty or -3:fail */
+            break;
     }
     return setFareInfo(fi, result, route->getFareOption());
 }
@@ -521,16 +519,17 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     string str1;
     string str2;
     string notused;
-    int w1_notused;
     int w2;
     int w3;
-    bool b_notused;
+    FARE_INFO::Fare rule114Fare;
+    FARE_INFO::FareResult fareResult;
 
     result = [[FareInfo alloc] init];
     
     result.result = fare_result;        /* calculate result */
     result.calcResultFlag = calcFlag;   /* calculate flag */
-    result.resultState = fi.getResultFlag();
+    result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine();
+    result.isResultCompanyMultipassed = fi.isMultiCompanyLine();
 
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
@@ -552,15 +551,15 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     result.availCountForFareOfStockDiscount = fi.countOfFareStockDiscount();
     
     /* rule 114 */
-    if (!fi.getRule114(&w1_notused, &w2, &w3)) {
-        w1_notused = w2 = w3 = 0;
-        result.rule114_salesKm = w2;
-        result.rule114_calcKm = w3;
+    rule114Fare = fi.getRule114();
+    if (rule114Fare.fare == 0) {
+        result.rule114_salesKm = 0;
+        result.rule114_calcKm = 0;
         result.isRule114Applied = NO;
     } else {
         result.isRule114Applied = YES;
-        result.rule114_salesKm = w2;
-        result.rule114_calcKm = w3;
+        result.rule114_salesKm = rule114Fare.sales_km;
+        result.rule114_calcKm = rule114Fare.calc_km;
 
         /* stock discount (114 applied) */
         w2 = fi.getFareStockDiscount(0, notused, true);
@@ -603,7 +602,8 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
 
     // 往復
-    result.roundTripFareWithCompanyLine = fi.roundTripFareWithCompanyLine(b_notused);
+    fareResult = fi.roundTripFareWithCompanyLine();
+    result.roundTripFareWithCompanyLine = fareResult.fare;
     result.roundTripFareWithCompanyLinePriorRule114 = fi.roundTripFareWithCompanyLinePriorRule114();
     
     // IC運賃
@@ -611,7 +611,6 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
     
     // 小児運賃
     result.childFare = fi.getChildFareForDisplay();
-    result.roundtripChildFare = fi.roundTripChildFareWithCompanyLine();
     
     // 学割運賃
     if (0 < (result.academicFare = fi.getAcademicDiscountFare())) {
@@ -647,7 +646,7 @@ FareInfo* setFareInfo(FARE_INFO& fi, int fare_result, int calcFlag)
 {
     vector<string>::const_iterator i = sqlstr.cbegin();
     while (i != sqlstr.cend()) {
-        NSLog(@"%s\n", i->c_str());
+        NSLog(@"%s¥n", i->c_str());
         ++i;
     }
 }
