@@ -27,6 +27,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     let ROUTE_SCRIPT_LINE_ERR:Int    = 7
     let ROUTE_SCRIPT_ROUTE_ERR:Int   = 8
     let ROUTE_DUPCHG_ERROR:Int       = 9
+    let ROUTE_AUTO_ROUTE:Int         = 10
     
     let TAG_UIACTIONSHEET_AUTOROUTE:Int         = 10
     let TAG_UIACTIONSHEET_QUERYSETUPROUTE:Int   = 11
@@ -111,7 +112,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated);
     
-        if NSUserDefaults.standardUserDefaults().boolForKey("HasLaunchedOnce") {
+        // remove old(before ver 15.10)
+        NSUserDefaults.standardUserDefaults().removeObjectForKey("HasLaunchedOnce")
+        
+        let cnt = NSUserDefaults.standardUserDefaults().integerForKey("hasLaunched")
+        if 0x1603 <= cnt {
+        
             // ２回目以降の起動時
         } else {
             // 初回起動時
@@ -130,7 +136,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
                 av.show()
             }
-            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "HasLaunchedOnce")
+            NSUserDefaults.standardUserDefaults().setInteger(0x1603, forKey: "hasLaunched")
+            RouteDataController.SaveToDatabaseId(DbId.DB_MAX_ID, sync: false)
             NSUserDefaults.standardUserDefaults().synchronize();
         }
 
@@ -214,7 +221,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             fareInfo = ds.calcFare()
             if (rc < 0) {
                 //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
-                routeStat = ROUTE_DUP_ERROR;
+                routeStat = ROUTE_AUTO_ROUTE;
             } else if (rc == 0) {
                 routeStat = ROUTE_FINISH;
             }
@@ -325,6 +332,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 case ROUTE_DUPCHG_ERROR:
                     lbl.text = "経路が重複していますので変更できません";
                     break;
+                case ROUTE_AUTO_ROUTE:
+                    lbl.text = "自動経路算出不可(条件を変えて試してみてください)"
                 default:
                     lbl.text = "unknown error";
                     break;
