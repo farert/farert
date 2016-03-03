@@ -75,6 +75,10 @@ int g_tax; /* main.m */
             g_tax = 8;
             dbname = @"jrdb2015";
             break;
+        case DB_2016:
+            g_tax = 8;
+            dbname = @"jrdb2016";
+            break;
         default:
             dbname = @"jrdb2015";
             g_tax = 8;
@@ -413,9 +417,16 @@ int g_tax; /* main.m */
 // Save databse index
 + (void)SaveToDatabaseId:(NSInteger)dbid
 {
+    [self SaveToDatabaseId:dbid sync:YES];
+}
+
++ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
+{
     /* Store */
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:dbid] forKey:@"JrDatabaseId"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    if (sync) {
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
 }
 
 // Retrieve database index
