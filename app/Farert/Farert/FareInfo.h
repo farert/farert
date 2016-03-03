@@ -60,8 +60,9 @@
 // 3 会社線のみ
 // 4 会社線２回以上通過
 // 8 不完全経路（未使用というか前で弾く）
-- (BOOL)isResultCompanyBeginEnd;
-- (BOOL)isResultCompanyMultipassed;
+@property (nonatomic) BOOL isResultCompanyBeginEnd;
+@property (nonatomic) BOOL isResultCompanyMultipassed;
+
 
 @property (nonatomic) NSInteger beginStationId;
 @property (nonatomic) NSInteger endStationId;
@@ -119,7 +120,6 @@
 
 // 子供運賃
 @property (nonatomic) NSInteger childFare;
-@property (nonatomic) NSInteger roundtripChildFare;
 
 // 学割運賃
 @property (nonatomic) BOOL isAcademicFare;

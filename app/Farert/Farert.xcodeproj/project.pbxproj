@@ -37,6 +37,7 @@
 		2A2BB0E81AD6BF2200F7DED2 /* RouteItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E71AD6BF2200F7DED2 /* RouteItem.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
 		2AB4F1021BD8812500940548 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AB4F1011BD8812500940548 /* libsqlite3.tbd */; };
+		2AC6A7371C83EE40002FD7EE /* jrdb2016.db in Resources */ = {isa = PBXBuildFile; fileRef = 2AC6A7361C83EE40002FD7EE /* jrdb2016.db */; };
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
 		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
 		2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754641ADCC2080020F59C /* CommonDefine.swift */; };
@@ -98,6 +99,7 @@
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		2A84DD181AF1DA8B005BA7D4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		2AB4F1011BD8812500940548 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		2AC6A7361C83EE40002FD7EE /* jrdb2016.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2016.db; sourceTree = "<group>"; };
 		2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteListTableViewCell.swift; sourceTree = "<group>"; };
 		2ACE5A591AF785030026A6CA /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FareInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2ACE5A5A1AF785030026A6CA /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 		2A2BB0CA1AD6980600F7DED2 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				2AC6A7361C83EE40002FD7EE /* jrdb2016.db */,
 				2ACE5A591AF785030026A6CA /* FareInfo.h */,
 				2ACE5A5A1AF785030026A6CA /* FareInfo.m */,
 				2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */,
@@ -331,6 +334,7 @@
 			files = (
 				2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */,
 				2A0412311B2F190A004BA042 /* InfoPlist.strings in Resources */,
+				2AC6A7371C83EE40002FD7EE /* jrdb2016.db in Resources */,
 				2A2BB08F1AD6966500F7DED2 /* LaunchScreen.xib in Resources */,
 				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
 				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,

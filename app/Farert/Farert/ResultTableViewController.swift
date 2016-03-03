@@ -746,38 +746,38 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         var strFareOpt : String = (self.fareInfo.isRoundtripDiscount) ? " (割引)" : ""
 
         if (self.fareInfo.isRule114Applied) {
-            strFareOpt +=  "(\\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)))"
+            strFareOpt +=  "(¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)))"
         }
 
         if (self.fareInfo.fareForCompanyline != 0) {
             /* 1: 普通運賃＋会社線 */
-            contentsForFare = [["fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fare))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
                                 "subTitle" : "うち会社線",
-                                "subFare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline))"]]
+                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline))"]]
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
-            contentsForFare += [["fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
-                                "subFare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline * 2))"]]
+            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
+                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline * 2))"]]
         } else if (self.fareInfo.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
-            contentsForFare = [["fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fare))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
                                 "subTitle" : "IC運賃",
-                                "subFare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fareForIC))"]]
+                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC))"]]
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
-            contentsForFare += [["fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
-                                 "subFare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fareForIC * 2))"]]
+            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
+                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC * 2))"]]
         } else {
             /* 1: 普通運賃 */
-            contentsForFare = [["fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.fare))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
                                 "subTitle" : "", "subFare" : ""]]
             /* 2: 往復運賃(割引可否) */
-            contentsForFare += [["fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
+            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
                                  "subFare" : ""]]
         }
         
         /* 114 exception */
         if (self.fareInfo.isRule114Applied) {
             num_of_fare++;
-            let fare_str : String = "(\\(RouteDataController.fareNumStr(self.fareInfo.farePriorRule114)))"
+            let fare_str : String = "(¥\(RouteDataController.fareNumStr(self.fareInfo.farePriorRule114)))"
             contentsForFare += [["title" : "規程114条 適用しない運賃",
                                  "fare" : fare_str]]
         }
@@ -788,30 +788,30 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         for (var i : Int = 0; i < self.fareInfo.availCountForFareOfStockDiscount; i++) {
             var fare_str : String
             if (self.fareInfo.isRule114Applied) {
-                fare_str = "\\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(2 + i)))(\\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i))))"
+                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(2 + i)))(¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i))))"
             } else {
-                fare_str = "\\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i)))"
+                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i)))"
             }
             contentsForFare += [["title" : self.fareInfo.fareForStockDiscountTitle(i), "fare" : fare_str]]
         }
         
         // Child fare
         contentsForFare += [["title" : "小児運賃",
-                             "fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.childFare))",
+                             "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare))",
                              "subTitle" : "往復",
-                             "subFare" : "\\(RouteDataController.fareNumStr(self.fareInfo.roundtripChildFare))"]]
+                             "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare * 2))"]]
         if self.fareInfo.isAcademicFare {
             num_of_fare += 1
             contentsForFare += [["title" : "学割運賃",
-                "fare" : "\\(RouteDataController.fareNumStr(self.fareInfo.academicFare))",
+                "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.academicFare))",
                 "subTitle" : "往復",
-                "subFare" : "\\(RouteDataController.fareNumStr(self.fareInfo.roundtripAcademicFare))"]]
+                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundtripAcademicFare))"]]
         }
 
-        if self.fareInfo.isResultCompanyBeginEnd() {
+        if self.fareInfo.isResultCompanyBeginEnd {
             contentsForMessage.append("会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.")
         }
-        if self.fareInfo.isResultCompanyMultipassed() {
+        if self.fareInfo.isResultCompanyMultipassed {
             contentsForMessage.append("複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.")
         }
     }
@@ -880,7 +880,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
         var body : String = "\(subject)\n\n\(ds.showFare())\n"
         
-        body = body.stringByReplacingOccurrencesOfString("\\", withString: "\")
+        body = body.stringByReplacingOccurrencesOfString("\\", withString: "¥")
         
         // メールビュー生成
         //_mailViewCtl = [[MFMailComposeViewController alloc] init];

@@ -256,6 +256,14 @@ public:
 };
 
 class FARE_INFO {
+    /* result_flag bit */
+    #define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
+    #define BRF_COMAPANY_END		1		/* 会社線で終了 */
+    										/* 通常OFF-OFF, ON-ONは会社線のみ */
+    #define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
+    #define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
+    #define BRF_ROUTE_EMPTY         4       /* empty */
+    #define BRF_FATAL_ERROR         5       /* fatal error in aggregate_fare_info() */
 public:
 	FARE_INFO() { reset(); FARE_INFO::tax = g_tax; }
 private:
@@ -286,12 +294,6 @@ private:
 	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
 	int32_t company_fare_child;			/* 会社線小児運賃 */
 	int32_t result_flag;				/* 結果状態: BRF_xxx */
-#define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
-#define BRF_COMAPANY_END		1		/* 会社線で終了 */
-										/* 通常OFF-OFF, ON-ONは会社線のみ */
-#define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
-#define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
-
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 	int32_t jr_fare;					//***
 	int32_t fare_ic;					//*** 0以外で有効
@@ -360,9 +362,40 @@ public:
 
         route_for_disp.clear();
 	}
-	void		setResultIncompleteRoute() { BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE); }
-	int32_t		getResultFlag() const { return result_flag; }
-	int32_t 	roundTripFareWithCompanyLine(bool& return_discount) const;
+    class FareResult {
+    public:
+        int fare;
+        bool isDiscount;
+        FareResult() { fare = 0; isDiscount = false; }
+        FareResult(int fare_, bool isDiscount_) {
+            fare = fare_;
+            isDiscount = isDiscount_;
+        }
+    };
+    void setEmpty() {
+        BIT_ON(result_flag, BRF_ROUTE_EMPTY);
+    }
+    void setInComplete() {
+        BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE);
+    }
+    bool isMultiCompanyLine() {
+        return BIT_CHK(result_flag, BRF_COMPANY_INCORRECT);
+    }
+    bool isBeginEndCompanyLine() {
+        return (result_flag & ((1 << BRF_COMAPANY_FIRST) | (1 << BRF_COMAPANY_END))) != 0;
+    }
+    int     resultCode() {
+        if (BIT_CHK(result_flag, BRF_ROUTE_INCOMPLETE)) {
+            return -1;
+        } else if (BIT_CHK(result_flag, BRF_ROUTE_EMPTY)) {
+            return -2;
+        } else if (BIT_CHK(result_flag, BRF_FATAL_ERROR)) {
+            return -3;
+        } else {
+            return 0;
+        }
+    }
+	FareResult 	roundTripFareWithCompanyLine() const;
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
     int32_t 	roundTripChildFareWithCompanyLine() const;
 	bool 		isUrbanArea() const;
@@ -390,16 +423,29 @@ public:
 	int32_t		getFareForDisplay() const;
     int32_t     getFareForDisplayPriorRule114() const;
 	int32_t		getFareForIC() const;
-    bool     getRule114(int32_t* fare, int32_t* sales_km, int32_t* calc_km) const {
-		*fare = rule114_fare;
-        *sales_km = rule114_sales_km;
-        *calc_km = rule114_calc_km;
-        return rule114_fare != 0;
+    class Fare {
+    public:
+        int fare;
+        int sales_km;
+        int calc_km;
+        Fare() { fare = sales_km = calc_km = 0; }
+        Fare(int f, int sk, int ck) {
+            set(f, sk, ck);
+        }
+        void set(int f, int sk, int ck) {
+            fare = f;
+            sales_km = sk;
+            calc_km = ck;
+        }
+    };
+    Fare     getRule114() const {
+        Fare f(rule114_fare, rule114_sales_km, rule114_calc_km);
+        return f;
     }
-    void     setRule114(int32_t fare, int32_t sales_km, int32_t calc_km) {
-        rule114_fare = fare;
-        rule114_sales_km = sales_km;
-        rule114_calc_km = calc_km;
+    void     setRule114(const Fare fare) {
+        rule114_fare = fare.fare;
+        rule114_sales_km = fare.sales_km;
+        rule114_calc_km = fare.calc_km;
     }
     void     clrRule114() {
         rule114_fare = 0;
@@ -674,7 +720,7 @@ public:
 
 
 private:
-	bool				checkOfRuleSpecificCoreLine(int32_t* rule114);
+	FARE_INFO::Fare checkOfRuleSpecificCoreLine();
 
 	class RoutePass
 	{
@@ -785,8 +831,8 @@ public:
 private:
     int32_t         reBuild();
 public:
-    int32_t         calcFare(FARE_INFO* fare_info);
-    int32_t         calcFare(int32_t count, FARE_INFO* fare_info);
+    FARE_INFO       calcFare();
+    FARE_INFO       calcFare(int32_t count);
 	uint32_t		getFareOption();
 	int32_t         setDetour(bool enabled = true);
 
@@ -839,7 +885,7 @@ public:
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
 	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
 
-	static bool		CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind, int32_t* result);
+	static FARE_INFO::Fare	CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
 

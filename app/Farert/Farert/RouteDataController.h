@@ -121,6 +121,7 @@
 
 // Save databse index
 + (void)SaveToDatabaseId:(NSInteger)dbid;
++ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
 
 // Retrieve database index
 + (NSInteger)GetDatabaseId;
@@ -137,8 +138,9 @@ enum DBIDX {
     DB_MIN_ID = 10,
     DB_TAX5 = DB_MIN_ID,
     DB_2014,
-    DB_MAX_ID,
-    DB_2015 = DB_MAX_ID,
+    DB_2015,
+    DB_2016,
+    DB_MAX_ID = DB_2016,
 };
 
 

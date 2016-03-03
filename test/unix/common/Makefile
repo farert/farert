@@ -22,10 +22,10 @@ OBJS = $(patsubst %.c,%.o,$(wildcard ./*.c)) $(patsubst %.cpp,%.o,$(wildcard ./*
 test : 
 
  .c.o:
-	gcc $(CFLAGS) -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -c $< -o $@
+	gcc $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -c $< -o $@
 
 .cpp.o:
-	g++ $(CFLAGS) -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/win_mfc/fjr_mfc/lib/alps -std=c++11 -c $< -o $@
+	g++ $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/win_mfc/fjr_mfc/lib/alps -std=c++11 -c $< -o $@
 
 
 test : $(OBJS)
