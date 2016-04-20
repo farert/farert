@@ -25,11 +25,11 @@ test :
 	gcc $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -c $< -o $@
 
 .cpp.o:
-	g++ $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/win_mfc/fjr_mfc/lib/alps -std=c++11 -c $< -o $@
+	g++ $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/win_mfc/fjr_mfc/lib/alps -std=c++0x -c $< -o $@
 
 
 test : $(OBJS)
-	g++ -o $@ -std=c++11 $^ -lpthread -ldl
+	g++ -o $@ -std=c++0x $^ -lpthread -ldl
 
 clean:
 	rm -f *.o test
