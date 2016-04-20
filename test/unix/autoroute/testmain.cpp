@@ -219,11 +219,11 @@ int main(int argc, char** argv)
 				s = Route::GetStationId(*argv);
 			} else {
 				if ('-' == **argv) {
-					e = Route::GetStationId(*++argv);
+					e = Route::GetStationId(++*argv);
 					bullet = 0;
 					break;	//>>>>>>>>>>>>>>>>>>>>>>
 				} else if ('+' == **argv) {
-					e = Route::GetStationId(*++argv);
+					e = Route::GetStationId(++*argv);
 					bullet = 1;
 					break;	//>>>>>>>>>>>>>>>>>>>>>>
 				} else {

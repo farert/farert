@@ -6790,7 +6790,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), StationName(Jct2id(id)).
 
 	//// 発駅=分岐駅
 
-	TRACE( _T("----------[%s]------\n"), Route::StationName(Jct2id(id)).c_str());
+	TRACE( _T("----------[(%d)%s]------\n"), id, Route::StationName(Jct2id(id)).c_str());
 
 	vector<IDENT> route_rev;
 	vector<IDENT>::const_reverse_iterator ritr = route.crbegin();
