@@ -23,8 +23,9 @@ typedef int int32_t;
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
 typedef short int16_t;
-#if defined _WINDOWS && _MSC_VER < 1900
+#if defined _WINDOWS
 typedef char int8_t;
+typedef unsigned char uint8_t;
 #endif
 
 extern int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
