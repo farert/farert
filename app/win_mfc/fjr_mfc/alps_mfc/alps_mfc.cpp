@@ -116,14 +116,17 @@ BOOL Calps_mfcApp::InitInstance()
 					LPVOID p = LockResource(hGlbl);
 					if (p) {
 						TCHAR impdbfn[MAX_PATH];
-						
-							// restore(decrypt)
-						dwDbEncSize = rd((unsigned char*)p, dwDbEncSize);
+						unsigned char* np = new unsigned char[(dwDbEncSize + 15) & ~15];
+						memcpy(np, p, dwDbEncSize);
+						UnlockResource(hGlbl);
+
+						// restore(decrypt)
+						dwDbEncSize = rd((unsigned char*)np, dwDbEncSize);
 						
 						GetTempPath(MAX_PATH, impdbfn);
 						GetTempFileName(impdbfn, _T("@~~"), 0, impdbfn);
-						res2tmpfile(impdbfn, (LPBYTE)p, dwDbEncSize);
-						
+						res2tmpfile(impdbfn, (LPBYTE)np, dwDbEncSize);
+						delete[] np;
 						bool b = DBS::getInstance()->open(impdbfn);
 						DeleteFile(impdbfn);
 						if (b) {
