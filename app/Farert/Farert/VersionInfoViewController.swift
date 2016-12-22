@@ -1,6 +1,6 @@
 //
 //  VersionInfoViewController.swift
-//  iFarert
+//  iFarert 
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/23.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -25,23 +25,23 @@ class VersionInfoViewController: UIViewController {
 
 
     
-    override func viewWillAppear(animated : Bool) {
+    override func viewWillAppear(_ animated : Bool) {
 
         super.viewWillAppear(true)
     
         if let lbl : UILabel = self.view.viewWithTag(1023432) as! UILabel? {
-            let dbverInf : DbSys = RouteDataController.DatabaseVersion()
-            lbl.text = "DB Rev. [\(dbverInf.name)](\(dbverInf.create_date))"
+            let dbverInf : DbSys = RouteDataController.databaseVersion()
+            lbl.text = "DB Rev. [\(dbverInf.name!)](\(dbverInf.create_date!))"
         }
     }
     
     
-    @IBAction func gotoSupportURL(sender: AnyObject) {
+    @IBAction func gotoSupportURL(_ sender: AnyObject) {
     
-        let url : NSURL = NSURL(string: "http://farert.blogspot.jp/")!
+        let url : URL = URL(string: "http://farert.blogspot.jp/")!
     
-        if UIApplication.sharedApplication().canOpenURL(url) {
-            UIApplication.sharedApplication().openURL(url)
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.openURL(url)
         } else {
             // エラー処理
         }
@@ -53,7 +53,7 @@ class VersionInfoViewController: UIViewController {
         //webView.loadRequest(urq)
     }
     
-    func webView(webView: UIWebView!, shouldStartLoadWithRequest request: NSURLRequest!, navigationType: UIWebViewNavigationType) -> Bool {
+    func webView(_ webView: UIWebView!, shouldStartLoadWithRequest request: URLRequest!, navigationType: UIWebViewNavigationType) -> Bool {
         return true
     }
     

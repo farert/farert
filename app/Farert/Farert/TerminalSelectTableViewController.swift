@@ -1,6 +1,6 @@
 //
 //  TerminalSelectTableViewController.swift
-//  iFarert
+//  iFarert 発駅 or 着駅(最短経路選択時) 選択 View
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/23.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -9,26 +9,42 @@
 import UIKit
 
 
-class TerminalSelectTableViewController: CSTableViewController, UISearchBarDelegate, UISearchDisplayDelegate {
+class TerminalSelectTableViewController: CSTableViewController {
 
-    @IBOutlet weak var termSearchBar: UISearchBar!
+    @IBOutlet weak var scopeBar: UISegmentedControl!    // section of 会社、都道府県
 
     var termFilteredArray : [Int] = []
-    var termCompanyPrefectArray : [[Int]] = RouteDataController.GetCompanyAndPrefects() as! [[Int]]
+    var termCompanyPrefectArray : [[Int]] = RouteDataController.getCompanyAndPrefects() as! [[Int]]
+
+    let searchController = UISearchController(searchResultsController: nil)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-    
-        self.navigationController?.toolbarHidden = false
+  
+        // Setup the Search Controller
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
+        definesPresentationContext = true
+        searchController.dimsBackgroundDuringPresentation = false
         
-        let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        searchController.searchBar.placeholder = "駅名（よみ）入力"
+
+        // Setup the Scope Bar
+        tableView.tableHeaderView = searchController.searchBar
+
+        
+        self.navigationController?.isToolbarHidden = false
+        
+        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
         if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) {
             //self.navigationController.title = @"着駅指定(最短経路)";
             self.title = "着駅指定(最短経路)"
+            self.navigationItem.prompt = "着駅指定(最短経路)"
         } else {
             //self.navigationController.title = @"発駅指定";
             self.title = "発駅指定"
+            self.navigationItem.prompt = "発駅指定"
         }
         // Uncomment the following line to preserve selection between presentations.
         self.clearsSelectionOnViewWillAppear = false
@@ -41,7 +57,7 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
         //self.navigationItem.backBarButtonItem.title = @"戻る"; //これはよいけど（って効かないからだめだが）上は幅広バーになっちゃう
     }
     
-    override func viewWillAppear(animated : Bool) {
+    override func viewWillAppear(_ animated : Bool) {
 
         super.viewWillAppear(animated)
     
@@ -49,41 +65,36 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
         //    [self.tableView setContentOffset:CGPointMake(0.0f, self.searchDisplayController.searchBar.frame.size.height)];
     
         // 戻ってきたときにセルの選択を解除
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.deselectRowAtIndexPath(idx, animated:false)
+        if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: idx, animated:false)
         }
     }
     
 
     // MARK: - Table view data source
     
-    override func numberOfSectionsInTableView(tableView : UITableView) -> Int {
+    override func numberOfSections(in tableView : UITableView) -> Int {
         // Return the number of sections.
-        if (tableView == self.searchDisplayController?.searchResultsTableView) {
-            return 1
-        } else {
-            return 2   /* Company, Prefect */
-        }
+        return 1;
     }
     
-    override func tableView(tableView : UITableView, numberOfRowsInSection section : Int) -> Int {
+    override func tableView(_ tableView : UITableView, numberOfRowsInSection section : Int) -> Int {
         // Return the number of rows in the section.
 
-        if (tableView == self.searchDisplayController?.searchResultsTableView) {
+        if searchController.isActive && searchController.searchBar.text != "" {
             return self.termFilteredArray.count
         } else {
-            if ((section == 0) || (section == 1)) {
-                let arys : [Int] = self.termCompanyPrefectArray[section] as [Int]
-                return arys.count
-            }
+            let section = scopeBar.selectedSegmentIndex
+            let arys : [Int] = self.termCompanyPrefectArray[section] as [Int]
+            return arys.count
         }
-        return 0;
     }
     
-    override func tableView(tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
+    override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         
-        if (tableView != self.searchDisplayController?.searchResultsTableView) {
-            switch (section) {
+        if !searchController.isActive || searchController.searchBar.text == "" {
+            let scope = scopeBar.selectedSegmentIndex
+            switch (scope) {
             case 0:
                 return "会社";
             case 1:
@@ -100,27 +111,28 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
     }
     
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         let cell_identifier : String = "termSearchbarCell"
         var cell : UITableViewCell!
         
-        if (tableView == self.searchDisplayController?.searchResultsTableView) {
-            cell = tableView.dequeueReusableCellWithIdentifier(cell_identifier)
+        if searchController.isActive && searchController.searchBar.text != "" {
+            cell = tableView.dequeueReusableCell(withIdentifier: cell_identifier)
             if (cell == nil) {
-                cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: cell_identifier)
+                cell = UITableViewCell(style: UITableViewCellStyle.value1, reuseIdentifier: cell_identifier)
                 if (cell == nil) {
                     return cell
                 }
             }
             let ident : Int = self.termFilteredArray[indexPath.row]
-            cell.textLabel?.text = RouteDataController.StationNameEx(ident)
-            cell.detailTextLabel?.text = "\(RouteDataController.GetKanaFromStationId(ident))(\(RouteDataController.PrectNameByStation(ident)))"
+            cell.textLabel?.text = RouteDataController.stationNameEx(ident)
+            cell.detailTextLabel?.text = "\(RouteDataController.getKanaFromStationId(ident)!)(\(RouteDataController.prectName(byStation: ident)!))"
         } else {
-            cell = tableView.dequeueReusableCellWithIdentifier("termCompanyAndPrefectCell")
-            let ident : Int = self.termCompanyPrefectArray[indexPath.section][indexPath.row]
+            cell = tableView.dequeueReusableCell(withIdentifier: "termCompanyAndPrefectCell")
+            let secidx = scopeBar.selectedSegmentIndex
+            let ident : Int = self.termCompanyPrefectArray[secidx][indexPath.row]
             if cell != nil {
-                cell.textLabel?.text = RouteDataController.CompanyOrPrefectName(ident)
+                cell.textLabel?.text = RouteDataController.companyOrPrefectName(ident)
             }
         }
         return cell;
@@ -168,16 +180,17 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue : UIStoryboardSegue, sender sender_ : AnyObject?) {
+    override func prepare(for segue : UIStoryboardSegue, sender sender_ : Any?) {
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
         let segid : String! = segue.identifier
         
         if segid == "termLineSegue" {
             // 都道府県または会社に属する路線一覧
-            let selectLineTblViewController : SelectLineTableViewController = segue.destinationViewController as! SelectLineTableViewController
+            let selectLineTblViewController : SelectLineTableViewController = segue.destination as! SelectLineTableViewController
             
-            let section : Int = self.tableView.indexPathForSelectedRow?.section ?? 0
+//            let section : Int = self.tableView.indexPathForSelectedRow?.section ?? 0
+            let section = scopeBar.selectedSegmentIndex
             let row : Int = self.tableView.indexPathForSelectedRow?.row ?? 0
             let iDs : [Int] = self.termCompanyPrefectArray[section] as [Int]
             selectLineTblViewController.companyOrPrefectId = iDs[row]
@@ -186,7 +199,7 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
             
         } else if segid == "toHistorySegue" {
             // 過去指定 履歴駅一覧
-            let dvc : CSTableViewController = segue.destinationViewController as! CSTableViewController
+            let dvc : CSTableViewController = segue.destination as! CSTableViewController
             dvc.transit_state = FGD.FA_TRANSIT_HISTORY
             
         } /* else termSelectDone(unwind)(検索結果から駅選択) */
@@ -196,23 +209,26 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
     
     
     // MARK: - Content Filtering
-    func filterContentForSearchText(searchText : String, scope  scope_ : String) {
+    func filterContentForSearchText(_ searchText : String) {
         // Update the filtered array based on the search text and scope.
         // Remove all objects from the filtered search array
-        self.termFilteredArray.removeAll(keepCapacity: false)
+        self.termFilteredArray.removeAll(keepingCapacity: false)
         
         if (true != searchText.isEmpty) {
-            self.termFilteredArray = RouteDataController.KeyMatchStations(searchText) as! [Int]
+            self.termFilteredArray = RouteDataController.keyMatchStations(searchText) as! [Int]
         }
+        tableView.reloadData()
     }
-    
+
+
+    /* --- Old version
     // MARK: - UISearchDisplayController Delegate Methods
-    func searchDisplayController(controller : UISearchDisplayController, shouldReloadTableForSearchString searchString : String?) -> Bool {
+    func searchDisplayController(_ controller : UISearchDisplayController, shouldReloadTableForSearch searchString : String?) -> Bool {
         // Tells the table data source to reload when text changes
         
         let selidx : Int = self.searchDisplayController?.searchBar.selectedScopeButtonIndex ?? 0
         var scope_str : String
-        if let scope_titles : [String]? = self.searchDisplayController?.searchBar.scopeButtonTitles {
+        if let scope_titles : [String] self.searchDisplayController?.searchBar.scopeButtonTitles {
             scope_str = scope_titles?[selidx] ?? ""
         } else {
             scope_str = ""
@@ -225,10 +241,10 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
         return true
     }
     
-    func searchDisplayController(controller : UISearchDisplayController, shouldReloadTableForSearchScope searchOption : Int) -> Bool {
+    func searchDisplayController(_ controller : UISearchDisplayController, shouldReloadTableForSearchScope searchOption : Int) -> Bool {
         
         var scope_str : String
-        if let scope_titles : [AnyObject]? = self.searchDisplayController?.searchBar.scopeButtonTitles {
+        if let scope_titles : [AnyObject]? = self.searchDisplayController?.searchBar.scopeButtonTitles as [AnyObject]?? {
             scope_str = scope_titles![searchOption] as! String
         } else {
             scope_str = ""
@@ -241,11 +257,11 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
         // Return YES to cause the search result table view to be reloaded.
         return true
     }
+    ---- old version */
     
-    
-    override func tableView(tableView : UITableView, didSelectRowAtIndexPath indexPath : NSIndexPath) {
+    override func tableView(_ tableView : UITableView, didSelectRowAt indexPath : IndexPath) {
         
-        if (tableView == self.searchDisplayController?.searchResultsTableView) {
+        if searchController.isActive && searchController.searchBar.text != "" {
 
 //                if ([self.delegate respondsToSelector:@selector(terminalSelectTablebleViewDone:)]) {
 //                [self.delegate terminalSelectTablebleViewDone:[[termFilteredArray objectAtIndex:[indexPath row]] intValue]];
@@ -253,13 +269,30 @@ class TerminalSelectTableViewController: CSTableViewController, UISearchBarDeleg
 //                self.terminalId = [NSNumber numberWithInt:indexPath.row];
 //                [self dismissViewControllerAnimated:YES completion:NULL];
 
-            let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
             apd.selectTerminalId = self.termFilteredArray[indexPath.row]
         
-            self.performSegueWithIdentifier("termSelectDone", sender: self)
+            self.performSegue(withIdentifier: "termSelectDone", sender: self)
         } else {
             // @"Select comapny or prefect");
         }
     }
+    // MARK: - Segmented Control
+    @IBAction func scopeChanged(_ sender: UISegmentedControl) {
+        tableView.reloadData()
+    }
+}
 
+extension TerminalSelectTableViewController: UISearchBarDelegate {
+    // MARK: - UISearchBar Delegate
+    func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
+        filterContentForSearchText(searchController.searchBar.text!)
+    }
+}
+
+extension TerminalSelectTableViewController: UISearchResultsUpdating {
+    // MARK: - UISearchResultsUpdating Delegate
+    func updateSearchResults(for searchController: UISearchController) {
+        filterContentForSearchText(searchController.searchBar.text!)
+    }
 }

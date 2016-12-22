@@ -1,6 +1,6 @@
 //
 //  ResultTableViewController.swift
-//  iFarert
+//  iFarert Result show secound right side view.
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/23.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -51,10 +51,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         //[self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"Cell"];
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "preferredContentSizeChanged", name: UIContentSizeCategoryDidChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: Selector(("preferredContentSizeChanged")), name: NSNotification.Name.UIContentSizeCategoryDidChange, object: nil)
         
         self.tableView.estimatedRowHeight = 100.0
-        if 8.0 <= ((UIDevice.currentDevice().systemVersion as NSString).floatValue) {
+        if 8.0 <= ((UIDevice.current.systemVersion as NSString).floatValue) {
             self.tableView.rowHeight = UITableViewAutomaticDimension
         }
         //NSLog(@"ResultView didLoad entry");
@@ -64,7 +64,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
-        self.navigationController?.toolbarHidden = false
+        self.navigationController?.isToolbarHidden = false
         
         // Inner state variables
         ///self.specificAppliedBarButton.enabled = YES;
@@ -82,21 +82,21 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     }
 
     // 戻ってきたときにセルの選択を解除
-    override func viewWillAppear(animated : Bool) {
+    override func viewWillAppear(_ animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.deselectRowAtIndexPath(idx, animated:false)
+        if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: idx, animated:false)
         }
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.tableView.reloadData()
     }
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         if self.fareInfo.result == 0 {
             return 6;
         } else {
@@ -104,7 +104,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         if (nil == self.fareInfo) || (self.fareInfo.result != 0) {
             return 1;   // Error message
@@ -127,15 +127,15 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     }
 
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         var cell : UITableViewCell
         
         if (nil == self.fareInfo) || (self.fareInfo.result != 0) {    // error
-            cell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell", for: indexPath) 
             //lbl = (UILabel*)[cell viewWithTag:1];
             //lbl.text = [self.fareInfo routeList];
-            cell.textLabel?.font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
+            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
             cell.textLabel?.numberOfLines = 0;
             
             if (nil == self.fareInfo) {
@@ -151,7 +151,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     break;
                 }
             }
-            cell.textLabel?.font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
+            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
             cell.textLabel?.numberOfLines = 0;
             return cell;   // Error message
         }
@@ -159,17 +159,17 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         switch indexPath.section {
         case 0:
             /* section */
-            cell = tableView.dequeueReusableCellWithIdentifier("rsTitleCell", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "rsTitleCell", for: indexPath) 
 
             let lbl : UILabel = cell.viewWithTag(1) as! UILabel
-            lbl.text = "\(RouteDataController.TerminalName(self.fareInfo.beginStationId)) → \(RouteDataController.TerminalName(self.fareInfo.endStationId))"
+            lbl.text = "\(RouteDataController.terminalName(self.fareInfo.beginStationId)!) → \(RouteDataController.terminalName(self.fareInfo.endStationId)!)"
             
         case 1:
             /* KM */
             let dic : [String : String] = self.contentsForKm[indexPath.row]
             
             if indexPath.row == 0 {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell1", forIndexPath:indexPath) 
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell1", for:indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["salesKm"]
                 if let str : String = dic["calcKm"] {
@@ -185,10 +185,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 }
             } else {
                 if nil == dic["Company_salesKm"] {
-                    if ((dic["title"]?.rangeOfString("114")) != nil) {
-                        cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell2x", forIndexPath:indexPath) 
+                    if ((dic["title"]?.range(of: "114")) != nil) {
+                        cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell2x", for:indexPath) 
                     } else {
-                        cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell2", forIndexPath:indexPath) 
+                        cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell2", for:indexPath) 
                     }
                     var lbl : UILabel = cell.viewWithTag(1) as! UILabel
                     lbl.text = dic["title"]
@@ -196,13 +196,13 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     lbl.text = dic["salesKm"]
                     
                     lbl = cell.viewWithTag(4) as! UILabel
-                    if let str : String? = dic["calcKm"] {
+                    if let str = dic["calcKm"] {
                         lbl.text = str
                     } else {
                         lbl.text = ""
                     }
                 } else {
-                    cell = tableView.dequeueReusableCellWithIdentifier("rsKmCell3", forIndexPath: indexPath) 
+                    cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell3", for: indexPath) 
                     var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                     lbl.text = dic["JR_salesKm"]
                     lbl = cell.viewWithTag(4) as! UILabel
@@ -216,7 +216,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             
             switch indexPath.row  {
             case 0:
-                cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell", forIndexPath: indexPath) 
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell", for: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
                 
@@ -227,7 +227,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 lbl.text = dic["subFare"]; /* company or IC */
                 
             case 1:
-                cell = tableView.dequeueReusableCellWithIdentifier("rsFareCell2", forIndexPath: indexPath) 
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell2", for: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
 
@@ -238,7 +238,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 var lbl : UILabel
                 
                 if let subtitle = dic["subTitle"] {
-                    cell = tableView.dequeueReusableCellWithIdentifier("rsPersonDiscountFareCell", forIndexPath: indexPath) 
+                    cell = tableView.dequeueReusableCell(withIdentifier: "rsPersonDiscountFareCell", for: indexPath) 
 
                     lbl = cell.viewWithTag(3) as! UILabel
                     lbl.text = subtitle
@@ -247,7 +247,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     lbl.text = dic["subFare"]
                     
                 } else {
-                    cell = tableView.dequeueReusableCellWithIdentifier("rsDiscountFareCell", forIndexPath: indexPath) 
+                    cell = tableView.dequeueReusableCell(withIdentifier: "rsDiscountFareCell", for: indexPath) 
                 }
                 lbl = cell.viewWithTag(1) as! UILabel
                 lbl.text = dic["title"];
@@ -259,14 +259,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
         case 3:
             let message : String = self.contentsForMessage[indexPath.row]
-            cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath) 
             let lbl : UILabel = cell.viewWithTag(1) as! UILabel
             lbl.text = message
             
         case 4:
             /* avail days */
             if (false == self.fareInfo.isArbanArea) {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsAvailDaysCell", forIndexPath: indexPath) 
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsAvailDaysCell", for: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(1) as! UILabel
                 lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
                 lbl = cell.viewWithTag(2) as! UILabel
@@ -286,7 +286,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     lbl.text = "(途中下車前途無効)"
                 }
             } else {
-                cell = tableView.dequeueReusableCellWithIdentifier("rsMetroAvailDaysCell", forIndexPath: indexPath) 
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath) 
                 if nil == self.fareInfo {
                     cell.textLabel?.text = "エラー"
                     assert(false)
@@ -295,11 +295,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             
         case 5:
             /* ROUTE */
-            let rcell : RouteListTableViewCell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) as! RouteListTableViewCell
+            let rcell : RouteListTableViewCell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell", for: indexPath) as! RouteListTableViewCell
             rcell.routeString.text = self.fareInfo.routeList!
             cell = rcell
         default:
-            cell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell", for: indexPath) 
             // provisional
             break;
         }
@@ -342,7 +342,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     }
     */
 
-    override func tableView(tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
+    override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         
         if (self.fareInfo?.result != 0) {
             let title : String = "無効な経路"   // Error message
@@ -350,8 +350,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             return title
         }
  
-        self.navigationItem.title = "\(RouteDataController.TerminalName(self.fareInfo.endStationId))"
-        self.navigationItem.prompt = "\(RouteDataController.TerminalName(self.fareInfo.beginStationId)) → "
+        self.navigationItem.title = "\(RouteDataController.terminalName(self.fareInfo.endStationId)!)"
+        self.navigationItem.prompt = "\(RouteDataController.terminalName(self.fareInfo.beginStationId)!) → "
 
         switch (section) {
         case 0:
@@ -374,12 +374,12 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     //  行の高さ
     //
-    override func tableView(tableView : UITableView, heightForRowAtIndexPath indexPath : NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView : UITableView, heightForRowAt indexPath : IndexPath) -> CGFloat {
 
         var value : CGFloat
         
         if self.fareInfo == nil {
-            return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+            return super.tableView(tableView, heightForRowAt: indexPath)
         }
 
         var ident : String = ""
@@ -424,7 +424,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     value = 44
         case 4:
             /* avail days */
-            if !self.fareInfo.isArbanArea ?? false {
+            if !self.fareInfo.isArbanArea  {
                 ident = "rsAvailDaysCell"
                 value = 44
             } else {
@@ -434,7 +434,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
         case 5:
             /* ROUTE */
-            let cell : RouteListTableViewCell = tableView.dequeueReusableCellWithIdentifier("rsRouteListCell"/*, forIndexPath: indexPath  EXC_BAD_ACCESSになる*/) as! RouteListTableViewCell
+            let cell : RouteListTableViewCell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell"/*, forIndexPath: indexPath  EXC_BAD_ACCESSになる*/) as! RouteListTableViewCell
             return cell.heightForTitle(self.fareInfo.routeList)
 
         default:
@@ -445,7 +445,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if !ident.isEmpty || 0 < value {
             return value
         }
-        return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+        return super.tableView(tableView, heightForRowAt: indexPath)
     }
 
     /*
@@ -460,7 +460,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     
     
     // callback for NSNotificationCenter
-    func preferredContentSizeChanged(aNotification: NSNotification) {
+    func preferredContentSizeChanged(_ aNotification: Notification) {
         // refresh tableView
         self.tableView.reloadData()
     }
@@ -469,9 +469,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     // Action menu selected
     
-    func actionSelectProc(title: String) {
-        if nil != title.rangeOfString("特例") {
-            if nil != title.rangeOfString("しない") {
+    func actionSelectProc(_ title: String) {
+        if nil != title.range(of: "特例") {
+            if nil != title.range(of: "しない") {
                 // @"特例を適用しない";
                 ds.setFareOption(FGD.FAREOPT_RULE_NO_APPLIED, availMask: FGD.FAREOPT_AVAIL_RULE_APPLIED)
             } else {
@@ -480,8 +480,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
             self.reCalcFareInfo()
             
-        } else if nil != title.rangeOfString("単駅") {
-            if nil != title.rangeOfString("発駅") {
+        } else if nil != title.range(of: "単駅") {
+            if nil != title.range(of: "発駅") {
                 // "発駅を単駅指定";
                 ds.setFareOption(FGD.FAREOPT_APPLIED_TERMINAL, availMask: FGD.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
             } else {
@@ -491,16 +491,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.reCalcFareInfo()
             self.tableView.reloadData()
             
-        } else if nil != title.rangeOfString("最短経路") {
+        } else if nil != title.range(of: "最短経路") {
             self.showIndicate()
-            self.navigationController?.view.userInteractionEnabled = false
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC))), dispatch_get_main_queue(), {
+            self.navigationController?.view.isUserInteractionEnabled = false
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
-                self.processDuringIndicatorAnimating(NSNull)
+                self.processDuringIndicatorAnimating(NSNull.self)
             })
             
-        } else if nil != title.rangeOfString("回り") {
-            let rc : Int = ds.setDetour((nil != title.rangeOfString("遠")) ? true : false)
+        } else if nil != title.range(of: "回り") {
+            let rc : Int = ds.setDetour((nil != title.range(of: "遠")) ? true : false)
             if 0 <= rc {
                 self.reCalcFareInfo()
                 self.tableView.reloadData()
@@ -514,7 +514,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     //  Compose button
     //
-    @IBAction func chgOptionButtonAction(sender: AnyObject) {
+    @IBAction func chgOptionButtonAction(_ sender: AnyObject) {
 
         if self.fareInfo == nil {
             return
@@ -551,17 +551,17 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
         
         if #available(iOS 8, OSX 10.10, *) {            // iOS8
-            let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .ActionSheet)
+            let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .actionSheet)
             for item in items {
-                ac.addAction(UIAlertAction(title: item, style: .Default, handler: { (action: UIAlertAction) in self.actionSelectProc(action.title!)}))
+                ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction) in self.actionSelectProc(action.title!)}))
             }
-            ac.addAction(UIAlertAction(title: "キャンセル", style: .Cancel, handler: nil))
+            ac.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: nil))
             // for iPad
-            ac.modalPresentationStyle = UIModalPresentationStyle.Popover
+            ac.modalPresentationStyle = UIModalPresentationStyle.popover
             ac.popoverPresentationController?.barButtonItem = (sender as! UIBarButtonItem)
             ac.popoverPresentationController?.sourceView = self.view
             // end of for iPad
-            self.presentViewController(ac, animated: true, completion: nil)
+            self.present(ac, animated: true, completion: nil)
 
         } else {
             // iOS7
@@ -571,23 +571,23 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             actsheet.title = self.title!
 
             for item in items {
-                actsheet.addButtonWithTitle(item)
+                actsheet.addButton(withTitle: item)
             }
-            actsheet.addButtonWithTitle("キャンセル")
+            actsheet.addButton(withTitle: "キャンセル")
             actsheet.cancelButtonIndex = actsheet.numberOfButtons - 1
             
-            if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
+            if UIDevice.current.userInterfaceIdiom == .pad {
                 self.clearsSelectionOnViewWillAppear = false
                 self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
-                actsheet.showFromBarButtonItem(sender as! UIBarButtonItem, animated: true)
+                actsheet.show(from: sender as! UIBarButtonItem, animated: true)
             } else {
-                let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
                 let win : UIWindow = apd.window!
 
                 if (win.subviews ).contains(self.tableView as UIView) {
-                    actsheet.showInView(self.view)
+                    actsheet.show(in: self.view)
                 } else {
-                    actsheet.showInView(win)
+                    actsheet.show(in: win)
                 }
             }
         }
@@ -596,26 +596,26 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     // action sheet
     // Send to other application.
     //
-    @IBAction func actionButtonAction(sender: AnyObject) {
+    @IBAction func actionButtonAction(_ sender: AnyObject) {
         self.ShowAirDrop(sender)
     }
     
     //  Action Sheet
     //
-    func actionSheet(actionSheet : UIActionSheet, clickedButtonAtIndex buttonIndex : Int) {
+    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
         //NSLog(@"action select:%d", buttonIndex);
     
         if (actionSheet.numberOfButtons - 1) == buttonIndex {
             return; // Canceled
         }
     
-        let title : String = actionSheet.buttonTitleAtIndex(buttonIndex)!
+        let title : String = actionSheet.buttonTitle(at: buttonIndex)!
         actionSelectProc(title)
     }
     
     //  長い処理
     //
-    func processDuringIndicatorAnimating(param : AnyObject) {
+    func processDuringIndicatorAnimating(_ param : AnyObject) {
         
         let begin_id : Int = ds.startStationId()
         let end_id : Int = ds.lastStationId()
@@ -634,7 +634,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     // MARK: - local
     
     // FareInfo 再計算
-    func reCalcFareInfo(initial : Bool = false) {
+    func reCalcFareInfo(_ initial : Bool = false) {
         
         // initial = false : fareInfoは有効ではなくてはいけない
         // initial = true  : 初期化プロセスなのでfareInfoは無効で良い
@@ -657,9 +657,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
 
         if self.fareInfo.isFareOptEnabled() || self.fareInfo.isArbanArea {
-            self.chgOptionButton.enabled = true
+            self.chgOptionButton.isEnabled = true
         } else {
-            self.chgOptionButton.enabled = false
+            self.chgOptionButton.isEnabled = false
         }
     }
     
@@ -678,62 +678,62 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         num_of_km = 1;
 
         if (self.fareInfo.jrCalcKm == self.fareInfo.jrSalesKm) {
-            contentsForKm = [["salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.totalSalesKm))km"]]
+            contentsForKm = [["salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.totalSalesKm)!)km"]]
         } else {
-            contentsForKm = [["salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.totalSalesKm))km",
-                             "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.jrCalcKm))km",
+            contentsForKm = [["salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.totalSalesKm)!)km",
+                             "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.jrCalcKm)!)km",
                              "subTitle" : (self.fareInfo.companySalesKm != 0) ? "計算キロ(JR)" : "計算キロ"]]
         }
     
         if self.fareInfo.salesKmForHokkaido != 0 {
-            num_of_km++;
+            num_of_km += 1;
             if self.fareInfo.calcKmForHokkaido == self.fareInfo.salesKmForHokkaido {
                 contentsForKm += [["title" : "JR北海道",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForHokkaido))km"]]
+                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km"]]
             } else {
                 contentsForKm += [["title" : "JR北海道",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForHokkaido))km",
-                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForHokkaido))km"]]
+                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km",
+                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForHokkaido)!)km"]]
             }
         }
         if (self.fareInfo.salesKmForKyusyu != 0) {
-            num_of_km++;
+            num_of_km += 1;
             if self.fareInfo.calcKmForKyusyu == self.fareInfo.salesKmForKyusyu {
                 contentsForKm += [["title" : "JR九州",
-                                  "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForKyusyu))km"]]
+                                  "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km"]]
             } else {
                 contentsForKm += [["title" : "JR九州",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForKyusyu))km",
-                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForKyusyu))km"]]
+                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km",
+                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForKyusyu)!)km"]]
             }
         }
         if self.fareInfo.salesKmForShikoku != 0 {
-            num_of_km++;
+            num_of_km += 1;
             if (self.fareInfo.calcKmForShikoku == self.fareInfo.salesKmForShikoku) {
                 contentsForKm += [["title" : "JR四国",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForShikoku))km"]]
+                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForShikoku)!)km"]]
             } else {
                 contentsForKm += [["title" : "JR四国",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForShikoku))km",
-                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForShikoku))km"]]
+                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForShikoku)!)km",
+                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForShikoku)!)km"]]
             }
         }
         if (self.fareInfo.isRule114Applied) {
-            num_of_km++;
+            num_of_km += 1;
             //if (self.fareInfo.rule114_salesKm != self.fareInfo.rule114_calcKm) && (0 != self.fareInfo.rule114_calcKm) {
             if (self.fareInfo.jrCalcKm != self.fareInfo.jrSalesKm) {
                 contentsForKm += [["title" : "規程114条適用",
-                                    "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_salesKm))km",
-                                    "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_calcKm))km"]]
+                                    "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_salesKm)!)km",
+                                    "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_calcKm)!)km"]]
             } else {
                 contentsForKm += [["title" : "規程114条適用",
-                    "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_salesKm))km"]]
+                    "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_salesKm)!)km"]]
             }
         }
         if (self.fareInfo.companySalesKm != 0) {
-            num_of_km++;
-            contentsForKm += [["Company_salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.companySalesKm))km",
-                               "JR_salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.jrSalesKm))km"]]
+            num_of_km += 1;
+            contentsForKm += [["Company_salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.companySalesKm)!)km",
+                               "JR_salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.jrSalesKm)!)km"]]
         }
         
         
@@ -746,38 +746,38 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         var strFareOpt : String = (self.fareInfo.isRoundtripDiscount) ? " (割引)" : ""
 
         if (self.fareInfo.isRule114Applied) {
-            strFareOpt +=  "(¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)))"
+            strFareOpt +=  "(¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)!))"
         }
 
         if (self.fareInfo.fareForCompanyline != 0) {
             /* 1: 普通運賃＋会社線 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "うち会社線",
-                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline))"]]
+                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
-            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
-                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline * 2))"]]
+            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
         } else if (self.fareInfo.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "IC運賃",
-                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC))"]]
+                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC)!)"]]
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
-            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
-                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC * 2))"]]
+            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC * 2)!)"]]
         } else {
             /* 1: 普通運賃 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare))",
+            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "", "subFare" : ""]]
             /* 2: 往復運賃(割引可否) */
-            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine))" + strFareOpt,
+            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
                                  "subFare" : ""]]
         }
         
         /* 114 exception */
         if (self.fareInfo.isRule114Applied) {
-            num_of_fare++;
-            let fare_str : String = "(¥\(RouteDataController.fareNumStr(self.fareInfo.farePriorRule114)))"
+            num_of_fare += 1;
+            let fare_str : String = "(¥\(RouteDataController.fareNumStr(self.fareInfo.farePriorRule114)!))"
             contentsForFare += [["title" : "規程114条 適用しない運賃",
                                  "fare" : fare_str]]
         }
@@ -785,27 +785,27 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         /* stock discount */
         num_of_fare += self.fareInfo.availCountForFareOfStockDiscount;
         
-        for (var i : Int = 0; i < self.fareInfo.availCountForFareOfStockDiscount; i++) {
+        for i in 0 ..< self.fareInfo.availCountForFareOfStockDiscount {
             var fare_str : String
             if (self.fareInfo.isRule114Applied) {
-                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(2 + i)))(¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i))))"
+                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fare(forStockDiscount: 2 + i))!)(¥\(RouteDataController.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!))"
             } else {
-                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForStockDiscount(i)))"
+                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!)"
             }
-            contentsForFare += [["title" : self.fareInfo.fareForStockDiscountTitle(i), "fare" : fare_str]]
+            contentsForFare += [["title" : self.fareInfo.fare(forStockDiscountTitle: i), "fare" : fare_str]]
         }
         
         // Child fare
         contentsForFare += [["title" : "小児運賃",
-                             "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare))",
+                             "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare)!)",
                              "subTitle" : "往復",
-                             "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare * 2))"]]
+                             "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare * 2)!)"]]
         if self.fareInfo.isAcademicFare {
             num_of_fare += 1
             contentsForFare += [["title" : "学割運賃",
-                "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.academicFare))",
+                "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.academicFare)!)",
                 "subTitle" : "往復",
-                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundtripAcademicFare))"]]
+                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
         }
 
         if self.fareInfo.isResultCompanyBeginEnd {
@@ -819,14 +819,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     
     func showIndicate() {
         self.frontView = UIView(frame: self.navigationController!.view.bounds)
-        self.frontView.backgroundColor = UIColor.clearColor()
+        self.frontView.backgroundColor = UIColor.clear
         self.navigationController!.view!.addSubview(self.frontView)
         
-        self.indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.WhiteLarge)
-        self.indicator.color = UIColor.blackColor()
+        self.indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
+        self.indicator.color = UIColor.black
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
-        self.frontView.bringSubviewToFront(self.indicator)
+        self.frontView.bringSubview(toFront: self.indicator)
         self.indicator.startAnimating()
     }
     
@@ -837,18 +837,18 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         self.indicator = nil
         self.frontView = nil
         
-        self.navigationController?.view.userInteractionEnabled = true
+        self.navigationController?.view.isUserInteractionEnabled = true
         self.tableView.reloadData()
     }
     
-    func ShowAirDrop(from : AnyObject) {
+    func ShowAirDrop(_ from : AnyObject) {
         if (nil == self.fareInfo) || (self.fareInfo.result != 0) {
             return;   // Error message
         }
         let subject : String = self.resultTitle()
         let shareText : String = self.resultMessage(subject)
         let activityItems : [AnyObject] = [shareText as AnyObject]
-        let excludeActivities : [String]? = [UIActivityTypePostToWeibo]
+        let excludeActivities : [UIActivityType] = [UIActivityType.postToWeibo]
         
         let activityController : UIActivityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
         
@@ -862,25 +862,25 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             activityController.popoverPresentationController?.barButtonItem = (from as! UIBarButtonItem)
         }
         // modalで表示
-        self.presentViewController(activityController, animated: true, completion: nil)
+        self.present(activityController, animated: true, completion: nil)
     }
         
     func resultTitle() -> String {
         if self.fareInfo == nil {
             return "エラー"
         }
-        return "運賃詳細(\(RouteDataController.TerminalName(self.fareInfo.beginStationId)) - \(RouteDataController.TerminalName(self.fareInfo.endStationId)))"
+        return "運賃詳細(\(RouteDataController.terminalName(self.fareInfo.beginStationId)!) - \(RouteDataController.terminalName(self.fareInfo.endStationId)!))"
     }
     
-    func resultMessage(subject : String) -> String {
+    func resultMessage(_ subject : String) -> String {
         
         if self.fareInfo == nil {
             return "エラー"
         }
 
-        var body : String = "\(subject)\n\n\(ds.showFare())\n"
+        var body : String = "\(subject)\n\n\(ds.showFare()!)\n"
         
-        body = body.stringByReplacingOccurrencesOfString("\\", withString: "¥")
+        body = body.replacingOccurrences(of: "\\", with: "¥")
         
         // メールビュー生成
         //_mailViewCtl = [[MFMailComposeViewController alloc] init];
@@ -898,11 +898,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         return body
     }
     
-    func ShowAlertView(title : String, message message_ : String) {
+    func ShowAlertView(_ title : String, message message_ : String) {
         if #available(iOS 8, OSX 10.10, *) {            // iOS8 -
-            let ac : UIAlertController = UIAlertController(title: self.title!, message: message_, preferredStyle: .Alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-            self.presentViewController(ac, animated: true, completion: nil)
+            let ac : UIAlertController = UIAlertController(title: self.title!, message: message_, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(ac, animated: true, completion: nil)
         } else {
             // iOS7
             let alertView : UIAlertView = UIAlertView(title: title, message: message_, delegate: self, cancelButtonTitle: nil, otherButtonTitles: "OK")
