@@ -1,6 +1,6 @@
 //
 //  SettingsTableViewController.swift
-//  iFarert
+//  iFarert Option Change database source management view
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/27.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -37,13 +37,13 @@ class SettingsTableViewController: UITableViewController {
         // Uncomment the following line to preserve selection between presentations.
         // self.clearsSelectionOnViewWillAppear = NO;
 
-        self.navigationController?.toolbarHidden = false
+        self.navigationController?.isToolbarHidden = false
 
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
-        before_dbid_idx = RouteDataController.GetDatabaseId()
+        before_dbid_idx = RouteDataController.getDatabaseId()
         if ((before_dbid_idx < DbId.DB_MIN_ID) || (DbId.DB_MAX_ID < before_dbid_idx)) {
             before_dbid_idx = DbId.DB_MAX_ID
         }
@@ -73,7 +73,7 @@ class SettingsTableViewController: UITableViewController {
     }
     */
     
-    override func tableView(tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
+    override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         if (section == 0) {
             return "データソース"
         }
@@ -129,7 +129,7 @@ class SettingsTableViewController: UITableViewController {
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
         if (segue.identifier == "settingsSegue") {
@@ -138,9 +138,9 @@ class SettingsTableViewController: UITableViewController {
                 dbid = DbId.DB_MAX_ID
             }
             if (before_dbid_idx != dbid) {
-                RouteDataController.SaveToDatabaseId(dbid)
-                RouteDataController.Close()
-                RouteDataController.OpenDatabase(dbid)
+                RouteDataController.save(toDatabaseId: dbid)
+                RouteDataController.close()
+                RouteDataController.openDatabase(dbid)
                 self.selectDbId = dbid
             } else {
                 self.selectDbId = -1;   /* no change */
