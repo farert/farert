@@ -1,6 +1,6 @@
 //
 //  MainTableViewController.swift
-//  iFarert
+//  iFarert Main first look View
 //
 //  Created by TAKEDA, Noriyuki on 2015/04/03.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -85,9 +85,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         //self.replayBarButton.accessibilityHint = @"経路を一つ前に戻ります";
         //self.organaizerBarButton.accessibilityHint = @"保持経路管理ビューを開きます";
-        self.navigationItem.rightBarButtonItem?.enabled = true
+        self.navigationItem.rightBarButtonItem?.isEnabled = true
         self.tableView.rowHeight = 44.0;
-        self.actionBarButton.enabled = false;
+        self.actionBarButton.isEnabled = false;
         ds = RouteDataController()
     }
 
@@ -99,7 +99,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  View will Appear
     // Called when the view is about to made visible. Default does nothing
     //
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     
         //  self.navigationController.toolbarHidden = NO;
@@ -109,13 +109,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  View did apear
     //
     //
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
     
         // remove old(before ver 15.10)
-        NSUserDefaults.standardUserDefaults().removeObjectForKey("HasLaunchedOnce")
+        UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
         
-        let cnt = NSUserDefaults.standardUserDefaults().integerForKey("hasLaunched")
+        let cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
         if 0x1603 <= cnt {
         
             // ２回目以降の起動時
@@ -124,21 +124,21 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // AlertView(iOS7, iOS8)
             if #available(iOS 8, OSX 10.10, *) {
                 /* iOS8 */
-                let ac = UIAlertController(title: WELCOME_TITLE, message: WELCOME_MESSAGE, preferredStyle: .Alert)
-                let otherAction = UIAlertAction(title: "了解", style: .Default) {
+                let ac = UIAlertController(title: WELCOME_TITLE, message: WELCOME_MESSAGE, preferredStyle: .alert)
+                let otherAction = UIAlertAction(title: "了解", style: .default) {
                     action in
                 }
                 ac.addAction(otherAction)
-                self.presentViewController(ac, animated: true, completion: nil)
+                self.present(ac, animated: true, completion: nil)
                 
             } else {
                 /* iOS7 */
                 let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
                 av.show()
             }
-            NSUserDefaults.standardUserDefaults().setInteger(0x1603, forKey: "hasLaunched")
-            RouteDataController.SaveToDatabaseId(DbId.DB_MAX_ID, sync: false)
-            NSUserDefaults.standardUserDefaults().synchronize();
+            UserDefaults.standard.set(0x1603, forKey: "hasLaunched")
+            RouteDataController.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
+            UserDefaults.standard.synchronize();
         }
 
         
@@ -146,11 +146,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         // ここから
         if viewContextMode == FGD.CONTEXT_AUTOROUTE_ACTION {
             
-            let appDelegate:AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
             if let selid = appDelegate.selectTerminalId {
                 self.actionSheetController(
                     ["新幹線を使う", "新幹線をつかわない（在来線のみ）"],
-                    title: RouteDataController.StationName(selid) + "までの最短経路追加",
+                    title: RouteDataController.stationName(selid) + "までの最短経路追加",
                     message: "",
                     from: TAG_UIACTIONSHEET_AUTOROUTE)
             }
@@ -169,20 +169,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         } else if (viewContextMode == FGD.CONTEXT_ROUTESETUP_VIEW) {
             // from 保持経路ビュー
             showIndicate();    /* start Activity and Disable UI */
-            self.navigationController!.view!.userInteractionEnabled = false;
+            self.navigationController!.view!.isUserInteractionEnabled = false;
             longTermFuncMode = LPROC_SETUPROUTE;
-            let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
-            dispatch_after(time, dispatch_get_main_queue(), {
+            let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+            DispatchQueue.main.asyncAfter(deadline: time, execute: {
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
-                self.processDuringIndicatorAnimating(self.routeScript ?? "")
+                self.processDuringIndicatorAnimating(self.routeScript as AnyObject? ?? "" as AnyObject)
             })
         }
         viewContextMode = 0;
         // ここまでは ObjCまでは、viewWillApear にあったが、こっちに写してみた
 
         // セルの選択を解除
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.deselectRowAtIndexPath(idx, animated:false)
+        if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: idx, animated:false)
         }
         
         if (scroll_flag) {
@@ -195,9 +195,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  長い処理
     //  longTermFuncMode != 0
     //
-    func processDuringIndicatorAnimating(param: AnyObject) {
+    func processDuringIndicatorAnimating(_ param: AnyObject) {
         var rc: Int = -1;
-        let appDelegate:AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
         switch (longTermFuncMode) {
         case LPROC_REVERSE:
@@ -259,7 +259,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 scroll_flag = true;
             }
         default:
-            assert(false, "bug:\(__FILE__) : \(__LINE__))")
+            assert(false, "bug:\(#file) : \(#line))")
             break
         }
         fareResultSetting(rc)   /* 簡易結果(Footer section) */
@@ -269,11 +269,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // Return the number of rows in the section.
         var num : Int = ds.getRouteCount()
         
@@ -282,15 +282,15 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         }
         if (0 < num) {
             //self.navigationItem.rightBarButtonItem.enabled = YES;
-            self.replayBarButton.enabled = true;
+            self.replayBarButton.isEnabled = true;
         } else {
             //self.navigationItem.rightBarButtonItem.enabled = NO;
-            self.replayBarButton.enabled = false;
+            self.replayBarButton.isEnabled = false;
         }
         if (1 < num) {
-            self.reverseBarButton.enabled = true;
+            self.reverseBarButton.isEnabled = true;
         } else {
-            self.reverseBarButton.enabled = false;
+            self.reverseBarButton.isEnabled = false;
         }
         return num;
     }
@@ -298,14 +298,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  TableView データ描画・設定
     //
     //
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if (ds.getRouteCount() - 1) <= indexPath.row {
             /*
             * 最後の行
             */
-            let cell = tableView.dequeueReusableCellWithIdentifier("LastRouteCell") as UITableViewCell!
-            let lbl = cell.viewWithTag(201) as! UILabel
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LastRouteCell") as UITableViewCell!
+            let lbl = cell?.viewWithTag(201) as! UILabel
             if (routeStat != 0) {
                 switch (routeStat) {
                 case ROUTE_DUP_ERROR:
@@ -338,20 +338,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     lbl.text = "unknown error";
                     break;
                 }
-                lbl.hidden = false;
+                lbl.isHidden = false;
             } else {
-                lbl.hidden = true;
+                lbl.isHidden = true;
             }
-            return cell
+            return cell!
         } else {
             /* 最後の行以外の普通の行
             *
             */
-            let cell = tableView.dequeueReusableCellWithIdentifier("RouteContentCell") as! FarertTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "RouteContentCell") as! FarertTableViewCell
             
             let ri = ds.getRouteItem(indexPath.row + 1)
-            cell.lineName.text = ri.line;
-            cell.stationName.text = ri.station;
+            cell.lineName.text = ri?.line;
+            cell.stationName.text = ri?.station;
 
             return cell
         }
@@ -395,8 +395,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  ヘッダタイトル
     //
     //
-    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let tableHeaderViewCell : HeaderTableViewCell = tableView.dequeueReusableCellWithIdentifier("HeaderCell") as! HeaderTableViewCell
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let tableHeaderViewCell : HeaderTableViewCell = tableView.dequeueReusableCell(withIdentifier: "HeaderCell") as! HeaderTableViewCell
         var label : UILabel?
         var title : String
         var subtitle : String
@@ -404,9 +404,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         if 0 < ds.startStationId() {
             /* 開始駅 */
-            title = RouteDataController.StationNameEx(ds.startStationId())
+            title = RouteDataController.stationNameEx(ds.startStationId())
             /* ひらかな */
-            subtitle = RouteDataController.GetKanaFromStationId(ds.startStationId())
+            subtitle = RouteDataController.getKanaFromStationId(ds.startStationId())
         } else {
             title = "";
             subtitle = "発駅を入力してください";
@@ -427,9 +427,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  フッタタイトル
     //
     //
-    override func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         
-        let cell : HeaderTableViewCell = tableView.dequeueReusableCellWithIdentifier("footerCell") as! HeaderTableViewCell
+        let cell : HeaderTableViewCell = tableView.dequeueReusableCell(withIdentifier: "footerCell") as! HeaderTableViewCell
         let lbl1 : UILabel = cell.viewWithTag(40001) as! UILabel
         let lbl2 : UILabel = cell.viewWithTag(40002) as! UILabel
         let lbl3 : UILabel = cell.viewWithTag(40003) as! UILabel
@@ -451,7 +451,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  ヘッダ高さ
     //
     //
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
 
         //let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("HeaderCell") as! UITableViewCell
         
@@ -465,7 +465,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  フッタ高さ
     //
     //
-    override func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
 
         if section == 0 {
             if (1 < ds.getRouteCount()) {
@@ -478,7 +478,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  行の高さ
     //
     //
-    override func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath : NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath : IndexPath) -> CGFloat {
      
         return UITableViewAutomaticDimension
     }
@@ -488,19 +488,19 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //  Touched on tableView Header / Footer
     //
     //
-    func tableHeaderViewTouched(tableHeaderViewCell : HeaderTableViewCell) {
+    func tableHeaderViewTouched(_ tableHeaderViewCell : HeaderTableViewCell) {
         if (tableHeaderViewCell.tag == 100) {
             /* header */
-            self.performSegueWithIdentifier("terminalSelectSegue", sender:self);
+            self.performSegue(withIdentifier: "terminalSelectSegue", sender:self);
             
         } else if (tableHeaderViewCell.tag == 200) {
             /* Footer */
             let lastIndex : Int = ds.getRouteCount() - 2; // last item
             if (0 <= lastIndex) {
                 scroll_flag = true; // Tableview scroll-up
-                let indexPath : NSIndexPath = NSIndexPath(forRow: lastIndex, inSection: 0)
-                self.tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: UITableViewScrollPosition.None)
-                self.performSegueWithIdentifier("fareInfoDetailSegue", sender:self)
+                let indexPath : IndexPath = IndexPath(row: lastIndex, section: 0)
+                self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableViewScrollPosition.none)
+                self.performSegue(withIdentifier: "fareInfoDetailSegue", sender:self)
             }
         }
     }
@@ -509,16 +509,16 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let segid : String = segue.identifier!
-        let apd:AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let apd:AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
         if segid == "terminalSelectSegue" {
             apd.context = FGD.CONTEXT_TERMINAL_VIEW;
             //        vc.delegate = self;
         } else if segid == "routeLineSegue" {
             /* 経路追加(駅に属する路線一覧 */
-            let selectLineTblViewController : SelectLineTableViewController = segue.destinationViewController as! SelectLineTableViewController;
+            let selectLineTblViewController : SelectLineTableViewController = segue.destination as! SelectLineTableViewController;
             selectLineTblViewController.baseStationId = ds.lastStationId()
             selectLineTblViewController.companyOrPrefectId = 0
             selectLineTblViewController.lastLineId = ds.lastLineId()
@@ -528,13 +528,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         } else if segid == "fareInfoDetailSegue" {
             /* 運賃詳細ビュー */
             let idx = self.tableView.indexPathForSelectedRow?.row ?? 0
-            let resultViewCtlr : ResultTableViewController = segue.destinationViewController as! ResultTableViewController
+            let resultViewCtlr : ResultTableViewController = segue.destination as! ResultTableViewController
             resultViewCtlr.ds = RouteDataController(assign: self.ds, count: idx + 2)
             apd.context = 0;
             
         } else if segid == "routeManagerSegue" {
             /* 経路一覧ビュー */
-            let naviCtlr : UINavigationController = segue.destinationViewController as! UINavigationController
+            let naviCtlr : UINavigationController = segue.destination as! UINavigationController
             let routeMngViewCtlr : ArchiveRouteTableViewController = naviCtlr.topViewController as! ArchiveRouteTableViewController
             if ds.getRouteCount() <= 1 {
                 routeMngViewCtlr.currentRouteString = "";
@@ -546,16 +546,16 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             //
         } else if segid == "settingsSegue" {
             /// // save Route
-            self.routeScript = ds.routeScript().stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+            self.routeScript = ds.routeScript().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         } else {
-            assert(false, "bug:\(__FILE__) \(__LINE__) segid=\(segid)")
+            assert(false, "bug:\(#file) \(#line) segid=\(segid)")
         }
         //NSLog(@"prepareForSegue:%@", [segue identifier]);
     }
 
     // MARK: - unwind segue
     
-    @IBAction func doneTerminal(segue: UIStoryboardSegue)
+    @IBAction func doneTerminal(_ segue: UIStoryboardSegue)
     {
         let seg_id : String? = segue.identifier
         
@@ -572,7 +572,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             var termId : Int = 0;
             
             ///UIViewController* v = (UIViewController*)[segue sourceViewController];
-            let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
             //termId = [[app selectTerminalId] intValue];
             termId = apd.selectTerminalId ?? 0
             if (apd.context == FGD.CONTEXT_TERMINAL_VIEW) {
@@ -581,7 +581,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 //if ([_ds startStationId] == termId) {
                 //    return;
                 //}
-                if (1 < ds.getRouteCount()) && !RouteDataController.IsRouteInStrage(ds.routeScript()) {
+                if (1 < ds.getRouteCount()) && !RouteDataController.isRoute(inStrage: ds.routeScript()) {
                     viewContextMode = FGD.CONTEXT_BEGIN_TERMINAL_ACTION;
                     // つつきは、viewDidApear:　で
                 } else {
@@ -591,12 +591,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 // from 最短経路
                 // auto route
                 //NSLog(@"autoroute end station=%d, %@", termId, [RouteDataController StationName:termId]);
-                self.navigationController?.popViewControllerAnimated(false)
+                _ = self.navigationController?.popViewController(animated: false)
 
                 // AlartViewで、新幹線を使うか否かを訊いてautoroute
                 //BOOL bulletUse = [self queryDialog:@"新幹線を使用しますか?"];
                 viewContextMode = FGD.CONTEXT_AUTOROUTE_ACTION;
-                RouteDataController.SaveToTerminalHistory(RouteDataController.StationNameEx(termId))
+                RouteDataController.save(toTerminalHistory: RouteDataController.stationNameEx(termId))
                 // つつきは、viewWilApear:　で
                 
             } else if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
@@ -624,7 +624,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         } else if (seg_id == "unwindArchiveRouteSelectSegue") {
             // from 保持経路一覧
             // setup route
-            let routeViewCtrl : ArchiveRouteTableViewController = segue.sourceViewController as! ArchiveRouteTableViewController
+            let routeViewCtrl : ArchiveRouteTableViewController = segue.source as! ArchiveRouteTableViewController
             if !routeViewCtrl.selectRouteString.isEmpty {
                 viewContextMode = FGD.CONTEXT_ROUTESETUP_VIEW;
                 self.routeScript = routeViewCtrl.selectRouteString;
@@ -640,8 +640,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //        TerminalHistoryTableViewController - [Close] button
     //         TermSelectTableViewController - [Close] button
     //
-    @IBAction func cancelTerminal(segue: UIStoryboardSegue) {
-        self.navigationController?.popViewControllerAnimated(false)
+    @IBAction func cancelTerminal(_ segue: UIStoryboardSegue) {
+        _ = self.navigationController?.popViewController(animated: false)
 
         print("canelTerminal segue=\(segue.identifier)")
     }
@@ -649,10 +649,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     // exit(unwind) segue
     //  from: VersionInfoViewController
     //
-    @IBAction func closeModal(segue: UIStoryboardSegue) {
+    @IBAction func closeModal(_ segue: UIStoryboardSegue) {
         print("MainView: closeModal:")
         if segue.identifier == "settingsSegue" {
-            let view : SettingsTableViewController = segue.sourceViewController as! SettingsTableViewController
+            let view : SettingsTableViewController = segue.source as! SettingsTableViewController
             if (0 < view.selectDbId) {  // is change DB
                 viewContextMode = FGD.CONTEXT_ROUTESETUP_VIEW;
             }
@@ -660,7 +660,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             /* settingsのあとでは「while a presentation or dismiss is in progress!」警告が表示される */
         } else if (segue.identifier == "versionInfoExitSegue") {
             //if self.navigationController?.isBeingDismissed() != true {
-                self.dismissViewControllerAnimated(true, completion: nil)
+                self.dismiss(animated: true, completion: nil)
             //}
         } else {
             assert(false)
@@ -671,14 +671,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     func showIndicate() {
         self.frontView = UIView(frame: self.navigationController!.view.bounds)
-        self.frontView.backgroundColor = UIColor.clearColor()
+        self.frontView.backgroundColor = UIColor.clear
         self.navigationController!.view!.addSubview(self.frontView)
     
-        self.indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.WhiteLarge)
-        self.indicator.color = UIColor.blackColor()
+        self.indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
+        self.indicator.color = UIColor.black
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
-        self.frontView.bringSubviewToFront(self.indicator)
+        self.frontView.bringSubview(toFront: self.indicator)
         self.indicator.startAnimating()
         
     }
@@ -690,29 +690,29 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         self.indicator = nil;
         self.frontView = nil;
         
-        self.navigationController?.view.userInteractionEnabled = true;
+        self.navigationController?.view.isUserInteractionEnabled = true;
         self.tableView.reloadData()
     }
 
     // 逆転
-    @IBAction func reverseAction(sender: UIBarButtonItem) {
+    @IBAction func reverseAction(_ sender: UIBarButtonItem) {
         if (ds.getRouteCount() < 2) {
             return;
         }
         
         self.showIndicate()    /* start Activity and Disable UI */
-        self.navigationController?.view?.userInteractionEnabled = false;
+        self.navigationController?.view?.isUserInteractionEnabled = false;
         longTermFuncMode = LPROC_REVERSE
         // [self performSelector:@selector(processDuringIndicatorAnimating:) withObject:nil afterDelay:0.1];
-        let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
-        dispatch_after(time, dispatch_get_main_queue(), {
+        let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+        DispatchQueue.main.asyncAfter(deadline: time, execute: {
             //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
-            self.processDuringIndicatorAnimating(NSNull)
+            self.processDuringIndicatorAnimating(NSNull.self)
         })
     }
     
     // バック（1つ前に戻る)
-    @IBAction func backAction(sender: UIBarButtonItem) {
+    @IBAction func backAction(_ sender: UIBarButtonItem) {
         if (1 < ds.getRouteCount()) {
             ds.removeTail()
             fareInfo = ds.calcFare()
@@ -725,7 +725,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     }
     
     // action menu
-    @IBAction func checkAction(sender: UIBarButtonItem) {
+    @IBAction func checkAction(_ sender: UIBarButtonItem) {
  
         if ds.isOsakakanDetourEnable() {
             self.actionSheetController(ds.isOsakakanDetourShortcut() ?
@@ -737,33 +737,33 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     
     // begin Action select menu.
-    func actionSheetController(menu_list : [String], title : String, message : String, from : Int) {
+    func actionSheetController(_ menu_list : [String], title : String, message : String, from : Int) {
         
         if #available(iOS 8, OSX 10.10, *) {
             // iOS8
-            let ac : UIAlertController = UIAlertController(title: title, message: message, preferredStyle: .ActionSheet)
+            let ac : UIAlertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
             for item : String in menu_list {
-                ac.addAction(UIAlertAction(title: item, style: .Default, handler: { (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item)}))
+                ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item)}))
             }
-            if nil == menu_list.last!.rangeOfString("いいえ") {
-                ac.addAction(UIAlertAction(title: "キャンセル", style: .Cancel, handler: {(action: UIAlertAction) in self.actionSelectProcFrom(from, label: "キャンセル")}))
+            if nil == menu_list.last!.range(of: "いいえ") {
+                ac.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: {(action: UIAlertAction) in self.actionSelectProcFrom(from, label: "キャンセル")}))
             }
             // for iPad
-            ac.modalPresentationStyle = UIModalPresentationStyle.Popover
+            ac.modalPresentationStyle = UIModalPresentationStyle.popover
             switch (from) {
             case TAG_UIACTIONSHEET_OSAKAKANDETOUR:
                 ac.popoverPresentationController?.barButtonItem = self.actionBarButton
             case TAG_UIACTIONSHEET_AUTOROUTE:
                 ac.popoverPresentationController?.sourceView = self.view
-                ac.popoverPresentationController?.sourceRect = self.tableView.rectForFooterInSection(0)
+                ac.popoverPresentationController?.sourceRect = self.tableView.rectForFooter(inSection: 0)
             case TAG_UIACTIONSHEET_QUERYSETUPROUTE :
                 ac.popoverPresentationController?.sourceView = self.view
-                ac.popoverPresentationController?.sourceRect = self.tableView.rectForHeaderInSection(0)
+                ac.popoverPresentationController?.sourceRect = self.tableView.rectForHeader(inSection: 0)
             default:
                 break
             }
             // end of for iPad
-            self.presentViewController(ac, animated: true, completion: nil)
+            self.present(ac, animated: true, completion: nil)
             
         } else {
             // iOS7
@@ -773,36 +773,36 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             actsheet.title = title
             
             for item : String in menu_list {
-                actsheet.addButtonWithTitle(item)
+                actsheet.addButton(withTitle: item)
             }
-            if nil == menu_list.last!.rangeOfString("いいえ") {
-                actsheet.addButtonWithTitle("キャンセル")
+            if nil == menu_list.last!.range(of: "いいえ") {
+                actsheet.addButton(withTitle: "キャンセル")
                 actsheet.cancelButtonIndex = actsheet.numberOfButtons - 1
             }
             actsheet.tag = from
             
-            if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
+            if UIDevice.current.userInterfaceIdiom == .pad {
                 self.clearsSelectionOnViewWillAppear = false
                 self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
                 switch (from) {
                 case TAG_UIACTIONSHEET_OSAKAKANDETOUR:
-                    actsheet.showFromBarButtonItem(self.actionBarButton, animated: true)
+                    actsheet.show(from: self.actionBarButton, animated: true)
                 case TAG_UIACTIONSHEET_AUTOROUTE:
-                    actsheet.showFromRect(self.tableView.rectForRowAtIndexPath(self.tableView.indexPathForSelectedRow!), inView: self.view, animated: true)
+                    actsheet.show(from: self.tableView.rectForRow(at: self.tableView.indexPathForSelectedRow!), in: self.view, animated: true)
                 case TAG_UIACTIONSHEET_QUERYSETUPROUTE:
-                    actsheet.showFromRect(self.tableView.rectForHeaderInSection(0), inView: self.view, animated: true)
+                    actsheet.show(from: self.tableView.rectForHeader(inSection: 0), in: self.view, animated: true)
                 default:
                     assert(false)
                     break
                 }
             } else {
-                let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
                 let win : UIWindow = apd.window!
                 
                 if (win.subviews ).contains(self.tableView as UIView) {
-                    actsheet.showInView(self.view)
+                    actsheet.show(in: self.view)
                 } else {
-                    actsheet.showInView(win)
+                    actsheet.show(in: win)
                 }
             }
         }
@@ -814,41 +814,41 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //   - Query clear remove by change begin terminal.
     //   - Change root for OOSAKA Kanjyou-sen
     //
-    func actionSheet(actionSheet : UIActionSheet, clickedButtonAtIndex buttonIndex : Int) {
+    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
         if buttonIndex < 0 {
             actionSelectProcFrom(actionSheet.tag, label: "キャンセル")
         } else {
             // <swift1> actionSelectProcFrom(actionSheet.tag, label: actionSheet.buttonTitleAtIndex(buttonIndex))
-            actionSelectProcFrom(actionSheet.tag, label: (actionSheet.buttonTitleAtIndex(buttonIndex))!)
+            actionSelectProcFrom(actionSheet.tag, label: (actionSheet.buttonTitle(at: buttonIndex))!)
         }
     }
     
-    func actionSelectProcFrom(from : Int, label title : String) {
+    func actionSelectProcFrom(_ from : Int, label title : String) {
 
-        let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         var rc : Int
         
         if (from == TAG_UIACTIONSHEET_AUTOROUTE) {
             if (apd.context != FGD.CONTEXT_AUTOROUTE_VIEW) {
                 return;
             }
-            if (nil != title.rangeOfString("キャンセル")) {
+            if (nil != title.range(of: "キャンセル")) {
                 return;
             }
             /*  最短経路 doneTerminal: -> willApear: ->
             *
             */
             self.showIndicate()    /* start Activity and Disable UI */
-            self.navigationController?.view?.userInteractionEnabled = false;
+            self.navigationController?.view?.isUserInteractionEnabled = false;
             longTermFuncMode = LPROC_AUTOROUTE;
             //[self performSelector:@selector(processDuringIndicatorAnimating:)
             //withObject:[NSNumber numberWithInteger:buttonIndex]
             //afterDelay:0.1];
-            let selectIndex : Int = (nil != title.rangeOfString("使う")) ? 0 : 1
-            let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
-            dispatch_after(time, dispatch_get_main_queue(), {
+            let selectIndex : Int = (nil != title.range(of: "使う")) ? 0 : 1
+            let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+            DispatchQueue.main.asyncAfter(deadline: time, execute: {
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: selectIndex)
-                self.processDuringIndicatorAnimating(selectIndex)
+                self.processDuringIndicatorAnimating(selectIndex as AnyObject)
             })
             
         } else if (from == TAG_UIACTIONSHEET_QUERYSETUPROUTE) {
@@ -856,7 +856,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             * doneTerminal: -> willApear
             */
 //            if (selectIndex == 0) {
-            if nil != title.rangeOfString("はい") {
+            if nil != title.range(of: "はい") {
                 self.setBeginTerminal()
                 self.tableView.reloadData()
             }
@@ -864,9 +864,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         } else if (from == TAG_UIACTIONSHEET_OSAKAKANDETOUR) {
             /*  大阪環状線 遠回り／近回り
             */
-            if nil == title.rangeOfString("キャンセル") {
-                if (nil != title.rangeOfString("大阪環状線")) {
-                    rc = ds.setDetour(nil != title.rangeOfString("遠") ? true : false)
+            if nil == title.range(of: "キャンセル") {
+                if (nil != title.range(of: "大阪環状線")) {
+                    rc = ds.setDetour(nil != title.range(of: "遠") ? true : false)
                     fareInfo = ds.calcFare()
                     if (rc < 0) {
                         routeStat = ROUTE_DUPCHG_ERROR;
@@ -884,7 +884,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
     // MARK: - local
     
-    func fareResultSetting(rc: Int) {
+    func fareResultSetting(_ rc: Int) {
 
         if (0 < rc) {
             switch (fareInfo?.result ?? 0) {
@@ -900,9 +900,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         }
         
         if ds.isOsakakanDetourEnable() {
-            self.actionBarButton.enabled = true
+            self.actionBarButton.isEnabled = true
         } else {
-            self.actionBarButton.enabled = false
+            self.actionBarButton.isEnabled = false
         }
     }
     
@@ -910,13 +910,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //
     //
     func setBeginTerminal() {
-        let appDelegate:AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
         
         let termId : Int = appDelegate.selectTerminalId
         ds.addRoute(termId)
         routeStat = 0;
         tableView.reloadData()
-        RouteDataController.SaveToTerminalHistory(RouteDataController.StationNameEx(termId))
+        RouteDataController.save(toTerminalHistory: RouteDataController.stationNameEx(termId))
     }
     
     //  TableView scroll-up(追加後、削除後、最短経路、保持経路)
@@ -925,21 +925,21 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     func scrollTableView() {
         let lastIndex : Int = ds.getRouteCount() - 1;
         if (0 < lastIndex) {
-            let idxpath : NSIndexPath = NSIndexPath(forRow: lastIndex, inSection:0)
-            tableView.scrollToRowAtIndexPath(idxpath, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+            let idxpath : IndexPath = IndexPath(row: lastIndex, section:0)
+            tableView.scrollToRow(at: idxpath, at: UITableViewScrollPosition.bottom, animated: true)
         }
     }
     
-    func alertMessage(title : String, message : String) {
+    func alertMessage(_ title : String, message : String) {
         if #available(iOS 8, OSX 10.10, *) {
             // iOS8
-            let ac : UIAlertController = UIAlertController(title: self.title!, message: message, preferredStyle: .Alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-            self.presentViewController(ac, animated: true, completion: nil)
+            let ac : UIAlertController = UIAlertController(title: self.title!, message: message, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(ac, animated: true, completion: nil)
         } else {
             // Alart
             let alertView : UIAlertView = UIAlertView(title: title, message: message, delegate: self, cancelButtonTitle: nil, otherButtonTitles: "OK")
-            alertView.alertViewStyle = UIAlertViewStyle.Default;
+            alertView.alertViewStyle = UIAlertViewStyle.default;
             alertView.show()
         }
     }

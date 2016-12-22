@@ -9,7 +9,7 @@
 import UIKit
 
 protocol TableHeaderViewDelegate: class {
-    func tableHeaderViewTouched(cell: HeaderTableViewCell)
+    func tableHeaderViewTouched(_ cell: HeaderTableViewCell)
 }
 
 class HeaderTableViewCell: UITableViewCell {
@@ -19,18 +19,18 @@ class HeaderTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        let tapGesture : UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "selTapped:")
+        let tapGesture : UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(HeaderTableViewCell.selTapped(_:)))
         self.addGestureRecognizer(tapGesture)
 
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
 
-    @IBAction func selTapped(sender : AnyObject) {
+    @IBAction func selTapped(_ sender : AnyObject) {
         delegate?.tableHeaderViewTouched(self)
     }
 }

@@ -30,18 +30,18 @@ class RouteSelStationSegue: UIStoryboardSegue {
 //        }
 // iOS7.1で飛ぶので辞めました.  CustomでなくPresent Modallyにしました.
         
-        let sourceViewController : CSTableViewController = self.sourceViewController as! CSTableViewController
-        let destinationViewController : CSTableViewController = self.destinationViewController as! CSTableViewController
+        let sourceViewController : CSTableViewController = self.source as! CSTableViewController
+        let destinationViewController : CSTableViewController = self.destination as! CSTableViewController
         
         let navigationController : UINavigationController = sourceViewController.navigationController! as UINavigationController
         
         if (destinationViewController.transit_state == FGD.FA_TRANSIT_AUTOROUTE) {
-            destinationViewController.modalTransitionStyle = UIModalTransitionStyle.PartialCurl;
-            sourceViewController.presentViewController(destinationViewController, animated:true, completion:nil)
+            destinationViewController.modalTransitionStyle = UIModalTransitionStyle.partialCurl;
+            sourceViewController.present(destinationViewController, animated:true, completion:nil)
             
         } else if (destinationViewController.transit_state == FGD.FA_TRANSIT_HISTORY) {
             /* 履歴 */
-            UIView.transitionWithView(navigationController.view, duration:0.3, options:UIViewAnimationOptions.TransitionCrossDissolve,
+            UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionCrossDissolve,
                 animations: {
                  navigationController.pushViewController(destinationViewController, animated: false)
                 }, completion: nil)
@@ -49,16 +49,16 @@ class RouteSelStationSegue: UIStoryboardSegue {
             if (destinationViewController.transit_state == FGD.FA_TRANSIT_STA2JCT) {
                 // Unwind segueの場合は、右からflipするアニメーション
                 // 着駅→分岐駅
-                navigationController.popViewControllerAnimated(false)
-                UIView.transitionWithView(navigationController.view, duration:0.3, options:UIViewAnimationOptions.TransitionFlipFromRight, animations: {
+                navigationController.popViewController(animated: false)
+                UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionFlipFromRight, animations: {
                     navigationController.pushViewController(destinationViewController, animated: false)
                     }, completion: nil)
                 //[navigationController popViewControllerAnimated:NO];
                 
             } else {    // segueの場合は、左からflipするアニメーション
                 // 分岐駅→着駅
-                navigationController.popViewControllerAnimated(false)
-                UIView.transitionWithView(navigationController.view, duration:0.3, options:UIViewAnimationOptions.TransitionFlipFromLeft, animations: {
+                navigationController.popViewController(animated: false)
+                UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionFlipFromLeft, animations: {
                      navigationController.pushViewController(destinationViewController, animated: false)
                     }, completion: nil)
                 //[navigationController popViewControllerAnimated:NO];
