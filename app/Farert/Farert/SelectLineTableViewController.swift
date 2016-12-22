@@ -1,6 +1,6 @@
 //
 //  SelectLineTableViewController.swift
-//  iFarert
+//  iFarert Select line view 1st right
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/23.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -31,14 +31,14 @@ class SelectLineTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
-        let apd:AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let apd:AppDelegate = UIApplication.shared.delegate as! AppDelegate
         if ((apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) || (apd.context == FGD.CONTEXT_TERMINAL_VIEW)) {
             self.navigationItem.setRightBarButtonItems(nil, animated: true)
         }
         if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
-            lineList = RouteDataController.LineIdsFromStation(self.baseStationId) as! [Int]
+            lineList = RouteDataController.lineIds(fromStation: self.baseStationId) as! [Int]
         } else { /* TAG_TERMINAL_VIEW */
-            lineList = RouteDataController.LinesFromCompanyOrPrefect(self.companyOrPrefectId) as! [Int]
+            lineList = RouteDataController.lines(fromCompanyOrPrefect: self.companyOrPrefectId) as! [Int]
         }
     }
     
@@ -48,35 +48,35 @@ class SelectLineTableViewController: UITableViewController {
     }
 
     // 戻ってきたときにセルの選択を解除
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.deselectRowAtIndexPath(idx, animated:false)
+        if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: idx, animated:false)
         }
     }
 
     // MARK: - Table view data source
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return lineList.count
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell : UITableViewCell
         let lineId : Int = lineList[indexPath.row]
-        let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         
         if ((apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) && (self.lastLineId == lineId)) {
-            cell = tableView.dequeueReusableCellWithIdentifier("termLineCell2", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "termLineCell2", for: indexPath) 
         } else {
-            cell = tableView.dequeueReusableCellWithIdentifier("termLineCell", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "termLineCell", for: indexPath) 
         }
         
-        cell.textLabel?.text = RouteDataController.LineName(lineId)
+        cell.textLabel?.text = RouteDataController.lineName(lineId)
         
         return cell;
     }
@@ -116,13 +116,13 @@ class SelectLineTableViewController: UITableViewController {
     }
     */
 
-    override func tableView(tableView: UITableView, titleForHeaderInSection section : Int) -> String? {
-        let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section : Int) -> String? {
+        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
     
         if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
-            return RouteDataController.StationName(baseStationId)
+            return RouteDataController.stationName(baseStationId)
         } else {
-            return RouteDataController.CompanyOrPrefectName(self.companyOrPrefectId)
+            return RouteDataController.companyOrPrefectName(self.companyOrPrefectId)
         }
     }
     
@@ -130,20 +130,20 @@ class SelectLineTableViewController: UITableViewController {
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let segid : String = segue.identifier!
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
         if (segid == "termLineToStationSegue") {
             // 駅一覧テーブルビュー(to SelectStationTableView)
-            let selStationViewController : SelectStationTableViewController = segue.destinationViewController as! SelectStationTableViewController
+            let selStationViewController : SelectStationTableViewController = segue.destination as! SelectStationTableViewController
             selStationViewController.companyOrPrefectId = self.companyOrPrefectId;
             selStationViewController.lineId = Int(self.lineList[self.tableView.indexPathForSelectedRow?.row ?? 0])
             selStationViewController.lastStationId = self.baseStationId
             selStationViewController.transit_state = FGD.FA_TRANSIT_STA2JCT
         } else if (segid  == "autoRouteSegue") {
             // 最短経路ボタン(to TermSelectTableView)
-            let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
             apd.context = FGD.CONTEXT_AUTOROUTE_VIEW;
             //UINavigationController* nvc = [segue destinationViewController];
             //CSTableViewController* vc = [nvc.viewControllers  objectAtIndex:0];

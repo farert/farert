@@ -17,27 +17,27 @@ class RouteListTableViewCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
     
     override func layoutSubviews() {
-        if ((UIDevice.currentDevice().systemVersion as NSString).floatValue) < 8.0 {
+        if ((UIDevice.current.systemVersion as NSString).floatValue) < 8.0 {
             self.routeString?.preferredMaxLayoutWidth = self.bounds.size.width - 12 - 12
         }
         super.layoutSubviews()
     }
     
-    func heightForTitle(title : String) -> CGFloat {
-        if 8.0 <= ((UIDevice.currentDevice().systemVersion as NSString).floatValue) {
+    func heightForTitle(_ title : String) -> CGFloat {
+        if 8.0 <= ((UIDevice.current.systemVersion as NSString).floatValue) {
             return UITableViewAutomaticDimension
         } else {
             self.routeString.text = title
             self.setNeedsLayout()
             self.layoutIfNeeded()
-            let r : CGFloat = self.contentView.systemLayoutSizeFittingSize(UILayoutFittingCompressedSize).height
+            let r : CGFloat = self.contentView.systemLayoutSizeFitting(UILayoutFittingCompressedSize).height
             if r < 44.0 {
                 return 44.0
             } else {
