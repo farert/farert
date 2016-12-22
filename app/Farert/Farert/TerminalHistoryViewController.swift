@@ -1,6 +1,6 @@
 //
 //  TerminalHistoryViewController.swift
-//  iFarert
+//  iFarert 選択履歴から駅選択 view
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/23.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -25,35 +25,35 @@ class TerminalHistoryViewController: CSTableViewController {
         self.clearsSelectionOnViewWillAppear = false
     
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        let h : [String]? = RouteDataController.ReadFromTerminalHistory() as! [String]?
+        self.navigationItem.rightBarButtonItem = self.editButtonItem
+        let h : [String]? = RouteDataController.readFromTerminalHistory() as! [String]?
         if h != nil {
             self.historyTerms = h!
         } else {
             self.historyTerms = []
         }
         if self.historyTerms.count <= 0 {
-            self.navigationItem.rightBarButtonItem!.enabled = false
+            self.navigationItem.rightBarButtonItem!.isEnabled = false
         }
-        self.clerBarButtonItem.enabled = false
+        self.clerBarButtonItem.isEnabled = false
     }
     
     // 戻ってきたときにセルの選択を解除
-    override func viewWillAppear(animated : Bool) {
+    override func viewWillAppear(_ animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.deselectRowAtIndexPath(idx, animated:false)
+        if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: idx, animated:false)
         }
     }
     
     // MARK: - Table view data source
     
-    override func numberOfSectionsInTableView(tableView : UITableView) -> Int {
+    override func numberOfSections(in tableView : UITableView) -> Int {
         // Return the number of sections.
         return 1;
     }
     
-    override func tableView(tableView : UITableView, numberOfRowsInSection section : Int) -> Int {
+    override func tableView(_ tableView : UITableView, numberOfRowsInSection section : Int) -> Int {
         if section == 0 {
             // Return the number of rows in the section.
             return self.historyTerms.count
@@ -62,9 +62,9 @@ class TerminalHistoryViewController: CSTableViewController {
         }
     }
     
-    override func tableView(tableView : UITableView, cellForRowAtIndexPath indexPath : NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView : UITableView, cellForRowAt indexPath : IndexPath) -> UITableViewCell {
     
-        let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryCell", forIndexPath: indexPath) 
+        let cell : UITableViewCell = tableView.dequeueReusableCell(withIdentifier: "termHistoryCell", for: indexPath) 
 
         if (indexPath.row < self.historyTerms.count) {
             cell.textLabel?.text = self.historyTerms[indexPath.row]
@@ -72,48 +72,48 @@ class TerminalHistoryViewController: CSTableViewController {
         return cell
     }
     
-    override func tableView(tableView : UITableView, editingStyleForRowAtIndexPath indexPath : NSIndexPath) -> UITableViewCellEditingStyle {
-        self.clerBarButtonItem.enabled = true
-        return UITableViewCellEditingStyle.Delete
+    override func tableView(_ tableView : UITableView, editingStyleForRowAt indexPath : IndexPath) -> UITableViewCellEditingStyle {
+        self.clerBarButtonItem.isEnabled = true
+        return UITableViewCellEditingStyle.delete
     }
     
     // Override to support conditional editing of the table view.
-    override func tableView(tableView : UITableView, canEditRowAtIndexPath indexPath : NSIndexPath) -> Bool {
-        self.clerBarButtonItem.enabled = false
+    override func tableView(_ tableView : UITableView, canEditRowAt indexPath : IndexPath) -> Bool {
+        self.clerBarButtonItem.isEnabled = false
         // Return NO if you do not want the specified item to be editable.
         return (0 < self.historyTerms.count)
     }
     
     // Override to support editing the table view.
-    override func tableView(tableView : UITableView, commitEditingStyle editingStyle : UITableViewCellEditingStyle, forRowAtIndexPath indexPath : NSIndexPath) {
+    override func tableView(_ tableView : UITableView, commit editingStyle : UITableViewCellEditingStyle, forRowAt indexPath : IndexPath) {
         
-        if (editingStyle == UITableViewCellEditingStyle.Delete) {
+        if (editingStyle == UITableViewCellEditingStyle.delete) {
             // Delete the row from the data source
             tableView.beginUpdates()
             let n : Int = self.historyTerms.count
             if (0 < n) {
-                self.historyTerms.removeAtIndex(indexPath.row) // model
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
+                self.historyTerms.remove(at: indexPath.row) // model
+                tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade)
             }
             tableView.endUpdates()
             if (n == 1) {
                 self.tableView.setEditing(false, animated: false)
-                self.navigationItem.rightBarButtonItem?.enabled = false
-                self.clerBarButtonItem.enabled = false
+                self.navigationItem.rightBarButtonItem?.isEnabled = false
+                self.clerBarButtonItem.isEnabled = false
                 tableView.reloadData()
             }
-            RouteDataController.SaveToTerminalHistoryWithArray(self.historyTerms)
+            RouteDataController.saveToTerminalHistory(with: self.historyTerms)
 
-        } else if (editingStyle == UITableViewCellEditingStyle.Insert) {
+        } else if (editingStyle == UITableViewCellEditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }
     }
     
     
-    override func tableView(tableView : UITableView, viewForHeaderInSection section : Int) -> UIView? {
+    override func tableView(_ tableView : UITableView, viewForHeaderInSection section : Int) -> UIView? {
 
         if (section == 0) && (self.historyTerms.count <= 0) {
-            guard let cell : UITableViewCell = (tableView.dequeueReusableCellWithIdentifier("termHistoryEmptyCell")) else {
+            guard let cell : UITableViewCell = (tableView.dequeueReusableCell(withIdentifier: "termHistoryEmptyCell")) else {
                 return nil
             }
             return cell
@@ -122,7 +122,7 @@ class TerminalHistoryViewController: CSTableViewController {
         }
     }
 
-    override func  tableView(tableView : UITableView, heightForHeaderInSection section : Int) -> CGFloat {
+    override func  tableView(_ tableView : UITableView, heightForHeaderInSection section : Int) -> CGFloat {
         if (section == 0) {
             if self.historyTerms.count  <= 0 {
                 //guard let cell : UITableViewCell = tableView.dequeueReusableCellWithIdentifier("termHistoryEmptyCell") else {
@@ -149,15 +149,15 @@ class TerminalHistoryViewController: CSTableViewController {
     }
     */
     
-    @IBAction func clearButtonAction(sender: AnyObject) {
+    @IBAction func clearButtonAction(_ sender: AnyObject) {
 
-        RouteDataController.SaveToTerminalHistoryWithArray([])
-        self.historyTerms.removeAll(keepCapacity: false)
+        RouteDataController.saveToTerminalHistory(with: [])
+        self.historyTerms.removeAll(keepingCapacity: false)
 
 //        self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.Fade)
         
-        self.navigationItem.rightBarButtonItem!.enabled = false
-        self.clerBarButtonItem.enabled = false
+        self.navigationItem.rightBarButtonItem!.isEnabled = false
+        self.clerBarButtonItem.isEnabled = false
 
         self.tableView.reloadData() // ないとヘッダ文字が表示されない
         self.tableView.reloadSectionIndexTitles()
@@ -167,17 +167,17 @@ class TerminalHistoryViewController: CSTableViewController {
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
         
         if (segue.identifier == "doneTerminalHistorySegue") {
-            let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
             if let idx : Int = self.tableView.indexPathForSelectedRow?.row {
                 if idx < self.historyTerms.count {
                     let station : String  = self.historyTerms[idx]
-                    apd.selectTerminalId = RouteDataController.GetStationId(station)
+                    apd.selectTerminalId = RouteDataController.getStationId(station)
                 } else {
                     apd.selectTerminalId = 0
                 }
@@ -190,10 +190,10 @@ class TerminalHistoryViewController: CSTableViewController {
     //      Perform Segue (Select tableview row)
     //
     //
-    override func shouldPerformSegueWithIdentifier(identifier : String, sender : AnyObject?) -> Bool {
+    override func shouldPerformSegue(withIdentifier identifier : String, sender : Any?) -> Bool {
         
         if identifier  == "doneTerminalHistorySegue" {
-            if true == self.clerBarButtonItem.enabled {
+            if true == self.clerBarButtonItem.isEnabled {
                 // 編集中は選択は無視する（何もしない）
                 return false
             }

@@ -1,6 +1,6 @@
 //
 //  SelectStationTableViewController.swift
-//  iFarert
+//  iFarert Select station 2nd right view
 //
 //  Created by TAKEDA, Noriyuki on 2015/03/30.
 //  Copyright (c) 2015年 TAKEDA, Noriyuki. All rights reserved.
@@ -27,11 +27,11 @@ class SelectStationTableViewController: CSTableViewController {
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-        let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
         if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) || (apd.context == FGD.CONTEXT_TERMINAL_VIEW) {
             self.navigationItem.setRightBarButtonItems(nil, animated:true)
-            stations = RouteDataController.StationsWithInCompanyOrPrefectAnd(companyOrPrefectId, lineId: lineId) as! [Int]
+            stations = RouteDataController.stationsWith(inCompanyOrPrefectAnd: companyOrPrefectId, lineId: lineId) as! [Int]
             if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) {
                 self.title = "着駅指定";
             } else {
@@ -39,11 +39,11 @@ class SelectStationTableViewController: CSTableViewController {
             }
         } else { //CONTEXT_ROUTESELECT_VIEW
             if (FGD.FA_TRANSIT_STA2JCT != self.transit_state) {
-                self.stations = RouteDataController.StationsIdsOfLineId(lineId) as! [Int]
+                self.stations = RouteDataController.stationsIds(ofLineId: lineId) as! [Int]
                 self.title = "着駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "分岐駅指定";
             } else {
-                stations = RouteDataController.JunctionIdsOfLineId(lineId) as! [Int]
+                stations = RouteDataController.junctionIds(ofLineId: lineId) as! [Int]
                 self.title = "分岐駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "着駅指定"
             }
@@ -52,62 +52,62 @@ class SelectStationTableViewController: CSTableViewController {
     }
     
     
-    @IBAction func terminalBarButtonAction(sender: AnyObject) {
-        self.performSegueWithIdentifier("stationViewSegue", sender: self)
+    @IBAction func terminalBarButtonAction(_ sender: AnyObject) {
+        self.performSegue(withIdentifier: "stationViewSegue", sender: self)
     }
    
     
     // mark - Table view data source
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // Return the number of sections.
         return 1;
     }
     
     
-    override func tableView(tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
+    override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         if (0 < self.companyOrPrefectId) {
-            let companyOrPrefctString : String = RouteDataController.CompanyOrPrefectName(companyOrPrefectId)
-            return "\(companyOrPrefctString) - \(RouteDataController.LineName(self.lineId))" as String
+            let companyOrPrefctString : String = RouteDataController.companyOrPrefectName(companyOrPrefectId)
+            return "\(companyOrPrefctString) - \(RouteDataController.lineName(self.lineId)!)" as String
 
         } else {
-            return RouteDataController.LineName(lineId) as String
+            return RouteDataController.lineName(lineId) as String
         }
     }
 
     
     
-    override func tableView(tableView : UITableView, numberOfRowsInSection section : Int) -> Int {
+    override func tableView(_ tableView : UITableView, numberOfRowsInSection section : Int) -> Int {
         // Return the number of rows in the section.
         return stations.count
     }
     
     
-    override func tableView(tableView : UITableView, cellForRowAtIndexPath indexPath : NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView : UITableView, cellForRowAt indexPath : IndexPath) -> UITableViewCell {
 
         let stationId : Int = stations[indexPath.row]
         var cell : UITableViewCell! = nil
         
-        let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         if ((apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) && (self.lastStationId == stationId)) {
             //インデント付き＋チェックマーク付き（起点駅)
-            cell = tableView.dequeueReusableCellWithIdentifier("terminalStationCell2", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "terminalStationCell2", for: indexPath) 
         } else {
-            cell = tableView.dequeueReusableCellWithIdentifier("terminalStationCell", forIndexPath: indexPath) 
+            cell = tableView.dequeueReusableCell(withIdentifier: "terminalStationCell", for: indexPath) 
         }
         
         // Configure the cell...;
-        cell!.textLabel?.text = RouteDataController.StationName(stationId)
+        cell!.textLabel?.text = RouteDataController.stationName(stationId)
         
-        var details : String = "(\(RouteDataController.GetKanaFromStationId(stationId)))"
-        if (RouteDataController.IsJunction(stationId) &&
-            !RouteDataController.IsSpecificJunction(self.lineId, stationId: stationId)) {
+        var details : String = "(\(RouteDataController.getKanaFromStationId(stationId)!))"
+        if (RouteDataController.isJunction(stationId) &&
+            !RouteDataController.isSpecificJunction(self.lineId, stationId: stationId)) {
                 /* junction(lflag.bit12 on) */
 
-            for lid in RouteDataController.LineIdsFromStation(stationId) as! [Int] {
+            for lid in RouteDataController.lineIds(fromStation: stationId) as! [Int] {
                 if ((lid != self.lineId)  &&
-                    !RouteDataController.IsSpecificJunction(lid, stationId: stationId)) {
-                    details += "/" + RouteDataController.LineName(lid)
+                    !RouteDataController.isSpecificJunction(lid, stationId: stationId)) {
+                    details += "/" + RouteDataController.lineName(lid)
                 }
             }
             //if ("/" == details[details.endIndex.predecessor()]) {
@@ -122,28 +122,28 @@ class SelectStationTableViewController: CSTableViewController {
     
     
     // 戻ってきたときにセルの選択を解除
-    override func viewWillAppear(animated : Bool) {
+    override func viewWillAppear(_ animated : Bool) {
         super.viewWillAppear(animated)
-        if let idx : NSIndexPath = self.tableView.indexPathForSelectedRow {
-            self.tableView.deselectRowAtIndexPath(idx, animated:false)
+        if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: idx, animated:false)
         }
     }
     
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
         let segid : String = segue.identifier!
         
         if (segid == "terminalSelectDoneSegue") {
-            let apd : AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
             apd.selectTerminalId = 0xffff & self.stations[self.tableView.indexPathForSelectedRow!.row]
             apd.selectLineId = self.lineId;
             
         } else if (segid == "stationViewSegue") {
-            let thisViewController : SelectStationTableViewController = segue.destinationViewController as! SelectStationTableViewController
+            let thisViewController : SelectStationTableViewController = segue.destination as! SelectStationTableViewController
             //NSLog(@"prepare segue: transit set %d-> ", self.transit_state);
             thisViewController.transit_state = (self.transit_state == FGD.FA_TRANSIT_STA2JCT) ? FGD.FA_TRANSIT_JCT2STA : FGD.FA_TRANSIT_STA2JCT;
             thisViewController.lineId = self.lineId;
