@@ -40,7 +40,7 @@ class RouteSelStationSegue: UIStoryboardSegue {
             sourceViewController.present(destinationViewController, animated:true, completion:nil)
             
         } else if (destinationViewController.transit_state == FGD.FA_TRANSIT_HISTORY) {
-            /* 履歴 */
+            /* 履歴 (Jan.2017,4th - removed) */
             UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionCrossDissolve,
                 animations: {
                  navigationController.pushViewController(destinationViewController, animated: false)
