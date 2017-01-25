@@ -23,9 +23,8 @@ typedef int int32_t;
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
 typedef short int16_t;
-#if defined _WINDOWS
+#if defined _WINDOWS && _MSC_VER < 1900
 typedef char int8_t;
-typedef unsigned char uint8_t;
 #endif
 
 extern int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
@@ -104,7 +103,7 @@ typedef uint32_t SPECIFICFLAG;
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
-#define STATION_IS_JUNCTION(sid)        (0 != (Route::AttrOfStationId(sid) & (1<<12)))
+#define STATION_IS_JUNCTION(sid)        (0 != (RouteUtil::AttrOfStationId(sid) & (1<<12)))
 //#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
 // sflg.12は特例乗り換え駅もONなのでlflg.15にした
 #define STATION_IS_JUNCTION_F(flg)		(0 != (flg & (1<<15)))
@@ -483,24 +482,10 @@ private:
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 	static bool     IsIC_area(int32_t urban_id);
+
+	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
+	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
 };
-
-// 1レコードめのlineIdの定義
-// bit0-9
-#define B1LID_MARK				0x8000		// line_idとの区別で負数になるように
-#define B1LID_BEGIN_CITY		0	// [区][浜][名][京][阪][神][広][九][福][仙][札]
-#define B1LID_FIN_CITY			1
-#define B1LID_BEGIN_YAMATE		2	// [山]
-#define B1LID_FIN_YAMATE		3
-#define B1LID_BEGIN_2CITY		4	// not used
-#define B1LID_FIN_2CITY			5	// not used
-#define B1LID_BEGIN_CITY_OFF	6
-#define B1LID_FIN_CITY_OFF		7
-#define B1LID_BEGIN_OOSAKA		8	// 大阪・新大阪
-#define B1LID_FIN_OOSAKA		9
-#define M1LID_CITY             0x3ff
-// bit10-14 reserve
-
 
 #define BCRULE70	            6		/* DB:lflag */
 
@@ -666,11 +651,24 @@ typedef struct
 #define BLF_MEIHANCITYFLAG		7	// ON: APPLIED_START / OFF:APPLIED_TERMINAL
 #define BLF_NO_RULE             8   // ON: 特例非適用(User->System)
 #define BLF_RULE_EN             9   // ON: 特例適用(System->User)
-#define BLF_END					16	// arrive to end.
 
 // bit 10 JR東日本管内のJR東海
 #define BLF_JREAST_IN_TOKAI     10
 
+// bit 11-20 発着 都区市内 適用
+#define BLF_TER_BEGIN_CITY		11		// [区][浜][名][京][阪][神][広][九][福][仙][札]
+#define BLF_TER_FIN_CITY		12
+#define BLF_TER_BEGIN_YAMATE	13		// [山]
+#define BLF_TER_FIN_YAMATE		14
+#define BLF_TER_BEGIN_2CITY		15		// not used
+#define BLF_TER_FIN_2CITY		16		// not used
+#define BLF_TER_BEGIN_CITY_OFF	17
+#define BLF_TER_FIN_CITY_OFF	18
+#define BLF_TER_BEGIN_OOSAKA	19	// 大阪・新大阪
+#define BLF_TER_FIN_OOSAKA		20
+#define LF_TER_CITY_MASK     (0x3ff << BLF_TER_BEGIN_CITY)
+
+#define BLF_END					31	// arrive to end.
 // end of last_flag
 
 
@@ -680,48 +678,123 @@ typedef struct
 /*   route
  *
  */
-class Route
+/* All class method Class */
+class RouteUtil
 {
-	/*static 迷ってる*/BYTE jct_mask[JCTMASKSIZE];	// about 40byte
-	vector<RouteItem> route_list_raw;
-	vector<RouteItem> route_list_cooked;
-private:
-    int32_t end_station_id;
-	SPECIFICFLAG last_flag;	// add() - removeTail() work
 public:
-	int32_t startStationId()
-	{ return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId; }
+    static bool     DbVer(DBsys* dbsys);
 
-	int32_t endStationId() { return end_station_id; }
-	void setEndStationId(int32_t stataion_id) {
-        end_station_id = stataion_id;
-        if (end_station_id <= 0) {
-            BIT_OFF(last_flag, BLF_END);
-        }
-    }
+    static DBO 		Enum_company_prefect();
+	static DBO 		Enum_station_match(LPCTSTR station);
+	static DBO 		Enum_lines_from_company_prefect(int32_t id);
+	static DBO		Enum_station_located_in_prefect_or_company_and_line(int32_t prefectOrCompanyId, int32_t lineId);
+	static tstring 	GetKanaFromStationId(int32_t stationId);
+	static DBO	 	Enum_line_of_stationId(int32_t stationId);
 
-	enum LINE_DIR {
+    static DBO	 	Enum_junction_of_lineId(int32_t lineId, int32_t stationId);
+	static DBO	 	Enum_station_of_lineId(int32_t lineId);
+
+    static int32_t 	GetStationId(LPCTSTR stationName);
+	static int32_t 	GetLineId(LPCTSTR lineName);
+
+    static tstring 	StationName(int32_t id);
+	static tstring 	StationNameEx(int32_t id);
+
+    static tstring 	LineName(int32_t id);
+    static tstring  PrefectName(int32_t id);
+    static tstring  CompanyName(int32_t id);
+
+    static tstring  CoreAreaCenterName(int32_t id);
+
+    static SPECIFICFLAG AttrOfStationId(int32_t id);
+	static SPECIFICFLAG AttrOfStationOnLineLine(int32_t line_id, int32_t station_id);
+
+    static tstring 	GetPrefectByStationId(int32_t stationId);
+
+    static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+private:
+    static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag);
+protected:
+public:
+    static int32_t  DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
+    static int32_t  CompanyIdFromStation(int32_t station_id);
+
+	static vector<int32_t>	GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t>	GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t			GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
+    enum LINE_DIR {
 		LDIR_ASC  = 1,		// 下り
 		LDIR_DESC = 2		// 上り
 	};
+	static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
+    static int32_t  GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id2 = -1);
+	static vector<uint32_t>  EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2);
+
+    static int32_t	NextShinkansenTransferTerm(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
+public: /* only user route */
+    static vector<PAIRIDENT> GetNeerNode(int32_t station_id);
+    static DBO	 	Enum_neer_node(int32_t stationId);
+	static int32_t 	NumOfNeerNode(int32_t stationId);
+
+    static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
+};
+
+class RouteList
+{
+protected:
+//public:
+    vector<RouteItem> route_list_raw;
+    SPECIFICFLAG last_flag;	// add() - removeTail() work
+public:
+    RouteList() {}
+    RouteList(const RouteList& route_list);
+    void    assign(const RouteList& source_route, int32_t count = -1);
+    virtual ~RouteList() { route_list_raw.clear(); }
+
+    int32_t startStationId() {
+        return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId;
+    }
+	int32_t endStationId() {
+		return (route_list_raw.size() <= 0) ? 0 : route_list_raw.back().stationId;
+	}
+	const vector<RouteItem>& routeList() const { return route_list_raw; }
+    SPECIFICFLAG getLastFlag() const { return last_flag; }
+	SPECIFICFLAG sync_flag(const RouteList& source_route) { last_flag = source_route.getLastFlag(); return last_flag; }
+
+    bool isModified() {
+		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
+	}
+    tstring         route_script();
+
+    bool 			checkPassStation(int32_t stationId);    /* not used current */
+
+	void            setFareOption(uint16_t cooked, uint16_t availbit);
+
+	virtual uint32_t        getFareOption();
+
+protected:
+};
+
+class Route : public RouteList
+{
+	BYTE jct_mask[JCTMASKSIZE];	// about 40byte
+public:
 
 public:
 	Route();
-	~Route();
-    void assign(const Route& source_route, int32_t count);
+    Route(const RouteList& route_list);
+	virtual ~Route();
 
-	vector<RouteItem>& routeList() { return route_list_raw; }
-	vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
-	bool isModified() {
-		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
-	}
-	void end()			{ BIT_ON(last_flag, BLF_END); }
-	bool is_end() const { return BIT_CHK(last_flag, BLF_END); }
+    void    assign(const RouteList& source_route, int32_t count = -1);
+    int32_t	setup_route(LPCTSTR route_str);
 
+protected:
+    bool	chk_jctsb_b(int32_t kind, int32_t num);
 
 private:
-	FARE_INFO::Fare checkOfRuleSpecificCoreLine();
-
 	class RoutePass
 	{
 	//friend class Route;
@@ -758,145 +831,117 @@ private:
 	    int32_t		enum_junctions_of_line();
 	    int32_t		enum_junctions_of_line_for_oskk_rev();
 	    int32_t     enum_junctions_of_line_for_osakakan();
+		static int32_t 	InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, int32_t station_id_a, int32_t station_id_b);
 	};
-public:
-	/* for RoutePass */
-    static int32_t      DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
-	static int32_t 		InStationOnOsakaKanjyou(int32_t dir, int32_t start_station_id, int32_t station_id_a, int32_t station_id_b);
-
-private:
-	static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
-	static int32_t		RetrieveOut70Station(int32_t line_id);
-
-	static vector<vector<int32_t>> Node_next(int32_t jctId);
-
-	static int32_t	 	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
-	static int32_t  	ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
-	static bool 	    Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
-	static bool 	    Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
-	static uint32_t  	CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIFICFLAG last_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
-	static uint32_t  	CheckOfRule87(const vector<RouteItem>& in_route_list);
-	static uint8_t      InRouteUrban(const vector<RouteItem>& route_list);
-
-	static void  		ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
-
-	static int32_t		InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1, int32_t stationId2);
-
-public:
-    static bool     DbVer(DBsys* dbsys);
-    static int32_t 	Id2jctId(int32_t stationId);
-	static int32_t 	Jct2id(int32_t jctId);
-	static tstring 	JctName(int32_t jctId);
-	static tstring 	StationName(int32_t id);
-	static tstring 	StationNameEx(int32_t id);
-	static tstring 	LineName(int32_t id);
-private:
-    static tstring  CoreAreaCenterName(int32_t id);
-    static int32_t  CoreAreaIDByCityId(int32_t startEndFlg, int32_t flg, SPECIFICFLAG flags);
-public:
-	static SPECIFICFLAG AttrOfStationId(int32_t id);
-	static SPECIFICFLAG AttrOfStationOnLineLine(int32_t line_id, int32_t station_id);
-	static int32_t	InStationOnLine(int32_t line_id, int32_t station_id);
-
-	static int32_t	LineIdFromStationId(int32_t station_id);
-	static int32_t	LineIdFromStationId2(int32_t station_id1, int32_t station_id2);
-
-	static int32_t 	GetStationId(LPCTSTR stationName);
-	static int32_t 	GetLineId(LPCTSTR lineName);
-
-    static tstring  PrefectName(int32_t id);
-    static tstring  CompanyName(int32_t id);
-    static int32_t  CompanyIdFromStation(int32_t station_id);
-
-public:	// termsel
-	static DBO 		Enum_company_prefect();
-	static DBO 		Enum_station_match(LPCTSTR station);
-	static tstring 	GetPrefectByStationId(int32_t stationId);
-	static DBO 		Enum_lines_from_company_prefect(int32_t id);
-	static DBO		Enum_station_located_in_prefect_or_company_and_line(int32_t prefectOrCompanyId, int32_t lineId);
-	static tstring 	GetKanaFromStationId(int32_t stationId);
-	static DBO	 	Enum_line_of_stationId(int32_t stationId);
 
 private:
 	void		    routePassOff(int32_t line_id, int32_t to_station_id, int32_t begin_station_id);
 	static int32_t 	RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt);
 	int32_t			getBsrjctSpType(int32_t line_id, int32_t station_id);
 	int32_t			junctionStationExistsInRoute(int32_t stationId);
-	static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag);
 
-public:
-	// alps_mfcDlg
-	void            setFareOption(uint16_t cooked, uint16_t availbit);
-	tstring 		showFare();
 private:
     int32_t         reBuild();
 public:
-    FARE_INFO       calcFare();
-    FARE_INFO       calcFare(int32_t count);
-	uint32_t		getFareOption();
 	int32_t         setDetour(bool enabled = true);
 
-    static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
-
-	tstring         route_script();
     //static tstring  Route_script(const vector<RouteItem>& routeList);
 
-	int32_t			setup_route(LPCTSTR route_str);
-
-private:
-    bool            checkJrEastTokai();
-
-	int32_t 		beginStationId(bool applied_agree);
-	int32_t 		endStationId(bool applied_agree);
-public:
-    static tstring  BeginOrEndStationName(int32_t ident);
-
-	bool			chk_jctsb_b(int32_t kind, int32_t num);
 public:
 	int32_t 		add(int32_t line_id, int32_t stationId2, int32_t ctlflg = 0);
 	int32_t 		add(int32_t stationId);
 	void 			removeTail(bool begin_off = false);
-	void 			removeAll(bool bWithStart =true, bool bWithEnd =true);
+	void 			removeAll(bool bWithStart =true/* Dec.2017:Remove terminal, bool bWithEnd =true*/);
 	int32_t			reverse();
-	bool 			checkPassStation(int32_t stationId);
-	void 			terminate(int32_t stationId);
-	static bool		IsSameNode(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
+	int32_t			changeNeerest(bool useBulletTrain, int end_station_id);
+
+protected:
+private:
+	static vector<vector<int32_t>> Node_next(int32_t jctId);
+
+private:
+    static int32_t 	Id2jctId(int32_t stationId);
+	static int32_t 	Jct2id(int32_t jctId);
+	static tstring 	JctName(int32_t jctId);
+
+	static int32_t	InStationOnLine(int32_t line_id, int32_t station_id);
+
+	static int32_t	LineIdFromStationId(int32_t station_id);
+	static int32_t	LineIdFromStationId2(int32_t station_id1, int32_t station_id2);
+
+
+    static bool		IsSameNode(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t  NeerJunction(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	int32_t			changeNeerest(bool useBulletTrain);
 
 
-	static DBO	 	Enum_junction_of_lineId(int32_t lineId, int32_t stationId);
-	static DBO	 	Enum_station_of_lineId(int32_t lineId);
-
-	static DBO	 	Enum_neer_node(int32_t stationId);
-	static int32_t 	NumOfNeerNode(int32_t stationId);
-	static int32_t 	RemoveDupRoute(vector<RouteItem> *routeList);
-
-	static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
+private:
 	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
-	static vector<int32_t>	GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t>	GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t			GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t			Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t	Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
+#if defined TEST || defined _DEBUG
+public:
+#endif
+	static bool		IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2);
+	static bool		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
+};
+
+class CalcRoute : public RouteList
+{
+    vector<RouteItem> route_list_cooked;
+
+    CalcRoute() {
+    }
+
+public:
+    CalcRoute(const RouteList& route);
+    CalcRoute(const RouteList& route, int count);
+	virtual ~CalcRoute() { route_list_cooked.clear(); }
+    void sync(const RouteList& route);
+    void sync(const RouteList& route, int count);
+
+    const vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
+    tstring 		showFare();
+    uint32_t        getFareOption();
+    int32_t         beginStationId(bool applied_agree);
+    int32_t         endStationId(bool applied_agree);
+    FARE_INFO::Fare checkOfRuleSpecificCoreLine();
+    FARE_INFO       calcFare();
+    FARE_INFO       calcFare(int32_t count);
+public:
+	// alps_mfcDlg
+    static tstring  BeginOrEndStationName(int32_t ident);
+private:
+    int32_t  coreAreaIDByCityId(int32_t startEndFlg);
+	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
+	static FARE_INFO::Fare	CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
 	static vector<int32_t>	Get_route_distance(SPECIFICFLAG last_flag, const vector<RouteItem>& route);
+	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
+	static int32_t	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
+	static int32_t	ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
+	static bool 	Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
+	static bool 	Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
+	static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIFICFLAG last_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
+	static uint32_t CheckOfRule87(const vector<RouteItem>& in_route_list);
+	static void  	ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
+	static uint8_t  InRouteUrban(const vector<RouteItem>& route_list);
+	static int32_t	RetrieveOut70Station(int32_t line_id);
+	static int32_t	InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1, int32_t stationId2);
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
 	static int32_t 	Retrieve_SpecificCoreStation(int32_t cityId);
-	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
-	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
-	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+    static int32_t  RemoveDupRoute(vector<RouteItem> *routeList);
 
-	static FARE_INFO::Fare	CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
-	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
-	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
+protected:
+    bool            checkJrEastTokai();
 
-	static bool		IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2);
-	static int32_t  GetHZLine(int32_t line_id, int32_t station_id, int32_t station_id2 = -1);
-	static vector<uint32_t>  EnumHZLine(int32_t line_id, int32_t station_id, int32_t station_id2);
-	static bool		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
-	static int32_t	NextShinkansenTransferTerm(int32_t line_id, int32_t station_id1, int32_t station_id2);
-
-	static vector<PAIRIDENT> GetNeerNode(int32_t station_id);
+#if defined TEST || defined _DEBUG
+    public:
+        void convertShinkansen2ZairaiFor114Judge() {
+            ConvertShinkansen2ZairaiFor114Judge(&route_list_raw);
+        }
+    #endif
+    	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
 };
+
 
 #endif /* _cplusplus */
 
@@ -904,6 +949,7 @@ public:
 
 #define ADDRC_LAST  0   // add() return code
 #define ADDRC_OK    1
+#define ADDRC_END	5
 // ADDRC_NG -1 to -N
 
 

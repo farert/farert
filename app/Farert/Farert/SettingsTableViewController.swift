@@ -43,7 +43,7 @@ class SettingsTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
-        before_dbid_idx = RouteDataController.getDatabaseId()
+        before_dbid_idx = cRouteUtil.getDatabaseId()
         if ((before_dbid_idx < DbId.DB_MIN_ID) || (DbId.DB_MAX_ID < before_dbid_idx)) {
             before_dbid_idx = DbId.DB_MAX_ID
         }
@@ -138,9 +138,9 @@ class SettingsTableViewController: UITableViewController {
                 dbid = DbId.DB_MAX_ID
             }
             if (before_dbid_idx != dbid) {
-                RouteDataController.save(toDatabaseId: dbid)
-                RouteDataController.close()
-                RouteDataController.openDatabase(dbid)
+                cRouteUtil.save(toDatabaseId: dbid)
+                cRouteUtil.close()
+                cRouteUtil.openDatabase(dbid)
                 self.selectDbId = dbid
             } else {
                 self.selectDbId = -1;   /* no change */

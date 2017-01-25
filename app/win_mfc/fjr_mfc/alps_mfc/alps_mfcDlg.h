@@ -86,5 +86,6 @@ public:
 	afx_msg void OnBnClickedButtonRouteOpen();
 	afx_msg void OnBnClickedButtonSpecialCity();
 	afx_msg void OnBnClickedButtonOsakaKan();
-};
+	afx_msg void OnBnClickedButtonNeerest();
+ };
 

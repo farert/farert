@@ -36,9 +36,9 @@ class SelectLineTableViewController: UITableViewController {
             self.navigationItem.setRightBarButtonItems(nil, animated: true)
         }
         if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
-            lineList = RouteDataController.lineIds(fromStation: self.baseStationId) as! [Int]
+            lineList = cRouteUtil.lineIds(fromStation: self.baseStationId) as! [Int]
         } else { /* TAG_TERMINAL_VIEW */
-            lineList = RouteDataController.lines(fromCompanyOrPrefect: self.companyOrPrefectId) as! [Int]
+            lineList = cRouteUtil.lines(fromCompanyOrPrefect: self.companyOrPrefectId) as! [Int]
         }
     }
     
@@ -76,7 +76,7 @@ class SelectLineTableViewController: UITableViewController {
             cell = tableView.dequeueReusableCell(withIdentifier: "termLineCell", for: indexPath) 
         }
         
-        cell.textLabel?.text = RouteDataController.lineName(lineId)
+        cell.textLabel?.text = cRouteUtil.lineName(lineId)
         
         return cell;
     }
@@ -120,9 +120,9 @@ class SelectLineTableViewController: UITableViewController {
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
     
         if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
-            return RouteDataController.stationName(baseStationId)
+            return cRouteUtil.stationName(baseStationId)
         } else {
-            return RouteDataController.companyOrPrefectName(self.companyOrPrefectId)
+            return cRouteUtil.companyOrPrefectName(self.companyOrPrefectId)
         }
     }
     

@@ -5,13 +5,11 @@
 
 
 FILE *os = stderr;
-Route route;
 
+#define TID(s)	RouteUtil::GetStationId(_T(#s))
+#define LID(s)	RouteUtil::GetLineId(_T(#s))
 
-#define TID(s)	Route::GetStationId(_T(#s))
-#define LID(s)	Route::GetLineId(_T(#s))
-
-static int test_setup_route(TCHAR* buffer);
+static int test_setup_route(TCHAR* buffer, Route& route);
 
 
 tstring cr_remove(tstring s)
@@ -25,8 +23,10 @@ tstring cr_remove(tstring s)
 
 #if defined _WIN32
 #define STRCPY(l, d, s)	_tcscpy_s<l>(d, s)
+#define STRCMP _tcscmp
 #else
 #define STRCPY(l, d, s)  strcpy_s(d, l,  s)
+#define STRCMP strcmp
 #endif
 /////////////////////////////////////////////////////////////////////////////////////
 // 2/7	test_jctspecial()
@@ -1555,6 +1555,7 @@ void test_route(const TCHAR *route_def[])
 	int opt;
 	int t;
 	int rc;
+	Route route;
 
 	t = 0;
 	for (i = 0; '\0' != *route_def[i]; i++) {
@@ -1566,13 +1567,15 @@ void test_route(const TCHAR *route_def[])
 			continue;
 		}
 		STRCPY(1024, buffer, route_def[i]);
+		if (STRCMP(buffer, _T("若松")) == 0)
+			rc = 2;
 		_ftprintf(os, _T("!****<%02d>: ******************* %s **********************\n<%s>\n"), i - t + 1, psz_title, buffer);
 
 		TRACE(_T("test_exec(route): %d*************************************************\n%s\n"), i - t + 1, buffer);
 #if 0
 		rc = route.setup_route(buffer);
 #else
-		rc = test_setup_route(buffer);
+		rc = test_setup_route(buffer, route);
 #endif
 		ASSERT(0 <= rc);
 
@@ -1588,33 +1591,35 @@ void test_route(const TCHAR *route_def[])
 				_ftprintf(os, _T("\n"));
 			}
 
-			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = route.showFare();
+			CalcRoute croute(route);
+
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 
-			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = route.showFare();
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 
-			opt = route.getFareOption();
+			opt = croute.getFareOption();
 			if ((opt & 0x03) != 0) {
 				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
-				route.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
-				s = route.showFare();
+				croute.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+				s = croute.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 
-				opt = route.getFareOption();
+				opt = croute.getFareOption();
 				ASSERT(IS_MAIHAN_CITY_START(opt));
 
-				route.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
-				s = route.showFare();
+				croute.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+				s = croute.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 
-				opt = route.getFareOption();
+				opt = croute.getFareOption();
 				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
 			} else {
 				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
@@ -1629,7 +1634,7 @@ void test_route(const TCHAR *route_def[])
 void test_hzl(const TCHAR *hzl_route_def[])
 {
 	// route.add() チェック xのついた駅へ着時、エラーとなること.
-
+	Route route;
 	TCHAR buffer[1024];
 	int i;
 	for (i = 0; '\0' != *hzl_route_def[i]; i++) {
@@ -1650,11 +1655,11 @@ void test_hzl(const TCHAR *hzl_route_def[])
 		for (p = _tcstok_s(buffer, _T(", \t"), &ctx); p; p = _tcstok_s(NULL, _T(", \t"), &ctx)) {
 			fail = 0;
 			if (stationId1 == 0) {
-				stationId1 = Route::GetStationId(p);
+				stationId1 = RouteUtil::GetStationId(p);
 				ASSERT(0 < stationId1);
 				route.add(stationId1);
 			} else if (lineId == 0) {
-				lineId = Route::GetLineId(p);
+				lineId = RouteUtil::GetLineId(p);
 				ASSERT(0 < lineId);
 			} else {
 				bool cont = false;
@@ -1670,7 +1675,7 @@ void test_hzl(const TCHAR *hzl_route_def[])
 				} else {
 					cont = true;
 				}
-				stationId2 = Route::GetStationId(p);
+				stationId2 = RouteUtil::GetStationId(p);
 				ASSERT(0 < stationId2);
 				rc = route.add(lineId, /*stationId1,*/ stationId2);
 				if (cont && rc < 0) {
@@ -1712,17 +1717,17 @@ static void test_hzl2(const TCHAR *param[])
 		p1 = _tcstok_s(NULL, _T(", \t"), &ctx);
 		p2 = _tcstok_s(NULL, _T(", \t"), &ctx);
 		p3 = _tcstok_s(NULL, _T(", \t"), &ctx);
-		ip0 = Route::GetStationId(p0);
-		ip1 = Route::GetLineId(p1);
-		ip2 = Route::GetStationId(p2);
-		ip3 = Route::GetStationId(p3);
+		ip0 = RouteUtil::GetStationId(p0);
+		ip1 = RouteUtil::GetLineId(p1);
+		ip2 = RouteUtil::GetStationId(p2);
+		ip3 = RouteUtil::GetStationId(p3);
 		ASSERT(0 < ip0 && 0 < ip1 && 0 < ip2 && 0 < ip3);
-		t = Route::NextShinkansenTransferTerm(ip1, ip2, ip3);
+		t = RouteUtil::NextShinkansenTransferTerm(ip1, ip2, ip3);
 		TRACE(_T("新幹線隣駅: %s\n"), param[i]);
 		if (ip0 == t) {
 			_ftprintf(os, _T("新幹線隣駅: Success %s\n"), param[i]);
 		} else {
-			_ftprintf(os, _T("新幹線隣駅: failure %s(result=%s)\n"), param[i], Route::StationName(t).c_str());
+			_ftprintf(os, _T("新幹線隣駅: failure %s(result=%s)\n"), param[i], RouteUtil::StationName(t).c_str());
 			ASSERT(FALSE);
 		}
 	}
@@ -1732,6 +1737,7 @@ static void test_hzl2(const TCHAR *param[])
 void test_autoroute(const TCHAR *route_def[])
 {
 	TCHAR buffer[1024];
+	Route route;
 	int i;
 	int rc;
 	for (i = 0; _T('\0') != *route_def[i]; i += 2) {
@@ -1756,27 +1762,28 @@ void test_autoroute(const TCHAR *route_def[])
 			fail = 0;
 			break;
 		}
-		
+
 		p = route_def[i + 1];
 		if (fail != 0) {
 			++p;
 		}
-		route.setEndStationId(Route::GetStationId(p));
 		_ftprintf(os, _T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
 
 		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
-		if (route.changeNeerest(false) < 0) {
+		rc = route.changeNeerest(false, RouteUtil::GetStationId(p));
+		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
 			ASSERT(fail != 0);
 		} else {
 			ASSERT(fail == 0);
-			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = route.showFare();
+			CalcRoute croute(route);
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 
-			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = route.showFare();
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		}
@@ -1784,19 +1791,20 @@ void test_autoroute(const TCHAR *route_def[])
 		STRCPY(1024, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
-		route.setEndStationId(Route::GetStationId(p));
 		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
-		if (route.changeNeerest(true) < 0) {
+		rc = route.changeNeerest(true, RouteUtil::GetStationId(p));
+		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
 			ASSERT(fail != 0);
 		} else {
 			ASSERT(0 <= fail);
-			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = route.showFare();
+			CalcRoute croute(route);
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
-			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = route.showFare();
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		}
@@ -1812,6 +1820,7 @@ void test_jctspecial(const TCHAR *route_def[])
 	TCHAR *pbuffer;
 	int i;
 	int rc;
+	Route route;
 
 	for (i = 0; '\0' != *route_def[i]; i++) {
 		route.removeAll();
@@ -1821,18 +1830,18 @@ void test_jctspecial(const TCHAR *route_def[])
 		pbuffer++;
 		_ftprintf(os, _T("!****<%02d>: ********************* %s *******************\n<%s>\n"), i + 1, buffer, pbuffer);
 		TRACE(_T("test_exec(route): %d********************** %s *********************\n%s\n"), i + 1, buffer, pbuffer);
-		rc = test_setup_route(pbuffer);
+		rc = test_setup_route(pbuffer, route);
 		ASSERT(0 <= rc);
 
-		tstring s = route.showFare();
+		tstring s = CalcRoute(route).showFare();
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
 		if (0 < route.routeList().size()) {
 			vector<RouteItem>::const_iterator pos = route.routeList().cbegin();
-			_ftprintf(os, _T("\nbegin: %s\n"), Route::StationName(pos->stationId).c_str());
+			_ftprintf(os, _T("\nbegin: %s\n"), RouteUtil::StationName(pos->stationId).c_str());
 			for (++pos; pos != route.routeList().cend(); pos++) {
-				_ftprintf(os, _T("%s, %s, %04x\n"), Route::LineName(pos->lineId).c_str(), Route::StationName(pos->stationId).c_str(), pos->flag);
+				_ftprintf(os, _T("%s, %s, %04x\n"), RouteUtil::LineName(pos->lineId).c_str(), RouteUtil::StationName(pos->stationId).c_str(), pos->flag);
 			}
 			_ftprintf(os, _T("\nrc=%d, modify flag=%s\n"), rc, route.isModified() ? _T("ON"):_T("OFF"));
 		}
@@ -1840,7 +1849,7 @@ void test_jctspecial(const TCHAR *route_def[])
 }
 
 
-static int test_setup_route(TCHAR* buffer)
+static int test_setup_route(TCHAR* buffer, Route& route)
 {
 	TCHAR* p;
 	int lineId = 0;
@@ -1853,7 +1862,7 @@ static int test_setup_route(TCHAR* buffer)
 	for (p = _tcstok_s(buffer, _T(", \t"), &ctx); p; p = _tcstok_s(NULL, _T(", \t"), &ctx)) {
 		fail = false;
 		if (stationId1 == 0) {
-			stationId1 = Route::GetStationId(p);
+			stationId1 = RouteUtil::GetStationId(p);
 			ASSERT(0 < stationId1);
 			route.add(stationId1);
 		} else if (lineId == 0) {
@@ -1861,7 +1870,7 @@ static int test_setup_route(TCHAR* buffer)
 				++p;
 				route.setDetour();
 			}
-			lineId = Route::GetLineId(p);
+			lineId = RouteUtil::GetLineId(p);
 			ASSERT(0 < lineId);
 		} else {
 			if ('x' == *p) {
@@ -1870,11 +1879,11 @@ static int test_setup_route(TCHAR* buffer)
 			} else {
 				fail = false;
 			}
-			stationId2 = Route::GetStationId(p);
+			stationId2 = RouteUtil::GetStationId(p);
 			ASSERT(0 < stationId2);
 			rc = route.add(lineId, /*stationId1,*/ stationId2);
 			if (fail) {
-				ASSERT(rc <= 0);
+				ASSERT((rc <= 0) || (rc == 5));
 				_ftprintf(os, _T("Setup route: Failure OK (%d)\n"), rc);
 				return 1;
 			} else {
@@ -1890,8 +1899,8 @@ static int test_setup_route(TCHAR* buffer)
 // 1/7
 void test_shinkanzen()
 {
-	ASSERT(Route::IsAbreastShinkansen(LID(東海道線), LID(東海道新幹線), TID(小田原), Route::GetStationId(_T("新富士(東)"))));
-	ASSERT(!Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(越後湯沢), Route::GetStationId(_T("新富士(東)"))));
+	ASSERT(Route::IsAbreastShinkansen(LID(東海道線), LID(東海道新幹線), TID(小田原), RouteUtil::GetStationId(_T("新富士(東)"))));
+	ASSERT(!Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(越後湯沢), RouteUtil::GetStationId(_T("新富士(東)"))));
 	ASSERT(!Route::IsAbreastShinkansen(LID(上越線), LID(上越新幹線), TID(高崎), TID(上毛高原)));
 	ASSERT(Route::IsAbreastShinkansen(LID(高崎線), LID(上越新幹線), TID(高崎), TID(熊谷)));
 }
@@ -1904,6 +1913,7 @@ void test_shin2zai(void)
 	int32_t rc;
 	int32_t i;
 	tstring s;
+	Route route;
 
 	for (i = 0; '\0' != *test_shin2_zai_tbl[i]; i++) {
 		rc = route.setup_route(test_shin2_zai_tbl[i]);
@@ -1914,16 +1924,16 @@ void test_shin2zai(void)
 		}
 		TRACE(_T("------------------------------------------------\n"));
 		_ftprintf(os, _T("%s\n"), test_shin2_zai_tbl[i]);
-		s = route.showFare();
+		CalcRoute croute(route);
+		s = croute.showFare();
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
-		vector<RouteItem>& r = route.routeList();
-		Route::ConvertShinkansen2ZairaiFor114Judge(&r);
 //		s = Route::Show_route(r, 0);
 //		s = cr_remove(s);
 //		TRACE(_T("\n%s-------------\n"), s.c_str());
-		s = route.showFare();
+		croute.convertShinkansen2ZairaiFor114Judge();
+		s = croute.showFare();
 		s = cr_remove(s);
 //		xxx(route.routeList());
 		_ftprintf(os, _T("---------------\n%s\n"), s.c_str());
@@ -1937,6 +1947,7 @@ void test_temp()
 {
 	int32_t rc;
 	tstring s;
+	Route route;
 
 	//rc = route.setup_route(_T("高久 東北線 東京 東海道新幹線 新横浜"));
 	//rc = route.setup_route(_T("高久 東北線 東京 東海道新幹線 新横浜 横浜線 東神奈川 東海道線 横浜 根岸線 本郷台 "));
@@ -1947,8 +1958,9 @@ void test_temp()
 		TRACE(_T("Error!!!!(%d)\n"), rc);
 		return;
 	}
-	route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	s = route.showFare();
+	CalcRoute croute(route);
+	croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	s = croute.showFare();
 	s = cr_remove(s);
 	TRACE(_T("%s\n"), s.c_str());
 }
