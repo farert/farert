@@ -16,7 +16,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     // MARK: Constant
     
     // MARK: Public property
-    var ds : RouteDataController = RouteDataController()
+    var ds : cCalcRoute = cCalcRoute()
 
     // MARK: Local property
     
@@ -162,7 +162,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             cell = tableView.dequeueReusableCell(withIdentifier: "rsTitleCell", for: indexPath) 
 
             let lbl : UILabel = cell.viewWithTag(1) as! UILabel
-            lbl.text = "\(RouteDataController.terminalName(self.fareInfo.beginStationId)!) → \(RouteDataController.terminalName(self.fareInfo.endStationId)!)"
+            lbl.text = "\(cRouteUtil.terminalName(self.fareInfo.beginStationId)!) → \(cRouteUtil.terminalName(self.fareInfo.endStationId)!)"
             
         case 1:
             /* KM */
@@ -350,8 +350,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             return title
         }
  
-        self.navigationItem.title = "\(RouteDataController.terminalName(self.fareInfo.endStationId)!)"
-        self.navigationItem.prompt = "\(RouteDataController.terminalName(self.fareInfo.beginStationId)!) → "
+        self.navigationItem.title = "\(cRouteUtil.terminalName(self.fareInfo.endStationId)!)"
+        self.navigationItem.prompt = "\(cRouteUtil.terminalName(self.fareInfo.beginStationId)!) → "
 
         switch (section) {
         case 0:
@@ -492,7 +492,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.tableView.reloadData()
             
         } else if nil != title.range(of: "最短経路") {
-            self.showIndicate()
+            let begin_id : Int = ds.startStationId()
+            let end_id : Int = ds.lastStationId()
+            if begin_id == end_id {
+                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
+                return
+            }
+
+            self.showIndicate() /* wait active indicator */
             self.navigationController?.view.isUserInteractionEnabled = false
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
@@ -500,12 +507,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             })
             
         } else if nil != title.range(of: "回り") {
-            let rc : Int = ds.setDetour((nil != title.range(of: "遠")) ? true : false)
-            if 0 <= rc {
-                self.reCalcFareInfo()
-                self.tableView.reloadData()
-            } else {
-                self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
+            if let route : cRoute = cRoute() {
+                route.sync(ds)
+                let rc = route.setDetour((nil != title.range(of: "遠")) ? true : false)
+                if 0 <= rc {
+                    ds.sync(route)
+                    self.reCalcFareInfo()
+                    self.tableView.reloadData()
+                } else {
+                    self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
+                }
             }
         } else {
             // cancel
@@ -619,13 +630,18 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         
         let begin_id : Int = ds.startStationId()
         let end_id : Int = ds.lastStationId()
-        
-        ds.resetStartStation()
-        ds.addRoute(begin_id)
-        let rc : Int = ds.autoRoute(false, arrive: end_id)
-        if 0 <= rc {
-            self.reCalcFareInfo()
-            self.tableView.reloadData()
+    
+        if let route = cRoute() {
+            route.add(begin_id)
+            let rc : Int = route.autoRoute(false, arrive: end_id)
+            if 1 == rc {
+                self.ds.sync(route)
+                self.reCalcFareInfo()
+                self.tableView.reloadData()
+            } else if rc == 0 || rc == 4 || rc == 5 {
+                self.ShowAlertView("最短経路算出", message: "経路は片道条件に達しています")
+                /* 開始駅 = 終了駅 は前段でチェックしているからここには来ない */
+            }
         }
         self.hideIndicate()    /* hide Activity and enable UI */
     }
@@ -678,10 +694,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         num_of_km = 1;
 
         if (self.fareInfo.jrCalcKm == self.fareInfo.jrSalesKm) {
-            contentsForKm = [["salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.totalSalesKm)!)km"]]
+            contentsForKm = [["salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.totalSalesKm)!)km"]]
         } else {
-            contentsForKm = [["salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.totalSalesKm)!)km",
-                             "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.jrCalcKm)!)km",
+            contentsForKm = [["salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.totalSalesKm)!)km",
+                             "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrCalcKm)!)km",
                              "subTitle" : (self.fareInfo.companySalesKm != 0) ? "計算キロ(JR)" : "計算キロ"]]
         }
     
@@ -689,33 +705,33 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             num_of_km += 1;
             if self.fareInfo.calcKmForHokkaido == self.fareInfo.salesKmForHokkaido {
                 contentsForKm += [["title" : "JR北海道",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km"]]
+                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km"]]
             } else {
                 contentsForKm += [["title" : "JR北海道",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km",
-                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForHokkaido)!)km"]]
+                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km",
+                                   "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForHokkaido)!)km"]]
             }
         }
         if (self.fareInfo.salesKmForKyusyu != 0) {
             num_of_km += 1;
             if self.fareInfo.calcKmForKyusyu == self.fareInfo.salesKmForKyusyu {
                 contentsForKm += [["title" : "JR九州",
-                                  "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km"]]
+                                  "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km"]]
             } else {
                 contentsForKm += [["title" : "JR九州",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km",
-                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForKyusyu)!)km"]]
+                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km",
+                                   "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForKyusyu)!)km"]]
             }
         }
         if self.fareInfo.salesKmForShikoku != 0 {
             num_of_km += 1;
             if (self.fareInfo.calcKmForShikoku == self.fareInfo.salesKmForShikoku) {
                 contentsForKm += [["title" : "JR四国",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForShikoku)!)km"]]
+                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForShikoku)!)km"]]
             } else {
                 contentsForKm += [["title" : "JR四国",
-                                   "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.salesKmForShikoku)!)km",
-                                   "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.calcKmForShikoku)!)km"]]
+                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForShikoku)!)km",
+                                   "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForShikoku)!)km"]]
             }
         }
         if (self.fareInfo.isRule114Applied) {
@@ -723,17 +739,17 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             //if (self.fareInfo.rule114_salesKm != self.fareInfo.rule114_calcKm) && (0 != self.fareInfo.rule114_calcKm) {
             if (self.fareInfo.jrCalcKm != self.fareInfo.jrSalesKm) {
                 contentsForKm += [["title" : "規程114条適用",
-                                    "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_salesKm)!)km",
-                                    "calcKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_calcKm)!)km"]]
+                                    "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_salesKm)!)km",
+                                    "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_calcKm)!)km"]]
             } else {
                 contentsForKm += [["title" : "規程114条適用",
-                    "salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.rule114_salesKm)!)km"]]
+                    "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_salesKm)!)km"]]
             }
         }
         if (self.fareInfo.companySalesKm != 0) {
             num_of_km += 1;
-            contentsForKm += [["Company_salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.companySalesKm)!)km",
-                               "JR_salesKm" : "\(RouteDataController.kmNumStr(self.fareInfo.jrSalesKm)!)km"]]
+            contentsForKm += [["Company_salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.companySalesKm)!)km",
+                               "JR_salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrSalesKm)!)km"]]
         }
         
         
@@ -746,38 +762,38 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         var strFareOpt : String = (self.fareInfo.isRoundtripDiscount) ? " (割引)" : ""
 
         if (self.fareInfo.isRule114Applied) {
-            strFareOpt +=  "(¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)!))"
+            strFareOpt +=  "(¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)!))"
         }
 
         if (self.fareInfo.fareForCompanyline != 0) {
             /* 1: 普通運賃＋会社線 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare)!)",
+            contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "うち会社線",
-                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
+                                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
-            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
-                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
+            contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
         } else if (self.fareInfo.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare)!)",
+            contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "IC運賃",
-                                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC)!)"]]
+                                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC)!)"]]
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
-            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
-                                 "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fareForIC * 2)!)"]]
+            contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                                 "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC * 2)!)"]]
         } else {
             /* 1: 普通運賃 */
-            contentsForFare = [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.fare)!)",
+            contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "", "subFare" : ""]]
             /* 2: 往復運賃(割引可否) */
-            contentsForFare += [["fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+            contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
                                  "subFare" : ""]]
         }
         
         /* 114 exception */
         if (self.fareInfo.isRule114Applied) {
             num_of_fare += 1;
-            let fare_str : String = "(¥\(RouteDataController.fareNumStr(self.fareInfo.farePriorRule114)!))"
+            let fare_str : String = "(¥\(cRouteUtil.fareNumStr(self.fareInfo.farePriorRule114)!))"
             contentsForFare += [["title" : "規程114条 適用しない運賃",
                                  "fare" : fare_str]]
         }
@@ -788,24 +804,24 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         for i in 0 ..< self.fareInfo.availCountForFareOfStockDiscount {
             var fare_str : String
             if (self.fareInfo.isRule114Applied) {
-                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fare(forStockDiscount: 2 + i))!)(¥\(RouteDataController.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!))"
+                fare_str = "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare(forStockDiscount: 2 + i))!)(¥\(cRouteUtil.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!))"
             } else {
-                fare_str = "¥\(RouteDataController.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!)"
+                fare_str = "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!)"
             }
             contentsForFare += [["title" : self.fareInfo.fare(forStockDiscountTitle: i), "fare" : fare_str]]
         }
         
         // Child fare
         contentsForFare += [["title" : "小児運賃",
-                             "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare)!)",
+                             "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
                              "subTitle" : "往復",
-                             "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.childFare * 2)!)"]]
+                             "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare * 2)!)"]]
         if self.fareInfo.isAcademicFare {
             num_of_fare += 1
             contentsForFare += [["title" : "学割運賃",
-                "fare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.academicFare)!)",
+                "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)",
                 "subTitle" : "往復",
-                "subFare" : "¥\(RouteDataController.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
+                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
         }
 
         if self.fareInfo.isResultCompanyBeginEnd {
@@ -869,7 +885,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if self.fareInfo == nil {
             return "エラー"
         }
-        return "運賃詳細(\(RouteDataController.terminalName(self.fareInfo.beginStationId)!) - \(RouteDataController.terminalName(self.fareInfo.endStationId)!))"
+        return "運賃詳細(\(cRouteUtil.terminalName(self.fareInfo.beginStationId)!) - \(cRouteUtil.terminalName(self.fareInfo.endStationId)!))"
     }
     
     func resultMessage(_ subject : String) -> String {

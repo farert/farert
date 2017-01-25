@@ -3,7 +3,7 @@
 #define DBPATH "../../../db/jrdb2015.db"
 
 int g_tax = 8;
-extern Route route;
+Route route;
 
 static tstring cr_remove(tstring s)
 {
@@ -15,7 +15,7 @@ static tstring cr_remove(tstring s)
 }
 
 
-void test_autoroute(void)
+static void test_autoroute(void)
 {
 	const static TCHAR *route_def[] = {
 /* */     _T("品川"),				_T("大井町"),
@@ -31,8 +31,8 @@ void test_autoroute(void)
 /*  */    _T("渋谷 山手線 品川"),		_T("大森"),
 /*  */    _T("渋谷 山手線 品川"),		_T("川崎"),
 /*  */    _T("渋谷 山手線 品川"),		_T("渋谷"),			//s
-/*!!*/    _T("渋谷 山手線 品川"),		_T("代々木"),		//s  
-/*!!*/    _T("渋谷 山手線 品川"),		_T("新宿"),			//   
+/*!!*/    _T("渋谷 山手線 品川"),		_T("代々木"),		//s
+/*!!*/    _T("渋谷 山手線 品川"),		_T("新宿"),			//
 /*!!*/    _T("渋谷 山手線 品川"),		_T("高田馬場"),
           _T("代々木,山手線,品川"),	_T("東京"),
 /*  */    _T("代々木 山手線 品川"),	_T("有楽町"),
@@ -46,10 +46,10 @@ void test_autoroute(void)
 		  _T("渋谷 山手線 五反田"),   _T("品川"),
 		  _T("渋谷 山手線 五反田"),   _T("恵比寿"),
 		  _T("渋谷 山手線 五反田"),   	_T("原宿"),
-		  _T("渋谷 山手線 五反田"),   _T("渋谷"), 
+		  _T("渋谷 山手線 五反田"),   _T("渋谷"),
 		  _T("渋谷 山手線 五反田"),   _T("代々木"),
 		  _T("代々木 山手線 五反田"), _T("大崎"),
-		  _T("代々木 山手線 五反田"), _T("品川"), 
+		  _T("代々木 山手線 五反田"), _T("品川"),
 		  _T("代々木 山手線 五反田"), _T("恵比寿"),
 		  _T("代々木 山手線 五反田"), _T("原宿"),
 		  _T("代々木 山手線 五反田"), _T("代々木"),
@@ -67,10 +67,10 @@ void test_autoroute(void)
 /* 01 */    _T("広島"), _T("博多"),
 /* 01 */    _T("広島"), _T("長崎"),
 
-/* 01 */    _T("青森"), _T("函館"), 
-/* 01 */    _T("松山"), _T("岡山"), 
-/* 01 */    _T("博多"), _T("広島"), 
-/* 01 */    _T("長崎"), _T("広島"), 
+/* 01 */    _T("青森"), _T("函館"),
+/* 01 */    _T("松山"), _T("岡山"),
+/* 01 */    _T("博多"), _T("広島"),
+/* 01 */    _T("長崎"), _T("広島"),
             _T("品川,東海道新幹線,名古屋,中央西線,塩尻"), _T("草薙"),
             _T("品川,東海道新幹線,名古屋"), _T("草薙"),
 
@@ -129,7 +129,8 @@ void test_autoroute(void)
 	for (i = 0; _T('\0') != *route_def[i]; i += 2) {
 		bool b_fail;
 		LPCTSTR p;
-		
+		int endid;
+
 		TRACE(_T("!===<%02d>: auto route ==================\n\n"), i / 2);
 		TRACE("test_exec(auto route): %d*************************************************\n", i / 2);
 		route.removeAll();
@@ -142,24 +143,25 @@ void test_autoroute(void)
 		if (b_fail) {
 			++p;
 		}
-		route.setEndStationId(Route::GetStationId(p));
+		endid = RouteUtil::GetStationId(p);
 		TRACE(_T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
 
 		TRACE(_T("* auto route(新幹線未使用) >>>>>>>\n"));
-		if (route.changeNeerest(false) < 0) {
+		if (route.changeNeerest(false, endid) < 0) {
 printf("! ! ! changeNeerest E r r o r ! ! !\n");
 			TRACE(_T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));
 			ASSERT(b_fail == true);
 		} else {
 printf("o o o changeNeerest S u c c e s s   o o o\n");
 			ASSERT(b_fail == false);
-			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = route.showFare();
+			CalcRoute croute(route);
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///非適用\n%s\n"), s.c_str());
 #if 1
-			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = route.showFare();
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///適用\n%s\n"), s.c_str());
 #endif
@@ -169,20 +171,21 @@ printf("o o o changeNeerest S u c c e s s   o o o\n");
 		strcpy(buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
-		route.setEndStationId(Route::GetStationId(p));
+
 		TRACE(_T("* auto route(新幹線使用) >>>>>>>\n"));
-		if (route.changeNeerest(true) < 0) {
+		if (route.changeNeerest(true, endid) < 0) {
 			TRACE(_T("Can't route.%s\n"), b_fail ? _T("(OK)") : _T("(NG)"));
 			ASSERT(b_fail == true);
 		} else {
 			ASSERT(b_fail == false);
-			route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = route.showFare();
+			CalcRoute croute(route);
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///非適用\n%s\n"), s.c_str());
 
-			route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = route.showFare();
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
 			s = cr_remove(s);
 			TRACE(_T("///適用\n%s\n"), s.c_str());
 		}
@@ -206,28 +209,28 @@ int main(int argc, char** argv)
 	int l = 0;
 	int rc;
 	int bullet = 0;
-	
+
 	if (! DBS::getInstance()->open(DBPATH)) {
 		printf("Can't db open\n");
 		return -1;
 	}
-	
+
 	if (2 <= argc) {
 		for (i = 1; i < argc; i++) {
 			++argv;
 			if ((i % 2) != 0) {
-				s = Route::GetStationId(*argv);
+				s = RouteUtil::GetStationId(*argv);
 			} else {
 				if ('-' == **argv) {
-					e = Route::GetStationId(++*argv);
+					e = RouteUtil::GetStationId(++*argv);
 					bullet = 0;
 					break;	//>>>>>>>>>>>>>>>>>>>>>>
 				} else if ('+' == **argv) {
-					e = Route::GetStationId(++*argv);
+					e = RouteUtil::GetStationId(++*argv);
 					bullet = 1;
 					break;	//>>>>>>>>>>>>>>>>>>>>>>
 				} else {
-					l = Route::GetLineId(*argv);
+					l = RouteUtil::GetLineId(*argv);
 				}
 			}
 			if (i == 1) { // first
@@ -254,19 +257,18 @@ int main(int argc, char** argv)
 			fprintf(stderr, "argument error: 'non '-' parameter'\n");
 			return -1;
 		}
-		route.setEndStationId(e);
-		rc = route.changeNeerest(bullet);
+		rc = route.changeNeerest(bullet, e);
 		if (rc < 0) {
 			fprintf(stderr, "**auto route Error. %d\n", rc);
 			return -1;
 		} else {
 			fprintf(stderr, "##################\n");
 		}
-		tstring s = route.showFare();
+		CalcRoute croute(route);
+		tstring s = croute.showFare();
 		printf("%s\n", s.c_str());
 	} else {
 		test_autoroute();
 	}
 	return 0;
 }
-
