@@ -55,7 +55,7 @@ add 中央西線(121)-名古屋(1513), 恵那(2446)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 金山(1511,125)
   add-mask on: 多治見(2451,186)
 added continue.
@@ -106,7 +106,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 金山
 removed.  : 名古屋
-JCT: 1644
+JCT: 1660
   add-mask on: 金山(1511,125)
   add-mask on: 多治見(2451,186)
 added continue.
@@ -1807,7 +1807,7 @@ add 中央西線(121)-松本(1884), 名古屋(1513)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -2830,7 +2830,7 @@ add 日田彦山線(190)-小倉(3930), 呼野(4051)
 >
 JCT: detect step:2
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT: step_(2)detect
 last_flag=0
 add 日豊線(194)-西小倉(3931), 城野(4046)
@@ -2871,7 +2871,7 @@ JCT: detect step:2
 JCT: C-1
 removed.  : 小倉
 removed.  : 西小倉
-JCT: 1644
+JCT: 1660
 JCT: step_(2)detect
 last_flag=0
 add 日豊線(194)-西小倉(3931), 城野(4046)
@@ -3308,7 +3308,7 @@ add 日田彦山線(190)-小倉(3930), 城野(4046)
 >
 JCT: detect step:2
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT: step_(2)detect
 last_flag=0
 add 日豊線(194)-西小倉(3931), 城野(4046)
@@ -3347,7 +3347,7 @@ JCT: detect step:2
 JCT: C-1
 removed.  : 小倉
 removed.  : 西小倉
-JCT: 1644
+JCT: 1660
 JCT: step_(2)detect
 last_flag=0
 add 日豊線(194)-西小倉(3931), 城野(4046)
@@ -4362,7 +4362,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 安積永盛
 removed.  : 郡山
-JCT: 1644
+JCT: 1660
   add-mask on: 安積永盛(493,36)
   add-mask on: 水戸(598,51)
   add-mask on: 上菅谷(1044,92)
@@ -4393,7 +4393,7 @@ add 水郡線(62)-郡山(494), 水戸(598)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 安積永盛(493,36)
   add-mask on: 水戸(598,51)
   add-mask on: 上菅谷(1044,92)
@@ -4711,7 +4711,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 宮内
 removed.  : 長岡
-JCT: 1644
+JCT: 1660
   add-mask on: 越後湯沢(1668,142)
   add-mask on: 六日町(1673,143)
   add-mask on: 浦佐(1675,144)
@@ -4784,7 +4784,7 @@ add 烏山線(64)-宇都宮(471), 烏山(1088)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 宝積寺(473,33)
 added continue.
 added fin.(0).
@@ -5028,7 +5028,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 宇都宮
 removed.  : 宝積寺
-JCT: 1644
+JCT: 1660
   add-mask on: 宝積寺(473,33)
 added continue.
 added fin.(0).
@@ -5140,7 +5140,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 新前橋
 removed.  : 高崎
-JCT: 1644
+JCT: 1660
   add-mask on: 小山(466,31)
   add-mask on: 新前橋(841,74)
 added continue.
@@ -6144,7 +6144,7 @@ add 湖西線(134)-京都(1547), 敦賀(2645)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6275,7 +6275,7 @@ add 湖西線(134)-京都(1547), 敦賀(2645)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6487,7 +6487,7 @@ add 湖西線(134)-敦賀(2645), 京都(1547)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6558,7 +6558,7 @@ add 湖西線(134)-敦賀(2645), 京都(1547)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6623,7 +6623,7 @@ add 湖西線(134)-敦賀(2645), 京都(1547)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6705,7 +6705,7 @@ add 湖西線(134)-敦賀(2645), 京都(1547)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6842,7 +6842,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 山科
 removed.  : 京都
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -6943,7 +6943,7 @@ add 湖西線(134)-京都(1547), 敦賀(2645)
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -7000,7 +7000,7 @@ add 福知山線(140)-大阪(1562), 谷川(2858)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 尼崎(1564,135)
   add-mask on: 谷川(2858,213)
 added continue.
@@ -7035,7 +7035,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 大阪
 removed.  : 尼崎
-JCT: 1644
+JCT: 1660
   add-mask on: 尼崎(1564,135)
   add-mask on: 谷川(2858,213)
 added continue.
@@ -7373,7 +7373,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 東岡山
 removed.  : 岡山
-JCT: 1644
+JCT: 1660
   add-mask on: 東岡山(3011,224)
 added continue.
 added fin.(0).
@@ -7443,7 +7443,7 @@ add 赤穂線(153)-岡山(3014), 西大寺(3186)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 東岡山(3011,224)
 added continue.
 added fin.(0).
@@ -7557,7 +7557,7 @@ JCT: J
 JCT: detect step-horiz:1
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -7841,7 +7841,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 岡山
 removed.  : 倉敷
-JCT: 1644
+JCT: 1660
 JCT:1
 JCT: J, B, D
 last_flag=40
@@ -8063,7 +8063,7 @@ add 芸備線(159)-新見(3170), 広島(3047)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 広島(3047,231)
   add-mask on: 備中神代(3243,251)
   add-mask on: 備後落合(3265,253)
@@ -8115,7 +8115,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 新見
 removed.  : 備中神代
-JCT: 1644
+JCT: 1660
   add-mask on: 広島(3047,231)
   add-mask on: 備中神代(3243,251)
   add-mask on: 備後落合(3265,253)
@@ -8344,7 +8344,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 伯耆大山
 removed.  : 米子
-JCT: 1644
+JCT: 1660
   add-mask on: 倉敷(3018,226)
   add-mask on: 新見(3170,247)
   add-mask on: 総社(3211,248)
@@ -8376,7 +8376,7 @@ add 伯備線(158)-米子(3508), 倉敷(3018)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 倉敷(3018,226)
   add-mask on: 新見(3170,247)
   add-mask on: 総社(3211,248)
@@ -8585,7 +8585,7 @@ JCT: J
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 横川(3049,232)
 added continue.
 added fin.(0).
@@ -8630,7 +8630,7 @@ JCT: J
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 海田市(3044,230)
 added continue.
 added fin.(0).
@@ -8712,7 +8712,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 海田市
 removed.  : 広島
-JCT: 1644
+JCT: 1660
   add-mask on: 海田市(3044,230)
 added continue.
 added fin.(0).
@@ -8788,7 +8788,7 @@ add 呉線(161)-広島(3047), 呉(3339)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 海田市(3044,230)
 added continue.
 added fin.(0).
@@ -8873,7 +8873,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 広島
 removed.  : 横川
-JCT: 1644
+JCT: 1660
   add-mask on: 横川(3049,232)
 added continue.
 added fin.(0).
@@ -9109,7 +9109,7 @@ add 山陰線(169)-下関(3097), 長門市(3435)
 JCT: detect step:1
 JCT: C-1
 removed.  : 幡生
-JCT: 1644
+JCT: 1660
   add-mask on: 幡生(3096,241)
   add-mask on: 長門市(3435,259)
 added continue.
@@ -9310,7 +9310,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 博多
 removed.  : 吉塚
-JCT: 1644
+JCT: 1660
   add-mask on: 吉塚(3957,284)
   add-mask on: 長者原(4031,296)
 added continue.
@@ -9346,7 +9346,7 @@ add 篠栗線(189)-博多(3669), 篠栗(4042)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 吉塚(3957,284)
   add-mask on: 長者原(4031,296)
 added continue.
@@ -10954,7 +10954,7 @@ JCT: detect step:1
 JCT: C-1
 removed.  : 宮内
 removed.  : 長岡
-JCT: 1644
+JCT: 1660
   add-mask on: 越後湯沢(1668,142)
   add-mask on: 六日町(1673,143)
   add-mask on: 浦佐(1675,144)
@@ -71568,7 +71568,7 @@ add 日豊線(194)-小倉(3930), 都城(4221)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 西小倉(3931,281)
   add-mask on: 城野(4046,298)
   add-mask on: 大分(4130,302)
@@ -71644,7 +71644,7 @@ add 日豊線(194)-小倉(3930), 城野(4046)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 西小倉(3931,281)
   add-mask on: 城野(4046,298)
 added continue.
@@ -71756,7 +71756,7 @@ add 日豊線(194)-小倉(3930), 城野(4046)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 西小倉(3931,281)
   add-mask on: 城野(4046,298)
 added continue.
@@ -71912,7 +71912,7 @@ add 日豊線(194)-小倉(3930), 城野(4046)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 西小倉(3931,281)
   add-mask on: 城野(4046,298)
 added continue.
@@ -72068,7 +72068,7 @@ add 日豊線(194)-小倉(3930), 城野(4046)
 >
 JCT: detect step:1
 JCT: A-1
-JCT: 1644
+JCT: 1660
   add-mask on: 西小倉(3931,281)
   add-mask on: 城野(4046,298)
 added continue.

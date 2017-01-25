@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if window?.rootViewController == nil {
             return true
         }
-        if (!RouteDataController.openDatabase()) {
+        if (!cRouteUtil.openDatabase()) {
             // Can't db open
             return false;
         }
@@ -41,13 +41,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        RouteDataController.close()
+        cRouteUtil.close()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
 
-        RouteDataController.openDatabase()
+        cRouteUtil.openDatabase()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -56,6 +56,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-        RouteDataController.close()
+        cRouteUtil.close()
     }
 }

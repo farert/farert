@@ -1,58 +1,56 @@
 2013-8-17
-ddm\			�f�[�^�x�[�X�쐬�X�N���v�g�����A�g�p���邱�Ƃ͂Ȃ��B
-			�f�[�^�x�[�X�̍쐬�́AHow-To-Makeing-db.txt ���Q�ƁBmkdb.bat�ō쐬����B
-faretbl.xlsx		�^���v�Z�e�[�u���쐬�A���W�b�N�쐬�̂��ƂƂȂ�f�[�^�ŁA�݌v�Q�l����
-How-To-Makeing-db.txt	(���̃t�@�C��)�f�[�^�x�[�X�쐬�菇��(���ۂɂ�mkdb.bat��ǂނׂ�)
-jr.db			�f�[�^�x�[�X�t�@�C��
-jrdb.txt		�f�[�^�x�[�X�쐬���f�[�^
-jrdb.xlsx		�f�[�^�x�[�X�쐬���f�[�^�̌��f�[�^
-			jrdb.xlsx ->(���ƂŃR�s�y)-> jrdb.txt ->(mkdb.bat)-> jr.db
-			�ƂȂ�B�{���Apython�ł�肽���Ƃ��낾���AOS�ˑ��Ȃ̂Ŕ����Ă���
-misc\			�̂̃t�@�C��(�����g��Ȃ��Ǝv��)
-mkdb.bat		�f�[�^�x�[�X�쐬�X�N���v�g(jrdb.txt����jr.db�𐶐��E�쐬����)
-node_list.txt		�f�[�^�x�[�X�쐬�X�N���v�g���쐬�������ԃt�@�C��(�g�p���邱�Ƃ͂Ȃ�)
-scripts\		�f�[�^�x�[�X����֘A�X�N���v�g��e�X�g�R�[�h�Ȃǂ��i�[
-			���s����Ƃ��́A���f�B���N�g�����J�����g�Ƃ��āA
-			> python scripts\xxx.py
-			�Ƃ��Ď��s����B�iscripts\�����J�����g�Ƃ��Ď��s���Ă�DB���ǂݍ��߂Ȃ��̂Ŏ��s���s����)
+ddm\			データベース作成スクリプトだが、使用することはない。
+				データベースの作成は、How-To-Makeing-db.txt を参照。mkdb.batで作成する。
+faretbl.xlsx	運賃計算テーブル作成、ロジック作成のもととなるデータで、設計参考資料
+How-To-Makeing-db.txt	(このファイル)データベース作成手順書(実際にはmkdb.batを読むべし)
+jr.db			データベースファイル
+jrdb.txt		データベース作成元データ
+jrdb.xlsx		データベース作成元データの元データ
+				jrdb.xlsx ->(手作業でコピペ)-> jrdb.txt ->(mkdb.bat)-> jr.db
+				となる。本来、pythonでやりたいところだが、OS依存なので避けている
+misc\			昔のファイル(もう使わないと思う)
+mkdb.bat		データベース作成スクリプト(jrdb.txtからjr.dbを生成・作成する)
+node_list.txt	データベース作成スクリプトが作成した中間ファイル(使用することはない)
+scripts\		データベース操作関連スクリプトやテストコードなどを格納
+				実行するときは、現ディレクトリをカレントとして、
+				> python scripts\xxx.py
+				として実行する。（scripts\内をカレントとして実行してもDBが読み込めないので実行失敗する)
 
 
 2013-7-25
-	mkdb.bat �����s���邾���ŗǂ��Ƃ���
+	mkdb.bat を実行するだけで良しとする
 
 
 2012-6-9
 
  jr.db
- 
- �쐬���@
- �@1) Excel(JRDB.XLS)��ҏW
- �@  �e�V�[�g���R�s�[���āA�C�ӂ̐V�K�쐬�e�L�X�g�t�@�C��(JRDB.TXT)�֓\��t����
+
+ 作成方法
+ 　1) Excel(JRDB.XLS)を編集
+ 　  各シートをコピーして、任意の新規作成テキストファイル(JRDB.TXT)へ貼り付ける
       (lines, clinfar, rule69, rule70, rule86, fare)
-   
+
    2) python jr_db_reg.py
    3) python node_list.py
 
 
    jrdb.db -+- jr_db_reg.py
-          +- node_list.py     �� jrdb.py��jr_db_reg.py, node_list.py �Ȃǂ���g�p����܂�.
+          +- node_list.py     ※ jrdb.pyはjr_db_reg.py, node_list.py などから使用されます.
 
 
-  �ȏ�Ŋ���
-  
-  alps_mfc�ɑg�ݍ��ޏꍇ�A
-  ���\�[�X�f�B���N�g����crypt_tofish.exe enc jr.db �ō쐬���ꂽjr.db.enc��
-  prj/res/�@�֔z�u
+  以上で完成
+
+  alps_mfcに組み込む場合、
+  リソースディレクトリにcrypt_tofish.exe enc jr.db で作成されたjr.db.encを
+  prj/res/　へ配置
 
 
 
 
 
-�I�[�v���\�[�X������
+オープンソース化する
 
-�o�H�T���A��ʌn�ȊO�̃V�X�e���̗p�r�ł͗��p�\�Ƃ���H
-�������܂�������_��
+経路探索、交通系以外のシステムの用途では利用可能とする？
+→あいまいだからダメ
 
-GPL���]�܂���
-
-
+GPLが望ましい
