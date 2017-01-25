@@ -44,13 +44,13 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.tableView.rowHeight = UITableViewAutomaticDimension // for iOS8
 
         // Straged route read from filesystem
-        self.routeList = RouteDataController.loadStrageRoute() as! [String]
+        self.routeList = cRouteUtil.loadStrageRoute() as! [String]
         
         if !self.currentRouteString.isEmpty {
             if let idx = self.routeList.index(of: self.currentRouteString) {      // is exist ?
                 self.routeList.remove(at: idx)
                 self.routeList.insert(self.currentRouteString, at: 0)  // 入れ替え
-                RouteDataController.save(toRouteArray: self.routeList)   // して保存
+                cRouteUtil.save(toRouteArray: self.routeList)   // して保存
                 self.saveButton.isEnabled = false
                 self.saved = true
             } else {                                            // non exist
@@ -154,7 +154,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 self.saveButton.isEnabled = false
                 self.tableView.reloadData()
             }
-            RouteDataController.save(toRouteArray: self.routeList)
+            cRouteUtil.save(toRouteArray: self.routeList)
             
         } else if (editingStyle == UITableViewCellEditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
@@ -327,7 +327,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             self.tableView.deselectRow(at: tableView.indexPathForSelectedRow!, animated: false)
         } else if tag == TAG_UIACTIONSHEET_QUERYCLEARALL {
             if selectIndex == 0 {
-                RouteDataController.save(toRouteArray: [])
+                cRouteUtil.save(toRouteArray: [])
                 self.routeList.removeAll(keepingCapacity: false)
                 
                 //self.tableView.endUpdates()
@@ -392,7 +392,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     
     // [Save] button
     @IBAction func saveButtonTapped(_ sender: AnyObject) {
-        RouteDataController.save(toRouteArray: self.routeList)
+        cRouteUtil.save(toRouteArray: self.routeList)
         self.saved = true
         self.saveButton.isEnabled = false
         self.tableView.reloadData()

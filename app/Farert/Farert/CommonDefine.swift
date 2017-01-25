@@ -46,7 +46,7 @@ struct FGD {
 }
 
 struct DbId {
-// RouteDataControllerにも同じような定義あり、なんとかしたい
+// cRouteUtilにも同じような定義あり、なんとかしたい
     static let DB_MIN_ID = 10
     
     static let DB_TAX5 = DB_MIN_ID

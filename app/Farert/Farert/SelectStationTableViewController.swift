@@ -31,7 +31,7 @@ class SelectStationTableViewController: CSTableViewController {
 
         if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) || (apd.context == FGD.CONTEXT_TERMINAL_VIEW) {
             self.navigationItem.setRightBarButtonItems(nil, animated:true)
-            stations = RouteDataController.stationsWith(inCompanyOrPrefectAnd: companyOrPrefectId, lineId: lineId) as! [Int]
+            stations = cRouteUtil.stationsWith(inCompanyOrPrefectAnd: companyOrPrefectId, lineId: lineId) as! [Int]
             if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) {
                 self.title = "着駅指定";
             } else {
@@ -39,11 +39,11 @@ class SelectStationTableViewController: CSTableViewController {
             }
         } else { //CONTEXT_ROUTESELECT_VIEW
             if (FGD.FA_TRANSIT_STA2JCT != self.transit_state) {
-                self.stations = RouteDataController.stationsIds(ofLineId: lineId) as! [Int]
+                self.stations = cRouteUtil.stationsIds(ofLineId: lineId) as! [Int]
                 self.title = "着駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "分岐駅指定";
             } else {
-                stations = RouteDataController.junctionIds(ofLineId: lineId) as! [Int]
+                stations = cRouteUtil.junctionIds(ofLineId: lineId) as! [Int]
                 self.title = "分岐駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "着駅指定"
             }
@@ -67,11 +67,11 @@ class SelectStationTableViewController: CSTableViewController {
     
     override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         if (0 < self.companyOrPrefectId) {
-            let companyOrPrefctString : String = RouteDataController.companyOrPrefectName(companyOrPrefectId)
-            return "\(companyOrPrefctString) - \(RouteDataController.lineName(self.lineId)!)" as String
+            let companyOrPrefctString : String = cRouteUtil.companyOrPrefectName(companyOrPrefectId)
+            return "\(companyOrPrefctString) - \(cRouteUtil.lineName(self.lineId)!)" as String
 
         } else {
-            return RouteDataController.lineName(lineId) as String
+            return cRouteUtil.lineName(lineId) as String
         }
     }
 
@@ -97,21 +97,21 @@ class SelectStationTableViewController: CSTableViewController {
         }
         
         // Configure the cell...;
-        cell!.textLabel?.text = RouteDataController.stationName(stationId)
+        cell!.textLabel?.text = cRouteUtil.stationName(stationId)
         
-        var details : String = "(\(RouteDataController.getKanaFromStationId(stationId)!))"
-        if (RouteDataController.isJunction(stationId) &&
-            !RouteDataController.isSpecificJunction(self.lineId, stationId: stationId)) {
+        var details : String = "(\(cRouteUtil.getKanaFromStationId(stationId)!))"
+        if (cRouteUtil.isJunction(stationId) &&
+            !cRouteUtil.isSpecificJunction(self.lineId, stationId: stationId)) {
                 /* junction(lflag.bit12 on) */
 
-            for lid in RouteDataController.lineIds(fromStation: stationId) as! [Int] {
+            for lid in cRouteUtil.lineIds(fromStation: stationId) as! [Int] {
                 if ((lid != self.lineId)  &&
-                    !RouteDataController.isSpecificJunction(lid, stationId: stationId)) {
-                    details += "/" + RouteDataController.lineName(lid)
+                    !cRouteUtil.isSpecificJunction(lid, stationId: stationId)) {
+                    details += "/" + cRouteUtil.lineName(lid)
                 }
             }
             //if ("/" == details[details.endIndex.predecessor()]) {
-            //    details += RouteDataController.LineName(self.lineId)
+            //    details += cRouteUtil.LineName(self.lineId)
             //}
         }
 

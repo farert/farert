@@ -90,7 +90,7 @@ BOOL CTermSel::OnInitDialog()
 	CListBox* pL = (CListBox*)GetDlgItem(IDC_LIST_COMPANY);
 	pL->ResetContent();
 
-	DBO dbo = Route::Enum_company_prefect();
+	DBO dbo = RouteUtil::Enum_company_prefect();
 	if (dbo.isvalid()) {
 		while (dbo.moveNext()) {
 			pL->SetItemData(pL->AddString(dbo.getText(0).c_str()), dbo.getInt(1));
@@ -123,7 +123,7 @@ void CTermSel::OnBnClickedButtonStationSel()
 	CListBox* pL = reinterpret_cast<CListBox*>(GetDlgItem(IDC_LIST_TERMINALS));
 
 		// âwåÛï‚ÉäÉXÉgÇÃóÒãì(Ç–ÇÁÇ™Ç»ÅAïîï™àÍívÅj
-	DBO dbo = Route::Enum_station_match(sStation);
+	DBO dbo = RouteUtil::Enum_station_match(sStation);
 	if (!dbo.isvalid()) {
 		return; 
 	}
@@ -141,7 +141,7 @@ void CTermSel::OnBnClickedButtonStationSel()
 
 		if (!samename.IsEmpty()) { // ìØñºâw?
 			sStation += samename;
-			CString prefect(Route::GetPrefectByStationId(itemId).c_str());
+			CString prefect(RouteUtil::GetPrefectByStationId(itemId).c_str());
 			if (!prefect.IsEmpty()) {
 				sStation += _T("[");
 				sStation += prefect;
@@ -308,7 +308,7 @@ void CTermSel::OnLbnDblclkListCompany()
 	int idx;
 	CListBox* pL = (CListBox*)GetDlgItem(IDC_LIST_COMPANY);
 	if (0 <= (idx = pL->GetCurSel())) {
-		DBO dbo = Route::Enum_lines_from_company_prefect((int)(DWORD_PTR)pL->GetItemData(idx));
+		DBO dbo = RouteUtil::Enum_lines_from_company_prefect((int)(DWORD_PTR)pL->GetItemData(idx));
 		if (!dbo.isvalid()) {
 			return;
 		}
@@ -341,7 +341,7 @@ void CTermSel::OnLbnDblclkListLines()
 	idx1 = pL1->GetCurSel();
 	
 	if ((0 <= idx0) && (0 <= idx1)) {
-		DBO dbo = Route::Enum_station_located_in_prefect_or_company_and_line(
+		DBO dbo = RouteUtil::Enum_station_located_in_prefect_or_company_and_line(
 						(int)(DWORD_PTR)pL0->GetItemData(idx0),
 						(int)(DWORD_PTR)pL1->GetItemData(idx1));
 		if (!dbo.isvalid()) {
@@ -459,11 +459,11 @@ void CTermSel::SetTerminalLineLabel(int stationId)
 	// get line from station
 	CString labelText;
 
-	labelText = Route::GetKanaFromStationId(stationId).c_str();
+	labelText = RouteUtil::GetKanaFromStationId(stationId).c_str();
 	if (!labelText.IsEmpty()) {
 		labelText += _T(" - ");
 	}
-	DBO dbo = Route::Enum_line_of_stationId(stationId);
+	DBO dbo = RouteUtil::Enum_line_of_stationId(stationId);
 	if (!dbo.isvalid()) {
 		return;
 	}
