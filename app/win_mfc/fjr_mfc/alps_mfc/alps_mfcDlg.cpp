@@ -335,18 +335,28 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 			}
 		}
 		if (rslt < 0) {
-			ASSERT(rslt == -1);		/* -1 以外はバグ(DBエラーか、引数不正) */
-			if (-1 != rslt) {
+			switch (rslt) {
+			case -1:
+				SetDlgItemText(IDC_EDIT_STAT, _T("経路が重複しています."));
+				break;
+			case -4:
+				SetDlgItemText(IDC_EDIT_STAT, _T("許可されない会社線通過連絡運輸です."));
+				break;
+			default:
+				ASSERT(FALSE);	/* -1 以外はバグ(DBエラーか、引数不正) */
 				AfxMessageBox(_T("Fatal error occured."));
 				ResetContent();
 				return;
 			}
-			SetDlgItemText(IDC_EDIT_STAT, _T("経路が重複しています."));
 			return;
 		}
 
 		if (5 == rslt) {
 			SetDlgItemText(IDC_EDIT_STAT, _T("経路は片道条件に達しています."));
+			return;	/* already finished */
+		}
+		if (4 == rslt) {
+			SetDlgItemText(IDC_EDIT_STAT, _T("会社線を含む経路はこれ以上指定できません."));
 			return;	/* already finished */
 		}
 		if ((0 != rslt) && (1 != rslt)) {	/* fin */
@@ -1235,7 +1245,7 @@ void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 	//ASSERT(0 < curLineId);
 	//setupForLinelistByStation(m_curStationId, curLineId);	// 着駅の所属路線
 
-	if (0 <= m_route.routeList().size()) {
+	if (0 < m_route.routeList().size()) {
 
 		vector<RouteItem>::const_iterator pos = m_route.routeList().cbegin();
 		TRACE(_T("\nbegin befor: %s\n"), RouteUtil::StationName(pos->stationId).c_str());
@@ -1291,6 +1301,10 @@ int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 	case -2:
 		AfxMessageBox(_T("不正な経路指定です"));
 		break;
+	case -4:
+		AfxMessageBox(_T("許可されていない会社線通過です"));
+		break;
+	case 4:	/* 会社線通過終端 */
 	case 0:
 	case 1:
 		/* success */
