@@ -7,6 +7,34 @@
 
 Copyright sutezo9@me . com Allrightreserve. Jun.2011 - 2012,2013.
 
+Copyright (C) 2014 Sutezo (sutezo666@gmail.com)
+
+   'Farert' is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    'Farert' is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with 'Farert'.  If not, see <http://www.gnu.org/licenses/>.
+
+このプログラムはフリーソフトウェアです。あなたはこれを、フリーソフトウェ
+ア財団によって発行された GNU 一般公衆利用許諾契約書(バージョン3か、希
+望によってはそれ以降のバージョンのうちどれか)の定める条件の下で再頒布
+または改変することができます。
+
+このプログラムは有用であることを願って頒布されますが、*全くの無保証*
+です。商業可能性の保証や特定の目的への適合性は、言外に示されたものも含
+め全く存在しません。詳しくはGNU 一般公衆利用許諾契約書をご覧ください。
+
+あなたはこのプログラムと共に、GNU 一般公衆利用許諾契約書の複製物を一部
+受け取ったはずです。もし受け取っていなければ、フリーソフトウェア財団ま
+で請求してください
+
 """
 import os
 import sqlite3
@@ -14,6 +42,15 @@ import sys
 import re
 from collections import defaultdict
 
+
+def IntValue(txt):
+	a = 0
+	try:
+		a += int(txt)
+	except:
+		a = 0
+
+	return a
 
 def same_staion(station_name):
 	if 0 <= station_name.find('('):
@@ -24,8 +61,7 @@ def same_staion(station_name):
 		same = ''
 	return (name, same)
 
-
-if 5 != len(sys.argv):
+if 4 == len(sys.argv):
   fn = sys.argv[1]
   db_name = sys.argv[2]
   tax = sys.argv[3]
@@ -48,6 +84,19 @@ class Dbreg:
 
 
 	def create_tables(self):
+		###########################################
+		sql = """
+		create table t_global (
+			cline_align_id integer not null,
+			max_station integer not null,
+			max_line integer not null,
+			max_jct integer not null,
+			max_station_chr inteter not null,
+			max_line_chr inteter not null
+		);
+		"""
+		self.con.execute(sql)
+		self.con.execute("insert into t_global values(0, 0, 0, 0, 0, 0);")
 		###########################################
 		sql = """
 		create table t_coreareac (
@@ -95,6 +144,7 @@ class Dbreg:
 			prefect_id integer not null references t_prefect(rowid),
 			samename text not null default(''),
 			sflg integer not null,
+			sub_company_id integer not null default(0),
 
 			primary key(name, samename)
 		);
@@ -127,8 +177,8 @@ class Dbreg:
 			station_id1 integer not null,
 			station_id2 intege not null,
 			fare integer not null,
-			child integer not null,
 			academic integer not null default(0),
+			flg integer not null default(0),
 			-- line_id integer not null references t_line(rowid),
 			primary key (station_id1, station_id2)
 		);
@@ -140,8 +190,8 @@ class Dbreg:
 			station_id1 integer not null,
 			station_id2 intege not null,
 			fare integer not null,
-			child integer not null,
 			academic integer not null default(0),
+			flg integer not null default(0),
 			-- line_id integer not null references t_line(rowid),
 			primary key (station_id1, station_id2)
 		);
@@ -273,6 +323,25 @@ class Dbreg:
 		);
 		""")
 		###########################################
+		self.con.execute("""
+		create table t_compnpass(
+			station_id1 integer not null default(0),
+			station_id2 integer not null default(0),
+			en_line_id integer not null default(0),
+			en_station_id1 integer not null default(0),
+			en_station_id2 integer not null default(0),
+
+			primary key (station_id1, station_id2, en_line_id)
+		);
+		""")
+		###########################################
+		self.con.execute("""
+		create table t_compnconc(
+			station_id	integer primary key,
+			pass		integer not null default(1)
+		);
+		""")
+		###########################################
 
 	n_line_Index_of_CompanyLine = 0
 	n_line_Index_of_Shinkansen = 0
@@ -337,12 +406,15 @@ class Dbreg:
 
 			for i in range(2):				# 会社、線区
 				key = linitems[i + 1].strip();
+				if i == 0 and 0 <= key.find('/'):		# 所属会社2つはシカト
+					continue
+
 				h_items[i][key] += 1
 				if 1 == h_items[i][key]:
 					if i == 1 and key.endswith("新幹線"):
-						pre_items.append([key])
+						pre_items.append([key])				# 新幹線
 					elif i == 1 and not linitems[1].startswith("JR"):
-						post_items.append([key])
+						post_items.append([key])			# 会社線
 					else:
 						items[i].append([key])
 
@@ -356,6 +428,8 @@ class Dbreg:
 		self.con.executemany('insert into t_line values(?)', items[1])
 		self.n_line_Index_of_CompanyLine = len(pre_items) + len(items[1])
 		self.con.executemany('insert into t_line values(?)', post_items)
+
+		self.cur.execute("update t_global set cline_align_id={0}".format(self.n_line_Index_of_CompanyLine))
 
 		print("registered t_line {0} affected.".format(len(pre_items) + len(items[1]) + len(post_items)))
 
@@ -382,11 +456,13 @@ class Dbreg:
 			't_farespp'		: self.reg_t_farespp,
 			't_farehla'		: self.reg_t_farehla,
 			't_farehla5p'	: self.reg_t_farehla,
+			't_compnpass'	: self.reg_t_compnpass,
+			't_compnconc'	: self.reg_t_compnconc,
 		}
 
 		self.num_of_line = 0
 		proc_stage = ''
-		for lin in open(fn, 'r', encoding='shift-jis'):
+		for lin in open(fn, 'r', encoding='shift_jisx0213'):
 			self.num_of_line += 1
 			if lin[0] == '#':
 				continue		# コメントスキップ
@@ -585,8 +661,16 @@ class Dbreg:
 		self.cur.execute('select rowid from t_prefect where name=?', [linitems[0].strip()])	# retrive 都道府県id
 		prefect_id = self.cur.fetchone()[0]
 
-		self.cur.execute('select rowid from t_company where name=?', [linitems[1].strip()])	# retrive 会社id
+		company_name = linitems[1].strip().split('/')[0]
+		self.cur.execute('select rowid from t_company where name=?', [company_name])	# retrive 会社id
 		company_id = self.cur.fetchone()[0]
+
+		if 0 < linitems[1].strip().find('/'):
+			company_name = linitems[1].strip().split('/')[1]
+			self.cur.execute('select rowid from t_company where name=?', [company_name])	# retrive 会社id
+			sub_company_id = self.cur.fetchone()[0]
+		else:
+			sub_company_id = 0
 
 		self.cur.execute('select rowid from t_line where name=?', [linitems[2].strip()])		# retrive 路線id
 		line_id = self.cur.fetchone()[0]
@@ -598,9 +682,9 @@ class Dbreg:
 		if None != row:
 			station_id = row[0]			# 登録済み
 		else:
-			self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?)', \
+			self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?, ?)', \
 						[ station_name, linitems[4].strip(), company_id, prefect_id, \
-						  samename, sflg])
+						  samename, sflg, sub_company_id])
 			self.cur.execute('select rowid from t_station where name=? and samename=?', [station_name, samename])
 			station_id = self.cur.fetchone()[0]
 			self.n_station += 1
@@ -633,8 +717,16 @@ class Dbreg:
  values((select rowid from t_station where name=? and samename=?),
  		(select rowid from t_station where name=? and samename=?), ?, ?, ?);
 """
-		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2]), int(linitems[4]), int(linitems[3])])
+		if 0 < int(linitems[4]):  # 小児
+			tmp = 1
+		else:
+			tmp = 0
 
+		if 0 < int(linitems[5]):  # 併算割引
+			tmp |= 0x02
+
+		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2]), int(linitems[3]), tmp])
+		#                                                                     fare            academic         flg
 #------------------------------------------------------------------------------
 	def reg_t_rule69(self, label, linitems, lin):
 		# t_rule69
@@ -789,16 +881,19 @@ insert into t_farels values(?, ?, ?, ?, ?, ?)""",
 			station2 = tmp
 			station2_s = ''
 
-		#print(lin, end='')
-		self.con.execute("""
+		kind = int(linitems[4].replace(',', ''))
+		if db_name != "2014" or kind != 2:
+			#print(lin, end='')
+			self.con.execute("""
 insert into t_farespp values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
  ?, ?, ?)""",
-			[station1, station1_s, station2, station2_s,
-			 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
-			 int(linitems[4].replace(',', ''))])
+				[station1, station1_s, station2, station2_s,
+				 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
+				 kind])
 		# station_id1, station_id2, fare, kind
+
 #------------------------------------------------------------------------------
 	def reg_t_farehla(self, label, linitems, lin):
 		# t_farehla : 本州3社+JR北地方交通線会社加算
@@ -808,7 +903,94 @@ insert into t_farespp values(
 		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', ''))])
 		# km, ha
 #------------------------------------------------------------------------------
+	def reg_t_compnpass(self, label, linitems, lin):
+		# t_compnpass
+		# 会社線通過連絡運輸
 
+		assert(label == "t_compnpass")
+
+		tmp = linitems[0].strip()     # 駅1
+		if 0 <= tmp.find('('):
+			station_id1 = tmp[:tmp.find('(')]
+			station_id1_s = tmp[tmp.find('('):]
+		else:
+			station_id1 = tmp
+			station_id1_s = ''
+
+		tmp = linitems[1].strip()     # 駅2
+		if 0 <= tmp.find('('):
+			station_id2 = tmp[:tmp.find('(')]
+			station_id2_s = tmp[tmp.find('('):]
+		else:
+			station_id2 = tmp
+			station_id2_s = ''
+
+		# 路線 or 会社
+		linename = linitems[2]
+		en_line_id = 0
+		if 'c' != linename[0]:
+			# 路線
+			try:
+				self.cur.execute('select rowid from t_line where name=?', [linename])	# retrive 会社id
+				en_line_id = self.cur.fetchone()[0]
+			except:
+				en_line_id = 0
+		else:
+			#会社
+			en_line_id = 0
+			for i in range(len(linename[1:])):
+				cname = linename[1 + i]
+				cc = { "北": "JR北海道", "東": "JR東日本", "海": "JR東海", "西": "JR西日本", "四": "JR四国","九": "JR九州"}
+				try:
+					cname = cc[cname]
+					self.cur.execute('select rowid from t_company where name=?', [cname])	# retrive 会社id
+					cn = self.cur.fetchone()[0]
+					en_line_id |= (1 << cn)
+				except:
+					pass
+
+				en_line_id |= 0x80000000
+
+		try:
+		   self.cur.execute('select rowid from t_station where name=?', [linitems[3]])	# retrive 会社id
+		   en_station_id1 = self.cur.fetchone()[0]
+		except:
+			en_station_id1 = 0
+
+		try:
+			self.cur.execute('select rowid from t_station where name=?', [linitems[4]])	# retrive 会社id
+			en_station_id2 = self.cur.fetchone()[0]
+		except:
+			en_station_id2 = 0
+
+		# station_id1,station_id2,en_line_id,en_station_id1,en_station_id2
+		self.cur.execute("""
+			insert into t_compnpass values(
+							(select rowid from t_station where name=? and samename=?),
+							(select rowid from t_station where name=? and samename=?), ?, ?, ?)""",
+			[station_id1, station_id1_s, station_id2, station_id2_s, en_line_id, en_station_id1, en_station_id2])
+
+#------------------------------------------------------------------------------
+	def reg_t_compnconc(self, label, linitems, lin):
+		# t_compnconc
+		# 会社線乗継チェック
+
+		assert(label == "t_compnconc")
+
+		tmp = linitems[0].strip()     # 駅1
+		if 0 <= tmp.find('('):
+			station_id = tmp[:tmp.find('(')]
+			station_id_s = tmp[tmp.find('('):]
+		else:
+			station_id = tmp
+			station_id_s = ''
+
+		allow = int(linitems[1])
+		self.cur.execute("""
+			insert into t_compnconc values(
+				(select rowid from t_station where name=? and samename=?), ?)""", [station_id, station_id_s, allow])
+
+#------------------------------------------------------------------------------
 	def reg_last_line(self):
 		# 分岐特例
 		for bitem in self.branch:
@@ -924,10 +1106,14 @@ insert into t_farespp values(
 		print("#define MAX_STATION	{0}".format(self.n_station))
 		print("#define MAX_LINE	{0}".format(n_line))
 
+		self.cur.execute("update t_global set max_station={0}".format(self.n_station))
+		self.cur.execute("update t_global set max_line={0}".format(n_line))
+
+
 		#self.cur.execute("select max(rowid) from t_line where name like '%新幹線'")
 		#n = self.cur.fetchone()[0]
-		print("#define IS_SHINKANSEN_LINE(id)	((0<(id))&&((id)<={0}))".format(self.n_line_Index_of_Shinkansen))
-		print("#define IS_COMPANY_LINE(id)	({0}<(id))".format(self.n_line_Index_of_CompanyLine))
+		print("(old)#define IS_SHINKANSEN_LINE(id)	((0<(id))&&((id)<={0}))".format(self.n_line_Index_of_Shinkansen))
+		print("(old)#define IS_COMPANY_LINE(id)	({0}<(id))".format(self.n_line_Index_of_CompanyLine))
 
 		# 以下のクエリー文でも会社線路線かどうか判定可(0でJR、非0で会社線)
 		# select count(*) from t_lines where line_id=? and (lflg & (1 << 18))!=0;
@@ -940,14 +1126,17 @@ insert into t_farespp values(
 		self.cur.execute("select count(*) from t_jct")
 		n = self.cur.fetchone()[0]
 		print("#define MAX_JCT	{0}".format(n))
+		self.cur.execute("update t_global set max_jct={0}".format(n))
 
 		self.cur.execute("select max(length(name)) from t_station");
 		n = self.cur.fetchone()[0]
 		print("#define MAX_STATION_CHR	{0}".format((n+1)*2))
+		self.cur.execute("update t_global set max_station_chr={0}".format(n))
 
 		self.cur.execute("select max(length(name)) from t_line");
 		n = self.cur.fetchone()[0]
 		print("#define MAX_LINE_CHR	{0}".format((n+1)*2))
+		self.cur.execute("update t_global set max_line_chr={0}".format(n))
 
 
 		"""

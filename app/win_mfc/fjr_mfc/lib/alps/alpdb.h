@@ -49,37 +49,12 @@ typedef short IDENT;
 typedef uint32_t PAIRIDENT;
 typedef uint32_t SPECIFICFLAG;
 
-#define MAKEPAIR(ident1, ident2)    ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
-#define IDENT1(ident)               ((IDENT)(0xffff & ident))
-#define IDENT2(ident)               ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
-
-#define FLG_HIDE_LINE				(1<<19)
-#define FLG_HIDE_STATION			(1<<18)
-#define IS_FLG_HIDE_LINE(lflg)		(0!=(lflg&FLG_HIDE_LINE))		// 路線非表示
-#define IS_FLG_HIDE_STATION(lflg)	(0!=(lflg&FLG_HIDE_STATION))	// 駅非表示
-
-#define BSRJCTSP		31		// 分岐特例
-#define	BSRJCTHORD		31		// 水平型検知フラグ
-
-#define BSRNOTYET_NA	30		// 不完全ルート
-#define BSRJCTSP_B		29		// 分岐特例B
-
-#define BSR69TERM		24
-#define BSR69CONT		23
-#define BSRJCT			15
-#define BSRBORDER       16
-
-#define JCTSP				 	1
-#define JCTSP_2L			 	2
-#define JCTSP_B_NISHIKOKURA 	3
-#define JCTSP_B_YOSHIZUKA	 	4
-#define JCTSP_B_NAGAOKA 		5
-
 /* --------------------------------------- */
 /* util */
 #define NumOf(c)                            (sizeof(c) / sizeof(c[0]))
 #define Min(a, b)                           ((a)>(b)?(b):(a))
 #define Max(a, b)                           ((a)>(b)?(a):(b))
+#define Limit(v, l, h)                      (Min(Max(v, l), h))
 
 #define MASK(bdef)                          (1 << bdef)
 #define BIT_CHK(flg, bdef)                  (0 != (flg & MASK(bdef)))
@@ -94,11 +69,40 @@ typedef uint32_t SPECIFICFLAG;
 #if !defined LOBYTE
 #define LOBYTE(b) ((b)&0xff)
 #endif
+
+/* --------------------------------------- */
+#define MAKEPAIR(ident1, ident2)    ((PAIRIDENT)(0xffff & ident1) | ((PAIRIDENT)ident2 << 16))
+#define IDENT1(ident)               ((IDENT)(0xffff & ident))
+#define IDENT2(ident)               ((IDENT)(0xffff & ((PAIRIDENT)ident >> 16)))
+
+// flag from DB
+#define FLG_HIDE_LINE				(1<<19)
+#define FLG_HIDE_STATION			(1<<18)
+#define IS_FLG_HIDE_LINE(lflg)		(0!=(lflg&FLG_HIDE_LINE))		// 路線非表示
+#define IS_FLG_HIDE_STATION(lflg)	(0!=(lflg&FLG_HIDE_STATION))	// 駅非表示
+
+#define BSRJCTSP		31		// [w]分岐特例
+#define	BSRJCTHORD		31		// [w]水平型検知フラグ
+
+#define BSRNOTYET_NA	30		// [w]不完全ルート
+#define BSRJCTSP_B		29		// [w]分岐特例B
+
+#define BSR69TERM		24		// [r]
+#define BSR69CONT		23		// [r]
+#define BSRJCT			15		// [r]
+#define BSRBORDER       16		// [r]
+
+#define JCTSP				 	1
+#define JCTSP_2L			 	2
+#define JCTSP_B_NISHIKOKURA 	3
+#define JCTSP_B_YOSHIZUKA	 	4
+#define JCTSP_B_NAGAOKA 		5
+
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
 #define MAX_LINE        223
-#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))	/* 新幹線は将来的にも10または15以内 !! */
-//#define IS_COMPANY_LINE_OF(id)     (211<(id))			/* !!!!!!!!!!!!! */
+#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))		/* 新幹線は将来的にも10または15以内 !! */
+#define IS_COMPANY_LINE(id)	    (DbidOf::Cline_align_id<(id))	/* 会社線id */
 //#define MAX_JCT 325
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
@@ -125,6 +129,7 @@ typedef uint32_t SPECIFICFLAG;
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
+#define MAX_COMPNPASSSET    3       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 
 /* 消費税(四捨五入)加算 */
 #define taxadd(fare, tax)    (fare + ((fare * 1000 * tax / 100000) + 5) / 10 * 10)
@@ -141,6 +146,11 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define fare_discount(fare, per) ((fare) / 10 * (10 - (per)) / 10 * 10)
 /* discount 5円の端数切上 */
 #define fare_discount5(fare, per) ((((fare) / 10 * (10 - (per))) + 5) / 10 * 10)
+
+
+/* t_clinfar */
+#define IS_ROUND_UP_CHILDREN_FARE(d)	(((d) & 0x01) != 0)
+#define IS_CONNECT_NON_DISCOUNT_FARE(d)	(((d) & 0x02) != 0)
 
 #define CSTART	1
 #define CEND	2
@@ -200,7 +210,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
 
-#define IS_COMPANY_LINE(d)			(((d) & (1<<31)) != 0)
+// 会社線か？(GetDistanceEx()[5])
+#define GDIS_COMPANY_LINE(d)		(((d) & (1<<31)) != 0)
 
 #define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
@@ -476,7 +487,7 @@ private:
 	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
 	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
 	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2);
+	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
 	       vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
@@ -577,6 +588,7 @@ public:
 	static int32_t StationIdOf_YOSHIZUKA;	  	// 吉塚
 
     static int32_t StationIdOf_MAIBARA;	      	// 米原
+	static int32_t Cline_align_id;				// 会社線路線ID境界(JR線のLast Index)
 };
 
 typedef struct
@@ -666,7 +678,14 @@ typedef struct
 #define BLF_TER_FIN_CITY_OFF	18
 #define BLF_TER_BEGIN_OOSAKA	19	// 大阪・新大阪
 #define BLF_TER_FIN_OOSAKA		20
-#define LF_TER_CITY_MASK     (0x3ff << BLF_TER_BEGIN_CITY)
+#define LF_TER_CITY_MASK     (0x3ff << BLF_TER_BEGIN_CITY)	// 11-20bit
+
+// 会社線
+#define BLF_COMPNCHECK			21		// 会社線通過チェック有効
+#define BLF_COMPNPASS			22		// 通過連絡運輸
+#define BLF_COMPNDA				23		// 通過連絡運輸不正フラグ
+#define BLF_COMPNBEGIN			24		// 会社線で開始
+#define BLF_COMPNEND			25		// 会社線で終了
 
 #define BLF_END					31	// arrive to end.
 // end of last_flag
@@ -718,6 +737,7 @@ protected:
 public:
     static int32_t  DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
     static int32_t  CompanyIdFromStation(int32_t station_id);
+	static int32_t  CompanyAnotherIdFromStation(int32_t station_id);
 
 	static vector<int32_t>	GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>	GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
@@ -857,6 +877,48 @@ public:
 	int32_t			changeNeerest(bool useBulletTrain, int end_station_id);
 
 protected:
+	int32_t			companyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
+	int32_t 		companyConnectCheck(int32_t station_id);
+	int32_t			preCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
+	int32_t			postCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
+		
+	class CompnpassSet
+	{
+		class recordset
+		{
+		public:
+			int32_t line_id;
+			int32_t stationId1;
+			int32_t stationId2;
+		} *results;
+		const int max_record;
+		int num_of_record;
+	public:
+		CompnpassSet() : max_record(MAX_COMPNPASSSET) {
+			results = new recordset[max_record];
+			num_of_record = 0;
+		}
+		~CompnpassSet() {
+			delete[] results;
+		}
+
+		// 結果数を返す（0~N, -1 Error：レコード数がオーバー(あり得ないバグ)）
+		int open(int32_t key1, int32_t key2);
+		int check(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
+	protected:
+		int en_line_id(int index) {
+			return results[Limit(index, 0, MAX_COMPNPASSSET - 1)].line_id;
+		}
+		int en_station_id1(int index) {
+			return results[Limit(index, 0, MAX_COMPNPASSSET - 1)].stationId1;
+		}
+		int en_station_id2(int index) {
+			return results[Limit(index, 0, MAX_COMPNPASSSET - 1)].stationId2;
+		}
+
+	};
+
 private:
 	static vector<vector<int32_t>> Node_next(int32_t jctId);
 
@@ -950,6 +1012,7 @@ protected:
 #define ADDRC_LAST  0   // add() return code
 #define ADDRC_OK    1
 #define ADDRC_END	5
+#define ADDRC_CEND	4
 // ADDRC_NG -1 to -N
 
 
