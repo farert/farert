@@ -1,0 +1,123 @@
+/*
+ *   Farert 
+ *   excel to text. db prepare transction.
+ *
+ *   Jan.23, 2015 / Sutezo
+ *   This code is Japanese Shift-jis
+ *
+ *   This program that can't regard the relative-path.
+ *   To use Drag&Drop on explore or type 'jr_db_reg.jse jrdb.xlsx' in console.
+ */
+
+// Sheet name of Excel
+var jrdb2014 = [ "lines(2014)", "clinfar(2014)", "rule69", "rule70_new", "rule86", "fare2" ]
+var jrdb2015 = [ "lines2015", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
+var jrdb2016 = [ "lines2016", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
+var dbfiles = [ jrdb2014, jrdb2015, jrdb2016 ]
+var dbfilename = [ "jrdb2014.txt", "jrdb2015.txt", "jrdb2016.txt" ]
+var tmpfn = "~~~00dfe.txt"
+
+var file_count = WScript.Arguments.Count();
+if (file_count == 0) {
+	WScript.echo("File not found.");
+	WScript.Quit();
+} else if (file_count > 1) {
+	WScript.echo("File too many.");
+	WScript.Quit();
+}
+
+var shell = new ActiveXObject("WScript.Shell");
+
+var filename = WScript.Arguments.Item(0)
+if (filename.lastIndexOf("\\") <= 0) {
+	filename = shell.CurrentDirectory + "\\" + filename
+}
+var pathname = filename.substr(0, filename.lastIndexOf("\\")) + "\\"
+
+// Excel invoked
+var excel = new ActiveXObject("Excel.Application");
+
+for (var ite in dbfiles) {
+	for (var ite2 in dbfiles[ite]) {
+		xls2txtv(dbfiles[ite][ite2], ite2 == 0 ? dbfilename[ite] : tmpfn);
+		if (ite2 != 0) {
+			cmd = "cmd /c copy/b " + pathname + dbfilename[ite] + " + " + pathname + tmpfn + " " + pathname + dbfilename[ite]
+			//WScript.echo(cmd)
+			shell.Run(cmd, 0, true);
+		}
+	}
+	//WScript.echo(pathname + dbfilename[ite])
+	removeDoubleQuatationChar(pathname + dbfilename[ite]) 
+}
+shell.Run("cmd /c del " + pathname + tmpfn, 0, true);
+excel.Quit()
+
+WScript.echo("終了しました")
+
+/*	Excelシートをタブ区切りテキストファイルとして保存
+ *	@param [in] sheetname Excelシート名
+ *	@param [in] o_txtfile ファイル名(パス無)
+ */
+function xls2txtv(sheetname, o_txtfile) {
+
+	excel.Visible = true;
+	excel.DisplayAlerts = false;
+
+	// open the Workbook
+	var book = excel.Workbooks.Open(filename)
+	var sheet = book.sheets(sheetname)
+
+	sheet.activate
+	sheet.select
+	sheet.cells.select
+	excel.selection.copy
+	
+	var newbook = excel.workbooks.add
+	newbook.worksheets(1).select
+	newbook.worksheets(1).activate
+	newbook.worksheets(1).paste
+
+	var fn = pathname + o_txtfile
+
+	newbook.saveas(fn, -4158)   // save as .txt
+	newbook.close
+}
+
+/*	ダブルクォーテーションを除去する
+ *	@param [in] infile パス名
+ */
+function removeDoubleQuatationChar(infile)
+{
+	var FORREADING      = 1;    // Read only
+	var FORWRITING      = 2;    // Write only
+	var FORAPPENDING    = 8;    // Append write
+
+
+	var TRISTATE_TRUE       = -1;   // Unicode
+	var TRISTATE_FALSE      =  0;   // ASCII
+	var TRISTATE_USEDEFAULT = -2;   // Systemdefault
+
+	var outfile = pathname + tmpfn		// ###
+
+	var fs = new ActiveXObject( "Scripting.FileSystemObject" );
+	var ifile = fs.OpenTextFile(infile, FORREADING, true, TRISTATE_FALSE );
+	var ofile = fs.OpenTextFile(outfile, FORWRITING, true, TRISTATE_FALSE );
+
+	var str_old = /\"/g
+	var str_new = ""
+	while (!ifile.AtEndOfStream) {
+		var str = ifile.ReadLine();
+		str = str.replace(str_old, str_new);
+		ofile.WriteLine(str);
+	}
+
+	ifile.Close()
+	ofile.Close()
+	ifile = null
+	ofile = null
+	
+	shell.Run("cmd /c del " + infile, 0, true);
+	shell.Run("cmd /c move " + pathname + tmpfn + " " + infile, 0, true);
+	
+	fs = null
+}
