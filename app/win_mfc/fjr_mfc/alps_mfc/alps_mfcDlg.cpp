@@ -283,6 +283,10 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		return;		/* Multiselected or non selection. */
 	}
 
+	if (m_route.isEnd()) {
+		return;		/* already finished */
+	}
+
 	if ((pLSel->GetItemText(selIdx, 0))[0] == _T('-')) {
 		SetDlgItemText(IDC_EDIT_STAT, _T("直前乗車路線は指定できません.戻って乗換駅を再選択してください."));
 		return;
@@ -324,7 +328,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 				return;
 			}
 		}
-		else if ((rslt == 0) || (rslt == 1)) {
+		else if ((rslt == 0) || (rslt == 1) || (rslt == 4)) {
 			pLRoute->SetItemText(nRoute - 1, 1, selTitle);					// 経路：分岐駅表示
 			pLRoute->SetItemData(nRoute - 1, MAKEPAIR(curLineId, selId));	//経路：分岐駅ID設定
 																			// カラム幅調整
@@ -355,16 +359,12 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 			SetDlgItemText(IDC_EDIT_STAT, _T("経路は片道条件に達しています."));
 			return;	/* already finished */
 		}
-		if (4 == rslt) {
-			SetDlgItemText(IDC_EDIT_STAT, _T("会社線を含む経路はこれ以上指定できません."));
-			return;	/* already finished */
-		}
-		if ((0 != rslt) && (1 != rslt)) {	/* fin */
+		if ((0 != rslt) && (1 != rslt) && (4 != rslt)) {	/* fin */
 			ASSERT(FALSE);
 			return;
 		}
 
-		/* result == 1 or 0 */
+		/* result == 1 or 0 or 4 */
 
 		setupForLinelistByStation(selId, curLineId);
 
@@ -379,6 +379,9 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 			SetDlgItemText(IDC_EDIT_STAT, _T("経路が片道条件に達しました."));
 			MessageBox(_T("経路が片道条件に達しました."), _T("経路終端"),
 				MB_OK | MB_ICONINFORMATION);
+		}
+		else if (4 == rslt) {
+			SetDlgItemText(IDC_EDIT_STAT, _T("会社線を含む経路はこれ以上指定できません."));
 		}
 	}
 }
