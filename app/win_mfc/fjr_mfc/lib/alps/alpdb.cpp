@@ -1544,8 +1544,6 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
 			if (BIT_CHK(results[i].line_id, RouteUtil::CompanyIdFromStation(station_id2))) {
 				return 0;	/* OK possible pass */
 			}
-			int a = RouteUtil::CompanyAnotherIdFromStation(station_id2);
-			int b = RouteUtil::CompanyIdFromStation(station_id1);
 
 			if (BIT_CHK(results[i].line_id, RouteUtil::CompanyAnotherIdFromStation(station_id2)) &&
 			    BIT_CHK(results[i].line_id, RouteUtil::CompanyIdFromStation(station_id1))) {
