@@ -1689,14 +1689,15 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
  *	@param [in] ctlflg       デフォルト0(All Off)
  *							 bit8: 新幹線乗換チェックしない
  *
- *  @retval 0 = OK(last)  ADDRC_LAST
- *  @retval 1 = OK        ADDRC_OK
+ *  @retval 0 = OK(last)         ADDRC_LAST
+ *  @retval 1 = OK               ADDRC_OK
+ *  @retval 4 = OK(last-company) ADDRC_CEND
  *  //@retval 2 = OK(re-route)
+ *  @retval 5 = already finished ADDRC_END)
  *  @retval -1 = overpass(復乗エラー)
  *  @retval -2 = 経路エラー(stationId1 or stationId2はline_id内にない)
  *  @retval -3 = operation error(開始駅未設定)
  *	@retval -4 = 会社線 通過連絡運輸なし
- *  @retval 5 = already finished(ADDRC_END)
  *  @retval -100 DB error
  *	@retval last_flag bit4-0 : reserve
  *	@retval last_flag bit5=1 : 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
