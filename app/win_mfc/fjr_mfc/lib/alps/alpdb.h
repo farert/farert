@@ -784,8 +784,11 @@ public:
     SPECIFICFLAG getLastFlag() const { return last_flag; }
 	SPECIFICFLAG sync_flag(const RouteList& source_route) { last_flag = source_route.getLastFlag(); return last_flag; }
 
-    bool isModified() {
+    bool isModified() const {
 		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
+	}
+	bool isEnd() const {
+		return BIT_CHK(last_flag, BLF_END);
 	}
     tstring         route_script();
 
