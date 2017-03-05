@@ -113,7 +113,7 @@
     </None>
     <None Include="res\jrdb2014.db.enc" />
     <None Include="res\jrdb2015.db.enc" />
-    <None Include="res\jrdb2016.db.enc" />
+    <None Include="res\jrdb2017.db.enc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alps_mfc.h" />
