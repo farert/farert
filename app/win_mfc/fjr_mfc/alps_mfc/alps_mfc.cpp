@@ -61,7 +61,7 @@ BOOL Calps_mfcApp::InitInstance()
 
 	CWinApp::InitInstance();
 
-	int dbid = IDR_DB2016;
+	int dbid = IDR_DB2017;
 	LPTSTR opt = _tcsstr(m_lpCmdLine, _T("-tax"));
 	if (NULL != opt) {
 		g_tax = _ttoi(opt + 4);
