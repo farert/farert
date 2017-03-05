@@ -12,9 +12,9 @@
 // Sheet name of Excel
 var jrdb2014 = [ "lines(2014)", "clinfar(2014)", "rule69", "rule70_new", "rule86", "fare2" ]
 var jrdb2015 = [ "lines2015", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
-var jrdb2016 = [ "lines2016", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
-var dbfiles = [ jrdb2014, jrdb2015, jrdb2016 ]
-var dbfilename = [ "jrdb2014.txt", "jrdb2015.txt", "jrdb2016.txt" ]
+var jrdb2017 = [ "lines2017", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
+var dbfiles = [ jrdb2014, jrdb2015, jrdb2017 ]
+var dbfilename = [ "jrdb2014.txt", "jrdb2015.txt", "jrdb2017.txt" ]
 var tmpfn = "~~~00dfe.txt"
 
 var file_count = WScript.Arguments.Count();

@@ -31,7 +31,7 @@
     <None Include="res\db1.bin">
       <Filter>リソース ファイル</Filter>
     </None>
-    <None Include="res\jrdb2016.db.enc" />
+    <None Include="res\jrdb2017.db.enc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alps_mfc.h">
