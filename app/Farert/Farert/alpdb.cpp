@@ -1447,6 +1447,8 @@ bool Route::chk_jctsb_b(int32_t kind, int32_t num)
  */
 int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num)
 {
+	int rc;
+
     if (BIT_CHK(last_flag, BLF_COMPNDA) ||
     (IS_COMPANY_LINE(line_id) && BIT_CHK(last_flag, BLF_COMPNPASS))) {
         return -4;      /* error x a c */
@@ -1463,9 +1465,12 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
     } else if (!IS_COMPANY_LINE(line_id) && (BIT_CHK(last_flag, BLF_COMPNCHECK))) {
 
         /* after block check e f */
-		BIT_ON(last_flag, BLF_COMPNPASS);
-		BIT_OFF(last_flag, BLF_COMPNEND);	// if company_line
-		return postCompanyPassCheck(line_id, stationId1, stationId2, num);
+		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
+		if (rc == 0) {
+			BIT_ON(last_flag, BLF_COMPNPASS);
+			BIT_OFF(last_flag, BLF_COMPNEND);	// if company_line
+		}
+		return rc;
 
     } else if (IS_COMPANY_LINE(line_id)) {
 		/* b */
@@ -1482,8 +1487,9 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 		}
 
 		/* 会社線乗継可否チェック(市振、目時、妙高高原、倶利伽羅) */
-		return companyConnectCheck(stationId1);
-    } else {
+		rc = companyConnectCheck(stationId1);
+		return rc;
+	} else {
         /* g h */
 		BIT_OFF(last_flag, BLF_COMPNEND);	// if company_line
         return 0;
@@ -1544,8 +1550,6 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
 			if (BIT_CHK(results[i].line_id, RouteUtil::CompanyIdFromStation(station_id2))) {
 				return 0;	/* OK possible pass */
 			}
-			int a = RouteUtil::CompanyAnotherIdFromStation(station_id2);
-			int b = RouteUtil::CompanyIdFromStation(station_id1);
 
 			if (BIT_CHK(results[i].line_id, RouteUtil::CompanyAnotherIdFromStation(station_id2)) &&
 			    BIT_CHK(results[i].line_id, RouteUtil::CompanyIdFromStation(station_id1))) {
@@ -2811,13 +2815,26 @@ FARE_INFO CalcRoute::calcFare()
 
 	if (route_list_raw.size() <= 1) {
 		fare_info.setEmpty();
-        return fare_info;
+
+#if 0 /* fare_info.result_flag は privateなので でもASSERTは正当 */
+ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
+	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
+ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
+	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+#endif
+		return fare_info;
 	}
 
 	if (BIT_CHK(route_list_raw.back().flag, BSRNOTYET_NA)) {
 					// BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE)
 		fare_info.setInComplete();	// この経路の片道乗車券は購入できません."));
-        return fare_info;
+#if 0 /* fare_info.result_flag は privateなので でもASSERTは正当 */
+		ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
+			(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
+		ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
+			(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+#endif
+		return fare_info;
 	}
 
     // JR東日本管内のJR東海チェック
@@ -2861,6 +2878,14 @@ ASSERT(FALSE);
         }
 	}
 	// success
+#if 0 /* fare_info.result_flag は privateなので でもASSERTは正当 */
+	// というわけで BRF_COMAPANY_xxx と、BLF_COMNxxx は同じ
+	TRACE("%d, %d - %d, %d\n", BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST), BIT_CHK(last_flag, BLF_COMPNBEGIN), BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END), BIT_CHK(last_flag, BLF_COMPNEND));
+	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
+		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
+	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
+		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+#endif
 	return fare_info;
 }
 
@@ -2900,7 +2925,7 @@ FARE_INFO CalcRoute::calcFare(int32_t count)
 uint32_t RouteList::getFareOption()
 {
 	uint32_t rc;
-	uint32_t c = route_list_raw.size();
+	int32_t c = (int32_t)route_list_raw.size();
 
 	if (c == 1) {
 		rc = 0x40; 	/* start only*/

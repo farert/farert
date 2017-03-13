@@ -28,8 +28,8 @@ enum DBIDX {
     DB_TAX5 = DB_MIN_ID,
     DB_2014,
     DB_2015,
-    DB_2016,
-    DB_MAX_ID = DB_2016,
+    DB_2017,
+    DB_MAX_ID = DB_2017,
 };
 
 #define MAX_HISTORY              20
