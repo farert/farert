@@ -420,8 +420,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 value = 24
             }
         case 3:
-                    ident = "rsMetroAvailDaysCell"
-                    value = 44
+            ident = "rsMetroAvailDaysCell"
+            value = 44
         case 4:
             /* avail days */
             if !self.fareInfo.isArbanArea  {
@@ -825,10 +825,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
 
         if self.fareInfo.isResultCompanyBeginEnd {
-            contentsForMessage.append("会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.")
+            contentsForMessage.append("会社線発着のため一枚の乗車券として発行されない場合があります.")
         }
         if self.fareInfo.isResultCompanyMultipassed {
-            contentsForMessage.append("複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.")
+            /* 2017.3 以降 ここに来ることはない */
+            contentsForMessage.append("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.")
         }
     }
     

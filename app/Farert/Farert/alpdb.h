@@ -303,7 +303,9 @@ private:
 	int32_t company_fare;				/* 会社線料金 */
 	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
 	int32_t company_fare_child;			/* 会社線小児運賃 */
+
 	int32_t result_flag;				/* 結果状態: BRF_xxx */
+private:
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 	int32_t jr_fare;					//***
 	int32_t fare_ic;					//*** 0以外で有効
@@ -784,8 +786,11 @@ public:
     SPECIFICFLAG getLastFlag() const { return last_flag; }
 	SPECIFICFLAG sync_flag(const RouteList& source_route) { last_flag = source_route.getLastFlag(); return last_flag; }
 
-    bool isModified() {
+    bool isModified() const {
 		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
+	}
+	bool isEnd() const {
+		return BIT_CHK(last_flag, BLF_END);
 	}
     tstring         route_script();
 
