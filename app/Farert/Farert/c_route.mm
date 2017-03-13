@@ -45,6 +45,8 @@ int g_tax; /* main.m */
     }
 }
 
+#pragma mark - Management of database
+
 + (BOOL)OpenDatabase
 {
     return [self OpenDatabase:[self GetDatabaseId]];
@@ -68,13 +70,9 @@ int g_tax; /* main.m */
             g_tax = 8;
             dbname = @"jrdb2015";
             break;
-        case DB_2016:
-            g_tax = 8;
-            dbname = @"jrdb2016";
-            break;
         default:
-            dbname = @"jrdb2015";
             g_tax = 8;
+            dbname = @"jrdb2017";
             break;
     }
     dbpath = [[NSBundle mainBundle] pathForResource:dbname ofType:@"db"];
@@ -85,6 +83,30 @@ int g_tax; /* main.m */
 {
     return DBS::getInstance()->close();
 }
+
+// Save databse index
++ (void)SaveToDatabaseId:(NSInteger)dbid
+{
+    [self SaveToDatabaseId:dbid sync:YES];
+}
+
++ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
+{
+    /* Store */
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:dbid] forKey:@"JrDatabaseId"];
+    if (sync) {
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+}
+
+// Retrieve database index
++ (NSInteger)GetDatabaseId
+{
+    return [[NSUserDefaults standardUserDefaults] integerForKey:@"JrDatabaseId"];
+}
+
+
+#pragma mark - alpdb utils
 
 + (NSString*)fareNumStr:(NSInteger)num
 {
@@ -326,27 +348,6 @@ int g_tax; /* main.m */
         return nil;
     }
     return storedDevices;
-}
-
-// Save databse index
-+ (void)SaveToDatabaseId:(NSInteger)dbid
-{
-    [self SaveToDatabaseId:dbid sync:YES];
-}
-
-+ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
-{
-    /* Store */
-    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:dbid] forKey:@"JrDatabaseId"];
-    if (sync) {
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
-}
-
-// Retrieve database index
-+ (NSInteger)GetDatabaseId
-{
-    return [[NSUserDefaults standardUserDefaults] integerForKey:@"JrDatabaseId"];
 }
 
 // 設定ファイルから経路配列を読み込む
