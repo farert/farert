@@ -18,32 +18,40 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     let HEADER_HEIGHT:CGFloat        = 44.0
     let FOOTER_HEIGHT:CGFloat        = 51.0
     
-    let ROUTE_DUP_ERROR:Int          = 1
-    let ROUTE_FINISH:Int             = 2
-    let ROUTE_FARERESULT_ERR1:Int    = 3
-    let ROUTE_FARERESULT_ERR2:Int    = 4
-    let ROUTE_FARERESULT_FAIL:Int    = 5
-    let ROUTE_SCRIPT_STATION_ERR:Int = 6
-    let ROUTE_SCRIPT_LINE_ERR:Int    = 7
-    let ROUTE_SCRIPT_ROUTE_ERR:Int   = 8
-    let ROUTE_DUPCHG_ERROR:Int       = 9
-    let ROUTE_AUTO_ROUTE:Int         = 10
-    let ROUTE_AUTO_NOTENOUGH:Int     = 11
+    enum ROUTE {
+        case OK
+        case DUP_ERROR
+        case FINISH
+        case FARERESULT_ERR1
+        case FARERESULT_ERR2
+        case FARERESULT_FAIL
+        case SCRIPT_STATION_ERR
+        case SCRIPT_LINE_ERR
+        case SCRIPT_ROUTE_ERR
+        case DUPCHG_ERROR
+        case AUTO_ROUTE
+        case AUTO_NOTENOUGH
+        case COMPANYPASS_ERROR
+        case UNKNOWN
+    }
     
     let TAG_UIACTIONSHEET_AUTOROUTE:Int         = 10
     let TAG_UIACTIONSHEET_QUERYSETUPROUTE:Int   = 11
     let TAG_UIACTIONSHEET_OSAKAKANDETOUR:Int    = 12
     
-    let LPROC_REVERSE:Int = 1
-    let LPROC_AUTOROUTE:Int = 2
-    let LPROC_SETUPROUTE:Int = 3
+    enum LPROC {
+        case UNKNOWN
+        case REVERSE
+        case AUTOROUTE
+        case SETUPROUTE
+    }
 
     // MARK: - Global variables
     
     var viewContextMode: Int = 0;
-    var routeStat: Int = 0;
+    var routeStat: ROUTE = .OK
     var scroll_flag: Bool = false;
-    var longTermFuncMode: Int = 0
+    var longTermFuncMode: LPROC = .UNKNOWN
     
     // MARK: - UI variables
 
@@ -171,7 +179,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // from 保持経路ビュー
             showIndicate();    /* start Activity and Disable UI */
             self.navigationController!.view!.isUserInteractionEnabled = false;
-            longTermFuncMode = LPROC_SETUPROUTE;
+            longTermFuncMode = .SETUPROUTE;
             let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
             DispatchQueue.main.asyncAfter(deadline: time, execute: {
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
@@ -201,16 +209,16 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
         switch (longTermFuncMode) {
-        case LPROC_REVERSE:
+        case .REVERSE:
             // reverse route
             rc = ds.reverse()
             let cds : cCalcRoute = cCalcRoute(route: ds)
             fareInfo = cds.calcFare()
             if rc < 0 {
                 //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等反転できません."];
-                routeStat = ROUTE_DUP_ERROR;
+                routeStat = .DUP_ERROR;
             }
-        case LPROC_AUTOROUTE:
+        case .AUTOROUTE:
             // auto route
             // buttonIndex : 0 = 新幹線を使う
             //               1 = 新幹線を使わない
@@ -226,7 +234,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             rc = ds.autoRoute(bullet != 1, arrive: appDelegate.selectTerminalId!);
             if (rc < 0) {
                 //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
-                routeStat = ROUTE_AUTO_ROUTE;
+                routeStat = .AUTO_ROUTE;
                 ds.assign(saveRoute)
             } else if (1 == rc) {
                 /* Do nothing, success */
@@ -234,9 +242,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 if (rc == 4) {    /* 0, 4 or 5 */
                     /* already routed *//* such as 代々木 新大久保 -> 代々木 */
                     ds.assign(saveRoute)
-                    routeStat = ROUTE_AUTO_NOTENOUGH
+                    routeStat = .AUTO_NOTENOUGH
                 } else {
-                    routeStat = ROUTE_FINISH;   /* 経路が終端に達しました */
+                    routeStat = .FINISH;   /* 経路が終端に達しました */
                 }
             }
             if let cds = cCalcRoute(route: ds) {
@@ -246,11 +254,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
             scroll_flag = true;
             
-        case LPROC_SETUPROUTE:
+        case .SETUPROUTE:
             // 保持経路のロード
             let rs : String? = param as? String
             if (nil == rs) || (rs!.isEmpty == true) {
-                longTermFuncMode = 0
+                longTermFuncMode = .UNKNOWN
                 hideIndicate()          /* hide Activity and enable UI */
                 return
             }
@@ -259,20 +267,22 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
                 switch (rc) {
                 case -200:
-                    routeStat = ROUTE_SCRIPT_STATION_ERR;
+                    routeStat = .SCRIPT_STATION_ERR;
                 case -300:
-                    routeStat = ROUTE_SCRIPT_LINE_ERR;
+                    routeStat = .SCRIPT_LINE_ERR;
                 case -2:
-                    routeStat = ROUTE_SCRIPT_ROUTE_ERR;
+                    routeStat = .SCRIPT_ROUTE_ERR;
+                case -4:
+                    routeStat = .COMPANYPASS_ERROR
                 default:
-                    routeStat = ROUTE_DUP_ERROR;    // -1: 経路重複エラー
+                    routeStat = .DUP_ERROR;    // -1: 経路重複エラー
                 }
             } else { // (0 <= result)
                 // 0=end, plus=continue
                 if ((rc == 0) && (1 < ds.getCount())) {
-                    routeStat = ROUTE_FINISH;
+                    routeStat = .FINISH;
                 } else {
-                    routeStat = 0;  // success
+                    routeStat = .OK  // success
                 }
                 viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;
                 scroll_flag = true;
@@ -287,7 +297,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             break
         }
         fareResultSetting(rc)   /* 簡易結果(Footer section) */
-        longTermFuncMode = 0
+        longTermFuncMode = .UNKNOWN
         hideIndicate()          /* hide Activity and enable UI */
     }
 
@@ -330,38 +340,42 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             */
             let cell = tableView.dequeueReusableCell(withIdentifier: "LastRouteCell") as UITableViewCell!
             let lbl = cell?.viewWithTag(201) as! UILabel
-            if (routeStat != 0) {
+
+            if (routeStat != .OK) {
                 switch (routeStat) {
-                case ROUTE_DUP_ERROR:
+                case ROUTE.COMPANYPASS_ERROR:
+                    lbl.text = "許可されていない会社線通過です";
+                    break;
+                case ROUTE.DUP_ERROR:
                     lbl.text = "経路が重複している等追加できません";
                     break;
-                case ROUTE_FINISH:
+                case ROUTE.FINISH:
                     lbl.text = "経路が終端に達しました";
                     break;
-                case ROUTE_FARERESULT_ERR1:
+                case ROUTE.FARERESULT_ERR1:
                     lbl.text = "続けて経路を追加または削除してください.";
                     break;
-                case ROUTE_FARERESULT_ERR2:
+                case ROUTE.FARERESULT_ERR2:
                     lbl.text = "会社線のみの運賃は表示できません.";
                     break;
-                case ROUTE_SCRIPT_STATION_ERR:
+                case ROUTE.SCRIPT_STATION_ERR:
                     lbl.text = "不正な駅名が含まれています.";
                     break;
-                case ROUTE_SCRIPT_LINE_ERR:
+                case ROUTE.SCRIPT_LINE_ERR:
                     lbl.text = "不正な路線名が含まれています.";
                     break;
-                case ROUTE_SCRIPT_ROUTE_ERR:
+                case ROUTE.SCRIPT_ROUTE_ERR:
                     lbl.text = "経路不正";
                     break;
-                case ROUTE_DUPCHG_ERROR:
+                case ROUTE.DUPCHG_ERROR:
                     lbl.text = "経路が重複していますので変更できません";
                     break;
-                case ROUTE_AUTO_ROUTE:
+                case ROUTE.AUTO_ROUTE:
                     lbl.text = "自動経路算出不可(条件を変えて試してみてください)"
-                case ROUTE_AUTO_NOTENOUGH:
+                case ROUTE.AUTO_NOTENOUGH:
                     lbl.text = "開始駅へ戻るにはもう少し経路を指定してからにしてください"
                 default:
-                    lbl.text = "unknown error";
+                    lbl.text = "処理に失敗しました(サポートへ連絡してください)";
                     break;
                 }
                 lbl.isHidden = false;
@@ -635,14 +649,17 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     fareInfo = FareInfo()
                 }
                 self.fareResultSetting(result)
-                if (result < 0) {
-                    //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
-                    routeStat = ROUTE_DUP_ERROR;
-                } else { // (0 <= result)
-                    // 0=end, plus=continue
-                    if (result == 0) || (result == 5) {
-                        routeStat = ROUTE_FINISH;
-                    }
+                if result == -4 {
+                    routeStat = ROUTE.COMPANYPASS_ERROR
+                } else if result == -2 {
+                    routeStat = ROUTE.DUP_ERROR;
+                } else if (result == 0) || (result == 5) || (result == 4) {
+                    routeStat = ROUTE.FINISH
+                } else if (result == 1) {
+                    routeStat = .OK
+                } else {
+                    assert(false, "bug!!!!!!")
+                    routeStat = .UNKNOWN
                 }
                 viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;
                 self.tableView.reloadData()
@@ -730,7 +747,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         self.showIndicate()    /* start Activity and Disable UI */
         self.navigationController?.view?.isUserInteractionEnabled = false;
-        longTermFuncMode = LPROC_REVERSE
+        longTermFuncMode = .REVERSE
         // [self performSelector:@selector(processDuringIndicatorAnimating:) withObject:nil afterDelay:0.1];
         let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
         DispatchQueue.main.asyncAfter(deadline: time, execute: {
@@ -874,7 +891,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             */
             self.showIndicate()    /* start Activity and Disable UI */
             self.navigationController?.view?.isUserInteractionEnabled = false;
-            longTermFuncMode = LPROC_AUTOROUTE;
+            longTermFuncMode = .AUTOROUTE;
             //[self performSelector:@selector(processDuringIndicatorAnimating:)
             //withObject:[NSNumber numberWithInteger:buttonIndex]
             //afterDelay:0.1];
@@ -902,11 +919,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 if (nil != title.range(of: "大阪環状線")) {
                     rc = ds.setDetour(nil != title.range(of: "遠") ? true : false)
                     if (rc < 0) {
-                        routeStat = ROUTE_DUPCHG_ERROR;
+                        routeStat = ROUTE.DUPCHG_ERROR;
                     } else if (rc == 0) || (rc == 5) {
-                        routeStat = ROUTE_FINISH;
+                        routeStat = ROUTE.FINISH;
                     } else {
-                        routeStat = 0;  /* success */
+                        routeStat = .OK  /* success */
                     }
                     if let cds = cCalcRoute(route: ds) {
                         fareInfo = cds.calcFare()
@@ -927,13 +944,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         if (1 == rc) {
             switch (fareInfo?.result ?? 0) {
             case 0:
-                routeStat = 0;
+                routeStat = .OK
             case 1:
-                routeStat = ROUTE_FARERESULT_ERR1;
+                routeStat = ROUTE.FARERESULT_ERR1;
             case 2:
-                routeStat = ROUTE_FARERESULT_ERR2;
+                routeStat = ROUTE.FARERESULT_ERR2;
             default:
-                routeStat = ROUTE_FARERESULT_FAIL;
+                routeStat = ROUTE.FARERESULT_FAIL;
             }
         }
         
@@ -956,7 +973,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         let termId : Int = appDelegate.selectTerminalId
         ds.add(termId)
-        routeStat = 0;
+        routeStat = .OK
         tableView.reloadData()
         self.actionBarButton.isEnabled = false;
         cRouteUtil.save(toTerminalHistory: cRouteUtil.stationNameEx(termId))

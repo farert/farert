@@ -52,7 +52,7 @@ struct DbId {
     static let DB_TAX5 = DB_MIN_ID
     static let DB_2014 = 11
     static let DB_2015 = 12
-    static let DB_2016 = 13
+    static let DB_2017 = 13
 
-    static let DB_MAX_ID = DB_2016
+    static let DB_MAX_ID = DB_2017
 }
