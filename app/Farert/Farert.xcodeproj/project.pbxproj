@@ -7,12 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2A0412311B2F190A004BA042 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A0412301B2F190A004BA042 /* InfoPlist.strings */; };
 		2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */; };
 		2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0881AD6966500F7DED2 /* Main.storyboard */; };
 		2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08B1AD6966500F7DED2 /* Images.xcassets */; };
 		2A2BB08F1AD6966500F7DED2 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08D1AD6966500F7DED2 /* LaunchScreen.xib */; };
-		2A2BB09B1AD6966600F7DED2 /* FarertTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB09A1AD6966600F7DED2 /* FarertTests.swift */; };
 		2A2BB0AF1AD6970D00F7DED2 /* MainTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */; };
 		2A2BB0B01AD6970D00F7DED2 /* ResultTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */; };
 		2A2BB0B31AD6970D00F7DED2 /* RouteSelStationSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A81AD6970D00F7DED2 /* RouteSelStationSegue.swift */; };
@@ -32,36 +30,21 @@
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
-		2AB4F1021BD8812500940548 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AB4F1011BD8812500940548 /* libsqlite3.tbd */; };
+		2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A69CCDE1E736EF1007F478A /* jrdb2017.db */; };
+		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
 		2ABD92E71E19EEA9002488E0 /* c_route.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2ABD92E61E19EEA9002488E0 /* c_route.mm */; };
-		2AC6A7371C83EE40002FD7EE /* jrdb2016.db in Resources */ = {isa = PBXBuildFile; fileRef = 2AC6A7361C83EE40002FD7EE /* jrdb2016.db */; };
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
 		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
 		2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754641ADCC2080020F59C /* CommonDefine.swift */; };
 		2AE7546B1AE21E8B0020F59C /* FarertTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */; };
-		2AE928861B29CCA000122437 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5F1B059B690026A6CA /* Info.plist */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		2A2BB0951AD6966600F7DED2 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2A2BB0771AD6966500F7DED2 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2A2BB07E1AD6966500F7DED2;
-			remoteInfo = Farert;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		2A0412301B2F190A004BA042 /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = ../InfoPlist.strings; sourceTree = "<group>"; };
 		2A2BB07F1AD6966500F7DED2 /* Farert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Farert.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A2BB0891AD6966500F7DED2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2A2BB08B1AD6966500F7DED2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		2A2BB08E1AD6966500F7DED2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		2A2BB0941AD6966600F7DED2 /* FarertTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FarertTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2A2BB0991AD6966600F7DED2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2A2BB09A1AD6966600F7DED2 /* FarertTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FarertTests.swift; sourceTree = "<group>"; };
 		2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTableViewController.swift; sourceTree = "<group>"; };
 		2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ResultTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		2A2BB0A81AD6970D00F7DED2 /* RouteSelStationSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteSelStationSegue.swift; sourceTree = "<group>"; };
@@ -87,16 +70,14 @@
 		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
 		2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = FarertTests/PrefixHeader.pch; sourceTree = SOURCE_ROOT; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		2A84DD181AF1DA8B005BA7D4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
-		2AB4F1011BD8812500940548 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		2A69CCDE1E736EF1007F478A /* jrdb2017.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2017.db; sourceTree = "<group>"; };
+		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		2A69CD0C1E75153D007F478A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2ABD92E61E19EEA9002488E0 /* c_route.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = c_route.mm; sourceTree = "<group>"; };
 		2ABD92E81E19F685002488E0 /* c_route.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c_route.h; sourceTree = "<group>"; };
-		2AC6A7361C83EE40002FD7EE /* jrdb2016.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2016.db; sourceTree = "<group>"; };
 		2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteListTableViewCell.swift; sourceTree = "<group>"; };
 		2ACE5A591AF785030026A6CA /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FareInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2ACE5A5A1AF785030026A6CA /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
-		2ACE5A631B059E180026A6CA /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Base; path = Base.lproj/Info.plist; sourceTree = "<group>"; };
-		2AD5D5AE1B0AB20000F8E6AD /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/Info.plist; sourceTree = "<group>"; };
 		2AE754641ADCC2080020F59C /* CommonDefine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonDefine.swift; sourceTree = "<group>"; };
 		2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FarertTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -106,15 +87,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2AB4F1021BD8812500940548 /* libsqlite3.tbd in Frameworks */,
+				2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */,
 				2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2A2BB0911AD6966600F7DED2 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,11 +98,10 @@
 		2A2BB0761AD6966500F7DED2 = {
 			isa = PBXGroup;
 			children = (
-				2AB4F1011BD8812500940548 /* libsqlite3.tbd */,
 				2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */,
 				2A2BB0811AD6966500F7DED2 /* Farert */,
-				2A2BB0971AD6966600F7DED2 /* FarertTests */,
 				2A2BB0801AD6966500F7DED2 /* Products */,
+				2A69CCE01E737046007F478A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -136,7 +109,6 @@
 			isa = PBXGroup;
 			children = (
 				2A2BB07F1AD6966500F7DED2 /* Farert.app */,
-				2A2BB0941AD6966600F7DED2 /* FarertTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -161,25 +133,7 @@
 		2A2BB0821AD6966500F7DED2 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				2A0412301B2F190A004BA042 /* InfoPlist.strings */,
-				2ACE5A5F1B059B690026A6CA /* Info.plist */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		2A2BB0971AD6966600F7DED2 /* FarertTests */ = {
-			isa = PBXGroup;
-			children = (
-				2A2BB09A1AD6966600F7DED2 /* FarertTests.swift */,
-				2A2BB0981AD6966600F7DED2 /* Supporting Files */,
-			);
-			path = FarertTests;
-			sourceTree = "<group>";
-		};
-		2A2BB0981AD6966600F7DED2 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				2A2BB0991AD6966600F7DED2 /* Info.plist */,
+				2A69CD0C1E75153D007F478A /* Info.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -204,9 +158,9 @@
 		2A2BB0CA1AD6980600F7DED2 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				2A69CCDE1E736EF1007F478A /* jrdb2017.db */,
 				2ABD92E61E19EEA9002488E0 /* c_route.mm */,
 				2ABD92E81E19F685002488E0 /* c_route.h */,
-				2AC6A7361C83EE40002FD7EE /* jrdb2016.db */,
 				2ACE5A591AF785030026A6CA /* FareInfo.h */,
 				2ACE5A5A1AF785030026A6CA /* FareInfo.m */,
 				2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */,
@@ -235,6 +189,14 @@
 			name = custom;
 			sourceTree = "<group>";
 		};
+		2A69CCE01E737046007F478A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2A69CCE11E737046007F478A /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -255,24 +217,6 @@
 			productReference = 2A2BB07F1AD6966500F7DED2 /* Farert.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2A2BB0931AD6966600F7DED2 /* FarertTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 2A2BB0A11AD6966600F7DED2 /* Build configuration list for PBXNativeTarget "FarertTests" */;
-			buildPhases = (
-				2A2BB0901AD6966600F7DED2 /* Sources */,
-				2A2BB0911AD6966600F7DED2 /* Frameworks */,
-				2A2BB0921AD6966600F7DED2 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				2A2BB0961AD6966600F7DED2 /* PBXTargetDependency */,
-			);
-			name = FarertTests;
-			productName = FarertTests;
-			productReference = 2A2BB0941AD6966600F7DED2 /* FarertTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -288,12 +232,6 @@
 						CreatedOnToolsVersion = 6.2;
 						LastSwiftMigration = 0810;
 					};
-					2A2BB0931AD6966600F7DED2 = {
-						CreatedOnToolsVersion = 6.2;
-						DevelopmentTeam = W6SVZ3YCU5;
-						LastSwiftMigration = 0810;
-						TestTargetID = 2A2BB07E1AD6966500F7DED2;
-					};
 				};
 			};
 			buildConfigurationList = 2A2BB07A1AD6966500F7DED2 /* Build configuration list for PBXProject "Farert" */;
@@ -302,7 +240,6 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
-				ja,
 			);
 			mainGroup = 2A2BB0761AD6966500F7DED2;
 			productRefGroup = 2A2BB0801AD6966500F7DED2 /* Products */;
@@ -310,7 +247,6 @@
 			projectRoot = "";
 			targets = (
 				2A2BB07E1AD6966500F7DED2 /* Farert */,
-				2A2BB0931AD6966600F7DED2 /* FarertTests */,
 			);
 		};
 /* End PBXProject section */
@@ -321,20 +257,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */,
-				2A0412311B2F190A004BA042 /* InfoPlist.strings in Resources */,
-				2AC6A7371C83EE40002FD7EE /* jrdb2016.db in Resources */,
 				2A2BB08F1AD6966500F7DED2 /* LaunchScreen.xib in Resources */,
 				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
 				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,
+				2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */,
 				2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */,
-				2AE928861B29CCA000122437 /* Info.plist in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2A2BB0921AD6966600F7DED2 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -370,23 +297,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2A2BB0901AD6966600F7DED2 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2A2BB09B1AD6966600F7DED2 /* FarertTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		2A2BB0961AD6966600F7DED2 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2A2BB07E1AD6966500F7DED2 /* Farert */;
-			targetProxy = 2A2BB0951AD6966600F7DED2 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		2A2BB0881AD6966500F7DED2 /* Main.storyboard */ = {
@@ -401,18 +312,8 @@
 			isa = PBXVariantGroup;
 			children = (
 				2A2BB08E1AD6966500F7DED2 /* Base */,
-				2A84DD181AF1DA8B005BA7D4 /* ja */,
 			);
 			name = LaunchScreen.xib;
-			sourceTree = "<group>";
-		};
-		2ACE5A5F1B059B690026A6CA /* Info.plist */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2ACE5A631B059E180026A6CA /* Base */,
-				2AD5D5AE1B0AB20000F8E6AD /* ja */,
-			);
-			name = Info.plist;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -422,6 +323,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -471,6 +373,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -520,7 +423,7 @@
 				DEVELOPMENT_TEAM = W6SVZ3YCU5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
-				INFOPLIST_FILE = "$(SRCROOT)/FarertTests/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
@@ -544,7 +447,7 @@
 				DEVELOPMENT_TEAM = W6SVZ3YCU5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
-				INFOPLIST_FILE = "$(SRCROOT)/FarertTests/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
@@ -553,44 +456,6 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		2A2BB0A21AD6966600F7DED2 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = FarertTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Farert.app/Farert";
-			};
-			name = Debug;
-		};
-		2A2BB0A31AD6966600F7DED2 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = FarertTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Farert.app/Farert";
 			};
 			name = Release;
 		};
@@ -611,15 +476,6 @@
 			buildConfigurations = (
 				2A2BB09F1AD6966600F7DED2 /* Debug */,
 				2A2BB0A01AD6966600F7DED2 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		2A2BB0A11AD6966600F7DED2 /* Build configuration list for PBXNativeTarget "FarertTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2A2BB0A21AD6966600F7DED2 /* Debug */,
-				2A2BB0A31AD6966600F7DED2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

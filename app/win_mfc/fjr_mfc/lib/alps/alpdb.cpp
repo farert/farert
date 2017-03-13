@@ -2898,7 +2898,7 @@ FARE_INFO CalcRoute::calcFare(int32_t count)
 uint32_t RouteList::getFareOption()
 {
 	uint32_t rc;
-	uint32_t c = route_list_raw.size();
+	int32_t c = (int32_t)route_list_raw.size();
 
 	if (c == 1) {
 		rc = 0x40; 	/* start only*/
