@@ -129,7 +129,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        allClearButton.isEnabled = false
+        self.editEnd()
         // Return NO if you do not want the specified item to be editable.
         return 0 < self.routeList.count
     }
@@ -152,6 +152,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
                 self.allClearButton.isEnabled = false
                 self.saveButton.isEnabled = false
+                editEnd()
                 self.tableView.reloadData()
             }
             cRouteUtil.save(toRouteArray: self.routeList)
@@ -168,7 +169,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     }
     */
     override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
-        self.allClearButton.isEnabled = true
+        self.editBegin()
         return UITableViewCellEditingStyle.delete
     }
     /*
@@ -336,8 +337,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
                 
-                self.saveButton.isEnabled = false
-                self.allClearButton.isEnabled = false
+                self.editEnd()
                 self.tableView.reloadData()
                 self.tableView.reloadSectionIndexTitles()
             }
@@ -387,7 +387,6 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 }
             }
         }
-//
     }
     
     // [Save] button
@@ -396,5 +395,18 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.saved = true
         self.saveButton.isEnabled = false
         self.tableView.reloadData()
+    }
+    func editEnd() {
+        self.saveButton.isEnabled = true
+        self.allClearButton.isEnabled = false    // Disable [Edit] button
+        self.navigationItem.leftBarButtonItem?.isEnabled = true
+        self.navigationItem.leftBarButtonItem?.tintColor = UIColor(red: 0.0, green: 122.0/255.0, blue: 1.0, alpha: 1.0)
+    }
+    
+    func editBegin() {
+        self.saveButton.isEnabled = false
+        self.allClearButton.isEnabled = true // Enable [Edit] button
+        self.navigationItem.leftBarButtonItem?.isEnabled = false
+        self.navigationItem.leftBarButtonItem?.tintColor = UIColor.white // hide
     }
 }
