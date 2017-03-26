@@ -14,6 +14,10 @@ class TerminalSelectTableViewController: CSTableViewController {
     @IBOutlet weak var clerBarButtonItem: UIBarButtonItem!
     @IBOutlet weak var scopeBar: UISegmentedControl!    // section of 会社、都道府県
 
+    let SEGIDX_COMPANY = 0
+    let SEGIDX_PREFECT = 1
+    let SEGIDX_HISTORY = 2
+    
     let HEADER_HEIGHT:CGFloat        = 44.0
     
     // MARK: Public property
@@ -22,8 +26,8 @@ class TerminalSelectTableViewController: CSTableViewController {
     var termFilteredArray : [Int] = []
     var termCompanyPrefectArray : [[Int]] = cRouteUtil.getCompanyAndPrefects() as! [[Int]]
 
-    let searchController = UISearchController(searchResultsController: nil)
-
+    let searchController : UISearchController! = UISearchController(searchResultsController: nil)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
   
@@ -56,15 +60,11 @@ class TerminalSelectTableViewController: CSTableViewController {
             self.navigationItem.prompt = "発駅指定"
         }
         // Uncomment the following line to preserve selection between presentations.
-        self.clearsSelectionOnViewWillAppear = false
+        self.clearsSelectionOnViewWillAppear = true
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
-        //UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"戻る" style:UIBarButtonItemStylePlain target:nil action:nil];
-        //self.navigationItem.backBarButtonItem = backButton;
-        //self.navigationItem.backBarButtonItem.title = @"戻る"; //これはよいけど（って効かないからだめだが）上は幅広バーになっちゃう
-     
         self.navigationItem.rightBarButtonItem!.isEnabled = false // Disable [Edit] button
         self.clerBarButtonItem.isEnabled = false    // Disable [Clear] button
     }
@@ -82,7 +82,6 @@ class TerminalSelectTableViewController: CSTableViewController {
         }
     }
     
-
     // MARK: - Table view data source
     
     override func numberOfSections(in tableView : UITableView) -> Int {
@@ -97,7 +96,7 @@ class TerminalSelectTableViewController: CSTableViewController {
             return self.termFilteredArray.count
         } else {
             let section = scopeBar.selectedSegmentIndex
-            if section != 2 {
+            if section != SEGIDX_HISTORY {
                 return self.termCompanyPrefectArray[section].count
             } else {
                 return self.historyTerms.count
@@ -110,7 +109,7 @@ class TerminalSelectTableViewController: CSTableViewController {
     override func tableView(_ tableView : UITableView, viewForHeaderInSection section : Int) -> UIView? {
         
         if (!searchController.isActive || searchController.searchBar.text == "") &&
-            (scopeBar.selectedSegmentIndex == 2) && (section == 0) && (self.historyTerms.count <= 0) {
+            (scopeBar.selectedSegmentIndex == SEGIDX_HISTORY) && (section == 0) && (self.historyTerms.count <= 0) {
 
             guard let cell : UITableViewCell = (tableView.dequeueReusableCell(withIdentifier: "termHistoryEmptyCell")) else {
                     return nil
@@ -122,7 +121,7 @@ class TerminalSelectTableViewController: CSTableViewController {
 
     override func  tableView(_ tableView : UITableView, heightForHeaderInSection section : Int) -> CGFloat {
         if (!searchController.isActive || searchController.searchBar.text == "") &&
-            (scopeBar.selectedSegmentIndex == 2) && (section == 0) && (self.historyTerms.count <= 0) {
+            (scopeBar.selectedSegmentIndex == SEGIDX_HISTORY) && (section == 0) && (self.historyTerms.count <= 0) {
                 return HEADER_HEIGHT
         }
         return UITableViewAutomaticDimension;
@@ -134,11 +133,11 @@ class TerminalSelectTableViewController: CSTableViewController {
         if !searchController.isActive || searchController.searchBar.text == "" {
             let scope = scopeBar.selectedSegmentIndex
             switch (scope) {
-            case 0:
+            case SEGIDX_COMPANY:
                 return "会社"
-            case 1:
+            case SEGIDX_PREFECT:
                 return "都道府県"
-            case 2:
+            case SEGIDX_HISTORY:
                 return "履歴"
             default:
                 break;
@@ -170,7 +169,7 @@ class TerminalSelectTableViewController: CSTableViewController {
             cell.detailTextLabel?.text = "\(cRouteUtil.getKanaFromStationId(ident)!)(\(cRouteUtil.prectName(byStation: ident)!))"
         } else {
             let secidx = scopeBar.selectedSegmentIndex
-            if secidx != 2 {
+            if secidx != SEGIDX_HISTORY {
                 cell = tableView.dequeueReusableCell(withIdentifier: "termCompanyAndPrefectCell")
                 let ident : Int = self.termCompanyPrefectArray[secidx][indexPath.row]
                 cell.textLabel?.text = cRouteUtil.companyOrPrefectName(ident)
@@ -182,19 +181,19 @@ class TerminalSelectTableViewController: CSTableViewController {
         return cell;
     }
 
-    // edit cell
-    override func tableView(_ tableView : UITableView, editingStyleForRowAt indexPath : IndexPath) -> UITableViewCellEditingStyle {
-        self.clerBarButtonItem.isEnabled = true // Enable [Edit] button
-        return UITableViewCellEditingStyle.delete   // Enable 'delete' action
-    }
-
-    
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView : UITableView, canEditRowAt indexPath : IndexPath) -> Bool {
-        self.clerBarButtonItem.isEnabled = false    // Disable [Edit] button
+        historyEditEnd()
         // Return NO if you do not want the specified item to be editable.
-        
-        return (!searchController.isActive || searchController.searchBar.text == "") && (2 == scopeBar.selectedSegmentIndex) && (0 < self.historyTerms.count)
+        return (!searchController.isActive || searchController.searchBar.text == "") &&
+            (SEGIDX_HISTORY == scopeBar.selectedSegmentIndex) && (0 < self.historyTerms.count)
+    }
+    
+    // edit cell
+    //  start Edit history
+    override func tableView(_ tableView : UITableView, editingStyleForRowAt indexPath : IndexPath) -> UITableViewCellEditingStyle {
+        historyEditBegin()
+        return UITableViewCellEditingStyle.delete   // Enable 'delete' action
     }
     
     // Override to support editing the table view.
@@ -212,7 +211,7 @@ class TerminalSelectTableViewController: CSTableViewController {
             if (n == 1) {
                 self.tableView.setEditing(false, animated: false)
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
-                self.clerBarButtonItem.isEnabled = false
+                historyEditEnd()
                 tableView.reloadData()
             }
             cRouteUtil.saveToTerminalHistory(with: self.historyTerms)
@@ -227,17 +226,21 @@ class TerminalSelectTableViewController: CSTableViewController {
     override func tableView(_ tableView : UITableView, didSelectRowAt indexPath : IndexPath) {
         
         if searchController.isActive && searchController.searchBar.text != "" {
-            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-            apd.selectTerminalId = self.termFilteredArray[indexPath.row]
-            
-            self.performSegue(withIdentifier: "termSelectDone", sender: self)
-        } else if 2 == scopeBar.selectedSegmentIndex {
-            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-            apd.selectTerminalId = cRouteUtil.getStationId(self.historyTerms[indexPath.row])
-            
-            self.performSegue(withIdentifier: "termSelectDone", sender: self)
-            
+            /* direct input */
+            if indexPath.row < self.termFilteredArray.count {
+                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
+                apd.selectTerminalId = self.termFilteredArray[indexPath.row]
+                self.performSegue(withIdentifier: "termSelectDone", sender: self)
+            }
+        } else if SEGIDX_HISTORY == scopeBar.selectedSegmentIndex {
+            /* history select */
+            if indexPath.row < self.historyTerms.count {
+                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
+                apd.selectTerminalId = cRouteUtil.getStationId(self.historyTerms[indexPath.row])
+                self.performSegue(withIdentifier: "termSelectDone", sender: self)
+            }
         } else {
+            /* company or prefect select */
             // @"Select comapny or prefect");
         }
     }
@@ -256,12 +259,15 @@ class TerminalSelectTableViewController: CSTableViewController {
             
 //            let section : Int = self.tableView.indexPathForSelectedRow?.section ?? 0
             let section = scopeBar.selectedSegmentIndex
-            let row : Int = self.tableView.indexPathForSelectedRow?.row ?? 0
-            let iDs : [Int] = self.termCompanyPrefectArray[section] as [Int]
-            selectLineTblViewController.companyOrPrefectId = iDs[row]
-            selectLineTblViewController.baseStationId = 0
-            selectLineTblViewController.lastLineId = 0
-            
+            if (0 == section) || (1 == section) {
+                let row : Int = self.tableView.indexPathForSelectedRow?.row ?? 0
+                let iDs : [Int] = self.termCompanyPrefectArray[section] as [Int]
+                if row < iDs.count {
+                    selectLineTblViewController.companyOrPrefectId = iDs[row]
+                    selectLineTblViewController.baseStationId = 0
+                    selectLineTblViewController.lastLineId = 0
+                }
+            }
         } else if segid == "toHistorySegue" {
             // 過去指定 履歴駅一覧 (Jan.2017,4th removed)
             let dvc : CSTableViewController = segue.destination as! CSTableViewController
@@ -292,7 +298,7 @@ class TerminalSelectTableViewController: CSTableViewController {
         
         // Disable/Enable [Edit] button
         self.navigationItem.rightBarButtonItem!.isEnabled =
-            ((2 == sender.selectedSegmentIndex) && (0 < self.historyTerms.count))
+            ((SEGIDX_HISTORY == sender.selectedSegmentIndex) && (0 < self.historyTerms.count))
   
         self.tableView.reloadData()
         self.tableView.reloadSectionIndexTitles()
@@ -307,22 +313,39 @@ class TerminalSelectTableViewController: CSTableViewController {
         //        self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.Fade)
         
         self.navigationItem.rightBarButtonItem!.isEnabled = false
-        self.clerBarButtonItem.isEnabled = false
         
+        historyEditEnd()
+    
         self.tableView.reloadData() // ないとヘッダ文字が表示されない
         self.tableView.reloadSectionIndexTitles()
 
     }
+
     //      Perform Segue (Select tableview row)
-    //
     //
     override func shouldPerformSegue(withIdentifier identifier : String, sender : Any?) -> Bool {
         
-        if true == self.clerBarButtonItem.isEnabled {
-            // 編集中は選択は無視する（何もしない）
-            return false
-        }
+        //if true == self.clerBarButtonItem.isEnabled {
+        //    // 編集中は選択は無視する（何もしない）
+        //    // コメントを解除すると、履歴編集中に戻ることができなくする
+        //    return false
+        //}
         return true
+    }
+    
+    func historyEditEnd() {
+        self.clerBarButtonItem.isEnabled = false    // Disable [Edit] button
+        self.scopeBar.isHidden = false
+        self.navigationItem.leftBarButtonItem?.isEnabled = true
+        self.navigationItem.leftBarButtonItem?.tintColor = UIColor(red: 0.0, green: 122.0/255.0, blue: 1.0, alpha: 1.0)
+    }
+    
+   func historyEditBegin() {
+        self.clerBarButtonItem.isEnabled = true // Enable [Edit] button
+        self.searchController.searchBar.isHidden = true
+        self.navigationItem.leftBarButtonItem?.isEnabled = false
+        self.navigationItem.leftBarButtonItem?.tintColor = UIColor.white // hide
+        self.scopeBar.isHidden = true
     }
 }
 
@@ -336,6 +359,8 @@ extension TerminalSelectTableViewController: UISearchBarDelegate {
 extension TerminalSelectTableViewController: UISearchResultsUpdating {
     // MARK: - UISearchResultsUpdating Delegate
     func updateSearchResults(for searchController: UISearchController) {
+        self.setEditing(false, animated: false)
+
         filterContentForSearchText(searchController.searchBar.text!)
     }
 }

@@ -347,7 +347,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     lbl.text = "許可されていない会社線通過です";
                     break;
                 case ROUTE.DUP_ERROR:
-                    lbl.text = "経路が重複している等追加できません";
+                    lbl.text = "経路が重複しているため追加できません";
                     break;
                 case ROUTE.FINISH:
                     lbl.text = "経路が終端に達しました";
@@ -652,11 +652,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 if result == -4 {
                     routeStat = ROUTE.COMPANYPASS_ERROR
                 } else if result == -2 {
-                    routeStat = ROUTE.DUP_ERROR;
+                    routeStat = ROUTE.SCRIPT_STATION_ERR;
                 } else if (result == 0) || (result == 5) || (result == 4) {
                     routeStat = ROUTE.FINISH
                 } else if (result == 1) {
                     routeStat = .OK
+                } else if (result == -1) {
+                    routeStat = ROUTE.DUP_ERROR
                 } else {
                     assert(false, "bug!!!!!!")
                     routeStat = .UNKNOWN
