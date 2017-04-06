@@ -678,7 +678,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         } else {
             //NSAssert(nil, @"bug");
-            print("Bug?? \(segue.identifier)")
+            print("Bug?? \(segue.identifier ?? "(null)")")
         }
     }
 
@@ -690,7 +690,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     @IBAction func cancelTerminal(_ segue: UIStoryboardSegue) {
         _ = self.navigationController?.popViewController(animated: false)
 
-        print("canelTerminal segue=\(segue.identifier)")
+        print("canelTerminal segue=\(segue.identifier ?? "(null)")")
     }
     
     // exit(unwind) segue
