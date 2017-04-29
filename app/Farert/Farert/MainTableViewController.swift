@@ -9,7 +9,7 @@
 import UIKit
 
 
-class MainTableViewController: UITableViewController, UIActionSheetDelegate, TableHeaderViewDelegate, UIAlertViewDelegate {
+class MainTableViewController: UITableViewController, UIActionSheetDelegate, TableHeaderViewDelegate, UIAlertViewDelegate, MainTableViewControllerDelegate {
     
     // MARK: - Constant
     let WELCOME_TITLE: String = "ダウンロードありがとうございます"
@@ -75,7 +75,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         super.awakeFromNib()
     }
     
-
     //  View Load
     //
     //
@@ -110,7 +109,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-    
+
+        self.addLeftBarButtonWithImage(UIImage(named: "ic_menu_black_24dp")!)
+
+        self.slideMenuController()?.removeLeftGestures()
+        self.slideMenuController()?.addLeftGestures()
+
+        let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
+        lvd.delegate = self as MainTableViewControllerDelegate
         //  self.navigationController.toolbarHidden = NO;
     }
     
@@ -176,7 +182,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 from: TAG_UIACTIONSHEET_QUERYSETUPROUTE)
             
         } else if (viewContextMode == FGD.CONTEXT_ROUTESETUP_VIEW) {
-            // from 保持経路ビュー
+            // from 保持経路ビュー(ArchiveRouteTableView)
             showIndicate();    /* start Activity and Disable UI */
             self.navigationController!.view!.isUserInteractionEnabled = false;
             longTermFuncMode = .SETUPROUTE;
@@ -545,6 +551,23 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         }
     }
 
+    // delegate function of LeftTableViewController add button
+    func getRoute() -> cRouteList? {
+        if 2 <= ds.getCount() {
+            if let r : cRouteList = cRouteList(route: self.ds) {
+                return r
+            }
+        }
+        return nil
+    }
+    
+    // Selected at leftView row
+    func changeRoute(route: cRouteList) {
+        ds = cRoute(routeList: route)
+        tableView.reloadData()
+        viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;       
+    }
+
 
     // MARK: - Navigation
 
@@ -669,7 +692,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 assert(false, "bug");
             }
         } else if (seg_id == "unwindArchiveRouteSelectSegue") {
-            // from 保持経路一覧
+            // from 保持経路一覧(ArchiveRouteTableViewTabel)
             // setup route
             let routeViewCtrl : ArchiveRouteTableViewController = segue.source as! ArchiveRouteTableViewController
             if !routeViewCtrl.selectRouteString.isEmpty {

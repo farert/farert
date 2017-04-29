@@ -16,6 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var selectTerminalId:Int!
     var selectLineId:Int!
     var context:Int!
+    
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 
@@ -29,7 +30,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // Can't db open
             return false;
         }
+
         
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+
+        let leftViewController = storyboard.instantiateViewController(withIdentifier: "LeftViewController") as! LeftTableViewController
+
+        let nvc : UINavigationController = storyboard.instantiateViewController(withIdentifier: "MainNavi") as! UINavigationController
+////        UINavigationBar.appearance().tintColor = UIColor(red: 0x68 / 255, green: 0x9F / 255, blue: 0x38 / 255, alpha: 1.0)
+        
+        leftViewController.mainViewController = nvc
+
+        let slideMenuController = SlideMenuController(mainViewController: nvc, leftMenuViewController: leftViewController)   // , rightMenuViewController: rightViewController)
+        self.window?.rootViewController = slideMenuController
+        self.window?.makeKeyAndVisible()
+
         return true
     }
 

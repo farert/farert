@@ -113,8 +113,8 @@ enum DBIDX {
 @end
 /* End of RouteUtil */
 
-//////////////////////////////////////////////////////////////
 @class cRoute;
+//////////////////////////////////////////////////////////////
 @interface cRouteList : NSObject
 {
 @public
@@ -122,7 +122,10 @@ enum DBIDX {
 }
 
 - (id)initWithRoute:(cRoute*)source;
-- (id)initWithRouteList:(cRouteList*)source;
+//- (id)initWithRouteList:(cRouteList*)source;
+// Identifier of Start Terminal
+- (NSInteger)startStationId;
+- (NSInteger)lastStationId;
 
 
 @end
@@ -138,6 +141,7 @@ enum DBIDX {
 
 - (id)init;
 - (id)initWithRoute:(cRoute*)source;
+- (id)initWithRouteList:(cRouteList*)source;
 - (id)initWithRoute:(cRoute*)source count:(NSInteger)count;
 - (void)sync:(cCalcRoute*)source;
 - (void)assign:(cRouteList*)source;
