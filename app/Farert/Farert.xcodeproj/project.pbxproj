@@ -30,11 +30,14 @@
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
+		2A4CCE251EAF431C0083260C /* Routefolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4CCE241EAF431C0083260C /* Routefolder.swift */; };
 		2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A69CCDE1E736EF1007F478A /* jrdb2017.db */; };
 		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
+		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
 		2ABD92E71E19EEA9002488E0 /* c_route.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2ABD92E61E19EEA9002488E0 /* c_route.mm */; };
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
 		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
+		2AE5B81D1E95F66500C58D92 /* SlideMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE5B81B1E95F66500C58D92 /* SlideMenuController.swift */; };
 		2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE754641ADCC2080020F59C /* CommonDefine.swift */; };
 		2AE7546B1AE21E8B0020F59C /* FarertTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */; };
 /* End PBXBuildFile section */
@@ -70,14 +73,18 @@
 		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
 		2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = FarertTests/PrefixHeader.pch; sourceTree = SOURCE_ROOT; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		2A4CCE241EAF431C0083260C /* Routefolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Routefolder.swift; path = ../Routefolder.swift; sourceTree = "<group>"; };
 		2A69CCDE1E736EF1007F478A /* jrdb2017.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2017.db; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2A69CD0C1E75153D007F478A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
 		2ABD92E61E19EEA9002488E0 /* c_route.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = c_route.mm; sourceTree = "<group>"; };
 		2ABD92E81E19F685002488E0 /* c_route.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c_route.h; sourceTree = "<group>"; };
 		2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteListTableViewCell.swift; sourceTree = "<group>"; };
 		2ACE5A591AF785030026A6CA /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FareInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2ACE5A5A1AF785030026A6CA /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
+		2AE5B81B1E95F66500C58D92 /* SlideMenuController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SlideMenuController.swift; sourceTree = "<group>"; };
+		2AE5B81C1E95F66500C58D92 /* SlideMenuControllerSwift.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SlideMenuControllerSwift.h; sourceTree = "<group>"; };
 		2AE754641ADCC2080020F59C /* CommonDefine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonDefine.swift; sourceTree = "<group>"; };
 		2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FarertTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -141,6 +148,8 @@
 		2A2BB0C91AD697FA00F7DED2 /* view */ = {
 			isa = PBXGroup;
 			children = (
+				2AE5B81B1E95F66500C58D92 /* SlideMenuController.swift */,
+				2AE5B81C1E95F66500C58D92 /* SlideMenuControllerSwift.h */,
 				2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */,
 				2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */,
 				2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */,
@@ -150,6 +159,7 @@
 				2A2BB0AD1AD6970D00F7DED2 /* TerminalSelectTableViewController.swift */,
 				2A2BB0AE1AD6970D00F7DED2 /* VersionInfoViewController.swift */,
 				2A2BB0BB1AD6974400F7DED2 /* CSTableViewController.swift */,
+				2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */,
 				2A2BB0CB1AD6986800F7DED2 /* custom */,
 			);
 			name = view;
@@ -158,6 +168,7 @@
 		2A2BB0CA1AD6980600F7DED2 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				2A4CCE241EAF431C0083260C /* Routefolder.swift */,
 				2A69CCDE1E736EF1007F478A /* jrdb2017.db */,
 				2ABD92E61E19EEA9002488E0 /* c_route.mm */,
 				2ABD92E81E19F685002488E0 /* c_route.h */,
@@ -282,7 +293,9 @@
 				2A2BB0B31AD6970D00F7DED2 /* RouteSelStationSegue.swift in Sources */,
 				2A2BB0DC1AD6BE8500F7DED2 /* alpdb.cpp in Sources */,
 				2A2BB0B41AD6970D00F7DED2 /* SelectLineTableViewController.swift in Sources */,
+				2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */,
 				2A2BB0B91AD6970D00F7DED2 /* VersionInfoViewController.swift in Sources */,
+				2A4CCE251EAF431C0083260C /* Routefolder.swift in Sources */,
 				2A2BB0C81AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift in Sources */,
 				2A2BB0C11AD6974400F7DED2 /* CSTableViewController.swift in Sources */,
 				2A2BB0B61AD6970D00F7DED2 /* SettingsTableViewController.swift in Sources */,
@@ -293,6 +306,7 @@
 				2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */,
 				2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */,
 				2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */,
+				2AE5B81D1E95F66500C58D92 /* SlideMenuController.swift in Sources */,
 				2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
