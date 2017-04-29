@@ -451,6 +451,18 @@ int g_tax; /* main.m */
     // [super dealloc];
 }
 
+// Identifier of Start Terminal
+// 開始駅id
+- (NSInteger)startStationId
+{
+    return obj_route_list->startStationId();
+}
+
+- (NSInteger)lastStationId
+{
+    return obj_route_list->routeList().back().stationId;
+}
+
 
 @end
 /* end of cRouteList */
@@ -471,6 +483,17 @@ int g_tax; /* main.m */
 {
     return [self initWithRoute:source count: -1];
 }
+
+- (id)initWithRouteList:(cRouteList*)source
+{
+    if (self = [super init]) {
+        obj_route = new Route();
+        [self assign:source];
+        return self;
+    }
+    return nil;
+}
+
 
 - (id)initWithRoute:(cRoute*)source count:(NSInteger)count;
 {
