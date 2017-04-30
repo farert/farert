@@ -103,7 +103,7 @@ typedef uint32_t SPECIFICFLAG;
 #define MAX_LINE        223
 #define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))		/* 新幹線は将来的にも10または15以内 !! */
 #define IS_COMPANY_LINE(id)	    (DbidOf::Cline_align_id<(id))	/* 会社線id */
-//#define MAX_JCT 325
+#define MAX_JCT 330
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
@@ -125,7 +125,7 @@ typedef uint32_t SPECIFICFLAG;
 
 #define MAX_NUM_JCT_STATION	103
 #define MAX_JCT_NUM			6		// 東京駅乗り入れ路線数が最大で6
-#define MAX_JCT				325		// 319
+
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
@@ -303,7 +303,9 @@ private:
 	int32_t company_fare;				/* 会社線料金 */
 	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
 	int32_t company_fare_child;			/* 会社線小児運賃 */
+
 	int32_t result_flag;				/* 結果状態: BRF_xxx */
+private:
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 	int32_t jr_fare;					//***
 	int32_t fare_ic;					//*** 0以外で有効
@@ -884,7 +886,7 @@ protected:
 	int32_t 		companyConnectCheck(int32_t station_id);
 	int32_t			preCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
 	int32_t			postCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
-		
+
 	class CompnpassSet
 	{
 		class recordset
