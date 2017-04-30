@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#define DBPATH "../../../db/jrdb2017.db"
+#define DBPATH _T("../../../db/jrdb2017.db")
 
 int g_tax = 8;
 Route route;
@@ -43,7 +43,9 @@ int main(int argc, char** argv)
 	int b = 0;
 	int rc;
 	int n;
-	
+#if defined _WINDOWS
+	_tsetlocale(LC_ALL, _T(""));	// tstring
+#endif
 	srand((unsigned)time(NULL));
 
 	if (! DBS::getInstance()->open(DBPATH)) {
@@ -59,18 +61,18 @@ int main(int argc, char** argv)
 		for (b = 0; b < 2; b++) {
 			rc = route.add(t);
 			if (rc <= 0) {
-				fprintf(stderr, "error start terminal add %s: %d\n", RouteUtil::StationName(t).c_str(), rc);
+				_ftprintf(stderr, _T("error start terminal add %s: %d\n"), RouteUtil::StationName(t).c_str(), rc);
 				return -1;
 			}
 			for (n = 0; rc == 1 && n < 10; n++) {
-				fprintf(stderr, "%6d-%02d auto route result(%s)%s->%s. ", 
+				_ftprintf(stderr, _T("%6d-%02d auto route result(%s)%s->%s. "), 
 				                                                c, n + 1,
-				                                                b == 0 ? "nba" : "bal", 
-																n != 0 ? "" : RouteUtil::StationName(t).c_str(), 
+				                                                b == 0 ? _T("nba") : _T("bal"), 
+																n != 0 ? _T("") : RouteUtil::StationName(t).c_str(), 
 																RouteUtil::StationName(e[n]).c_str());
 				fflush(stderr);
-				rc = route.changeNeerest(b, e[n]);
-				fprintf(stderr, "%d\n", rc);
+				rc = route.changeNeerest(b, e[n] != 0);
+				_ftprintf(stderr, _T("%d\n"), rc);
 			}
 		}
 	}

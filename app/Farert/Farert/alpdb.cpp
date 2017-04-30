@@ -1479,7 +1479,7 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 		ASSERT(!BIT_CHK(last_flag, BLF_COMPNPASS));
 		ASSERT(route_list_raw.back().lineId != line_id);
 		ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
-		
+
 		BIT_ON(last_flag, BLF_COMPNEND);	// if company_line
 
 		if (BIT_CHK(last_flag, BLF_COMPNBEGIN)) {
@@ -6866,6 +6866,39 @@ int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t statio
 //	@retval -n: add() error(re-track)
 //	@retval -32767 unknown error(DB error or BUG)
 //
+class Dijkstra	{
+	struct NODE_JCT {
+		int32_t minCost;
+		IDENT fromNode;
+		bool done_flg;
+		IDENT line_id;
+	} *d;
+public:
+	Dijkstra() {
+		int i;
+		d = new NODE_JCT [MAX_JCT];
+		/* ダイクストラ変数初期化 */
+		for (i = 0; i < MAX_JCT; i++) {
+			d[i].minCost = -1;
+			d[i].fromNode = 0;
+			d[i].done_flg = false;
+			d[i].line_id = 0;
+		}
+	}
+	~Dijkstra() {
+		delete [] d;
+	}
+	void setMinCost(int index, int32_t value) { d[index].minCost = value; }
+	void setFromNode(int index, IDENT value) { d[index].fromNode = value; }
+	void setDoneFlag(int index, bool value) { d[index].done_flg = value; }
+	void setLineId(int index, IDENT value) { d[index].line_id = value; }
+
+	int32_t minCost(int index) { return d[index].minCost; }
+	IDENT fromNode(int index) { return d[index].fromNode; }
+	bool doneFlag(int index) { return d[index].done_flg; }
+	IDENT lineId(int index) { return d[index].line_id; }
+};
+
 int32_t Route::changeNeerest(bool useBulletTrain, int end_station_id)
 {
 	ASSERT(0 < startStationId());
@@ -6880,13 +6913,10 @@ int32_t Route::changeNeerest(bool useBulletTrain, int end_station_id)
 	IDENT lastNode1_distance = 0;
 	IDENT lastNode2 = 0;
 	IDENT lastNode2_distance = 0;
-	int32_t minCost[MAX_JCT];
-	IDENT fromNode[MAX_JCT];
-	bool done_flg[MAX_JCT];
-	IDENT line_id[MAX_JCT];
 	int32_t i;
 	bool loopRoute;
 	//int32_t km;
+	Dijkstra dijkstra;
 	int32_t a = 0;
 	int32_t b = 0;
 	int32_t doneNode;
@@ -6922,13 +6952,8 @@ int32_t Route::changeNeerest(bool useBulletTrain, int end_station_id)
     if (BIT_CHK(last_flag, BLF_END)) {
 		return 5;	/* already finished */
     }
-	/* ダイクストラ変数初期化 */
-	for (i = 0; i < MAX_JCT; i++) {
-		minCost[i] = -1;
-		fromNode[i] = 0;
-		done_flg[i] = false;
-		line_id[i] = 0;
-	}
+
+	// dijkstra initial
 
 	startNode = Route::Id2jctId(stationId);
 	lastNode = Route::Id2jctId(end_station_id);
@@ -6939,16 +6964,16 @@ int32_t Route::changeNeerest(bool useBulletTrain, int end_station_id)
 		// 発駅～最初の分岐駅までの計算キロを最初の分岐駅までの初期コストとして初期化
 		a = Route::Id2jctId(IDENT1(neer_node.at(0)));
 		if (!IsJctMask(jct_mask, a)) {
-			minCost[a - 1] = IDENT2(neer_node.at(0));
-			fromNode[a - 1] = -1;	// from駅を-1(分岐駅でないので存在しない分岐駅)として初期化
-			line_id[a - 1] = lid;
+			dijkstra.setMinCost(a - 1, IDENT2(neer_node.at(0)));
+			dijkstra.setFromNode(a - 1, -1);	// from駅を-1(分岐駅でないので存在しない分岐駅)として初期化
+			dijkstra.setLineId(a - 1, lid);
 		}
 		if (2 <= neer_node.size()) {
 			b = Route::Id2jctId(IDENT1(neer_node.at(1)));
 			if (!IsJctMask(jct_mask, b)) {
-				minCost[b - 1] = IDENT2(neer_node.at(1));
-				fromNode[b - 1] = -1;
-				line_id[b - 1] = lid;
+				dijkstra.setMinCost(b - 1, IDENT2(neer_node.at(1)));
+				dijkstra.setFromNode(b - 1, -1);
+				dijkstra.setLineId(b - 1, lid);
 			} else if (IsJctMask(jct_mask, a)) {
 				TRACE(_T("Autoroute:発駅の両隣の分岐駅は既に通過済み"));
 				return -10;								// >>>>>>>>>>>>>>>>>>>>>>>
@@ -6962,7 +6987,7 @@ int32_t Route::changeNeerest(bool useBulletTrain, int end_station_id)
 			b = 0;
 		}
 	} else {
-		minCost[startNode - 1] = 0;
+		dijkstra.setMinCost(startNode - 1, 0);
 		a = b = 0;
 	}
 
@@ -7037,20 +7062,20 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 		for (i = 0; i < MAX_JCT; i++) {
 			// ノードiが確定しているとき
 			// ノードiまでの現時点での最小コストが不明の時
-			if (done_flg[i] || (minCost[i] < 0)) {
+			if (dijkstra.doneFlag(i) || (dijkstra.minCost(i) < 0)) {
 				continue;
 			}
 			/*  確定したノード番号が-1かノードiの現時点の最小コストが小さいとき
 			 *  確定ノード番号更新する
 			 */
-			if ((doneNode < 0) || (!IsJctMask(jct_mask, i + 1) && (minCost[i] < minCost[doneNode]))) {
+			if ((doneNode < 0) || (!IsJctMask(jct_mask, i + 1) && (dijkstra.minCost(i) < dijkstra.minCost(doneNode)))) {
 				doneNode = i;
 			}
 		}
 		if (doneNode == -1) {
 			break;	/* すべてのノードが確定したら終了 */
 		}
-		done_flg[doneNode] = true;	// Enter start node
+		dijkstra.setDoneFlag(doneNode, true);	// Enter start node
 
 		TRACE(_T("[%s]"), RouteUtil::StationName(Jct2id(doneNode + 1)).c_str());
 		if (nLastNode == 0) {
@@ -7062,8 +7087,8 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 				break;	/* 着ノードが完了しても終了可 */
 			}
 		} else if (nLastNode == 2) {
-			if (done_flg[lastNode1 - 1] &&
-				done_flg[lastNode2 - 1]) {
+			if (dijkstra.doneFlag(lastNode1 - 1) &&
+				dijkstra.doneFlag(lastNode2 - 1)) {
 				break;	/* 着ノードが完了しても終了可 */
 			}
 		}
@@ -7081,22 +7106,22 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 			    (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
                 /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
 				/* 新幹線でない */
-				cost = minCost[doneNode] + ite->at(1); // cost
+				cost = dijkstra.minCost(doneNode) + ite->at(1); // cost
 
 				// ノードtoはまだ訪れていないノード
 				// またはノードtoへより小さいコストの経路だったら
 				// ノードtoの最小コストを更新
-				if ((((minCost[a] < 0) || (cost <= minCost[a])) &&
-					((cost != minCost[a]) || IS_SHINKANSEN_LINE(ite->at(2))))
+				if ((((dijkstra.minCost(a) < 0) || (cost <= dijkstra.minCost(a))) &&
+					((cost != dijkstra.minCost(a)) || IS_SHINKANSEN_LINE(ite->at(2))))
 					&&
 					(!loopRoute ||
 						((((doneNode + 1) != excNode1) && ((doneNode + 1) != excNode2)) ||
 						 ((excNode1 != (a + 1)) && (excNode2 != (a + 1)))))) {
 					/* ↑ 同一距離に2線ある場合新幹線を採用 */
-					minCost[a] = cost;
-					fromNode[a] = doneNode + 1;
-					line_id[a] = ite->at(2);
-					TRACE( _T("+<%s(%s)>"), RouteUtil::StationName(Jct2id(a + 1)).c_str(), RouteUtil::LineName(line_id[a]).c_str());
+					dijkstra.setMinCost(a, cost);
+					dijkstra.setFromNode(a, doneNode + 1);
+					dijkstra.setLineId(a, ite->at(2));
+					TRACE( _T("+<%s(%s)>"), RouteUtil::StationName(Jct2id(a + 1)).c_str(), RouteUtil::LineName(dijkstra.lineId(a)).c_str());
 				} else {
 					TRACE(_T("-<%s>"), RouteUtil::StationName(Jct2id(a + 1)).c_str());
 				}
@@ -7117,8 +7142,8 @@ TRACE(_T("x(%s)"), RouteUtil::StationName(Jct2id(a + 1)).c_str());
 		// 計算キロ＋2つの最後の分岐駅候補までの計算キロは、
 		// どちらが短いか？
 		if ((2 == nLastNode) &&
-            (!IsJctMask(jct_mask, lastNode2) && ((minCost[lastNode2 - 1] + lastNode2_distance) <
-              (minCost[lastNode1 - 1] + lastNode1_distance)))) {
+            (!IsJctMask(jct_mask, lastNode2) && ((dijkstra.minCost(lastNode2 - 1) + lastNode2_distance) <
+              (dijkstra.minCost(lastNode1 - 1) + lastNode1_distance)))) {
             id = lastNode2;		// 短い方を最後の分岐駅とする
         } else {
             id = lastNode1;
@@ -7127,10 +7152,10 @@ TRACE(_T("x(%s)"), RouteUtil::StationName(Jct2id(a + 1)).c_str());
 		id = lastNode;
 	}
 
-TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(Jct2id(id)).c_str(), RouteUtil::StationName(Jct2id(fromNode[id - 1])).c_str(), fromNode[id - 1], (int)lastNode, (int)lastNode1, (int)lastNode2);
+TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(Jct2id(id)).c_str(), RouteUtil::StationName(Jct2id(dijkstra.fromNode(id - 1))).c_str(), dijkstra.fromNode(id - 1), (int)lastNode, (int)lastNode1, (int)lastNode2);
 
 	//fromNodeが全0で下のwhileループで永久ループに陥る
-	if (fromNode[id - 1] == 0) {
+	if (dijkstra.fromNode(id - 1) == 0) {
 	    if ((lastNode == 0) &&
 			(((nLastNode == 2) && (lastNode2 == startNode)) ||
 	                              (lastNode1 == startNode))) {
@@ -7153,18 +7178,18 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 	// 発駅(=分岐駅)でなく最初の分岐駅(-1+1=0)でない間
 	// 最後の分岐駅からfromをトレース >> route[]
 	while ((id != startNode) && (0 < id)) {
-		TRACE( _T("  %s, %s, %s."), RouteUtil::LineName(lineid).c_str(), RouteUtil::LineName(line_id[id - 1]).c_str(), RouteUtil::StationName(Jct2id(id)).c_str());
-		if (lineid != line_id[id - 1]) {
+		TRACE( _T("  %s, %s, %s."), RouteUtil::LineName(lineid).c_str(), RouteUtil::LineName(dijkstra.lineId(id - 1)).c_str(), RouteUtil::StationName(Jct2id(id)).c_str());
+		if (lineid != dijkstra.lineId(id - 1)) {
 			if (IS_SHINKANSEN_LINE(lineid)) {
 				//TRACE("@@@@->%d\n", lineid);
                 /* 新幹線→並行在来線 */
 				int32_t zline = RouteUtil::GetHZLine(lineid, Route::Jct2id(id));
-				for (idb = id; (idb != startNode) && (line_id[idb - 1] == zline);
-				     idb = fromNode[idb - 1]) {
-					TRACE( _T("    ? %s %s/"),  RouteUtil::LineName(line_id[idb - 1]).c_str(), RouteUtil::StationName(Jct2id(idb)).c_str());
+				for (idb = id; (idb != startNode) && (dijkstra.lineId(idb - 1) == zline);
+				     idb = dijkstra.fromNode(idb - 1)) {
+					TRACE( _T("    ? %s %s/"),  RouteUtil::LineName(dijkstra.lineId(idb - 1)).c_str(), RouteUtil::StationName(Jct2id(idb)).c_str());
 					;
 				}
-				if (line_id[idb - 1] == lineid) { /* もとの新幹線に戻った ? */
+				if (dijkstra.lineId(idb - 1) == lineid) { /* もとの新幹線に戻った ? */
 					//TRACE(".-.-.-");
 					id = idb;
 					continue;
@@ -7182,7 +7207,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 						continue;
 					}
 					/* thru */
-					TRACE( _T("+-+-+-: %s(%s) : "), RouteUtil::LineName(line_id[idb - 1]).c_str(), RouteUtil::LineName(lineid).c_str());
+					TRACE( _T("+-+-+-: %s(%s) : "), RouteUtil::LineName(dijkstra.lineId(idb - 1)).c_str(), RouteUtil::LineName(lineid).c_str());
 				} else {
 					//TRACE("&");
 				}
@@ -7194,12 +7219,12 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
             // 新幹線に戻ってきている場合(花巻→盛岡）、花巻まで（北上から）無効化にする
             //
 			route.push_back(id - 1);
-			lineid = line_id[id - 1];
+			lineid = dijkstra.lineId(id - 1);
 			TRACE( _T("  o\n"));
 		} else {
 			TRACE( _T("  x\n"));
 		}
-		id = fromNode[id - 1];
+		id = dijkstra.fromNode(id - 1);
 	}
 
 	//// 発駅=分岐駅
@@ -7210,10 +7235,10 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 	vector<IDENT>::const_reverse_iterator ritr = route.crbegin();
 	int32_t bid = -1;
 	while (ritr != route.crend()) {
-		TRACE(_T("> %s %s\n"), RouteUtil::LineName(line_id[*ritr]).c_str(), RouteUtil::StationName(Jct2id(*ritr + 1)).c_str());
-		if (0 < bid && IS_SHINKANSEN_LINE(line_id[bid])) {
-			if (RouteUtil::GetHZLine(line_id[bid], Route::Jct2id(*ritr + 1)) == line_id[*ritr]) {
-				line_id[*ritr] = line_id[bid];	/* local line -> bullet train */
+		TRACE(_T("> %s %s\n"), RouteUtil::LineName(dijkstra.lineId(*ritr)).c_str(), RouteUtil::StationName(Jct2id(*ritr + 1)).c_str());
+		if (0 < bid && IS_SHINKANSEN_LINE(dijkstra.lineId(bid))) {
+			if (RouteUtil::GetHZLine(dijkstra.lineId(bid), Route::Jct2id(*ritr + 1)) == dijkstra.lineId(*ritr)) {
+				dijkstra.setLineId(*ritr, dijkstra.lineId(bid));	/* local line -> bullet train */
 				route_rev.pop_back();
 			}
 		}
@@ -7226,13 +7251,13 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 	route_rev.clear();	/* release */
 
 	if (lastNode == 0) {	// 着駅は非分岐駅?
-TRACE(_T("last: %s\n"), RouteUtil::LineName(line_id[route.back()]).c_str());
+TRACE(_T("last: %s\n"), RouteUtil::LineName(dijkstra.lineId(route.back())).c_str());
 		lid = Route::LineIdFromStationId(end_station_id); // 着駅所属路線ID
 		// 最終分岐駅～着駅までの営業キロ、運賃計算キロを取得
 		//km = Route::Get_node_distance(lid, end_station_id, Route::Jct2id(a));
 		//km += minCost[route.back()];	// 最後の分岐駅までの累積計算キロを更新
-		if ((lid == line_id[route.back()]) ||
-		    IsAbreastShinkansen(lid, line_id[route.back()],
+		if ((lid == dijkstra.lineId(route.back())) ||
+		    IsAbreastShinkansen(lid, dijkstra.lineId(route.back()),
 		                        Jct2id(route.back() + 1),
 		                        end_station_id)) {
 			route.pop_back();	// if   着駅の最寄分岐駅の路線=最後の分岐駅?
@@ -7244,7 +7269,7 @@ TRACE(_T("last: %s\n"), RouteUtil::LineName(line_id[route.back()]).c_str());
 		lid = 0;
 	}
 
-	if ((1 < route_list_raw.size()) && (1 < route.size()) && (route_list_raw.back().lineId == line_id[route[0]])) {
+	if ((1 < route_list_raw.size()) && (1 < route.size()) && (route_list_raw.back().lineId == dijkstra.lineId(route[0]))) {
 TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), RouteUtil::LineName(route_list_raw.back().lineId).c_str(), RouteUtil::StationName(route_list_raw.back().stationId).c_str());
 		removeTail();
 		ASSERT(0 < route_list_raw.size()); /* route_list_raw.size() は0か2以上 */
@@ -7254,7 +7279,7 @@ TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), RouteUtil::LineNam
 	a = 1;
 	for (i = 0; i < (int32_t)route.size(); i++) {
 TRACE(_T("route[] add: %s\n"), RouteUtil::StationName(Route::Jct2id(route[i] + 1)).c_str());
-		a = add(line_id[route[i]], /*stationId,*/ Route::Jct2id(route[i] + 1));
+		a = add(dijkstra.lineId(route[i]), /*stationId,*/ Route::Jct2id(route[i] + 1));
 		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
 		if ((a <= 0) || (a == 5)) {
 			//ASSERT(FALSE);
@@ -8000,8 +8025,6 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 				this->base_calc_km += sales_km;
 				this->local_only = false;		// 幹線
 
-				fare_add = 0;
-
 			} else {
 				int32_t company_id1;
 				int32_t company_id2;
@@ -8057,7 +8080,7 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 						} else {
 							vector<int32_t> comfare_1(4, 0);	// a+++b
 
-							// if ex. 氷見-金沢 併算割引非適用 
+							// if ex. 氷見-金沢 併算割引非適用
 							if (IS_CONNECT_NON_DISCOUNT_FARE(comfare.at(3)) && (((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN)) != (last_flag & ((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN))))) {
 								/* 乗継割引なし */
 								if (!FARE_INFO::Fare_company(station_id1, ite->stationId, comfare)) {
@@ -8673,7 +8696,7 @@ bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, vector<in
 		fare_work = campanyFare.at(0) = dbo.getInt(0);	// fare
 		campanyFare.at(2) = dbo.getInt(1);	// academic
 		campanyFare.at(3) = dbo.getInt(2);	// flg
-	
+
 		// (0=5円は切り捨て, 1=5円未満切り上げ)
 		if (IS_ROUND_UP_CHILDREN_FARE(campanyFare.at(3))) {
 			campanyFare.at(1) = round_up(fare_work / 2);

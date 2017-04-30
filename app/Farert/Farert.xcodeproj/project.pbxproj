@@ -30,7 +30,10 @@
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
-		2A4CCE251EAF431C0083260C /* Routefolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4CCE241EAF431C0083260C /* Routefolder.swift */; };
+		2A4CCE271EB556A00083260C /* Routefolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4CCE261EB556A00083260C /* Routefolder.swift */; };
+		2A57119E1EB836F800D593DD /* McPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119D1EB836F800D593DD /* McPicker.swift */; };
+		2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */; };
+		2A5711A21EB8CFA800D593DD /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5711A11EB8CFA800D593DD /* RoundButton.swift */; };
 		2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A69CCDE1E736EF1007F478A /* jrdb2017.db */; };
 		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
 		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
@@ -73,7 +76,10 @@
 		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
 		2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = FarertTests/PrefixHeader.pch; sourceTree = SOURCE_ROOT; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		2A4CCE241EAF431C0083260C /* Routefolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Routefolder.swift; path = ../Routefolder.swift; sourceTree = "<group>"; };
+		2A4CCE261EB556A00083260C /* Routefolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Routefolder.swift; sourceTree = "<group>"; };
+		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
+		2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolderTableViewCell.swift; sourceTree = "<group>"; };
+		2A5711A11EB8CFA800D593DD /* RoundButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		2A69CCDE1E736EF1007F478A /* jrdb2017.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2017.db; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2A69CD0C1E75153D007F478A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -168,7 +174,7 @@
 		2A2BB0CA1AD6980600F7DED2 /* model */ = {
 			isa = PBXGroup;
 			children = (
-				2A4CCE241EAF431C0083260C /* Routefolder.swift */,
+				2A4CCE261EB556A00083260C /* Routefolder.swift */,
 				2A69CCDE1E736EF1007F478A /* jrdb2017.db */,
 				2ABD92E61E19EEA9002488E0 /* c_route.mm */,
 				2ABD92E81E19F685002488E0 /* c_route.h */,
@@ -192,10 +198,13 @@
 		2A2BB0CB1AD6986800F7DED2 /* custom */ = {
 			isa = PBXGroup;
 			children = (
+				2A57119D1EB836F800D593DD /* McPicker.swift */,
 				2A2BB0A81AD6970D00F7DED2 /* RouteSelStationSegue.swift */,
 				2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */,
 				2AE7546A1AE21E8B0020F59C /* FarertTableViewCell.swift */,
 				2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */,
+				2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */,
+				2A5711A11EB8CFA800D593DD /* RoundButton.swift */,
 			);
 			name = custom;
 			sourceTree = "<group>";
@@ -293,10 +302,13 @@
 				2A2BB0B31AD6970D00F7DED2 /* RouteSelStationSegue.swift in Sources */,
 				2A2BB0DC1AD6BE8500F7DED2 /* alpdb.cpp in Sources */,
 				2A2BB0B41AD6970D00F7DED2 /* SelectLineTableViewController.swift in Sources */,
+				2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */,
 				2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */,
+				2A57119E1EB836F800D593DD /* McPicker.swift in Sources */,
 				2A2BB0B91AD6970D00F7DED2 /* VersionInfoViewController.swift in Sources */,
-				2A4CCE251EAF431C0083260C /* Routefolder.swift in Sources */,
+				2A4CCE271EB556A00083260C /* Routefolder.swift in Sources */,
 				2A2BB0C81AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift in Sources */,
+				2A5711A21EB8CFA800D593DD /* RoundButton.swift in Sources */,
 				2A2BB0C11AD6974400F7DED2 /* CSTableViewController.swift in Sources */,
 				2A2BB0B61AD6970D00F7DED2 /* SettingsTableViewController.swift in Sources */,
 				2A2BB0AF1AD6970D00F7DED2 /* MainTableViewController.swift in Sources */,

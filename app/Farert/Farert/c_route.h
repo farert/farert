@@ -34,6 +34,7 @@ enum DBIDX {
 
 #define MAX_HISTORY              20
 #define MAX_ARCHIVE_ROUTE        100
+#define MAX_HOLDER               60
 
 @interface cRouteItem : NSObject
 
@@ -126,6 +127,7 @@ enum DBIDX {
 // Identifier of Start Terminal
 - (NSInteger)startStationId;
 - (NSInteger)lastStationId;
+- (NSString*)routeScript;
 
 
 @end
@@ -194,6 +196,7 @@ enum DBIDX {
 
 - (id)initWithRoute:(cRoute*)source;
 - (id)initWithRoute:(cRoute*)source count:(NSInteger)count;
+- (id)initWithRouteList:(cRouteList*)source;
 
 - (void)sync:(cRoute*)source;
 - (void)sync:(cRoute*)source count:(NSInteger)count;

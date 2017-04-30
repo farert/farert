@@ -463,6 +463,10 @@ int g_tax; /* main.m */
     return obj_route_list->routeList().back().stationId;
 }
 
+- (NSString*)routeScript
+{
+    return [NSString stringWithUTF8String:obj_route_list->route_script().c_str()];
+}
 
 @end
 /* end of cRouteList */
@@ -659,6 +663,14 @@ int g_tax; /* main.m */
 {
     if (self = [super init]) {
         self->obj_calcroute = new CalcRoute(*source->obj_route, (int)count);
+    }
+    return self;
+}
+
+- (id)initWithRouteList:(cRouteList*)source
+{
+    if (self = [super init]) {
+        self->obj_calcroute = new CalcRoute(*source->obj_route_list, -1);
     }
     return self;
 }

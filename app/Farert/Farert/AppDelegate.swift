@@ -31,7 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false;
         }
 
-        
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
 
         let leftViewController = storyboard.instantiateViewController(withIdentifier: "LeftViewController") as! LeftTableViewController

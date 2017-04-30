@@ -162,12 +162,6 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         }
     }
 
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
-    }
-    */
     override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
         self.editBegin()
         return UITableViewCellEditingStyle.delete

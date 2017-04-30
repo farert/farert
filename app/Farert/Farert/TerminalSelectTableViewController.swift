@@ -39,6 +39,8 @@ class TerminalSelectTableViewController: CSTableViewController {
         
         searchController.searchBar.placeholder = "駅名（よみ）入力"
 
+        //tableView.register(UITableViewCell.self, forCellReuseIdentifier: "termSearchbarCell")
+        
         // Setup the Scope Bar
         tableView.tableHeaderView = searchController.searchBar
 
@@ -67,6 +69,10 @@ class TerminalSelectTableViewController: CSTableViewController {
         
         self.navigationItem.rightBarButtonItem!.isEnabled = false // Disable [Edit] button
         self.clerBarButtonItem.isEnabled = false    // Disable [Clear] button
+    }
+  
+    deinit {
+        searchController.view.removeFromSuperview()
     }
     
     override func viewWillAppear(_ animated : Bool) {

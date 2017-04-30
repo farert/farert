@@ -278,6 +278,7 @@ open class SlideMenuController: UIViewController, UIGestureRecognizerDelegate {
             if leftPanGesture == nil {
                 leftPanGesture = UIPanGestureRecognizer(target: self, action: #selector(self.handleLeftPanGesture(_:)))
                 leftPanGesture!.delegate = self
+                leftPanGesture!.cancelsTouchesInView = false    //******
                 view.addGestureRecognizer(leftPanGesture!)
             }
             
