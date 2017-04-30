@@ -290,8 +290,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 } else {
                     routeStat = .OK  // success
                 }
-                viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;
-                scroll_flag = true;
             }
             if let cds = cCalcRoute(route: ds) {
                 fareInfo = cds.calcFare()
@@ -561,20 +559,30 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         return nil
     }
     
+    // delegate from LeftView
+    
     // Selected at leftView row
     func changeRoute(route: cRouteList) {
         ds = cRoute(routeList: route)
+        routeStat = .OK
+        if let cds = cCalcRoute(route: ds) {
+            fareInfo = cds.calcFare()
+        } else {
+            fareInfo = FareInfo()
+        }
         tableView.reloadData()
         viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;       
     }
 
-
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
+    // each view before dispatch
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let segid : String = segue.identifier!
         let apd:AppDelegate = UIApplication.shared.delegate as! AppDelegate
+
+        viewContextMode = 0
 
         if segid == "terminalSelectSegue" {
             apd.context = FGD.CONTEXT_TERMINAL_VIEW;
@@ -594,7 +602,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             let resultViewCtlr : ResultTableViewController = segue.destination as! ResultTableViewController
             resultViewCtlr.ds = cCalcRoute(route: self.ds, count: idx + 2)
             apd.context = 0;
-            
+
         } else if segid == "routeManagerSegue" {
             /* 経路一覧ビュー */
             let naviCtlr : UINavigationController = segue.destination as! UINavigationController
@@ -606,8 +614,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
             apd.context = 0;
         } else if segid == "versionInfoTransitSegue" {
-            //
+            // バージョン情報
         } else if segid == "settingsSegue" {
+            // 設定(データベース切り替え)
             /// // save Route
             self.routeScript = ds.routeScript().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         } else {
@@ -713,6 +722,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     @IBAction func cancelTerminal(_ segue: UIStoryboardSegue) {
         _ = self.navigationController?.popViewController(animated: false)
 
+        viewContextMode = 0
         print("canelTerminal segue=\(segue.identifier ?? "(null)")")
     }
     
@@ -721,6 +731,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //
     @IBAction func closeModal(_ segue: UIStoryboardSegue) {
         print("MainView: closeModal:")
+        viewContextMode = 0
+        
         if segue.identifier == "settingsSegue" {
             let view : SettingsTableViewController = segue.source as! SettingsTableViewController
             if (0 < view.selectDbId) {  // is change DB
@@ -904,6 +916,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         var rc : Int
         
+        viewContextMode = 0
+        
         if (from == TAG_UIACTIONSHEET_AUTOROUTE) {
             if (apd.context != FGD.CONTEXT_AUTOROUTE_VIEW) {
                 return;
@@ -955,7 +969,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     } else {
                         fareInfo = FareInfo()
                     }
-                    viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;
                     self.tableView.reloadData()
                 }
             }
