@@ -16,6 +16,7 @@ public enum Aggregate: Int {
     case STOCKW    // 株割り4割
     case ACADEMIC   // 学割
     case ACADEMIC_ROUNDTRIP   // 学割往復
+    case NULLFARE   // 無効
 }
 
 
@@ -208,6 +209,7 @@ public class Routefolder {
         if let cds = cCalcRoute(routeList: item.routeList) {
             if let fareInfo : FareInfo = cds.calcFare() {
                 var fare : Int = 0
+
                 switch item.indexOfAggregate {
                 case Aggregate.NORMAL.rawValue:   // 普通運賃
                     fare = fareInfo.fare
@@ -241,8 +243,8 @@ public class Routefolder {
                     } else {
                         fare = fareInfo.roundTripFareWithCompanyLine
                     }
-                default:
-                    fare = fareInfo.fare
+                default:    // 無効
+                    return (0, 0)
                 }
                 return (fare, fareInfo.totalSalesKm)
             }
