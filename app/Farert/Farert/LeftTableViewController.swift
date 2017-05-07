@@ -34,7 +34,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     var delegate: MainTableViewControllerDelegate?
     
     let aggregate_label = [ "普通運賃", "小児運賃", "往復運賃", "株割運賃", "株4割運賃",
-                            "学割運賃", "学割往復" ]
+                            "学割運賃", "学割往復" , "無効"]
     
     // MARK: Method
   
