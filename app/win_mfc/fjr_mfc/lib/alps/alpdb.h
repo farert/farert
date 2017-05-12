@@ -943,7 +943,6 @@ private:
 
 
 private:
-	static bool 	IsSpecificCoreDistance(const vector<RouteItem>& route);
 	static int32_t	Get_node_distance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 #if defined TEST || defined _DEBUG
 public:
