@@ -227,9 +227,9 @@ public class Routefolder {
                     if fareInfo.availCountForFareOfStockDiscount < 1 {
                         fare = fareInfo.fare
                     } else if 1 < fareInfo.availCountForFareOfStockDiscount {
-                        fare = fareInfo.fare(forStockDiscount: 0)
-                    } else {
                         fare = fareInfo.fare(forStockDiscount: 1)
+                    } else {
+                        fare = fareInfo.fare(forStockDiscount: 0)
                     }
                 case Aggregate.ACADEMIC.rawValue:    // 学割
                     if fareInfo.isAcademicFare {

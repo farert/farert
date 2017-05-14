@@ -7540,6 +7540,7 @@ int32_t FARE_INFO::countOfFareStockDiscount() const
         break;
     case JR_CENTRAL:
     case JR_WEST:
+    case JR_KYUSYU:
         return 1;
         break;
     default:
@@ -7559,10 +7560,11 @@ int32_t FARE_INFO::getFareStockDiscount(int32_t index, tstring& title, bool appl
 const
 {
 	const TCHAR* const titles[] = {
-		_T("JR東日本 株主優待2割"),
-		_T("JR東日本 株主優待4割"),
-		_T("JR西日本 株主優待5割"),
-		_T("JR東海   株主優待1割"),
+		_T("JR東日本 株主優待2割"), // 0
+		_T("JR東日本 株主優待4割"), // 1
+		_T("JR西日本 株主優待5割"), // 2
+		_T("JR東海   株主優待1割"), // 3
+        _T("JR九州   株主優待5割"), // 4
 	};
 
 	int32_t cfare;
@@ -7594,6 +7596,11 @@ const
     case JR_WEST:
         if (index == 0) {
             title = titles[2];
+            return fare_discount(cfare, 5);
+        }
+    case JR_KYUSYU:
+        if (index == 0) {
+            title = titles[4];
     		return fare_discount(cfare, 5);
         }
         break;
@@ -7615,6 +7622,7 @@ const
 //  @retval JR_EAST = JR東日本
 //  @retval JR_WEST = JR西日本
 //  @retval JR_CENTRAL = JR東海
+//  @retval JR_KYUSYU = JR九州
 //  @retval 0 = 無効
 //
 int32_t FARE_INFO::getStockDiscountCompany() const
@@ -7625,6 +7633,9 @@ int32_t FARE_INFO::getStockDiscountCompany() const
 	if ((JR_GROUP_MASK & companymask) == (1 << (JR_WEST - 1))) {
 		return JR_WEST;
 	}
+    if ((JR_GROUP_MASK & companymask) == (1 << (JR_KYUSYU - 1))) {
+        return JR_KYUSYU;
+    }
 	if (((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1)))) {
         /* 都区内または横浜市内が適用されていたらJR東海ではない*/
         /* Route::CheckOfRule86() */
