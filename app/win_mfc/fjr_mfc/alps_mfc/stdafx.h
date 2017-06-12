@@ -47,7 +47,7 @@ typedef std::basic_string<TCHAR> tstring;
 #include <AtlConv.h>
 #include "../lib/db/sqlite3.h"
 #include "../lib/db/db.h"
-#include "../lib/alps/alpdb.h"
+#include "../../../alps/alpdb.h"
 #include "../lib/alps/alpfile.h"
 
 
