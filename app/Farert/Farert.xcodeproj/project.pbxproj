@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A0A0B5C1EE994ED00764EF1 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */; };
 		2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */; };
 		2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0881AD6966500F7DED2 /* Main.storyboard */; };
 		2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08B1AD6966500F7DED2 /* Images.xcassets */; };
@@ -23,7 +24,6 @@
 		2A2BB0C41AD6974400F7DED2 /* FarertDataObj.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0BE1AD6974400F7DED2 /* FarertDataObj.m */; };
 		2A2BB0C61AD6974400F7DED2 /* HeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */; };
 		2A2BB0C81AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */; };
-		2A2BB0DC1AD6BE8500F7DED2 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D01AD6BE8500F7DED2 /* alpdb.cpp */; };
 		2A2BB0DD1AD6BE8500F7DED2 /* db.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D21AD6BE8500F7DED2 /* db.cpp */; };
 		2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */; };
 		2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */; };
@@ -46,6 +46,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = alpdb.cpp; path = ../../alps/alpdb.cpp; sourceTree = "<group>"; };
+		2A0A0B5B1EE994ED00764EF1 /* alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = alpdb.h; path = ../../alps/alpdb.h; sourceTree = "<group>"; };
 		2A2BB07F1AD6966500F7DED2 /* Farert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Farert.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A2BB0891AD6966500F7DED2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -64,8 +66,6 @@
 		2A2BB0BE1AD6974400F7DED2 /* FarertDataObj.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FarertDataObj.m; sourceTree = "<group>"; };
 		2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeaderTableViewCell.swift; sourceTree = "<group>"; };
 		2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveRouteTableViewController.swift; sourceTree = "<group>"; };
-		2A2BB0D01AD6BE8500F7DED2 /* alpdb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = alpdb.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		2A2BB0D11AD6BE8500F7DED2 /* alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = alpdb.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2A2BB0D21AD6BE8500F7DED2 /* db.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = db.cpp; sourceTree = "<group>"; };
 		2A2BB0D31AD6BE8500F7DED2 /* db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = db.h; sourceTree = "<group>"; };
 		2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2014.db; sourceTree = "<group>"; };
@@ -183,8 +183,8 @@
 				2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */,
 				2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */,
 				2A2BB0BE1AD6974400F7DED2 /* FarertDataObj.m */,
-				2A2BB0D01AD6BE8500F7DED2 /* alpdb.cpp */,
-				2A2BB0D11AD6BE8500F7DED2 /* alpdb.h */,
+				2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */,
+				2A0A0B5B1EE994ED00764EF1 /* alpdb.h */,
 				2A2BB0D21AD6BE8500F7DED2 /* db.cpp */,
 				2A2BB0D31AD6BE8500F7DED2 /* db.h */,
 				2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */,
@@ -300,8 +300,8 @@
 				2AE7546B1AE21E8B0020F59C /* FarertTableViewCell.swift in Sources */,
 				2A2BB0B81AD6970D00F7DED2 /* TerminalSelectTableViewController.swift in Sources */,
 				2A2BB0B31AD6970D00F7DED2 /* RouteSelStationSegue.swift in Sources */,
-				2A2BB0DC1AD6BE8500F7DED2 /* alpdb.cpp in Sources */,
 				2A2BB0B41AD6970D00F7DED2 /* SelectLineTableViewController.swift in Sources */,
+				2A0A0B5C1EE994ED00764EF1 /* alpdb.cpp in Sources */,
 				2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */,
 				2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */,
 				2A57119E1EB836F800D593DD /* McPicker.swift in Sources */,

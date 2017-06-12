@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../lib/alps/alpdb.h"
+#include "../../../alps/alpdb.h"
 
 
 

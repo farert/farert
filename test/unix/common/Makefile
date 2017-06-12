@@ -6,8 +6,8 @@ ifeq ($(EXP), 1)
 vpath %cpp exp
 vpath %h exp
 else
-vpath %cpp ../../../app/win_mfc/fjr_mfc/lib/alps
-vpath %h ../../../app/win_mfc/fjr_mfc/lib/alps
+vpath %cpp ../../../app/alps
+vpath %h ../../../app/alps
 endif
 
 vpath %cpp ../../../app/win_mfc/fjr_mfc/lib/db
@@ -25,7 +25,7 @@ test :
 	gcc $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -c $< -o $@
 
 .cpp.o:
-	g++ $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/win_mfc/fjr_mfc/lib/alps -std=c++0x -c $< -o $@
+	g++ $(CFLAGS) -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/alps -std=c++0x -c $< -o $@
 
 
 test : $(OBJS)

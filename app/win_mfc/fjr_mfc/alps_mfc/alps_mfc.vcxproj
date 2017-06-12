@@ -125,7 +125,7 @@
     <ClInclude Include="TermSel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\lib\alps\alpdb.cpp" />
+    <ClCompile Include="..\..\..\alps\alpdb.cpp" />
     <ClCompile Include="..\lib\alps\alpfile.cpp" />
     <ClCompile Include="..\lib\db\db.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
