@@ -2729,7 +2729,7 @@ JR東日本 株主優待4： \123,456
 			_tcscat_s(cb, NumOf(cb), _T("(割)\r\n"));
 		} else if (fare_info.isRule114()) {
 			sResult += cb;
-			_sntprintf_s(cb, MAX_BUF, _T("\r\n規定114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n"),
+			_sntprintf_s(cb, MAX_BUF, _T("\r\n規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n"),
 		                              num_str_yen(fare_info.getFareForDisplayPriorRule114()).c_str(),
 		                              num_str_yen(fare_info.roundTripFareWithCompanyLinePriorRule114()).c_str());
 		} else {
@@ -4725,7 +4725,7 @@ int32_t CalcRoute::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector
 							route_item = out_route_list->insert(route_item, RouteItem(trule69list.at(0).at(0), IDENT2(a69list.at(0))));
 							route_item++;
 						}
-					} else if (2 == a69list.size()) {
+					} else if (2 <= a69list.size()) {
 						/* 置換処理3 */
 						if (route_item->stationId == IDENT2(a69list.back())) {
 							route_item->lineId = trule69list.at(0).at(0);
@@ -7331,7 +7331,7 @@ FARE_INFO::FareResult 	FARE_INFO::roundTripFareWithCompanyLine() const
 {
 	FareResult fareW;
 
-	if (6000 < total_jr_calc_km) {	/* 往復割引 */
+	if (6000 < total_jr_sales_km) {	/* 往復割引 */
 		fareW.fare = fare_discount(jr_fare, 1) * 2 + company_fare * 2;
 		fareW.isDiscount = true;
 		ASSERT(this->roundTripDiscount == true);
@@ -7351,7 +7351,7 @@ int32_t 	FARE_INFO::roundTripFareWithCompanyLinePriorRule114() const
 {
     int32_t fareW;
 
-    if (6000 < total_jr_calc_km) {	/* 往復割引 */
+    if (6000 < total_jr_sales_km) {	/* 往復割引 */
         ASSERT(FALSE);
     }
     if (!isRule114()) {
@@ -7684,7 +7684,7 @@ int32_t 	FARE_INFO::roundTripAcademicFareWithCompanyLine() const
 
 	// JR
 
-	if (6000 < total_jr_calc_km) {	/* 往復割引かつ学割 */
+	if (6000 < total_jr_sales_km) {	/* 往復割引かつ学割 */
 		fareW = fare_discount(fare_discount(jr_fare, 1), 2);
 		ASSERT(this->roundTripDiscount == true);
 	} else {
@@ -7711,7 +7711,7 @@ int32_t 	FARE_INFO::roundTripChildFareWithCompanyLine() const
 {
 	int32_t fareW;
 
-	if (6000 < total_jr_calc_km) {	/* 往復割引 */
+	if (6000 < total_jr_sales_km) {	/* 往復割引 */
 		fareW = fare_discount(fare_discount(jr_fare, 5), 1) * 2 + company_fare_child * 2;
 	} else {
 		fareW = fare_discount(jrFare(), 5) * 2 + company_fare_child * 2;
@@ -8424,7 +8424,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG last_flag, const vector<RouteItem>& route
             this->avail_days = 1;	/* 当日限り */
         }
 
-        if (6000 < total_jr_calc_km) {	/* 往復割引 */
+        if (6000 < total_jr_sales_km) {	/* 往復割引 */
             this->roundTripDiscount = true;
         } else {
             this->roundTripDiscount = false;
