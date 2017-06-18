@@ -38,7 +38,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     let TAG_UIACTIONSHEET_AUTOROUTE:Int         = 10
     let TAG_UIACTIONSHEET_QUERYSETUPROUTE:Int   = 11
     let TAG_UIACTIONSHEET_OSAKAKANDETOUR:Int    = 12
-    
+    let TAG_UIACTIONSHEET_ROUTEHOLDER:Int       = 13
+  
     enum LPROC {
         case UNKNOWN
         case REVERSE
@@ -67,7 +68,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     var routeScript: String?
     var frontView: UIView!
     var indicator: UIActivityIndicatorView!
-
+    var dsPre: cRouteList? //左画面から受信、適用前の仮格納庫
     
     // MARK: - View functions
     
@@ -159,8 +160,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         
         // ここから
-        if viewContextMode == FGD.CONTEXT_AUTOROUTE_ACTION {
-            
+        switch viewContextMode {
+        case FGD.CONTEXT_AUTOROUTE_ACTION:
             let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
             if let selid = appDelegate.selectTerminalId {
                 self.actionSheetController(
@@ -170,18 +171,26 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     from: TAG_UIACTIONSHEET_AUTOROUTE)
             }
     
-        } else if viewContextMode == FGD.CONTEXT_ROUTESELECT_VIEW {
+        case FGD.CONTEXT_ROUTESELECT_VIEW:
             /* from 経路追加 */
             scroll_flag = true
             
-        } else if viewContextMode == FGD.CONTEXT_BEGIN_TERMINAL_ACTION {
+        case FGD.CONTEXT_BEGIN_TERMINAL_ACTION:
             // 開始駅選択による経路破棄の確認
             self.actionSheetController(["はい", "いいえ"],
                 title: "表示経路を破棄してよろしいですか？",
                 message: "",
                 from: TAG_UIACTIONSHEET_QUERYSETUPROUTE)
             
-        } else if (viewContextMode == FGD.CONTEXT_ROUTESETUP_VIEW) {
+        case FGD.CONTEXT_TICKETHOLDER_VIEW:
+            // ticker holder : from changeRoute()
+            self.actionSheetController(["はい", "いいえ"],
+                                       title: "表示経路を破棄してよろしいですか？",
+                                       message: "",
+                                       from: TAG_UIACTIONSHEET_ROUTEHOLDER)
+            // to actionSheetController()
+            
+        case FGD.CONTEXT_ROUTESETUP_VIEW:
             // from 保持経路ビュー(ArchiveRouteTableView)
             showIndicate();    /* start Activity and Disable UI */
             self.navigationController!.view!.isUserInteractionEnabled = false;
@@ -191,7 +200,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
                 self.processDuringIndicatorAnimating(self.routeScript as AnyObject? ?? "" as AnyObject)
             })
+        default:
+            break
         }
+    
         viewContextMode = 0;
         // ここまでは ObjCまでは、viewWillApear にあったが、こっちに写してみた
 
@@ -562,16 +574,21 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     // delegate from LeftView
     
     // Selected at leftView row
+    //  from tableView:didSelectRowAt in LeftTableView
+    //
     func changeRoute(route: cRouteList) {
-        ds = cRoute(routeList: route)
-        routeStat = .OK
-        if let cds = cCalcRoute(route: ds) {
-            fareInfo = cds.calcFare()
+        let curscr = ds.routeScript()
+        let newscr = route.routeScript()
+        if (ds.getCount() <= 1) || curscr == newscr || cRouteUtil.isRoute(inStrage: newscr) {
+            // すぐやる
+            dsPre = nil
+            viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW
         } else {
-            fareInfo = FareInfo()
+            // 聞いてからやる
+            dsPre = route
+            viewContextMode = FGD.CONTEXT_TICKETHOLDER_VIEW
         }
-        tableView.reloadData()
-        viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;       
+        // to: viewDidAppear()
     }
 
     // MARK: - Navigation
@@ -918,7 +935,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         viewContextMode = 0
         
-        if (from == TAG_UIACTIONSHEET_AUTOROUTE) {
+        switch from {
+        case TAG_UIACTIONSHEET_AUTOROUTE:
             if (apd.context != FGD.CONTEXT_AUTOROUTE_VIEW) {
                 return;
             }
@@ -941,7 +959,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 self.processDuringIndicatorAnimating(selectIndex as AnyObject)
             })
             
-        } else if (from == TAG_UIACTIONSHEET_QUERYSETUPROUTE) {
+        case TAG_UIACTIONSHEET_QUERYSETUPROUTE:
             /*  経路表示時の１行目の発駅変更(既存経路破棄→新規発駅設定)
             * doneTerminal: -> willApear
             */
@@ -951,7 +969,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 self.tableView.reloadData()
             }
             
-        } else if (from == TAG_UIACTIONSHEET_OSAKAKANDETOUR) {
+        case TAG_UIACTIONSHEET_OSAKAKANDETOUR:
             /*  大阪環状線 遠回り／近回り
             */
             if nil == title.range(of: "キャンセル") {
@@ -972,6 +990,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     self.tableView.reloadData()
                 }
             }
+        case TAG_UIACTIONSHEET_ROUTEHOLDER:
+            /* きっぷホルダ 経路選択 from changeRoute, viewDidApear, actionSheetController */
+            if nil != title.range(of: "はい") {
+                self.setRouteList()
+            }
+        default:
+            // don't come here
+            break
         }
     }
 
@@ -1017,6 +1043,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         cRouteUtil.save(toTerminalHistory: cRouteUtil.stationNameEx(termId))
     }
     
+    //  経路設定
+    //
+    func setRouteList() {
+        ds = cRoute(routeList: dsPre)
+        routeStat = .OK
+        if let cds = cCalcRoute(route: ds) {
+            fareInfo = cds.calcFare()
+        } else {
+            fareInfo = FareInfo()
+        }
+        tableView.reloadData()
+    }
+    
+    
     //  TableView scroll-up(追加後、削除後、最短経路、保持経路)
     //
     //
@@ -1028,6 +1068,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         }
     }
     
+    
+    // Message view
+    //
     func alertMessage(_ title : String, message : String) {
         if #available(iOS 8, OSX 10.10, *) {
             // iOS8
