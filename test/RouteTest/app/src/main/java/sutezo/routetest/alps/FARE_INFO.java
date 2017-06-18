@@ -764,7 +764,7 @@ public class FARE_INFO {
                 this.avail_days = 1;	/* 当日限り */
             }
 
-            if (6000 < total_jr_calc_km) {	/* 往復割引 */
+            if (6000 < total_jr_sales_km) {	/* 往復割引 */
                 this.roundTripDiscount = true;
             } else {
                 this.roundTripDiscount = false;
@@ -886,7 +886,7 @@ public class FARE_INFO {
     FareResult 	roundTripFareWithCompanyLine() {
         FareResult fareW = new FareResult();
 
-        if (6000 < total_jr_calc_km) {	/* 往復割引 */
+        if (6000 < total_jr_sales_km) {	/* 往復割引 */
             fareW.fare = fare_discount(jr_fare, 1) * 2 + company_fare * 2;
             fareW.isDiscount = true;
             RouteUtil.ASSERT (this.roundTripDiscount == true);
@@ -905,7 +905,7 @@ public class FARE_INFO {
     int 	roundTripFareWithCompanyLinePriorRule114() {
         int fareW;
 
-        if (6000 < total_jr_calc_km) {	/* 往復割引 */
+        if (6000 < total_jr_sales_km) {	/* 往復割引 */
             RouteUtil.ASSERT (false);
         }
         if (!isRule114()) {
@@ -923,7 +923,7 @@ public class FARE_INFO {
     int 	roundTripChildFareWithCompanyLine()	{
         int fareW;
 
-        if (6000 < total_jr_calc_km) {	/* 往復割引 */
+        if (6000 < total_jr_sales_km) {	/* 往復割引 */
             fareW = fare_discount(fare_discount(jr_fare, 5), 1) * 2 + company_fare_child * 2;
     	} else {
     		fareW = fare_discount(jrFare(), 5) * 2 + company_fare_child * 2;
@@ -1263,7 +1263,7 @@ public class FARE_INFO {
 
         // JR
 
-        if (6000 < total_jr_calc_km) {	/* 往復割引かつ学割 */
+        if (6000 < total_jr_sales_km) {	/* 往復割引かつ学割 */
             fareW = fare_discount(fare_discount(jr_fare, 1), 2);
             RouteUtil.ASSERT (this.roundTripDiscount == true);
         } else {

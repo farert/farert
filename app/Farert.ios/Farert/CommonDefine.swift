@@ -17,6 +17,7 @@ struct FGD {
     static let  CONTEXT_AUTOROUTE_ACTION      = 34392  // Action sheet
     static let  CONTEXT_BEGIN_TERMINAL_ACTION = 34393
     static let  CONTEXT_ROUTESETUP_VIEW       = 34394
+    static let  CONTEXT_TICKETHOLDER_VIEW     = 34395
     
     //static let  CONTEXT_AUTOROUTE_BUTTON 23943  // Auto route barbutton
     //static let  CONTEXT_JUNCTION_SWITCH_BUTTON 23945    // Arrive station barbutton
