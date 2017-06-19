@@ -103,11 +103,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ReadMe.txt" />
     <None Include="res\alps_mfc.ico" />
     <None Include="res\alps_mfc.rc2" />
-    <None Include="res\db1.bin" />
     <None Include="res\jr.db.enc">
       <FileType>BMP</FileType>
     </None>

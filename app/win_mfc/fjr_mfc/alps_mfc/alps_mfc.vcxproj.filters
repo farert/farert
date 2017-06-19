@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
     <None Include="res\alps_mfc.rc2">
       <Filter>リソース ファイル</Filter>
     </None>
@@ -25,12 +24,8 @@
     <None Include="res\jr.db.enc">
       <Filter>リソース ファイル</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
     <None Include="res\jrdb2014.db.enc" />
     <None Include="res\jrdb2015.db.enc" />
-    <None Include="res\db1.bin">
-      <Filter>リソース ファイル</Filter>
-    </None>
     <None Include="res\jrdb2017.db.enc" />
   </ItemGroup>
   <ItemGroup>
@@ -78,9 +73,6 @@
     <ClCompile Include="..\lib\db\sqlite3.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\alps\alpdb.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\lib\db\db.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -91,6 +83,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="RouteInputDlg.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\alps\alpdb.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
