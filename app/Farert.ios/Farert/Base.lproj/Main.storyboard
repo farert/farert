@@ -1111,8 +1111,8 @@
                                     <action selector="gotoSupportURL:" destination="70O-gX-2JZ" eventType="touchUpInside" id="eX4-Ha-8G1"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 17.06" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
-                                <rect key="frame" x="143" y="150.5" width="89.5" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 17.06.01" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
+                                <rect key="frame" x="132.5" y="150.5" width="110.5" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -1339,7 +1339,8 @@
                                                 <constraint firstItem="uSf-t8-g8L" firstAttribute="leading" secondItem="DUm-yM-NgY" secondAttribute="leadingMargin" constant="40" id="sSF-6Q-KQr"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                        <color key="backgroundColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <connections>
                                             <outlet property="aggregateType" destination="uSf-t8-g8L" id="r4e-Ud-k5W"/>
                                             <outlet property="holderItemTitle" destination="5Ef-lW-Xwz" id="erq-yY-sEr"/>
