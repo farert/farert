@@ -579,14 +579,17 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     func changeRoute(route: cRouteList) {
         let curscr = ds.routeScript()
         let newscr = route.routeScript()
-        if (ds.getCount() <= 1) || curscr == newscr || cRouteUtil.isRoute(inStrage: newscr) {
-            // すぐやる
-            dsPre = nil
-            viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW
-        } else {
-            // 聞いてからやる
-            dsPre = route
-            viewContextMode = FGD.CONTEXT_TICKETHOLDER_VIEW
+        if (curscr != newscr) {
+            if (ds.getCount() <= 1) || cRouteUtil.isRoute(inStrage: newscr) {
+                // すぐやる
+                setRouteList(routeList: route)
+                dsPre = nil
+                viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW
+            } else {
+                // 聞いてからやる
+                dsPre = route
+                viewContextMode = FGD.CONTEXT_TICKETHOLDER_VIEW
+            }
         }
         // to: viewDidAppear()
     }
@@ -861,7 +864,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             case TAG_UIACTIONSHEET_AUTOROUTE:
                 ac.popoverPresentationController?.sourceView = self.view
                 ac.popoverPresentationController?.sourceRect = self.tableView.rectForFooter(inSection: 0)
-            case TAG_UIACTIONSHEET_QUERYSETUPROUTE :
+            case TAG_UIACTIONSHEET_QUERYSETUPROUTE, TAG_UIACTIONSHEET_ROUTEHOLDER :
                 ac.popoverPresentationController?.sourceView = self.view
                 ac.popoverPresentationController?.sourceRect = self.tableView.rectForHeader(inSection: 0)
             default:
@@ -993,7 +996,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         case TAG_UIACTIONSHEET_ROUTEHOLDER:
             /* きっぷホルダ 経路選択 from changeRoute, viewDidApear, actionSheetController */
             if nil != title.range(of: "はい") {
-                self.setRouteList()
+                self.setRouteList(routeList: nil)
             }
         default:
             // don't come here
@@ -1045,8 +1048,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     //  経路設定
     //
-    func setRouteList() {
-        ds = cRoute(routeList: dsPre)
+    func setRouteList(routeList : cRouteList?) {
+        if nil == routeList {
+            self.ds = cRoute(routeList: self.dsPre)
+        } else {
+            self.ds = cRoute(routeList: routeList!)
+        }
         routeStat = .OK
         if let cds = cCalcRoute(route: ds) {
             fareInfo = cds.calcFare()

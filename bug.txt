@@ -1,4 +1,27 @@
 
+—— release 17.06.01 >>>
+
+b#17062301
+iOS8できっぷホルダの運賃種別を切り替えるPickerViewを選択すると（OKもキャンセルも）クラッシュする
+-> UIAlertControllerにかえる（iOS8のみ・9以上は McPickerを使う)
+
+b#17062302
+iOS9 + iPADminiできっぷホルダの経路選択をした時、経路選択ビューの経路を上書きしても良いかのPopupメニューの表示時、クラッシュする
+-> actionSheetController()の中のSwitch/Case文にTAG_UIACTIONSHEET_ROUTEHOLDERを含め忘れていた.
+
+b#17062303
+経路選択ビューの表示が空のとききっぷホルダの経路選択しても経路選択ビューに反映されない。
+->実装し忘れてた
+
+b#17062304
+発駅、着駅のUISearchControllerがiOS8,9で表示されていなかった.
+-> 修正した
+
+
+
+
+—— release 17.06 >>>
+
 FareResult 規程と規定がある
 
 メイン画面のルート編集後ホルダのルートを選択すると失われてしまう。

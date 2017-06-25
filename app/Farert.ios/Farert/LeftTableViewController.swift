@@ -165,18 +165,52 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         //*let cell : HolderTableViewCell = btn.superview?.superview as! HolderTableViewCell
         //*let row : Int = (tableView.indexPath(for: cell)?.row)!
         let row : Int = btn.tag
-        
-        McPicker.show(data: [aggregate_label], doneHandler: { selections in
-            if let sel : String = selections[0] {
-                if let bidx : Int = self.aggregate_label.index(of: sel) {
-                    self.routeFolder.setAggregateType(index: row, aggr: bidx)
-                    //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
-                    btn.setTitle(sel, for: .normal) // self.tableView.reloadData()
-                    self.updateAggregate()
-                    self.tableView.reloadData()
+ 
+        if #available(iOS 9.0, *) {
+            let mcPicker = McPicker(data: [aggregate_label])
+            let customLabel = UILabel()
+            customLabel.textAlignment = .center
+            customLabel.textColor = .white
+            mcPicker.label = customLabel
+            mcPicker.toolbarButtonsColor = .white
+            mcPicker.toolbarBarTintColor = .darkGray
+            mcPicker.pickerBackgroundColor = .gray
+            
+            mcPicker.show() { selections in
+                if let sel : String = selections[0] {
+                    if let bidx : Int = self.aggregate_label.index(of: sel) {
+                        self.routeFolder.setAggregateType(index: row, aggr: bidx)
+                        //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
+                        btn.setTitle(sel, for: .normal) // self.tableView.reloadData()
+                        self.updateAggregate()
+                        self.tableView.reloadData()
+                    }
                 }
             }
-        })
+            
+        } else {
+            /* iOS8 */
+            let ac : UIAlertController = UIAlertController(title: "運賃種別", message: nil, preferredStyle: .actionSheet)
+            for item in aggregate_label {
+                ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction!) -> Void in
+                    if let bidx : Int = self.aggregate_label.index(of: item) {
+                        self.routeFolder.setAggregateType(index: row, aggr: bidx)
+                        //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
+                        btn.setTitle(item, for: .normal) // self.tableView.reloadData()
+                        self.updateAggregate()
+                        self.tableView.reloadData()
+                    }
+                }))
+            }
+            ac.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: nil))
+            // for iPad
+            ac.modalPresentationStyle = UIModalPresentationStyle.popover
+            //ac.popoverPresentationController?.barButtonItem = (sender as! UIBarButtonItem)
+            ac.popoverPresentationController?.sourceView = self.view
+            // end of for iPad
+            self.present(ac, animated: true, completion: nil)
+            
+        }
         // '//*' also is OK
         // don't come here....
     }

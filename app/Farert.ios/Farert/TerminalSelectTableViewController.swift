@@ -37,8 +37,13 @@ class TerminalSelectTableViewController: CSTableViewController {
         definesPresentationContext = true
         searchController.dimsBackgroundDuringPresentation = false
         
+        searchController.hidesNavigationBarDuringPresentation = true
+        
         searchController.searchBar.placeholder = "駅名（よみ）入力"
 
+        searchController.searchBar.searchBarStyle = UISearchBarStyle.prominent
+        searchController.searchBar.sizeToFit()
+        
         //tableView.register(UITableViewCell.self, forCellReuseIdentifier: "termSearchbarCell")
         
         // Setup the Scope Bar
