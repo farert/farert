@@ -497,6 +497,9 @@ DBO RouteUtil::Enum_lines_from_company_prefect(int32_t id)
 //
 DBO RouteUtil::Enum_station_match(LPCTSTR station)
 {
+#ifdef _WINDOWS
+	USES_CONVERSION;
+#endif
 	char sql[256];
 //	const char tsql[] = "/**/select name, rowid, samename from t_station where (sflg&(1<<18))=0 and %s like '%q%%'";
 	const char tsql[] = "/**/select name, rowid, samename from t_station where %s like '%q%%'";
@@ -519,9 +522,9 @@ DBO RouteUtil::Enum_station_match(LPCTSTR station)
 		CT2A qsSame(sameName.c_str(), CP_UTF8);
 
 		sqlite3_snprintf(sizeof(sql), sql, tsql,
-								"name", qsName);
+								"name", LPSTR(qsName));
 		sqlite3_snprintf(sizeof(sql) - lstrlenA(sql), sql + lstrlenA(sql), tsql_s,
-								qsSame);
+								LPSTR(qsSame));
 #else
 		sqlite3_snprintf(sizeof(sql), sql, tsql,
 								"name", stationName.c_str());
@@ -539,7 +542,7 @@ DBO RouteUtil::Enum_station_match(LPCTSTR station)
 #ifdef _WINDOWS
 		CT2A qsName(stationName.c_str(), CP_UTF8);	// C++ string to UTF-8
 		sqlite3_snprintf(sizeof(sql), sql, tsql,
-								bKana ? "kana" : "name", qsName);
+								bKana ? "kana" : "name", LPSTR(qsName));
 #else
 		sqlite3_snprintf(sizeof(sql), sql, tsql,
 								bKana ? "kana" : "name", stationName.c_str());
