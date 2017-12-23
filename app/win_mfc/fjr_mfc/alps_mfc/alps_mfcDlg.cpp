@@ -97,6 +97,7 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedButtonSpecialCity)
 	ON_BN_CLICKED(IDC_BUTTON_OSAKAKAN, &Calps_mfcDlg::OnBnClickedButtonOsakaKan)
 	ON_BN_CLICKED(IDC_BUTTON_NEEREST, &Calps_mfcDlg::OnBnClickedButtonNeerest)
+	ON_BN_CLICKED(IDC_CHECK_JRTOKAI, &Calps_mfcDlg::OnBnClickedCheckJrtokai)
 END_MESSAGE_MAP()
 
 
@@ -313,6 +314,8 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 	}
 	else {
 		// add route list 駅Id
+
+		m_route.setSameShinZaiKyusyu(BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SHINZAISAME));
 
 		/* 経路追加 */// last line
 		curLineId = IDENT1(pLRoute->GetItemData(nRoute - 1));	//(stationId is not yet strage in HIWORD)
@@ -804,6 +807,7 @@ void Calps_mfcDlg::ResetContent()
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
 	CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
+	CheckDlgButton(IDC_CHECK_JRTOKAI, BST_UNCHECKED);		/* [JR東海株主券適用]ボタン押し下げ状態 */
 
 	SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
 	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
@@ -812,9 +816,9 @@ void Calps_mfcDlg::ResetContent()
 	GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ボタン */
 	GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(FALSE);/* Disable [AutoRoute]ボタン */
 	GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
+	GetDlgItem(IDC_CHECK_JRTOKAI)->EnableWindow(FALSE);
+	SetDlgItemText(IDC_CHECK_JRTOKAI, _T("JR東海株主券適用"));
 }
-
-
 
 //	[発駅を単駅に指定／着駅を単駅に指定]
 //
@@ -891,6 +895,21 @@ void Calps_mfcDlg::OnBnClickedCheckRuleapply()
 	}
 	showFare();
 }
+
+
+//	[JR東海株主券適用]ボタン
+//
+void Calps_mfcDlg::OnBnClickedCheckJrtokai()
+{
+	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_JRTOKAI)) {
+		m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	}
+	else {
+		m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	}
+	showFare();
+}
+
 
 //	[リバース]Pushボタン
 //	経路を逆転する
@@ -1353,3 +1372,6 @@ void CAboutDlg::OnNMClickSyslink1(NMHDR *pNMHDR, LRESULT *pResult)
 	ShellExecuteW(m_hWnd, L"open", L"http://farert.blogspot.jp", NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
+
+
+

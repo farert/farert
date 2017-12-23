@@ -87,5 +87,8 @@ public:
 	afx_msg void OnBnClickedButtonSpecialCity();
 	afx_msg void OnBnClickedButtonOsakaKan();
 	afx_msg void OnBnClickedButtonNeerest();
+	afx_msg void OnBnClickedButtonShinzai();
+	afx_msg void OnBnClickedButtonJrtokai();
+	afx_msg void OnBnClickedCheckJrtokai();
  };
 
