@@ -5,4 +5,7 @@
     </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup>
+    <RESOURCE_FILE>alps_mfc.rc</RESOURCE_FILE>
+  </PropertyGroup>
 </Project>

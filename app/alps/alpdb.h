@@ -7,14 +7,20 @@ typedef struct {
     char name[128];             // UTF-8 max 42character
     int32_t tax;
     char createdate[64];    // UTF-8 max 42character '2015/03/14 12:43:43'
+    uint32_t options;
 } DBsys;
 #else
 typedef struct {
     TCHAR name[128];             // max 42character
     int32_t tax;
     TCHAR createdate[64];        // max 42character '2015/03/14 12:43:43'
+    uint32_t options;
 } DBsys;
 #endif
+
+// options
+#define DB_SHINZAI_SAME 0       // 小倉ー博多間 新幹線・在来線同一視
+
 
 #if defined __cplusplus
 
@@ -667,27 +673,31 @@ typedef struct
 #define BLF_RULE_EN             9   // ON: 特例適用(System->User)
 
 // bit 10 JR東日本管内のJR東海
-#define BLF_JREAST_IN_TOKAI     10
+//#171219# #define BLF_JRTOKAI_STOCK       10      // user -> System
+#define BLF_JREAST_IN_TOKAI     11      // System -> user
 
 // bit 11-20 発着 都区市内 適用
-#define BLF_TER_BEGIN_CITY		11		// [区][浜][名][京][阪][神][広][九][福][仙][札]
-#define BLF_TER_FIN_CITY		12
-#define BLF_TER_BEGIN_YAMATE	13		// [山]
-#define BLF_TER_FIN_YAMATE		14
-#define BLF_TER_BEGIN_2CITY		15		// not used
-#define BLF_TER_FIN_2CITY		16		// not used
-#define BLF_TER_BEGIN_CITY_OFF	17
-#define BLF_TER_FIN_CITY_OFF	18
-#define BLF_TER_BEGIN_OOSAKA	19	// 大阪・新大阪
-#define BLF_TER_FIN_OOSAKA		20
+#define BLF_TER_BEGIN_CITY		12		// [区][浜][名][京][阪][神][広][九][福][仙][札]
+#define BLF_TER_FIN_CITY		13
+#define BLF_TER_BEGIN_YAMATE	14		// [山]
+#define BLF_TER_FIN_YAMATE		15
+#define BLF_TER_BEGIN_2CITY		16		// not used
+#define BLF_TER_FIN_2CITY		17		// not used
+#define BLF_TER_BEGIN_CITY_OFF	18
+#define BLF_TER_FIN_CITY_OFF	19
+#define BLF_TER_BEGIN_OOSAKA	20	// 大阪・新大阪
+#define BLF_TER_FIN_OOSAKA		21
 #define LF_TER_CITY_MASK     (0x3ff << BLF_TER_BEGIN_CITY)	// 11-20bit
 
 // 会社線
-#define BLF_COMPNCHECK			21		// 会社線通過チェック有効
-#define BLF_COMPNPASS			22		// 通過連絡運輸
-#define BLF_COMPNDA				23		// 通過連絡運輸不正フラグ
-#define BLF_COMPNBEGIN			24		// 会社線で開始
-#define BLF_COMPNEND			25		// 会社線で終了
+#define BLF_COMPNCHECK			22		// 会社線通過チェック有効
+#define BLF_COMPNPASS			23		// 通過連絡運輸
+#define BLF_COMPNDA				24		// 通過連絡運輸不正フラグ
+#define BLF_COMPNBEGIN			25		// 会社線で開始
+#define BLF_COMPNEND			26		// 会社線で終了
+
+// Grobal
+#define BLF_SAMESHINZAIKYUSYU   30  // Route only : 小倉-博多間 新在同一視
 
 #define BLF_END					31	// arrive to end.
 // end of last_flag
@@ -869,6 +879,7 @@ private:
     int32_t         reBuild();
 public:
 	int32_t         setDetour(bool enabled = true);
+    void            setSameShinZaiKyusyu(bool enabled = true);
 
     //static tstring  Route_script(const vector<RouteItem>& routeList);
 
@@ -1050,6 +1061,14 @@ protected:
 
 #define IS_FAREOPT_ENABLED(flg)               (((flg) & 0x3f) != 0)
 
+#if 0 // #171219
+// bit 6-7
+// empty or start only
 
+// bit 8-9(User->System)
+#define FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK 	(1<<6)   // 有効ビットマスク
+#define FAREOPT_JRTOKAI_STOCK_APPLIED			(1<<6)	// JR東海株主に適用
+#define FAREOPT_JRTOKAI_STOCK_NO_APPLIED			0   	// JR東海株主に非適用
+#endif
 
 #endif	/* _ALPDB_H__ */
