@@ -3,38 +3,38 @@
 
 
 
-showFare()�̖߂�l
+showFare()の戻り値
 
 uint32_t RouteList::getFareOption()
-�v�Z���ʂ��w��\�ȃt���O�I�v�V�����̏���Ԃ�
+計算結果より指定可能なフラグオプションの情報を返す
  bit6 on: start only
  bit7   : empty
- bit1:0 : �����1��ʉ�
- bit5:4 : ����K�p����Ă��Ĕ�K�p�w�肳��Ă���
- bit4   : ����K�p����Ă��Ĕ�K�p����Ă��Ȃ�(�K��)
- bit1   : �� �s��s������(����)
- bit0   : �� �s��s������(����)
+ bit1:0 : 大阪環状線1回通過
+ bit5:4 : 特例適用されていて非適用指定されている
+ bit4   : 特例適用されていて非適用されていない(規定)
+ bit1   : 発 都区市内発着(名阪)
+ bit0   : 着 都区市内発着(名阪)
 
 uint32_t CalcRoute::getFareOption()
  	uint32_t rc = RouteList::getFareOption();
-�@�@ return if empty or start
+　　 return if empty or start
 
 void RouteList::setFareOption(uint16_t cooked, uint16_t availbit)
-Rule�K�p��
-��������w�w��P�w���s���w��
+Rule適用か
+京阪線着駅指定単駅か市内駅か
 
-JR���C�@
-�t���O��Ԃ��i��L��bit
-���q�����̐ݒ�@
+JR東海　
+フラグ一つ返す（上記のbit
+小倉博多の設定　
 
 
 
 
 2014-12-11
-iOS���Ŏg�p���郁�\�b�h���X�g
+iOS側で使用するメソッドリスト
 
 - RouteDataController:
-    initWithAssign(�C�j�V�����C�U) route.assign(route&)
+    initWithAssign(イニシャライザ) route.assign(route&)
 
 - ResultView(entity)
   routeScript
@@ -64,220 +64,220 @@ iOS���Ŏg�p���郁�\�b�h���X�g
 
 2014-11-3
 sflg 13-15 reserve
-�̂���13���g�p �uBCBULARB:�V�������p���܂ދߍx��ԃt���O�v�Ƃ��Ďg�p
-�Č��A���s�A�V���A�����A������
-�V�_��-�V���A�V�_��-�����΂�NG�Ȃ̂ŁA�V���-�����΂�NG�ƂȂ�悤�ɂ��Ȃ���΂Ȃ�Ȃ��B
-���w�A���w�݂̂Ŕ��肷��ƁA���C���V�����ƎR�z�V�����ł킩��Ă��邩��ǂ����̂́A�V���-�����΂�NG�Ȃ�OK�ƂȂ�B
+のうち13を使用 「BCBULARB:新幹線利用も含む近郊区間フラグ」として使用
+米原、京都、新大阪、相生、西明石
+新神戸-新大阪、新神戸-西明石はNGなので、新大阪-西明石はNGとなるようにしなければならない。
+発駅、着駅のみで判定すると、東海道新幹線と山陽新幹線でわかれているから良いものの、新大阪-西明石はNGなのOKとなる。
 
 
 2013-12-9
--�\�\�\�\�\�\�\�\�\�\�\
-GIT �R�~�b�g��̃��O
--�\�\�\�\�\�\�\�\�\�\
+-―――――――――――
+GIT コミット後のログ
+-――――――――――
 2014-2-6
-DB�V�����A�����q�A�g�˂𕪊�w�Ɏw��
+DB新幹線、西小倉、吉塚を分岐駅に指定
 
 2014-2-3
-showFare()�s���S�o�H��ǉ�
+showFare()不完全経路を追加
 
 2014-1-26
  albdp.cpp - getBsrjctSpType() query invalid statement '%d% -> '?'
- getBsrjctSpType() I/F�ύXAttrOfStationOnLineLine()�œ���lflg�̉���8�r�b�g��
- sflg�̂��̂ł��邩�琳�����Ȃ��B
- TODO: test_result.txt ���ʂ̊m�F
- TODO: jb21��add()�ł�x�ł͂Ȃ��BshowFare��YET�t���O���Ė������ł��邱�Ƃ�
- ���߂��Ȃ���΂Ȃ�Ȃ��B
- TODO: �������̎���
+ getBsrjctSpType() I/F変更AttrOfStationOnLineLine()で得たlflgの下位8ビットは
+ sflgのものであるから正しくない。
+ TODO: test_result.txt 結果の確認
+ TODO: jb21はadd()ではxではない。showFareでYETフラグ見て未完成であることを
+ しめさなければならない。
+ TODO: 長岡廻りの実装
 
 2014-1-22
-  �t���O�r�b�g23-16��Off�ɂ��Ă���A�V�����抷�t���O(b19-20)�����X�g���Ă��܂��Ă����B
-  AttrOfStationOnLineLine()�C���őΉ�
+  フラグビット23-16がOffにしており、新幹線乗換フラグ(b19-20)がロストしてしまっていた。
+  AttrOfStationOnLineLine()修正で対応
 
-2014-1-3�@�R�~�b�g
+2014-1-3　コミット
 
 2013-12-20
-Excel�C��
-	b29ON�̒�`
-	�ŏI�J����(20�J����)�ɁA�H��1����w1�H��2�抷�w���`�B���ꂼ��Ajctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2 �ƂȂ�
-	                                                                  ��z���@�@�@�@�@�@�Y��              ����`          �{��
-	����L�̏��Ԃ�'/'�ŋ�؂�A���ׂ�
-	jctsp_line_id2��b31�̓��c�F�R���P�[�X�ł̂ݎg�p�Ȃ̂Ŗ���`
+Excel修正
+	b29ONの定義
+	最終カラム(20カラム)に、路線1分岐駅1路線2乗換駅を定義。それぞれ、jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2 となる
+	                                                                  上越線　　　　　　浦佐              未定義          宮内
+	を上記の順番に'/'で区切り、並べる
+	jctsp_line_id2はb31の日田彦山線ケースでのみ使用なので未定義
 
-	��������-�����q��///���������
-	20�J��������܂��́A!�Ȃ疢��`����ȊO�́Ab29��ON�Ƃ���
+	鹿児島線-西小倉は///だけ入れる
+	20カラムが空または、!なら未定義それ以外は、b29をONとする
 
 
-DB�C��
-DB�X�N���v�g�C��
-	t_jctspcl.type��ǉ�
-	b29�ǉ�
-	b29��t_jcpspcl�̃��R�[�h�ǉ�(���R�[�h�\���ύX�C�����܂�)
+DB修正
+DBスクリプト修正
+	t_jctspcl.type列追加
+	b29追加
+	b29のt_jcpspclのレコード追加(レコード構造変更修正も含む)
 
-DB��b29:BSRJCTSP_B
+DBのb29:BSRJCTSP_B
 
 alpdb.cpp:
-b30:BSRNOTYET�̎���
-b31:BSRJCTHORD �̒�`�ǉ�
-�t���[�Ɖӏ������d�l���̎���(�{��-�������ƁA����������2���̌v3��)
+b30:BSRNOTYETの実装
+b31:BSRJCTHORD の定義追加
+フローと箇条書き仕様書の実装(宮内-長岡廻りと、福岡県廻りの2件の計3件)
 
 2013-12-19 (commit complete)
-�t���O�̒�`��啝�Ɏd�l�ύX
-���q-�����q���
-�{��-�������̎d�l�ǉ��ƏC��
+フラグの定義を大幅に仕様変更
+小倉-西小倉回り
+宮内-長岡回りの仕様追加と修正
 
--�\�\�\�\�\�\�\�\�\�\
+-――――――――――
 
 
 lflg
-31 �������w		x
-30 ���0�A1��DB�ǃG���[	o
-29 69����ԊJ�n�w	o Query_a69list�Ŏg�p
-28 69����ԊJ�n�w	o ���� �Ǐo�ł͕s�v
-27 �V����		o �V�����抷����Ŏg�p
-26 �V����		o
-25 �V����		o
+31 分岐特例駅		x
+30 常に0、1はDB読エラー	o
+29 69条区間開始駅	o Query_a69listで使用
+28 69条区間開始駅	o 同上 読出では不要
+27 新幹線		o 新幹線乗換判定で使用
+26 新幹線		o
+25 新幹線		o
 24 -
-23 ��А�		��
-22 �V����������w	�E
-21 ��Ћ��E�w
-20-17 69�Ŏg�pDB�ǎ���0
-16-13 �V�������s�ݗ�ID GetHZLine()�Ŏg�p(�V�����̂�)DB�ǂݍ��ݎ��͕s�v
+23 会社線		△
+22 新幹線内分岐駅	・
+21 会社境界駅
+20-17 69で使用DB読時は0
+16-13 新幹線並行在来ID GetHZLine()で使用(新幹線のみ)DB読み込み時は不要
 0-12 station.cflg
-add()�ŃZ�b�g���́A0x1fff��Mask���邽��0-12�܂ł̂ݎg�p
+add()でセット時は、0x1fffでMaskするため0-12までのみ使用
 
 
-- 88��
+- 88条
 CheckOfRule88j()
 
 (a)
-�@�@�@�@�@�V���
-���C�����@(�_��)
-�R�z��    XXXX
+　　　　　新大阪
+東海道線　(神戸)
+山陽線    XXXX
  :          :
 
-*XXXX�́A�R�z���A�_�˂���P�H�܂ł̋����ȏ�ɂ��邱��
-�V���A���C�����A�R�z�����`�F�b�N����΁A(�_��)�͐_�˂ł������肦�Ȃ��B
+*XXXXは、山陽線、神戸から姫路までの距離以上にあること
+新大阪、東海道線、山陽線をチェックすれば、(神戸)は神戸でしかありえない。
 |
 V
-�@�@�@�@�@���
-���C�����@(�_��)
-�R�z��    XXXX
+　　　　　大阪
+東海道線　(神戸)
+山陽線    XXXX
  :          :
-�ɒu������
+に置き換え
 
 (b)
  :
           XXXX
-�R�z��    (�_��)
-���C�����@�V���
+山陽線    (神戸)
+東海道線　新大阪
 
-*XXXX�́A�R�z���A�_�˂���P�H�܂ł̋����ȏ�ɂ��邱��
-�V���A���C�����A�R�z�����`�F�b�N����΁A(�_��)�͐_�˂ł������肦�Ȃ��B
+*XXXXは、山陽線、神戸から姫路までの距離以上にあること
+新大阪、東海道線、山陽線をチェックすれば、(神戸)は神戸でしかありえない。
 |
 V
  :
           XXXX
-�R�z��    (�_��)
-���C�����@���
-�ɒu������
+山陽線    (神戸)
+東海道線　大阪
+に置き換え
 
 (c)
-            ���
-(���C����)  �V���
-�R�z�V����  YYYY
+            大阪
+(東海道線)  新大阪
+山陽新幹線  YYYY
  :
-*���A�V���A�R�z�V�������`�F�b�N����΁A(���C����)�͎���
-YYYY�͎R�z�V�����ɐV��ォ��̋������P�H�ȉ��ł��邱��
+*大阪、新大阪、山陽新幹線をチェックすれば、(東海道線)は自明
+YYYYは山陽新幹線に新大阪からの距離が姫路以遠であること
 |
 v
-            �V���
-�R�z�V����  YYYY
-�ɒu������
-�ł͂Ȃ��A
-            ���
-���C����    �_��       *1
-�R�z��      ������     *1
-�R�z�V����  YYYY
-�ɒu������
+            新大阪
+山陽新幹線  YYYY
+に置き換え
+ではなく、
+            大阪
+東海道線    神戸       *1
+山陽線      西明石     *1
+山陽新幹線  YYYY
+に置き換え
 
-*1�ɒǉ��t���O�Ƃ��Čo�R�\�����Ȃ���ǉ�
-���Ɍv�Z���O���t���O���݂���
+*1に追加フラグとして経由表示しないを追加
+他に計算除外をフラグも設ける
 
 (d)
  :
 ?????        YYYY
-�R�z�V����   �V���
-(���C����)   ���
+山陽新幹線   新大阪
+(東海道線)   大阪
 
-*���A�V���A�R�z�V�������`�F�b�N����΁A(���C����)�͎���
-YYYY�͎R�z�V�����ɐV��ォ��̋������P�H�ȉ��ł��邱��
+*大阪、新大阪、山陽新幹線をチェックすれば、(東海道線)は自明
+YYYYは山陽新幹線に新大阪からの距離が姫路以遠であること
 |
 V
  :
 ?????        YYYY
-�R�z�V����   �V���
-�ł͂Ȃ��A
-            ���
-���C����    �_��       *1
-�R�z��      ������     *1
-�R�z�V����  YYYY
-�ɒu������
+山陽新幹線   新大阪
+ではなく、
+            大阪
+東海道線    神戸       *1
+山陽線      西明石     *1
+山陽新幹線  YYYY
+に置き換え
 
-*1�ɒǉ��t���O�Ƃ��Čo�R�\�����Ȃ���ǉ�
-���Ɍv�Z���O���t���O���݂���H
-
-
+*1に追加フラグとして経由表示しないを追加
+他に計算除外をフラグも設ける？
 
 
 
-- �^���v�Z�\��
 
 
-c: show_route() ��show_fare()�̒��ɂ����
+- 運賃計算構成
+
+
+c: show_route() をshow_fare()の中にいれる
 
 showFare:
 	checkOfRuleSpecificCoreLine(void); // route_list_raw -> route_list_cooked
-	86,87�K�p�̔����\��
+	86,87適用の発着表示
 	fare_info.calc_fare(route_list_raw);
-	fare_info.fare �ɋ��z
+	fare_info.fare に金額
 
 
 
-showFare() �̏����v��
-	- checkOfRuleSpecificCoreLine() /* 86, 87, 69, 70�� 114��K�p���`�F�b�N */
-	- 114��K�p����Ă�����1�s�ڂɂ��̏ꍇ�̉^���z��\������
-	- route_list_cooked����łȂ��ƋK���K�p�Ɣ��f���s��s�������\����
-	     - route_list_cooked�ɑ΂���calc_fare()
-	- route_list_cooked����̏ꍇ�K����K�p�Ɣ��f��
-	     - route_list_raw�ɑ΂���calc_fare()
-	- fare_info�̉^����\��
+showFare() の処理要約
+	- checkOfRuleSpecificCoreLine() /* 86, 87, 69, 70条 114条適用かチェック */
+	- 114条適用されていたら1行目にその場合の運賃額を表示する
+	- route_list_cookedが空でないと規則適用と判断し都区市内発着表示を
+	     - route_list_cookedに対してcalc_fare()
+	- route_list_cookedが空の場合規則非適用と判断し
+	     - route_list_rawに対してcalc_fare()
+	- fare_infoの運賃を表示
 	-
 	-
 	-
-����-�⍑
-�o�R�F�R�z��
-�c�ƃL���F 182.0 km �v�Z�L���F 182.0 km
-�^���F\3,260     \2,600[2����] \3,260[����] \6,520[����] \1,950[4����]
-�L�������F   2��
+下関-岩国
+経由：山陽線
+営業キロ： 182.0 km 計算キロ： 182.0 km
+運賃：\3,260     \2,600[2割引] \3,260[周割] \6,520[往復] \1,950[4割引]
+有効日数：   2日
 
-����-�⍑
-�o�R�F�R�z��<�����l>�⓿��
-�c�ƃL���F 182.0 km �v�Z�L���F 182.0 km
-�^���F\3,260     \2,600[2����] \3,260[����] \6,520[����] \1,950[4����]
-�L�������F   2��
+下関-岩国
+経由：山陽線<櫛ヶ浜>岩徳線
+営業キロ： 182.0 km 計算キロ： 182.0 km
+運賃：\3,260     \2,600[2割引] \3,260[周割] \6,520[往復] \1,950[4割引]
+有効日数：   2日
 
 fare_info.calc_fare:
 	FARE_INFO::aggregate_fare_info(ite->lineId, station_id1, ite->stationId)) {
-		FARE_INFO::CheckSpecficFarePass(line_id, station_id1, station_id2);	// ���ʉ��Z��ԁi�����Д���)
-		FARE_INFO::Fare_company(station_id1, station_id2);			// ��А�
-	FARE_INFO::days_ticket(this->sales_km);						// JR�݂̂̉c�ƃL����86,87�K�p��̋����Ōv�Z���ׂ�
-	FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);	// ����^��
+		FARE_INFO::CheckSpecficFarePass(line_id, station_id1, station_id2);	// 特別加算区間（同一会社発着)
+		FARE_INFO::Fare_company(station_id1, station_id2);			// 会社線
+	FARE_INFO::days_ticket(this->sales_km);						// JRのみの営業キロで86,87適用後の距離で計算すべき
+	FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId);	// 特例運賃
 
-	* {�́A�m�[�h�� �C���f���g���͊e�m�[�h�ɑ΂��Ă������Ȃ���.
+	* {は、ノード毎 インデント内は各ノードに対していおこなわれる.
 
 
 
-route.checkOfRuleSpecificCoreLine:  86�A87���A69�𔻒聕�o�H�Z�o showFare()�̍ŏ��ɌĂ΂��
+route.checkOfRuleSpecificCoreLine:  86、87条、69条判定＆経路算出 showFare()の最初に呼ばれる
 	Route::CheckOfRule86(route_list_raw, &exit, &enter, &cityId);
 	Route::reRouteRule86j87j(cityId, chk, exit, enter);
 		Route::SpecificCoreAreaFirstTransferStationBy(exit.lineId, IDENT1(cityId));
@@ -285,14 +285,14 @@ route.checkOfRuleSpecificCoreLine:  86�A87���A69�𔻒聕�o�H�Z�o showFare()�̍ŏ
 		Route::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
 		Route::Retrieve_SpecificCoreStation(IDENT2(cityId));
 	Route::ReRouteRule70j(route_list_raw, &route_list_cooked)
-	Route::reRouteRule69j(route_tmp);			/* 69��K�p(route_tmp->route_list_cooked) */
+	Route::reRouteRule69j(route_tmp);			/* 69条適用(route_tmp->route_list_cooked) */
 	Route::CheckOfRule87(route_list_raw);
 	Route::CheckOfRule88j(&route_list_cooked);
 	Route::CheckOfRule114j(route_list_raw, route_list_cooked, rtky & 0x03 | 0x8000);
 	Route::reRouteRule86j87j(cityId, 2, exit, enter);
-	Route::reRouteRule69j(route_tmp);			/* 69��K�p(route_tmp->route_list_cooked) */
+	Route::reRouteRule69j(route_tmp);			/* 69条適用(route_tmp->route_list_cooked) */
 	Route::reRouteRule86j87j(cityId, 1, exit, enter);
-	Route::reRouteRule69j(route_tmp);			/* 69��K�p(route_tmp->route_list_cooked) */
+	Route::reRouteRule69j(route_tmp);			/* 69条適用(route_tmp->route_list_cooked) */
 	Route::CheckOfRule88j(&route_list_cooked);
 	Route::CheckOfRule114j(route_list_raw, route_list_cooked, chk & 0x03);
 
@@ -304,30 +304,30 @@ route.checkOfRuleSpecificCoreLine:  86�A87���A69�𔻒聕�o�H�Z�o showFare()�̍ŏ
 
 ----------------------------------------------------------------
 
-// �������� 1������ �[���؂�̂� 10190 �� 9170
+// 往復割引 1割引き 端数切り捨て 10190 → 9170
 
 #if 0
-���p��ԂɐV���ց`�����Ԃ��܂ޏꍇ�́A�V�����ƍݗ����Ƃł͉^�����قȂ�܂��B
-���̗�̏ꍇ�̉^���v�Z�͎��̂Ƃ���ł��B
-�䂫�͐V�������p�Ŗ{�B�������̉^����K�p���A�^�Z�v�Z�L����1179.3km��13,440�~�B
-�Г�1������12,090�~�B������͍ݗ������p�Ŕ����`�����Ԃ̉^���v�Z�L����1179.3km��
-�u�{�B3�Г��̊����̕��ʉ^���\�v��K�p����13,440�~��JR��B���p���i�����`���֊�79km�j��
-���Z�z150�~�������A13,590�~�B�Г�1������12,230�~�ɂȂ�܂��B
-���������^����12,090�~�{12,230�~��24,320�~�ł��B
+利用区間に新下関～博多間を含む場合は、新幹線と在来線とでは運賃が異なります。
+この例の場合の運賃計算は次のとおりです。
+ゆきは新幹線利用で本州内幹線の運賃を適用し、運算計算キロは1179.3kmで13,440円。
+片道1割引で12,090円。かえりは在来線利用で博多～東京間の運賃計算キロは1179.3kmで
+「本州3社内の幹線の普通運賃表」を適用した13,440円にJR九州利用分（博多～下関間79km）の
+加算額150円を加え、13,590円。片道1割引で12,230円になります。
+往復割引運賃は12,090円＋12,230円＝24,320円です。
 
 
 #endif
 
-// �f�o�b�N----------------------------------------------------------------
+// デバック----------------------------------------------------------------
 
 #if 0	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  �v�Z�L��220km�`�ŁA�s��s���K�p����Ă��Ȃ��ꍇ�A114�������݂�H
+  計算キロ220km～で、都区市内適用されていない場合、114条を試みる？
 					Route::CheckOfRule114j(route, route_new, rtky & 0x03 | 0x8000)
 
 	if (1900 < sales_km) {
 		Route::CheckOfRule114j(route, route_new, rtky & 0x03 | 0x8000);
 	}
 
-	���Óc-����̗�
-	����͉��l����200
+	長津田-国母の例
+	国母は横浜から200
