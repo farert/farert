@@ -902,16 +902,35 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
 	} else {
 		if (line_id == DbidOf::LineIdOf_OOSAKAKANJYOUSEN) {
 			_num = enum_junctions_of_line_for_osakakan();
-		} else if (BIT_CHK(last_flag, BLF_SAMESHINZAIKYUSYU) &&
-				   (line_id == DbidOf::LineIdOf_SANYOSHINKANSEN) &&
-			 	   ((station_id1 == DbidOf::StationIdOf_KOKURA) &&
-				    (station_id2 == DbidOf::StationIdOf_HAKATA)) ||
-	 			   ((station_id1 == DbidOf::StationIdOf_HAKATA) &&
-				    (station_id2 == DbidOf::StationIdOf_KOKURA))) {
- 			JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
- 			JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
- 			_num = 2;
-		} else {
+		} else if ((line_id == DbidOf::LineIdOf_SANYOSHINKANSEN) &&
+					BIT_CHK(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI)) {
+			if ((station_id1 == DbidOf::StationIdOf_HAKATA) &&
+				(station_id2 == DbidOf::StationIdOf_KOKURA)) {
+				/* 山陽新幹線 博多 -> 小倉 */
+				/* 博多の西はもうないし、小倉の東は本州で閉塞区間なので */
+				JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
+				JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
+				_num = 2;
+			}
+			else if (station_id2 == DbidOf::StationIdOf_HAKATA) {
+				/* 山陽新幹線 -> 博多 */				
+				if (station_id1 == DbidOf::StationIdOf_KOKURA) {
+					JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
+					JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
+					_num = 2;
+				}
+				else {
+					_station_id2 = DbidOf::StationIdOf_KOKURA;
+					_num = enum_junctions_of_line();
+					_station_id2 = station_id2;	// restore
+					JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
+					_num += 1;
+				}
+			} 
+			else {
+				_num = enum_junctions_of_line();
+			}
+	} else {
 			_num = enum_junctions_of_line();
 		}
 	}
@@ -1206,7 +1225,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
         TRACE("Osaka-kan: 3time\n");
         jnum = enum_junctions_of_line();
 		ASSERT((check() & 0x01) != 0);
-				enum_junctions_of_line_for_oskk_rev(); // safety
+		enum_junctions_of_line_for_oskk_rev(); // safety
 		ASSERT((check() & 0x01) != 0);
 	}
 	TRACE("\ncheck:%d, far=%d, err=%d\n", check(), farRoutePass.check(), _err);
@@ -2499,13 +2518,11 @@ int32_t Route::reBuild()
 
     // 経路自体は変わらない。フラグのみ
 	// 特例適用、発着駅を単駅指定フラグは保持(大阪環状線廻りは既に持っている)
-	last_flag = routeWork.last_flag | (last_flag & ((1 << BLF_MEIHANCITYFLAG) | (1 << BLF_NO_RULE) | (1 << BLF_RULE_EN)));
-#if 0 // jr-tokai /* #171219 */
     last_flag = routeWork.last_flag |
 	            (last_flag & ((1 << BLF_MEIHANCITYFLAG) |
 				              (1 << BLF_NO_RULE) | (1 << BLF_RULE_EN) |
-							  (1 << BLF_JREAST_IN_TOKAI) | (1 << BLF_JRTOKAI_STOCK)));
-#endif
+							  (1 << BLF_JREAST_IN_TOKAI) | (1 << BLF_JRTOKAI_STOCK) |
+							  (1 << BLF_NOTSAMEKOKURAHAKATASHINZAI)));
     memcpy(jct_mask, routeWork.jct_mask, sizeof(jct_mask));
 
     return rc;
@@ -2812,6 +2829,10 @@ JR東日本 株主優待4： \123,456
 	} else if (fare_info.isBeginEndCompanyLine()) {
 		sResult += _T("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
 	}
+	if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI) &&
+		(fare_info.getStockDiscountCompany() != JR_CENTRAL)) {
+		sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
+	}
 
 	return sResult;
 }
@@ -2858,6 +2879,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, B
 	} else {
 		BIT_OFF(last_flag, BLF_JREAST_IN_TOKAI);
 	}
+	BIT_OFF(last_flag, BLF_JRTOKAI_STOCK_APPLY);
 
 	if (!BIT_CHK(last_flag, BLF_NO_RULE)) {
 		/* 規則適用 */
@@ -2923,7 +2945,6 @@ FARE_INFO CalcRoute::calcFare(int32_t count)
 
 
 
-
 //public:
 //	運賃計算オプションを得る
 //	@return
@@ -2940,7 +2961,9 @@ FARE_INFO CalcRoute::calcFare(int32_t count)
 //     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
 //     & 0x30 = 0x10 : 特例あり;特例適用
 //     & 0x30 = 0x20 : 特例なし:特例非適用
-//
+//	   & 0x300= 0x200: JR東海株主優待券使用
+//	   & 0x300= 0x100: JR東海株主優待券使用しない
+//virtual
 uint32_t RouteList::getFareOption()
 {
 	uint32_t rc;
@@ -2968,23 +2991,22 @@ uint32_t RouteList::getFareOption()
 	// 特例有無 bit 4-5
 	if (BIT_CHK(last_flag, BLF_RULE_EN)) {
 		if (BIT_CHK(last_flag, BLF_NO_RULE)) {
-			rc |= ((1<<4)|(1<<5)); // 0x30
+			rc |= (1 << 5);		// 0x20 do'nt applied
 		}
 		else {
 			rc |= (1 << 4);     // 0x10 default: Applied
 		}
 	}
-#if 0	/* #171219 */
+
 	// JR東海株主 有無 bit 4-5
 	if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
 		if (BIT_CHK(last_flag, BLF_JRTOKAI_STOCK)) {
-			rc |= ((1<<8)|(1<<9));     //
+			rc |= (1 << 9);     // 0x200
 		}
 		else {
-			rc |= (1 << 8);     // default: Applied
+			rc |= (1 << 8);		// default: Applied 0x100
 		}
 	}
-#endif
 	return rc;
 }
 
@@ -3009,8 +3031,15 @@ uint32_t CalcRoute::getFareOption()
 			ASSERT(FALSE);
 			return 0xc0 | rc;	// calc error
 		}
+		rc = RouteList::getFareOption();
 	}
 
+	// JR東海株主 有無 bit 4-5
+	if ((0 != (0x300 & rc)) /*&& BIT_CHK(last_flag, BLF_NO_RULE)*/) {
+		if (!BIT_CHK(last_flag, BLF_JRTOKAI_STOCK_APPLY)) {
+			rc &= ~0x300;
+		}
+	}
 	// 名阪 都区市内 - 都区市内 bit 0-1
 	if ((1 << BLF_TER_BEGIN_CITY_OFF) == (last_flag & (1 << BLF_TER_BEGIN_CITY_OFF))) {
 		rc |= 1;
@@ -3057,20 +3086,19 @@ void RouteList::setFareOption(uint16_t cooked, uint16_t availbit)
 				BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);	/* 発駅=単駅、着駅市内駅 */
 			}
 		} else {
-			ASSERT(FALSE);
-			return;
+			//ASSERT(FALSE);
+			//return;
 		}
 	}
-#if 0 	/* #171219 */
 	/* JR東海株主適用有無 */
 	if (0 != (FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK & availbit)) {
 		if (FAREOPT_JRTOKAI_STOCK_APPLIED == (FAREOPT_JRTOKAI_STOCK_APPLIED & cooked)) {
-			BIT_ON(last_flag,  BLF_JRTOKAI_STOCK);    /* 非適用 */
+			BIT_ON(last_flag,  BLF_JRTOKAI_STOCK);    /* 適用 */
 		} else {
-			BIT_OFF(last_flag,  BLF_JRTOKAI_STOCK);   /* 適用 */
+			BIT_OFF(last_flag,  BLF_JRTOKAI_STOCK);   /* 非適用 */
 		}
 	}
-#endif
+
 #if 0
 	// 大阪環状線 近回り(規定)／遠回り
 	if (0 != (FAREOPT_AVAIL_OSAKAKAN_DETOUR & availbit)) {
@@ -3105,15 +3133,15 @@ int32_t Route::setDetour(bool enabled)
 }
 
 
-//	小倉ー博多 新幹線・在来線同一視
+//	小倉ー博多 新幹線・在来線別線扱い
 //	@param [in] enabled  : true = 有効／ false = 無効
 //
-void Route::setSameShinZaiKyusyu(bool enabled)
+void Route::setNotSameKokuraHakataShinZai(bool enabled)
 {
 	if (enabled) {
-		BIT_ON(last_flag, BLF_SAMESHINZAIKYUSYU);
+		BIT_ON(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
 	} else {
-		BIT_OFF(last_flag, BLF_SAMESHINZAIKYUSYU);
+		BIT_OFF(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
 	}
 }
 
@@ -3124,18 +3152,21 @@ void Route::setSameShinZaiKyusyu(bool enabled)
 //
 int32_t CalcRoute::beginStationId(bool applied_agree)
 {
-    int32_t stid;
+	int32_t stid;
 
-    if (!applied_agree) {
-        return route_list_raw.front().stationId;
-    } else {
-        stid = coreAreaIDByCityId(CSTART);
-        if (stid == 0) {
-            return route_list_cooked.front().stationId;
-        } else {
-            return stid + STATION_ID_AS_CITYNO;
-        }
-    }
+	if (!applied_agree) {
+		return route_list_raw.front().stationId;
+	}
+	else {
+		stid = coreAreaIDByCityId(CSTART);
+		if (stid == 0) {
+			ASSERT(route_list_cooked.front().stationId == route_list_raw.front().stationId);
+			return route_list_raw.front().stationId;
+		}
+		else {
+			return stid + STATION_ID_AS_CITYNO;
+		}
+	}
 }
 
 //  public
@@ -3153,11 +3184,12 @@ int32_t CalcRoute::endStationId(bool applied_agree)
     } else {
         stid = coreAreaIDByCityId(CEND);
         if (stid == 0) {
-            return route_list_cooked.back().stationId;
+			ASSERT(route_list_cooked.back().stationId == route_list_raw.back().stationId);
+			return route_list_raw.back().stationId;
         } else {
-            return stid + STATION_ID_AS_CITYNO;
-        }
-    }
+			return stid + STATION_ID_AS_CITYNO;
+		}
+	}
 }
 
 //  public
@@ -4987,6 +5019,7 @@ int32_t CalcRoute::InCityStation(int32_t cityno, int32_t lineId, int32_t station
 //			3: 発駅≠着駅とも特定都区市内    entr, exit 有効
 //		 0x83: 発駅=着駅=特定都区市内        entr, exit 有効
 //			4: 全駅同一特定都区市内          -
+//		0x8000_0000 : BLF_JRTOKAI_STOCK_APPLY JR東海株主優待券使用メニュー有効可否フラグ
 //
 //	 [九] 山陽新幹線
 //	 [福] 鹿児島線
@@ -5026,9 +5059,17 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIF
 		return 0;	/* empty */
 	}
 	city_no_s = MASK_CITYNO(fite->flag);
+
 	// 発駅が尼崎の場合大阪市内発ではない　基153-2
 	if ((city_no_s == CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == fite->stationId)) {
 		city_no_s = 0;
+	}
+	else if ((city_no_s != 0) && (city_no_s != CITYNO_NAGOYA) && BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
+		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
+		r |= 0x80000000; // BIT_ON(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI
+		if (BIT_CHK(last_flag, BLF_JRTOKAI_STOCK)) { /* by user */
+			city_no_s = 0;
+		}
 	}
 
 	rite = in_route_list.crbegin();
@@ -5041,7 +5082,13 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIF
 	if ((city_no_e == CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == rite->stationId)) {
 		city_no_e = 0;
 	}
-
+	else if ((city_no_e != 0) && (city_no_e != CITYNO_NAGOYA) && BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
+		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
+		r |= 0x80000000; // BIT_ON(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI
+		if (BIT_CHK(last_flag, BLF_JRTOKAI_STOCK)) {
+			city_no_e = 0;
+		}
+	}
 
 	*cityId_pair = MAKEPAIR(city_no_s, city_no_e);
 
@@ -5079,7 +5126,8 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIF
 			return 4;	/* 全駅特定都区市内 */
 			break;
 		case 1:
-			r = 1;		/* 発駅特定都区市内 */
+			r &= ~0xffff;
+			r |= 1;		/* 発駅特定都区市内 */
 			*exit = out_line;
 			break;
 		case 2:
@@ -5562,6 +5610,12 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	/* 特定都区市内発着可否判定 */
 	chk = CalcRoute::CheckOfRule86(route_list_tmp2, last_flag, &exit, &enter, &cityId);
 	TRACE("RuleSpecific:chk 0x%0x, %d -> %d\n", chk, IDENT1(cityId), IDENT2(cityId));
+	if (BIT_CHK(chk, 31)) {
+		BIT_ON(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI
+	}
+	else {
+		BIT_OFF(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI
+	}
 
 	/* 86, 87適用可能性あり？ */
 	if ((chk == 4) || (chk == 0)) {  /* 全駅特定都区市内駅 or 発着とも特定都区市内駅でない場合 */
@@ -7670,6 +7724,7 @@ const
 //  @retval JR_CENTRAL = JR東海
 //  @retval JR_KYUSYU = JR九州
 //  @retval 0 = 無効
+//	会社線も含んでも良い(計算時は除外されるため)
 //
 int32_t FARE_INFO::getStockDiscountCompany() const
 {
@@ -7683,7 +7738,7 @@ int32_t FARE_INFO::getStockDiscountCompany() const
         return JR_KYUSYU;
     }
 	if (((JR_GROUP_MASK & companymask) == (1 << (JR_CENTRAL - 1)))) {
-        /* 都区内または横浜市内が適用されていたらJR東海ではない*/
+        /* [名]以外の[都][区]内または[横]が適用されていたらJR東海ではない*/
         /* Route::CheckOfRule86() */
         if (((STATION_ID_AS_CITYNO < beginTerminalId) &&
              (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO)))||

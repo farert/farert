@@ -71,6 +71,7 @@ Calps_mfcDlg::Calps_mfcDlg(CWnd* pParent /*=NULL*/)
 void Calps_mfcDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_MFCMENUBUTTON_FAREOPT, m_fareOptionMenuButton);
 }
 
 BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
@@ -87,17 +88,15 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_AUTOROUTE, &Calps_mfcDlg::OnBnClickedButtonAutoroute)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_DROPFILES()
-	ON_BN_CLICKED(IDC_CHECK_RULEAPPLY, &Calps_mfcDlg::OnBnClickedCheckRuleapply)
 	ON_BN_CLICKED(IDC_BUTTON_REVERSE, &Calps_mfcDlg::OnBnClickedButtonReverse)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTECOPY, &Calps_mfcDlg::OnBnClickedButtonRoutecopy)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTEIN, &Calps_mfcDlg::OnBnClickedButtonRoutein)
 	ON_BN_CLICKED(IDC_BUTTON_RESULTCOPY, &Calps_mfcDlg::OnBnClickedButtonResultcopy)
 	ON_BN_CLICKED(IDC_BUTTON_RSLTOPEN, &Calps_mfcDlg::OnBnClickedButtonRsltopen)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &Calps_mfcDlg::OnBnClickedButtonRouteOpen)
-	ON_BN_CLICKED(IDC_BUTTON_SPECIAL_CITY, &Calps_mfcDlg::OnBnClickedButtonSpecialCity)
-	ON_BN_CLICKED(IDC_BUTTON_OSAKAKAN, &Calps_mfcDlg::OnBnClickedButtonOsakaKan)
 	ON_BN_CLICKED(IDC_BUTTON_NEEREST, &Calps_mfcDlg::OnBnClickedButtonNeerest)
-	ON_BN_CLICKED(IDC_CHECK_JRTOKAI, &Calps_mfcDlg::OnBnClickedCheckJrtokai)
+	ON_BN_CLICKED(IDC_MFCMENUBUTTON_FAREOPT, &Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt)
+	ON_STN_CLICKED(IDC_STATIC_BAR, &Calps_mfcDlg::OnStnClickedStaticBar)
 END_MESSAGE_MAP()
 
 
@@ -126,6 +125,10 @@ BOOL Calps_mfcDlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
 	}
+
+	m_menu.LoadMenu(IDR_MENU1);
+	m_fareOptionMenuButton.m_hMenu = m_menu.GetSubMenu(0)->GetSafeHmenu();
+
 
 	// このダイアログのアイコンを設定します。アプリケーションのメイン ウィンドウがダイアログでない場合、
 	//  Framework は、この設定を自動的に行います。
@@ -315,7 +318,9 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 	else {
 		// add route list 駅Id
 
-		m_route.setSameShinZaiKyusyu(BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_SHINZAISAME));
+		m_route.setNotSameKokuraHakataShinZai(
+			(MF_CHECKED & m_menu.GetMenuState(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_BYCOMMAND))
+				? true : false);
 
 		/* 経路追加 */// last line
 		curLineId = IDENT1(pLRoute->GetItemData(nRoute - 1));	//(stationId is not yet strage in HIWORD)
@@ -806,108 +811,33 @@ void Calps_mfcDlg::ResetContent()
 
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
-	CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
-	CheckDlgButton(IDC_CHECK_JRTOKAI, BST_UNCHECKED);		/* [JR東海株主券適用]ボタン押し下げ状態 */
+	resetMenu();
 
-	SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
-	GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
-	SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
-	GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
 	GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ボタン */
 	GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(FALSE);/* Disable [AutoRoute]ボタン */
 	GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
-	GetDlgItem(IDC_CHECK_JRTOKAI)->EnableWindow(FALSE);
-	SetDlgItemText(IDC_CHECK_JRTOKAI, _T("JR東海株主券適用"));
-}
 
-//	[発駅を単駅に指定／着駅を単駅に指定]
-//
-void Calps_mfcDlg::OnBnClickedButtonSpecialCity()
-{
-	/* 単駅選択可能な特定都区市内発着か? */
-	CalcRoute croute(m_route);
-	int opt = 0x03 & croute.getFareOption();
-
-	ASSERT(opt == 1 || opt == 2);
-	if ((opt == 1) || (opt == 2)) {
-		croute.setFareOption((opt == 1) ? FAREOPT_APPLIED_TERMINAL : FAREOPT_APPLIED_START,
-		                      FAREOPT_AVAIL_APPLIED_START_TERMINAL);
-		m_route.sync_flag(croute);
-		showFare();
-	} else {
-		/* showFare()の後でおこなっているため普通は不要(安全策)*/
-//		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
-//		croute.setFareOption(0, FAREOPT_AVAIL_APPLIED_START_TERMINAL);
-	}
-}
-
-//	[大阪環状線遠回り／大阪環状線近回り]
-//
-void Calps_mfcDlg::OnBnClickedButtonOsakaKan()
-{
-	/* 大阪環状線1回だけ通っている? */
-	int opt = 0x03 & (m_route.getFareOption() >> 2);
-	int rc;
-
-	ASSERT(opt == 1 || opt == 2);
-	if ((opt == 1) || (opt == 2)) {
-		// 近回り時に押されたら遠回り(FAREOPT_OSAKAKAN_DETOUR)に :
-		// 遠回り時に押されたら近回り(0:FAREOPT_OSAKAKAN_SHORTCUT)に
-		rc = m_route.setDetour((opt == 1) ? true : false);
-		if (1 == rc) {
-			showFare();
-			// optは逆転する
-			// または無効となりこのボタンは押せなくなる
-		} else if (rc != 0) {
-			AfxMessageBox(_T("経路が重複しています"));
-		} else {
-			// rc == 0
-			int selId = m_route.routeList().back().stationId;
-
-			MessageBox(_T("経路が片道条件に達しました. "), _T("経路終端"), MB_ICONQUESTION);
-
-			CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
-			int numList = pLRoute->GetItemCount();
-
-			// 2回目は既に空欄となっているので。ASSERT(selId == IDENT2(pLRoute->GetItemData(numList - 1)));	// last station
-			ASSERT(m_route.routeList().back().lineId == IDENT1(pLRoute->GetItemData(numList - 1)));	// last line
-
-			pLRoute->SetItemText(numList - 1, 1, _T(""));
-			pLRoute->SetItemData(numList - 1, MAKEPAIR(m_route.routeList().back().lineId, 0));
-
-			setupForLinelistByStation(selId, m_route.routeList().back().lineId);
-			showFare();
-		}
-	} else {
-		/* showFare()の後でおこなっているため普通は不要(安全策)*/
-		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
-	}
-}
-
-//	[特例適用]チェックボタン
-//
-void Calps_mfcDlg::OnBnClickedCheckRuleapply()
-{
-	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_RULEAPPLY)) {
-		m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	} else {
-		m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	}
-	showFare();
+	//m_fareOptionMenuButton.DrawMenuBar();
 }
 
 
-//	[JR東海株主券適用]ボタン
+//	メニューリセット
 //
-void Calps_mfcDlg::OnBnClickedCheckJrtokai()
+void Calps_mfcDlg::resetMenu()
 {
-	if (BST_CHECKED == IsDlgButtonChecked(IDC_CHECK_JRTOKAI)) {
-		m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	}
-	else {
-		m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	}
-	showFare();
+	/* [特例適用] */
+	m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
+	m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
+
+	/* [株主優待券使用] */
+	m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+	m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+
+	m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, _T("着駅を単駅に指定"));
+	m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
+
+	m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, _T("大阪環状線遠回り"));
+	m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
 }
 
 
@@ -1188,10 +1118,20 @@ void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
 /*	運賃表示
  *
  */
-void Calps_mfcDlg::showFare()
+void Calps_mfcDlg::showFare(bool bResetOption/* = false*/)
 {
 	int16_t opt;
+	int16_t opt_chk;
 
+	if (bResetOption) {
+		//	[特例適用]チェックボタン
+		//	[JR東海株主優待券使用]チェックボタン
+		//	[発駅を単駅に指定／着駅を単駅に指定]
+		m_route.setFareOption(
+			FAREOPT_RULE_APPLIED | FAREOPT_APPLIED_TERMINAL | FAREOPT_JRTOKAI_STOCK_NO_APPLIED,
+			FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL | FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+		resetMenu();
+	}
 	/*	運賃表示条件フラグ取得 */
 	CalcRoute croute(m_route);
 	SetDlgItemText(IDC_EDIT_RESULT, croute.showFare().c_str());
@@ -1201,7 +1141,7 @@ void Calps_mfcDlg::showFare()
 	if ((opt & 0xc0) != 0) {
 		/* not enough route */
 		GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ボタン */
-		CheckDlgButton(IDC_CHECK_RULEAPPLY, BST_UNCHECKED);	/* [特例適用]ボタン押下げ状態 */
+		m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED); /* [特例適用]Uncheck状態 */
 		GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
 	}
 	else {
@@ -1209,37 +1149,76 @@ void Calps_mfcDlg::showFare()
 		GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(TRUE);/* Disable [Neerest]ボタン */
 	}
 
-	if ((opt & 0x30) != 0x0) {
-		GetDlgItem(IDC_CHECK_RULEAPPLY)->EnableWindow(BST_CHECKED);	/* [特例適用]ボタン押下げ状態 */
+	// 特例適用
+	if ((opt_chk = (opt & 0x30)) != 0) {
+		m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_ENABLED);
+		if (opt_chk == 0x20) {
+			// 特例非適用
+			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
+			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+			m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
+		}
+		else {
+			// 特例適用
+			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
+
+
+			// 大高 大阪 杉本町 着駅・発駅を単駅に指定
+			switch (opt & 0x03) {
+			case 0:
+				m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
+				break;
+
+			case 1:		// 「発駅を単駅に指定」
+				m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, _T("発駅を単駅に指定"));
+				m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
+				break;
+			case 2:		// 「着駅を単駅に指定」
+				m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, _T("着駅を単駅に指定"));
+				m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
+				break;
+			default:
+				ASSERT(FALSE);
+				break;
+			}
+
+			// JR東海株主優待券使用
+			if ((opt_chk = (opt & 0x300)) != 0) {
+				m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
+				if (opt_chk == 0x200) {
+					m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
+				}
+				else {
+					m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+				}
+			}
+			else {
+				// JR東海株主優待券使用 選択肢なし(無関係)
+				m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+				m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+			}
+		}
+	}
+	else {
+		// 特例 無関係
+		m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
+		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+		m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 	}
 
-	switch (opt & 0x03) {
-	case 0:
-		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(FALSE);
-		break;
-	case 1:	// 「発駅を単駅に指定」
-		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(TRUE);
-		SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("発駅を単駅に指定"));
-		break;
-	case 2:		// 「着駅を単駅に指定」
-		GetDlgItem(IDC_BUTTON_SPECIAL_CITY)->EnableWindow(TRUE);
-		SetDlgItemText(IDC_BUTTON_SPECIAL_CITY, _T("着駅を単駅に指定"));
-		break;
-	default:
-		ASSERT(FALSE);
-		break;
-	}
+
+	// 大阪環状線 内回り／外回り
 	switch ((opt >> 2) & 0x03) {
 	case 0:
-		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
+		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
 		break;
 	case 1:
-		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(TRUE);
-		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線遠回り"));
+		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
+		m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, _T("大阪環状線遠回り"));
 		break;
 	case 2:
-		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(TRUE);
-		SetDlgItemText(IDC_BUTTON_OSAKAKAN, _T("大阪環状線近回り"));
+		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
+		m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, _T("大阪環状線近回り"));
 		break;
 	default:
 		ASSERT(FALSE);
@@ -1276,22 +1255,23 @@ void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 		}
 		TRACE(_T("\n"));
 
-		UpdateRouteList();
+UpdateRouteList();
 
-		pos = m_route.routeList().cbegin();
-		TRACE(_T("\nbegin after: %s\n"), RouteUtil::StationName(pos->stationId).c_str());
-		for (++pos; pos != m_route.routeList().cend(); pos++) {
-			TRACE(_T("%s, %s, %d\n"), RouteUtil::LineName(pos->lineId).c_str(), RouteUtil::StationName(pos->stationId).c_str(), pos->flag>>31);
-		}
-		TRACE(_T("\n"));
-	} else {
-		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
+pos = m_route.routeList().cbegin();
+TRACE(_T("\nbegin after: %s\n"), RouteUtil::StationName(pos->stationId).c_str());
+for (++pos; pos != m_route.routeList().cend(); pos++) {
+	TRACE(_T("%s, %s, %d\n"), RouteUtil::LineName(pos->lineId).c_str(), RouteUtil::StationName(pos->stationId).c_str(), pos->flag >> 31);
+}
+TRACE(_T("\n"));
 	}
+ else {
+	 GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
+ }
 #endif
-	CRouteInputDlg dlg;
-	if (IDOK == dlg.DoModal()) {
-		parseAndSetupRoute(dlg.routeString);
-	}
+ CRouteInputDlg dlg;
+ if (IDOK == dlg.DoModal()) {
+	 parseAndSetupRoute(dlg.routeString);
+ }
 }
 
 
@@ -1340,7 +1320,8 @@ int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 		GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(TRUE);	// 駅/路線 選択リスト選択可
 		GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(TRUE);			// [+] button
 		GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(TRUE);	/* Enable [AutoRoute]ボタン */
-	} else {
+	}
+	else {
 		ResetContent();
 	}
 	return 0;
@@ -1353,7 +1334,7 @@ void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 	CString s;
 	CFileDialog dlg(TRUE);
 	HINSTANCE hInst =
-	ShellExecute(NULL, _T("open"), _T("result.txt"), NULL, NULL, SW_SHOW);
+		ShellExecute(NULL, _T("open"), _T("result.txt"), NULL, NULL, SW_SHOW);
 
 	if (hInst <= (HINSTANCE)32) {
 		s.Format(_T("結果記録ファイルのオープンに失敗しました. %d"), hInst);
@@ -1373,5 +1354,124 @@ void CAboutDlg::OnNMClickSyslink1(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
+//	[計算オプション...] MenuBarButton
+//
+void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
+{
+	UINT state;
+
+	switch (m_fareOptionMenuButton.m_nMenuResult) {
+	case IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME:
+		//	[博多-小倉 新幹線在来線別線扱い]チェックボタン
+		state = m_menu.GetMenuState(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_BYCOMMAND);
+		if (MF_CHECKED & state) {
+			m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_UNCHECKED);
+			m_route.setNotSameKokuraHakataShinZai(false);
+		}
+		else {
+			m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_CHECKED);
+			m_route.setNotSameKokuraHakataShinZai(true);
+			MessageBox(_T("博多-小倉 新幹線在来線別線扱いを選択しました\r\n該当経路は選択しなおす必要があります"), _T("計算オプション"), MB_ICONINFORMATION);
+		}
+		break;
+
+	case IDR_MENU_ARROUND_OSAKAKAN:
+		//	[大阪環状線遠回り／大阪環状線近回り]
+		{
+			/* 大阪環状線1回だけ通っている? */
+			int opt = 0x03 & (m_route.getFareOption() >> 2);
+			int rc;
+
+			ASSERT(opt == 1 || opt == 2);
+			if ((opt == 1) || (opt == 2)) {
+				// 近回り時に押されたら遠回り(FAREOPT_OSAKAKAN_DETOUR)に :
+				// 遠回り時に押されたら近回り(0:FAREOPT_OSAKAKAN_SHORTCUT)に
+				rc = m_route.setDetour((opt == 1) ? true : false);
+				if (1 == rc) {
+					showFare(false);
+					// optは逆転する
+					// または無効となりこのボタンは押せなくなる
+				}
+				else if (rc != 0) {
+					AfxMessageBox(_T("経路が重複しています"));
+				}
+				else {
+					// rc == 0
+					int selId = m_route.routeList().back().stationId;
+
+					MessageBox(_T("経路が片道条件に達しました. "), _T("経路終端"), MB_ICONQUESTION);
+
+					CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
+					int numList = pLRoute->GetItemCount();
+
+					// 2回目は既に空欄となっているので。ASSERT(selId == IDENT2(pLRoute->GetItemData(numList - 1)));	// last station
+					ASSERT(m_route.routeList().back().lineId == IDENT1(pLRoute->GetItemData(numList - 1)));	// last line
+
+					pLRoute->SetItemText(numList - 1, 1, _T(""));
+					pLRoute->SetItemData(numList - 1, MAKEPAIR(m_route.routeList().back().lineId, 0));
+
+					setupForLinelistByStation(selId, m_route.routeList().back().lineId);
+					showFare(false);
+				}
+			}
+			else {
+				/* showFare()の後でおこなっているため普通は不要(安全策)*/
+				//!		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
+			}
+		}
+		break;
+
+	case IDR_MENU_SPECIFIC_APPLY:
+		//	[特例適用]チェックボタン
+		state = m_menu.GetMenuState(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND);
+		if (MF_CHECKED & state) {
+			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
+			m_route.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+		}
+		else {
+			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
+			m_route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+		}
+		showFare(false);
+		break;
+
+	case IDR_MENU_TERM_AGGR:
+		//	[発駅を単駅に指定／着駅を単駅に指定]
+		{
+			CalcRoute croute(m_route);
+			uint32_t opt = 3 & croute.getFareOption();
+			if (opt == 2) {
+				m_route.setFareOption(FAREOPT_APPLIED_START, FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+			}
+			else if (opt == 1) {
+				m_route.setFareOption(FAREOPT_APPLIED_TERMINAL, FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+			}
+			showFare(false);
+		}
+		break;
+
+	case IDR_MENU_JRTOKAI_STOCK:
+		//	[JR東海株主優待券使用]チェックボタン
+		state = m_menu.GetMenuState(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND);
+		if (MF_CHECKED & state) {
+			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+			m_route.setFareOption(FAREOPT_JRTOKAI_STOCK_NO_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+		}
+		else {
+			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
+			m_route.setFareOption(FAREOPT_JRTOKAI_STOCK_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+		}
+		showFare(false);
+		break;
+
+	default:
+		ASSERT(FALSE);
+		break;
+	}
+}
 
 
+void Calps_mfcDlg::OnStnClickedStaticBar()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+}

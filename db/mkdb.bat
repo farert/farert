@@ -26,8 +26,8 @@ if errorlevel 1 goto err
 @echo move %1.db.enc ..\app\win_mfc\fjr_mfc\alps_mfc\res
 move %1.db.enc ..\app\win_mfc\fjr_mfc\alps_mfc\res
 if errorlevel 1 goto err
-@echo copy %1.db ..\app\Farert\Farert
-copy %1.db ..\app\Farert\Farert
+@echo copy %1.db ..\app\Farert.ios\Farert
+copy %1.db ..\app\Farert.ios\Farert
 if errorlevel 1 goto err
 rem popd
 @echo **** successfully *****
