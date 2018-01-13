@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../../../alps/alpdb.h"
+#include "afxmenubutton.h"
 
 
 
@@ -49,8 +50,9 @@ protected:
 	UINT CancelRouteQuery();
 	void CantSameStartAndEnd();
 	void ResetContent();
-	void showFare();
+	void showFare(bool bResetOption = true);
 	int parseAndSetupRoute(LPCTSTR route_str);
+	void resetMenu();
 
 private:
 	Route	m_route;
@@ -58,6 +60,9 @@ private:
 	int		m_curStationId;
 	tstring m_lastRouteString;
 	tstring m_lastResultString;
+
+	CMFCMenuButton m_fareOptionMenuButton;
+	CMenu   m_menu;
 
 protected:
 	afx_msg void OnBnClickedButtonStartsel();
@@ -76,19 +81,14 @@ public:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnDropFiles(HDROP hDropInfo);
-	afx_msg void OnBnClickedCheckSpecialCity();
-	afx_msg void OnBnClickedCheckRuleapply();
 	afx_msg void OnBnClickedButtonReverse();
 	afx_msg void OnBnClickedButtonRoutecopy();
 	afx_msg void OnBnClickedButtonRoutein();
 	afx_msg void OnBnClickedButtonResultcopy();
 	afx_msg void OnBnClickedButtonRsltopen();
 	afx_msg void OnBnClickedButtonRouteOpen();
-	afx_msg void OnBnClickedButtonSpecialCity();
-	afx_msg void OnBnClickedButtonOsakaKan();
 	afx_msg void OnBnClickedButtonNeerest();
-	afx_msg void OnBnClickedButtonShinzai();
-	afx_msg void OnBnClickedButtonJrtokai();
-	afx_msg void OnBnClickedCheckJrtokai();
+	afx_msg void OnBnClickedMfcmenubuttonFareopt();
+	afx_msg void OnStnClickedStaticBar();
  };
 
