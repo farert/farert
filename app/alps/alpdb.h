@@ -608,7 +608,7 @@ typedef struct
 } JCTSP_DATA;
 
 /* last_flag */
-#define LASTFLG_OFF				0   // all bit clear at removeAll()
+#define LASTFLG_OFF				MASK(BLF_NOTSAMEKOKURAHAKATASHINZAI)   // all bit clear at removeAll()
 
 // 大阪環状線 通過制御フラグ定義
 // ※ ここでいう「内回り」「外回り」は駅1-駅2間の進行方向ではなくDB定義上の
@@ -701,7 +701,7 @@ typedef struct
 			// 28
 			// 29 used
 
-// Grobal
+// Global
 #define BLF_NOTSAMEKOKURAHAKATASHINZAI   30  // Route only : 小倉-博多間 新在別線扱い
 
 #define BLF_END					31	// arrive to end.
@@ -885,6 +885,7 @@ private:
 public:
 	int32_t         setDetour(bool enabled = true);
     void            setNotSameKokuraHakataShinZai(bool enabled = true);
+    bool            isNotSameKokuraHakataShinZai();
 
     //static tstring  Route_script(const vector<RouteItem>& routeList);
 

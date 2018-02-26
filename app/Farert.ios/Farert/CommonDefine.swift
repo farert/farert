@@ -44,6 +44,11 @@ struct FGD {
     static let  FAREOPT_AVAIL_APPLIED_START_TERMINAL 	= 1   // 有効ビットマスク
     static let  FAREOPT_APPLIED_START					= 1	// 名阪間 発駅を市内駅に適用
     static let  FAREOPT_APPLIED_TERMINAL				= 2	// 名阪間 着駅を市内駅に適用
+    
+    // bit 8-9 JR東海株主優待券
+    static let FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK     = 0x40   // 有効ビットマスク
+    static let FAREOPT_JRTOKAI_STOCK_APPLIED           = 0x40    // JR東海株主に適用
+    static let FAREOPT_JRTOKAI_STOCK_NO_APPLIED        =   0     // JR東海株主に非適用
 }
 
 struct DbId {
