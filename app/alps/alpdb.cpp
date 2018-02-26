@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -47,6 +47,9 @@ using namespace std;
 #define JctMaskOff(bit, jctid) 	bit[(jctid) / 8] &= ~(1 << ((jctid) % 8))
 #define JctMaskClear(bit)   	memset(bit, 0, JCTMASKSIZE)
 #define IsJctMask(bit, jctid)	((bit[(jctid) / 8] & (1 << ((jctid) % 8))) != 0)
+
+#define TITLE_NOTSAMEKOKURAHAKATASHINZAI _T("(小倉博多間新幹線在来線別線)")
+
 
 ////////////////////////////////////////////
 //	static member
@@ -913,7 +916,7 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
 				_num = 2;
 			}
 			else if (station_id2 == DbidOf::StationIdOf_HAKATA) {
-				/* 山陽新幹線 -> 博多 */				
+				/* 山陽新幹線 -> 博多 */
 				if (station_id1 == DbidOf::StationIdOf_KOKURA) {
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
@@ -926,7 +929,7 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
 					_num += 1;
 				}
-			} 
+			}
 			else {
 				_num = enum_junctions_of_line();
 			}
@@ -2502,7 +2505,7 @@ int32_t Route::reBuild()
 	routeWork.add(pos->stationId);
 
 	// add() の開始駅追加時removeAll()が呼ばれlast_flagがリセットされるため)
-	routeWork.last_flag |= last_flag & (1 << BLF_OSAKAKAN_DETOUR);
+	routeWork.last_flag |= last_flag & ((1 << BLF_OSAKAKAN_DETOUR) | (1 << BLF_NOTSAMEKOKURAHAKATASHINZAI));
 
 	for (++pos; pos != route_list_raw.cend(); pos++) {
 		rc = routeWork.add(pos->lineId, pos->stationId);
@@ -2521,8 +2524,7 @@ int32_t Route::reBuild()
     last_flag = routeWork.last_flag |
 	            (last_flag & ((1 << BLF_MEIHANCITYFLAG) |
 				              (1 << BLF_NO_RULE) | (1 << BLF_RULE_EN) |
-							  (1 << BLF_JREAST_IN_TOKAI) | (1 << BLF_JRTOKAI_STOCK) |
-							  (1 << BLF_NOTSAMEKOKURAHAKATASHINZAI)));
+							  (1 << BLF_JREAST_IN_TOKAI) | (1 << BLF_JRTOKAI_STOCK)));
     memcpy(jct_mask, routeWork.jct_mask, sizeof(jct_mask));
 
     return rc;
@@ -2831,6 +2833,7 @@ JR東日本 株主優待4： \123,456
 	}
 	if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI) &&
 		(fare_info.getStockDiscountCompany() != JR_CENTRAL)) {
+	//if (!BIT_CHK(last_flag, BLF_JRTOKAI_STOCK) && BIT_CHK(last_flag, BLF_JRTOKAI_STOCK_APPLY)) {
 		sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
 	}
 
@@ -3001,10 +3004,10 @@ uint32_t RouteList::getFareOption()
 	// JR東海株主 有無 bit 4-5
 	if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
 		if (BIT_CHK(last_flag, BLF_JRTOKAI_STOCK)) {
-			rc |= (1 << 9);     // 0x200
+			rc |= (1 << 9);     // 0x200 : Enable
 		}
 		else {
-			rc |= (1 << 8);		// default: Applied 0x100
+			rc |= (1 << 8);		// default: Disable 0x100
 		}
 	}
 	return rc;
@@ -3143,6 +3146,11 @@ void Route::setNotSameKokuraHakataShinZai(bool enabled)
 	} else {
 		BIT_OFF(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
 	}
+}
+
+bool Route::isNotSameKokuraHakataShinZai()
+{
+    return BIT_CHK(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
 }
 
 //public
@@ -3355,8 +3363,15 @@ int32_t Route::setup_route(LPCTSTR route_str)
 		return -1;
 	}
 	_tcscpy_s(rstr, len, route_str);
+	len = _tcslen(TITLE_NOTSAMEKOKURAHAKATASHINZAI);
+	if (0 == _tcsncmp(rstr, TITLE_NOTSAMEKOKURAHAKATASHINZAI, len)) {
+		BIT_ON(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
+		p = rstr + len;
+	} else {
+		p = rstr;
+	}
 
-	for (p = _tcstok_s(rstr, token, &ctx); p; p = _tcstok_s(NULL, token, &ctx)) {
+	for (p = _tcstok_s(p, token, &ctx); p; p = _tcstok_s(NULL, token, &ctx)) {
 		if (stationId1 == 0) {
 			stationId1 = RouteUtil::GetStationId(p);
 			if (stationId1 <= 0) {
@@ -3577,7 +3592,12 @@ tstring RouteList::route_script()
 
 	vector<RouteItem>::const_iterator pos = routeList->cbegin();
 
-	result_str = RouteUtil::StationNameEx(pos->stationId);
+	if (BIT_CHK(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI)) {
+		result_str = TITLE_NOTSAMEKOKURAHAKATASHINZAI;
+	} else {
+		result_str = _T("");
+	}
+	result_str += RouteUtil::StationNameEx(pos->stationId);
 
 	oskk_flag = false;
 	for (pos++; pos != routeList->cend() ; pos++) {
@@ -3662,7 +3682,7 @@ void Route::removeAll(bool bWithStart /* =true */)
 
 	route_list_raw.clear();
 
-	last_flag = LASTFLG_OFF;
+	last_flag &= ~LASTFLG_OFF;
 
 	TRACE(_T("clear-all mask.\n"));
 

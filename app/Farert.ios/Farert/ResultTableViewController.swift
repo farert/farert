@@ -518,6 +518,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
                 }
             }
+        } else if nil != title.range(of: "株主優待") {
+            if nil != title.range(of: "しない") {
+                // @"JR東海株主優待券を適用しない";
+                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
+            } else {
+                // @"JR東海株主優待券を使用しない";
+                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
+            }
+            self.reCalcFareInfo()
+
         } else {
             // cancel
         }
@@ -543,6 +553,13 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                         items.append("発駅を単駅指定")
                     } else  {
                         items.append("着駅を単駅指定")
+                    }
+                }
+                if self.fareInfo.isJRCentralStockEnable() {
+                    if self.fareInfo.isJRCentralStock() {
+                        items.append("JR東海株主優待券を適用しない")
+                    } else {
+                        items.append("JR東海株主優待券を適用する")
                     }
                 }
             } else {

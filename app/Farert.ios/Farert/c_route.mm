@@ -598,6 +598,17 @@ int g_tax; /* main.m */
     return obj_route->setDetour(enabled);
 }
 
+// - 博多小倉間新幹線在来線別線
+- (void)setNotSameKokuraHakataShinZai:(BOOL)enabled
+{
+    return obj_route->setNotSameKokuraHakataShinZai(enabled);
+}
+
+- (BOOL)isNotSameKokuraHakataShinZai
+{
+    return obj_route->isNotSameKokuraHakataShinZai();
+}
+
 // Number of Route
 - (NSInteger)getRouteCount
 {
