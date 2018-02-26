@@ -242,7 +242,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             //               1 = 新幹線を使わない
             var bullet : Int
             if let nsid : NSNumber = param as? NSNumber {
-                bullet = Int(nsid)
+                bullet = nsid.intValue
             } else {
                 bullet = 0
             }
@@ -637,6 +637,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // バージョン情報
         } else if segid == "settingsSegue" {
             // 設定(データベース切り替え)
+            let naviCtlr : UINavigationController = segue.destination as! UINavigationController
+            let settingViewCtrl : SettingsTableViewController = naviCtlr.topViewController as! SettingsTableViewController
+            let b : Bool = ds.isNotSameKokuraHakataShinZai()
+            settingViewCtrl.isSameShinkanzanKokuraHakataOther = b;
             /// // save Route
             self.routeScript = ds.routeScript().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         } else {
@@ -752,13 +756,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     @IBAction func closeModal(_ segue: UIStoryboardSegue) {
         print("MainView: closeModal:")
         viewContextMode = 0
-        
         if segue.identifier == "settingsSegue" {
             let view : SettingsTableViewController = segue.source as! SettingsTableViewController
             if (0 < view.selectDbId) {  // is change DB
                 viewContextMode = FGD.CONTEXT_ROUTESETUP_VIEW;
             }
-            
+            ds.setNotSameKokuraHakataShinZai(view.isSameShinkanzanKokuraHakataOther)
             /* settingsのあとでは「while a presentation or dismiss is in progress!」警告が表示される */
         } else if (segue.identifier == "versionInfoExitSegue") {
             //if self.navigationController?.isBeingDismissed() != true {

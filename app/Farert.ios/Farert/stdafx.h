@@ -60,5 +60,6 @@ extern void assertion_function(int cond);
 #define _tcscpy_s strcpy_s
 #define _tcslen   strlen
 #define sprintf_s snprintf
+#define _tcsncmp  strncmp
 
 #endif

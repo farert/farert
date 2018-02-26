@@ -112,6 +112,17 @@
     return (self.calcResultFlag & 0x30) == 0x10;
 }
 
+// bit 8-9
+- (BOOL)isJRCentralStockEnable
+{
+    return (self.calcResultFlag & 0x300) != 0x000;
+}
+
+- (BOOL)isJRCentralStock
+{
+    return (self.calcResultFlag & 0x300) == 0x200;
+}
+
 - (BOOL)isFareOptEnabled
 {
     return (self.calcResultFlag & 0x3f) != 0x00;

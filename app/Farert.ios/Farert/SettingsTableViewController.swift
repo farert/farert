@@ -18,7 +18,10 @@ class SettingsTableViewController: UITableViewController {
     // MARK: - Private property
     var before_dbid_idx : Int = 0
     
+    var isSameShinkanzanKokuraHakataOther : Bool = false;
+    
     // MARK: - UI Propery
+    @IBOutlet weak var swShinkansenKokuraHakataOther: UISwitch!
     
     @IBOutlet weak var sgmDataVer: UISegmentedControl!
 
@@ -51,6 +54,7 @@ class SettingsTableViewController: UITableViewController {
         self.selectDbId = -1;   /* is no select */
         
         self.sgmDataVer.selectedSegmentIndex = before_dbid_idx - DbId.DB_MIN_ID;
+        self.swShinkansenKokuraHakataOther.setOn(isSameShinkanzanKokuraHakataOther, animated: false);
     }
 
     override func didReceiveMemoryWarning() {
@@ -76,6 +80,8 @@ class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         if (section == 0) {
             return "データソース"
+        } else if (section == 1) {
+            return "設定"
         }
         return nil
     }
@@ -145,6 +151,7 @@ class SettingsTableViewController: UITableViewController {
             } else {
                 self.selectDbId = -1;   /* no change */
             }
+            self.isSameShinkanzanKokuraHakataOther = self.swShinkansenKokuraHakataOther.isOn;
         }
     }
 }
