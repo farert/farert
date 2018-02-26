@@ -1,0 +1,51 @@
+StoryBoardでcell内配置を4列にする。
+
+5つのラベルを横に配置
+
+それぞれのラベルを、
+「Content View」と「ラベル」をCommandキーで2つ選択して「Equal Widths」
+その「Mutliplier」を,0.05, 0.245. 0.25, 0.23, 0.25にする
+それぞれのラベルの上を0下を0の固定制約を追加
+ここまで15制約
+
+最左のラベルのLeadを0
+他の4ラベルのLeadも0Fixにする(それぞれ隣同士を適切に設定し直す事も必要になる場合あり)
+これで最後のラベルが怒られたらMultiplierで調整
+
+以上20制約
+  2   7   11    15    19
+1 3 5 6 9 10 13 14 17 18 21
+  4   8   12    16    20
+
+1~4 label(空欄用ダミーラベル)
+3   Label1のWidths
+6   ラベル1
+10　ラベル2
+14　ラベル3
+18  ラベル4
+21はSuperViewとのRelationは、Equalではなく、0 Greater Thanにする(これは警告が出るのでそれに任せ「Lead」は固定にし、「Trail」を可変にする方を選ぶ)
+各ラベルのLead制約は左隣のLabelのTrailになるよう制約を編集し直す。値は0
+各ラベルのTop、Bottom制約はSuperViewのTop/Bottomからで0固定
+
+その他の制約でも、MarginやRelative to Marginの制約は外す
+
+0.04  0.24  0.24  0.23  0.245
+
+21のTrail >= 制約のPriorityは1000ではなく250に下げる
+
+--------------------------------------
+切符ホルダの右端に空のLabelを
+制約は10個
+Lead=0
+SuperView=Width*0.1
+Top=0
+SuperView=Height*0.22
+Trail-Editボタンlead =0
+Trail-総営業キロLead=0
+Trail-総運賃Lead=0
+Trail-ホルダLead=0
+追加ボタンとBottomAlign
+EditボタンとBottomAlign
+：
+基本長さは比率で指定
+Leadは固定でTrailはGreater Thanに。

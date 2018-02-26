@@ -52,6 +52,10 @@
 - (BOOL)isRuleApplied;
 - (BOOL)isFareOptEnabled;
 
+// bit 8-9
+- (BOOL)isJRCentralStockEnable;
+- (BOOL)isJRCentralStock;
+
 
 
 @property (nonatomic) NSInteger resultState;

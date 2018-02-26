@@ -94,7 +94,6 @@ enum DBIDX {
 + (NSString*)PrectNameByStation:(NSInteger)stationId;
 + (NSString*)GetKanaFromStationId:(NSInteger)ident;
 
-
 + (void)saveToRouteArray:(NSArray*)routeList;
 
 // Save databse index
@@ -168,6 +167,10 @@ enum DBIDX {
 
 //- (NSInteger)getFareOption;
 - (NSInteger)setDetour:(BOOL)enabled;
+
+//- 小倉博多間新幹線在来線別線扱い
+- (void)setNotSameKokuraHakataShinZai:(BOOL)enabled;
+- (BOOL)isNotSameKokuraHakataShinZai;
 
 // Number of Route
 - (NSInteger)getRouteCount;
