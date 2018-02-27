@@ -1,4 +1,4 @@
-﻿#if !defined _ALPDB_H__
+#if !defined _ALPDB_H__
 
 #define _ALPDB_H__
 
