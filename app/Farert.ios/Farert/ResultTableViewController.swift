@@ -524,18 +524,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 // @"JR東海株主優待券を適用しない";
                 ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
             } else {
-                // @"JR東海株主優待券を使用しない";
-<<<<<<< HEAD
+                // @"JR東海株主優待券を使用する";
                 ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
-=======
-                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
-            }
-            self.reCalcFareInfo()
->>>>>>> 87de96159f75c4f27db5018a66e06ec3a6460644
-
         } else {
             // cancel
         }
