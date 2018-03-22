@@ -2,12 +2,14 @@
 
 extern int test_exec(void);
 extern tstring cr_remove(tstring s);
+extern int test_setup_route(TCHAR* buffer, Route& route);
 
 int g_tax = 8;
 
 extern void test_route(const TCHAR *route_def[]);
 
 static const TCHAR *test_tbl[] = {
+#if 0
 	_T("渋谷 山手線 恵比寿"),
 	_T("小倉 山陽新幹線 博多"),
 	_T("博多南 博多南線 博多"),
@@ -30,63 +32,41 @@ static const TCHAR *test_tbl[] = {
 	_T("国府津 御殿場線 沼津"),	/***/
 	_T("国府津 御殿場線 沼津 東海道線 熱海"),	/***/
 	_T("国府津 御殿場線 沼津 東海道線 熱海 伊東線 伊東"),	/***/
-	_T("函館 函館線 五稜郭 江差線 木古内 海峡線 中小国 津軽線 青森"),
+//	_T("函館 函館線 五稜郭 江差線 木古内 海峡線 中小国 津軽線 青森"),
 	_T("神田 東北線 東京 東海道新幹線 三島 東海道線 富士 身延線 甲府"),
 	_T("東京 東海道線 品川 東海道新幹線 名古屋"),
 	_T("東京 東海道新幹線 三島 東海道線 富士 身延線 甲府"),
+#endif
+	_T("品川 東海道新幹線 小田原"),
+	_T("品川 東海道新幹線 名古屋"),
+	_T("品川 東海道新幹線 熱海"),
+	_T("品川 東海道新幹線 掛川"),
+	_T("品川 東海道新幹線 米原"),
+	_T("品川 東海道新幹線 京都"),
+	_T("掛川 東海道新幹線 米原"),
+	_T("岐阜羽島 東海道新幹線 新大阪"),
+	_T("新大阪 東海道新幹線 熱海"),
+	_T("新宿 山手線 品川 東海道新幹線 小田原"),
+	_T("新宿 山手線 品川 東海道新幹線 名古屋"),
+	_T("新宿 山手線 品川 東海道新幹線 熱海"),
+	_T("新宿 山手線 品川 東海道新幹線 掛川"),
+	_T("新宿 山手線 品川 東海道新幹線 米原"),
+	_T("新宿 山手線 品川 東海道新幹線 京都"),
+	_T("新大阪 東海道新幹線 米原 福井"),
+	_T("新大阪 東海道新幹線 米原"),
+	_T("品川 東海道新幹線 小田原 東海道線 早川"),
+	_T("品川 東海道新幹線 静岡 東海道線 草薙"),
+	_T("品川 東海道新幹線 名古屋 関西線 四日市"),
+	_T("熱海 東海道新幹線 静岡 東海道線 草薙"),
+	_T("熱海 東海道新幹線 米原"),
+	_T("三島 東海道新幹線 名古屋 関西線 四日市"),
 	_T(""),
 	_T(""),
 };
 
 TCHAR buffer[1024];
-extern Route route;
+Route route;
 
-static int test_setup_route(Route& route, TCHAR* buffer)
-{
-	TCHAR* p;
-	int lineId = 0;
-	int stationId1 = 0;
-	int stationId2 = 0;
-	TCHAR* ctx = NULL;
-	bool fail;
-	int rc;
-
-	for (p = _tcstok_s(buffer, _T(", \t"), &ctx); p; p = _tcstok_s(NULL, _T(", \t"), &ctx)) {
-		fail = false;
-		if (stationId1 == 0) {
-			stationId1 = Route::GetStationId(p);
-			ASSERT(0 < stationId1);
-			route.add(stationId1);
-		} else if (lineId == 0) {
-			if ('r' == *p) {
-				++p;
-				route.setDetour();
-			}
-			lineId = Route::GetLineId(p);
-			ASSERT(0 < lineId);
-		} else {
-			if ('x' == *p) {
-				++p;
-				fail = true;
-			} else {
-				fail = false;
-			}
-			stationId2 = Route::GetStationId(p);
-			ASSERT(0 < stationId2);
-			rc = route.add(lineId, /*stationId1,*/ stationId2);
-			if (fail) {
-				ASSERT(rc < 0);
-				TRACE(_T("Setup route: Failure OK (%d)\n"), rc);
-				return 1;
-			} else {
-				ASSERT(0 <= rc);
-			}
-			lineId = 0;
-			stationId1 = stationId2;
-		}
-	}
-	return 0;
-}
 
 static int setup(int argc, TCHAR**argv)
 {
@@ -116,7 +96,7 @@ int main(int argc, char** argv)
 #if defined _WINDOWS
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
-	if (! DBS::getInstance()->open(_T("../../../db/jrdb2015.db"))) {
+	if (! DBS::getInstance()->open(_T("../../../db/jrdb2017.db"))) {
 		printf("Can't db open\n");
 		return -1;
 	}
@@ -124,10 +104,11 @@ int main(int argc, char** argv)
 		test_route(test_tbl);
 	} else {
 		route.removeAll();
-		rc = test_setup_route(route, buffer);
+		rc = test_setup_route(buffer, route);
 		ASSERT(0 <= rc);
-		route.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-		s = route.showFare();
+		CalcRoute croute(route);
+		croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+		s = croute.showFare();
 		s = cr_remove(s);
 		TRACE(_T("%s\n"), s.c_str());
 	}

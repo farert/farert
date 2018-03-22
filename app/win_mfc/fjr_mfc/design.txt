@@ -1,8 +1,44 @@
+2018/3/21
+
+tstring CalcRoute::showFare()
+FARE_INFO CalcRoute::calcFare()
+ bool CalcRoute::checkJrEastTokai() /* JR東海以外 and JR東日本で新幹線でない場合false */
+    -> BLF_JREAST_IN_TOKAI on/off
+       BLF_JRTOKAI_STOCK_APPLY off
+ calc_fare()
+   aggregate_fare_info()
+    getDistanceEx() 東海道新幹線は発着とも
+FARE_INFO::getStockDiscountCompany() 株主優待判定 JR東海に限っては
+          companymask だからどうにでもなりげ。
+
+          /＊ [名]以外の[都][区]内または[横]が適用されていたらJR東海ではない＊
+          /* Route::CheckOfRule86() */
+          if (((STATION_ID_AS_CITYNO < beginTerminalId) &&
+               (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO)))|
+              ((STATION_ID_AS_CITYNO < endTerminalId) &&
+               (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)))) {
+              return 0;
+
+
+// showFare()の最後
+if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI) &&
+    (fare_info.getStockDiscountCompany() != JR_CENTRAL)) {
+//if (!BIT_CHK(last_flag, BLF_JRTOKAI_STOCK) && BIT_CHK(last_flag, BLF_JRTOKAI_STOCK_APPLY)) {
+    sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
+}
+
+companymaskをみて株優判定判断
+
+
+経路の全区間で、
+発着ともJR東海駅ではないか、
+発駅がJR東海でも境界駅でもない
+着駅がJR東海でも境界駅でもない
+とFalse
 
 
 
-
-
+//////////////////////////////////////////////////////////////////////
 showFare()の戻り値
 
 uint32_t RouteList::getFareOption()

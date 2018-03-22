@@ -9,7 +9,7 @@ FILE *os = stderr;
 #define TID(s)	RouteUtil::GetStationId(_T(#s))
 #define LID(s)	RouteUtil::GetLineId(_T(#s))
 
-static int test_setup_route(TCHAR* buffer, Route& route);
+int test_setup_route(TCHAR* buffer, Route& route);
 
 
 tstring cr_remove(tstring s)
@@ -1721,6 +1721,22 @@ static const TCHAR *test_shin2_zai_tbl[] = {
 };
 
 
+const static TCHAR *test_route3_tbl[] = {
+		_T("cJR東海株主優待券使用"),
+		_T("品川 東海道新幹線 三島"),
+		_T("品川 東海道新幹線 静岡"),
+		_T("品川 東海道新幹線 豊橋"),
+		_T("品川 東海道新幹線 新横浜"),
+		_T("品川 東海道新幹線 名古屋"),
+		_T("品川 東海道新幹線 岐阜羽島"),
+		_T("品川 東海道新幹線 京都"),
+		_T("新富士(東) 東海道新幹線 三島"),
+		_T("新横浜 東海道新幹線 三河安城"),
+		_T("c新幹線小倉―博多間在来線同一視"),
+		_T("広島 山陽新幹線 博多 鹿児島線 原田 筑豊線 桂川(九) 篠栗線 e吉塚 鹿児島線 西小倉 日豊線  城野 日田彦山線 夜明"),
+		_T("s広島 山陽新幹線 博多 鹿児島線 原田 筑豊線 桂川(九) 篠栗線 吉塚 鹿児島線 西小倉 日豊線  城野 日田彦山線 夜明"),
+	_T(""),
+};
 /////////////////////////////////////////////////////////////////////////////////////
 
 void test_route(const TCHAR *route_def[])
@@ -1748,8 +1764,14 @@ void test_route(const TCHAR *route_def[])
 				rev = 2;
 			}
 			continue;
+		} else if (route_def[i][0] == _T('s')) {
+			/* 新幹線在来線別線扱い（小倉-博多) */
+			route.setNotSameKokuraHakataShinZai(true);
+			STRCPY(1024, buffer, &route_def[i][1]);
+		} else {
+			route.setNotSameKokuraHakataShinZai(false);
+			STRCPY(1024, buffer, route_def[i]);
 		}
-		STRCPY(1024, buffer, route_def[i]);
 		if (STRCMP(buffer, _T("若松")) == 0)
 			rc = 2;
 		_ftprintf(os, _T("!****<%02d>: ******************* %s **********************\n<%s>\n"), i - t + 1, psz_title, buffer);
@@ -1794,18 +1816,30 @@ void test_route(const TCHAR *route_def[])
 				s = cr_remove(s);
 				_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 
-				opt = croute.getFareOption();
-				ASSERT(IS_MAIHAN_CITY_START(opt));
+				rc = croute.getFareOption();
+				ASSERT(IS_MAIHAN_CITY_START(rc));
 
 				croute.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 				s = croute.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 
-				opt = croute.getFareOption();
-				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
+				rc = croute.getFareOption();
+				ASSERT(IS_MAIHAN_CITY_TERMINAL(rc));
 			} else {
 				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
+			}
+			// JR東海株主優待券使用
+			if ((opt & 0x300) != 0) {
+				route.setFareOption(FAREOPT_JRTOKAI_STOCK_NO_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+				s = croute.showFare();
+				s = cr_remove(s);
+				_ftprintf(os, _T("///JR東海株主優待券未使用\n%s\n"), s.c_str());
+
+				route.setFareOption(FAREOPT_JRTOKAI_STOCK_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+				s = croute.showFare();
+				s = cr_remove(s);
+				_ftprintf(os, _T("///JR東海株主優待券使用\n%s\n"), s.c_str());
 			}
 		}
 	}
@@ -2033,7 +2067,7 @@ void test_jctspecial(const TCHAR *route_def[])
 
 /////////////////////////////////////////////////////////////////////
 
-static int test_setup_route(TCHAR* buffer, Route& route)
+int test_setup_route(TCHAR* buffer, Route& route)
 {
 	TCHAR* p;
 	int lineId = 0;
@@ -2231,6 +2265,8 @@ int test_exec(void)
 	_ftprintf(os, _T("\n#---shinkansen convert-------------------------------------------\n"));
 	test_shin2zai();
 
+	_ftprintf(os, _T("\n#---same kokura hakata shinzai-----------------------------------\n"));
+	test_route(test_route3_tbl);
 
     time(&end);
     end -= now;

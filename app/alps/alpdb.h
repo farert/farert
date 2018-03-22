@@ -1,4 +1,4 @@
-#if !defined _ALPDB_H__
+﻿#if !defined _ALPDB_H__
 
 #define _ALPDB_H__
 
@@ -17,9 +17,6 @@ typedef struct {
     uint32_t options;
 } DBsys;
 #endif
-
-// options
-#define DB_SHINZAI_SAME 0       // 小倉ー博多間 新幹線・在来線同一視
 
 
 #if defined __cplusplus
