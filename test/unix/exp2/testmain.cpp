@@ -31,13 +31,14 @@ void test(void)
 			TRACE("Error!!!!(%d) test_tbl[%d](%s)\n", rc, i, test_tbl[i]);
 			return;
 		}
-		s = route.showFare();
+		CalcRoute croute(route);
+		s = croute.showFare();
 		s = cr_remove(s);
 		TRACE(_T("%s\n"), s.c_str());
 
-		vector<RouteItem>& r = route.routeList();
-		Route::ConvertShinkansen2ZairaiFor114Judge(&r);
-		s = Route::Show_route(r, 0);
+		const vector<RouteItem>& r = route.routeList();
+		CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&r);
+		s = RouteUtil::Show_route(r, 0);
 		s = cr_remove(s);
 		TRACE(_T("%s\n-------------\n"), s.c_str());
 	}
