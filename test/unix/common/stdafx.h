@@ -23,6 +23,7 @@
 #define _tcschr strchr
 #define _tfopen fopen
 #define _tcscpy strcpy
+#define _tcsncmp strncmp
 
 typedef char* LPTSTR;
 
