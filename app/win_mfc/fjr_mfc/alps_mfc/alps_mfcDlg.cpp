@@ -1155,7 +1155,6 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = false*/)
 		if (opt_chk == 0x20) {
 			// “Á—á”ñ“K—p
 			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
-			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
 			m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 		}
 		else {
@@ -1181,31 +1180,29 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = false*/)
 				ASSERT(FALSE);
 				break;
 			}
-
-			// JR“ŒŠCŠ”Žå—D‘ÒŒ”Žg—p
-			if ((opt_chk = (opt & 0x300)) != 0) {
-				m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
-				if (opt_chk == 0x200) {
-					m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
-				}
-				else {
-					m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
-				}
-			}
-			else {
-				// JR“ŒŠCŠ”Žå—D‘ÒŒ”Žg—p ‘I‘ðŽˆ‚È‚µ(–³ŠÖŒW)
-				m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
-				m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
-			}
 		}
 	}
 	else {
 		// “Á—á –³ŠÖŒW
 		m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
-		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
 		m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 	}
 
+	// JR“ŒŠCŠ”Žå—D‘ÒŒ”Žg—p
+	if ((opt_chk = (opt & 0x300)) != 0) {
+		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
+		if (opt_chk == 0x200) {
+			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
+		}
+		else {
+			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+		}
+	}
+	else {
+		// JR“ŒŠCŠ”Žå—D‘ÒŒ”Žg—p ‘I‘ðŽˆ‚È‚µ(–³ŠÖŒW)
+		m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+	}
 
 	// ‘åãŠÂóü “à‰ñ‚è^ŠO‰ñ‚è
 	switch ((opt >> 2) & 0x03) {

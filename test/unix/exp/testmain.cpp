@@ -6,7 +6,7 @@ extern int test_setup_route(TCHAR* buffer, Route& route);
 
 int g_tax = 8;
 
-extern void test_route(const TCHAR *route_def[]);
+extern void test_route(const TCHAR *route_def[], bool rev = true);
 
 static const TCHAR *test_tbl[] = {
 #if 0
@@ -52,7 +52,7 @@ static const TCHAR *test_tbl[] = {
 	_T("新宿 山手線 品川 東海道新幹線 掛川"),
 	_T("新宿 山手線 品川 東海道新幹線 米原"),
 	_T("新宿 山手線 品川 東海道新幹線 京都"),
-	_T("新大阪 東海道新幹線 米原 福井"),
+	_T("新大阪 東海道新幹線 米原 北陸線 福井"),
 	_T("新大阪 東海道新幹線 米原"),
 	_T("品川 東海道新幹線 小田原 東海道線 早川"),
 	_T("品川 東海道新幹線 静岡 東海道線 草薙"),
@@ -60,6 +60,19 @@ static const TCHAR *test_tbl[] = {
 	_T("熱海 東海道新幹線 静岡 東海道線 草薙"),
 	_T("熱海 東海道新幹線 米原"),
 	_T("三島 東海道新幹線 名古屋 関西線 四日市"),
+	_T("国府津 御殿場線 沼津"),
+	_T("国府津 東海道線 小田原"),
+	_T("小田原 東海道新幹線 熱海"),
+	_T("品川 東海道新幹線 名古屋"),
+	_T("大高 東海道線 東神奈川"),
+	_T("大高 東海道線 神戸"),
+	_T("品川 東海道新幹線 名古屋 関西線 四日市 "),
+	_T("桑園 函館線 岩見沢 室蘭線 長万部"),
+	_T("桑園 函館線 岩見沢"),
+	_T("新谷 内子線 内子"),
+	_T("富士 身延線 富士宮"),
+	_T("岐阜羽島 東海道新幹線 米原"),
+	_T("大崎 山手線 品川 東海道新幹線 熱海"),
 	_T(""),
 	_T(""),
 };
@@ -96,12 +109,14 @@ int main(int argc, char** argv)
 #if defined _WINDOWS
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
+	setvbuf(stdout, 0, _IONBF, 0);
+
 	if (! DBS::getInstance()->open(_T("../../../db/jrdb2017.db"))) {
 		printf("Can't db open\n");
 		return -1;
 	}
 	if (setup(argc, argv) < 1) {
-		test_route(test_tbl);
+		test_route(test_tbl, false);
 	} else {
 		route.removeAll();
 		rc = test_setup_route(buffer, route);
