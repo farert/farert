@@ -1,33 +1,227 @@
+株主優待適用条件
+
+calc_fare()
+ aggregate_fare_inf(), CheckIsJRTokai()の呼び出し後、
+
+		TRACE("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", isNotCityterminalWoTokai(), isCityterminalWoTokai(), *last_flag & LF_TER_CITY_MASK);
+		TRACE("@@@ en=%d, aply=%d rule=%d norule=%d\n", BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_ENABLE),
+			BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED),
+			BIT_CHK(*last_flag, BLF_NO_RULE), BIT_CHK(*last_flag, BLF_RULE_EN));
+
+ 品川　東海道新幹線　熱海		1 0 0  		1 0 0 0	
+ 品川　東海道新幹線 名古屋  	0 1 24576 	1 0 0 1	特例適用中		提S
+							1 0 0		0 0 1 0 特例非適用		*
+							1 0 16384	1 1 0 0 株主優待適用	S*
+ 品川 東海道新幹線　三河安城 	0 1 8192	1 0 0 1                提S
+							1 0 0		0 0 1 0               *
+							1 0 0		1 1 0 0               S*
+ 品川 東海道新幹線　三島		0 1 32768	1 0 0 1 [山]          提S
+							1 0 0		0 0 1 0               *
+							1 0 0		1 1 0 0               S*
+ 品川 東海道新幹線　新横浜		1 0 0		1 0 0 0               *
+ 三島　東海道新幹線　静岡		1 0 0		0 0 0 0               *
+ 小田原　東海道新幹線　熱海		1 0 0		0 0 0 0               *
+上野　東北新幹線 盛岡			-------               
+海尻 小海線 小海				------
+
+
+S: 切り替え有効
+提：株主優待適用可能表示
+*: 株主優待適用
+
+
+
 2018/3/21
 
-tstring CalcRoute::showFare()
-FARE_INFO CalcRoute::calcFare()
- bool CalcRoute::checkJrEastTokai() /* JR東海以外 and JR東日本で新幹線でない場合false */
-    -> BLF_JREAST_IN_TOKAI on/off
-       BLF_JRTOKAI_STOCK_APPLY off
- calc_fare()
-   aggregate_fare_info()
-    getDistanceEx() 東海道新幹線は発着とも
-FARE_INFO::getStockDiscountCompany() 株主優待判定 JR東海に限っては
-          companymask だからどうにでもなりげ。
+小田原 熱海
+0 1 0　　　0(1:NG)
 
-          /＊ [名]以外の[都][区]内または[横]が適用されていたらJR東海ではない＊
-          /* Route::CheckOfRule86() */
-          if (((STATION_ID_AS_CITYNO < beginTerminalId) &&
-               (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO)))|
-              ((STATION_ID_AS_CITYNO < endTerminalId) &&
-               (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)))) {
-              return 0;
+品川 名古屋
+0 1 0　　　1(0:NG)       最後の提案は1であるべきなのだが0でNG
+0 1 1     0 優待券行使（OK)
+0 0 1     0 OK
+
+大高　川崎
+0 1 0	0  メニュー提案してくるのがダメ
+
+大高 神戸
+0 1 0   0  メニュー提案してくるのがダメ
+
+品川 四日市 
+0 1 0	1(0)NG
+0 1 1	0 OK 優待券行使
+
+桑園 岩見沢 長万部
+0 1 0 	0 OK メニューで提案してくるのでNG
+
+桑園 岩見沢
+0 1 0 	0(1)NG
+
+新谷 内子
+0 0 0   0(1)NG
+
+富士 富士宮
+0 0 0	0(1)NG 
+
+岐阜羽島 米原
+0 0 0   0(1)NG
+
+大崎 品川 熱海
+0 1 0	0(1)NG 
+
+1 0 0 あり得ない？
+1 0 1　あり得ない
+>>>>>
+1 1 0 1 x
+
+
+!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!
+
+
+
+city 
+BLF_JRTOKAISTOCK_ENABLE
+BLF_JRTOKAISTOCK_APPLIED 
+suggestion
+
+
+
+非適用だと都区内になっていないので株主優待表示なのに提案している
+株主行使適用が効いていない。
+
+
+tstring CalcRoute::showFare()
+  FARE_INFO CalcRoute::calcFare()
+    bool CalcRoute::checkJrEastTokai() /* JR東海以外 and JR東日本で新幹線でない場合false */    remove
+     -> BLF_JREAST_IN_TOKAI on/off                                                        remove
+        BLF_JRTOKAI_STOCK_APPLY off                                                       remove
+    CalcRoute.checkOfRuleSpecificCoreLine()
+        CalcRoute::CheckOfRule86()                                   vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv <-- remove
+ 	        else if ((city_no_s != 0) && (city_no_s != CITYNO_NAGOYA) && BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
+	        	/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
+	        	r |= 0x80000000; // BIT_ON(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI　　＝＝＝＞「提案可能フラグ」
+	        	if (BIT_CHK(last_flag, BLF_JRTOKAI_STOCK)) { /* by user */   ======>「提案適用フラグ」
+	        		city_no_s = 0;
+	        	}
+	        }
+	    CheckOfRule86()の直下
+	    if (BIT_CHK(chk, 31)) {
+	    	BIT_ON(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI        setFareOption で適用時ONする　　　＝＝＝＞「提案可能フラグ」
+	    }
+	    else {
+	    	BIT_OFF(last_flag, BLF_JRTOKAI_STOCK_APPLY); // for UI                                      ＝＝＝＞「提案可能フラグ」
+	    }
+	    ======>
+		checkJrEastTokai()は削除
+
+		/* 山手線内発着 enable */
+		if ((MASK(BLF_JREAST_IN_TOKAI) | MASK(BLF_JRTOKAISTOCK_APPLIED)) !=
+			(last_flag & (MASK(BLF_JREAST_IN_TOKAI) | MASK(BLF_JRTOKAISTOCK_APPLIED)))) {
+
+			last_flag &= ~LF_TER_CITY_MASK;
+			last_flag |= ((rtky & 0x03) << BLF_TER_BEGIN_YAMATE);	// BLF_TER_BEGIN_YAMATE, BLF_TER_FIN_YAMATE
+			TRACE("applied for rule87\n");
+		}
+
+
+    FARE_INFO::calc_fare()
+      FARE_INFO::aggregate_fare_info()
+        FARE_INFO::getDistanceEx() ********************* companymask
+      ======>
+	  aggregate_fare_inf() call 直後に
+	    if checkJrEastTokai()をリネームした処理が有効  -> checkIsJRTokai
+	      if CheckOfRule86で設定したフラグ「提案可能フラグ」が無効の場合、
+		    companynmaskをJR東海単独に
+		   else
+			「提案可能フラグ」をON
+		    if UI指定の「株主適用フラグ」がON
+			  companynmaskをJR東海単独に.
+　          else 
+              nothing
+	    
+
+  fare_info.getFareStockDiscount()
+    FARE_INFO::getStockDiscountCompany() 
+	    if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
+	    	return JR_EAST;
+	    }
+		:
+        /＊ [名]以外の[都][区]内または[横]が適用されていたらJR東海ではない＊
+        /* Route::CheckOfRule86() */
+        if (((STATION_ID_AS_CITYNO < beginTerminalId) &&
+             (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO)))|
+             ((STATION_ID_AS_CITYNO < endTerminalId) &&
+              (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)))) {
+          return 0;
 
 
 // showFare()の最後
 if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI) &&
     (fare_info.getStockDiscountCompany() != JR_CENTRAL)) {
-//if (!BIT_CHK(last_flag, BLF_JRTOKAI_STOCK) && BIT_CHK(last_flag, BLF_JRTOKAI_STOCK_APPLY)) {
     sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
 }
+=====> 
+  「提案可能フラグ」？　かつ ！「提案適用フラグ」
+  　　株主優待選択可の表示
+
+＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+提案可能フラグ
+  BLF_JRTOKAISTOCK_ENABLE  (BLF_JRTOKAI_STOCK_APPLY)
+  東海道新幹線で[区][山][浜][京][阪]が適用する場面でセットされる
+  JR東海株主優待適用・非適用選択メニューが有効となる
+提案適用フラグ
+  BLF_JRTOKAISTOCK_APPLIED （BLF_JRTOKAI_STOCK）
+  UI側からユーザが指定する
+＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊
+品川 小田原 Sになるが、Aでよし
+使用行使しても効かず
+
+
+
+
+
+他のフラグはトル
 
 companymaskをみて株優判定判断
+
+RouteList::getFareOption()
+	// JR東海株主 有無 bit 4-5
+	if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {                    ===>「提案可能フラグ」
+		if (BIT_CHK(last_flag, BLF_JRTOKAI_STOCK)) {                  ===>「提案適用フラグ」
+			rc |= (1 << 9);     // 0x200 : Enable
+		}
+		else {
+			rc |= (1 << 8);		// default: Disable 0x100
+		}
+	}
+
+CalcRoute::getFareOption()
+	// JR東海株主 有無 bit 4-5
+	if ((0 != (0x300 & rc)) /*&& BIT_CHK(last_flag, BLF_NO_RULE)*/) {
+		if (!BIT_CHK(last_flag, BLF_JRTOKAI_STOCK_APPLY)) {          ＝＝＝＞「提案可能フラグ」
+			rc &= ~0x300;
+		}
+	}
+
+RouteList::setFareOption()
+	/* JR東海株主適用有無 */
+	if (0 != (FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK & availbit)) {
+		if (FAREOPT_JRTOKAI_STOCK_APPLIED == (FAREOPT_JRTOKAI_STOCK_APPLIED & cooked)) {
+			BIT_ON(last_flag,  BLF_JRTOKAI_STOCK);    /* 適用 */     　＝＝＝＞「提案適用フラグ」
+		} else {
+			BIT_OFF(last_flag,  BLF_JRTOKAI_STOCK);   /* 非適用 */　　　＝＝＝＞「提案適用フラグ」
+		}
+	}
+
+
+BLF_JREAST_IN_TOKAI -> S to U     -> Is Suggestion -> ＝＝＝＞ remove
+BLF_JRTOKAI_STOCK -> U to S       ->　　　　　　　　　　　 ＝＝＝＞「提案可能フラグ」BLF_JRTOKAISTOCK_ENABLE
+BLF_JRTOKAI_STOCK_APPLY -> Inner  -> Suggestion Enable　＝＝＝＞「提案適用フラグ」BLF_JRTOKAISTOCK_APPLIED
+
+・・・・・・・・・・・・
+
 
 
 経路の全区間で、

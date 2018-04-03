@@ -556,13 +556,6 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                         items.append("着駅を単駅指定")
                     }
                 }
-                if self.fareInfo.isJRCentralStockEnable() {
-                    if self.fareInfo.isJRCentralStock() {
-                        items.append("JR東海株主優待券を適用しない")
-                    } else {
-                        items.append("JR東海株主優待券を適用する")
-                    }
-                }
             } else {
                 items.append("特例を適用する")
             }
@@ -571,6 +564,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             items.append("最短経路算出")
         }
         
+        if self.fareInfo.isJRCentralStockEnable() {
+            if self.fareInfo.isJRCentralStock() {
+                items.append("JR東海株主優待券を適用しない")
+            } else {
+                items.append("JR東海株主優待券を適用する")
+            }
+        }
+
         if self.fareInfo.isOsakakanDetourEnable() {
             if self.fareInfo.isOsakakanDetourShortcut() {
                 items.append("大阪環状線 近回り")

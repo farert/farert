@@ -168,6 +168,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define JR_KYUSYU	5
 #define JR_SHIKOKU	6
 #define JR_GROUP_MASK   ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0))
+#define IS_JR_MAJOR_COMPANY(c)	((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c))
 
 #define	LINE_TOHOKU_SINKANSEN	1	// 東北新幹線
 #define	LINE_JYOETSU_SINKANSEN	2	// 上越新幹線
@@ -327,12 +328,18 @@ private:
     int32_t beginTerminalId;
     int32_t endTerminalId;
 
+    bool bEnableTokaiStockSelect;
+
 	bool retr_fare();
 	int32_t aggregate_fare_info(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
 	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 public:
-	bool calc_fare(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
-    void setRoute(int32_t beginDtationId, int32_t endStationId, const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+    void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
+        beginTerminalId = begin_station_id;
+        endTerminalId = end_station_id;
+    }
+	bool calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
+    void setRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	void reset() {				//***
 		companymask = 0;
 		sales_km = 0;
@@ -370,10 +377,12 @@ public:
 
         roundTripDiscount = false;
 
-        beginTerminalId = 0;
-        endTerminalId = 0;
+        //beginTerminalId = 0;          /* for Use isCityterminalWoTokai() / isNotCityterminalWoTokai() */
+        //endTerminalId = 0;
 
 		result_flag = 0;
+
+        bEnableTokaiStockSelect = false;
 
         route_for_disp.clear();
 	}
@@ -393,13 +402,13 @@ public:
     void setInComplete() {
         BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE);
     }
-    bool isMultiCompanyLine() {
+    bool isMultiCompanyLine() const {
         return BIT_CHK(result_flag, BRF_COMPANY_INCORRECT);
     }
-    bool isBeginEndCompanyLine() {
+    bool isBeginEndCompanyLine() const {
         return (result_flag & ((1 << BRF_COMAPANY_FIRST) | (1 << BRF_COMAPANY_END))) != 0;
     }
-    int     resultCode() {
+    int     resultCode() const {
         if (BIT_CHK(result_flag, BRF_ROUTE_INCOMPLETE)) {
             return -1;
         } else if (BIT_CHK(result_flag, BRF_ROUTE_EMPTY)) {
@@ -409,6 +418,25 @@ public:
         } else {
             return 0;
         }
+    }
+
+	// [名]以外の都区市内・山手線が発着のいずれかにあり
+	bool isCityterminalWoTokai() const {
+		return ((STATION_ID_AS_CITYNO < beginTerminalId) &&
+             (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO))) ||
+            ((STATION_ID_AS_CITYNO < endTerminalId) &&
+             (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)));
+	}
+	
+	// [名]か単駅のみ発着の場合
+    bool isNotCityterminalWoTokai() const {
+		return ((beginTerminalId < STATION_ID_AS_CITYNO) ||
+             (CITYNO_NAGOYA == (beginTerminalId - STATION_ID_AS_CITYNO))) &&
+            ((endTerminalId < STATION_ID_AS_CITYNO) ||
+             (CITYNO_NAGOYA == (endTerminalId - STATION_ID_AS_CITYNO)));
+	}
+    bool isEnableTokaiStockSelect() const {
+        return bEnableTokaiStockSelect;
     }
 	FareResult 	roundTripFareWithCompanyLine() const;
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
@@ -501,7 +529,8 @@ private:
 
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
-};
+    static bool     CheckIsJRTokai(const vector<RouteItem> &route);
+}; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */
 
@@ -669,11 +698,12 @@ typedef struct
 #define BLF_NO_RULE             8   // ON: 特例非適用(User->System)
 #define BLF_RULE_EN             9   // ON: 特例適用(System->User)
 
-// bit 10 JR東日本管内のJR東海
-#define BLF_JRTOKAI_STOCK       10      // user -> System
-#define BLF_JREAST_IN_TOKAI     11      // System -> user
-#define BLF_JRTOKAI_STOCK_APPLY 12      // System -> user(inner-use)
-
+// bit 10 JR東海 東海道新幹線区間
+#define BLF_JRTOKAISTOCK_ENABLE 10		// 提案可能フラグ
+										//   東海道新幹線で[区][山][浜][京][阪]が適用する場面でセットされる
+										//   JR東海株主優待適用・非適用選択メニューが有効となる
+#define BLF_JRTOKAISTOCK_APPLIED 11		// 提案適用フラグ
+										//   UI側からユーザが指定する
 
 // bit 11-20 発着 都区市内 適用
 #define BLF_TER_BEGIN_CITY		13		// [区][浜][名][京][阪][神][広][九][福][仙][札]
@@ -752,7 +782,6 @@ protected:
 public:
     static int32_t  DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
     static int32_t  CompanyIdFromStation(int32_t station_id);
-	static int32_t  CompanyAnotherIdFromStation(int32_t station_id);
 
 	static vector<int32_t>	GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t>	GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
@@ -1009,9 +1038,6 @@ private:
 	static vector<Station>	SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
 	static int32_t 	Retrieve_SpecificCoreStation(int32_t cityId);
     static int32_t  RemoveDupRoute(vector<RouteItem> *routeList);
-
-protected:
-    bool            checkJrEastTokai();
 
 #if defined TEST || defined _DEBUG
     public:
