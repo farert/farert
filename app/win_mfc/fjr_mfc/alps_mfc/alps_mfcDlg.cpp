@@ -1118,7 +1118,7 @@ void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
 /*	‰^’À•\Ž¦
  *
  */
-void Calps_mfcDlg::showFare(bool bResetOption/* = false*/)
+void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 {
 	int16_t opt;
 	int16_t opt_chk;

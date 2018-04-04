@@ -843,12 +843,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
         }
 
+        contentsForMessage.removeAll();
         if self.fareInfo.isResultCompanyBeginEnd {
             contentsForMessage.append("会社線発着のため一枚の乗車券として発行されない場合があります.")
         }
         if self.fareInfo.isResultCompanyMultipassed {
             /* 2017.3 以降 ここに来ることはない */
             contentsForMessage.append("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.")
+        }
+        if self.fareInfo.isEnableTokaiStockSelect {
+            contentsForMessage.append("JR東海株主優待券使用オプション選択可")
         }
     }
     

@@ -747,6 +747,8 @@ int g_tax; /* main.m */
     result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine();
     result.isResultCompanyMultipassed = fi.isMultiCompanyLine();
 
+    result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
+    
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
     result.endStationId = fi.getEndTerminalId();

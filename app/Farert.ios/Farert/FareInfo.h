@@ -67,6 +67,7 @@
 @property (nonatomic) BOOL isResultCompanyBeginEnd;
 @property (nonatomic) BOOL isResultCompanyMultipassed;
 
+@property (nonatomic) BOOL isEnableTokaiStockSelect;
 
 @property (nonatomic) NSInteger beginStationId;
 @property (nonatomic) NSInteger endStationId;
