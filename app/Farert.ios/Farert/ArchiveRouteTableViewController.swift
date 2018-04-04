@@ -192,7 +192,8 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     override func tableView(_ tableView : UITableView, viewForHeaderInSection section : Int) -> UIView? {
 
         if (section == 0) && (self.routeList.count <= 0) {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "routeListEmptyCell") as UITableViewCell!
+
+            let cell = tableView.dequeueReusableCell(withIdentifier: "routeListEmptyCell") as UITableViewCell?
 //          return cell.contentView
             return cell
         } else {

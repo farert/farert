@@ -354,7 +354,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             /*
             * 最後の行
             */
-            let cell = tableView.dequeueReusableCell(withIdentifier: "LastRouteCell") as UITableViewCell!
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LastRouteCell") as UITableViewCell?
             let lbl = cell?.viewWithTag(201) as! UILabel
 
             if (routeStat != .OK) {
