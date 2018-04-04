@@ -125,7 +125,7 @@
 
 - (BOOL)isFareOptEnabled
 {
-    return (self.calcResultFlag & 0x3f) != 0x00;
+    return (self.calcResultFlag & 0x33f) != 0x00;
 }
 
 
