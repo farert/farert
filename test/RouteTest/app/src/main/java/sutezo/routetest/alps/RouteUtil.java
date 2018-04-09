@@ -47,6 +47,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class RouteUtil {
 
+    final static String TITLE_NOTSAMEKOKURAHAKATASHINZAI = "小倉博多間新幹線在来線別線";
+
     static int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
 
     // (System->User)
@@ -68,6 +70,13 @@ public class RouteUtil {
 
     static boolean IS_FAREOPT_ENABLED(int flg)               { return (((flg) & 0x3f) != 0); }
 
+    // bit 6-7
+    // empty or start only
+
+    // bit 8-9(User->System)
+    final static int FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK 	= (1<<6);   // 有効ビットマスク
+    final static int FAREOPT_JRTOKAI_STOCK_APPLIED			= (1<<6);	// JR東海株主に適用
+    final static int FAREOPT_JRTOKAI_STOCK_NO_APPLIED		= 0;   	// JR東海株主に非適用
 
     final static int ADDRC_LAST = 0;   // add() return code
     final static int ADDRC_OK = 1;
@@ -123,6 +132,10 @@ public class RouteUtil {
     static final int JR_KYUSYU	= 5;
     static final int JR_SHIKOKU	= 6;
     static final int JR_GROUP_MASK  = ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0));
+    static final boolean IS_JR_MAJOR_COMPANY(int c)	{
+        return ((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c));
+    }
+
 
     static final int LINE_TOHOKU_SINKANSEN	= 1;	// 東北新幹線
     static final int LINE_JYOETSU_SINKANSEN = 2;	// 上越新幹線
@@ -837,10 +850,10 @@ public class RouteUtil {
      //	@param [in] last_flag    route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
      //	@retval 文字列
      //
-     public static String Show_route(final RouteItem[] routeList, int last_flag) {
+     public static String Show_route(final RouteItem[] routeList, final LastFlag last_flag_) {
          String lineName;
          String stationName;
-
+         LastFlag last_flag = last_flag_.clone();
          //TCHAR buf[MAX_BUF];
          String result_str;
          int station_id1;
@@ -851,7 +864,7 @@ public class RouteUtil {
 
          result_str = "";
          station_id1 = routeList[0].stationId;
-         last_flag &= ~RouteList.MLF_OSAKAKAN_PASS;	// BIT_OFF(last_flag, RouteList.BLF_OSAKAKAN_1PASS)
+         last_flag.setOsakaKanFlag(LastFlag.OSAKAKAN_PASS.OSAKAKAN_NOPASS);	// BIT_OFF(last_flag, osakakan_1pass)
 
          for (int pos = 1; pos < routeList.length ; pos++) {
 
@@ -865,7 +878,7 @@ public class RouteUtil {
                          result_str += lineName;
                          if (DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN == routeList[pos].lineId) {
                              result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, last_flag);
-                             last_flag = BIT_ON(last_flag, RouteList.BLF_OSAKAKAN_1PASS);
+                             last_flag.setOsakaKanPass(true);
                          }
                          result_str += "]";
                      } else {
@@ -884,7 +897,7 @@ public class RouteUtil {
                      result_str += lineName;
                      if (DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN == routeList[pos].lineId) {
                          result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, last_flag);
-                         last_flag = BIT_ON(last_flag, RouteList.BLF_OSAKAKAN_1PASS);
+                         last_flag.setOsakaKanPass(true);
                      }
                      result_str += "]";
                  }
@@ -904,7 +917,7 @@ public class RouteUtil {
      //	@param [in] last_flag    route flag.
      //	@retval 文字列
      //
-     private static String  RouteOsakaKanDir(int station_id1, int station_id2, int last_flag) {
+     private static String  RouteOsakaKanDir(int station_id1, int station_id2, final LastFlag last_flag) {
          String result_str;
          final String result[] = {
                  "",
@@ -966,14 +979,19 @@ public class RouteUtil {
          int  c;
 
          c = DirOsakaKanLine(station_id1, station_id2) == 0 ? 1 : 0;
-         c |= BIT_CHK(last_flag, RouteList.BLF_OSAKAKAN_DETOUR) ? 0x02 : 0;
-         pass = BIT_CHK(last_flag, RouteList.BLF_OSAKAKAN_1PASS) ? RouteList.BLF_OSAKAKAN_2DIR : RouteList.BLF_OSAKAKAN_1DIR;
-         c |= BIT_CHK(last_flag,  pass) ? 0x04 : 0;
+         c |= last_flag.osakakan_detour ? 0x02 : 0;
+         if (last_flag.getOsakaKanPass()) {
+             c |= last_flag.osakakan_2dir ? 0x04 : 0;
+             pass = 2;
+         } else {
+             c |= last_flag.osakakan_1dir ? 0x04 : 0;
+             pass = 1;
+         }
          c |= LINE_DIR.LDIR_ASC == DirLine(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2) ? 0x08 : 0;
          System.out.printf("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n",
-                     pass == RouteList.BLF_OSAKAKAN_2DIR ? 2 : 1,
+                     pass,
                      StationName(station_id1),
-                     ((0 != (c & 0x02)) && (pass != RouteList.BLF_OSAKAKAN_2DIR)) ? ">>" : ">",
+                     ((0 != (c & 0x02)) && (pass != 2)) ? ">>" : ">",
                      StationName(station_id2), 0x1 & c, 0x1 & (c >>> 1), 0x01 & (c >>> 2), 0x01 & (c >>> 3));
 
          if (inner_outer.length <= c) {
@@ -1008,34 +1026,21 @@ public class RouteUtil {
      //
      //	@param [in] station_id   駅id
      //
-     static int  CompanyIdFromStation(int station_id) {
+     static int[]  CompanyIdFromStation(int station_id) {
+         int results[] = {0, 0};
          Cursor ctx = RouteDB.db().rawQuery(
-                 "select company_id from t_station where rowid=?",
+                 "select company_id, sub_company_id from t_station where rowid=?",
                  new String[] {String.valueOf(station_id)});
-         int rc = 0;
-         try {
-             if (ctx.moveToNext()) {
-                 rc = ctx.getInt(0);
-             }
-         } finally {
-             ctx.close();
-         }
-         return rc;
-     }
 
-     static int  CompanyAnotherIdFromStation(int station_id) {
-         Cursor ctx = RouteDB.db().rawQuery(
-         "select sub_company_id from t_station where rowid=?",
-                 new String[] {String.valueOf(station_id)});
-         int rc = 0;
          try {
              if (ctx.moveToNext()) {
-                 rc = ctx.getInt(0);
+                 results[0] = ctx.getInt(0);
+                 results[1] = ctx.getInt(1);
              }
          } finally {
              ctx.close();
          }
-         return rc;
+         return results;
      }
 
      //static
@@ -1099,7 +1104,7 @@ public class RouteUtil {
      //	@retuen [0]:営業キロ, [1]:計算キロ
      //	@note used aggregate_fare_info()* -> GetDistanceEx(), Get_route_distance()
      //
-     static List<Integer> GetDistance(int oskkflg, int line_id, int station_id1, int station_id2) {
+     static List<Integer> GetDistance(final LastFlag oskkflg, int line_id, int station_id1, int station_id2) {
          List<Integer> d = new ArrayList<Integer>(2);
          int sales_km;
 
@@ -1114,8 +1119,8 @@ public class RouteUtil {
          //      0 0 1 0 0 1 1 1
          // ~pass & 1dir | pass & 2dir
 
-         if ( ((oskkflg & ((1 << RouteList.BLF_OSAKAKAN_1PASS) | (1 << RouteList.BLF_OSAKAKAN_1DIR))) == (1 << RouteList.BLF_OSAKAKAN_1DIR)) ||
-                 ((oskkflg & ((1 << RouteList.BLF_OSAKAKAN_1PASS) | (1 << RouteList.BLF_OSAKAKAN_2DIR))) == ((1 << RouteList.BLF_OSAKAKAN_1PASS) | (1 << RouteList.BLF_OSAKAKAN_2DIR)))) {
+         if ((!oskkflg.getOsakaKanPass() && oskkflg.osakakan_1dir) ||
+             (oskkflg.getOsakaKanPass() && oskkflg.osakakan_2dir)) {
              sales_km = GetDistanceOfOsakaKanjyouRvrs(line_id, station_id1, station_id2);
              System.out.printf("Osaka-kan reverse\n");
          } else {

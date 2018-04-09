@@ -38,7 +38,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     private static String DB_NAME = "jrdb";
     private static String DB_NAME_ASSET = "routeDB/jrdb2017.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private SQLiteDatabase mDatabase;
     private final Context mContext;

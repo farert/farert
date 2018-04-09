@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import static sutezo.routetest.alps.RouteUtil.JR_CENTRAL;
+
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -65,13 +67,13 @@ public class CalcRoute extends RouteList {
 
     public void sync(RouteList route) {
         assign(route);
-        last_flag = route.getLastFlag();
+        last_flag = route.getLastFlag().clone();
         route_list_cooked.clear();
     }
 
     public void sync(RouteList route, int count) {
         assign(route, count);
-        last_flag = route.getLastFlag();
+        last_flag = route.getLastFlag().clone();
         route_list_cooked.clear();
     }
 
@@ -269,6 +271,9 @@ public class CalcRoute extends RouteList {
     	} else if (fare_info.isBeginEndCompanyLine()) {
     		sqlbuf.append("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
     	}
+        if (fare_info.isEnableTokaiStockSelect()) {
+            sqlbuf.append("\r\nJR東海株主優待券使用オプション選択可");
+        }
         return sqlbuf.toString();
     }
 
@@ -291,13 +296,19 @@ public class CalcRoute extends RouteList {
     			RouteUtil.ASSERT(false);
     			return 0xc0 | rc;	// calc error
     		}
+            rc = super.getFareOption();
     	}
-
+        // JR東海株主 有無 bit 4-5
+    	if ((0 != (0x300 & rc)) /*&& last_flag.no_rule)*/) {
+    		if (!last_flag.jrtokaistock_enable) {
+    			rc &= ~0x300;
+    		}
+    	}
     	// 名阪 都区市内 - 都区市内 bit 0-1
-    	if ((1 << BLF_TER_BEGIN_CITY_OFF) == (last_flag & (1 << BLF_TER_BEGIN_CITY_OFF))) {
+    	if (last_flag.ter_begin_city_off) {
     		rc |= 1;
     	}
-    	else if ((1 << BLF_TER_FIN_CITY_OFF) == (last_flag  & (1 << BLF_TER_FIN_CITY_OFF))) {
+    	else if (last_flag.ter_fin_city_off) {
     		rc |= 2;
     	}
     	return rc;
@@ -316,6 +327,7 @@ public class CalcRoute extends RouteList {
         } else {
             stid = coreAreaIDByCityId(RouteUtil.CSTART);
             if (stid == 0) {
+                RouteUtil.ASSERT(route_list_cooked.get(0).stationId == route_list_raw.get(0).stationId);
                 return route_list_cooked.get(0).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
@@ -337,6 +349,7 @@ public class CalcRoute extends RouteList {
         } else {
             stid = coreAreaIDByCityId(RouteUtil.CEND);
             if (stid == 0) {
+                 RouteUtil.ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
                 return route_list_cooked.get(route_list_cooked.size() - 1).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
@@ -349,9 +362,9 @@ public class CalcRoute extends RouteList {
     //	showFare() => calcFare() =>
     //	route_list_raw => route_list_cooked
     //
-    //	後半でBLF_TER_xxx(route[0].lineId)を設定します
+    //	後半でter_xxx(route[0].lineId)を設定します
     //
-    //	@param [in]  last_flag   BLF_MEIHANCITYFLAG = 発駅:着駅 無効(0)/有効(1)
+    //	@param [in]  last_flag   meihancityflag = 発駅:着駅 無効(0)/有効(1)
     //	@param [out] rule114	 [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
     //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
     //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
@@ -375,20 +388,20 @@ public class CalcRoute extends RouteList {
         int flg;
         int aply88;
 
-        last_flag = RouteUtil.BIT_OFF(last_flag, BLF_RULE_EN);    // initialize
+        last_flag.rule_en = false;    // initialize
 
         // 69を適用したものをroute_list_tmp2へ
         n = ReRouteRule69j(route_list_raw, route_list_tmp);	/* 69条適用(route_list_raw.route_list_tmp) */
         System.out.printf("Rule 69 applied %dtimes.\n", n);
         if (0 < n) {
-            last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+            last_flag.rule_en = true;    // applied rule
         }
         // route_list_tmp2 = route_list_tmp
         // 70を適用したものをroute_list_tmp2へ
         n = ReRouteRule70j(route_list_tmp, /*out*/route_list_tmp2);
         System.out.printf(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
         if (0 == n) {
-            last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+            last_flag.rule_en = true;    // applied rule
         }
 
         // 88を適用したものをroute_list_tmpへ
@@ -396,21 +409,28 @@ public class CalcRoute extends RouteList {
         if (0 != aply88) {
             if ((aply88 & 1) != 0) {
                 System.out.printf("Apply to rule88 for start.\n");
-                last_flag &= ~LF_TER_CITY_MASK;
-    			last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_BEGIN_OOSAKA);
+                last_flag.terCityReset();
+    			last_flag.ter_begin_oosaka = true;
             } else if ((aply88 & 2) != 0) {
                 System.out.printf("Apply to rule88 for arrive.\n");
-                last_flag &= ~LF_TER_CITY_MASK;
-    			last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_FIN_OOSAKA);
+                last_flag.terCityReset();
+    			last_flag.ter_fin_oosaka = true;
             }
-            last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+            last_flag.rule_en = true;    // applied rule
         }
 
 		/* 特定都区市内発着可否判定 */
         chk = CheckOfRule86(route_list_tmp2.toArray(new RouteItem[0]), last_flag, exit, enter, cityId);
         System.out.printf("RuleSpecific:chk 0x%x, %d -> %d\n", chk, cityId[0], cityId[1]);
+        if (RouteUtil.BIT_CHK(chk, 31)) {
+    		last_flag.jrtokaistock_enable = true; // for UI
+    	}
+    	else {
+    		last_flag.jrtokaistock_enable = false; // for UI
+    	}
+    	chk &= ~(1 << 31);
 
-		/* 86, 87適用可能性あり？ */
+		/* 86, 87適用可能性None？ */
         if ((chk == 4) || (chk == 0)) {  /* 全駅特定都区市内駅 or 発着とも特定都区市内駅でない場合 */
 			/* 未変換 */
             System.out.printf("no applied for rule86/87\n");
@@ -432,14 +452,14 @@ public class CalcRoute extends RouteList {
         if (0 != aply88) {
             if ((aply88 & 1) != 0) {
                 System.out.printf("Apply to rule88(2) for start.\n");
-                last_flag &= ~LF_TER_CITY_MASK;
-    			last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_BEGIN_OOSAKA);
+                last_flag.terCityReset();
+    			last_flag.ter_begin_oosaka = true;
             } else if ((aply88 & 2) != 0) {
                 System.out.printf("Apply to rule88(2) for arrive.\n");
-                last_flag &= ~LF_TER_CITY_MASK;
-    			last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_FIN_OOSAKA);
+                last_flag.terCityReset();
+    			last_flag.ter_fin_oosaka = true;
             }
-            last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+            last_flag.rule_en = true;    // applied rule
         }
 
         // 69を適用したものをroute_list_tmp3へ
@@ -457,14 +477,28 @@ public class CalcRoute extends RouteList {
 			/* <<<都区市内適用>>> */
 			/* 201km <= sales_km */
 			/* enable */
-            last_flag &= ~LF_TER_CITY_MASK;
-    		last_flag |= ((chk & 0x03) << BLF_TER_BEGIN_CITY);	// BLF_TER_BEGIN_CITY, BLF_TER_FIN_CITY
+            last_flag.terCityReset();
+            switch (chk & 0x03) {
+                case 0:
+                    break;
+                case 1:
+                    last_flag.ter_begin_city = true;
+                    break;
+                case 2:
+                    last_flag.ter_fin_city = true;
+                    break;
+                case 3:
+                default:
+                    last_flag.ter_begin_city = true;
+                    last_flag.ter_fin_city = true;
+                    break;
+            }
             System.out.printf("applied for rule86(%d)\n", chk & 0x03);
 
             // route_list_cooked = route_list_tmp3
             cpyRouteItems(route_list_tmp3, route_list_cooked);
 
-            last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+            last_flag.rule_en = true;    // applied rule
 
             return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
@@ -475,14 +509,30 @@ public class CalcRoute extends RouteList {
 			/* apply to 87 */  /* 都区内に限り最短が100km以下は非適用(基115-2) */
             if ((1000 < sales_km) && ((InRouteUrban(route_list_raw) != RouteUtil.URB_TOKYO) || (1000 < Get_route_distance(last_flag, route_list_raw).sales_km))) {
 				/* 山手線内発着 enable */
-                last_flag &= ~LF_TER_CITY_MASK;
-    			last_flag |= ((rtky & 0x03) << BLF_TER_BEGIN_YAMATE);	// BLF_TER_BEGIN_YAMATE, BLF_TER_FIN_YAMATE
-                System.out.printf("applied for rule87\n");
+                if (!last_flag.jrtokaistock_enable || !last_flag.jrtokaistock_applied) {
 
+    				last_flag.terCityReset();
+                    switch (chk & 0x03) {
+                        case 0:
+                            break;
+                        case 1:
+                            last_flag.ter_begin_yamate = true;
+                            break;
+                        case 2:
+                            last_flag.ter_fin_yamate = true;
+                            break;
+                        case 3:
+                        default:
+                            last_flag.ter_begin_yamate = true;
+                            last_flag.ter_fin_yamate = true;
+                            break;
+                    }
+    				System.out.printf("applied for rule87\n");
+    			}
                 // route_list_cooked = route_list_tmp3
                 cpyRouteItems(route_list_tmp3, route_list_cooked);
 
-                last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                last_flag.rule_en = true;    // applied rule
 
                 return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             }
@@ -533,7 +583,7 @@ public class CalcRoute extends RouteList {
                     flg |= 0x02;
                 }
                 if (flg == 0x03) {	/* 発・着とも200km越えだが、都区市内間は200km以下 */
-                    if (RouteUtil.BIT_CHK(last_flag, BLF_MEIHANCITYFLAG)) {
+                    if (last_flag.meihancityflag) {
 						/* 発のみ都区市内適用 */
 						/* route_list_tmp = route_list_tmp2 */
                         cpyRouteItems(route_list_tmp2, route_list_tmp);
@@ -547,32 +597,36 @@ public class CalcRoute extends RouteList {
 						/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
                         if (sk == 900) {
                             System.out.printf("applied for rule87(start)\n");
-                            last_flag &= ~LF_TER_CITY_MASK;
-            				last_flag |= ((1 << BLF_TER_BEGIN_YAMATE) | (1 << BLF_TER_BEGIN_CITY_OFF));
+                            last_flag.terCityReset();
+            				last_flag.ter_begin_yamate = true;
+            				last_flag.ter_begin_city_off = true;
                         } else {
                             System.out.printf("applied for rule86(start)\n");
-                            last_flag &= ~LF_TER_CITY_MASK;
-            				last_flag |= ((1 << BLF_TER_BEGIN_CITY) | (1 << BLF_TER_BEGIN_CITY_OFF));
+                            last_flag.terCityReset();
+            				last_flag.ter_begin_city = true;
+            				last_flag.ter_begin_city_off = true;
                         }
                         // route_list_cooked = route_list_tmp3
                         cpyRouteItems(route_list_tmp3, route_list_cooked);
-                        last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                        last_flag.rule_en = true;    // applied rule
                         return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     } else {
 						/* 着のみ都区市内適用 */
 						/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
                         if (sk == 900) {
                             System.out.printf("applied for rule87(end)\n");
-                            last_flag &= ~LF_TER_CITY_MASK;
-        					last_flag |= ((1 << BLF_TER_FIN_YAMATE) | (1 << BLF_TER_FIN_CITY_OFF));
+                            last_flag.terCityReset();
+        					last_flag.ter_fin_yamate = true;
+        					last_flag.ter_fin_city_off = true;
                         } else {
                             System.out.printf("applied for rule86(end)\n");
-                            last_flag &= ~LF_TER_CITY_MASK;
-        					last_flag |= ((1 << BLF_TER_FIN_CITY) | (1 << BLF_TER_FIN_CITY_OFF));
+                            last_flag.terCityReset();
+        					last_flag.ter_fin_city = true;
+        					last_flag.ter_fin_city_off = true;
                         }
                         // route_list_cooked = route_list_tmp3
                         cpyRouteItems(route_list_tmp3, route_list_cooked);
-                        last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                        last_flag.rule_en = true;    // applied rule
                         return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     }
                 } else if (flg == 0x01) {
@@ -588,31 +642,31 @@ public class CalcRoute extends RouteList {
 					/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
                     if (sk == 900) {
                         System.out.printf("applied for rule87(start)\n");
-                        last_flag &= ~LF_TER_CITY_MASK;
-    					last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_BEGIN_YAMATE);
+                        last_flag.terCityReset();
+    					last_flag.ter_begin_yamate = true;;
                     } else {
                         System.out.printf("applied for rule86(start)\n");
-                        last_flag &= ~LF_TER_CITY_MASK;
-    					last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_BEGIN_CITY);
+                        last_flag.terCityReset();
+    					last_flag.ter_begin_city = true;
                     }
                     // route_list_cooked = route_list_tmp3
                     cpyRouteItems(route_list_tmp3, route_list_cooked);
-                    last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    last_flag.rule_en = true;    // applied rule
                     return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 } else if (flg == 0x02) {
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
                     if (sk == 900) {
                         System.out.printf("applied for rule87(end)\n");
-                        last_flag &= ~LF_TER_CITY_MASK;
-    					last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_FIN_YAMATE);
+                        last_flag.terCityReset();
+    					last_flag.ter_fin_yamate = true;
                     } else {
                         System.out.printf("applied for rule86(end)\n");
-                        last_flag &= ~LF_TER_CITY_MASK;
-    					last_flag = RouteUtil.BIT_ON(last_flag, BLF_TER_FIN_CITY);
+                        last_flag.terCityReset();
+    					last_flag.ter_fin_city = true;
                     }
                     // route_list_cooked = route_list_tmp3
                     cpyRouteItems(route_list_tmp3, route_list_cooked);
-                    last_flag = RouteUtil.BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    last_flag.rule_en = true;    // applied rule
                     return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 }
 				/* flg == 0 */
@@ -684,10 +738,10 @@ public class CalcRoute extends RouteList {
     		fare_info.setEmpty();
 
     /* fare_info.result_flag は privateなので でもASSERTは正当 */
-    //ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
-    //	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
-    //ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
-    //	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+    //ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && last_flag.compnbegin)) ||
+    //	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !last_flag.compnbegin)));
+    //ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && last_flag.compnend)) ||
+    //	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !last_flag.compnend)));
 
     		return fare_info;
     	}
@@ -696,18 +750,14 @@ public class CalcRoute extends RouteList {
     					// BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE)
     		fare_info.setInComplete();	// この経路の片道乗車券は購入できません."));
          /* fare_info.result_flag は privateなので でもASSERTは正当 */
-    	//	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
-    	//		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
-    	//	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
-    	//		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+    	//	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && last_flag.compnbegin)) ||
+    	//		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !last_flag.compnbegin)));
+    	//	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && last_flag.compnend)) ||
+    	//		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !last_flag.compnend)));
 
     		return fare_info;
     	}
-
-        // JR東日本管内のJR東海チェック
-        checkJrEastTokai(); // BIT_SET(last_flag, BLF_JREAST_IN_TOKAI);
-
-    	if (!RouteUtil.BIT_CHK(last_flag, BLF_NO_RULE)) {
+    	if (!last_flag.no_rule) {
     		/* 規則適用 */
 
     		/* 86, 87, 69, 70条 114条適用かチェック */
@@ -725,33 +775,39 @@ public class CalcRoute extends RouteList {
     		} else {
     			///////////////////////////////////////////////////
     			// calc fare
+                fare_info.setTerminal(this.beginStationId(true),
+                        this.endStationId(true));
     			if (fare_info.calc_fare(last_flag, route_list_raw, route_list_cooked)) {
-                    fare_info.setRoute(this.beginStationId(true),
-                                        this.endStationId(true),
-                                        this.route_list_cooked, last_flag);
+                    fare_info.setRoute(this.route_list_cooked, last_flag);
+    				RouteUtil.ASSERT(fare_info.getBeginTerminalId() == this.beginStationId(true));
+                    RouteUtil.ASSERT(fare_info.getEndTerminalId() == this.endStationId(true));
     			                                // rule 114 applied
                     fare_info.setRule114(rule114);
-                }
+                } else {
+				    fare_info.reset();
+			    }
     		}
     	} else {
     		/* 規則非適用 */
     		/* 単駅 */
     		///////////////////////////////////////////////////
     		// calc fare
+            fare_info.setTerminal(this.beginStationId(false),
+    		 					  this.endStationId(false));
     		if (fare_info.calc_fare(last_flag, route_list_raw, null)) {
-                fare_info.setRoute(this.beginStationId(false),
-                                    this.endStationId(false),
-                                    this.route_list_raw, last_flag);
+                fare_info.setRoute(this.route_list_raw, last_flag);
+    			RouteUtil.ASSERT(fare_info.getBeginTerminalId() == this.beginStationId(false));
+    			RouteUtil.ASSERT(fare_info.getEndTerminalId() == this.endStationId(false));
             }
     	}
     	// success
         /* fare_info.result_flag は privateなので でもASSERTは正当 */
-    	// というわけで BRF_COMAPANY_xxx と、BLF_COMNxxx は同じ
-    	//TRACE("%d, %d - %d, %d\n", BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST), BIT_CHK(last_flag, BLF_COMPNBEGIN), BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END), BIT_CHK(last_flag, BLF_COMPNEND));
-    	//ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
-    	//	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
-    	//ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
-    	//	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+    	// というわけで BRF_COMAPANY_xxx と、comnxxx は同じ
+    	//TRACE("%d, %d - %d, %d\n", BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST), last_flag.compnbegin), BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END), last_flag.compnend));
+    	//ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && last_flag.compnbegin)) ||
+    	//	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !last_flag.compnbegin)));
+    	//ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && last_flag.compnend)) ||
+    	//	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !last_flag.compnend)));
 
     	return fare_info;
     }
@@ -788,12 +844,12 @@ public class CalcRoute extends RouteList {
     private int coreAreaIDByCityId(int startEndFlg)	{
         int cityno;
 
-        if (0 != (last_flag & (1 << BLF_RULE_EN))) {
-    		if (((startEndFlg == RouteUtil.CSTART) && RouteUtil.BIT_CHK(last_flag, BLF_TER_BEGIN_YAMATE)) ||
-    		    ((startEndFlg == RouteUtil.CEND)   && RouteUtil.BIT_CHK(last_flag, BLF_TER_FIN_YAMATE))) {
+        if (last_flag.rule_en) {
+    		if (((startEndFlg == RouteUtil.CSTART) && last_flag.ter_begin_yamate) ||
+    		    ((startEndFlg == RouteUtil.CEND)   && last_flag.ter_fin_yamate)) {
     			return RouteUtil.CITYNO_YAMATE;	/* 山手線内*/
-    		} else if (((startEndFlg == RouteUtil.CSTART) && RouteUtil.BIT_CHK(last_flag, BLF_TER_BEGIN_CITY)) ||
-    				   ((startEndFlg == RouteUtil.CEND)   && RouteUtil.BIT_CHK(last_flag, BLF_TER_FIN_CITY))) {
+    		} else if (((startEndFlg == RouteUtil.CSTART) && last_flag.ter_begin_city) ||
+    				   ((startEndFlg == RouteUtil.CEND)   && last_flag.ter_fin_city)) {
     			int flags;
     			if (startEndFlg == RouteUtil.CSTART) {
     				flags = route_list_cooked.get(0).flag;
@@ -806,8 +862,8 @@ public class CalcRoute extends RouteList {
     			} else {
     				RouteUtil.ASSERT(false);
     			}
-    		} else if (((startEndFlg == RouteUtil.CSTART) && RouteUtil.BIT_CHK(last_flag, BLF_TER_BEGIN_OOSAKA)) ||
-    				   ((startEndFlg == RouteUtil.CEND)   && RouteUtil.BIT_CHK(last_flag, BLF_TER_FIN_OOSAKA))) {
+    		} else if (((startEndFlg == RouteUtil.CSTART) && last_flag.ter_begin_oosaka) ||
+    				   ((startEndFlg == RouteUtil.CEND)   && last_flag.ter_fin_oosaka)) {
     			return RouteUtil.CITYNO_SHINOOSAKA;	/* 大阪・新大阪 */
     		}
             // else
@@ -823,7 +879,7 @@ public class CalcRoute extends RouteList {
     //	大阪-[東海道線]-新大阪-[山陽新幹線]-
     //	の場合、大阪-[東海道線]-新大阪の区間を外す（201km以上なら外さない)
     //	(この関数へは201km以上の86条適用時には呼ばれることはない)
-    //	BLF_TER_xxx(route[0].lineId)の設定前であることを前提(0を設定)とします
+    //	ter_xxx(route[0].lineId)の設定前であることを前提(0を設定)とします
     //
     //	@param [in/out] route    route
     //
@@ -959,7 +1015,7 @@ public class CalcRoute extends RouteList {
     //
     //	@note 86/87適用後の営業キロが200km/100km以下であること.
     //
-    private static FARE_INFO.Fare CheckOfRule114j(int last_flag, final List<RouteItem> route, final List<RouteItem> routeSpecial, int kind) {
+    private static FARE_INFO.Fare CheckOfRule114j(final LastFlag last_flag, final List<RouteItem> route, final List<RouteItem> routeSpecial, int kind) {
 
         int dkm;
         int km;				// 100km or 200km
@@ -1080,31 +1136,31 @@ public class CalcRoute extends RouteList {
     //	showFare() => calcFare() => checkOfRuleSpecificCoreLine() =>
     //	CheckOfRule114j() =>
     //
-    //	@param [in]  last_flag 大阪環状線通過方向(BLF_OSAKAKAN_1DIR, BLF_OSAKAKAN_2DIR, BLF_OSAKAKAN_1PASS)
-    //                         * BLF_OSAKAKAN_1PASS はwork用に使用可
+    //	@param [in]  last_flag 大阪環状線通過方向(osakakan_1dir, osakakan_2dir, osakakan_1pass)
+    //                         * osakakan_1pass はwork用に使用可
     //	@param [in]  route     計算ルート
     //	@retuen 営業キロ[0] ／ 計算キロ[1]
     //
-    private static KM Get_route_distance(int last_flag, final List<RouteItem> route) {
+    private static KM Get_route_distance(final LastFlag last_flag, final List<RouteItem> route) {
         int total_sales_km;
         int total_calc_km;
         int stationId;
-        int oskk_flag;
+        LastFlag oskk_flag;
 
         total_sales_km = 0;
         total_calc_km = 0;
         stationId = 0;
 		/* 大阪環状線flag */
 
-        oskk_flag = last_flag;
-        oskk_flag = RouteUtil.BIT_OFF(oskk_flag, BLF_OSAKAKAN_1PASS);
+        oskk_flag = last_flag.clone();
+        oskk_flag.setOsakaKanPass(false);
 
         for (RouteItem it : route) {
             if (stationId != 0) {
                 List<Integer> vkms;
                 if (it.lineId == DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN) {
                     vkms = RouteUtil.GetDistance(oskk_flag, it.lineId, stationId, it.stationId);
-                    oskk_flag = RouteUtil.BIT_ON(oskk_flag, BLF_OSAKAKAN_1PASS);
+                    oskk_flag.setOsakaKanPass(true);
                 } else if (it.lineId == RouteUtil.ID_L_RULE70) {
                     vkms = new ArrayList<Integer>(2);
                     vkms.add(FARE_INFO.Retrieve70Distance(stationId, it.stationId));
@@ -1243,7 +1299,7 @@ public class CalcRoute extends RouteList {
                                     out_route_list.add(i, new RouteItem(trule69list.get(0)[0], a69list.get(0)[1]));
                                     i++;
                                 }
-                            } else if (2 == a69list.size()) {
+                            } else if (2 <= a69list.size()) {
 								/* 置換処理3 */
                                 if (out_route_list.get(i).stationId == a69list.get(1)[1].shortValue()) {
                                     out_route_list.get(i).lineId = trule69list.get(0)[0].shortValue();
@@ -1634,7 +1690,7 @@ public class CalcRoute extends RouteList {
     //	showFare() => calcFare() => checkOfRuleSpecificCoreLine() =>
     //
     //	@param [in]  in_route_list 経路
-    //  @param [in]  last_flag     フラグ(BLF_JREAST_IN_TOKAI)
+    //  @param [in]  last_flag     フラグ(jrtokaistock_applied)
     //	@param [out] exit          脱出路線・駅
     //	@param [out] entr          進入路線・駅
     //	@param [out] cityId_pair   IDENT1(発駅特定都区市内Id), IDENT2(着駅特定都区市内Id)
@@ -1645,6 +1701,7 @@ public class CalcRoute extends RouteList {
     //			3: 発駅≠着駅とも特定都区市内    entr, exit 有効
     //		 0x83: 発駅=着駅=特定都区市内        entr, exit 有効
     //			4: 全駅同一特定都区市内          -
+    //		0x8000_0000 : jrtokaistock_enable JR東海株主優待券使用メニュー有効可否フラグ
     //
     //	 [九] 山陽新幹線
     //	 [福] 鹿児島線
@@ -1664,7 +1721,7 @@ public class CalcRoute extends RouteList {
     //	----o 通常
     //	o---o なし(乗車駅または分岐駅～分岐駅または降車駅が都区市内だが間に非都区市内が含まれる例はなし。
     //
-    static int CheckOfRule86(final RouteItem[] in_route_list, int last_flag, Station exit, Station entr, int[] cityId_pair) {
+    static int CheckOfRule86(final RouteItem[] in_route_list, final LastFlag last_flag, Station exit, Station entr, int[] cityId_pair) {
         DbidOf dbid = new DbidOf();
         int city_no_s;
         int city_no_e;
@@ -1683,21 +1740,27 @@ public class CalcRoute extends RouteList {
         // 発駅が尼崎の場合大阪市内発ではない　基153-2
         if ((city_no_s == RouteUtil.CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == in_route_list[0].stationId)) {
             city_no_s = 0;
-        } else if (((city_no_s == RouteUtil.CITYNO_TOKYO) || (city_no_s == RouteUtil.CITYNO_YOKOHAMA)) &&
-                RouteUtil.BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
-            city_no_s = 0;
-        }
+        } else if ((city_no_s != 0) && (city_no_s != RouteUtil.CITYNO_NAGOYA)) {
+    		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
+    		r |= 0x80000000; // BIT_ON(last_flag, jrtokaistock_enable); // for UI
+    		if (last_flag.jrtokaistock_applied) { /* by user */
+    			city_no_s = 0;
+    		}
+    	}
 
         city_no_e = RouteUtil.MASK_CITYNO(in_route_list[in_route_list.length - 1].flag);
         // 着駅が尼崎の場合大阪市内着ではない　基153-2
         if ((city_no_e == RouteUtil.CITYNO_OOSAKA) &&
                 (dbid.StationIdOf_AMAGASAKI == in_route_list[in_route_list.length - 1].stationId)) {
             city_no_e = 0;
-        } else if (((city_no_e == RouteUtil.CITYNO_TOKYO) || (city_no_e == RouteUtil.CITYNO_YOKOHAMA)) &&
-                RouteUtil.BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI)) {
-            city_no_e = 0;
         }
-
+    	else if ((city_no_e != 0) && (city_no_e != RouteUtil.CITYNO_NAGOYA)) {
+    		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
+    		r |= 0x80000000; // BIT_ON(last_flag, jrtokaistock_enable); // for UI
+    		if (last_flag.jrtokaistock_applied) {
+    			city_no_e = 0;
+    		}
+    	}
 
         cityId_pair[0] = city_no_s;
         cityId_pair[1] = city_no_e;
@@ -1739,7 +1802,8 @@ public class CalcRoute extends RouteList {
                     return 4;	/* 全駅特定都区市内 */
                 //break;
                 case 1:
-                    r = 1;		/* 発駅特定都区市内 */
+                    r &= ~0xffff;
+        			r |= 1;		/* 発駅特定都区市内 */
                     exit.let(out_line);
                     break;
                 case 2:
@@ -2228,87 +2292,6 @@ public class CalcRoute extends RouteList {
         return affects;
     }
 
-    //
-    //  経路はJR東海管内のみか？
-    //  @retval true: JR東海管内のみ / false=以外
-    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-    //
-    boolean checkJrEastTokai() {
-	/*
-	    W W x
-	    W x x
-	    C x x
-	    E x x
-	    x W x
-	    x C x
-	    x E x
-	    x x x
-
-	    C C -
-
-	    W C b
-	    C W f
-
-	    C E n
-	    E C n
-	    E E n
-	    E W fn 東京 新幹線 米原
-	    W E bn 米原 新幹線 東京
-
-	    b:発駅が境界駅ならtrue
-	    f:着駅が境界駅ならtrue
-	    -:true
-	    n:新幹線ならtrue
-	    x:false
-	*/
-        int station_id1 = 0;
-        int id1 = 0;
-
-        last_flag = RouteUtil.BIT_OFF(last_flag, BLF_JREAST_IN_TOKAI);
-
-		/* JR東海以外 and JR東日本で新幹線でない場合false */
-        for (RouteItem ite : route_list_raw) {
-            int id = RouteUtil.CompanyIdFromStation(ite.stationId);
-            if (station_id1 != 0) {
-                if (((id == RouteUtil.JR_WEST) && (id1 == RouteUtil.JR_WEST)) ||
-                        ((id != RouteUtil.JR_CENTRAL) && (id != RouteUtil.JR_EAST) && (id != RouteUtil.JR_WEST)) ||
-                        ((id1 != RouteUtil.JR_CENTRAL) && (id1 != RouteUtil.JR_EAST) && (id1 != RouteUtil.JR_WEST))) {
-                    return false;
-                }
-                if ((id1 == RouteUtil.JR_WEST) &&
-                        !RouteUtil.BIT_CHK(RouteUtil.AttrOfStationOnLineLine(ite.lineId,
-                                        station_id1),
-                                BSRBORDER)) {
-                    return false;
-                }
-                if ((id == RouteUtil.JR_WEST) &&
-                        !RouteUtil.BIT_CHK(RouteUtil.AttrOfStationOnLineLine(ite.lineId,
-                                        ite.stationId),
-                                BSRBORDER)) {
-                    return false;
-                }
-                if ((id == RouteUtil.JR_EAST) &&
-                        ((ite.lineId != DbidOf.id().LineIdOf_TOKAIDOSHINKANSEN) &&
-                                !RouteUtil.BIT_CHK(RouteUtil.AttrOfStationOnLineLine(ite.lineId,
-                                                ite.stationId),
-                                        BSRBORDER))) {
-                    return false;
-                }
-                if ((id1 == RouteUtil.JR_EAST) &&
-                        ((ite.lineId != DbidOf.id().LineIdOf_TOKAIDOSHINKANSEN) &&
-                                !RouteUtil.BIT_CHK(RouteUtil.AttrOfStationOnLineLine(ite.lineId,
-                                                station_id1),
-                                        BSRBORDER))) {
-                    return false;
-                }
-            }
-            station_id1 = ite.stationId;
-            id1 = id;
-        }
-        System.out.printf("isJrTokai true\n");
-        last_flag = RouteUtil.BIT_ON(last_flag, BLF_JREAST_IN_TOKAI);
-        return true;
-    }
 
     //static
     //	並行在来線へ変換
@@ -2564,9 +2547,9 @@ public class CalcRoute extends RouteList {
 		if (0 != (RouteUtil.FAREOPT_AVAIL_OSAKAKAN_DETOUR & availbit)) {
 			if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
 				if (0 != (cooked & RouteUtil.FAREOPT_OSAKAKAN_DETOUR)) {
-					last_flag = RouteUtil.BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
+					last_flag.osakakan_detour = true;
 				} else {
-					last_flag = RouteUtil.BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
+					last_flag = RouteUtil.BIT_OFF(last_flag, osakakan_detour);
 				}
 			} else {
 				RouteUtil.ASSERT (false);
@@ -2659,9 +2642,9 @@ if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
 if (RouteUtil.IS_MAIHAN_CITY_START(cooked) == RouteUtil.FAREOPT_APPLIED_START) {
 も同様
 
- ((c & 0x02) && (pass != BLF_OSAKAKAN_2DIR)) ? ">>" : ">",
+ ((c & 0x02) && (pass != osakakan_2dir)) ? ">>" : ">",
  v
- ((0 != (c & 0x02)) && (pass != BLF_OSAKAKAN_2DIR)) ? ">>" : ">",
+ ((0 != (c & 0x02)) && (pass != osakakan_2dir)) ? ">>" : ">",
 
 CheckOfRule114j() 戻り値真偽でないのがある
 
