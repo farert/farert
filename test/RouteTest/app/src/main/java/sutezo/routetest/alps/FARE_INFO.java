@@ -113,6 +113,8 @@ public class FARE_INFO {
     int beginTerminalId;
     int endTerminalId;
 
+    boolean bEnableTokaiStockSelect;
+
     /* discount */
     static int fare_discount(int fare, int per) {
         return ((fare) / 10 * (10 - (per)) / 10 * 10);
@@ -328,18 +330,18 @@ public class FARE_INFO {
     //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
     //	@retval -1 Fatal error
     //
-    private int aggregate_fare_info(int last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
+    private int aggregate_fare_info(final LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
         short station_id1;		/* station_id1, (station_id2=ite.stationId) */
         short station_id_0;		/* last station_id1(for Company line) */
-        int   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+        LastFlag osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
         //
         int fare_add = 0;						// 運賃特別区間加算値
         final List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
 
         this.local_only = true;
         this.local_only_as_hokkaido = true;
-        osakakan_aggregate = last_flag;
-        osakakan_aggregate = RouteUtil.BIT_OFF(osakakan_aggregate, RouteList.BLF_OSAKAKAN_1PASS);
+        osakakan_aggregate = last_flag.clone();
+        osakakan_aggregate.setOsakaKanPass(false);
 
         station_id1 = 0;
 
@@ -381,7 +383,7 @@ public class FARE_INFO {
                         dex = this.getDistanceEx(ri.lineId, station_id1, ri.stationId);
                     } else {
                         dex = GetDistanceEx(osakakan_aggregate, ri.lineId, station_id1, ri.stationId);
-                        osakakan_aggregate = RouteUtil.BIT_ON(osakakan_aggregate, RouteList.BLF_OSAKAKAN_1PASS);
+                        osakakan_aggregate.setOsakaKanPass(true);
                     }
 
                     if (9 != dex.length) {
@@ -429,9 +431,7 @@ public class FARE_INFO {
                                 CompanyFare comfare_1 = null;	// a+++b
 
     							// if ex. 氷見-金沢 併算割引非適用
-    							if (comfare.passflg &&
-                                    (((1 << RouteList.BLF_COMPNEND) | (1 << RouteList.BLF_COMPNBEGIN)) !=
-                        (last_flag & ((1 << RouteList.BLF_COMPNEND) | (1 << RouteList.BLF_COMPNBEGIN))) )) {
+    							if (comfare.passflg && (!last_flag.compnbegin || !last_flag.compnend)) {
     								/* 乗継割引なし */
     								comfare = Fare_company(station_id1, ri.stationId);
                                     if (comfare == null) {
@@ -669,6 +669,10 @@ public class FARE_INFO {
         return 0;
     }
 
+    void setTerminal(int begin_station_id, int end_station_id) {
+        beginTerminalId = begin_station_id;
+        endTerminalId = end_station_id;
+    }
 
     // Private:
     //	showFare() =>
@@ -680,7 +684,7 @@ public class FARE_INFO {
     //	@param [in] applied_rule ルール適用(デフォルトTrue)
     //	@return 異常の時はfalse(会社線のみでJRなし)
     //
-    boolean calc_fare(int last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
+    boolean calc_fare(LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
         int fare_add;		/* 特別加算区間 */
         int adjust_km;
         List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
@@ -694,6 +698,29 @@ public class FARE_INFO {
             return false;
             //goto err;		/* >>>>>>>>>>>>>>>>>>> */
         }
+        //System.out.padb kill-serverrintf("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", RouteUtil.isNotCityterminalWoTokai(), RouteUtil.isCityterminalWoTokai(), last_flag.isTerCity());
+    	System.out.printf("@@@ en=%s, aply=%s rule=%s norule=%s\n", last_flag.jrtokaistock_enable,
+    		last_flag.jrtokaistock_applied,
+    		last_flag.no_rule, last_flag.rule_en);
+
+    	bEnableTokaiStockSelect = false;
+    	last_flag.jrtokaistock_enable = false;
+    	if (CheckIsJRTokai(routeList_raw)) {
+    		// JR東海のみ
+
+    		// [名]以外の都区市内・山手線が発着のいずれかにあるか
+
+    		if (isCityterminalWoTokai()) {
+    			bEnableTokaiStockSelect = true;	// JR東海株主優待券使用可
+    			last_flag.jrtokaistock_enable = true;
+    		}
+    		else {
+    			this.companymask = (1 << (RouteUtil.JR_CENTRAL - 1));
+    			if (last_flag.jrtokaistock_applied) {
+    				last_flag.jrtokaistock_enable = true;
+    			}
+    		}
+    	}
 
         /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
         if (routeList_cooked != null) {
@@ -721,7 +748,7 @@ public class FARE_INFO {
     	if (retr_fare()) {
     		int special_fare;
 
-    		if (RouteUtil.BIT_CHK(last_flag, RouteList.BLF_COMPNCHECK) && (this.sales_km < 1500)) {
+    		if (last_flag.compncheck && (this.sales_km < 1500)) {
     										/* 大聖寺-和倉温泉は106kmある */
     										/* 大聖寺-米原-岐阜-富山-津端-和倉温泉 を弾く為 */
     	        	System.out.printf("specific fare section replace for IR-ishikawa change continue discount\n");
@@ -789,12 +816,7 @@ public class FARE_INFO {
     //	@param [in] routeList         経路（規則適用時は変換後、規則非適用なら変換前）
     //	@param [in] last_flag         route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
     //
-    void setRoute(int begin_station_id, int end_station_id,
-                  final List<RouteItem> routeList,
-                  int last_flag) {
-        beginTerminalId = begin_station_id;
-        endTerminalId = end_station_id;
-
+    void setRoute(final List<RouteItem> routeList, final LastFlag last_flag) {
         route_for_disp = RouteUtil.Show_route(routeList.toArray(new RouteItem [0]), last_flag);
     }
 
@@ -837,10 +859,12 @@ public class FARE_INFO {
 
         roundTripDiscount = false;
 
-        beginTerminalId = 0;
-        endTerminalId = 0;
+        //beginTerminalId = 0;
+        //endTerminalId = 0;
 
         result_flag = 0;
+
+        bEnableTokaiStockSelect = false;
 
         route_for_disp = "";
     }
@@ -877,6 +901,27 @@ public class FARE_INFO {
              return 0;
          }
      }
+
+
+ 	// [名]以外の都区市内・山手線が発着のいずれかにあり
+ 	boolean isCityterminalWoTokai() {
+ 		return ((RouteUtil.STATION_ID_AS_CITYNO < beginTerminalId) &&
+              (RouteUtil.CITYNO_NAGOYA != (beginTerminalId - RouteUtil.STATION_ID_AS_CITYNO))) ||
+             ((RouteUtil.STATION_ID_AS_CITYNO < endTerminalId) &&
+              (RouteUtil.CITYNO_NAGOYA != (endTerminalId - RouteUtil.STATION_ID_AS_CITYNO)));
+ 	}
+
+ 	// [名]か単駅のみ発着の場合
+     boolean isNotCityterminalWoTokai() {
+ 		return ((beginTerminalId < RouteUtil.STATION_ID_AS_CITYNO) ||
+              (RouteUtil.CITYNO_NAGOYA == (beginTerminalId - RouteUtil.STATION_ID_AS_CITYNO))) &&
+             ((endTerminalId < RouteUtil.STATION_ID_AS_CITYNO) ||
+              (RouteUtil.CITYNO_NAGOYA == (endTerminalId - RouteUtil.STATION_ID_AS_CITYNO)));
+ 	}
+
+    boolean isEnableTokaiStockSelect() {
+        return bEnableTokaiStockSelect;
+    }
 
     /**	往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
      *
@@ -1074,8 +1119,8 @@ public class FARE_INFO {
 
         switch (getStockDiscountCompany()) {
             case RouteUtil.JR_EAST:
-                return 2;
             case RouteUtil.JR_CENTRAL:
+                return 2;
             case RouteUtil.JR_WEST:
             case RouteUtil.JR_KYUSYU:
                 return 1;
@@ -1132,6 +1177,10 @@ public class FARE_INFO {
             case RouteUtil.JR_CENTRAL:
                 if (index == 0) {
                     result = fare_discount(cfare, 1);
+                } else if (index == 1) {
+                    result = fare_discount(cfare, 2);
+                } else {
+                    result = 0;    // wrong index
                 }
                 break;
             default:
@@ -1149,7 +1198,8 @@ public class FARE_INFO {
     		"JR東日本 株主優待4割", // 1
     		"JR西日本 株主優待5割", // 2
     		"JR東海   株主優待1割", // 3
-            "JR九州   株主優待5割", // 4
+    		"JR東海   株主優待2割", // 4
+            "JR九州   株主優待5割", // 5
         };
         int sindex = -1;
         int stockno = getStockDiscountCompany();
@@ -1175,7 +1225,7 @@ public class FARE_INFO {
                 break;
             case RouteUtil.JR_KYUSYU:
                 if (index == 0) {
-                    sindex = 4;
+                    sindex = 5;
                 } else {
                     //return "";    // wrong index
                     RouteUtil.ASSERT(false);
@@ -1184,6 +1234,8 @@ public class FARE_INFO {
             case RouteUtil.JR_CENTRAL:
                 if (index == 0) {
                     sindex = 3;
+                } else if (index == 1) {
+                    sindex = 4;
                 } else {
                     //return "";    // wrong index
                     RouteUtil.ASSERT(false);
@@ -1206,6 +1258,7 @@ public class FARE_INFO {
     //  @retval RouteUtil.JR_CENTRAL = JR東海
     //  @retval RouteUtil.JR_KYUSYU = JR九州
     //  @retval 0 = 無効
+    //	会社線も含んでも良い(計算時は除外されるため)
     //
     int getStockDiscountCompany() {
         if ((RouteUtil.JR_GROUP_MASK & companymask) == (1 << (RouteUtil.JR_EAST - 1))) {
@@ -1218,16 +1271,7 @@ public class FARE_INFO {
             return RouteUtil.JR_KYUSYU;
         }
         if (((RouteUtil.JR_GROUP_MASK & companymask) == (1 << (RouteUtil.JR_CENTRAL - 1)))) {
-            /* 都区内または横浜市内が適用されていたらJR東海ではない*/
-            /* CheckOfRule86() */
-            if (((RouteUtil.STATION_ID_AS_CITYNO < beginTerminalId) &&
-                    (RouteUtil.CITYNO_NAGOYA != (beginTerminalId - RouteUtil.STATION_ID_AS_CITYNO)))||
-                    ((RouteUtil.STATION_ID_AS_CITYNO < endTerminalId) &&
-                            (RouteUtil.CITYNO_NAGOYA != (endTerminalId - RouteUtil.STATION_ID_AS_CITYNO)))) {
-                return 0;
-            } else {
-                return RouteUtil.JR_CENTRAL;
-            }
+            return RouteUtil.JR_CENTRAL;
         }
         return 0;
     }
@@ -2367,12 +2411,18 @@ public class FARE_INFO {
                         "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))" +
                         "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-" +
                         "	(select calc_km from t_lines where line_id=?1 and station_id=?2)) end," +							// [3]
-                        "	(select company_id from t_station where rowid=?2)," +                                               // [4]
-                        "   (select company_id from t_station where rowid=?3),"	+                                               // [5]
-                        "	(select sflg&4095 from t_station where rowid=?2)," +                                                // [6]
-                        "   (select sflg&4095 from t_station where rowid=?3)," +                                         		// [7]
-                        "	(select (1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3)"                            // [8]
+                        "	(select company_id from t_station where rowid=?2),"		+		// [4](4)
+                        "   (select company_id from t_station where rowid=?3),"	    +       // [4](5)
+                        "	(select sub_company_id from t_station where rowid=?2),"	+		// [5](6)
+                        "	(select sub_company_id from t_station where rowid=?3)," +       // [5](7)
+                        "	(select sflg&4095 from t_station where rowid=?2)," +                        // [6](8)
+                        "   (select sflg&4095 from t_station where rowid=?3)," +	                    // [7](9)
+                        "	(select (1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3)" // [8](10)
                 , new String[] {String.valueOf(line_id), String.valueOf(station_id1), String.valueOf(station_id2)});
+        int company_id1;
+    	int company_id2;
+    	int sub_company_id1;
+    	int sub_company_id2;
         try {
             //	2147483648 = 0x80000000
             if (ctx.moveToNext()) {
@@ -2380,62 +2430,58 @@ public class FARE_INFO {
                 result[1] = ctx.getInt(1);	// calc_km
                 result[2] = ctx.getInt(2);	// sales_km for in company as station_id1
                 result[3] = ctx.getInt(3);	// calc_km  for in company as station_id1
-                result[4] = ctx.getInt(4);	//
-                result[5] = ctx.getInt(5);	//
-                result[6] = ctx.getInt(6);	//
-                result[7] = ctx.getInt(7);	//
-                result[8] = ctx.getInt(8);	//
+                company_id1 = ctx.getInt(4);     // [4]駅ID1の会社ID
+    			company_id2 = ctx.getInt(5);     // [5]駅ID2の会社ID
+    			sub_company_id1 = ctx.getInt(6);
+    			sub_company_id2 = ctx.getInt(7);
+    			result[6] = (ctx.getInt(8));	// 駅1のsflg
+    			result[7] = (ctx.getInt(9));	// 駅2のsflg
+    			result[8] = (ctx.getInt(10));	// 1=JR以外の会社線／0=JRグループ社線
 
-                if ((line_id == dbid.LineIdOf_HAKATAMINAMISEN) ||
-                        (line_id == dbid.LineIdOf_SANYOSHINKANSEN)) { //山陽新幹線、博多南線はJ九州内でもJR西日本
-                    result[4] = RouteUtil.JR_WEST;
-                    result[5] = RouteUtil.JR_WEST;
-                } else if (line_id == dbid.LineIdOf_TOKAIDOSHINKANSEN) {
-                    if (result[4] == RouteUtil.JR_EAST) {
-                        result[4] = RouteUtil.JR_CENTRAL;
-                    }
-                    if (result[5] == RouteUtil.JR_EAST) {
-                        result[5] = RouteUtil.JR_CENTRAL;
-                    }
-                    if (result[2] == -1) {
-                        result[4] = result[5];
-                    }
-                    if (result[3] == -1) {
-                        result[5] = result[4];
-                    }
-                } else if ((station_id1 == dbid.StationIdOf_MAIBARA) &&
-                        (result[5] == RouteUtil.JR_EAST)) {  // 3社は北陸線、東海道線
-                    // 米原 - JR東日本
-                    if (line_id == dbid.LineIdOf_TOKAIDO) {
-                        result[4] = RouteUtil.JR_CENTRAL;
-                        result[5] = RouteUtil.JR_EAST;
-                    } else {  /* 北陸線 (東海道新幹線は前で引っ掛けてるので有りえない)*/
-                        result[4] = RouteUtil.JR_WEST;
-                        result[5] = RouteUtil.JR_EAST;
-                    }
-                } else if ((station_id2 == dbid.StationIdOf_MAIBARA) &&
-                        (result[4] == RouteUtil.JR_EAST)) {
-                    // JR東日本 ｰ 米原
-                    if (line_id == dbid.LineIdOf_TOKAIDO) {
-                        result[4] = RouteUtil.JR_EAST;
-                        result[5] = RouteUtil.JR_CENTRAL;
-                    } else {
-                        result[4] = RouteUtil.JR_EAST;  /* 北陸線 */
-                        result[5] = RouteUtil.JR_WEST;  /* 北陸線 */
-                    }
-                } else if (line_id == RouteUtil.LINE_HOKKAIDO_SINKANSEN) {
-				    result[4] = RouteUtil.JR_HOKKAIDO;
-				    result[5] = RouteUtil.JR_HOKKAIDO;
-                } else {
-                    if (result[2] == -1) {		/* station_id1が境界駅の場合 */
-                        System.out.printf("multicompany line detect 1: %d, %d(com1 <- com2)\n", result[2], result[3]);
-                        result[4] = result[5];
-                    }
-                    if (result[3] == -1) {		/* ite.stationId(station_id2)が境界駅の場合 */
-                        System.out.printf("multicompany line detect 2: %d, %d(com2 <- com1)\n", result[2], result[3]);
-                        result[5] = result[4];
-                    }
-                }
+    			if ((line_id == dbid.LineIdOf_HAKATAMINAMISEN) ||
+    				(line_id == dbid.LineIdOf_SANYOSHINKANSEN)) { //山陽新幹線、博多南線はJ九州内でもJR西日本
+    				result[4] = RouteUtil.JR_WEST;
+    				result[5] = RouteUtil.JR_WEST;
+    			}
+    			else if (line_id == RouteUtil.LINE_HOKKAIDO_SINKANSEN) {
+    				result[4] = RouteUtil.JR_HOKKAIDO;
+    				result[5] = RouteUtil.JR_HOKKAIDO;
+    			}
+    			else if ((line_id == dbid.LineIdOf_TOKAIDOSHINKANSEN) &&
+    				     ((company_id1 == company_id2) && (company_id1 != RouteUtil.JR_CENTRAL))) {
+    				/*
+    					東 西 -> あとで救われる
+    					東 海
+    					海 東
+    					海 海
+    					東 東 -> 東 海
+    					西 西 -> 西 海 にする　上り、下りの情報は不要
+    					西 東
+    					西 海
+    					海 西
+    				*/
+    				result[4] = company_id1;
+    				result[5] = RouteUtil.JR_CENTRAL;
+    			}
+    			else {
+    // 猪谷(4)(4) 富山(4)
+    // 猪谷(4)(3) 名古屋(3)
+    // 神戸(4)　門司(3)(4)
+    // 品川(2)-新大阪(4)
+    // 長野(2)-金沢(4)
+     // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない
+     // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
+    				if (RouteUtil.IS_JR_MAJOR_COMPANY(company_id1) && RouteUtil.IS_JR_MAJOR_COMPANY(company_id2) && (company_id1 != company_id2)) {
+    					if (sub_company_id1 == company_id2) {
+    						company_id1 = sub_company_id1;
+    					}
+    					else if (company_id1 == sub_company_id2) {
+    						company_id2 = sub_company_id2;
+    					}
+    				}
+    				result[4] = company_id1;
+    				result[5] = company_id2;
+    			}
             }
         } finally {
             ctx.close();
@@ -2466,7 +2512,7 @@ public class FARE_INFO {
      *	@return int[] [8] 1=JR以外の会社線／0=JRグループ社線
      *
      */
-    private static Integer[] GetDistanceEx(int osakakan_aggregate, int line_id, int station_id1, int station_id2) {
+    private static Integer[] GetDistanceEx(final LastFlag osakakan_aggregate, int line_id, int station_id1, int station_id2) {
         List<Integer> result;
         long rslt = 0;
 
@@ -2696,6 +2742,50 @@ public class FARE_INFO {
         }
     }
 
+    //static
+    //
+    //  経路はJR東海管内のみか？
+    //  @retval true: JR東海管内のみ / false=以外
+    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
+    //
+    static boolean CheckIsJRTokai(List<RouteItem> route)
+    {
+    /*
+        b:発駅が境界駅ならtrue
+        f:着駅が境界駅ならtrue
+        -:true
+        n:新幹線ならtrue
+        x:false
+    */
+        int station_id1 = 0;
+        int [] cid1 = {0, 0};
+        int cid_s1;
+        int cid_e1;
+        int cid_s2;
+        int cid_e2;
+
+        /* JR東海以外 and 東海道新幹線でない場合false */
+        for (RouteItem ite : route) {
+            int [] cid = RouteUtil.CompanyIdFromStation(ite.stationId);
+            if (station_id1 != 0) {
+                if (ite.lineId != DbidOf.id().LineIdOf_TOKAIDOSHINKANSEN) {
+                    cid_e1 = cid[0];
+                    cid_s1 = cid1[0];
+                    cid_e2 = cid[1];
+                    cid_s2 = cid1[1];
+                    if (((cid_s1 == cid_e1) && (RouteUtil.JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
+                            ((cid_s1 != RouteUtil.JR_CENTRAL) && (cid_s2 != RouteUtil.JR_CENTRAL)) ||
+                            ((cid_e1 != RouteUtil.JR_CENTRAL) && (cid_e2 != RouteUtil.JR_CENTRAL))) {
+                        return false;
+                    }
+                }
+            }
+            station_id1 = ite.stationId;
+            System.arraycopy(cid, 0, cid1, 0, cid.length);
+        }
+        System.out.printf("isJrTokai true\n");
+        return true;
+    }
 
 
     int		getResultCode() {

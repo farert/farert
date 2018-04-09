@@ -1570,9 +1570,9 @@ public class RouteTest {
             "神戸 東海道線 京都 奈良線 木津 関西線 天王寺 大阪環状線 福島(環)",
             "神戸 東海道線 京都 奈良線 木津 関西線 天王寺 大阪環状線 野田",
 // 京橋out 大阪in
-            "天満 大阪環状線 京橋 JR東西線 尼崎 東海道線 e大阪 大阪環状線 野田",
+            "天満 大阪環状線 京橋 JR東西線 尼崎 東海道線 大阪 大阪環状線 野田",
             "天満 大阪環状線 京橋 JR東西線 尼崎 東海道線 大阪 大阪環状線 x桜ノ宮",
-            "天満 r大阪環状線 京橋 JR東西線 尼崎 東海道線 大阪 大阪環状線 x桜ノ宮",
+            "天満 r大阪環状線 京橋 JR東西線 尼崎 東海道線 e大阪 大阪環状線 x桜ノ宮",
             "天満 大阪環状線 京橋 JR東西線 尼崎 東海道線 大阪 大阪環状線 e天満",
             "天満 大阪環状線 京橋 JR東西線 尼崎 東海道線 大阪 大阪環状線 e京橋",
 // 京橋out 天王寺in
@@ -1619,9 +1619,7 @@ public class RouteTest {
             "品川 東海道新幹線 小田原",	/***/
             "東京 東海道線 品川 東海道新幹線 小田原",	/***/
             "              品川 東海道新幹線 名古屋",	/***/
-            "東京 東海道線 品川 東海道新幹線 名古屋",	/***/
             "              品川 東海道線 名古屋",	/***/
-            "              品川 東海道新幹線 名古屋",	/***/
             "品川 東海道新幹線 京都",	/***/
             "品川 東海道線 京都",	/***/
             "品川 東海道新幹線 米原",	/***/
@@ -1637,6 +1635,10 @@ public class RouteTest {
             "神田 東北線 東京 東海道新幹線 三島 東海道線 富士 身延線 甲府",
             "東京 東海道線 品川 東海道新幹線 名古屋",
             "東京 東海道新幹線 三島 東海道線 富士 身延線 甲府",
+            "岡山 宇野線 茶屋町 本四備讃線 宇多津",
+            "金沢 北陸新幹線 佐久平",
+            "甲府 中央東線 塩尻",
+
     };
 
     // 7/7:   test_shin2zai()
@@ -1690,6 +1692,57 @@ public class RouteTest {
             "新横浜 東海道新幹線 東京",						// aj			@東北線,
     };
 
+    static final String[] test_route3_tbl = {
+    		"cJR東海株主優待券使用",
+    		"品川 東海道新幹線 三島",
+    		"品川 東海道新幹線 静岡",
+    		"品川 東海道新幹線 豊橋",
+    		"品川 東海道新幹線 新横浜",
+    		"品川 東海道新幹線 名古屋",
+    		"品川 東海道新幹線 岐阜羽島",
+    		"品川 東海道新幹線 京都",
+    		"品川 東海道新幹線 小田原",
+    		"品川 東海道新幹線 熱海",
+    		"品川 東海道新幹線 掛川",
+    		"品川 東海道新幹線 米原",
+    		"品川 東海道新幹線 小田原 東海道線 早川",
+    		"品川 東海道新幹線 静岡 東海道線 草薙",
+    		"品川 東海道新幹線 名古屋 関西線 四日市",
+    		"掛川 東海道新幹線 米原",
+    		"新富士(東) 東海道新幹線 三島",
+    		"新横浜 東海道新幹線 三河安城",
+    		"c新幹線小倉―博多間在来線同一視",
+    		"広島 山陽新幹線 博多 鹿児島線 原田 筑豊線 桂川(九) 篠栗線 e吉塚 鹿児島線 西小倉 日豊線  城野 日田彦山線 夜明",
+    		"s広島 山陽新幹線 博多 鹿児島線 原田 筑豊線 桂川(九) 篠栗線 吉塚 鹿児島線 西小倉 日豊線  城野 日田彦山線 夜明",
+    		"岐阜羽島 東海道新幹線 新大阪",
+    		"新大阪 東海道新幹線 熱海",
+    		"新宿 山手線 品川 東海道新幹線 小田原",
+    		"新宿 山手線 品川 東海道新幹線 名古屋",
+    		"新宿 山手線 品川 東海道新幹線 熱海",
+    		"新宿 山手線 品川 東海道新幹線 掛川",
+    		"新宿 山手線 品川 東海道新幹線 米原",
+    		"新宿 山手線 品川 東海道新幹線 京都",
+    		"渋谷 山手線 品川 東海道新幹線 新横浜 横浜線 東神奈川",
+    		"新大阪 東海道新幹線 米原 北陸線 福井",
+    		"新大阪 東海道新幹線 米原",
+    		"熱海 東海道新幹線 静岡 東海道線 草薙",
+    		"熱海 東海道新幹線 米原",
+    		"三島 東海道新幹線 名古屋 関西線 四日市",
+    		"国府津 御殿場線 沼津",
+    		"国府津 東海道線 小田原",
+    		"小田原 東海道新幹線 熱海",
+    		"品川 東海道新幹線 名古屋",
+    		"大高 東海道線 東神奈川",
+    		"大高 東海道線 神戸",
+    		"品川 東海道新幹線 名古屋 関西線 四日市 ",
+    		"桑園 函館線 岩見沢 室蘭線 長万部",
+    		"桑園 函館線 岩見沢",
+    		"新谷 内子線 内子",
+    		"富士 身延線 富士宮",
+    		"岐阜羽島 東海道新幹線 米原",
+    		"大崎 山手線 品川 東海道新幹線 熱海",
+    };
+
 
     PrintWriter os;
 
@@ -1725,6 +1778,9 @@ public class RouteTest {
 
         os.print("\n#---shinkansen convert-------------------------------------------\n");
         test_shin2zai();
+
+        os.printf("\n#---same kokura hakata shinzai-----------------------------------\n");
+    	test_route(test_route3_tbl);
     }
 
     public static void test_execute(Context ctx, SQLiteDatabase db) {
@@ -1778,6 +1834,9 @@ public class RouteTest {
 /////////////////////////////////////////////////////////////////////////////////////
 
     void test_route(final String[] route_def) {
+        test_route(route_def, true);
+    }
+    void test_route(final String[] route_def, boolean round) {
         Route route = new Route();
         int i;
         int rc;
@@ -1785,6 +1844,12 @@ public class RouteTest {
         String psz_title = "";
         i = 0;
         int rev = 2;
+
+        if (round) {
+    		rev = 2;
+    	} else {
+    		rev = 1;
+        }
         for (String line : route_def) {
             route.removeAll();
             if ((line.charAt(0) == 'c') || (line.charAt(0) == 'C')) {
@@ -1797,6 +1862,12 @@ public class RouteTest {
     				rev = 2;
     			}
                 continue;
+            } else if (line.charAt(0) == 's') {
+                /* 新幹線在来線別線扱い（小倉-博多) */
+    			route.setNotSameKokuraHakataShinZai(true);
+                line = line.substring(1);
+    		} else {
+    			route.setNotSameKokuraHakataShinZai(false);
             }
             ++i;
             if ("若松" == line) {
@@ -1844,18 +1915,30 @@ public class RouteTest {
     				s = cr_remove(s);
     				os.print(String.format("///着駅=単駅\n%s\n", s));
 
-    				opt = croute.getFareOption();
-    				ASSERT(RouteUtil.IS_MAIHAN_CITY_START(opt));
+    				rc = croute.getFareOption();
+    				ASSERT(RouteUtil.IS_MAIHAN_CITY_START(rc));
 
     				croute.setFareOption(RouteUtil.FAREOPT_APPLIED_TERMINAL | RouteUtil.FAREOPT_RULE_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED | RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL);
     				s = croute.showFare();
     				s = cr_remove(s);
     				os.print(String.format("///発駅=単駅\n%s\n", s));
 
-    				opt = croute.getFareOption();
-    				ASSERT(RouteUtil.IS_MAIHAN_CITY_TERMINAL(opt));
+    				rc = croute.getFareOption();
+    				ASSERT(RouteUtil.IS_MAIHAN_CITY_TERMINAL(rc));
     			} else {
     				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
+    			}
+                // JR東海株主優待券使用
+    			if ((opt & 0x300) != 0) {
+    				croute.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED, RouteUtil.FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+    				s = croute.showFare();
+    				s = cr_remove(s);
+    				os.printf("///JR東海株主優待券使用\n%s\n", s);
+
+    				croute.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, RouteUtil.FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+    				s = croute.showFare();
+    				s = cr_remove(s);
+    				os.printf("///JR東海株主優待券未使用\n%s\n", s);
     			}
             }
         }

@@ -50,6 +50,7 @@ class RouteDB {
     private String name;          // [128] UTF-8 max 42character
     private int tax;
     private String createdate;    // [64] UTF-8 max 42character '2015/03/14 12:43:43'
+    private int options;
 
     private static SQLiteDatabase _db = null;
     private static RouteDB obj = null;
