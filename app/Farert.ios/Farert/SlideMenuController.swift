@@ -279,6 +279,8 @@ open class SlideMenuController: UIViewController, UIGestureRecognizerDelegate {
                 if leftPanGesture == nil {
                     leftPanGesture = UIPanGestureRecognizer(target: self, action: #selector(self.handleLeftPanGesture(_:)))
                     leftPanGesture!.delegate = self
+                    //******これをいれないとTableViewCellの編集移動D&Dができない
+                    leftPanGesture!.cancelsTouchesInView = false
                     view.addGestureRecognizer(leftPanGesture!)
                 }
             }

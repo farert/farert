@@ -347,6 +347,7 @@ class TerminalSelectTableViewController: CSTableViewController {
     func historyEditEnd() {
         self.clerBarButtonItem.isEnabled = false    // Disable [Edit] button
         self.scopeBar.isHidden = false
+        self.searchController.searchBar.isHidden = false
         self.navigationItem.leftBarButtonItem?.isEnabled = true
         self.navigationItem.leftBarButtonItem?.tintColor = UIColor(red: 0.0, green: 122.0/255.0, blue: 1.0, alpha: 1.0)
     }
