@@ -314,7 +314,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     
     // Enable Re-order cell
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return 1 < self.routeFolder.count()
+         return 1 < self.routeFolder.count()
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
@@ -329,8 +329,6 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         return .none
     }
     
-    /*
-    
     func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
         // Prevent moving rows to different sections
         if sourceIndexPath.section != proposedDestinationIndexPath.section {
@@ -342,7 +340,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         }
         return proposedDestinationIndexPath
     }
-***/
+
     // MARK: - local function
 
     func maxAddFailure() {
