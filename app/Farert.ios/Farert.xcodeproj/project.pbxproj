@@ -76,7 +76,6 @@
 		2A2BB0DB1AD6BE8500F7DED2 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DbSys.h; sourceTree = "<group>"; };
 		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
-		2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrefixHeader.pch; path = FarertTests/PrefixHeader.pch; sourceTree = SOURCE_ROOT; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		2A4CCE261EB556A00083260C /* Routefolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Routefolder.swift; sourceTree = "<group>"; };
 		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
@@ -141,7 +140,6 @@
 				2A2BB0881AD6966500F7DED2 /* Main.storyboard */,
 				2A2BB0821AD6966500F7DED2 /* Supporting Files */,
 				2A2BB0BA1AD6974400F7DED2 /* Farert-Bridging-Header.h */,
-				2A2BB0E91AD6BF9300F7DED2 /* PrefixHeader.pch */,
 				2A7BB5F51EFF5E0A00A47293 /* Launch Screen.storyboard */,
 			);
 			path = Farert;
@@ -469,7 +467,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -495,7 +493,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
