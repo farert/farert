@@ -1,0 +1,2273 @@
+clear-all mask.
+test_exec(route): 1*************************************************
+渋谷 山手線 恵比寿
+clear-all mask.
+add-begin 渋谷(845)
+last_flag=0
+add 山手線(47)-渋谷(845), 恵比寿(844)
+added continue.
+added fin.(0).
+c69 line_id=47, station_id1=845, station_id2=844
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x4, 1 -> 1
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:渋谷-恵比寿
+fare(yamate)
+c69 line_id=47, station_id1=845, station_id2=844
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x4, 1 -> 1
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:渋谷-恵比寿
+fare(yamate)
+clear-all mask.
+clear-all mask.
+add-begin 恵比寿(844)
+last_flag=0
+add 山手線(47)-恵比寿(844), 渋谷(845)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=47, station_id1=844, station_id2=845
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x4, 1 -> 1
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:恵比寿-渋谷
+fare(yamate)
+c69 line_id=47, station_id1=844, station_id2=845
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x4, 1 -> 1
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:恵比寿-渋谷
+fare(yamate)
+clear-all mask.
+test_exec(route): 2*************************************************
+小倉 山陽新幹線 博多
+clear-all mask.
+add-begin 小倉(3919)
+last_flag=0
+add 山陽新幹線(5)-小倉(3919), 博多(3658)
+  add-mask on: 博多(3658,268)
+  add-mask on: 小倉(3919,282)
+  add-mask on: 西小倉(3920,283)
+  add-mask on: 折尾(3928,284)
+  add-mask on: 香椎(3943,285)
+  add-mask on: 吉塚(3946,286)
+added continue.
+added fin.(0).
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 8 -> 9
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69(2) applied 0times.
+start station is re-route rule86/87
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69(3) applied 0times.
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69(4) applied 0times.
+no applied for rule86/87(sales_km=672)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽新幹線:小倉-博多
+fare(basic)
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 8 -> 9
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69(2) applied 0times.
+start station is re-route rule86/87
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69(3) applied 0times.
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3919, station_id2=3658
+noapplid rule69(0)Rule 69(4) applied 0times.
+no applied for rule86/87(sales_km=672)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽新幹線:小倉-博多
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 博多(3658)
+last_flag=0
+add 山陽新幹線(5)-博多(3658), 小倉(3919)
+  add-mask on: 博多(3658,268)
+  add-mask on: 小倉(3919,282)
+  add-mask on: 西小倉(3920,283)
+  add-mask on: 折尾(3928,284)
+  add-mask on: 香椎(3943,285)
+  add-mask on: 吉塚(3946,286)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 9 -> 8
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69(2) applied 0times.
+start station is re-route rule86/87
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69(3) applied 0times.
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69(4) applied 0times.
+no applied for rule86/87(sales_km=672)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽新幹線:博多-小倉
+fare(basic)
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 9 -> 8
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69(2) applied 0times.
+start station is re-route rule86/87
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69(3) applied 0times.
+end station is re-route rule86/87
+c69 line_id=5, station_id1=3658, station_id2=3919
+noapplid rule69(0)Rule 69(4) applied 0times.
+no applied for rule86/87(sales_km=672)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 山陽新幹線:博多-小倉
+fare(basic)
+clear-all mask.
+test_exec(route): 3*************************************************
+博多南 博多南線 博多
+clear-all mask.
+add-begin 博多南(3659)
+last_flag=0
+add 博多南線(175)-博多南(3659), 博多(3658)
+  add-mask on: 博多(3658,268)
+added continue.
+added fin.(0).
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 9
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多南-博多
+fare(basic)
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 9
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多南-博多
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 博多(3658)
+last_flag=0
+add 博多南線(175)-博多(3658), 博多南(3659)
+  add-mask on: 博多(3658,268)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=175, station_id1=3658, station_id2=3659
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 9 -> 0
+start station is re-route rule86/87
+c69 line_id=175, station_id1=3658, station_id2=3659
+c69 line_id=175, station_id1=3659, station_id2=3659
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多-博多南
+fare(basic)
+c69 line_id=175, station_id1=3658, station_id2=3659
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 9 -> 0
+start station is re-route rule86/87
+c69 line_id=175, station_id1=3658, station_id2=3659
+c69 line_id=175, station_id1=3659, station_id2=3659
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多-博多南
+fare(basic)
+clear-all mask.
+test_exec(route): 4*************************************************
+博多 博多南線 博多南
+clear-all mask.
+add-begin 博多(3658)
+last_flag=0
+add 博多南線(175)-博多(3658), 博多南(3659)
+  add-mask on: 博多(3658,268)
+added continue.
+added fin.(0).
+c69 line_id=175, station_id1=3658, station_id2=3659
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 9 -> 0
+start station is re-route rule86/87
+c69 line_id=175, station_id1=3658, station_id2=3659
+c69 line_id=175, station_id1=3659, station_id2=3659
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多-博多南
+fare(basic)
+c69 line_id=175, station_id1=3658, station_id2=3659
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 9 -> 0
+start station is re-route rule86/87
+c69 line_id=175, station_id1=3658, station_id2=3659
+c69 line_id=175, station_id1=3659, station_id2=3659
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多-博多南
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 博多南(3659)
+last_flag=0
+add 博多南線(175)-博多南(3659), 博多(3658)
+  add-mask on: 博多(3658,268)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 9
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多南-博多
+fare(basic)
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 9
+c69 line_id=175, station_id1=3659, station_id2=3658
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=85)
+multicompany line none detect X: 0, 0, comp1,2=4, 4, 博多南線:博多南-博多
+fare(basic)
+clear-all mask.
+test_exec(route): 5*************************************************
+恵那,中央西線,名古屋,東海道新幹線,新横浜
+clear-all mask.
+add-begin 恵那(2431)
+last_flag=0
+add 中央西線(121)-恵那(2431), 名古屋(1497)
+JCT:1
+JCT: J, B, D
+last_flag=0
+add 中央西線(121)-恵那(2431), 金山(1495)
+  add-mask on: 金山(1495,125)
+  add-mask on: 多治見(2436,188)
+added continue.
+added fin.(0).
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+added continue.
+added fin.(0).
+last_flag=40
+add 東海道新幹線(4)-名古屋(1497), 新横浜(1570)
+JCT: h_detect 2 (J, B, D)
+JCT: D-2
+JCT: hor.1(D-2)
+Enter removeTail
+removed.  : 名古屋
+last_flag=0
+add 東海道線(82)-金山(1495), 三河安城(1484)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+added continue.
+added fin.(0).
+>
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=121, station_id1=2431, station_id2=1495
+c69 line_id=82, station_id1=1495, station_id2=1484
+c69 line_id=4, station_id1=1484, station_id2=1570
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 2
+end station is re-route rule86/87
+c69 line_id=121, station_id1=2431, station_id2=1495
+c69 line_id=82, station_id1=1495, station_id2=1484
+c69 line_id=4, station_id1=1484, station_id2=1570
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 中央西線:恵那-金山
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:金山-三河安城
+multicompany line none detect X: 2317, 0, comp1,2=3, 3, 東海道新幹線:三河安城-新横浜
+fare(basic)
+c69 line_id=121, station_id1=2431, station_id2=1495
+c69 line_id=82, station_id1=1495, station_id2=1484
+c69 line_id=4, station_id1=1484, station_id2=1570
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 2
+end station is re-route rule86/87
+c69 line_id=121, station_id1=2431, station_id2=1495
+c69 line_id=82, station_id1=1495, station_id2=1484
+c69 line_id=4, station_id1=1484, station_id2=1570
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 中央西線:恵那-金山
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:金山-三河安城
+multicompany line none detect X: 2317, 0, comp1,2=3, 3, 東海道新幹線:三河安城-新横浜
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 新横浜(1570)
+last_flag=0
+add 東海道新幹線(4)-新横浜(1570), 三河安城(1484)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-三河安城(1484), 金山(1495)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+added continue.
+added fin.(0).
+last_flag=0
+add 中央西線(121)-金山(1495), 恵那(2431)
+  add-mask on: 金山(1495,125)
+  add-mask on: 多治見(2436,188)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1570, station_id2=1484
+c69 line_id=82, station_id1=1484, station_id2=1495
+c69 line_id=121, station_id1=1495, station_id2=2431
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 2 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=1570, station_id2=1484
+c69 line_id=82, station_id1=1484, station_id2=1495
+c69 line_id=121, station_id1=1495, station_id2=2431
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 758, 0, comp1,2=3, 3, 東海道新幹線:新横浜-三河安城
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:三河安城-金山
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 中央西線:金山-恵那
+fare(basic)
+c69 line_id=4, station_id1=1570, station_id2=1484
+c69 line_id=82, station_id1=1484, station_id2=1495
+c69 line_id=121, station_id1=1495, station_id2=2431
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 2 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=1570, station_id2=1484
+c69 line_id=82, station_id1=1484, station_id2=1495
+c69 line_id=121, station_id1=1495, station_id2=2431
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 758, 0, comp1,2=3, 3, 東海道新幹線:新横浜-三河安城
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:三河安城-金山
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 中央西線:金山-恵那
+fare(basic)
+clear-all mask.
+test_exec(route): 6*************************************************
+品川 東海道線 小田原
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道線(82)-品川(840), 小田原(1425)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=840, station_id2=1425
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1425
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 709, 0, comp1,2=2, 2, 東海道線:品川-小田原
+fare(basic)
+c69 line_id=82, station_id1=840, station_id2=1425
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1425
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 709, 0, comp1,2=2, 2, 東海道線:品川-小田原
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 小田原(1425)
+last_flag=0
+add 東海道線(82)-小田原(1425), 品川(840)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1425, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1425, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 62, 0, comp1,2=2, 2, 東海道線:小田原-品川
+fare(basic)
+c69 line_id=82, station_id1=1425, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1425, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 62, 0, comp1,2=2, 2, 東海道線:小田原-品川
+fare(basic)
+clear-all mask.
+test_exec(route): 7*************************************************
+品川 東海道新幹線 小田原
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 小田原(1425)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1425
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1425
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:品川-小田原
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1425
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1425
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:品川-小田原
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 小田原(1425)
+last_flag=0
+add 東海道新幹線(4)-小田原(1425), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1425, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1425, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:小田原-品川
+fare(basic)
+c69 line_id=4, station_id1=1425, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1425, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:小田原-品川
+fare(basic)
+clear-all mask.
+test_exec(route): 8*************************************************
+東京 東海道線 品川 東海道新幹線 小田原
+clear-all mask.
+add-begin 東京(414)
+last_flag=0
+add 東海道線(82)-東京(414), 品川(840)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-品川(840), 小田原(1425)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=414, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1425
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1425
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:東京-品川
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:品川-小田原
+fare(basic)
+c69 line_id=82, station_id1=414, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1425
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1425
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:東京-品川
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:品川-小田原
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 小田原(1425)
+last_flag=0
+add 東海道新幹線(4)-小田原(1425), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-品川(840), 東京(414)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1425, station_id2=840
+c69 line_id=82, station_id1=840, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1425, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:小田原-品川
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:品川-東京
+fare(basic)
+c69 line_id=4, station_id1=1425, station_id2=840
+c69 line_id=82, station_id1=840, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1425, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=839)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道新幹線:小田原-品川
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:品川-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 9*************************************************
+東京 東海道線 品川 東海道新幹線 名古屋
+clear-all mask.
+add-begin 東京(414)
+last_flag=0
+add 東海道線(82)-東京(414), 品川(840)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-品川(840), 名古屋(1497)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=414, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:東京-品川
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-名古屋
+fare(basic)
+c69 line_id=82, station_id1=414, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-名古屋
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 名古屋(1497)
+last_flag=0
+add 東海道新幹線(4)-名古屋(1497), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-品川(840), 東京(414)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1497, station_id2=840
+c69 line_id=82, station_id1=840, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-品川
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:品川-東京
+fare(basic)
+c69 line_id=4, station_id1=1497, station_id2=840
+c69 line_id=82, station_id1=840, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 10*************************************************
+              品川 東海道線 名古屋
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道線(82)-品川(840), 名古屋(1497)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 709, 0, comp1,2=2, 3, 東海道線:品川-名古屋
+fare(basic)
+c69 line_id=82, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 777, 0, comp1,2=2, 3, 東海道線:東京-名古屋
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 名古屋(1497)
+last_flag=0
+add 東海道線(82)-名古屋(1497), 品川(840)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1497, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2883, 0, comp1,2=3, 2, 東海道線:名古屋-品川
+fare(basic)
+c69 line_id=82, station_id1=1497, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2883, 0, comp1,2=3, 2, 東海道線:名古屋-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 11*************************************************
+              品川 東海道新幹線 名古屋
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 名古屋(1497)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-名古屋
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-名古屋
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 名古屋(1497)
+last_flag=0
+add 東海道新幹線(4)-名古屋(1497), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1497, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-品川
+fare(basic)
+c69 line_id=4, station_id1=1497, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 12*************************************************
+品川 東海道新幹線 京都
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 京都(1531)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 米原(1512,129)
+  add-mask on: 草津(1524,130)
+  add-mask on: 山科(1530,131)
+  add-mask on: 京都(1531,132)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1531
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1531
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-京都
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1531
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1531
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-京都
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 京都(1531)
+last_flag=0
+add 東海道新幹線(4)-京都(1531), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 米原(1512,129)
+  add-mask on: 草津(1524,130)
+  add-mask on: 山科(1530,131)
+  add-mask on: 京都(1531,132)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1531, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 4 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1531, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 4090, 0, comp1,2=3, 3, 東海道新幹線:京都-品川
+fare(basic)
+c69 line_id=4, station_id1=1531, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 4 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1531, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 4090, 0, comp1,2=3, 3, 東海道新幹線:京都-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 13*************************************************
+品川 東海道線 京都
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道線(82)-品川(840), 京都(1531)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 岐阜(1503,127)
+  add-mask on: 大垣(1506,128)
+  add-mask on: 米原(1512,129)
+  add-mask on: 草津(1524,130)
+  add-mask on: 山科(1530,131)
+  add-mask on: 京都(1531,132)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=840, station_id2=1531
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1531
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 709, 0, comp1,2=2, 4, 東海道線:品川-京都
+fare(basic)
+c69 line_id=82, station_id1=840, station_id2=1531
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 4
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1531
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 777, 0, comp1,2=2, 4, 東海道線:東京-京都
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 京都(1531)
+last_flag=0
+add 東海道線(82)-京都(1531), 品川(840)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 岐阜(1503,127)
+  add-mask on: 大垣(1506,128)
+  add-mask on: 米原(1512,129)
+  add-mask on: 草津(1524,130)
+  add-mask on: 山科(1530,131)
+  add-mask on: 京都(1531,132)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1531, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 4 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1531, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 4359, 0, comp1,2=4, 2, 東海道線:京都-品川
+fare(basic)
+c69 line_id=82, station_id1=1531, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 4 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1531, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 4359, 0, comp1,2=4, 2, 東海道線:京都-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 14*************************************************
+品川 東海道新幹線 米原
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 米原(1512)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 米原(1512,129)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1512
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1512
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 978, -1, comp1,2=3, 3, 東海道新幹線:品川-米原
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1512
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1512
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, -1, comp1,2=3, 3, 東海道新幹線:東京-米原
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 米原(1512)
+last_flag=0
+add 東海道新幹線(4)-米原(1512), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 米原(1512,129)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1512, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1512, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 東海道新幹線:米原-品川
+fare(basic)
+c69 line_id=4, station_id1=1512, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1512, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 東海道新幹線:米原-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 15*************************************************
+品川 東海道線 米原
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道線(82)-品川(840), 米原(1512)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 岐阜(1503,127)
+  add-mask on: 大垣(1506,128)
+  add-mask on: 米原(1512,129)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=840, station_id2=1512
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1512
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 709, -1, comp1,2=2, 3, 東海道線:品川-米原
+fare(basic)
+c69 line_id=82, station_id1=840, station_id2=1512
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1512
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 777, -1, comp1,2=2, 3, 東海道線:東京-米原
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 米原(1512)
+last_flag=0
+add 東海道線(82)-米原(1512), 品川(840)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 岐阜(1503,127)
+  add-mask on: 大垣(1506,128)
+  add-mask on: 米原(1512,129)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1512, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1512, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: -1, 0, comp1,2=3, 2, 東海道線:米原-品川
+fare(basic)
+c69 line_id=82, station_id1=1512, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1512, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: -1, 0, comp1,2=3, 2, 東海道線:米原-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 16*************************************************
+品川 東海道新幹線 静岡
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 静岡(1447)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1447
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1447
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-静岡
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1447
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1447
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-静岡
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 静岡(1447)
+last_flag=0
+add 東海道新幹線(4)-静岡(1447), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1447, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1447, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 756, 0, comp1,2=3, 3, 東海道新幹線:静岡-品川
+fare(basic)
+c69 line_id=4, station_id1=1447, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1447, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 756, 0, comp1,2=3, 3, 東海道新幹線:静岡-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 17*************************************************
+品川 東海道線 静岡
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道線(82)-品川(840), 静岡(1447)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=840, station_id2=1447
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1447
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 709, 0, comp1,2=2, 3, 東海道線:品川-静岡
+fare(basic)
+c69 line_id=82, station_id1=840, station_id2=1447
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=414, station_id2=1447
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 777, 0, comp1,2=2, 3, 東海道線:東京-静岡
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 静岡(1447)
+last_flag=0
+add 東海道線(82)-静岡(1447), 品川(840)
+  add-mask on: 川崎(728,68)
+  add-mask on: 品川(840,77)
+  add-mask on: 鶴見(1409,108)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1447, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1447, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 1025, 0, comp1,2=3, 2, 東海道線:静岡-品川
+fare(basic)
+c69 line_id=82, station_id1=1447, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1447, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule87
+multicompany line none detect X: 1025, 0, comp1,2=3, 2, 東海道線:静岡-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 18*************************************************
+品川 東海道新幹線 静岡 東海道線 掛川
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 静岡(1447)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-静岡(1447), 掛川(1457)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1447
+c69 line_id=82, station_id1=1447, station_id2=1457
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1447
+c69 line_id=82, station_id1=1447, station_id2=1457
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-静岡
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:静岡-掛川
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1447
+c69 line_id=82, station_id1=1447, station_id2=1457
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1447
+c69 line_id=82, station_id1=1447, station_id2=1457
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-静岡
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:静岡-掛川
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 掛川(1457)
+last_flag=0
+add 東海道線(82)-掛川(1457), 静岡(1447)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-静岡(1447), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1457, station_id2=1447
+c69 line_id=4, station_id1=1447, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1457, station_id2=1447
+c69 line_id=4, station_id1=1447, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:掛川-静岡
+multicompany line none detect X: 756, 0, comp1,2=3, 3, 東海道新幹線:静岡-品川
+fare(basic)
+c69 line_id=82, station_id1=1457, station_id2=1447
+c69 line_id=4, station_id1=1447, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1457, station_id2=1447
+c69 line_id=4, station_id1=1447, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:掛川-静岡
+multicompany line none detect X: 756, 0, comp1,2=3, 3, 東海道新幹線:静岡-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 19*************************************************
+品川 東海道新幹線 名古屋 関西線 亀山
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 名古屋(1497)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 関西線(126)-名古屋(1497), 亀山(2453)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 亀山(2453,189)
+  add-mask on: 河原田(2584,194)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=840, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2453
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2453
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-名古屋
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 関西線:名古屋-亀山
+fare(basic)
+c69 line_id=4, station_id1=840, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2453
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2453
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-名古屋
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 関西線:名古屋-亀山
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 亀山(2453)
+last_flag=0
+add 関西線(126)-亀山(2453), 名古屋(1497)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 亀山(2453,189)
+  add-mask on: 河原田(2584,194)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-名古屋(1497), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=126, station_id1=2453, station_id2=1497
+c69 line_id=4, station_id1=1497, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=126, station_id1=2453, station_id2=1497
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 関西線:亀山-名古屋
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-品川
+fare(basic)
+c69 line_id=126, station_id1=2453, station_id2=1497
+c69 line_id=4, station_id1=1497, station_id2=840
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=126, station_id1=2453, station_id2=1497
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 関西線:亀山-名古屋
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 20*************************************************
+国府津 御殿場線 沼津
+clear-all mask.
+add-begin 国府津(1423)
+last_flag=0
+add 御殿場線(116)-国府津(1423), 沼津(1433)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+c69 line_id=116, station_id1=1423, station_id2=1433
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 御殿場線:国府津-沼津
+fare(basic)
+c69 line_id=116, station_id1=1423, station_id2=1433
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 御殿場線:国府津-沼津
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 沼津(1433)
+last_flag=0
+add 御殿場線(116)-沼津(1433), 国府津(1423)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=116, station_id1=1433, station_id2=1423
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 御殿場線:沼津-国府津
+fare(basic)
+c69 line_id=116, station_id1=1433, station_id2=1423
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 御殿場線:沼津-国府津
+fare(basic)
+clear-all mask.
+test_exec(route): 21*************************************************
+国府津 御殿場線 沼津 東海道線 熱海
+clear-all mask.
+add-begin 国府津(1423)
+last_flag=0
+add 御殿場線(116)-国府津(1423), 沼津(1433)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-沼津(1433), 熱海(1430)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+c69 line_id=116, station_id1=1423, station_id2=1433
+c69 line_id=82, station_id1=1433, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 御殿場線:国府津-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 東海道線:沼津-熱海
+fare(basic)
+c69 line_id=116, station_id1=1423, station_id2=1433
+c69 line_id=82, station_id1=1433, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 御殿場線:国府津-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 東海道線:沼津-熱海
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 熱海(1430)
+last_flag=0
+add 東海道線(82)-熱海(1430), 沼津(1433)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+last_flag=0
+add 御殿場線(116)-沼津(1433), 国府津(1423)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=82, station_id1=1430, station_id2=1433
+c69 line_id=116, station_id1=1433, station_id2=1423
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 東海道線:熱海-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 御殿場線:沼津-国府津
+fare(basic)
+c69 line_id=82, station_id1=1430, station_id2=1433
+c69 line_id=116, station_id1=1433, station_id2=1423
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 東海道線:熱海-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 御殿場線:沼津-国府津
+fare(basic)
+clear-all mask.
+test_exec(route): 22*************************************************
+国府津 御殿場線 沼津 東海道線 熱海 伊東線 伊東
+clear-all mask.
+add-begin 国府津(1423)
+last_flag=0
+add 御殿場線(116)-国府津(1423), 沼津(1433)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-沼津(1433), 熱海(1430)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+last_flag=0
+add 伊東線(92)-熱海(1430), 伊東(1635)
+  add-mask on: 熱海(1430,115)
+added continue.
+added fin.(0).
+c69 line_id=116, station_id1=1423, station_id2=1433
+c69 line_id=82, station_id1=1433, station_id2=1430
+c69 line_id=92, station_id1=1430, station_id2=1635
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 御殿場線:国府津-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 東海道線:沼津-熱海
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 伊東線:熱海-伊東
+fare(basic)
+c69 line_id=116, station_id1=1423, station_id2=1433
+c69 line_id=82, station_id1=1433, station_id2=1430
+c69 line_id=92, station_id1=1430, station_id2=1635
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 御殿場線:国府津-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 東海道線:沼津-熱海
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 伊東線:熱海-伊東
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 伊東(1635)
+last_flag=0
+add 伊東線(92)-伊東(1635), 熱海(1430)
+  add-mask on: 熱海(1430,115)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-熱海(1430), 沼津(1433)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+last_flag=0
+add 御殿場線(116)-沼津(1433), 国府津(1423)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 沼津(1433,117)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=92, station_id1=1635, station_id2=1430
+c69 line_id=82, station_id1=1430, station_id2=1433
+c69 line_id=116, station_id1=1433, station_id2=1423
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 伊東線:伊東-熱海
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 東海道線:熱海-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 御殿場線:沼津-国府津
+fare(basic)
+c69 line_id=92, station_id1=1635, station_id2=1430
+c69 line_id=82, station_id1=1430, station_id2=1433
+c69 line_id=116, station_id1=1433, station_id2=1423
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 伊東線:伊東-熱海
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 東海道線:熱海-沼津
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 御殿場線:沼津-国府津
+fare(basic)
+clear-all mask.
+test_exec(route): 23*************************************************
+神田 東北線 東京 東海道新幹線 三島 東海道線 富士 身延線 甲府
+clear-all mask.
+add-begin 神田(415)
+last_flag=0
+add 東北線(32)-神田(415), 東京(414)
+  add-mask on: 東京(414,22)
+  add-mask on: 神田(415,23)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-東京(414), 三島(1432)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-三島(1432), 富士(1438)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+last_flag=0
+add 身延線(117)-富士(1438), 甲府(682)
+  add-mask on: 甲府(682,60)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+c69 line_id=32, station_id1=415, station_id2=414
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:神田-東京
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-三島
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:三島-富士
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 身延線:富士-甲府
+fare(basic)
+c69 line_id=32, station_id1=415, station_id2=414
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-三島
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:三島-富士
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 身延線:富士-甲府
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 甲府(682)
+last_flag=0
+add 身延線(117)-甲府(682), 富士(1438)
+  add-mask on: 甲府(682,60)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-富士(1438), 三島(1432)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-三島(1432), 東京(414)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東北線(32)-東京(414), 神田(415)
+  add-mask on: 東京(414,22)
+  add-mask on: 神田(415,23)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+c69 line_id=32, station_id1=414, station_id2=415
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 身延線:甲府-富士
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:富士-三島
+multicompany line none detect X: 161, 0, comp1,2=3, 3, 東海道新幹線:三島-東京
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東北線:東京-神田
+fare(basic)
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+c69 line_id=32, station_id1=414, station_id2=415
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 身延線:甲府-富士
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:富士-三島
+multicompany line none detect X: 161, 0, comp1,2=3, 3, 東海道新幹線:三島-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 24*************************************************
+東京 東海道線 品川 東海道新幹線 名古屋
+clear-all mask.
+add-begin 東京(414)
+last_flag=0
+add 東海道線(82)-東京(414), 品川(840)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-品川(840), 名古屋(1497)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+c69 line_id=82, station_id1=414, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:東京-品川
+multicompany line none detect X: 978, 0, comp1,2=3, 3, 東海道新幹線:品川-名古屋
+fare(basic)
+c69 line_id=82, station_id1=414, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-名古屋
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 名古屋(1497)
+last_flag=0
+add 東海道新幹線(4)-名古屋(1497), 品川(840)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-品川(840), 東京(414)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=4, station_id1=1497, station_id2=840
+c69 line_id=82, station_id1=840, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-品川
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 東海道線:品川-東京
+fare(basic)
+c69 line_id=4, station_id1=1497, station_id2=840
+c69 line_id=82, station_id1=840, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x3, 3 -> 1
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=1497, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2614, 0, comp1,2=3, 3, 東海道新幹線:名古屋-東京
+fare(basic)
+clear-all mask.
+test_exec(route): 25*************************************************
+東京 東海道新幹線 三島 東海道線 富士 身延線 甲府
+clear-all mask.
+add-begin 東京(414)
+last_flag=0
+add 東海道新幹線(4)-東京(414), 三島(1432)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-三島(1432), 富士(1438)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+last_flag=0
+add 身延線(117)-富士(1438), 甲府(682)
+  add-mask on: 甲府(682,60)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-三島
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:三島-富士
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 身延線:富士-甲府
+fare(basic)
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x1, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1432
+c69 line_id=82, station_id1=1432, station_id2=1438
+c69 line_id=117, station_id1=1438, station_id2=682
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=3, 3, 東海道新幹線:東京-三島
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:三島-富士
+multicompany line detect 2: 0, -1(com2 <- com1)
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 身延線:富士-甲府
+fare(basic)
+clear-all mask.
+clear-all mask.
+add-begin 甲府(682)
+last_flag=0
+add 身延線(117)-甲府(682), 富士(1438)
+  add-mask on: 甲府(682,60)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道線(82)-富士(1438), 三島(1432)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-三島(1432), 東京(414)
+  add-mask on: 東京(414,22)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+reverse route
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 身延線:甲府-富士
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:富士-三島
+multicompany line none detect X: 161, 0, comp1,2=3, 3, 東海道新幹線:三島-東京
+fare(basic)
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x2, 0 -> 1
+end station is re-route rule86/87
+c69 line_id=117, station_id1=682, station_id2=1438
+c69 line_id=82, station_id1=1438, station_id2=1432
+c69 line_id=4, station_id1=1432, station_id2=414
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line detect 1: -1, 0(com1 <- com2)
+multicompany line none detect X: -1, 0, comp1,2=3, 3, 身延線:甲府-富士
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 東海道線:富士-三島
+multicompany line none detect X: 161, 0, comp1,2=3, 3, 東海道新幹線:三島-東京
+fare(basic)

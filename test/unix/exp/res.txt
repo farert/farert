@@ -1,0 +1,1186 @@
+clear-all mask.
+!****<01>: *******************  **********************
+<小田原 東海道新幹線 熱海>
+test_exec(route): 1*************************************************
+小田原 東海道新幹線 熱海
+clear-all mask.
+add-begin 小田原(1425)
+last_flag=0
+add 東海道新幹線(4)-小田原(1425), 熱海(1430)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=1425, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, -1, comp1,2=2, 2, 東海道新幹線:小田原-熱海
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:2 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+小田原 -> 熱海
+経由：[東海道新幹線]
+営業キロ： 20.7 km
+運賃： ¥410          往復： ¥820  
+JR東日本 株主優待2割： ¥320
+JR東日本 株主優待4割： ¥240
+小児運賃： ¥200     往復： ¥400  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=1425, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, -1, comp1,2=2, 2, 東海道新幹線:小田原-熱海
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:2 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///適用
+小田原 -> 熱海
+経由：[東海道新幹線]
+営業キロ： 20.7 km
+運賃： ¥410          往復： ¥820  
+JR東日本 株主優待2割： ¥320
+JR東日本 株主優待4割： ¥240
+小児運賃： ¥200     往復： ¥400  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+clear-all mask.
+!****<02>: *******************  **********************
+<品川 東海道新幹線 名古屋>
+test_exec(route): 2*************************************************
+品川 東海道新幹線 名古屋
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 名古屋(1497)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000003, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 978, 0, comp1,2=2, 3, 東海道新幹線:品川-名古屋
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+品川 -> 名古屋
+経由：[東海道新幹線]
+営業キロ： 359.2 km
+運賃： ¥5,940        往復： ¥11,880
+
+小児運賃： ¥2,970   往復： ¥5,940
+学割運賃： ¥4,750   往復： ¥9,500
+
+有効日数：   3日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000003, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 1046, 0, comp1,2=2, 3, 東海道新幹線:東京-名古屋
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///適用
+東京都区内[区] -> 名古屋市内[名]
+経由：[東海道新幹線]
+営業キロ： 366.0 km
+運賃： ¥6,260        往復： ¥12,520
+
+小児運賃： ¥3,130   往復： ¥6,260
+学割運賃： ¥5,000   往復： ¥10,000
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000003, 1 -> 3
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 1046, 0, comp1,2=2, 3, 東海道新幹線:東京-名古屋
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///JR東海株主優待券未使用
+東京都区内[区] -> 名古屋市内[名]
+経由：[東海道新幹線]
+営業キロ： 366.0 km
+運賃： ¥6,260        往復： ¥12,520
+
+小児運賃： ¥3,130   往復： ¥6,260
+学割運賃： ¥5,000   往復： ¥10,000
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:0 @@@
+RuleSpecific:chk 0x80000002, 0 -> 3
+end station is re-route rule86/87
+c69 line_id=4, station_id1=840, station_id2=1497
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(2)
+multicompany line none detect X: 978, 0, comp1,2=2, 3, 東海道新幹線:品川-名古屋
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [true] companymask:4 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+品川 -> 名古屋市内[名]
+経由：[東海道新幹線]
+営業キロ： 359.2 km
+運賃： ¥5,940        往復： ¥11,880
+JR東海   株主優待1割： ¥5,340
+JR東海   株主優待2割： ¥4,750
+小児運賃： ¥2,970   往復： ¥5,940
+学割運賃： ¥4,750   往復： ¥9,500
+
+有効日数：   3日
+
+clear-all mask.
+!****<03>: *******************  **********************
+<大高 東海道線 東神奈川>
+test_exec(route): 3*************************************************
+大高 東海道線 東神奈川
+clear-all mask.
+add-begin 大高(1492)
+last_flag=0
+add 東海道線(82)-大高(1492), 東神奈川(1411)
+  add-mask on: 東神奈川(1411,109)
+  add-mask on: 横浜(1412,110)
+  add-mask on: 大船(1416,111)
+  add-mask on: 茅ケ崎(1419,112)
+  add-mask on: 国府津(1423,113)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 沼津(1433,117)
+  add-mask on: 富士(1438,118)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=82, station_id1=1492, station_id2=1411
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000003, 3 -> 2
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1412
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2759, 0, comp1,2=3, 2, 東海道線:大高-東神奈川
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+大高 -> 東神奈川
+経由：[東海道線]
+営業キロ： 326.6 km
+運賃： ¥5,620        往復： ¥11,240
+
+小児運賃： ¥2,810   往復： ¥5,620
+学割運賃： ¥4,490   往復： ¥8,980
+
+有効日数：   3日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=82, station_id1=1492, station_id2=1411
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000003, 3 -> 2
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1412
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2883, 0, comp1,2=3, 2, 東海道線:名古屋-横浜
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///適用
+名古屋市内[名] -> 横浜市内[浜]
+経由：[東海道線]
+営業キロ： 337.2 km
+運賃： ¥5,620        往復： ¥11,240
+
+小児運賃： ¥2,810   往復： ¥5,620
+学割運賃： ¥4,490   往復： ¥8,980
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=82, station_id1=1492, station_id2=1411
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000003, 3 -> 2
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1412
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 2883, 0, comp1,2=3, 2, 東海道線:名古屋-横浜
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///JR東海株主優待券未使用
+名古屋市内[名] -> 横浜市内[浜]
+経由：[東海道線]
+営業キロ： 337.2 km
+運賃： ¥5,620        往復： ¥11,240
+
+小児運賃： ¥2,810   往復： ¥5,620
+学割運賃： ¥4,490   往復： ¥8,980
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=82, station_id1=1492, station_id2=1411
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000001, 3 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1411
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 2883, 0, comp1,2=3, 2, 東海道線:名古屋-東神奈川
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+名古屋市内[名] -> 東神奈川
+経由：[東海道線]
+営業キロ： 339.0 km
+運賃： ¥5,620        往復： ¥11,240
+
+小児運賃： ¥2,810   往復： ¥5,620
+学割運賃： ¥4,490   往復： ¥8,980
+
+有効日数：   3日
+
+clear-all mask.
+!****<04>: *******************  **********************
+<大高 東海道線 神戸>
+test_exec(route): 4*************************************************
+大高 東海道線 神戸
+clear-all mask.
+add-begin 大高(1492)
+last_flag=0
+add 東海道線(82)-大高(1492), 神戸(1563)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 岐阜(1503,127)
+  add-mask on: 大垣(1506,128)
+  add-mask on: 米原(1512,129)
+  add-mask on: 草津(1524,130)
+  add-mask on: 山科(1530,131)
+  add-mask on: 京都(1531,132)
+  add-mask on: 新大阪(1546,133)
+  add-mask on: 大阪(1547,134)
+  add-mask on: 尼崎(1549,135)
+  add-mask on: 神戸(1563,136)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=82, station_id1=1492, station_id2=1563
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000003, 3 -> 6
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1563
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 923, 0, comp1,2=3, 4, 東海道線:大高-神戸
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:c isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+大高 -> 神戸
+経由：[東海道線]
+営業キロ： 235.9 km
+運賃： ¥4,000        往復： ¥8,000
+
+小児運賃： ¥2,000   往復： ¥4,000
+学割運賃： ¥3,200   往復： ¥6,400
+
+有効日数：   3日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=82, station_id1=1492, station_id2=1563
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000003, 3 -> 6
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1563
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 799, 0, comp1,2=3, 4, 東海道線:名古屋-神戸
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:c isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///適用
+名古屋市内[名] -> 神戸市内[神]
+経由：[東海道線]
+営業キロ： 223.5 km
+運賃： ¥4,000        往復： ¥8,000
+
+小児運賃： ¥2,000   往復： ¥4,000
+学割運賃： ¥3,200   往復： ¥6,400
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=82, station_id1=1492, station_id2=1563
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000003, 3 -> 6
+start station is re-route rule86/87
+end station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1563
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(3)
+multicompany line none detect X: 799, 0, comp1,2=3, 4, 東海道線:名古屋-神戸
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:c isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///JR東海株主優待券未使用
+名古屋市内[名] -> 神戸市内[神]
+経由：[東海道線]
+営業キロ： 223.5 km
+運賃： ¥4,000        往復： ¥8,000
+
+小児運賃： ¥2,000   往復： ¥4,000
+学割運賃： ¥3,200   往復： ¥6,400
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=82, station_id1=1492, station_id2=1563
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000001, 3 -> 0
+start station is re-route rule86/87
+c69 line_id=82, station_id1=1497, station_id2=1563
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 799, 0, comp1,2=3, 4, 東海道線:名古屋-神戸
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:c isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+名古屋市内[名] -> 神戸
+経由：[東海道線]
+営業キロ： 223.5 km
+運賃： ¥4,000        往復： ¥8,000
+
+小児運賃： ¥2,000   往復： ¥4,000
+学割運賃： ¥3,200   往復： ¥6,400
+
+有効日数：   3日
+
+clear-all mask.
+!****<05>: *******************  **********************
+<品川 東海道新幹線 名古屋 関西線 四日市 >
+test_exec(route): 5*************************************************
+品川 東海道新幹線 名古屋 関西線 四日市 
+clear-all mask.
+add-begin 品川(840)
+last_flag=0
+add 東海道新幹線(4)-品川(840), 名古屋(1497)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 三島(1432,116)
+  add-mask on: 静岡(1447,119)
+  add-mask on: 掛川(1457,120)
+  add-mask on: 浜松(1463,121)
+  add-mask on: 豊橋(1471,122)
+  add-mask on: 三河安城(1484,123)
+  add-mask on: 大府(1489,124)
+  add-mask on: 金山(1495,125)
+  add-mask on: 名古屋(1497,126)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+last_flag=0
+add 関西線(126)-名古屋(1497), 四日市(2582)
+  add-mask on: 名古屋(1497,126)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=840, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 978, 0, comp1,2=2, 3, 東海道新幹線:品川-名古屋
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 関西線:名古屋-四日市
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+品川 -> 四日市
+経由：[東海道新幹線]名古屋[関西線]
+営業キロ： 396.4 km
+運賃： ¥6,480        往復： ¥12,960
+
+小児運賃： ¥3,240   往復： ¥6,480
+学割運賃： ¥5,180   往復： ¥10,360
+
+有効日数：   3日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=840, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=2, 3, 東海道新幹線:東京-名古屋
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 関西線:名古屋-四日市
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///適用
+東京都区内[区] -> 四日市
+経由：[東海道新幹線]名古屋[関西線]
+営業キロ： 403.2 km
+運賃： ¥6,800        往復： ¥13,600
+
+小児運賃： ¥3,400   往復： ¥6,800
+学割運賃： ¥5,440   往復： ¥10,880
+
+有効日数：   4日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=840, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 1046, 0, comp1,2=2, 3, 東海道新幹線:東京-名古屋
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 関西線:名古屋-四日市
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:6 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///JR東海株主優待券未使用
+東京都区内[区] -> 四日市
+経由：[東海道新幹線]名古屋[関西線]
+営業キロ： 403.2 km
+運賃： ¥6,800        往復： ¥13,600
+
+小児運賃： ¥3,400   往復： ¥6,800
+学割運賃： ¥5,440   往復： ¥10,880
+
+有効日数：   4日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=4, station_id1=840, station_id2=1497
+c69 line_id=126, station_id1=1497, station_id2=2582
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:0 @@@
+RuleSpecific:chk 0x80000000, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 978, 0, comp1,2=2, 3, 東海道新幹線:品川-名古屋
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 関西線:名古屋-四日市
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [true] companymask:4 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+品川 -> 四日市
+経由：[東海道新幹線]名古屋[関西線]
+営業キロ： 396.4 km
+運賃： ¥6,480        往復： ¥12,960
+JR東海   株主優待1割： ¥5,830
+JR東海   株主優待2割： ¥5,180
+小児運賃： ¥3,240   往復： ¥6,480
+学割運賃： ¥5,180   往復： ¥10,360
+
+有効日数：   3日
+
+clear-all mask.
+!****<06>: *******************  **********************
+<桑園 函館線 岩見沢 室蘭線 長万部>
+test_exec(route): 6*************************************************
+桑園 函館線 岩見沢 室蘭線 長万部
+clear-all mask.
+add-begin 桑園(54)
+last_flag=0
+add 函館線(16)-桑園(54), 岩見沢(67)
+  add-mask on: 桑園(54,5)
+  add-mask on: 白石(57,6)
+  add-mask on: 岩見沢(67,7)
+added continue.
+added fin.(0).
+last_flag=0
+add 室蘭線(23)-岩見沢(67), 長万部(24)
+  add-mask on: 長万部(24,4)
+  add-mask on: 岩見沢(67,7)
+  add-mask on: 沼ノ端(120,11)
+  add-mask on: 追分(134,13)
+  add-mask on: 東室蘭(160,16)
+  add-mask on: 苫小牧(174,17)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=16, station_id1=54, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:11 @@@
+RuleSpecific:chk 0x80000001, 11 -> 0
+start station is re-route rule86/87
+c69 line_id=16, station_id1=55, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:桑園-岩見沢
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 室蘭線:岩見沢-長万部
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(hokkaido-basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+桑園 -> 長万部
+経由：[函館線]岩見沢[室蘭線]
+営業キロ： 253.2 km
+JR北海道営業キロ： 253.2  km
+運賃： ¥4,750        往復： ¥9,500
+
+小児運賃： ¥2,370   往復： ¥4,740
+学割運賃： ¥3,800   往復： ¥7,600
+
+有効日数：   3日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=16, station_id1=54, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:11 @@@
+RuleSpecific:chk 0x80000001, 11 -> 0
+start station is re-route rule86/87
+c69 line_id=16, station_id1=55, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:札幌-岩見沢
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 室蘭線:岩見沢-長万部
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(hokkaido-basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///適用
+札幌市内[札] -> 長万部
+経由：[函館線]岩見沢[室蘭線]
+営業キロ： 251.6 km
+JR北海道営業キロ： 251.6  km
+運賃： ¥4,750        往復： ¥9,500
+
+小児運賃： ¥2,370   往復： ¥4,740
+学割運賃： ¥3,800   往復： ¥7,600
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=16, station_id1=54, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:11 @@@
+RuleSpecific:chk 0x80000001, 11 -> 0
+start station is re-route rule86/87
+c69 line_id=16, station_id1=55, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69(2) applied 0times.
+applied for rule86(1)
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:札幌-岩見沢
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 室蘭線:岩見沢-長万部
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(hokkaido-basic)
+@@@@JR海株主提案 1 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  0
+///JR東海株主優待券未使用
+札幌市内[札] -> 長万部
+経由：[函館線]岩見沢[室蘭線]
+営業キロ： 251.6 km
+JR北海道営業キロ： 251.6  km
+運賃： ¥4,750        往復： ¥9,500
+
+小児運賃： ¥2,370   往復： ¥4,740
+学割運賃： ¥3,800   往復： ¥7,600
+
+有効日数：   3日
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=16, station_id1=54, station_id2=67
+c69 line_id=23, station_id1=67, station_id2=24
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:0 @@@
+RuleSpecific:chk 0x80000000, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:桑園-岩見沢
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 室蘭線:岩見沢-長万部
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(hokkaido-basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+桑園 -> 長万部
+経由：[函館線]岩見沢[室蘭線]
+営業キロ： 253.2 km
+JR北海道営業キロ： 253.2  km
+運賃： ¥4,750        往復： ¥9,500
+
+小児運賃： ¥2,370   往復： ¥4,740
+学割運賃： ¥3,800   往復： ¥7,600
+
+有効日数：   3日
+
+clear-all mask.
+!****<07>: *******************  **********************
+<桑園 函館線 岩見沢>
+test_exec(route): 7*************************************************
+桑園 函館線 岩見沢
+clear-all mask.
+add-begin 桑園(54)
+last_flag=0
+add 函館線(16)-桑園(54), 岩見沢(67)
+  add-mask on: 桑園(54,5)
+  add-mask on: 白石(57,6)
+  add-mask on: 岩見沢(67,7)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=16, station_id1=54, station_id2=67
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:11 @@@
+RuleSpecific:chk 0x80000001, 11 -> 0
+start station is re-route rule86/87
+c69 line_id=16, station_id1=55, station_id2=67
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=406)
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:桑園-岩見沢
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(hokkaido-basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+桑園 -> 岩見沢
+経由：[函館線]
+営業キロ： 42.2 km
+JR北海道営業キロ： 42.2   km
+運賃： ¥840          往復： ¥1,680
+
+小児運賃： ¥420     往復： ¥840  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=16, station_id1=54, station_id2=67
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:11 @@@
+RuleSpecific:chk 0x80000001, 11 -> 0
+start station is re-route rule86/87
+c69 line_id=16, station_id1=55, station_id2=67
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=406)
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:桑園-岩見沢
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(hokkaido-basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///適用
+桑園 -> 岩見沢
+経由：[函館線]
+営業キロ： 42.2 km
+JR北海道営業キロ： 42.2   km
+運賃： ¥840          往復： ¥1,680
+
+小児運賃： ¥420     往復： ¥840  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=16, station_id1=54, station_id2=67
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:11 @@@
+RuleSpecific:chk 0x80000001, 11 -> 0
+start station is re-route rule86/87
+c69 line_id=16, station_id1=55, station_id2=67
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=406)
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:桑園-岩見沢
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(hokkaido-basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///JR東海株主優待券未使用
+桑園 -> 岩見沢
+経由：[函館線]
+営業キロ： 42.2 km
+JR北海道営業キロ： 42.2   km
+運賃： ¥840          往復： ¥1,680
+
+小児運賃： ¥420     往復： ¥840  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=16, station_id1=54, station_id2=67
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:0 @@@
+RuleSpecific:chk 0x80000000, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=1, 1, 函館線:桑園-岩見沢
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:1 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(hokkaido-basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+桑園 -> 岩見沢
+経由：[函館線]
+営業キロ： 42.2 km
+JR北海道営業キロ： 42.2   km
+運賃： ¥840          往復： ¥1,680
+
+小児運賃： ¥420     往復： ¥840  
+
+有効日数：   1日
+
+clear-all mask.
+!****<08>: *******************  **********************
+<新谷 内子線 内子>
+test_exec(route): 8*************************************************
+新谷 内子線 内子
+clear-all mask.
+add-begin 新谷(3751)
+last_flag=0
+add 内子線(179)-新谷(3751), 内子(3750)
+  add-mask on: 内子(3750,274)
+  add-mask on: 新谷(3751,275)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=179, station_id1=3751, station_id2=3750
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=6, 6, 内子線:新谷-内子
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:20 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(ls)'s'
+fare(shikoku)[4]
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+新谷 -> 内子
+経由：[内子線]
+営業キロ： 5.3 km     計算キロ： 5.8 km
+JR四国営業キロ： 5.3    km 計算キロ： 5.8 km
+運賃： ¥210          往復： ¥420  
+
+小児運賃： ¥100     往復： ¥200  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=179, station_id1=3751, station_id2=3750
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=6, 6, 内子線:新谷-内子
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:20 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(ls)'s'
+fare(shikoku)[4]
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///適用
+新谷 -> 内子
+経由：[内子線]
+営業キロ： 5.3 km     計算キロ： 5.8 km
+JR四国営業キロ： 5.3    km 計算キロ： 5.8 km
+運賃： ¥210          往復： ¥420  
+
+小児運賃： ¥100     往復： ¥200  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+clear-all mask.
+!****<09>: *******************  **********************
+<富士 身延線 富士宮>
+test_exec(route): 9*************************************************
+富士 身延線 富士宮
+clear-all mask.
+add-begin 富士(1438)
+last_flag=0
+add 身延線(117)-富士(1438), 富士宮(2233)
+  add-mask on: 富士(1438,118)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=117, station_id1=1438, station_id2=2233
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 身延線:富士-富士宮
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:4 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(sub)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+富士 -> 富士宮
+経由：[身延線]
+営業キロ： 10.7 km     計算キロ： 11.7 km
+運賃： ¥240          往復： ¥480  
+JR東海   株主優待1割： ¥210
+JR東海   株主優待2割： ¥190
+小児運賃： ¥120     往復： ¥240  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=117, station_id1=1438, station_id2=2233
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=3, 3, 身延線:富士-富士宮
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:4 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(sub)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///適用
+富士 -> 富士宮
+経由：[身延線]
+営業キロ： 10.7 km     計算キロ： 11.7 km
+運賃： ¥240          往復： ¥480  
+JR東海   株主優待1割： ¥210
+JR東海   株主優待2割： ¥190
+小児運賃： ¥120     往復： ¥240  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+clear-all mask.
+!****<10>: *******************  **********************
+<岐阜羽島 東海道新幹線 米原>
+test_exec(route): 10*************************************************
+岐阜羽島 東海道新幹線 米原
+clear-all mask.
+add-begin 岐阜羽島(4491)
+last_flag=0
+add 東海道新幹線(4)-岐阜羽島(4491), 米原(1512)
+  add-mask on: 米原(1512,129)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=4491, station_id2=1512
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 東海道新幹線:岐阜羽島-米原
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:4 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+岐阜羽島 -> 米原
+経由：[東海道新幹線]
+営業キロ： 49.6 km
+運賃： ¥840          往復： ¥1,680
+JR東海   株主優待1割： ¥750
+JR東海   株主優待2割： ¥670
+小児運賃： ¥420     往復： ¥840  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=4, station_id1=4491, station_id2=1512
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x0, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, -1, comp1,2=3, 3, 東海道新幹線:岐阜羽島-米原
+isJrTokai true
+@@@ CheckIsJRTokai()=1 @companymask 東海化 [false] companymask:4 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:0 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=0 BLF_JRTOKAISTOCK_APPLIED=0  1
+///適用
+岐阜羽島 -> 米原
+経由：[東海道新幹線]
+営業キロ： 49.6 km
+運賃： ¥840          往復： ¥1,680
+JR東海   株主優待1割： ¥750
+JR東海   株主優待2割： ¥670
+小児運賃： ¥420     往復： ¥840  
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+clear-all mask.
+!****<11>: *******************  **********************
+<大崎 山手線 品川 東海道新幹線 熱海>
+test_exec(route): 11*************************************************
+大崎 山手線 品川 東海道新幹線 熱海
+clear-all mask.
+add-begin 大崎(841)
+last_flag=0
+add 山手線(47)-大崎(841), 品川(840)
+  add-mask on: 品川(840,77)
+added continue.
+added fin.(0).
+last_flag=0
+add 東海道新幹線(4)-品川(840), 熱海(1430)
+  add-mask on: 品川(840,77)
+  add-mask on: 小田原(1425,114)
+  add-mask on: 熱海(1430,115)
+  add-mask on: 新横浜(1570,137)
+added continue.
+added fin.(0).
+
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=47, station_id1=841, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1430
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=1046)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:大崎-品川
+multicompany line none detect X: 0, -1, comp1,2=2, 2, 東海道新幹線:品川-熱海
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:2 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///非適用
+大崎 -> 熱海
+経由：[山手線]品川[東海道新幹線]
+営業キロ： 99.8 km
+運賃： ¥1,660        往復： ¥3,320
+JR東日本 株主優待2割： ¥1,320
+JR東日本 株主優待4割： ¥990
+小児運賃： ¥830     往復： ¥1,660
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=47, station_id1=841, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1430
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=1046)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:大崎-品川
+multicompany line none detect X: 0, -1, comp1,2=2, 2, 東海道新幹線:品川-熱海
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:2 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///適用
+大崎 -> 熱海
+経由：[山手線]品川[東海道新幹線]
+営業キロ： 99.8 km
+運賃： ¥1,660        往復： ¥3,320
+JR東日本 株主優待2割： ¥1,320
+JR東日本 株主優待4割： ¥990
+小児運賃： ¥830     往復： ¥1,660
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:0
+c69 line_id=47, station_id1=841, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:1 @@@
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4, station_id1=414, station_id2=1430
+noapplid rule69(0)Rule 69(2) applied 0times.
+no applied for rule86/87(sales_km=1046)
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:大崎-品川
+multicompany line none detect X: 0, -1, comp1,2=2, 2, 東海道新幹線:品川-熱海
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:2 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:0
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=0  1
+///JR東海株主優待券未使用
+大崎 -> 熱海
+経由：[山手線]品川[東海道新幹線]
+営業キロ： 99.8 km
+運賃： ¥1,660        往復： ¥3,320
+JR東日本 株主優待2割： ¥1,320
+JR東日本 株主優待4割： ¥990
+小児運賃： ¥830     往復： ¥1,660
+
+有効日数：   1日
+
+JR東海株主優待券使用オプション選択可
+@@@@@ [Begin] BLF_JRTOKAISTOCK_APPLIED:800
+c69 line_id=47, station_id1=841, station_id2=840
+c69 line_id=4, station_id1=840, station_id2=1430
+noapplid rule69(0)Rule 69 applied 0times.
+Rule70 not applied.
+@@@@@@ 86都区市内適用(0だとキャンセル)　city_no_s:0 @@@
+RuleSpecific:chk 0x80000000, 0 -> 0
+no applied for rule86/87
+multicompany line none detect X: 0, 0, comp1,2=2, 2, 山手線:大崎-品川
+multicompany line none detect X: 0, -1, comp1,2=2, 2, 東海道新幹線:品川-熱海
+@@@ CheckIsJRTokai()=0 @companymask 東海化 [false] companymask:2 isTokaiWithCityterminal:0
+ BLF_JRTOKAISTOCK_ENABLE:400 BLF_JRTOKAISTOCK_APPLIED:800
+fare(basic)
+@@@@JR海株主提案 0 BLF_JRTOKAISTOCK_ENABLE=1 BLF_JRTOKAISTOCK_APPLIED=1  0
+///JR東海株主優待券使用
+大崎 -> 熱海
+経由：[山手線]品川[東海道新幹線]
+営業キロ： 99.8 km
+運賃： ¥1,660        往復： ¥3,320
+JR東日本 株主優待2割： ¥1,320
+JR東日本 株主優待4割： ¥990
+小児運賃： ¥830     往復： ¥1,660
+
+有効日数：   1日
+
