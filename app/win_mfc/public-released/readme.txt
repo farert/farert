@@ -1,9 +1,9 @@
 
 
 経路運賃営業キロ計算アプリ
-JR運賃、営業キロ表示、経路編集ソフト Farert 18.04
-                                                　　 2018-04-04
-                                              Copyright(C) 2014-2017 Sutezo
+JR運賃、営業キロ表示、経路編集ソフト Farert 18.08
+                                                　　 2018-08-27
+                                              Copyright(C) 2014-2018 Sutezo
 
  Contents
 
@@ -93,8 +93,9 @@ farert ファイル一本を任意のフォルダへ配置し、実行してください。
 実行してください（WindowsXP, Vista, 7, Windows8、Windows10、
 エディションの種類、32ビット、64ビット問わず）
 
-Microsoft Visual C++ 2015 再頒布可能パッケージ Update 3
-https://www.microsoft.com/ja-jp/download/details.aspx?id=53587
+Microsoft Visual C++ 2017 再頒布可能パッケージ (x86)
+(32bitコンパイルしていますので、32ビット、64ビットOS双方で動作します)
+https://support.microsoft.com/ja-jp/help/2977003/the-latest-supported-visual-c-downloads
 
 
 Windows8以降のOSで、はじめて実行する際に「WindowsによってPCが保護されました」と

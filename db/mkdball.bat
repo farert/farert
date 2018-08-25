@@ -8,6 +8,9 @@ if errorlevel 1 goto err
 @echo ==== mkdb jrdb2017 2017 ====
 call mkdb jrdb2017 2017
 if errorlevel 1 goto err
+@echo ==== mkdb jrdb2018 2018 ====
+call mkdb jrdb2018 2018
+if errorlevel 1 goto err
 @echo **** complete *****
 @echo .
 goto fin
