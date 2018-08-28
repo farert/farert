@@ -29,7 +29,8 @@ enum DBIDX {
     DB_2014,
     DB_2015,
     DB_2017,
-    DB_MAX_ID = DB_2017,
+    DB_2018,
+    DB_MAX_ID = DB_2018,
 };
 
 #define MAX_HISTORY              20
