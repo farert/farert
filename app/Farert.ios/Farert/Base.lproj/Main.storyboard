@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2S1-Sy-Prq">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2S1-Sy-Prq">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -1244,8 +1244,8 @@
                                     <action selector="gotoSupportURL:" destination="70O-gX-2JZ" eventType="touchUpInside" id="eX4-Ha-8G1"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 18.04.02" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
-                                <rect key="frame" x="129.5" y="151" width="116" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 18.08" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
+                                <rect key="frame" x="141.5" y="151" width="92" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -1518,7 +1518,7 @@
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="98" id="tIf-Dg-u1J"/>
                                                     </constraints>
-                                                    <string key="text">駅、路線、運賃データを過去データで見ることもできます。通常は最新（2017年）版を指定してください
+                                                    <string key="text">駅、路線、運賃データを過去データで見ることもできます。通常は最新（2018年）版を指定してください
 また保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示も不正になりますが保存時のデータソースに戻すと元どおりになります</string>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1530,6 +1530,7 @@
                                                         <segment title="消費税3%"/>
                                                         <segment title="2014版"/>
                                                         <segment title="2015版"/>
+                                                        <segment title="2017版"/>
                                                         <segment title="最新版"/>
                                                     </segments>
                                                 </segmentedControl>
