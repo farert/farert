@@ -826,8 +826,9 @@ int g_tax; /* main.m */
     // 往復
     fareResult = fi.roundTripFareWithCompanyLine();
     result.roundTripFareWithCompanyLine = fareResult.fare;
-    result.roundTripFareWithCompanyLinePriorRule114 = fi.roundTripFareWithCompanyLinePriorRule114();
-
+    if (fi.isRule114()) {
+        result.roundTripFareWithCompanyLinePriorRule114 = fi.roundTripFareWithCompanyLinePriorRule114();
+    }
     // IC運賃
     result.fareForIC = fi.getFareForIC();
 
