@@ -5567,8 +5567,9 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	   88変換したものは対象外(=山陽新幹線 新大阪着時、非表示フラグが消えてしまうのを避ける効果あり) */
 	CalcRoute::ReRouteRule86j87j(cityId, chk & ~aply88, exit, enter, &route_list_tmp);
 
-	// 88を適用
-	aply88 = CalcRoute::CheckOfRule88j(&route_list_tmp);
+	// 88を適用(新大阪発は大阪発に補正)
+	/*aply88 = */CalcRoute::CheckOfRule88j(&route_list_tmp);
+#if 0
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88(2) for start.\n");
@@ -5581,6 +5582,8 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 		}
         BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 	}
+#endif
+
 
 	// 69を適用したものをroute_list_tmp3へ
 	n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -8622,7 +8625,7 @@ bool FARE_INFO::retr_fare()
 				TRACE("fare(osaka)\n");
 				this->jr_fare = FARE_INFO::Fare_osaka(this->total_jr_sales_km);
 			}
-		} else if (IS_TKMSP(this->flag)) {
+		} else if (IS_TKMSP(this->flag) && (((1 << (JR_CENTRAL - 1)) & companymask) == 0)) {
 			/* 東京電車特定区間のみ */
 			ASSERT(this->jr_fare == 0); /* 特別加算区間を通っていないはずなので */
 			ASSERT(this->company_fare == 0);	// 会社線は通っていない
