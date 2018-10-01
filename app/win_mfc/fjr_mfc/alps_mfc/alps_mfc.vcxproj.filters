@@ -27,6 +27,7 @@
     <None Include="res\jrdb2014.db.enc" />
     <None Include="res\jrdb2015.db.enc" />
     <None Include="res\jrdb2017.db.enc" />
+    <None Include="res\jrdb2018.db.enc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alps_mfc.h">
