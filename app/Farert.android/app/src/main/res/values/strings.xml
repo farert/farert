@@ -1,4 +1,278 @@
 <resources>
-    <string name="app_name">Farert</string>
-    <string name="title_zzitem_detail">ZZItem Detail</string>
+    <string name="app_name">経路運賃営業キロ計算</string>
+
+    <string name="title_main_view">経路指定</string>
+
+    <string name="title_share_text">アプリ選択</string>
+
+    <string name="query">確認</string>
+    <string name="error">エラー</string>
+
+    <string name="main_last_list_caption">追加...     ></string>
+    <string name="main_alert_query_terminal_title">発駅選択</string>
+    <string name="main_alert_query_terminal_mesg">経路を削除してもよろしいでしょうか？</string>
+    <string name="main_alert_query_bullet">新幹線を使いますか？</string>
+    <string name="main_head_caption">　発：　%1$s  %2$s</string>
+
+    <string name="title_back">経路戻り</string>
+    <string name="title_reverse">リバース</string>
+    <string name="title_oskkanrev">大阪環状線回り</string>
+
+    <string name="title_footer_fare">普通運賃</string>
+    <string name="title_footer_saleskm">営業キロ</string>
+    <string name="title_footer_availday">有効日数</string>
+
+    <string name="emsg_reverr">経路が重複している等反転できません</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+
+    <string name="nav_header_title">きっぷホルダ</string>
+    <string name="nav_header_total_fare_title">総運賃</string>
+    <string name="nav_header_total_fare">¥999,999-</string>
+    <string name="nav_header_total_km_title">総営業キロ</string>
+    <string name="nav_header_total_km">666,999.5km-</string>
+
+
+    <string name="title_main_menu_archive">経路保存</string>
+    <string name="title_main_menu_result">結果詳細</string>
+    <string name="title_main_menu_settings">設定</string>
+    <string name="title_main_menu_version">バージョン情報</string>
+
+    <string name="title_version_info">経路運賃営業キロ計算</string>
+    <string name="version_number">Farert %1$s</string>
+    <string name="db_version_name">DB rev. %1$s版 %2$s</string>
+    <string name="support_site_url"><a href="http://farert.blogspot.com/p/main.html">サポートサイト</a></string>
+    <string name="support_site_url_body">http://farert.blogspot.com/p/main.html</string>
+    <string name="eula">本アプリで表示される結果は必ずしも正確な情報ではないことがありえます。実際の旅行での費用とは異なることがあり得ることをご理解の上ご利用ください。
+本アプリにより発生したあらゆる損害は作者は負いません
+不具合を見つけたらサポートサイトへご連絡ください</string>
+    <string name="title_version_close">ok</string>
+    <string name="copyright">Copyright(c) Sutezo 2014-2018</string>
+
+    <string name="btn_edit">編集</string>
+    <string name="btn_add">追加&lt;&lt;</string>
+
+
+    <string name="action_settings">Settings</string>
+
+    <string name="should_select_terminal">発駅を選択してください</string>
+
+    <string name="ttl_company">会社</string>
+    <string name="ttl_prefect">都道府県</string>
+    <string name="ttl_history">履歴</string>
+    <string name="ttl_search">検索</string>
+
+    <string name="term_menu_title">検索</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="tab_company">会社</string>
+    <string name="tab_prefect">都道府県</string>
+    <string name="tab_history">履歴</string>
+    <string name="title_terminal_select_depart">発駅選択</string>
+    <string name="title_terminal_select_arrive">着駅指定(最短経路)</string>
+    <string name="title_station_select_arrive">着駅指定</string>
+    <string name="title_station_select_junction">分岐駅指定</string>
+    <string name="title_line_select_autoroute">最短経路</string>
+    <string name="title_linelistactivity">路線選択</string>
+    <string name="title_stationlistactivity">駅選択</string>
+    <string name="label_search_title">駅名（よみ）入力</string>
+    <string name="match_disp">一致件数：%1$d件</string>
+
+    <string name="no_history">履歴はありません</string>
+
+    <string name="menu_item_all_delete">全削除</string>
+    <string name="title_activity_version">バージョン情報</string>
+    <string name="title_activity_settings">設定</string>
+
+    <!-- Strings related to Settings -->
+
+    <string name="main_rc_finished">経路は終端に達しています</string>
+    <string name="main_rc_neerested">すでに経路は最短となっています</string>
+    <string name="main_rc_iregalstation">不正な駅名が含まれています.</string>
+    <string name="main_rc_iregalline">不正な路線名が含まれています.</string>
+    <string name="main_rc_iregaroute">経路不正.</string>
+    <string name="main_rc_wrongcompany_pass">許可されていない会社線通過です.</string>
+    <string name="main_rc_cantautostart">経路を算出できません.</string>
+    <string name="main_rc_duplicate_route">経路が重複しているため追加できません.</string>
+
+    <!-- Result view -->
+    <string name="result_section">区間</string>
+    <string name="result_kiro">キロ程</string>
+    <string name="result_saleskm">営業キロ</string>
+    <string name="result_kmval">79,999.9km</string>
+    <string name="result_calckm">計算キロ(JR)</string>
+    <string name="result_calckm_wo_jr">計算キロ</string>
+    <string name="result_jrcompany_hokaido">JR北海道</string>
+    <string name="result_jrcompany_east">JR東日本</string>
+    <string name="result_jrcompany_west">JR西日本</string>
+    <string name="result_jrcompany_central">JR東海</string>
+    <string name="result_jrcompany_shikoku">JR四国</string>
+    <string name="result_jrcompany_kyusyu">JR九州</string>
+    <string name="result_rule114">規程114条適用</string>
+    <string name="result_no_rule114_title_fare">規程114条 適用しない運賃</string>
+    <string name="result_jrline">JR線</string>
+    　
+    <string name="result_comapanyline">会社線</string>
+    <string name="result_fare">運賃</string>
+    <string name="result_normalfare">普通</string>
+    <string name="result_companyfare">うち会社線</string>
+    <string name="result_farevalue">¥84,558-</string>
+    <string name="result_round">往復</string>
+    　　　
+    <string name="result_icfare">IC運賃</string>
+    　　　
+    <string name="result_discount">(割引)</string>
+    <string name="result_stockdiscount">JR東日本 株主優待2割:</string>
+    <string name="result_chilefare">小児運賃:</string>
+    <string name="result_studentdiscount">学割運賃:</string>
+    <string name="result_availdays">有効日数</string>
+    <string name="result_days">199日間</string>
+    <string name="result_days_long">(発着駅都区市内の駅を除き途中下車可能)</string>
+    <string name="result_days_metro">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、当日限り有効)</string>
+    <string name="result_days_short">途中下車不可</string>
+    <string name="result_via">経由</string>
+    <string name="result_value_discount"> (割引)</string>
+    <string name="blank">　</string>
+
+    <string name="result_err_1">経路が不完全です.続けて指定してください</string>
+    <string name="result_err_2">会社線のみ運賃は表示できません</string>
+    <string name="result_err_other">運賃は表示できません</string>
+    <string name="result_err_sameautoroute">開始駅=終了駅では最短経路は算出しません.</string>
+    <string name="result_err_duproute">経路が重複するため指定できません</string>
+
+    <string name="result_availday_except_begin_end">(発着駅都区市内の駅を除き</string>
+    <string name="result_availday_except_begin">(発駅都区市内の駅を除き</string>
+    <string name="result_availday_except_end">(着駅都区市内の駅を除き</string>
+    <string name="result_availdays_fmt">%1$d日間</string>
+    <string name="result_availday_empty">(</string>
+    <string name="result_availday_stopover">%1$s途中下車可能)</string>
+    <string name="result_availday_dontstopover">(途中下車前途無効)</string>
+    <string name="result_availday_metroarea">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)</string>
+    <string name="result_note_company">会社線発着のため一枚の乗車券として発行されない場合があります.\n</string>
+    <string name="result_note_multicompany">複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.\n</string>
+    <string name="result_note_jrtokaistock">JR東海株主優待券使用オプション選択可\n</string>
+
+    <string name="result_menu_share">共有</string>
+    <string name="result_menu_osakakan_far">大阪環状線遠回り</string>
+    <string name="result_menu_osakakan_near">大阪環状線近回り</string>
+    <string name="result_menu_neerest">最短経路</string>
+    <string name="result_menu_meihancity_start">発駅を単駅とする</string>
+    <string name="result_menu_meihancity_arrive">着駅を単駅とする</string>
+    <string name="result_menu_sperule">特例を適用</string>
+    <string name="result_menu_stocktokai">JR東海株主優待券を適用</string>
+    <string name="action">する</string>
+    <string name="nothing">しない</string>
+
+    <string name="result_value_section">%1$s → %2$s</string>
+    <string name="result_km">%1$skm</string>
+    <string name="result_yen">¥%1$s-</string>
+
+    <string name="result_mailtitle_faredetail">運賃詳細</string>
+
+    <!-- Archive Route -->
+    <string name="menu_item_save">保存</string>
+
+    <string name="main_alert_query_route_update_title">経路更新</string>
+    <string name="main_alert_query_route_update_mesg">経路を選択された経路で更新します.現在の経路は破棄されます.よろしいでしょうか?</string>
+
+    <string name="no_archive_route">保存された経路はありません</string>
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <!-- Archive / Terminal -->
+    <string name="main_alert_query_all_clear_title">確認</string>
+    <string name="main_alert_query_all_clear_mesg">すべて削除してよいでしょうか？</string>
+
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Entry 1</item>
+        <item>Entry 2</item>
+        <item>Entry 3</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="multi_select_list_preference_default_value" />
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="title_activity_result_view">ResultViewActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+
+    <!-- Settings -->
+    <string name="setting_title_datasource">データソース</string>
+    <string-array name="setting_list_datasource">
+        <item>"消費税3%"</item>
+        <item>"2014版"</item>
+        <item>"2015版"</item>
+        <item>"2017版"</item>
+        <item>"最新版"</item>
+    </string-array>
+
+    <string name="setting_descipt_datasource">駅、路線、運賃データを過去データで見ることもできます。通常は最新（2018年）版を指定してください
+また保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示も不正になりますが保存時のデータソースに戻すと元どおりになります</string>
+
+    <string name="setting_title_option">オプション</string>
+    <string name="setting_title_kokura_shinkansen">小倉-博多間新幹線在来線別線扱い</string>
+    <string name="setting_descr_kokura_shinkansen">経路は全て選択しなおしてください</string>
 </resources>
