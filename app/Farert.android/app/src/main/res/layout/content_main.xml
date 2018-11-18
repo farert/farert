@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_constraint_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/app_bar_main">
+
+    <Button
+        android:id="@+id/buttonTerminal"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/windowBackground"
+        android:padding="6dp"
+        android:text="@string/should_select_terminal"
+        android:theme="@style/AppTheme.FlatButton"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_route"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="10dp"
+        android:scrollbars="vertical"
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/buttonTerminal"
+        app:layout_constraintBottom_toTopOf="@+id/footer_fare"/>
+
+    <TextView
+        android:id="@+id/footer_fare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/windowBackground"
+        android:paddingLeft="@dimen/margin"
+        android:text="@string/title_footer_fare"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/footer_saleskm"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/fare_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="20dp"
+        android:text="88,888円"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBaseline_toBaselineOf="@+id/footer_fare"
+        app:layout_constraintEnd_toEndOf="@+id/saleskm_value"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/footer_fare" />
+
+    <TextView
+        android:id="@+id/footer_saleskm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:background="?android:attr/windowBackground"
+        android:paddingLeft="@dimen/margin"
+        android:text="@string/title_footer_saleskm"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/bottombar"
+        app:layout_constraintEnd_toStartOf="@+id/saleskm_value" />
+
+    <TextView
+        android:id="@+id/saleskm_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="43,434km"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/bottombar"
+        app:layout_constraintLeft_toLeftOf="@+id/fare_value" />
+
+    <TextView
+        android:id="@+id/footer_availday"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="107dp"
+        android:background="?android:attr/windowBackground"
+        android:gravity="center"
+        android:text="@string/title_footer_availday"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="@+id/footer_saleskm"
+        app:layout_constraintEnd_toStartOf="@+id/availday_value"
+        app:layout_constraintHorizontal_bias="0.16"
+        app:layout_constraintStart_toEndOf="@+id/saleskm_value"
+        app:layout_constraintTop_toTopOf="@+id/footer_fare" />
+
+    <TextView
+        android:id="@+id/availday_value"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="32日間"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="@+id/footer_saleskm"
+        app:layout_constraintLeft_toRightOf="@+id/footer_availday"
+        app:layout_constraintTop_toTopOf="@+id/footer_fare" />
+    <Button
+        android:id="@+id/buttonFareDetail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:padding="10dp"
+        android:theme="@style/AppTheme.FlatButton"
+        app:layout_constraintTop_toBottomOf="@+id/recycler_view_route"
+        />
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/bottombar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:background="?android:attr/windowBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/menu_main_bottom">
+
+    </android.support.design.widget.BottomNavigationView>
+
+    <android.support.constraint.Group
+        android:id="@+id/group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="footer_fare,fare_value,footer_saleskm,saleskm_value,footer_availday,availday_value,textView" />
+
+
+</android.support.constraint.ConstraintLayout>
