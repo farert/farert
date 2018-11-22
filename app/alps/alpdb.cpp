@@ -5783,19 +5783,40 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	if (sk <= sales_km) {
 			/* 114条適用かチェック */
 
-		route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-		route_list_tmp3.assign(route_list_tmp4.cbegin(), route_list_tmp4.cend());
-		CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
-		CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
 		if ((0x03 & chk) == 3) {
+
+			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+			/* 発駅のみ特定都区市内着経路に変換 */
+			CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
+
+			// 69を適用したものをroute_list_tmp3へ
+			n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
+		
+			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
 			rule114 =					/* 86,87適用前,   86,87適用後 */
 			         CalcRoute::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
 									        0x01 | ((sk2 == 2000) ? 0 : 0x8000));
             if (rule114.fare == 0) {
+				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+				/* 着駅のみ特定都区市内着経路に変換 */
+				CalcRoute::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp);
+
+				// 69を適用したものをroute_list_tmp3へ
+				n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+				CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
+
+				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+				CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
 			    rule114 = CalcRoute::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
 									           0x02 | ((sk2 == 2000) ? 0 : 0x8000));
             }
 		} else {
+			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+			route_list_tmp3.assign(route_list_tmp4.cbegin(), route_list_tmp4.cend());
+			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
+			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
 			ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
 			rule114 =
 			CalcRoute::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
@@ -6463,6 +6484,9 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(SPECIFICFLAG last_flag, const vector<
 	dkm = RouteUtil::GetDistance(line_id, station_id1, station_id2).at(0);
 	aSales_km -= dkm;	/* 発駅から初回乗換駅までの営業キロを除いた営業キロ */
 
+	if (aSales_km < 0) {
+		return result;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	}
 	ASSERT(0 <= aSales_km);
 	ASSERT(0 < dkm);
 
