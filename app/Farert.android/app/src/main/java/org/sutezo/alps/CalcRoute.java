@@ -696,20 +696,44 @@ public class CalcRoute extends RouteList {
         if (sk <= sales_km) {
 				/* 114条適用かチェック */
 
-            cpyRouteItems(route_list_tmp2, route_list_tmp);
-            cpyRouteItems(route_list_tmp4, route_list_tmp3);
-
-            route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
-            route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
             if ((0x03 & chk) == 3) {
+                /* 発のみ都区市内適用 */
+                /* route_list_tmp = route_list_tmp2 */
+                cpyRouteItems(route_list_tmp2, route_list_tmp);
+                /* 発駅のみ特定都区市内着経路に変換 */
+                ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp);
+
+                // 69を適用したものをroute_list_tmp3へ
+                ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+                route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
+
+                cpyRouteItems(route_list_tmp2, route_list_tmp);
+                route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
 							/* 86,87適用前,   86,87適用後 */
                 r114 = CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
                         0x01 | ((sk2 == 2000) ? 0 : 0x8000));
                 if (r114 == null) {
+                    /* 着のみ都区市内適用 */
+                    /* route_list_tmp = route_list_tmp2 */
+                    cpyRouteItems(route_list_tmp2, route_list_tmp);
+                    /* 発駅のみ特定都区市内着経路に変換 */
+                    ReRouteRule86j87j(cityId, 2, exit, enter, /*out*/route_list_tmp);
+
+                    // 69を適用したものをroute_list_tmp3へ
+                    ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+                    route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
+
+                    cpyRouteItems(route_list_tmp2, route_list_tmp);
+                    route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
                     r114 = CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
                             0x02 | ((sk2 == 2000) ? 0 : 0x8000));
                 }
             } else {
+                cpyRouteItems(route_list_tmp2, route_list_tmp);
+                cpyRouteItems(route_list_tmp4, route_list_tmp3);
+
+                route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
+                route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
                 RouteUtil.ASSERT (((0x03 & chk) == 1) || ((0x03 & chk) == 2));
                 r114 = CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
                                 (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000));
