@@ -10,12 +10,14 @@
 
 　jrdb2014.db            Sqlite3 データベース
 　jrdb2015.db            
-　jrdb2016.db            
+　jrdb2017.db            
+　jrdb2018.db            
 　jrdb2014.db.enc        Sqlite3 データベースを暗号化したもの
 　jrdb2015.db.enc        
-　jrdb2016.db.enc        
+　jrdb2017.db.enc        
+　jrdb2018.db.enc        
 
-  最新は2016、その他は旧データベース（いつか統合したい）
+  最新は2018、その他は旧データベース（いつか統合したい）
   .encは暗号化したもので、Windows(MFC)版ではこれを使用で、リソースディレクトリ
   ../app/win_mfc/fjr_mfc/alps_mfc/res/ へ 配置される(mkdball.batでおこなう)
   *.db は、iOS版は,  ../app/Farert/Farert へ 配置される(mkdball.batでおこなう)
@@ -45,7 +47,9 @@ scripts\jr_db_reg.py	mkdb.batから呼ばれる
 
         以上で完了
 
-
+      iOS版はそのままコピーされてビルドすれば使えるが、
+      Android版はZIP化しなければならないため(DOSバッチファイルでは面倒)、MACコマンドプロンプト側で
+      mkdb-android.sh を実行する
 
 
 ｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰ
