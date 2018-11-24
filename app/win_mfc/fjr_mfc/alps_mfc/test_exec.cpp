@@ -1779,6 +1779,9 @@ const static TCHAR *test_route3_tbl[] = {
 		_T("大阪 東海道線 新大阪 東海道新幹線 名古屋 東海道線 金山(中) 中央西線 千種"),
 		_T("大阪 東海道線 金山(中) 中央西線 千種"),
 		_T("京都 東海道線 尼崎 福知山線 谷川 加古川線, 加古川 山陽線 西明石 山陽新幹線 e新大阪"),
+		_T("c-------会社線合わせて200km超えでもJRだけでは200km未満なので86条適用されないように-----------"),
+		_T("新大阪,東海道線,神戸,山陽線,上郡,智頭線,智頭,因美線,鳥取"),
+		_T("c--------------"),
 		_T(""),
 };
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1835,11 +1838,19 @@ void test_route(const TCHAR *route_def[], bool round = true)
 
 		for (int j = 0; j < rev; j++) {
 			if (0 < j) {
+				rc = route.getFareOption() & 0x400;
 				if (route.reverse() < 0) {
-					_ftprintf(os, _T("------ 反転は無効-------\n\n"));
+					_ftprintf(os, _T("------ 反転は無効---%s---\n\n"), rc == 0 ? _T("enable") : _T("disable"));
+					//ASSERT(rc != 0);
 					break;
 				} else {
-					_ftprintf(os, _T("------ 反転 ------\n\n"));
+					if (rc != 0) {
+						_ftprintf(os, _T("------ 反転 ---GUI disable---\n\n"));
+					}
+					else { // normal
+						_ftprintf(os, _T("------ 反転 ------\n\n"));
+					}
+					//ASSERT(rc == 0);
 				}
 			} else {
 				_ftprintf(os, _T("\n"));

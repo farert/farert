@@ -952,13 +952,13 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="JR東日本 株主優待2割：" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dqu-JF-C5e">
-                                            <rect key="frame" x="37" y="0.0" width="240" height="23.5"/>
+                                            <rect key="frame" x="37" y="0.0" width="187.5" height="23.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥54,555-" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5d5-IP-bPR">
-                                            <rect key="frame" x="277" y="0.0" width="94" height="23.5"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥54,555-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5d5-IP-bPR">
+                                            <rect key="frame" x="224.5" y="0.0" width="131.5" height="23.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -966,7 +966,7 @@
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="5d5-IP-bPR" firstAttribute="top" secondItem="iyv-PQ-vud" secondAttribute="top" id="5Dm-GK-4OV"/>
-                                        <constraint firstItem="dqu-JF-C5e" firstAttribute="width" secondItem="iyv-PQ-vud" secondAttribute="width" multiplier="0.64" id="9SR-2B-PuE"/>
+                                        <constraint firstItem="dqu-JF-C5e" firstAttribute="width" secondItem="iyv-PQ-vud" secondAttribute="width" multiplier="0.5" id="9SR-2B-PuE"/>
                                         <constraint firstItem="dqu-JF-C5e" firstAttribute="top" secondItem="iyv-PQ-vud" secondAttribute="top" id="Ai4-Em-T5i"/>
                                         <constraint firstItem="5d5-IP-bPR" firstAttribute="leading" secondItem="dqu-JF-C5e" secondAttribute="trailing" id="GnR-8A-hfP"/>
                                         <constraint firstItem="Pug-kk-UPC" firstAttribute="leading" secondItem="iyv-PQ-vud" secondAttribute="leading" id="MZh-pi-cNS"/>
@@ -976,7 +976,7 @@
                                         <constraint firstItem="dqu-JF-C5e" firstAttribute="leading" secondItem="Pug-kk-UPC" secondAttribute="trailing" id="h0r-Hj-iiM"/>
                                         <constraint firstAttribute="bottom" secondItem="5d5-IP-bPR" secondAttribute="bottom" id="ljl-yg-Yob"/>
                                         <constraint firstItem="Pug-kk-UPC" firstAttribute="width" secondItem="iyv-PQ-vud" secondAttribute="width" multiplier="0.1" id="nvJ-r9-AOE"/>
-                                        <constraint firstItem="5d5-IP-bPR" firstAttribute="width" secondItem="iyv-PQ-vud" secondAttribute="width" multiplier="0.25" id="sMf-gM-gjc"/>
+                                        <constraint firstItem="5d5-IP-bPR" firstAttribute="width" secondItem="iyv-PQ-vud" secondAttribute="width" multiplier="0.35" id="sMf-gM-gjc"/>
                                         <constraint firstAttribute="bottom" secondItem="dqu-JF-C5e" secondAttribute="bottom" id="u8c-z4-okL"/>
                                     </constraints>
                                 </tableViewCellContentView>
@@ -1244,8 +1244,8 @@
                                     <action selector="gotoSupportURL:" destination="70O-gX-2JZ" eventType="touchUpInside" id="eX4-Ha-8G1"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 18.10" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
-                                <rect key="frame" x="143" y="151" width="89.5" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 18.11" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
+                                <rect key="frame" x="144.5" y="151" width="86.5" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>

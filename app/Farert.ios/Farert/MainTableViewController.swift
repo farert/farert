@@ -345,7 +345,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             //self.navigationItem.rightBarButtonItem.enabled = NO;
             self.replayBarButton.isEnabled = false;
         }
-        if (1 < num) {
+        if ((1 < num) && ds.isReverseAllow()) {
             self.reverseBarButton.isEnabled = true;
         } else {
             self.reverseBarButton.isEnabled = false;
@@ -809,7 +809,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
     // 逆転
     @IBAction func reverseAction(_ sender: UIBarButtonItem) {
-        if (ds.getCount() < 2) {
+        if ((ds.getCount() < 2) || (!ds.isReverseAllow())){
             return;
         }
         
