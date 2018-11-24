@@ -178,7 +178,7 @@ public class FARE_INFO {
                 if (RouteDB.getInstance().tax() == 5) {
                     this.jr_fare = RouteUtil.round(fare_tmp);
                 } else {
-                    /* 新幹線乗車はIC運賃適用外 */
+                    /* 新幹線乗車はIC運賃適用外(東北新幹線も) */
                     if (((1 << RouteUtil.BCBULURB) & this.flag) == 0) {
                         this.fare_ic = fare_tmp;
                     }
@@ -758,7 +758,8 @@ public class FARE_INFO {
     				if (0 < special_fare) {
     		            this.jr_fare = special_fare - this.company_fare;	/* IRいしかわ 乗継割引 */
     				}
-    		} else if (((RouteUtil.MASK_URBAN & this.flag) != 0) || (this.sales_km < 500)) {
+    		} else if ((((1 << RouteUtil.BCBULURB) & this.flag) == 0) /* b#18111401: 新幹線乗車なく、 */
+                && (((RouteUtil.MASK_URBAN & this.flag) != 0) || (this.sales_km < 500))) {
     			special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 1);
     			if (0 < special_fare) {
     	        	System.out.printf("specific fare section replace for Metro or Shikoku-Big-bridge\n");

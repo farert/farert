@@ -214,9 +214,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             /* FARE */
             let dic : [String : String] = self.contentsForFare[indexPath.row]
             
-            switch indexPath.row  {
-            case 0:
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell", for: indexPath) 
+            if indexPath.row == 0 {
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell", for: indexPath)
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
                 
@@ -226,25 +225,30 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 lbl = cell.viewWithTag(4) as! UILabel
                 lbl.text = dic["subFare"]; /* company or IC */
                 
-            case 1:
+            } else if (indexPath.row == 1) && (self.fareInfo.isRoundtrip) {
                 cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell2", for: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
 
                 lbl = cell.viewWithTag(4) as! UILabel
                 lbl.text = dic["subFare"];
-                
-            default:
+            
+            } else {
                 var lbl : UILabel
                 
-                if let subtitle = dic["subTitle"] {
-                    cell = tableView.dequeueReusableCell(withIdentifier: "rsPersonDiscountFareCell", for: indexPath) 
+                if dic["person"] != nil {
+                    cell = tableView.dequeueReusableCell(withIdentifier: "rsPersonDiscountFareCell", for: indexPath)
 
                     lbl = cell.viewWithTag(3) as! UILabel
-                    lbl.text = subtitle
-                    
-                    lbl = cell.viewWithTag(4) as! UILabel
-                    lbl.text = dic["subFare"]
+                    if let subtitle = dic["subTitle"] {
+                        lbl.text = subtitle
+                        lbl = cell.viewWithTag(4) as! UILabel
+                        lbl.text = dic["subFare"]
+                    } else {
+                        lbl.text = ""
+                        lbl = cell.viewWithTag(4) as! UILabel
+                        lbl.text = ""
+                    }
                     
                 } else {
                     cell = tableView.dequeueReusableCell(withIdentifier: "rsDiscountFareCell", for: indexPath) 
@@ -254,8 +258,6 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
                 lbl = cell.viewWithTag(2) as! UILabel
                 lbl.text = dic["fare"];
-                
-                break
             }
         case 3:
             let message : String = self.contentsForMessage[indexPath.row]
@@ -774,7 +776,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         
         /* FARE */
         
-        num_of_fare = 3;    /* normal + round + child */
+        num_of_fare = (self.fareInfo.isRoundtrip) ? 3 : 2;    /* normal + round + child */
         
         /* 1行目 普通＋会社 or 普通 + IC */
         /* 2行目 (往復）同上 */
@@ -790,23 +792,29 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                                 "subTitle" : "うち会社線",
                                 "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
-            contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+            if (self.fareInfo.isRoundtrip) {
+                contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
                                 "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
+            }
         } else if (self.fareInfo.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
             contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "IC運賃",
                                 "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC)!)"]]
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
-            contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+            if (self.fareInfo.isRoundtrip) {
+                contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
                                  "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC * 2)!)"]]
+            }
         } else {
             /* 1: 普通運賃 */
             contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
                                 "subTitle" : "", "subFare" : ""]]
             /* 2: 往復運賃(割引可否) */
-            contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+            if (self.fareInfo.isRoundtrip) {
+                contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
                                  "subFare" : ""]]
+            }
         }
         
         /* 114 exception */
@@ -831,16 +839,28 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
         
         // Child fare
-        contentsForFare += [["title" : "小児運賃",
-                             "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
-                             "subTitle" : "往復",
+        if (self.fareInfo.isRoundtrip) {
+            contentsForFare += [["person":"",
+              "title" : "小児運賃",
+              "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
+              "subTitle" : "往復",
                              "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare * 2)!)"]]
+        } else {
+            contentsForFare += [["person":"", "title" : "小児運賃",
+                                 "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)"]]
+        }
+
         if self.fareInfo.isAcademicFare {
             num_of_fare += 1
-            contentsForFare += [["title" : "学割運賃",
-                "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)",
-                "subTitle" : "往復",
-                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
+            if (self.fareInfo.isRoundtrip) {
+                contentsForFare += [["person":"","title" : "学割運賃",
+                    "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)",
+                    "subTitle" : "往復",
+                    "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
+            } else {
+                contentsForFare += [["person":"","title" : "学割運賃",
+                                     "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)"]]
+            }
         }
 
         contentsForMessage.removeAll();

@@ -652,6 +652,12 @@ int g_tax; /* main.m */
     return obj_route->routeList().back().lineId;
 }
 
+// Enable Reverse
+- (BOOL)isReverseAllow
+{
+    return (obj_route->getFareOption() & 0x400) == 0;
+}
+
 @end
 /* End of cRoute */
 
@@ -746,6 +752,8 @@ int g_tax; /* main.m */
 
     result = [[FareInfo alloc] init];
 
+    result.isRoundtrip = obj_calcroute->isRoundTrip();
+    
     result.result = fare_result;        /* calculate result */
     result.calcResultFlag = calcFlag;   /* calculate flag */
     result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine();
@@ -811,7 +819,6 @@ int g_tax; /* main.m */
 
     result.salesKmForKyusyu = fi.getSalesKmForKyusyu();
     result.calcKmForKyusyu = fi.getCalcKmForKyusyu();
-
 
     // 往復割引有無
     result.isRoundtripDiscount = fi.isRoundTripDiscount();

@@ -1145,7 +1145,7 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 		GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
 	}
 	else {
-		GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(TRUE); /* Enable [Reverse]ボタン */
+		GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow((opt & 0x400) == 0); /* Enable [Reverse]ボタン */
 		GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(TRUE);/* Disable [Neerest]ボタン */
 	}
 

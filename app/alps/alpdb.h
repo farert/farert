@@ -841,6 +841,9 @@ public:
 	void            setFareOption(uint16_t cooked, uint16_t availbit);
 
 	virtual uint32_t   getFareOption();
+	bool			isRoundTrip() const {
+		return !BIT_CHK(last_flag, BLF_END) || BIT_CHK(last_flag, BLF_COMPNDA);
+	}
 protected:
 };
 

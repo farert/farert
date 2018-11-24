@@ -36,6 +36,7 @@
 //	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
 //     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
 //     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
+//     & 0x
 // (System->User)
 - (BOOL)isMeihanCityStartTerminalEnable;
 - (BOOL)isMeihanCityStart;
@@ -99,6 +100,8 @@
 @property (nonatomic) NSInteger salesKmForKyusyu;
 @property (nonatomic) NSInteger calcKmForKyusyu;
 
+// 往復
+@property (nonatomic) BOOL isRoundtrip;
 
 // 往復割引有無
 @property (nonatomic) BOOL isRoundtripDiscount;
