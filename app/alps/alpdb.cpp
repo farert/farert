@@ -6517,7 +6517,7 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(SPECIFICFLAG last_flag, const vector<
 	km_spe = CalcRoute::Get_route_distance(last_flag, routeSpecial); 	/* 経路距離(86,87適用後) */
 	ASSERT(km_spe.size() == 3);
 
-	aSales_km = km_spe.at(0);			// 営業キロ
+	aSales_km = km_spe.at(0) - km_spe.at(2);			// 営業キロ
 
 	/* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
 	if ((0x8000 & kind) == 0) {

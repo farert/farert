@@ -48,10 +48,12 @@ import android.database.sqlite.SQLiteOpenHelper;
  class KM {
      int sales_km;
      int calc_km;
+     int company_km;
      KM() {sales_km = 0; calc_km = 0;}
-     KM(int skm, int ckm) {
+     KM(int skm, int ckm, int cpkm) {
          sales_km = skm;
          calc_km = ckm;
+         company_km = cpkm;
      }
      static int KM(int kmx10) {
          return ((kmx10 + 9) / 10);	/* km単位で端数は切り上げ */

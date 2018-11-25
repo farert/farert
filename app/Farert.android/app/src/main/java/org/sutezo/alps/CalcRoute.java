@@ -111,8 +111,8 @@ public class CalcRoute extends RouteList {
         if (fare_info.isUrbanArea()) {
 
 			 /* 全経路が近郊区間内で新幹線未利用のとき最短距離で算出可能 */
-            sqlbuf.append(String.format(
-                            "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n")
+            sqlbuf.append(String.format(Locale.JAPANESE,
+                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n")
             );
             //RouteUtil.ASSERT (fare_info.getTicketAvailDays() <= 2);
         } else {
@@ -121,14 +121,14 @@ public class CalcRoute extends RouteList {
 
         if ((0 < fare_info.getJRCalcKm()) &&
                 (fare_info.getJRSalesKm() != fare_info.getJRCalcKm())) {
-            sqlbuf.append(String.format(
+            sqlbuf.append(String.format(Locale.JAPANESE,
                     (fare_info.getCompanySalesKm() <= 0) ?
                             "営業キロ： %s km     計算キロ： %s km\r\n" :
                             "営業キロ： %s km JR線計算キロ： %s km\r\n",
                     RouteUtil.num_str_km(fare_info.getTotalSalesKm()),
                     RouteUtil.num_str_km(fare_info.getJRCalcKm())));
         } else {
-            sqlbuf.append(String.format(
+            sqlbuf.append(String.format(Locale.JAPANESE,
                     "営業キロ： %s km\r\n",
                     RouteUtil.num_str_km(fare_info.getTotalSalesKm())));
         }
@@ -136,7 +136,7 @@ public class CalcRoute extends RouteList {
 		/* 会社線(通過連絡運輸)あり */
         if (fare_info.getJRSalesKm() != fare_info.getTotalSalesKm()) {
             RouteUtil.ASSERT (0 != fare_info.getCompanySalesKm());
-            sqlbuf.append(String.format(
+            sqlbuf.append(String.format(Locale.JAPANESE,
                     "(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n",
                     RouteUtil.num_str_km(fare_info.getJRSalesKm()),
                     RouteUtil.num_str_km(fare_info.getCompanySalesKm())));
@@ -147,33 +147,33 @@ public class CalcRoute extends RouteList {
         if (0 < fare_info.getSalesKmForHokkaido()) {
             if ((0 < fare_info.getCalcKmForHokkaido()) &&
                     (fare_info.getCalcKmForHokkaido() != fare_info.getSalesKmForHokkaido())) {
-                sqlbuf.append(String.format("JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n",
+                sqlbuf.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForHokkaido()),
                         RouteUtil.num_str_km(fare_info.getCalcKmForHokkaido())));
             } else {
-                sqlbuf.append(String.format("JR北海道営業キロ： %-6s km\r\n",
+                sqlbuf.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForHokkaido())));
             }
         }
         if (0 < fare_info.getSalesKmForShikoku()) {
             if ((0 < fare_info.getCalcKmForShikoku()) &&
                     (fare_info.getSalesKmForShikoku() != fare_info.getCalcKmForShikoku())) {
-                sqlbuf.append(String.format("JR四国営業キロ： %-6s km 計算キロ： %s km\r\n",
+                sqlbuf.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForShikoku()),
                         RouteUtil.num_str_km(fare_info.getCalcKmForShikoku())));
             } else {
-                sqlbuf.append(String.format("JR四国営業キロ： %-6s km \r\n",
+                sqlbuf.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForShikoku())));
             }
         }
         if (0 < fare_info.getSalesKmForKyusyu()) {
             if ((0 < fare_info.getCalcKmForKyusyu()) &&
                     (fare_info.getSalesKmForKyusyu() != fare_info.getCalcKmForKyusyu())) {
-                sqlbuf.append(String.format("JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n",
+                sqlbuf.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForKyusyu()),
                         RouteUtil.num_str_km(fare_info.getCalcKmForKyusyu())));
             } else {
-                sqlbuf.append(String.format("JR九州営業キロ： %-6s km \r\n",
+                sqlbuf.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForKyusyu())));
             }
         }
@@ -196,38 +196,56 @@ public class CalcRoute extends RouteList {
         int fare_ic = fare_info.getFareForIC();
 
         if (fare_info.isRule114()) {
-            sqlbuf.append(String.format("規程114条適用 営業キロ： %s km 計算キロ： %s km\r\n",
+            sqlbuf.append(String.format(Locale.JAPANESE, "規程114条適用 営業キロ： %s km 計算キロ： %s km\r\n",
                     RouteUtil.num_str_km(fare_info.getRule114SalesKm()),
                     RouteUtil.num_str_km(fare_info.getRule114CalcKm())));
         }
         String company_option;
         if (0 < company_fare) {
-            company_option = String.format(" (うち会社線： ¥%s)", RouteUtil.num_str_yen(company_fare));
+            company_option = String.format(Locale.JAPANESE, " (うち会社線： ¥%s)", RouteUtil.num_str_yen(company_fare));
         } else {
             company_option = "";
         }
         if (fare_ic == 0) {
-            sqlbuf.append(String.format("運賃： ¥%-7s %s     往復： ¥%-5s",
-                    RouteUtil.num_str_yen(normal_fare),
-                    company_option,
-                    RouteUtil.num_str_yen(fareW.fare)));
-            if (fareW.isDiscount) {
-                sqlbuf.append("(割)\r\n");
-            } else if (fare_info.isRule114()) {
-                sqlbuf.append(String.format("\r\n規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n",
-                        RouteUtil.num_str_yen(fare_info.getFareForDisplayPriorRule114()),
-                        RouteUtil.num_str_yen(fare_info.roundTripFareWithCompanyLinePriorRule114())));
+            if (!isRoundTrip()) {
+                sqlbuf.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s\r\n",
+                        RouteUtil.num_str_yen(normal_fare),
+                        company_option));
             } else {
-                sqlbuf.append("\r\n");
+                sqlbuf.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s     往復： ¥%-5s",
+                        RouteUtil.num_str_yen(normal_fare),
+                        company_option,
+                        RouteUtil.num_str_yen(fareW.fare)));
+                if (fareW.isDiscount) {
+                    sqlbuf.append("(割)\r\n");
+                } else {
+                    sqlbuf.append("\r\n");
+                }
+            }
+            if (fare_info.isRule114()) {
+                if (!isRoundTrip()) {
+                    sqlbuf.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s}\r\n",
+                            RouteUtil.num_str_yen(fare_info.getFareForDisplayPriorRule114())));
+                } else {
+                    sqlbuf.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n",
+                            RouteUtil.num_str_yen(fare_info.getFareForDisplayPriorRule114()),
+                            RouteUtil.num_str_yen(fare_info.roundTripFareWithCompanyLinePriorRule114())));
+                }
             }
         } else {
             RouteUtil.ASSERT (!fareW.isDiscount);
             RouteUtil.ASSERT (company_fare == 0);
             RouteUtil.ASSERT (normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
-            sqlbuf.append(String.format("運賃(IC)： ¥%s(¥%s)  %s    往復： ¥%s(¥%s)\r\n",
-                    RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
-                    company_option,
-                    RouteUtil.num_str_yen(normal_fare * 2), RouteUtil.num_str_yen(fare_ic * 2)));
+            if (!isRoundTrip()) {
+                sqlbuf.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s\r\n",
+                        RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
+                        company_option));
+            } else {
+                sqlbuf.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s    往復： ¥%s(¥%s)\r\n",
+                        RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
+                        company_option,
+                        RouteUtil.num_str_yen(normal_fare * 2), RouteUtil.num_str_yen(fare_ic * 2)));
+            }
         }
 
         for (int i = 0; true; i++) {
@@ -242,29 +260,39 @@ public class CalcRoute extends RouteList {
 
             if (fare_info.isRule114()) {
                 FARE_INFO.StockFare stockFare114 = fare_info.getFareStockDiscount(i, true);
-                sqlbuf.append(String.format("%s： ¥%s{¥%s}",
+                sqlbuf.append(String.format(Locale.JAPANESE, "%s： ¥%s{¥%s}",
                         stockFare114.title,
                         RouteUtil.num_str_yen(stockFare114.fare +
                                 company_fare),
                         RouteUtil.num_str_yen(stockFare.fare + company_fare)));
             } else {
-                sqlbuf.append(String.format("%s： ¥%s",
+                sqlbuf.append(String.format(Locale.JAPANESE, "%s： ¥%s",
                         stockFare.title,
                         RouteUtil.num_str_yen(stockFare.fare + company_fare)));
             }
         }
 
 		/* child fare */
-        sqlbuf.append(String.format("\r\n小児運賃： ¥%-7s 往復： ¥%-5s\r\n",
-                RouteUtil.num_str_yen(fare_info.getChildFareForDisplay()),
-                RouteUtil.num_str_yen(fare_info.roundTripChildFareWithCompanyLine())));
+        if (!isRoundTrip()) {
+            sqlbuf.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s\r\n",
+                    RouteUtil.num_str_yen(fare_info.getChildFareForDisplay())));
+        } else {
+            sqlbuf.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s 往復： ¥%-5s\r\n",
+                    RouteUtil.num_str_yen(fare_info.getChildFareForDisplay()),
+                    RouteUtil.num_str_yen(fare_info.roundTripChildFareWithCompanyLine())));
+        }
         normal_fare = fare_info.getAcademicDiscountFare();
         if (0 < normal_fare) {
-            sqlbuf.append(String.format("学割運賃： ¥%-7s 往復： ¥%-5s\r\n",
-                    RouteUtil.num_str_yen(normal_fare),
-                    RouteUtil.num_str_yen(fare_info.roundTripAcademicFareWithCompanyLine())));
+            if (!isRoundTrip()) {
+                sqlbuf.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s\r\n",
+                        RouteUtil.num_str_yen(normal_fare)));
+            } else {
+                sqlbuf.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s 往復： ¥%-5s\r\n",
+                        RouteUtil.num_str_yen(normal_fare),
+                        RouteUtil.num_str_yen(fare_info.roundTripAcademicFareWithCompanyLine())));
+            }
         }
-        sqlbuf.append(String.format(
+        sqlbuf.append(String.format(Locale.JAPANESE,
                 "\r\n有効日数：%4d日\r\n",
                 fare_info.getTicketAvailDays()));
 
@@ -374,7 +402,7 @@ public class CalcRoute extends RouteList {
     public FARE_INFO.Fare checkOfRuleSpecificCoreLine() {
 
         int[] cityId = new int [2];
-        int sales_km;
+        int jsales_km;
         int skm;
         List<RouteItem> route_list_tmp = new ArrayList<RouteItem>();
         List<RouteItem> route_list_tmp2 = new ArrayList<RouteItem>();
@@ -474,11 +502,14 @@ public class CalcRoute extends RouteList {
 		 * route_list_tmp3	70-88-69-86-69適用
 		 */
 		/* compute of sales_km by route_list_cooked */
-        sales_km = Get_route_distance(last_flag, route_list_tmp3).sales_km;
-
-        if ((2000 < sales_km) && ((InRouteUrban(route_list_raw) != RouteUtil.URB_TOKYO) || (2000 < Get_route_distance(last_flag, route_list_raw).sales_km))) {
+        KM km = Get_route_distance(last_flag, route_list_tmp3);
+        jsales_km = km.sales_km - km.company_km;
+        km = Get_route_distance(last_flag, route_list_raw);
+        skm = km.sales_km - km.company_km;
+        if ((2000 < jsales_km) && ((InRouteUrban(route_list_raw) != RouteUtil.URB_TOKYO) ||
+                (2000 < skm))) {
 			/* <<<都区市内適用>>> */
-			/* 201km <= sales_km */
+			/* 201km <= jsales_km */
 			/* enable */
             last_flag.terCityReset();
             switch (chk & 0x03) {
@@ -510,7 +541,8 @@ public class CalcRoute extends RouteList {
         rtky = CheckOfRule87(route_list_tmp2.toArray(new RouteItem[0]));
         if ((3 & rtky) != 0) {
 			/* apply to 87 */  /* 都区内に限り最短が100km以下は非適用(基115-2) */
-            if ((1000 < sales_km) && ((InRouteUrban(route_list_raw) != RouteUtil.URB_TOKYO) || (1000 < Get_route_distance(last_flag, route_list_raw).sales_km))) {
+            if ((1000 < jsales_km) && ((InRouteUrban(route_list_raw) != RouteUtil.URB_TOKYO) ||
+                    (1000 < skm))) {
 				/* 山手線内発着 enable */
                 if (!last_flag.jrtokaistock_enable || !last_flag.jrtokaistock_applied) {
 
@@ -564,7 +596,8 @@ public class CalcRoute extends RouteList {
                 System.out.printf("Rule 69(3) applied %dtimes.\n", n);
 
 				/* 発駅のみ都区市内にしても201/101km以上か？ */
-                skm = Get_route_distance(last_flag, route_list_tmp3).sales_km;
+                km = Get_route_distance(last_flag, route_list_tmp3);
+                skm = km.sales_km - km.company_km;
                 if (sk2 < skm) {
                     // 発 都区市内有効
                     flg = 0x01;
@@ -580,7 +613,8 @@ public class CalcRoute extends RouteList {
                 System.out.printf("Rule 69(4) applied %dtimes.\n", n);
 
 				/* 着駅のみ都区市内にしても201/101km以上か？ */
-                skm = Get_route_distance(last_flag, route_list_tmp3).sales_km;
+                km = Get_route_distance(last_flag, route_list_tmp3);
+                skm = km.sales_km - km.company_km;
                 if (sk2 < skm) {
                     // 着 都区市内有効
                     flg |= 0x02;
@@ -689,11 +723,11 @@ public class CalcRoute extends RouteList {
 		 */
 
 		/* 未変換 */
-        System.out.printf("no applied for rule86/87(sales_km=%d)\n", sales_km);
+        System.out.printf("no applied for rule86/87(sales_km=%d)\n", jsales_km);
 
         FARE_INFO.Fare r114;
 
-        if (sk <= sales_km) {
+        if (sk <= jsales_km) {
 				/* 114条適用かチェック */
 
             if ((0x03 & chk) == 3) {
@@ -1069,7 +1103,7 @@ public class CalcRoute extends RouteList {
         }
         km_spe = Get_route_distance(last_flag, routeSpecial); 	/* 経路距離(86,87適用後) */
 
-        aSales_km = km_spe.sales_km;			// 営業キロ
+        aSales_km = km_spe.sales_km - km_spe.company_km;			// 営業キロ
 
 		/* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
         if ((0x8000 & kind) == 0) {
@@ -1099,6 +1133,10 @@ public class CalcRoute extends RouteList {
         // ex. 国母-横浜-長津田の場合、身延線.富士-国母 間の距離を引く
         dkm = RouteUtil.GetDistance(line_id, station_id1, station_id2).get(0);
         aSales_km -= dkm;	/* 発駅から初回乗換駅までの営業キロを除いた営業キロ */
+
+        if (aSales_km < 0) {
+            return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        }
 
         RouteUtil.ASSERT (0 <= aSales_km);
         RouteUtil.ASSERT (0 < dkm);
@@ -1166,17 +1204,19 @@ public class CalcRoute extends RouteList {
     //	@param [in]  last_flag 大阪環状線通過方向(osakakan_1dir, osakakan_2dir, osakakan_1pass)
     //                         * osakakan_1pass はwork用に使用可
     //	@param [in]  route     計算ルート
-    //	@retuen 営業キロ[0] ／ 計算キロ[1]
+    //	@retuen 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]
     //
     private static KM Get_route_distance(final LastFlag last_flag, final List<RouteItem> route) {
         int total_sales_km;
         int total_calc_km;
+        int total_company_km;
         int stationId;
         LastFlag oskk_flag;
 
         total_sales_km = 0;
         total_calc_km = 0;
         stationId = 0;
+        total_company_km = 0;
 		/* 大阪環状線flag */
 
         oskk_flag = last_flag.clone();
@@ -1198,10 +1238,13 @@ public class CalcRoute extends RouteList {
                 RouteUtil.ASSERT (vkms.size() == 2);
                 total_sales_km += vkms.get(0);
                 total_calc_km  += vkms.get(1);
+                if (RouteUtil.IS_COMPANY_LINE(it.lineId)) {
+                    total_company_km += vkms.get(0);
+                }
             }
             stationId = it.stationId;
         }
-        return new KM(total_sales_km, total_calc_km);
+        return new KM(total_sales_km, total_calc_km, total_company_km);
     }
 
 
@@ -1239,9 +1282,9 @@ public class CalcRoute extends RouteList {
 
         if (km < 0) {
             km = -km;	/* 上り */
-            sql_buf = String.format(tsql_desc, km_offset, km - km_offset);
+            sql_buf = String.format(Locale.JAPANESE, tsql_desc, km_offset, km - km_offset);
         } else {		/* 下り */
-            sql_buf = String.format(tsql_asc, km_offset, km - km_offset);
+            sql_buf = String.format(Locale.JAPANESE, tsql_asc, km_offset, km - km_offset);
         }
         //int akm;
         short aStationId = 0;

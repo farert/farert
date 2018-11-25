@@ -81,6 +81,10 @@ public class RouteList {
     public void assign(RouteList source_route, int count) {
         route_list_raw = dupRouteItems(source_route.route_list_raw, count);
         last_flag = source_route.last_flag.clone();
+        if ((0 < count) && source_route.route_list_raw.size() != count) {
+            last_flag.end = false;
+            last_flag.compnda = false;
+        }
     }
 
     static List<RouteItem> dupRouteItems(final List<RouteItem> source) {
@@ -270,6 +274,8 @@ public class RouteList {
     //     & 0x30 = 0x20 : 特例なし:特例非適用
     //	   & 0x300= 0x200: JR東海株主優待券使用
     //	   & 0x300= 0x100: JR東海株主優待券使用しない
+    //     & 0x400= 0x400: Reverse不可(6の字)
+    //     & 0x400= 0x000: 通常(会社線絡みはReverseできなくてもこっち)
     //virtual
     int getFareOption()
     {
@@ -286,7 +292,16 @@ public class RouteList {
     		rc = 0;
     	}
 
-    	// 大阪環状線 1回通過で近回り時 bit 2-3
+        // Reverse
+        if ((c < 1) ||
+                (!isRoundTrip() && // finished or company stop
+                        //startStationId() == endStationId()
+                        (route_list_raw.get(0).stationId != route_list_raw.get(route_list_raw.size() - 1).stationId))) {
+            // Qの字の大阪環状線ではダメやねん
+            rc |= 0x400;	// Disable reverse
+        }
+
+        // 大阪環状線 1回通過で近回り時 bit 2-3
     	if (last_flag.is_osakakan_1pass()) {
     		if (last_flag.osakakan_detour) {
     			rc |= (1 << 3);  // 0x08;
@@ -316,5 +331,8 @@ public class RouteList {
             }
 		}
     	return rc;
+    }
+    boolean			isRoundTrip()  {
+        return !last_flag.end || last_flag.compnda;
     }
 }
