@@ -200,6 +200,7 @@ public class Route extends RouteList {
 				 * 0: success(last)
 				 * 1: success
                  * 4: company pass finish
+                 * -4: wrong company pass
 				 */
                 RouteUtil.ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
                 if (rc <= 0) {
