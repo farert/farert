@@ -367,7 +367,7 @@ public class RouteUtil {
     //	@return 変換された文字列(ex. 61000 -> "6,100.0", 25793 -> "2,579.3")
     //
     static String num_str_km(int num) {
-        return String.format("%,d.%d", num / 10, num % 10);
+        return String.format(Locale.JAPANESE, "%,d.%d", num / 10, num % 10);
     }
 
     //	3桁毎にカンマを付加した数値文字列を作成
@@ -377,7 +377,7 @@ public class RouteUtil {
     //	@return 変換された文字列(ex. 61000 -> "\61,000", 3982003 -> "3,982,003")
     //
     static String num_str_yen(int num) {
-        return String.format("%,d", num);
+        return String.format(Locale.JAPANESE, "%,d", num);
     }
 
 
@@ -428,7 +428,7 @@ public class RouteUtil {
  			sqlite3_snprintf(sizeof(sql) - lstrlenA(sql), sql + lstrlenA(sql), tsql_s,
  									qsSame);
  	#else */
-             sql = String.format(tsql, "name", stationName) + String.format(tsql_s, sameName);
+             sql = String.format(Locale.JAPANESE, tsql, "name", stationName) + String.format(Locale.JAPANESE, tsql_s, sameName);
  	/* #endif */
          } else {
              boolean bKana;
@@ -443,7 +443,7 @@ public class RouteUtil {
  			sqlite3_snprintf(sizeof(sql), sql, tsql,
  									bKana ? "kana" : "name", qsName);
  	#else */
-             sql = String.format(tsql, bKana ? "kana" : "name", stationName);
+             sql = String.format(Locale.JAPANESE, tsql, bKana ? "kana" : "name", stationName);
  	/* #endif */
          }
          return RouteDB.db().rawQuery(sql + tsql_e, null);	//, false);
@@ -473,7 +473,7 @@ public class RouteUtil {
          } else {
              ident = id;
          }
-         sql = String.format(tsql,
+         sql = String.format(Locale.JAPANESE, tsql,
                  (0x10000 <= id) ? "prefect_id" : "company_id", ident);
 
          return RouteDB.db().rawQuery(sql, null);	// , false);
@@ -502,7 +502,7 @@ public class RouteUtil {
              ident = prefectOrCompanyId;
          }
 
-         String sql = String.format(tsql,
+         String sql = String.format(Locale.JAPANESE, tsql,
                  (0x10000 <= prefectOrCompanyId) ? "prefect_id" : "company_id");
 
          Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {String.valueOf(lineId),

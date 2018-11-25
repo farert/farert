@@ -771,6 +771,7 @@ public class FARE_INFO {
 
     		        if (RouteUtil.URB_TOKYO == RouteUtil.URBAN_ID(this.flag)) {      /* 東京、新潟、仙台 近郊区間(最短距離で算出可能) */
     		                                                      /* 新幹線乗車も特別運賃適用 */
+                                                                  /* ---> b#18111401: しないようにした(上で弾いた)*/
 
     		            if ((companymask & (1 << (JR_CENTRAL - 1))) != 0) {
     		                /* 新幹線乗車 はIC運賃適用しないが大都市特例運賃は適用 */
@@ -1797,7 +1798,7 @@ public class FARE_INFO {
             }
         }
 
-        tbl = String.format("h%d", RouteDB.getInstance().tax());
+        tbl = String.format(Locale.US, "h%d", RouteDB.getInstance().tax());
         fare = Fare_table("bspekm", tbl, km);
         if (0 != fare) {
             return fare;
@@ -2120,7 +2121,7 @@ public class FARE_INFO {
 
         final String tbl[] = { "t_clinfar", "t_clinfar5p"};
 
-        sql = String.format(tsql, tbl[(RouteDB.getInstance().tax() == 5) ? 1 : 0]);
+        sql = String.format(Locale.JAPANESE, tsql, tbl[(RouteDB.getInstance().tax() == 5) ? 1 : 0]);
         Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {String.valueOf(station_id1), String.valueOf(station_id2)});	// false));
         boolean rc = false;
         try {
@@ -2159,7 +2160,7 @@ public class FARE_INFO {
     private static int	Fare_table(final String tbl, final String field, int km) {
         final String tsql =
                 "select %s from t_fare%s where km<=? order by km desc limit(1)";
-        String sql = String.format(tsql, field, tbl);
+        String sql = String.format(Locale.JAPANESE, tsql, field, tbl);
 
         Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {String.valueOf(KM.KM(km))});
         int rc = 0;
@@ -2187,7 +2188,7 @@ public class FARE_INFO {
         int ckm;
         int fare;
 
-        String sql = String.format(
+        String sql = String.format(Locale.JAPANESE,
                 "select ckm, %c%d from t_fare%s where km<=? order by km desc limit(1)",
                 c, RouteDB.getInstance().tax(), tbl);
 
@@ -2221,8 +2222,7 @@ public class FARE_INFO {
     private static int Fare_table(int dkm, int skm, char c)	{
         int fare;
 
-        String sql = String.format(
-
+        String sql = String.format(Locale.JAPANESE,
                 "select %c%d from t_farels where dkm=?2 and (skm=-1 or skm=?1)",
                 c, RouteDB.getInstance().tax());
     /*
@@ -2257,7 +2257,7 @@ public class FARE_INFO {
     //	@return 駅1～駅2に運賃と区別区間が含まれている場合その加算額を返す
     //
     private static int CheckSpecficFarePass(int line_id, int station_id1, int station_id2) {
-        String sql = String.format(
+        String sql = String.format(Locale.JAPANESE,
                 "select station_id1, station_id2, fare%dp from t_farespp f where kind=0 and exists (" +
                         "select *" +
                         "	from t_lines" +
@@ -2327,7 +2327,7 @@ public class FARE_INFO {
                         " ((station_id1=?1 and station_id2=?2) or" +
                         "  (station_id1=?2 and station_id2=?1))";
 
-        sql = String.format(tsql, RouteDB.getInstance().tax());
+        sql = String.format(Locale.JAPANESE, tsql, RouteDB.getInstance().tax());
 
         Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {
                 String.valueOf(station_id1),
