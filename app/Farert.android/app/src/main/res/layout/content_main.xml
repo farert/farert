@@ -127,7 +127,7 @@
     </android.support.design.widget.BottomNavigationView>
 
     <android.support.constraint.Group
-        android:id="@+id/group"
+        android:id="@+id/footer_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:constraint_referenced_ids="footer_fare,fare_value,footer_saleskm,saleskm_value,footer_availday,availday_value,textView" />

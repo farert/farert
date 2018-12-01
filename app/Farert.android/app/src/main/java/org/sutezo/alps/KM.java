@@ -49,7 +49,7 @@ import android.database.sqlite.SQLiteOpenHelper;
      int sales_km;
      int calc_km;
      int company_km;
-     KM() {sales_km = 0; calc_km = 0;}
+     KM() {sales_km = 0; calc_km = 0; company_km = 0; }
      KM(int skm, int ckm, int cpkm) {
          sales_km = skm;
          calc_km = ckm;
