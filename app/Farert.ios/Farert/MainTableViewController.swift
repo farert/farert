@@ -32,6 +32,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         case AUTO_ROUTE
         case AUTO_NOTENOUGH
         case COMPANYPASS_ERROR
+        case COMPANY_FIN
         case UNKNOWN
     }
     
@@ -376,6 +377,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 case ROUTE.FINISH:
                     lbl.text = "経路が終端に達しました";
                     break;
+                case ROUTE.COMPANY_FIN:
+                    lbl.text = "会社線利用路線はこれ以上追加できません"
+                    break
                 case ROUTE.FARERESULT_ERR1:
                     lbl.text = "続けて経路を追加または削除してください.";
                     break;
@@ -717,8 +721,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     routeStat = ROUTE.COMPANYPASS_ERROR
                 } else if result == -2 {
                     routeStat = ROUTE.SCRIPT_STATION_ERR;
-                } else if (result == 0) || (result == 5) || (result == 4) {
+                } else if (result == 0) || (result == 5) {
                     routeStat = ROUTE.FINISH
+                } else if (result == 4) {
+                    routeStat = ROUTE.COMPANY_FIN
                 } else if (result == 1) {
                     routeStat = .OK
                 } else if (result == -1) {

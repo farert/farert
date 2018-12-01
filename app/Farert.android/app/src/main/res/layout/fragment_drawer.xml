@@ -1,30 +1,132 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@android:color/white">
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/rl_drawer_header"
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="wrap_content"
         android:background="@color/colorPrimary">
+
         <ImageView
+            android:id="@+id/imgHolder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@mipmap/ic_launcher_round"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/nav_header_title"
             android:scaleType="fitCenter"
-            android:layout_centerInParent="true" />
-    </RelativeLayout>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/tickfolder3" />
+
+        <TextView
+            android:id="@+id/txtHeaderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+
+            android:text="@string/nav_header_title"
+            android:textColor="@android:color/background_light"
+            android:textSize="@dimen/text_large"
+            app:layout_constraintLeft_toRightOf="@id/imgHolder"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txtHeaderFareTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/nav_header_total_fare_title"
+            android:textColor="@android:color/background_light"
+            app:layout_constraintLeft_toLeftOf="@id/txtHeaderTitle"
+            app:layout_constraintTop_toBottomOf="@id/txtHeaderTitle" />
+
+        <TextView
+            android:id="@+id/txtTotalFare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/nav_header_total_fare"
+            android:textColor="@android:color/background_light"
+            app:layout_constraintStart_toEndOf="@+id/txtHeaderFareTitle"
+            app:layout_constraintTop_toBottomOf="@+id/txtHeaderTitle" />
+
+        <TextView
+            android:id="@+id/txtKmTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/nav_header_total_km_title"
+            android:textColor="@android:color/background_light"
+            app:layout_constraintLeft_toLeftOf="@id/txtHeaderFareTitle"
+            app:layout_constraintTop_toBottomOf="@id/txtTotalFare"
+            tools:layout_editor_absoluteX="96dp" />
+
+        <TextView
+            android:id="@+id/txtTotalSalesKm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/nav_header_total_km"
+            android:textColor="@android:color/background_light"
+            app:layout_constraintLeft_toRightOf="@+id/txtKmTitle"
+            app:layout_constraintTop_toBottomOf="@+id/txtTotalFare" />
+
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/menu_item_all_delete"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:theme="@style/AppTheme.FlatButton"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintBottom_toBottomOf="@+id/btnAppend"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="@id/txtHeaderTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtKmTitle" />
+
+        <Button
+            android:id="@+id/btnAppend"
+            android:layout_width="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:theme="@style/AppTheme.FlatButton"
+            android:textColor="@color/colorAccent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/btn_add"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnEdit"
+            app:layout_constraintTop_toBottomOf="@+id/txtKmTitle" />
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:background="@android:color/white">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_drawer_list"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager"
         android:scrollbars="vertical"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin" />
+        />
+
+
+    </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>
-

@@ -277,7 +277,7 @@ public class RouteList {
     //     & 0x400= 0x400: Reverse不可(6の字)
     //     & 0x400= 0x000: 通常(会社線絡みはReverseできなくてもこっち)
     //virtual
-    int getFareOption()
+    public int getFareOption()
     {
     	int rc;
     	int c = route_list_raw.size();
@@ -332,7 +332,7 @@ public class RouteList {
 		}
     	return rc;
     }
-    boolean			isRoundTrip()  {
+    public boolean			isRoundTrip()  {
         return !last_flag.end || last_flag.compnda;
     }
 }

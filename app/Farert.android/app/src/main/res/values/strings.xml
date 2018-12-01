@@ -29,7 +29,7 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
 
-    <string name="nav_header_title">きっぷホルダ</string>
+    <string name="nav_header_title"><u>きっぷホルダ</u></string>
     <string name="nav_header_total_fare_title">総運賃</string>
     <string name="nav_header_total_fare">¥999,999-</string>
     <string name="nav_header_total_km_title">総営業キロ</string>
@@ -54,7 +54,6 @@
 
     <string name="btn_edit">編集</string>
     <string name="btn_add">追加&lt;&lt;</string>
-
 
     <string name="action_settings">Settings</string>
 
@@ -97,6 +96,7 @@
     <string name="main_rc_wrongcompany_pass">許可されていない会社線通過です.</string>
     <string name="main_rc_cantautostart">経路を算出できません.</string>
     <string name="main_rc_duplicate_route">経路が重複しているため追加できません.</string>
+    <string name="main_rc_company_end">会社線利用路線はこれ以上追加できません</string>
 
     <!-- Result view -->
     <string name="result_section">区間</string>
@@ -241,6 +241,17 @@
         <item>3</item>
     </string-array>
 
+    <string-array name="list_ticket_type">
+        <item>普通運賃</item>
+        <item>小児運賃</item>
+        <item>往復運賃</item>
+        <item>株割運賃</item>
+        <item>株割x2運賃</item>
+        <item>学割運賃</item>
+        <item>学割往復</item>
+        <item>無効</item>
+    </string-array>
+
     <string-array name="multi_select_list_preference_default_value" />
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
@@ -275,4 +286,7 @@
     <string name="setting_title_option">オプション</string>
     <string name="setting_title_kokura_shinkansen">小倉-博多間新幹線在来線別線扱い</string>
     <string name="setting_descr_kokura_shinkansen">経路は全て選択しなおしてください</string>
+    
+    
+    <string name="sample_section">上越国際スキー場前 - 岩原スキー場前</string>
 </resources>

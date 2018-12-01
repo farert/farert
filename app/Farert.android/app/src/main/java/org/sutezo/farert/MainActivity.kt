@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 } else {
                     mRoute.removeAll()    // removeAll, clear start
                 }
-                update_fare(0)
+                update_fare(1)
             }
             R.id.navigation_reverse -> {
                 val rc = mRoute.reverse()
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 if (mOsakakan_detour != OSAKA_KAN.DISABLE) {
                     mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) OSAKA_KAN.NEAR else OSAKA_KAN.FAR
                     mRoute.setDetour(mOsakakan_detour == OSAKA_KAN.FAR)
-                    update_fare(0)
+                    update_fare(1)
                 }
             }
         }
@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         (menuView.getChildAt(2) as BottomNavigationItemView).apply {
             setEnabled(false)
         }
-        update_fare(0)
+        update_fare(1)
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 // illegal(nothing)
             }
         }
-        Toast.makeText(this, "${func.toString()}Select menu_station_select:${RouteUtil.StationNameEx(stationId)}", Toast.LENGTH_LONG).show()
+        //Toast.makeText(this, "${func.toString()}Select menu_station_select:${RouteUtil.StationNameEx(stationId)}", Toast.LENGTH_LONG).show()
     }
 
 
@@ -232,7 +232,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         // 下部計算結果
         val msg =
                     when (rc) {
-                        0, 5 -> {
+                        0 -> {
                             //"経路は終端に達しています"
                             resources.getString(R.string.main_rc_finished)
                         }
@@ -241,7 +241,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             ""
                         }
                         4 -> {
-                            // すでに経路は最短となっています
+                            // 会社線利用路線はこれ以上追加できません
+                            resources.getString(R.string.main_rc_company_end)
+                        }
+                        5 -> {
                             resources.getString(R.string.main_rc_neerested)
                         }
                         -200 -> {
@@ -269,6 +272,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             resources.getString(R.string.main_rc_duplicate_route)
                         }
                     }
+        var revButton = false
+
         mOsakakan_detour = OSAKA_KAN.DISABLE
         if (0 <= rc && 1 < mRoute.count) {
             fare_value.visibility = View.VISIBLE
@@ -291,11 +296,14 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                     mOsakakan_detour = OSAKA_KAN.FAR
                 }
             }
+            revButton = ((cr.fareOption and 0x400) == 0)
+            footer_group.visibility = View.VISIBLE
         } else {
             fare_value.visibility = View.INVISIBLE
             saleskm_value.visibility = View.INVISIBLE
             availday_value.visibility = View.INVISIBLE
             buttonFareDetail.text = msg
+            footer_group.visibility = View.INVISIBLE
         }
 
         // 先頭部 開始駅
@@ -313,7 +321,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         // リバースボタンの有効化／無効化
         (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
             (getChildAt(1) as BottomNavigationItemView).apply {
-                setEnabled(1 < mRoute.count)
+                setEnabled(1 < mRoute.count && revButton)
             }
         }
         //大阪環状線遠回り／近回りボタン
@@ -330,7 +338,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     private fun beginRoute(stationId: Int) {
         mRoute.removeAll()
         mRoute.add(stationId)
-        update_fare(0)
+        update_fare(1)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -461,6 +469,7 @@ class RouteRecyclerAdapter(private val listener : RouteRecyclerAdapter.RecyclerL
             // last item
             holder.line_item.text = holder.itemView.resources.getString(R.string.main_last_list_caption)
             holder.line_item.setTextColor(holder.line_item.linkTextColors)
+            holder.line_item.gravity = Gravity.RIGHT
         } else {
             val current = route.item(position + 1)
             holder.line_item.text = RouteUtil.LineName(current.lineId())
