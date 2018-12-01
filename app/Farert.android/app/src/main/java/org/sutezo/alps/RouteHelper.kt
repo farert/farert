@@ -6,6 +6,11 @@ import org.json.JSONArray
 import org.sutezo.alps.RouteUtil.*
 import org.sutezo.farert.R.id.result
 
+
+const val MAX_HOLDER : Int = 60
+const val MAX_HISTORY = 20
+const val MAX_ARCHIVE_ROUTE = 100
+
 fun getCompanys() : List<Int> {
     val companys : MutableList<Int> = mutableListOf() // JR group
     val dbo = RouteUtil.Enum_company_prefect()

@@ -219,17 +219,35 @@ public class Routefolder {
                     fare = fareInfo.roundTripFareWithCompanyLine
                 case Aggregate.STOCK.rawValue:     // 株割
                     if fareInfo.availCountForFareOfStockDiscount < 1 {
+                        // N/A
                         fare = fareInfo.fare
                     } else {
-                        fare = fareInfo.fare(forStockDiscount: 0)
+                        if (fareInfo.isRule114Applied) {
+                            //株割 有効 114条有効
+                            fare = fareInfo.fare(forStockDiscount: 0+2)
+                        } else {
+                            //株割 有効 114条無効
+                            fare = fareInfo.fare(forStockDiscount: 0)
+                        }
                     }
                 case Aggregate.STOCKW.rawValue:    // 株割り4割
                     if fareInfo.availCountForFareOfStockDiscount < 1 {
+                        // N/A
                         fare = fareInfo.fare
                     } else if 1 < fareInfo.availCountForFareOfStockDiscount {
-                        fare = fareInfo.fare(forStockDiscount: 1)
+                        // 株割4
+                        if (fareInfo.isRule114Applied) {
+                            fare = fareInfo.fare(forStockDiscount: 1+2)
+                        } else {
+                            fare = fareInfo.fare(forStockDiscount: 1)
+                        }
                     } else {
-                        fare = fareInfo.fare(forStockDiscount: 0)
+                        // 株割4は無効で株割2のみ有効
+                        if (fareInfo.isRule114Applied) {
+                            fare = fareInfo.fare(forStockDiscount: 0+2)
+                        } else {
+                            fare = fareInfo.fare(forStockDiscount: 0)
+                        }
                     }
                 case Aggregate.ACADEMIC.rawValue:    // 学割
                     if fareInfo.isAcademicFare {

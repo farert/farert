@@ -17,6 +17,7 @@ import android.widget.Toast
 class ResultViewActivity : AppCompatActivity() {
 
     var mCalcRoute : CalcRoute? = null
+    var mIsRoundTrip : Boolean = true
 
     enum class Option {
         N_A,
@@ -58,6 +59,7 @@ class ResultViewActivity : AppCompatActivity() {
         val ds = Route()
         ds.assign((application as FarertApp).ds, routeEndIndex)
         setRouteChange(ds)
+        mIsRoundTrip = ds.isRoundTrip
         mCalcRoute = CalcRoute(ds)
         mCalcRoute?.let {
             setRouteOption(it)
@@ -194,7 +196,7 @@ class ResultViewActivity : AppCompatActivity() {
             text_title_err.visibility = View.VISIBLE
             result_scroll_view.visibility = View.INVISIBLE
             when (fi.result) {
-                1-> {
+                1 -> {
                     // incomplete (小倉、西小倉)
                     text_title_err.text = resources.getString(R.string.result_err_1)
                 }
@@ -287,9 +289,9 @@ class ResultViewActivity : AppCompatActivity() {
 
         /* 1行目 普通＋会社 or 普通 + IC */
         /* 2行目 (往復）同上 */
-        var strFareOpt  = resources.getString(if (fi.isRoundtripDiscount) R.string.result_value_discount else R.string.blank)
+        var strFareOpt = resources.getString(if (fi.isRoundtripDiscount) R.string.result_value_discount else R.string.blank)
 
-        if (fi.isRule114Applied) strFareOpt +=  "(${fareNumStr(fi.roundTripFareWithCompanyLinePriorRule114)})"
+        if (fi.isRule114Applied) strFareOpt += "(${fareNumStr(fi.roundTripFareWithCompanyLinePriorRule114)})"
 
         if (fi.fareForCompanyline != 0) {
             /* 1: 普通運賃＋会社線 */
@@ -324,6 +326,11 @@ class ResultViewActivity : AppCompatActivity() {
             text_round2.text = resources.getString(R.string.blank)
         }
 
+        if (!mIsRoundTrip) {
+            val row = row_round_trip
+            result_table.removeView(row)
+        }
+
         /* 114 exception */
         if (fi.isRule114Applied) {
             text_title_rule114_fare.text = resources.getString(R.string.result_no_rule114_title_fare)
@@ -339,18 +346,18 @@ class ResultViewActivity : AppCompatActivity() {
             if (it.isNotEmpty()) {
                 sn++
                 text_title_stock_discount1.text = it[0].first
-                var s = resources.getString(R.string.result_yen, fareNumStr(it[0].second))
+                var s = resources.getString(R.string.result_yen, fareNumStr(it[0].third))
                 if (fi.isRule114Applied) {
-                    s += "(${resources.getString(R.string.result_yen, fareNumStr(it[0].third))})"
+                    s += "(${resources.getString(R.string.result_yen, fareNumStr(it[0].second))})"
                 }
                 text_stock_discount1.text = s
 
                 if (2 <= it.size) {
                     sn++
                     text_title_stock_discount2.text = it[1].first
-                    var s = resources.getString(R.string.result_yen, fareNumStr(it[1].second))
+                    var s = resources.getString(R.string.result_yen, fareNumStr(it[1].third))
                     text_stock_discount2.text = if (fi.isRule114Applied)
-                        s + "(${resources.getString(R.string.result_yen, fareNumStr(it[1].third))})"
+                        s + "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
                     else s
                 }
             }
@@ -369,12 +376,22 @@ class ResultViewActivity : AppCompatActivity() {
 
         // Child fare ガキ
         text_children_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.childFare))
-        text_children_fare_round.text = resources.getString(R.string.result_yen, fareNumStr(fi.childFare * 2))
+        if (mIsRoundTrip) {
+            text_children_fare_round.text = resources.getString(R.string.result_yen, fareNumStr(fi.childFare * 2))
+        } else {
+            text_title_children_fare_round.visibility = View.INVISIBLE
+            text_children_fare_round.visibility = View.INVISIBLE
+        }
 
         // 学割
         if (fi.isAcademicFare) {
             text_student_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.academicFare))
-            text_student_fare_round.text = resources.getString(R.string.result_yen, fareNumStr(fi.roundtripAcademicFare))
+            if (mIsRoundTrip) {
+                text_student_fare_round.text = resources.getString(R.string.result_yen, fareNumStr(fi.roundtripAcademicFare))
+            } else {
+                text_title_student_fare_round.visibility = View.INVISIBLE
+                text_student_fare_round.visibility = View.INVISIBLE
+            }
         } else {
             val row = row_student_discount
             result_table.removeView(row)

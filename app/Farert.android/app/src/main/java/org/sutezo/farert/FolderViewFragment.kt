@@ -150,7 +150,7 @@ class FolderViewFragment : Fragment() {
         }
 
         inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var title = itemView.itemTextView
+            var title = itemView.itemSection
             init {
             }
         }
