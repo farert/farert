@@ -3,6 +3,7 @@ package org.sutezo.farert
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -19,7 +20,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.route_list.view.*
 import org.sutezo.alps.*
-
+import java.lang.NumberFormatException
 
 
 class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListener, RouteRecyclerAdapter.RecyclerListener {
@@ -95,29 +96,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
 
         mRoute = (application as FarertApp).ds
 
-//        ds.add(RouteUtil.GetStationId("石倉"))
-//        ds.add(RouteUtil.GetLineId("函館線"),RouteUtil.GetStationId("森"))
-//        ds.add(RouteUtil.GetLineId("函館線(砂原線)"),RouteUtil.GetStationId("大沼"))
-//        ds.add(RouteUtil.GetLineId("函館線"),RouteUtil.GetStationId("新函館北斗"))
-//        ds.add(RouteUtil.GetLineId("北海道新幹線"),RouteUtil.GetStationId("新青森"))
-//        ds.add(RouteUtil.GetLineId("奥羽線"),RouteUtil.GetStationId("青森"))
-//        ds.add(RouteUtil.GetLineId("青い森鉄道"),RouteUtil.GetStationId("目時"))
-//        ds.add(RouteUtil.GetLineId("IGRいわて銀河"),RouteUtil.GetStationId("盛岡"))
-//        ds.add(RouteUtil.GetLineId("東北線"),RouteUtil.GetStationId("大宮"))
-//        ds.add(RouteUtil.GetLineId("埼京線"),RouteUtil.GetStationId("赤羽"))
-//        ds.add(RouteUtil.GetLineId("東北線(尾久経由)"),RouteUtil.GetStationId("日暮里"))
-//        ds.add(RouteUtil.GetLineId("東北線"),RouteUtil.GetStationId("神田"))
-//        ds.add(RouteUtil.GetLineId("中央東線"),RouteUtil.GetStationId("八王子"))
-//        ds.add(RouteUtil.GetLineId("横浜線"),RouteUtil.GetStationId("東神奈川"))
-//        ds.add(RouteUtil.GetLineId("東海道線"),RouteUtil.GetStationId("鶴見"))
-//        ds.add(RouteUtil.GetLineId("東海道線(西大井経由)"),RouteUtil.GetStationId("品川"))
-//        ds.add(RouteUtil.GetLineId("東海道線"),RouteUtil.GetStationId("東京"))
-//        ds.add(RouteUtil.GetLineId("京葉線"),RouteUtil.GetStationId("蘇我"))
-//        ds.add(RouteUtil.GetLineId("外房線"),RouteUtil.GetStationId("茂原"))
-
-
         recycler_view_route.adapter = RouteRecyclerAdapter(this, mRoute)
-
 
         BottomNavigationViewHelper.disableShiftMode(bottombar)
         bottombar.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
@@ -127,12 +106,42 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             setEnabled(false)
         }
         (menuView.getChildAt(1) as BottomNavigationItemView).apply {
-            setEnabled(false)
+            isEnabled = false
         }
         (menuView.getChildAt(2) as BottomNavigationItemView).apply {
-            setEnabled(false)
+            isEnabled = false
         }
         update_fare(1)
+
+
+        // first launch check
+
+        val rd = readParam(this, "hasLaunched")
+        var num : Int
+        try {
+            num = Integer.parseInt(rd)
+        } catch (e: NumberFormatException) {
+            num = -1
+        }
+        if (-1 == num) {
+            welcome_show()
+            val cv = getVersionCode()
+            saveParam(this, "hasLaunched", cv.toString())
+        }
+    }
+
+    private fun getVersionCode(): Int {
+        val pm = this.packageManager
+        var versionCode = 0
+        try {
+            val packageInfo = pm.getPackageInfo(this.packageName, 0)
+            versionCode = packageInfo.versionCode
+            // versionCode:通算バージョン(数値)
+            // versionName: "18.11" とか
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+        return versionCode
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
@@ -225,6 +234,20 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         //Toast.makeText(this, "${func.toString()}Select menu_station_select:${RouteUtil.StationNameEx(stationId)}", Toast.LENGTH_LONG).show()
     }
 
+    // welcome
+
+    private fun welcome_show() {
+        val build = AlertDialog.Builder(this).apply {
+            setTitle(R.string.welcome)
+            setMessage(R.string.eula)
+            setPositiveButton(R.string.agree, null)
+            setNegativeButton(R.string.disagree) { _, _ ->
+                finish()
+            }
+        }
+        val dlg = build.create()
+        dlg.show()
+    }
 
     // 計算結果表示
     private fun update_fare(rc : Int)
@@ -298,12 +321,14 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             }
             revButton = ((cr.fareOption and 0x400) == 0)
             footer_group.visibility = View.VISIBLE
+            mDrawerFragment.route = mRoute
         } else {
             fare_value.visibility = View.INVISIBLE
             saleskm_value.visibility = View.INVISIBLE
             availday_value.visibility = View.INVISIBLE
             buttonFareDetail.text = msg
             footer_group.visibility = View.INVISIBLE
+            mDrawerFragment.route = null
         }
 
         // 先頭部 開始駅
@@ -358,13 +383,6 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 startActivity(intent)
                 true
             }
-            // 結果詳細
-            R.id.result -> {
-                val intent = Intent(this, ResultViewActivity::class.java)
-                intent.putExtra("arrive", -1)
-                startActivity(intent)
-                true
-            }
             // バージョン情報
             R.id.version_view -> {
                 val intent = Intent(this, VersionActivity::class.java)
@@ -391,39 +409,34 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
     }
 
-    override fun onDrawerItemSelected(view: View, position: Int) {
-        //changeRoute()
-    }
-
-    // Selected at leftView row
-    //  from tableView:didSelectRowAt in LeftTableView
-    //
-    fun changeRoute(route: RouteList) {
-        /*
-        val curscr = mRoute.routeScript()
-        val newscr = route.routeScript()
-        if (curscr != newscr) {
-            if (mRoute.getCount() <= 1) || RouteUtil.isRoute(newscr) {
+    // FolderViewFragment.FragmentDrawerListener
+    override fun onDrawerItemSelected(view: View, leftRouteList: RouteList) {
+        val curScr = mRoute.route_script()
+        val newScr = leftRouteList.route_script()
+        if (curScr != newScr) {
+            if ((mRoute.getCount() <= 1) || isStrageInRoute(this, curScr)) {
                 // すぐやる
-                setRouteList(routeList: route)
-                dsPre = nil
-                viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW
+                val rc = mRoute.setup_route(newScr)
+                update_fare(rc)
             } else {
                 // 聞いてからやる
-                dsPre = route
-                viewContextMode = FGD.CONTEXT_TICKETHOLDER_VIEW
+                AlertDialog.Builder(this).apply {
+                    setTitle(R.string.main_alert_query_left_route_overwrite_title)
+                    setMessage(R.string.main_alert_query_left_route_overwrite_mesg)
+                    setPositiveButton("Yes") { _, _ ->
+                        val rc = mRoute.setup_route(newScr)
+                        update_fare(rc)
+                    }
+                    setNegativeButton("No", null)
+                    show()
+                }
             }
         }
-        // to: viewDidAppear()
-        */
     }
-    //class FolderRecyclerAdapter(val context: Context,
-//                            val itemClickListener: RecyclerViewHolder.ItemClickListener,
-//                            private val itemList:List<String>) : RecyclerView.Adapter<RecyclerViewHolder>() {
 
-    override fun onClickRow(clkidx: Int) {
+    override fun onClickRow(selectItem: Int) {
         if (0 < mRoute.count) {
-            if ((mRoute.count - 1) <= clkidx) {
+            if ((mRoute.count - 1) <= selectItem) {
                 // add route
                 val lastIdx = mRoute.count - 1
                 val intent = Intent(this, LineListActivity::class.java)
@@ -434,7 +447,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             } else {
                 // result display
                 val intent = Intent(this, ResultViewActivity::class.java)
-                intent.putExtra("arrive", clkidx + 2)
+                intent.putExtra("arrive", selectItem + 2)
                 startActivity(intent)
             }
         }

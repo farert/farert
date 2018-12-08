@@ -15,8 +15,18 @@ import org.sutezo.alps.*
 
 class Routefolder {
 
-    class Folder(val routeList : RouteList = RouteList(),
-                var aggregateType : Aggregate = Aggregate.NORMAL) 
+    /*
+    class Folder {
+        var mRouteList : RouteList = RouteList()
+        var mAggregateType : Aggregate = Aggregate.NORMAL
+
+        constructor(routeList: RouteList, aggregateType: Aggregate) {
+            mRouteList.assign(routeList)
+            mAggregateType = aggregateType
+        }
+    }
+    */
+    data class Folder(val routeList: RouteList, var aggregateType: Aggregate)
 
     //private static let onlyObj = Routefolder()
     
@@ -31,39 +41,55 @@ class Routefolder {
         NULLFARE,   // 無効
     }
 
-    private var routeList : MutableList<Folder> = arrayListOf<Folder>()
+    private var _routeList : MutableList<Folder> = arrayListOf()
     private var _totalFare : Int = 0
     private var _totalSalesKm : Int = 0
 
-    public fun totalFare() : String {
-        return if (routeList.count() <= 0) {
+    fun MutableList<Folder>.swap(index_a : Int, index_b: Int) {
+        val tmp = this[index_a]
+        this[index_a] = this[index_b]
+        this[index_b] = tmp
+    }
+
+    fun totalFare() : String {
+        return if (_routeList.count() <= 0) {
             "¥---,---"
         } else {
             "¥${fareNumStr(_totalFare)}"
         }
     }
 
-    public fun totalSalesKm() : String {
-        return if (routeList.count() <= 0) {
+    fun totalSalesKm() : String {
+        return if (_routeList.count() <= 0) {
             "---,--- km"
         } else {
             "${kmNumStr(_totalSalesKm)} km"
         }
     }
 
-    public fun add(context: Context, item : RouteList) : Boolean {
-        if (MAX_HOLDER <= routeList.count()) {
+    fun add(context: Context, item : RouteList) : Boolean {
+        if (MAX_HOLDER <= _routeList.count()) {
             return false
         }
-        routeList.add(Folder(item, Aggregate.NORMAL))
+        _routeList.add(Folder(item, Aggregate.NORMAL))
+        calc()
+        save(context)
+        return true
+    }
+
+    fun swap(context: Context, from: Int, to: Int) : Boolean {
+        if (from < 0 || to < 0 || _routeList.count() < from || _routeList.count() < to) {
+            return false
+        }
+        _routeList.swap(from, to)
         calc()
         save(context)
         return true
     }
 
     //fun route(index : Int) -> cRoute {
-    //    if index < routeList.count {
-    //        return cRoute(routeList: routeList[index].routeList)
+    //    if index < _routeList.count {
+    //        return cRoute(_routeList: _routeList[index]._routeList)
     //    } else {
     //        assert(false, "Index failure...")
     //        return cRoute()
@@ -71,8 +97,8 @@ class Routefolder {
     //}
 
     fun routeItem(index : Int) : RouteList {
-        return if (index < routeList.count()) {
-            routeList[index].routeList
+        return if (index < _routeList.count()) {
+            _routeList[index].routeList
         } else {
             assert(false) // , "Index failure...")
             RouteList()
@@ -80,8 +106,8 @@ class Routefolder {
     }
 
     fun routeItemFare(index : Int) : String {
-        if (index < routeList.count()) {
-            val fare = calcFare(routeList[index])
+        if (index < _routeList.count()) {
+            val fare = calcFare(_routeList[index])
             return "¥${fareNumStr(fare.first)}"
         } else {
             assert(false)//, "Index failure...")
@@ -90,54 +116,45 @@ class Routefolder {
     }
 
     fun count() : Int {
-        return routeList.count()
+        return _routeList.count()
     }
 
     fun aggregateType(index : Int) : Aggregate {
-        if (index < routeList.count()) {
-            return routeList[index].aggregateType
+        if (index < _routeList.count()) {
+            return _routeList[index].aggregateType
         } else {
             return Aggregate.NULLFARE
         }
     }
 
     public fun setAggregateType(context: Context, index : Int, aggr : Aggregate) : Unit {
-        if (index < routeList.count()) {
-            routeList[index].aggregateType = aggr
+        if (index < _routeList.count()) {
+            _routeList[index].aggregateType = aggr
             calc()
             save(context)
         }
     }
 
-    public fun remove(context: Context, index : Int) {
-        routeList.removeAt(index)
+    public fun remove(context: Context, index : Int, no_write: Boolean = false) {
+        _routeList.removeAt(index)
         calc()
-        save(context)
+        if (!no_write) {
+            save(context)
+        }
     }
 
     public fun removeAll(context: Context) {
         _totalSalesKm = 0
         _totalFare = 0
-        routeList.removeAll { true }
+        _routeList.removeAll { true }
         calc()
         save(context)
     }
 
-    /*  Exchange content index_a and index b
-     *
-     */
-    fun exchange(context: Context, index_source : Int, index_destination : Int) {
-        val obj = routeList[index_source]
-        routeList.removeAt(index_source)
-        routeList.add(index_destination, obj)
-        save(context)
-    }
-
-
     fun calc() {
         var ta : Int = 0
         var td : Int = 0
-        for (route in this.routeList) {
+        for (route in this._routeList) {
             val result = calcFare(route)
             ta += result.first
             td += result.second
@@ -149,7 +166,7 @@ class Routefolder {
     fun save(context: Context) {
         val folders : MutableList<String> = mutableListOf()
 
-        for (one in routeList) {
+        for (one in _routeList) {
             val rs = one.aggregateType.ordinal.toString() + "|" + one.routeList.route_script() + "\n"
             folders.add(rs)
         }
@@ -158,95 +175,95 @@ class Routefolder {
 
     fun load(context: Context) {
         val folders = readParams(context, "folder")
-        routeList.removeAll { true }
+        _routeList.removeAll { true }
 
         for (o in folders) {
             val item = o.split("|")
             if (item.count() != 2) {
                 continue
             }
-            var ord: Int = 0
+            var ord : Int
             try {
                 ord = item[0].toInt()
             } catch (e: NumberFormatException) {
                 ord = 0
             }
             val agr: Routefolder.Aggregate = Routefolder.Aggregate.values()[ord]
-            val script = item[1]
+            val script = item[1].trim { c -> c == '\n' }
             val route = Route()
             val rc = route.setup_route(script)
             if (rc < 0) {
                 continue
             }
             val folder = Routefolder.Folder(route, agr)
-            routeList.add(folder)
+            _routeList.add(folder)
 
-            if (MAX_HOLDER <= routeList.count()) {
+            if (MAX_HOLDER <= _routeList.count()) {
                 break
             }
         }
         calc()
     }
 
-        fun calcFare(item : Folder) : Pair<Int, Int> {
+    fun calcFare(item : Folder) : Pair<Int, Int> {
 
-            val cds : CalcRoute? = CalcRoute(item.routeList)
-            cds?.let {
-                val fareInfo = it.calcFareInfo()
-                var fare : Int = 0
+        val cds : CalcRoute? = CalcRoute(item.routeList)
+        cds?.let {
+            val fareInfo = it.calcFareInfo()
+            var fare : Int
 
-                when (item.aggregateType) {
-                    Aggregate.NORMAL -> {   // 普通運賃
-                        fare = fareInfo.fare
-                    }
-                    Aggregate.CHILD -> {     // 小児運賃
-                        fare = fareInfo.childFare
-                    }
-                    Aggregate.ROUNDTRIP -> { // 往復
-                        fare = fareInfo.roundTripFareWithCompanyLine
-                    }
-                    Aggregate.STOCK -> {     // 株割
-                        val stocks = fareInfo.fareForStockDiscounts ?: listOf()
-                            fare =
-                                if (1 <= stocks.count()) {
-                                    // title, normal_fare, 114applied_fare
-                                    if (fareInfo.isRule114Applied) stocks[0].third else stocks[0].second    // thirdは114適用
-                                } else {
-                                    fareInfo.fare
-                                }
-                    }
-                    Aggregate.STOCKW -> {    // 株割り4割
-                        val stocks = fareInfo.fareForStockDiscounts ?: listOf()
+            when (item.aggregateType) {
+                Aggregate.NORMAL -> {   // 普通運賃
+                    fare = fareInfo.fare
+                }
+                Aggregate.CHILD -> {     // 小児運賃
+                    fare = fareInfo.childFare
+                }
+                Aggregate.ROUNDTRIP -> { // 往復
+                    fare = fareInfo.roundTripFareWithCompanyLine
+                }
+                Aggregate.STOCK -> {     // 株割
+                    val stocks = fareInfo.fareForStockDiscounts ?: listOf()
                         fare =
-                            if (2 <= stocks.count()) {
-                                if (fareInfo.isRule114Applied) stocks[1].third else stocks[1].second
-                            } else if (1 <= stocks.count()) {
-                                if (fareInfo.isRule114Applied) stocks[0].third else stocks[0].second
+                            if (1 <= stocks.count()) {
+                                // title, normal_fare, 114applied_fare
+                                if (fareInfo.isRule114Applied) stocks[0].third else stocks[0].second    // thirdは114適用
                             } else {
                                 fareInfo.fare
                             }
-                    }
-                    Aggregate.ACADEMIC -> {    // 学割
-                        if (fareInfo.isAcademicFare) {
-                            fare = fareInfo.academicFare
+                }
+                Aggregate.STOCKW -> {    // 株割り4割
+                    val stocks = fareInfo.fareForStockDiscounts ?: listOf()
+                    fare =
+                        if (2 <= stocks.count()) {
+                            if (fareInfo.isRule114Applied) stocks[1].third else stocks[1].second
+                        } else if (1 <= stocks.count()) {
+                            if (fareInfo.isRule114Applied) stocks[0].third else stocks[0].second
                         } else {
-                            fare = fareInfo.fare
+                            fareInfo.fare
                         }
-                    }
-                    Aggregate.ACADEMIC_ROUNDTRIP -> {    // 学割往復
-                        if (fareInfo.isAcademicFare) {
-                            fare = fareInfo.roundtripAcademicFare
-                        } else {
-                            fare = fareInfo.roundTripFareWithCompanyLine
-                        }
-                    }
-                    else -> {    // 無効
-                        return Pair(0, 0)
+                }
+                Aggregate.ACADEMIC -> {    // 学割
+                    if (fareInfo.isAcademicFare) {
+                        fare = fareInfo.academicFare
+                    } else {
+                        fare = fareInfo.fare
                     }
                 }
-                return Pair(fare, fareInfo.totalSalesKm)
+                Aggregate.ACADEMIC_ROUNDTRIP -> {    // 学割往復
+                    if (fareInfo.isAcademicFare) {
+                        fare = fareInfo.roundtripAcademicFare
+                    } else {
+                        fare = fareInfo.roundTripFareWithCompanyLine
+                    }
+                }
+                else -> {    // 無効
+                    return Pair(0, 0)
+                }
             }
-            return Pair(0, 0)
+            return Pair(fare, fareInfo.totalSalesKm)
         }
+        return Pair(0, 0)
     }
+}
     

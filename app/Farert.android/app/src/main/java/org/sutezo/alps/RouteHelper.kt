@@ -1,10 +1,8 @@
 package org.sutezo.alps
 
 import android.content.Context
-import android.database.Cursor
 import org.json.JSONArray
-import org.sutezo.alps.RouteUtil.*
-import org.sutezo.farert.R.id.result
+import org.sutezo.farert.ArchiveRouteActivity
 
 
 const val MAX_HOLDER : Int = 60
@@ -685,7 +683,7 @@ fun readParams(context: Context, key: String) : List<String> {
     for (i in 0 until jsonArray.length()) {
         values.add(jsonArray.get(i).toString())
     }
-    return values.reversed()
+    return values
 }
 
 fun saveHistory(context: Context, history : List<String>) {
@@ -854,4 +852,10 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.ticketAvailDays = fi.getTicketAvailDays();
 
     return result;
+}
+
+// 経路は不揮発メモリに保存されたものか？
+fun isStrageInRoute(context: Context, routeScript : String) : Boolean {
+    var listItems = readParams(context, ArchiveRouteActivity.KEY_ARCHIVE)
+    return listItems.contains(routeScript)
 }

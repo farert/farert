@@ -22,7 +22,7 @@ import org.sutezo.alps.*
  * in two-pane mode (on tablets) or a [StationListActivity]
  * on handsets.
  */
-class StationListFragment : Fragment(), StationListRecyclerViewAdapter.RecyclerListener {
+class StationListFragment : Fragment() {
 
     /**
      * The dummy content this fragment is presenting.
@@ -64,30 +64,31 @@ class StationListFragment : Fragment(), StationListRecyclerViewAdapter.RecyclerL
                 }
             }
         }
-        rootView.station_list.adapter = StationListRecyclerViewAdapter(lineId, srcStationId, list(), this)
+        rootView.station_list.adapter = StationListRecyclerViewAdapter(lineId, srcStationId, list(), onClickRow)
         return rootView
     }
 
-    override fun onClickRow(stationId: Int) {
-        if (stationId == srcStationId) { return }
-        val activity = activity
-        val intent = Intent(activity, MainActivity::class.java).apply {
-            putExtra("dest_station_id", stationId)
-            putExtra("mode", mode)
-            putExtra("line_id", if (mode == "route") lineId else 0)
-            //addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_FORWARD_RESULT)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+    private val onClickRow: (Int) -> Unit = {
+        if (it != srcStationId) {
+            val activity = activity
+            val intent = Intent(activity, MainActivity::class.java).apply {
+                putExtra("dest_station_id", it)
+                putExtra("mode", mode)
+                putExtra("line_id", if (mode == "route") lineId else 0)
+                //addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_FORWARD_RESULT)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
+            //activity!!.setResult(Activity.RESULT_OK, intent)
+            //activity!!.startActivity(intent)
+            startActivity(intent)
         }
-        //activity!!.setResult(Activity.RESULT_OK, intent)
-        //activity!!.startActivity(intent)
-        startActivity(intent)
     }
 }
 
 class StationListRecyclerViewAdapter(private val lineId: Int,
                                      private val seledStaionId: Int,
                                      private val values: List<Int>,
-                                     private val listner: StationListRecyclerViewAdapter.RecyclerListener) :
+                                     private val onClickCallBack: (Int) -> Unit) :
         RecyclerView.Adapter<StationListRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
@@ -95,7 +96,7 @@ class StationListRecyclerViewAdapter(private val lineId: Int,
     init {
         onClickListener = View.OnClickListener { v ->
             val item = v.tag as Int
-            listner.onClickRow(item)
+            onClickCallBack(item)
         }
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -138,10 +139,6 @@ class StationListRecyclerViewAdapter(private val lineId: Int,
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val idView: TextView = view.id_text_station
         val contentView: TextView = view.id_text_lines_of_station
-    }
-
-    interface RecyclerListener {
-        fun onClickRow(stationId: Int)
     }
 }
 
