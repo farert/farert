@@ -8,25 +8,45 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.*
+import android.widget.AdapterView
+import android.widget.CheckBox
+import android.widget.Toast
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
-import org.sutezo.alps.Route
+import kotlinx.android.synthetic.main.fragment_drawer.view.*
+import org.sutezo.alps.*
 
+interface RecyclerClickListener {
+    fun onClickRow(context: Context, routeScript: String)
+    fun onChangeItem(numItem: Int)
+    fun onSliderChange(view: View?)
+}
 
-class FolderViewFragment : Fragment() {
+class FolderViewFragment : Fragment(), RecyclerClickListener {
 
     private lateinit var adapter: FolderRecyclerAdapter
 
     private var drawerListener: FragmentDrawerListener? = null
     private var mDrawerLayout: DrawerLayout? = null
-    private var containerView: View? = null
+    private var mContainerView: View? = null
+    private val ticketFolder : Routefolder = Routefolder()
+    private var mContext: Context? = null
 
+    var route : RouteList? = null
+
+    fun MutableList<Boolean>.swap(a: Int, b: Int) {
+        val t = this[b]
+        this[b] = this[a]
+        this[a] = t
+    }
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         try {
             drawerListener = context as FragmentDrawerListener
+            mContext = context
         } catch (e : RuntimeException) {
             e.printStackTrace()
         }
@@ -38,30 +58,85 @@ class FolderViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
- //       var titles = activity.resources.getStringArray(R.array.nav_drawer_labels)
- //       val data = ArrayList<String>()
- //       for (i in titles.indices) {
- //           val navItem = DrawerItem(title = titles[i])
- //           data.add(navItem)
- //       }
 
-        adapter = FolderRecyclerAdapter(/*data*/)
+        ticketFolder.load(view.context)
+
+        adapter = FolderRecyclerAdapter(ticketFolder, this)
         rv_drawer_list.adapter = adapter
         rv_drawer_list.layoutManager = LinearLayoutManager(activity)
-        rv_drawer_list.addOnItemTouchListener(RecyclerTouchListener(activity!!, rv_drawer_list, object : ClickListener {
-            override fun onClick(view: View, position: Int) {
-                drawerListener?.onDrawerItemSelected(view, position)
-                mDrawerLayout?.closeDrawer(containerView!!)
+
+        val touchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+                /* ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT*/0) {
+
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+
+                val from = viewHolder.adapterPosition
+                val to = target.adapterPosition
+
+                adapter.routefolder.swap(adapter.mContext!!, from, to)
+                adapter.mCheck.swap(from, to)
+                adapter.notifyItemMoved(from, to)
+
+                return true
             }
 
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
+
+                viewHolder?: return
+
+                val idx = viewHolder.adapterPosition
+
+                adapter.mContext?: return
+                adapter.routefolder.remove(adapter.mContext!!, idx)
+                adapter.mCheck.removeAt(idx)
+            }
+        })
+
+        touchHelper.attachToRecyclerView(rv_drawer_list)
+
+        rv_drawer_list.addItemDecoration(touchHelper)
+        rv_drawer_list.addOnItemTouchListener(RecyclerTouchListener(activity!!, rv_drawer_list, object : ClickListener {
+            override fun onClick(view: View, position: Int) {
+
+            }
+
+            //close navigation view
             override fun onLongClick(view: View?, position: Int) {
+                view?.let {
+                    val route = (rv_drawer_list.adapter as FolderRecyclerAdapter).routefolder.routeItem(position)
+                    drawerListener?.onDrawerItemSelected(it, route)
+                    mDrawerLayout?.closeDrawer(mContainerView!!)
+                }
+            }
+
+            override fun onSliderChange(view: View?) {
 
             }
         }))
+
+        // [+Add] button
+        btnAppend.setOnClickListener {
+            if (route != null) {
+                (rv_drawer_list.adapter as FolderRecyclerAdapter).add(view.context, route!!)
+            }
+        }
+        // Edit clear button
+        btnDelete.setOnClickListener {
+            (rv_drawer_list.adapter as FolderRecyclerAdapter).deleteChecked()
+            checkBox.isChecked = false
+        }
+        // Checkbox
+        checkBox.setOnClickListener { _ ->
+            (rv_drawer_list.adapter as FolderRecyclerAdapter).checkAll(checkBox.isChecked)
+        }
+
+        // Fare Information
+        updateFareInfo()
     }
 
     fun init(fragmentId: Int, drawerLayout: DrawerLayout, toolbar: Toolbar) {
-        containerView = activity!!.findViewById(fragmentId)
+        mContainerView = activity!!.findViewById(fragmentId)
         mDrawerLayout = drawerLayout
         val drawerToggle = object : ActionBarDrawerToggle(activity, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             override fun onDrawerOpened(drawerView: View) {
@@ -82,13 +157,18 @@ class FolderViewFragment : Fragment() {
 
         mDrawerLayout?.addDrawerListener(drawerToggle)
         mDrawerLayout?.post { drawerToggle.syncState() }
-
     }
 
     interface ClickListener {
         fun onClick(view: View, position: Int)
         fun onLongClick(view: View?, position: Int)
+        fun onSliderChange(view: View?)
     }
+
+    private fun updateFareInfo() {
+
+    }
+
 
     internal class RecyclerTouchListener(context: Context, recyclerView: RecyclerView, private val clickListener: ClickListener?) : RecyclerView.OnItemTouchListener {
 
@@ -125,34 +205,106 @@ class FolderViewFragment : Fragment() {
     }
 
     interface FragmentDrawerListener {
-        fun onDrawerItemSelected(view: View, position: Int)
+        fun onDrawerItemSelected(view: View, leftRouteList : RouteList)
     }
 
+    internal class FolderRecyclerAdapter(val routefolder: Routefolder, val listener : RecyclerClickListener)
+        : RecyclerView.Adapter<FolderRecyclerAdapter.MyViewHolder>() {
 
-    //class FolderRecyclerAdapter(val context: Context,
-//                            val itemClickListener: RecyclerViewHolder.ItemClickListener,
-//                            private val itemList:List<String>) : RecyclerView.Adapter<RecyclerViewHolder>() {
-    internal class FolderRecyclerAdapter() : RecyclerView.Adapter<FolderRecyclerAdapter.MyViewHolder>() {
-        val itemList = arrayListOf<String>("東京-品川", "札幌-沼宮内", "武蔵小杉-博多","渋谷-大久保", "上越国際スキー場前-高崎問屋町")
+        var mContext : Context? = null
+        var mCheck : MutableList<Boolean> = MutableList(routefolder.count()) {false}
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.folder_list, parent, false)
+            mContext = parent.context
             return MyViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            val current = itemList[position]
-            holder.title.text = current
+            val current = routefolder.routeItem(position)
+            val begin = current.startStationId()
+            val term = current.endStationId()
+            val label  =  "${terminalName(begin)} - ${terminalName(term)}"
+            holder.title.text = label
+            holder.fareType.setSelection(routefolder.aggregateType(position).ordinal)
+            holder.fareType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
+                }
+
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    listener.onChangeItem(position)
+                }
+
+            }
+            val fareValue  = routefolder.routeItemFare(position)
+            holder.fareValue.text = fareValue
+            holder.deleteCheck.isChecked = mCheck[position]
+            holder.deleteCheck.tag = position
+            holder.deleteCheck.setOnClickListener {v: View? ->
+                v?.let {
+                    val idx = v.tag as Int
+                    val chk = v as CheckBox
+                    mCheck[idx] = chk.isChecked
+                }
+            }
         }
 
         override fun getItemCount(): Int {
-            return itemList.size
+            return routefolder.count()
+        }
+
+        // 経路追加ボタン
+        fun add(context: Context, route : RouteList) {
+            val rl = RouteList()    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
+            rl.assign(route)
+            routefolder.add(context, rl)
+            mCheck.add(false)
+            // notifyItemInserted(routefolder.count() - 1)
+            mCheck = MutableList(routefolder.count()) {false}
+            notifyDataSetChanged()
+        }
+
+        // 削除ボタン
+        fun deleteChecked() {
+            for (i in (routefolder.count() - 1) downTo  0) {
+                if (mCheck[i]) {
+                    mContext?.let {
+                        routefolder.remove(it, i)
+                        notifyItemRemoved(i)
+                        //notifyItemRangeChanged(i, routefolder.count())
+                    }
+                }
+            }
+            mCheck = MutableList(routefolder.count()) {false}
+
+            notifyDataSetChanged()
+        }
+
+        // 削除用チェックボタンを全切り替え
+        fun checkAll(value : Boolean) {
+            mCheck = MutableList(routefolder.count()) {value}
+            notifyDataSetChanged()
         }
 
         inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             var title = itemView.itemSection
+            var fareType = itemView.ticket_type
+            var fareValue = itemView.itemFare
+            var deleteCheck = itemView.chk_delete
             init {
             }
         }
     }
+
+    override fun onClickRow(context: Context, routeScript: String) {
+
+    }
+    override fun onChangeItem(numItem: Int) {
+
+    }
+    override fun onSliderChange(view: View?) {
+
+    }
+
 }

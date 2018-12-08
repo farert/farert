@@ -592,7 +592,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         let curscr = ds.routeScript()
         let newscr = route.routeScript()
         if (curscr != newscr) {
-            if (ds.getCount() <= 1) || cRouteUtil.isRoute(inStrage: newscr) {
+            if (ds.getCount() <= 1) || cRouteUtil.isRoute(inStrage: curscr) {
                 // すぐやる
                 setRouteList(routeList: route)
                 dsPre = nil

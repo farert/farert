@@ -22,6 +22,9 @@
     <string name="title_footer_saleskm">営業キロ</string>
     <string name="title_footer_availday">有効日数</string>
 
+    <string name="main_alert_query_left_route_overwrite_title">チケット経路選択</string>
+    <string name="main_alert_query_left_route_overwrite_mesg">経路を選択した経路で更新してもよろしいでしょうか？</string>
+
     <string name="emsg_reverr">経路が重複している等反転できません</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -46,13 +49,18 @@
     <string name="db_version_name">DB rev. %1$s版 %2$s</string>
     <string name="support_site_url"><a href="http://farert.blogspot.com/p/main.html">サポートサイト</a></string>
     <string name="support_site_url_body">http://farert.blogspot.com/p/main.html</string>
+    <string name="welcome">ダウンロードありがとうございます</string>
     <string name="eula">本アプリで表示される結果は必ずしも正確な情報ではないことがありえます。実際の旅行での費用とは異なることがあり得ることをご理解の上ご利用ください。
 本アプリにより発生したあらゆる損害は作者は負いません
 不具合を見つけたらサポートサイトへご連絡ください</string>
+    <string name="agree">了解</string>
+    <string name="disagree">いいえ</string>
+
     <string name="title_version_close">ok</string>
     <string name="copyright">Copyright(c) Sutezo 2014-2018</string>
 
     <string name="btn_edit">編集</string>
+    <string name="btn_del">削除</string>
     <string name="btn_add">追加&lt;&lt;</string>
 
     <string name="action_settings">Settings</string>

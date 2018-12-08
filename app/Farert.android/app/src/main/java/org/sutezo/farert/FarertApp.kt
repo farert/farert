@@ -25,7 +25,7 @@ class FarertApp : Application() {
 
     private fun setDatabase() {
         val dbname = readParam(this, "datasource").toString()
-        var dbidx : Int = 0
+        var dbidx : Int
         try {
             dbidx = Integer.parseInt(dbname)
         } catch (e: NumberFormatException) {

@@ -27,7 +27,7 @@
         <TextView
             android:id="@+id/txtHeaderTitle"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_margin="16dp"
 
             android:text="@string/nav_header_title"
@@ -79,22 +79,28 @@
             app:layout_constraintLeft_toRightOf="@+id/txtKmTitle"
             app:layout_constraintTop_toBottomOf="@+id/txtTotalFare" />
 
-        <Button
-            android:id="@+id/btnEdit"
+        <CheckBox
+            android:id="@+id/checkBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/menu_item_all_delete"
+            android:layout_marginBottom="4dp"
+            android:text=""
+            android:theme="@style/FolderDrawCheckBox"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+        <Button
+            android:id="@+id/btnDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_del"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:theme="@style/AppTheme.FlatButton"
             android:textColor="@color/colorAccent"
-            app:layout_constraintBottom_toBottomOf="@+id/btnAppend"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="@id/txtHeaderTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtKmTitle" />
+            app:layout_constraintLeft_toRightOf="@id/checkBox"
+            />
 
         <Button
             android:id="@+id/btnAppend"
@@ -107,8 +113,9 @@
             android:layout_marginEnd="16dp"
             android:text="@string/btn_add"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnEdit"
+            app:layout_constraintLeft_toRightOf="@+id/btnEdit"
             app:layout_constraintTop_toBottomOf="@+id/txtKmTitle" />
+
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"

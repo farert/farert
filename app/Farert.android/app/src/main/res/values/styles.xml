@@ -25,4 +25,16 @@
         <item name="android:textColor">#44ceff</item>
         <item name="android:textSize">12sp</item>
     </style>
+    <style name="FolderDrawCheckBox" parent="Theme.AppCompat.Light">
+        <!-- 枠線 -->
+        <item name="colorControlNormal">#ffffff</item>
+        <!-- チェック時の色 -->
+        <item name="colorControlActivated">#77ff77</item>
+    </style>
+    <style name="TicketListTitle" parent="Theme.AppCompat.Light">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#808080</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

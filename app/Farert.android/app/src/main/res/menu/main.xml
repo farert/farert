@@ -2,8 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto  ">
     <item
+        android:id="@+id/archive_route"
+        android:title="@string/title_main_menu_archive"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
         android:title="@string/title_main_menu_settings"
         android:icon="@drawable/ic_menu_gallery"
         app:showAsAction="never" />
@@ -12,14 +15,5 @@
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/title_main_menu_version"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/archive_route"
-        android:title="@string/title_main_menu_archive"
-        app:showAsAction="ifRoom" />
-    <item
-        android:title="@string/title_main_menu_result"
-        android:icon="@drawable/ic_menu_manage"
-        android:id="@+id/result"
-        app:showAsAction="ifRoom" />
 
 </menu>
