@@ -275,9 +275,6 @@ class TerminalSelectActivity : AppCompatActivity() {
                     LIST_TYPE.SEARCH -> { //search text
                         keyMatchStations(arguments!!.getString("search_text", "x"))
                     }
-                    else -> {
-                        arrayListOf<Int>()
-                    }
                 }
             }
             val lists = listItems()
@@ -358,10 +355,6 @@ class TerminalSelectActivity : AppCompatActivity() {
                     }
                     activity!!.startActivity(intent)
                 }
-                else -> {
-                    val x = listType.ordinal
-                    assert(false)
-                }
             }
         }
         fun clearContents() {
@@ -429,9 +422,6 @@ class TerminalSelectActivity : AppCompatActivity() {
                 }
                 PlaceholderFragment.LIST_TYPE.HISTORY, PlaceholderFragment.LIST_TYPE.SEARCH -> {
                     holder.idView.text = RouteUtil.StationNameEx(item)
-                }
-                else->{
-                    holder.idView.text = "error!!!(bug)"
                 }
             }
             //no need // holder.idView.tag = item

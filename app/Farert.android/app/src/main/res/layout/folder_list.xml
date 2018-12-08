@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,8 +12,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sample_section"
-        android:textStyle="bold" />
+        style="@style/TicketListTitle"
+        app:layout_constraintLeft_toLeftOf="@+id/ticket_type"
+        />
 
+    <CheckBox
+        android:id="@+id/chk_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text=""
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/itemSection"
+        />
     <android.support.v7.widget.AppCompatSpinner
         android:id="@+id/ticket_type"
         style="@style/faretype_spin"
@@ -20,7 +32,9 @@
         android:layout_height="wrap_content"
         android:background="@drawable/folder_fare_type"
         android:entries="@array/list_ticket_type"
-        app:layout_constraintTop_toBottomOf="@id/itemSection" />
+        app:layout_constraintTop_toBottomOf="@id/itemSection"
+        app:layout_constraintLeft_toRightOf="@+id/chk_delete"
+        />
 
     <TextView
         android:id="@+id/itemFare"
@@ -31,5 +45,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Button"
         app:layout_constraintLeft_toRightOf="@id/ticket_type"
         app:layout_constraintTop_toTopOf="@id/ticket_type" />
+
+
 </android.support.constraint.ConstraintLayout>
 
