@@ -15,17 +15,6 @@ import org.sutezo.alps.*
 
 class Routefolder {
 
-    /*
-    class Folder {
-        var mRouteList : RouteList = RouteList()
-        var mAggregateType : Aggregate = Aggregate.NORMAL
-
-        constructor(routeList: RouteList, aggregateType: Aggregate) {
-            mRouteList.assign(routeList)
-            mAggregateType = aggregateType
-        }
-    }
-    */
     data class Folder(val routeList: RouteList, var aggregateType: Aggregate)
 
     //private static let onlyObj = Routefolder()

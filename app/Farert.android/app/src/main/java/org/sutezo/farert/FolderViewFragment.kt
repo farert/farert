@@ -17,9 +17,10 @@ import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
 import kotlinx.android.synthetic.main.fragment_drawer.view.*
 import org.sutezo.alps.*
+import java.lang.Exception
 
 interface RecyclerClickListener {
-    fun onClickRow(context: Context, routeScript: String)
+    fun onClickRow(view: View, position: Int)
     fun onChangeItem(numItem: Int)
     fun onSliderChange(view: View?)
 }
@@ -98,16 +99,14 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         rv_drawer_list.addItemDecoration(touchHelper)
         rv_drawer_list.addOnItemTouchListener(RecyclerTouchListener(activity!!, rv_drawer_list, object : ClickListener {
             override fun onClick(view: View, position: Int) {
-
+//                val route = (rv_drawer_list.adapter as FolderRecyclerAdapter).routefolder.routeItem(position)
+//                drawerListener?.onDrawerItemSelected(view, route)
+//                mDrawerLayout?.closeDrawer(mContainerView!!)
             }
 
             //close navigation view
             override fun onLongClick(view: View?, position: Int) {
-                view?.let {
-                    val route = (rv_drawer_list.adapter as FolderRecyclerAdapter).routefolder.routeItem(position)
-                    drawerListener?.onDrawerItemSelected(it, route)
-                    mDrawerLayout?.closeDrawer(mContainerView!!)
-                }
+
             }
 
             override fun onSliderChange(view: View?) {
@@ -226,6 +225,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             val term = current.endStationId()
             val label  =  "${terminalName(begin)} - ${terminalName(term)}"
             holder.title.text = label
+            holder.fareType.tag = position
             holder.fareType.setSelection(routefolder.aggregateType(position).ordinal)
             holder.fareType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                 override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -233,9 +233,17 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 }
 
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    listener.onChangeItem(position)
-                }
+                    parent?.let {
+                        try {
+                            val row_index = it.tag as Int
+                            val agt = Routefolder.Aggregate.values()[position]
+                            routefolder.setAggregateType(it.context, row_index, agt)
+                            listener.onChangeItem(row_index)
+                        } catch (e: Exception) {
 
+                        }
+                    }
+                }
             }
             val fareValue  = routefolder.routeItemFare(position)
             holder.fareValue.text = fareValue
@@ -247,6 +255,10 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                     val chk = v as CheckBox
                     mCheck[idx] = chk.isChecked
                 }
+            }
+            holder.itemView.tag = position
+            holder.itemView.setOnClickListener {
+                listener.onClickRow(it, holder.itemView.tag as Int)
             }
         }
 
@@ -297,11 +309,14 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
     }
 
-    override fun onClickRow(context: Context, routeScript: String) {
-
+    override fun onClickRow(view: View, position: Int) {
+        val route = ticketFolder.routeItem(position)
+        drawerListener?.onDrawerItemSelected(view, route)
+        mDrawerLayout?.closeDrawer(mContainerView!!)
     }
     override fun onChangeItem(numItem: Int) {
-
+        txtTotalSalesKm.text = ticketFolder.totalSalesKm()
+        txtTotalFare.text = ticketFolder.totalFare()
     }
     override fun onSliderChange(view: View?) {
 

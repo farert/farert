@@ -696,7 +696,7 @@ fun appendHistory(context: Context, terminal : String) : Unit {
     if (history.contains(terminal)) {
         history.remove(terminal)
     }
-    history.add(terminal)
+    history.add(0, terminal)
     saveParam(context,"history", history)
 }
 
