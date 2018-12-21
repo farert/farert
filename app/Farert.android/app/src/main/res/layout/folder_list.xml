@@ -46,6 +46,25 @@
         app:layout_constraintLeft_toRightOf="@id/ticket_type"
         app:layout_constraintTop_toTopOf="@id/ticket_type" />
 
+    <ImageView
+        android:id="@+id/imageView_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintRight_toLeftOf="@id/imageView_right"
+        app:layout_constraintTop_toBottomOf="@id/itemSection"
+        app:srcCompat="@drawable/ic_jyubako"/>
+
+    <ImageView
+        android:id="@+id/imageView_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/itemSection"
+        app:srcCompat="@drawable/ic_kb_arrow_right"
+        />
 
 </android.support.constraint.ConstraintLayout>
 
