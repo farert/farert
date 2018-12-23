@@ -52,7 +52,7 @@
             android:label="@string/title_activity_result_view" />
         <activity
             android:name=".ArchiveRouteActivity"
-            android:label="@string/title_main_menu_archive"/>
+            android:label="@string/title_main_menu_archive" />
     </application>
 
 </manifest>
