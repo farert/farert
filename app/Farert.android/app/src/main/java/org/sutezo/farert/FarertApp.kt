@@ -8,6 +8,8 @@ import org.json.JSONArray
 import org.sutezo.alps.Route
 import org.sutezo.alps.RouteDB
 import org.sutezo.alps.readParam
+import java.io.OutputStream
+import java.io.PrintStream
 
 class FarertApp : Application() {
     val ds = Route()
@@ -20,6 +22,8 @@ class FarertApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        //System.setOut(PrintStream("C:\\debug.log") )
+        System.setOut(NullPrintStream())
         setDatabase()
     }
 

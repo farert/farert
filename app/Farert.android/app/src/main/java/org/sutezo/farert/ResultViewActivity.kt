@@ -334,7 +334,8 @@ class ResultViewActivity : AppCompatActivity() {
         /* 114 exception */
         if (fi.isRule114Applied) {
             text_title_rule114_fare.text = resources.getString(R.string.result_no_rule114_title_fare)
-            text_rule114_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.farePriorRule114))
+            val s = "(${resources.getString(R.string.result_yen, fareNumStr(fi.farePriorRule114))})"
+            text_rule114_fare.text = s
         } else {
             val row = row_114rule_fare
             result_table.removeView(row)
@@ -346,19 +347,25 @@ class ResultViewActivity : AppCompatActivity() {
             if (it.isNotEmpty()) {
                 sn++
                 text_title_stock_discount1.text = it[0].first
-                var s = resources.getString(R.string.result_yen, fareNumStr(it[0].third))
+                var s = ""
                 if (fi.isRule114Applied) {
+                    s = resources.getString(R.string.result_yen, fareNumStr(it[0].third))
                     s += "(${resources.getString(R.string.result_yen, fareNumStr(it[0].second))})"
+                } else {
+                    s = resources.getString(R.string.result_yen, fareNumStr(it[0].second))
                 }
                 text_stock_discount1.text = s
 
                 if (2 <= it.size) {
                     sn++
                     text_title_stock_discount2.text = it[1].first
-                    var s = resources.getString(R.string.result_yen, fareNumStr(it[1].third))
-                    text_stock_discount2.text = if (fi.isRule114Applied)
-                        s + "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
-                    else s
+                    if (fi.isRule114Applied) {
+                        s = resources.getString(R.string.result_yen, fareNumStr(it[1].third))
+                        s += "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
+                    } else {
+                        s = resources.getString(R.string.result_yen, fareNumStr(it[1].second))
+                    }
+                    text_stock_discount2.text = s
                 }
             }
         } ?: run {

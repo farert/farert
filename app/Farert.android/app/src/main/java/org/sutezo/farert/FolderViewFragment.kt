@@ -13,6 +13,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.CheckBox
 import android.widget.Toast
+import kotlinx.android.synthetic.main.content_main.view.*
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
 import kotlinx.android.synthetic.main.fragment_drawer.view.*
@@ -118,19 +119,21 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         btnAppend.setOnClickListener {
             if (route != null) {
                 (rv_drawer_list.adapter as FolderRecyclerAdapter).add(view.context, route!!)
+                updateFareInfo()
             }
         }
-        // Edit clear button
+        // Delete button
         btnDelete.setOnClickListener {
             (rv_drawer_list.adapter as FolderRecyclerAdapter).deleteChecked()
             checkBox.isChecked = false
+            updateFareInfo()
         }
         // Checkbox
         checkBox.setOnClickListener { _ ->
             (rv_drawer_list.adapter as FolderRecyclerAdapter).checkAll(checkBox.isChecked)
         }
 
-        // Fare Information
+        // Fare Information(集計値初期化)
         updateFareInfo()
     }
 
@@ -165,7 +168,8 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
     }
 
     private fun updateFareInfo() {
-
+        txtTotalSalesKm.text = ticketFolder.totalSalesKm()
+        txtTotalFare.text = ticketFolder.totalFare()
     }
 
 
@@ -232,12 +236,14 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
                 }
 
+                // 運賃種別選択
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                     parent?.let {
                         try {
                             val row_index = it.tag as Int
                             val agt = Routefolder.Aggregate.values()[position]
                             routefolder.setAggregateType(it.context, row_index, agt)
+                            notifyItemChanged(row_index) // 運賃額の変更
                             listener.onChangeItem(row_index)
                         } catch (e: Exception) {
 
@@ -246,7 +252,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 }
             }
             val fareValue  = routefolder.routeItemFare(position)
-            holder.fareValue.text = fareValue
+            holder.fareValue.text = fareValue    // 運賃額
             holder.deleteCheck.isChecked = mCheck[position]
             holder.deleteCheck.tag = position
             holder.deleteCheck.setOnClickListener {v: View? ->
@@ -309,17 +315,18 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
     }
 
+    // folder ticket row clicked
     override fun onClickRow(view: View, position: Int) {
         val route = ticketFolder.routeItem(position)
         drawerListener?.onDrawerItemSelected(view, route)
         mDrawerLayout?.closeDrawer(mContainerView!!)
     }
+
+    // 行追加, 運賃種別変更
     override fun onChangeItem(numItem: Int) {
-        txtTotalSalesKm.text = ticketFolder.totalSalesKm()
-        txtTotalFare.text = ticketFolder.totalFare()
+        updateFareInfo()
     }
     override fun onSliderChange(view: View?) {
 
     }
-
 }
