@@ -2,25 +2,25 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape>
-            <solid android:color="#fff"/>
+            <solid android:color="#ffffff"/>
             <corners
                 android:topRightRadius="5dp"
                 android:bottomRightRadius="5dp"
                 android:bottomLeftRadius="5dp"
                 android:topLeftRadius="5dp"/>
             <stroke android:width="2dp"
-                android:color="#0f0"/>
+                android:color="#00ff00"/>
         </shape>
     </item>
     <item android:right="40dp"
-        android:top="1dp"
-        android:left="1dp"
-        android:bottom="1dp">
+        android:top="2dp"
+        android:left="2dp"
+        android:bottom="2dp">
         <shape>
-            <solid android:color="#fff"/>
+            <solid android:color="#ffffff"/>
             <corners
-                android:bottomLeftRadius="4dp"
-                android:topLeftRadius="4dp"/>
+                android:bottomLeftRadius="5dp"
+                android:topLeftRadius="5dp"/>
         </shape>
     </item>
 </layer-list>

@@ -166,10 +166,6 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         main_constraint_layout.invalidate()
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        return super.onPrepareOptionsMenu(menu)
-    }
-
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         val func = intent?.getStringExtra("mode") ?: ""
@@ -233,6 +229,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
         //Toast.makeText(this, "${func.toString()}Select menu_station_select:${RouteUtil.StationNameEx(stationId)}", Toast.LENGTH_LONG).show()
     }
+
+
 
     // welcome
 
