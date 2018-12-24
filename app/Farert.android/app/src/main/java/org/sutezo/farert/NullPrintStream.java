@@ -1,9 +1,9 @@
 package org.sutezo.farert;
 
 import java.io.ByteArrayOutputStream;
-        import java.io.IOException;
-        import java.io.OutputStream;
-        import java.io.PrintStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 public class NullPrintStream extends PrintStream {
 
