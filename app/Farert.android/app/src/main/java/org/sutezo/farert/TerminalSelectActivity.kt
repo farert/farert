@@ -450,6 +450,7 @@ class TerminalSelectActivity : AppCompatActivity() {
             }
             notifyItemRemoved(position)
             listener.onChangeItem(itemCount)
+            notifyDataSetChanged()
         }
 
         fun clearContents() {
