@@ -15,8 +15,6 @@ class FarertApp : Application() {
     val ds = Route()
 
     companion object {
-        //const val CONSTANT = 12
-        private lateinit var db: SQLiteDatabase
         lateinit var mDbHelper : DatabaseOpenHelper
     }
 
@@ -38,15 +36,14 @@ class FarertApp : Application() {
         dbidx = DatabaseOpenHelper.validDBidx(dbidx)
         mDbHelper = DatabaseOpenHelper(this, dbidx)
         mDbHelper.createEmptyDataBase(dbidx)
-        db = mDbHelper.openDataBase()
-        RouteDB.createFactory(db, if (dbidx == 0) 5 else 8)
+        RouteDB.createFactory(mDbHelper.openDataBase(), if (dbidx == 0) 5 else 8)
     }
 
 
     fun changeDatabase(dbidx: Int) {
+        val idx = DatabaseOpenHelper.validDBidx(dbidx)
         mDbHelper.closeDatabase()
-        mDbHelper.createEmptyDataBase(dbidx)
-        db = mDbHelper.openDataBase()
-        RouteDB.createFactory(db, if (dbidx == 0) 5 else 8);
+        mDbHelper.createEmptyDataBase(idx)
+        RouteDB.createFactory(mDbHelper.openDataBase(), if (idx == 0) 5 else 8);
     }
 }

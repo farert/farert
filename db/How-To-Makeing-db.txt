@@ -1,5 +1,13 @@
-﻿
+*** This document is UTF-8 Japanese only.
+
 データベースの作成方法      2017.2.24
+ ◆ 作者環境はMAC OS-X上で開発していますが、DBメンテナンスのすべては、Windows上で動作することを前提としています。
+ (MAC OS-X上にVirtualBoxでWindowsをいれて動作。Windows上にPython、Excelが必要)
+
+ 　Unix環境(Linux、MACなど)でも可能ですが、Excelからテキストへ変換する処理を手作業でおこなう必要があります。
+ 　具体的には、Excelの各シートを全選択＆テキストエディタへ貼り付けという作業をし、jrdb20xx.txt という
+　 テキストファイルで保存します。
+　 Windows上ではこれをjr_db_reg.jseが一括でおこなっております。
 
  ◆ レシピ：
 
@@ -9,13 +17,13 @@
  ◆ ターゲット：
 
 　jrdb2014.db            Sqlite3 データベース
-　jrdb2015.db            
-　jrdb2017.db            
-　jrdb2018.db            
+　jrdb2015.db
+　jrdb2017.db
+　jrdb2018.db
 　jrdb2014.db.enc        Sqlite3 データベースを暗号化したもの
-　jrdb2015.db.enc        
-　jrdb2017.db.enc        
-　jrdb2018.db.enc        
+　jrdb2015.db.enc
+　jrdb2017.db.enc
+　jrdb2018.db.enc
 
   最新は2018、その他は旧データベース（いつか統合したい）
   .encは暗号化したもので、Windows(MFC)版ではこれを使用で、リソースディレクトリ
@@ -40,65 +48,17 @@ scripts\jr_db_reg.py	mkdb.batから呼ばれる
 
      2) エクスプローラ上で、jr_db_reg.jse へ jrdb.xlsx をD&Dする
         または、
-        jr_db_reg.se jrdb.xlsx
+        jr_db_reg.jse jrdb.xlsx
+
         をコマンドプロンプトで実行する
 
      3) mkdball.bat を実行する（エクスプローラ上で可：引数なし）
 
         以上で完了
 
-      iOS版はそのままコピーされてビルドすれば使えるが、
-      Android版はZIP化しなければならないため(DOSバッチファイルでは面倒)、MACコマンドプロンプト側で
+ ◆ 各アプリへの組み込み
+ 　　　上記のバッチファイルでプロジェクトフォルダへコピーしている（Windows版プロジェクト、iOS版プロジェクト)
+      Android版用プロジェクトはZIP化しなければならないため(DOSバッチファイルでは面倒)、MACコマンドプロンプト側で
       mkdb-android.sh を実行する
 
-
-ｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰ
-2013-8-17
-ddm\			データベース作成スクリプトだが、使用することはない。
-			データベースの作成は、How-To-Makeing-db.txt を参照。mkdb.batで作成する。
-faretbl.xlsx	運賃計算テーブル作成、ロジック作成のもととなるデータで、設計参考資料
-How-To-Makeing-db.txt	(このファイル)データベース作成手順書(実際にはmkdb.batを読むべし)
-jr.db			データベースファイル
-jrdb.txt		データベース作成元データ
-
-misc\			昔のファイル(もう使わないと思う)
-node_list.txt	データベース作成スクリプトが作成した中間ファイル(使用することはない)
-
-2013-7-25
-	mkdb.bat を実行するだけで良しとする
-
-
-2012-6-9
-
- jr.db
-
- 作成方法
- 　1) Excel(JRDB.XLS)を編集
- 　  各シートをコピーして、任意の新規作成テキストファイル(JRDB.TXT)へ貼り付ける
-      (lines, clinfar, rule69, rule70, rule86, fare)
-      -> jr_db_reg.jse にjrdb.xls を渡して実行できる.
-
-   2) python jr_db_reg.py
-   3) python node_list.py
-
-
-   jrdb.db -+- jr_db_reg.py
-          +- node_list.py     ※ jrdb.pyはjr_db_reg.py, node_list.py などから使用されます.
-
-
-  以上で完成
-
-  alps_mfcに組み込む場合、
-  リソースディレクトリにcrypt_tofish.exe enc jr.db で作成されたjr.db.encを
-  prj/res/　へ配置
-
-
-
-
-
-オープンソース化する
-
-経路探索、交通系以外のシステムの用途では利用可能とする？
-→あいまいだからダメ
-
-GPLが望ましい
+以上
