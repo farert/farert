@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -8715,7 +8715,8 @@ bool FARE_INFO::retr_fare()
 				TRACE("fare(osaka)\n");
 				this->jr_fare = FARE_INFO::Fare_osaka(this->total_jr_sales_km);
 			}
-		} else if (IS_TKMSP(this->flag) && (((1 << (JR_CENTRAL - 1)) & companymask) == 0)) {
+		} else if (!this->local_only &&
+                   (IS_TKMSP(this->flag) && (((1 << (JR_CENTRAL - 1)) & companymask) == 0))) {
 			/* 東京電車特定区間のみ */
 			ASSERT(this->jr_fare == 0); /* 特別加算区間を通っていないはずなので */
 			ASSERT(this->company_fare == 0);	// 会社線は通っていない
