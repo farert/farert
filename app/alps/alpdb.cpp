@@ -6173,53 +6173,6 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
 	}
 }
 
-//static
-//
-//  経路はJR東海管内のみか？
-//  @retval true: JR東海管内のみ / false=以外
-//  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-//
-bool FARE_INFO::CheckIsJRTokai(const vector<RouteItem> &route)
-{
-/*
-    b:発駅が境界駅ならtrue
-    f:着駅が境界駅ならtrue
-    -:true
-    n:新幹線ならtrue
-    x:false
-*/
-	vector<RouteItem>::const_iterator ite;
-
-	int32_t station_id1 = 0;
-	int32_t cid1 = 0;
-	int32_t cid_s1;
-	int32_t cid_e1;
-	int32_t cid_s2;
-	int32_t cid_e2;
-
-	/* JR東海以外 and 東海道新幹線でない場合false */
-	for (ite = route.cbegin(); ite != route.cend(); ite++) {
-        int32_t cid = RouteUtil::CompanyIdFromStation(ite->stationId);
-		if (station_id1 != 0) {
-			if (ite->lineId != DbidOf::getInstance().id_of_line(_T("東海道新幹線"))) {
-				cid_e1 = IDENT1(cid);
-				cid_s1 = IDENT1(cid1);
-				cid_e2 = IDENT2(cid);
-				cid_s2 = IDENT2(cid1);
-				if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
-					((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
-					((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
-					return false;
-				}
-            }
-        }
-		station_id1 = ite->stationId;
-        cid1 = cid;
-	}
-	TRACE("isJrTokai true\n");
-	return true;
-}
-
 
 //static
 //	並行在来線へ変換
@@ -8177,33 +8130,74 @@ bool FARE_INFO::IsIC_area(int32_t urban_id)
 //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
 //	@retval -1 Fatal error
 //
-int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
+int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
 {
 	IDENT station_id1;		/* station_id1, (station_id2=ite->stationId) */
 	IDENT station_id_0;		/* last station_id1(for Company line) */
 	vector<RouteItem>::const_iterator ite;
 	uint32_t   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+    int32_t cid1 = 0;
+	int32_t cid_s1;
+	int32_t cid_e1;
+	int32_t cid_s2;
+	int32_t cid_e2;
+	int32_t id_line_tokaido_shinkansen = DbidOf::getInstance().id_of_line(_T("東海道新幹線"));
+    bool b_jrtokaiOnly;
 	                                //
 	int32_t fare_add = 0;						// 運賃特別区間加算値
 	const vector<RouteItem>& routeList = (routeList_cooked.size() <= 1) ? routeList_raw : routeList_cooked;
 
 	this->local_only = true;
 	this->local_only_as_hokkaido = true;
-	osakakan_aggregate = last_flag;
+	osakakan_aggregate = *last_flag;
 	BIT_OFF(osakakan_aggregate, BLF_OSAKAKAN_1PASS);
+
+    bEnableTokaiStockSelect = false;
+	BIT_OFF(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
 
 	station_id1 = 0;
 
 	/* 近郊区間ではない条件となる新幹線乗車があるか */
+    //  経路はJR東海管内のみか？
+    //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
+    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
+    /*
+        b:発駅が境界駅ならtrue
+        f:着駅が境界駅ならtrue
+        -:true
+        n:新幹線ならtrue
+        x:false
+    */
+    b_jrtokaiOnly = true;
 	for (ite = routeList_raw.cbegin(); ite != routeList_raw.cend(); ite++) {
+        int32_t cid = RouteUtil::CompanyIdFromStation(ite->stationId);
 		if (station_id1 != 0) {
+            /* JR東海以外 and 東海道新幹線でない場合false */
+            if (ite->lineId != id_line_tokaido_shinkansen) {
+				cid_e1 = IDENT1(cid);
+				cid_s1 = IDENT1(cid1);
+				cid_e2 = IDENT2(cid);
+				cid_s2 = IDENT2(cid1);
+				if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
+					((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
+					((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
+					b_jrtokaiOnly = false;
+                    //break
+				}
+            }
 			if (IsBulletInUrban(ite->lineId, station_id1, ite->stationId)) {
 				this->flag |= (1 << BCBULURB); // ONの場合大都市近郊区間特例無効(新幹線乗車している)
-				break;
+				//break;
 			}
 		}
 		station_id1 = ite->stationId;
+        cid1 = cid;
 	}
+
+	TRACE("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", isNotCityterminalWoTokai(), isCityterminalWoTokai(), *last_flag & LF_TER_CITY_MASK);
+	TRACE("@@@ en=%d, aply=%d rule=%d norule=%d\n", BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_ENABLE),
+		BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED),
+		BIT_CHK(*last_flag, BLF_NO_RULE), BIT_CHK(*last_flag, BLF_RULE_EN));
 
 	station_id_0 = station_id1 = 0;
 
@@ -8278,7 +8272,7 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 							vector<int32_t> comfare_1(4, 0);	// a+++b
 
 							// if ex. 氷見-金沢 併算割引非適用
-							if (IS_CONNECT_NON_DISCOUNT_FARE(comfare.at(3)) && (((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN)) != (last_flag & ((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN))))) {
+							if (IS_CONNECT_NON_DISCOUNT_FARE(comfare.at(3)) && (((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN)) != (*last_flag & ((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN))))) {
 								/* 乗継割引なし */
 								if (!FARE_INFO::Fare_company(station_id1, ite->stationId, comfare)) {
 									ASSERT(FALSE);
@@ -8366,6 +8360,22 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG last_flag, const vector<Rout
 			}
 		}
 		station_id1 = ite->stationId;
+	}
+    if (b_jrtokaiOnly) {
+		// JR東海のみ
+
+		// [名]以外の都区市内・山手線が発着のいずれかにあるか
+
+		if (isCityterminalWoTokai()) {
+			bEnableTokaiStockSelect = true;	// JR東海株主優待券使用可
+			BIT_ON(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
+		}
+		else {
+			this->companymask = (1 << (JR_CENTRAL - 1));
+			if (BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED)) {
+				BIT_ON(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
+			}
+		}
 	}
 	return fare_add;
 }
@@ -8533,36 +8543,12 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 
 	reset();
 
-	if ((fare_add = FARE_INFO::aggregate_fare_info(*last_flag, routeList_raw, routeList_cooked)) < 0) {
+	if ((fare_add = FARE_INFO::aggregate_fare_info(last_flag, routeList_raw, routeList_cooked)) < 0) {
 		ASSERT(FALSE);
         reset();
         BIT_ON(result_flag, BRF_FATAL_ERROR);
 		return false;
         //goto err;		/* >>>>>>>>>>>>>>>>>>> */
-	}
-
-	TRACE("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", isNotCityterminalWoTokai(), isCityterminalWoTokai(), *last_flag & LF_TER_CITY_MASK);
-	TRACE("@@@ en=%d, aply=%d rule=%d norule=%d\n", BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_ENABLE),
-		BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED),
-		BIT_CHK(*last_flag, BLF_NO_RULE), BIT_CHK(*last_flag, BLF_RULE_EN));
-
-	bEnableTokaiStockSelect = false;
-	BIT_OFF(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
-	if (CheckIsJRTokai(routeList_raw)) {
-		// JR東海のみ
-
-		// [名]以外の都区市内・山手線が発着のいずれかにあるか
-
-		if (isCityterminalWoTokai()) {
-			bEnableTokaiStockSelect = true;	// JR東海株主優待券使用可
-			BIT_ON(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
-		}
-		else {
-			this->companymask = (1 << (JR_CENTRAL - 1));
-			if (BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED)) {
-				BIT_ON(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
-			}
-		}
 	}
 
 	/* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
