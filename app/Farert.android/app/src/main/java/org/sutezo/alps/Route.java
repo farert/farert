@@ -251,30 +251,29 @@ public class Route extends RouteList {
 //		  計算の過程では、ローカル変数フラグ使用
 
     private boolean chk_jctsb_b(int kind, int num) {
-        DbidOf dbid = new DbidOf();
         boolean ret = false;
 
         switch (kind) {
             case JCTSP_B_NISHIKOKURA:
 			/* 博多-新幹線-小倉*/
                 ret = (2 <= num) &&
-                        (dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.get(num - 1).lineId) &&
-                        (dbid.StationIdOf_KOKURA == route_list_raw.get(num - 1).stationId) &&
-                        (dbid.StationIdOf_HAKATA == route_list_raw.get(num - 2).stationId);
+                        (DbIdOf.INSTANCE.line("山陽新幹線") == route_list_raw.get(num - 1).lineId) &&
+                        (DbIdOf.INSTANCE.station("小倉") == route_list_raw.get(num - 1).stationId) &&
+                        (DbIdOf.INSTANCE.station("博多") == route_list_raw.get(num - 2).stationId);
                 break;
             case JCTSP_B_YOSHIZUKA:
 			/* 小倉-新幹線-博多 */
                 ret = (2 <= num) &&
-                        (dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.get(num - 1).lineId) &&
-                        (dbid.StationIdOf_HAKATA == route_list_raw.get(num - 1).stationId); //&&
-                //(0 < RouteUtil.InStation(dbid.StationIdOf_KOKURA,
-                //                      dbid.LineIdOf_SANYOSHINKANSEN,
+                        (DbIdOf.INSTANCE.line("山陽新幹線") == route_list_raw.get(num - 1).lineId) &&
+                        (DbIdOf.INSTANCE.station("博多") == route_list_raw.get(num - 1).stationId); //&&
+                //(0 < RouteUtil.InStation(DbIdOf.INSTANCE.station("小倉"),
+                //                      DbIdOf.INSTANCE.line("山陽新幹線"),
                 //                      route_list_raw.get(num - 1).stationId,
                 //                      route_list_raw.get(num - 2).stationId));
                 //return (2 <= num) &&
-                //	(dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.get(num - 1).lineId) &&
-                //	(dbid.StationIdOf_HAKATA == route_list_raw.get(num - 1).stationId) &&
-                //	(dbid.StationIdOf_KOKURA == route_list_raw.get(num - 2).stationId);
+                //	(DbIdOf.INSTANCE.line("山陽新幹線") == route_list_raw.get(num - 1).lineId) &&
+                //	(DbIdOf.INSTANCE.station("博多") == route_list_raw.get(num - 1).stationId) &&
+                //	(DbIdOf.INSTANCE.station("小倉") == route_list_raw.get(num - 2).stationId);
                 break;
             default:
                 break;
@@ -345,10 +344,10 @@ public class Route extends RouteList {
 
             if (station_id1 == station_id2) {
                 _num = 0;
-            } else if ((line_id == RouteUtil.LINE_SANYO_SINKANSEN) &&
+            } else if ((line_id == DbIdOf.INSTANCE.line("山陽新幹線")) &&
     					last_flag.notsamekokurahakatashinzai) {
-    			if (station_id1 == DbidOf.id().StationIdOf_HAKATA) {
-    				if (station_id2 == DbidOf.id().StationIdOf_KOKURA) {
+    			if (station_id1 == DbIdOf.INSTANCE.station("博多")) {
+    				if (station_id2 == DbIdOf.INSTANCE.station("小倉")) {
     					/* 山陽新幹線 博多 -> 小倉 */
     					/* 博多の西はもうなかと、小倉の東は本州で閉塞区間じゃけん */
                         routePassed.on(Route.Id2jctId(station_id1));
@@ -358,20 +357,20 @@ public class Route extends RouteList {
     				else {
     					/* 博多 -> 小倉、広島方面の場合*/
     					routePassed.on(Route.Id2jctId(station_id1)); // 博多
-    					_station_id1 = DbidOf.id().StationIdOf_KOKURA;
+    					_station_id1 = DbIdOf.INSTANCE.station("小倉");
     					_num = 1 + enum_junctions_of_line(); // 小倉->小倉～新大阪間のどれか
     					_station_id1 = station_id1; // restore(博多)
     				}
     			}
-    			else if (station_id2 == DbidOf.id().StationIdOf_HAKATA) {
+    			else if (station_id2 == DbIdOf.INSTANCE.station("博多")) {
     				/* 山陽新幹線 -> 博多 */
-    				if (station_id1 == DbidOf.id().StationIdOf_KOKURA) {
+    				if (station_id1 == DbIdOf.INSTANCE.station("小倉")) {
     					routePassed.on(Route.Id2jctId(station_id1));
     					routePassed.on(Route.Id2jctId(station_id2));
     					_num = 2;
     				}
     				else {
-    					_station_id2 = DbidOf.id().StationIdOf_KOKURA;
+    					_station_id2 = DbIdOf.INSTANCE.station("小倉");
     					_num = enum_junctions_of_line(); //新大阪-小倉間のどれかの駅～小倉
     					_station_id2 = station_id2;	// restore(博多)
     					routePassed.on(Route.Id2jctId(station_id2));
@@ -382,7 +381,7 @@ public class Route extends RouteList {
     				_num = enum_junctions_of_line();
     			}
             } else {
-                if (line_id == DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN) {
+                if (line_id == DbIdOf.INSTANCE.line("大阪環状線")) {
                     _num = enum_junctions_of_line_for_osakakan();
                 } else {
                     _num = enum_junctions_of_line();
@@ -457,7 +456,7 @@ public class Route extends RouteList {
                             "select station_id from t_lines where line_id=?1 and (lflg&((1<<31)|(1<<15)))=(1<<15) and sales_km>=(select max(sales_km) from t_lines where " +
                             "line_id=?1 and (station_id=?2 or station_id=?3)))";
 
-            RouteUtil.ASSERT (_line_id == DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN);
+            RouteUtil.ASSERT (_line_id == DbIdOf.INSTANCE.line("大阪環状線"));
 
             Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(_line_id),
                     String.valueOf(_station_id1),
@@ -488,7 +487,7 @@ public class Route extends RouteList {
             int  check_result = 0;
             RoutePass farRoutePass = new RoutePass(this);
 
-            RouteUtil.ASSERT (_line_id == DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN);
+            RouteUtil.ASSERT (_line_id == DbIdOf.INSTANCE.line("大阪環状線"));
 
             if (_source_jct_mask == null) {
 				/* removeTail() */
@@ -636,20 +635,20 @@ public class Route extends RouteList {
                     }
                     if (((0x01 & check()) == 0) &&
                             (RouteUtil.STATION_IS_JUNCTION(_start_station_id) || (_start_station_id == _station_id2) ||
-                                    (InStationOnLine(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, _start_station_id) <= 0) ||
+                                    (InStationOnLine(DbIdOf.INSTANCE.line("大阪環状線"), _start_station_id) <= 0) ||
                                     (InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2) <= 0))) {
                         // 開始駅が大阪環状線なら、開始駅が通過範囲内にあるか ?
                         // 野田 大阪環状線 大阪 東海道線 尼崎 JR東西線 京橋 大阪環状線 福島(環)
                         // の2回目の大阪環状線は近回りの内回りは大阪でひっかかるが、外回りは分岐駅のみで判断
                         // すると通ってしまうので */
-                        System.out.printf("Osaka-kan: 9(%d, %d, %d)\n", RouteUtil.STATION_IS_JUNCTION(_start_station_id) ? 1:0, InStationOnLine(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, _start_station_id), InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
+                        System.out.printf("Osaka-kan: 9(%d, %d, %d)\n", RouteUtil.STATION_IS_JUNCTION(_start_station_id) ? 1:0, InStationOnLine(DbIdOf.INSTANCE.line("大阪環状線"), _start_station_id), InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
                         System.out.printf("Osaka-kan: 9ok\n");
                         break; /* OK */
                     } else {
                         _err = true;	/* for jct_mask all zero and 0 < InStationOnOsakaKanjyou() */
                     }
                     //System.out.printf("%d %d", RouteUtil.STATION_IS_JUNCTION(_start_station_id), _start_station_id);
-                    //System.out.printf("Osaka-kan: @(%d, %d, %d)\n", check(), InStationOnLine(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, _start_station_id), InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
+                    //System.out.printf("Osaka-kan: @(%d, %d, %d)\n", check(), InStationOnLine(DbIdOf.INSTANCE.line("大阪環状線"), _start_station_id), InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
                     System.out.printf("Osaka-kan: 9x\n");
                     dir ^= 0x1;	/* 方向を逆にしてみる */
                 } /* NG */
@@ -803,7 +802,7 @@ public class Route extends RouteList {
             int n = 0;
 
             if ((dir & 0x01) == 0) {
-                n = RouteUtil.InStation(start_station_id, DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b);
+                n = RouteUtil.InStation(start_station_id, DbIdOf.INSTANCE.line("大阪環状線"), station_id_a, station_id_b);
             } else {
                 final String tsql =
                         "select count(*) from (" +
@@ -813,7 +812,7 @@ public class Route extends RouteList {
                                 "line_id=?1 and (station_id=?2 or station_id=?3))" +
                                 ") where station_id=?4";
 
-                Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN),
+                Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(DbIdOf.INSTANCE.line("大阪環状線")),
                         String.valueOf(station_id_a),
                         String.valueOf(station_id_b),
                         String.valueOf(start_station_id)});
@@ -1054,7 +1053,6 @@ public class Route extends RouteList {
         return add(line_id, stationId2, 0);
     }
     public int add(int line_id, int stationId2, int ctlflg) {
-        DbidOf dbid = new DbidOf();
         int rc;
         int i;
         int j;
@@ -1192,12 +1190,12 @@ public class Route extends RouteList {
                     // line_id : 信越線
                     // stationId2 : 宮内～長岡
                 }
-            } else if ((2 <= num) && (dbid.LineIdOf_SANYOSHINKANSEN == line_id)) { /* b#14021205 add */
+            } else if ((2 <= num) && (DbIdOf.INSTANCE.line("山陽新幹線") == line_id)) { /* b#14021205 add */
                 routePassed.off(Id2jctId(route_list_raw.get(num - 2).stationId));
                 System.out.printf("b#14021205-1\n");
             }
         } else if ((2 <= num) && RouteUtil.BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
-                (dbid.LineIdOf_SANYOSHINKANSEN == route_list_raw.get(num - 1).lineId) &&
+                (DbIdOf.INSTANCE.line("山陽新幹線") == route_list_raw.get(num - 1).lineId) &&
                 (RouteUtil.DirLine(route_list_raw.get(num - 1).lineId,
                         route_list_raw.get(num - 2).stationId,
                         route_list_raw.get(num - 1).stationId)
@@ -1210,7 +1208,7 @@ public class Route extends RouteList {
         // 水平型検知
         if (RouteUtil.BIT_CHK(route_list_raw.get(num - 1).flag, BSRJCTHORD)) {
             System.out.printf("JCT: h_detect 2 (J, B, D)\n");
-            if ((DbidOf.id().StationIdOf_HAKATA != stationId1) &&
+            if ((DbIdOf.INSTANCE.station("博多") != stationId1) &&
                     IsAbreastShinkansen(route_list_raw.get(num - 1).lineId, line_id, stationId1, stationId2)) {
                 // 	line_idは新幹線
                 //	route_list_raw.get(num - 1).lineIdは並行在来線
@@ -1337,8 +1335,8 @@ public class Route extends RouteList {
                                     route_list_raw.get(num - 1).lineId,
                                     stationId1,
                                     route_list_raw.get(num - 2).stationId)
-                            || (jctspdt.jctSpStationId == dbid.StationIdOf_NISHIKOKURA) // KC-2
-                            || (jctspdt.jctSpStationId == dbid.StationIdOf_YOSHIZUKA) // KC-2
+                            || (jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("西小倉")) // KC-2
+                            || (jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("吉塚")) // KC-2
                             || (RouteUtil.InStation(jctspdt.jctSpStationId,
                             route_list_raw.get(num - 1).lineId,
                             route_list_raw.get(num - 2).stationId,
@@ -1346,8 +1344,8 @@ public class Route extends RouteList {
                         // A-0, I, A-2
                         System.out.printf("JCT: A-0, I, A-2\n");	//***************
 
-                        if ((jctspdt.jctSpStationId == dbid.StationIdOf_NISHIKOKURA) // KC-2
-                                || (jctspdt.jctSpStationId == dbid.StationIdOf_YOSHIZUKA)) { // KC-2
+                        if ((jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("西小倉")) // KC-2
+                                || (jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("吉塚"))) { // KC-2
                             routePassOff(jctspdt.jctSpMainLineId,
                                     stationId1, jctspdt.jctSpStationId);
                             System.out.printf("JCT: KC-2\n");
@@ -1519,7 +1517,7 @@ public class Route extends RouteList {
                             System.out.printf("add_abort\n");
                             return rc;			// >>>>>>>>>>>>>>>>>>>>>
                         }
-                        if (stationId2 != dbid.StationIdOf_KOKURA) {
+                        if (stationId2 != DbIdOf.INSTANCE.station("小倉")) {
                             // b#15032701
                             jct_flg_on = RouteUtil.BIT_ON(jct_flg_on, BSRJCTHORD);	//b#14021202
                         }
@@ -1581,7 +1579,7 @@ public class Route extends RouteList {
         // Route passed check
         rc = route_pass.check();
 
-        if (line_id == dbid.LineIdOf_OOSAKAKANJYOUSEN) {
+        if (line_id == DbIdOf.INSTANCE.line("大阪環状線")) {
             if ((rc & 0x01) != 0) {
                 rc = -1;
             } else if ((rc & 0x02) != 0) {

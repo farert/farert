@@ -168,7 +168,7 @@ public class RouteList {
             i++;
             if (1 < i) {
                 result_str.append(",");
-                if (!oskk_flag && (ri.lineId == DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN)) {
+                if (!oskk_flag && (ri.lineId == DbIdOf.INSTANCE.line("大阪環状線"))) {
                     if (last_flag.osakakan_detour) {
                         result_str.append("r");
                     }
