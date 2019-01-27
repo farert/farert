@@ -949,7 +949,6 @@ public class CalcRoute extends RouteList {
     //	@retval 2: change arrived
     //
     static int CheckOfRule88j(List<RouteItem> route) {
-        DbidOf	dbid = new DbidOf();
         int lastIndex;
 		/*static*/ int chk_distance1 = 0;
 		/*static*/ int chk_distance2 = 0;
@@ -957,66 +956,66 @@ public class CalcRoute extends RouteList {
         lastIndex = (int)route.size() - 1;
 
         //if (!chk_distance1) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
-        chk_distance1 = RouteUtil.GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, dbid.StationIdOf_HIMEJI).get(0);
-        chk_distance2 = RouteUtil.GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, dbid.StationIdOf_HIMEJI).get(0);
+        chk_distance1 = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), DbIdOf.INSTANCE.station("姫路")).get(0);
+        chk_distance2 = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), DbIdOf.INSTANCE.station("姫路")).get(0);
         //}
 
         if (2 <= lastIndex) {
             // 新大阪 発 東海道線 - 山陽線
-            if ((route.get(0).stationId == dbid.StationIdOf_SHINOSAKA) &&
-                    (route.get(1).lineId == dbid.LineIdOf_TOKAIDO) &&
-                    (route.get(2).lineId == dbid.LineIdOf_SANYO) &&
-                    (chk_distance1 <= RouteUtil.GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, route.get(2).stationId).get(0))) {
+            if ((route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
+                    (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線")) &&
+                    (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
+                    (chk_distance1 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), route.get(2).stationId).get(0))) {
 
-                RouteUtil.ASSERT (route.get(1).stationId == dbid.StationIdOf_KOUBE);
+                RouteUtil.ASSERT (route.get(1).stationId == DbIdOf.INSTANCE.station("神戸"));
 				/*	新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
-                route.get(0).let(new RouteItem(0, dbid.StationIdOf_OSAKA));	// 新大阪->大阪
+                route.get(0).let(new RouteItem(0, DbIdOf.INSTANCE.station("大阪")));	// 新大阪->大阪
 
                 return 1;
             }	// 新大阪 着 山陽線 - 東海道線
-            else if ((route.get(route.size() - 1).stationId == dbid.StationIdOf_SHINOSAKA) &&
-                    (route.get(route.size() - 1).lineId == dbid.LineIdOf_TOKAIDO) &&
-                    (route.get(lastIndex - 1).lineId == dbid.LineIdOf_SANYO) &&
-                    (chk_distance1 <= RouteUtil.GetDistance(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE, route.get(lastIndex - 2).stationId).get(0))) {
+            else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
+                    (route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")) &&
+                    (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
+                    (chk_distance1 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), route.get(lastIndex - 2).stationId).get(0))) {
 
-                RouteUtil.ASSERT (route.get(lastIndex - 1).stationId == dbid.StationIdOf_KOUBE);
+                RouteUtil.ASSERT (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("神戸"));
 				/*	新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
-                route.get(route.size() - 1).let(new RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_OSAKA));	// 新大阪->大阪
+                route.get(route.size() - 1).let(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("大阪")));	// 新大阪->大阪
 
                 return 2;
             }
             // 大阪 発 新大阪 経由 山陽新幹線
-            if ((route.get(0).stationId == dbid.StationIdOf_OSAKA) &&
-                    (route.get(2).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
-                    (route.get(1).stationId == dbid.StationIdOf_SHINOSAKA) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route.get(2).stationId).get(0))) {
+            if ((route.get(0).stationId == DbIdOf.INSTANCE.station("大阪")) &&
+                    (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
+                    (route.get(1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
+                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(2).stationId).get(0))) {
 
-                RouteUtil.ASSERT (route.get(1).lineId == dbid.LineIdOf_TOKAIDO);
+                RouteUtil.ASSERT (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線"));
 
 				/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
-                route.get(1).let(new RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_KOUBE));
+                route.get(1).let(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("神戸")));
                 route.get(1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
 
                 // at(2)						// 山陽線-西明石
-                route.add(2, new RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_NISHIAKASHI));
+                route.add(2, new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("西明石")));
                 route.get(2).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
 
                 return 1;
             }	// 山陽新幹線 新大阪 経由 大阪 着
-            else if ((route.get(route.size() - 1).stationId == dbid.StationIdOf_OSAKA) &&
-                    (route.get(lastIndex - 1).stationId == dbid.StationIdOf_SHINOSAKA) &&
-                    (route.get(lastIndex - 1).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route.get(lastIndex - 2).stationId).get(0))) {
+            else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("大阪")) &&
+                    (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
+                    (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
+                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(lastIndex - 2).stationId).get(0))) {
 
-                RouteUtil.ASSERT ((route.get(route.size() - 1).lineId == dbid.LineIdOf_TOKAIDO));
+                RouteUtil.ASSERT ((route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")));
 
 				/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
-                route.get(lastIndex - 1).let(new RouteItem(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_NISHIAKASHI));	// 新大阪->西明石
+                route.get(lastIndex - 1).let(new RouteItem(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("西明石")));	// 新大阪->西明石
                 route.get(lastIndex - 1).flag |= RouteUtil.FLG_HIDE_STATION;
                 route.get(lastIndex).flag |= RouteUtil.FLG_HIDE_LINE;	// 東海道線 非表示
-                route.add(lastIndex, new RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE));
+                route.add(lastIndex, new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸")));
                 route.get(lastIndex).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
 
                 return 2;
@@ -1024,35 +1023,35 @@ public class CalcRoute extends RouteList {
         }
         if (1 <= lastIndex) {
             // 新大阪 発 山陽新幹線
-            if ((route.get(0).stationId == dbid.StationIdOf_SHINOSAKA) &&
-                    (route.get(1).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route.get(1).stationId).get(0))) {
+            if ((route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
+                    (route.get(1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
+                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(1).stationId).get(0))) {
 
 				/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
-                route.get(0).let(new RouteItem(0, dbid.StationIdOf_OSAKA));
-                route.add(1, new RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_NISHIAKASHI));
+                route.get(0).let(new RouteItem(0, DbIdOf.INSTANCE.station("大阪")));
+                route.add(1, new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("西明石")));
                 route.get(1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
 
-                route.add(1, new RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_KOUBE));
+                route.add(1, new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("神戸")));
                 route.get(1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
 
                 return 1;
 
             }	// 山陽新幹線 大阪 着
-            else if ((route.get(route.size() - 1).stationId == dbid.StationIdOf_SHINOSAKA) &&
-                    (route.get(route.size() - 1).lineId == dbid.LineIdOf_SANYOSHINKANSEN) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_SHINOSAKA, route.get(lastIndex - 1).stationId).get(0))) {
+            else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
+                    (route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
+                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(lastIndex - 1).stationId).get(0))) {
 
 				/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
-                route.get(route.size() - 1).let(new RouteItem(dbid.LineIdOf_SANYOSHINKANSEN, dbid.StationIdOf_NISHIAKASHI));	// 新大阪->西明石
+                route.get(route.size() - 1).let(new RouteItem(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("西明石")));	// 新大阪->西明石
                 route.get(route.size() - 1).flag |= RouteUtil.FLG_HIDE_STATION;
 
-                route.add(new RouteItem(dbid.LineIdOf_SANYO, dbid.StationIdOf_KOUBE));	// add 山陽線-神戸
+                route.add(new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸")));	// add 山陽線-神戸
                 route.get(route.size() - 1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
 
-                route.add(new RouteItem(dbid.LineIdOf_TOKAIDO, dbid.StationIdOf_OSAKA));	// add 東海道線-大阪
+                route.add(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("大阪")));	// add 東海道線-大阪
                 route.get(route.size() - 1).flag |= RouteUtil.FLG_HIDE_LINE;
 
                 return 2;
@@ -1225,7 +1224,7 @@ public class CalcRoute extends RouteList {
         for (RouteItem it : route) {
             if (stationId != 0) {
                 List<Integer> vkms;
-                if (it.lineId == DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN) {
+                if (it.lineId == DbIdOf.INSTANCE.line("大阪環状線")) {
                     vkms = RouteUtil.GetDistance(oskk_flag, it.lineId, stationId, it.stationId);
                     oskk_flag.setOsakaKanPass(true);
                 } else if (it.lineId == RouteUtil.ID_L_RULE70) {
@@ -1792,7 +1791,6 @@ public class CalcRoute extends RouteList {
     //	o---o なし(乗車駅または分岐駅～分岐駅または降車駅が都区市内だが間に非都区市内が含まれる例はなし。
     //
     static int CheckOfRule86(final RouteItem[] in_route_list, final LastFlag last_flag, Station exit, Station entr, int[] cityId_pair) {
-        DbidOf dbid = new DbidOf();
         int city_no_s;
         int city_no_e;
         int c;
@@ -1808,7 +1806,7 @@ public class CalcRoute extends RouteList {
         }
         city_no_s = RouteUtil.MASK_CITYNO(in_route_list[0].flag);
         // 発駅が尼崎の場合大阪市内発ではない　基153-2
-        if ((city_no_s == RouteUtil.CITYNO_OOSAKA) && (dbid.StationIdOf_AMAGASAKI == in_route_list[0].stationId)) {
+        if ((city_no_s == RouteUtil.CITYNO_OOSAKA) && (DbIdOf.INSTANCE.station("尼崎") == in_route_list[0].stationId)) {
             city_no_s = 0;
         } else if ((city_no_s != 0) && (city_no_s != RouteUtil.CITYNO_NAGOYA)) {
     		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
@@ -1821,7 +1819,7 @@ public class CalcRoute extends RouteList {
         city_no_e = RouteUtil.MASK_CITYNO(in_route_list[in_route_list.length - 1].flag);
         // 着駅が尼崎の場合大阪市内着ではない　基153-2
         if ((city_no_e == RouteUtil.CITYNO_OOSAKA) &&
-                (dbid.StationIdOf_AMAGASAKI == in_route_list[in_route_list.length - 1].stationId)) {
+                (DbIdOf.INSTANCE.station("尼崎") == in_route_list[in_route_list.length - 1].stationId)) {
             city_no_e = 0;
         }
     	else if ((city_no_e != 0) && (city_no_e != RouteUtil.CITYNO_NAGOYA)) {

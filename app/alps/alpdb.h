@@ -105,7 +105,7 @@ typedef uint32_t SPECIFICFLAG;
 #define MAX_STATION     4590
 #define MAX_LINE        223
 #define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))		/* 新幹線は将来的にも10または15以内 !! */
-#define IS_COMPANY_LINE(id)	    (DbidOf::Cline_align_id<(id))	/* 会社線id */
+#define IS_COMPANY_LINE(id)	    (DbidOf::getInstance().cline_align_id()<(id))	/* 会社線id */
 #define MAX_JCT 330
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
@@ -427,7 +427,7 @@ public:
             ((STATION_ID_AS_CITYNO < endTerminalId) &&
              (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)));
 	}
-	
+
 	// [名]か単駅のみ発着の場合
     bool isNotCityterminalWoTokai() const {
 		return ((beginTerminalId < STATION_ID_AS_CITYNO) ||
@@ -599,30 +599,17 @@ public:
 
 class DbidOf
 {
+    DbidOf();
+    map<tstring, int> retrieve_id_pool;
+    int32_t companyline_align_id;			// 会社線路線ID境界(JR線のLast Index)
 public:
-	DbidOf();
-	static int32_t StationIdOf_SHINOSAKA;		// 新大阪
-	static int32_t StationIdOf_OSAKA;    		// 大阪
-	static int32_t StationIdOf_KOUBE;     		// 神戸
-	static int32_t StationIdOf_HIMEJI;    		// 姫路
-	static int32_t StationIdOf_NISHIAKASHI; 	// 西明石
-	static int32_t LineIdOf_TOKAIDO;       		// 東海道線
-	static int32_t LineIdOf_SANYO;        		// 山陽線
-	static int32_t LineIdOf_SANYOSHINKANSEN; 	// 山陽新幹線
-	static int32_t LineIdOf_TOKAIDOSHINKANSEN; 	// 東海道新幹線
-	static int32_t LineIdOf_HAKATAMINAMISEN; 	// 博多南線
-	static int32_t LineIdOf_OOSAKAKANJYOUSEN; 	// 大阪環状線
-
-	static int32_t StationIdOf_KITASHINCHI; 	// 北新地
-	static int32_t StationIdOf_AMAGASAKI;		// 尼崎
-
-	static int32_t StationIdOf_KOKURA;  		// 小倉
-	static int32_t StationIdOf_NISHIKOKURA;  	// 西小倉
-	static int32_t StationIdOf_HAKATA;  		// 博多
-	static int32_t StationIdOf_YOSHIZUKA;	  	// 吉塚
-
-    static int32_t StationIdOf_MAIBARA;	      	// 米原
-	static int32_t Cline_align_id;				// 会社線路線ID境界(JR線のLast Index)
+    static DbidOf& getInstance() {
+        static DbidOf obj;
+        return obj;
+    }
+    int32_t cline_align_id();
+    int32_t id_of_station(tstring name);
+    int32_t id_of_line(tstring name);
 };
 
 typedef struct

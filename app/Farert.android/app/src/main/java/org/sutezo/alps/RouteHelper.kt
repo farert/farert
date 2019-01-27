@@ -670,7 +670,7 @@ fun saveParam(context: Context, key: String, values: List<String>):Unit {
 
 fun readParam(context: Context, key: String) : String {
     val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    return sharedPref.getString(key, "")
+    return sharedPref.getString(key, "")?: ""
 }
 
 fun readParams(context: Context, key: String) : List<String> {
