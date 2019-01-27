@@ -1,3 +1,25 @@
+
+大都市近郊区間
+
+
+-------<<< 運賃計算処理概要 >>>>-------
+FARE_INFO fare_info = calcFare()   // from APP Interface.
+                                   // 全ての必要な情報みんなFARE_INFOに格納されてくる
+                                   /* 86, 87, 69, 70条 114条適用かチェック */
+{
+ /* no_rule flag により以下をやるか否か */
+ rule114 = checkOfRuleSpecificCoreLine();	// route_list_raw -> route_list_cooked
+
+ fare_info.calc_fare(&last_flag, route_list_raw, route_list_cooked);
+   fare_info.aggregate_fare_info()
+   fare_info.CheckIsJRTokai() JR東海のみ?
+   adjust_km = FARE_INFO::CheckAndApplyRule43_2j(routeList_cooked);
+   fare_info.retr_fare() 運賃計算を適用。フラグ見て、fare_infoのfareにセットする
+
+ return fare_info;
+}
+-------
+
 株主優待適用条件
 
 calc_fare()
@@ -8,7 +30,7 @@ calc_fare()
 			BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED),
 			BIT_CHK(*last_flag, BLF_NO_RULE), BIT_CHK(*last_flag, BLF_RULE_EN));
 
- 品川　東海道新幹線　熱海		1 0 0  		1 0 0 0	
+ 品川　東海道新幹線　熱海		1 0 0  		1 0 0 0
  品川　東海道新幹線 名古屋  	0 1 24576 	1 0 0 1	特例適用中		提S
 							1 0 0		0 0 1 0 特例非適用		*
 							1 0 16384	1 1 0 0 株主優待適用	S*
@@ -21,7 +43,7 @@ calc_fare()
  品川 東海道新幹線　新横浜		1 0 0		1 0 0 0               *
  三島　東海道新幹線　静岡		1 0 0		0 0 0 0               *
  小田原　東海道新幹線　熱海		1 0 0		0 0 0 0               *
-上野　東北新幹線 盛岡			-------               
+上野　東北新幹線 盛岡			-------
 海尻 小海線 小海				------
 
 
@@ -47,7 +69,7 @@ S: 切り替え有効
 大高 神戸
 0 1 0   0  メニュー提案してくるのがダメ
 
-品川 四日市 
+品川 四日市
 0 1 0	1(0)NG
 0 1 1	0 OK 優待券行使
 
@@ -61,13 +83,13 @@ S: 切り替え有効
 0 0 0   0(1)NG
 
 富士 富士宮
-0 0 0	0(1)NG 
+0 0 0	0(1)NG
 
 岐阜羽島 米原
 0 0 0   0(1)NG
 
 大崎 品川 熱海
-0 1 0	0(1)NG 
+0 1 0	0(1)NG
 
 1 0 0 あり得ない？
 1 0 1　あり得ない
@@ -81,9 +103,9 @@ S: 切り替え有効
 
 
 
-city 
+city
 BLF_JRTOKAISTOCK_ENABLE
-BLF_JRTOKAISTOCK_APPLIED 
+BLF_JRTOKAISTOCK_APPLIED
 suggestion
 
 
@@ -138,12 +160,12 @@ tstring CalcRoute::showFare()
 			「提案可能フラグ」をON
 		    if UI指定の「株主適用フラグ」がON
 			  companynmaskをJR東海単独に.
-　          else 
+　          else
               nothing
-	    
+
 
   fare_info.getFareStockDiscount()
-    FARE_INFO::getStockDiscountCompany() 
+    FARE_INFO::getStockDiscountCompany()
 	    if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
 	    	return JR_EAST;
 	    }
@@ -162,7 +184,7 @@ if (BIT_CHK(last_flag, BLF_JREAST_IN_TOKAI) &&
     (fare_info.getStockDiscountCompany() != JR_CENTRAL)) {
     sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
 }
-=====> 
+=====>
   「提案可能フラグ」？　かつ ！「提案適用フラグ」
   　　株主優待選択可の表示
 

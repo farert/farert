@@ -331,7 +331,7 @@ private:
     bool bEnableTokaiStockSelect;
 
 	bool retr_fare();
-	int32_t aggregate_fare_info(SPECIFICFLAG last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
+	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
 	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
@@ -529,7 +529,6 @@ private:
 
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
-    static bool     CheckIsJRTokai(const vector<RouteItem> &route);
 }; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */

@@ -333,10 +333,17 @@ public class FARE_INFO {
     //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
     //	@retval -1 Fatal error
     //
-    private int aggregate_fare_info(final LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
+    private int aggregate_fare_info(LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
         short station_id1;		/* station_id1, (station_id2=ite.stationId) */
         short station_id_0;		/* last station_id1(for Company line) */
         LastFlag osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+        int [] cid1 = {0, 0};
+        int cid_s1;
+        int cid_e1;
+        int cid_s2;
+        int cid_e2;
+        int id_line_tokaido_shinkansen = DbIdOf.INSTANCE.line("東海道新幹線");
+        boolean b_jrtokaiOnly;
         //
         int fare_add = 0;						// 運賃特別区間加算値
         final List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
@@ -349,14 +356,44 @@ public class FARE_INFO {
         station_id1 = 0;
 
         /* 近郊区間ではない条件となる新幹線乗車があるか */
+        //  経路はJR東海管内のみか？
+        //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
+        //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
+
+        b_jrtokaiOnly = true;
+        /*
+            b:発駅が境界駅ならtrue
+            f:着駅が境界駅ならtrue
+            -:true
+            n:新幹線ならtrue
+            x:false
+        */
+        /* JR東海以外 and 東海道新幹線でない場合false */
         for (RouteItem ri : routeList_raw) {
+            int [] cid = RouteUtil.CompanyIdFromStation(ri.stationId);
             if (station_id1 != 0) {
+                if (ri.lineId != id_line_tokaido_shinkansen) {
+                    cid_e1 = cid[0];
+                    cid_s1 = cid1[0];
+                    cid_e2 = cid[1];
+                    cid_s2 = cid1[1];
+                    if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
+                            ((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
+                            ((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
+                        b_jrtokaiOnly = false;
+                        //break;
+                    }
+                }
                 if (IsBulletInUrban(ri.lineId, station_id1, ri.stationId)) {
                     this.flag |= (1 << RouteUtil.BCBULURB); // ONの場合大都市近郊区間特例無効(新幹線乗車している)
-                    break;
+                    //break;
                 }
             }
             station_id1 = ri.stationId;
+            System.arraycopy(cid, 0, cid1, 0, cid.length);
+        }
+        if (b_jrtokaiOnly) {
+            System.out.printf("isJrTokai true\n");
         }
 
         station_id_0 = station_id1 = 0;
@@ -527,6 +564,29 @@ public class FARE_INFO {
                 }
             }
             station_id1 = ri.stationId;
+        }
+        //System.out.padb kill-serverrintf("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", RouteUtil.isNotCityterminalWoTokai(), RouteUtil.isCityterminalWoTokai(), last_flag.isTerCity());
+        System.out.printf("@@@ en=%s, aply=%s rule=%s norule=%s\n", last_flag.jrtokaistock_enable,
+            last_flag.jrtokaistock_applied,
+            last_flag.no_rule, last_flag.rule_en);
+
+        bEnableTokaiStockSelect = false;
+        last_flag.jrtokaistock_enable = false;
+        if (b_jrtokaiOnly) {
+            // JR東海のみ
+
+            // [名]以外の都区市内・山手線が発着のいずれかにあるか
+
+            if (isCityterminalWoTokai()) {
+                bEnableTokaiStockSelect = true;	// JR東海株主優待券使用可
+                last_flag.jrtokaistock_enable = true;
+            }
+            else {
+                this.companymask = (1 << (JR_CENTRAL - 1));
+                if (last_flag.jrtokaistock_applied) {
+                    last_flag.jrtokaistock_enable = true;
+                }
+            }
         }
         return fare_add;
     }
@@ -701,29 +761,6 @@ public class FARE_INFO {
             return false;
             //goto err;		/* >>>>>>>>>>>>>>>>>>> */
         }
-        //System.out.padb kill-serverrintf("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", RouteUtil.isNotCityterminalWoTokai(), RouteUtil.isCityterminalWoTokai(), last_flag.isTerCity());
-    	System.out.printf("@@@ en=%s, aply=%s rule=%s norule=%s\n", last_flag.jrtokaistock_enable,
-    		last_flag.jrtokaistock_applied,
-    		last_flag.no_rule, last_flag.rule_en);
-
-    	bEnableTokaiStockSelect = false;
-    	last_flag.jrtokaistock_enable = false;
-    	if (CheckIsJRTokai(routeList_raw)) {
-    		// JR東海のみ
-
-    		// [名]以外の都区市内・山手線が発着のいずれかにあるか
-
-    		if (isCityterminalWoTokai()) {
-    			bEnableTokaiStockSelect = true;	// JR東海株主優待券使用可
-    			last_flag.jrtokaistock_enable = true;
-    		}
-    		else {
-    			this.companymask = (1 << (JR_CENTRAL - 1));
-    			if (last_flag.jrtokaistock_applied) {
-    				last_flag.jrtokaistock_enable = true;
-    			}
-    		}
-    	}
 
         /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
         if (routeList_cooked != null) {
@@ -2714,51 +2751,6 @@ public class FARE_INFO {
         } else {
             return 0;
         }
-    }
-
-    //static
-    //
-    //  経路はJR東海管内のみか？
-    //  @retval true: JR東海管内のみ / false=以外
-    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-    //
-    static boolean CheckIsJRTokai(List<RouteItem> route)
-    {
-    /*
-        b:発駅が境界駅ならtrue
-        f:着駅が境界駅ならtrue
-        -:true
-        n:新幹線ならtrue
-        x:false
-    */
-        int station_id1 = 0;
-        int [] cid1 = {0, 0};
-        int cid_s1;
-        int cid_e1;
-        int cid_s2;
-        int cid_e2;
-
-        /* JR東海以外 and 東海道新幹線でない場合false */
-        for (RouteItem ite : route) {
-            int [] cid = RouteUtil.CompanyIdFromStation(ite.stationId);
-            if (station_id1 != 0) {
-                if (ite.lineId != DbIdOf.INSTANCE.line("東海道新幹線")) {
-                    cid_e1 = cid[0];
-                    cid_s1 = cid1[0];
-                    cid_e2 = cid[1];
-                    cid_s2 = cid1[1];
-                    if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
-                            ((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
-                            ((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
-                        return false;
-                    }
-                }
-            }
-            station_id1 = ite.stationId;
-            System.arraycopy(cid, 0, cid1, 0, cid.length);
-        }
-        System.out.printf("isJrTokai true\n");
-        return true;
     }
 
 
