@@ -190,7 +190,7 @@ public class RouteUtil {
         return (((flg)&(1 << 5))!=0);	/* 山点線内／大阪環状線内 ?*/
     }
     static boolean IS_COMPANY_LINE(int d) {
-        return DbidOf.id().Cline_align_id < d;	/* 会社線id */
+        return DbIdOf.INSTANCE.company_line_align_id() < d;	/* 会社線id */
     }
 
     // 会社線か？(GetDistanceEx()[5])
@@ -880,7 +880,7 @@ public class RouteUtil {
                      if (ID_L_RULE70 != routeList[pos].lineId) {
                          result_str += "[";
                          result_str += lineName;
-                         if (DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN == routeList[pos].lineId) {
+                         if (DbIdOf.INSTANCE.line("大阪環状線") == routeList[pos].lineId) {
                              result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, last_flag);
                              last_flag.setOsakaKanPass(true);
                          }
@@ -899,7 +899,7 @@ public class RouteUtil {
                  if (!IS_FLG_HIDE_LINE(routeList[pos].flag)) {
                      result_str += "[";
                      result_str += lineName;
-                     if (DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN == routeList[pos].lineId) {
+                     if (DbIdOf.INSTANCE.line("大阪環状線") == routeList[pos].lineId) {
                          result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, last_flag);
                          last_flag.setOsakaKanPass(true);
                      }
@@ -991,7 +991,7 @@ public class RouteUtil {
              c |= last_flag.osakakan_1dir ? 0x04 : 0;
              pass = 1;
          }
-         c |= LINE_DIR.LDIR_ASC == DirLine(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, station_id1, station_id2) ? 0x08 : 0;
+         c |= LINE_DIR.LDIR_ASC == DirLine(DbIdOf.INSTANCE.line("大阪環状線"), station_id1, station_id2) ? 0x08 : 0;
          System.out.printf("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n",
                      pass,
                      StationName(station_id1),
@@ -1016,8 +1016,8 @@ public class RouteUtil {
      //	@note station_id_a, station_id_bは区別はなし
      //
      public static int DirOsakaKanLine(int station_id_a, int station_id_b) {
-         if (GetDistance(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b).get(0).intValue() <=
-                 GetDistanceOfOsakaKanjyouRvrs(DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN, station_id_a, station_id_b)) {
+         if (GetDistance(DbIdOf.INSTANCE.line("大阪環状線"), station_id_a, station_id_b).get(0).intValue() <=
+                 GetDistanceOfOsakaKanjyouRvrs(DbIdOf.INSTANCE.line("大阪環状線"), station_id_a, station_id_b)) {
              return 0;
          } else {
              return 1;
@@ -1112,7 +1112,7 @@ public class RouteUtil {
          List<Integer> d = new ArrayList<Integer>(2);
          int sales_km;
 
-         if (line_id != DbidOf.id().LineIdOf_OOSAKAKANJYOUSEN)  {
+         if (line_id != DbIdOf.INSTANCE.line("大阪環状線"))  {
              RouteUtil.ASSERT (false);
              return GetDistance(line_id, station_id1, station_id2);
          }
