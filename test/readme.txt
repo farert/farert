@@ -1,4 +1,3 @@
-unix/   ŽÀƒ\[ƒX‚ðŽg‚Á‚½Unix/WindowsƒRƒ}ƒ“ƒhƒ‰ƒCƒ“”Åƒrƒ‹ƒhŠÂ‹«
-	(ƒJƒŒƒ“ƒg‚Éƒ\[ƒXƒcƒŠ[‚©‚çŽ‚Á‚Ä‚«‚Ä‚¨‚¯‚Î‚»‚Á‚¿‚ª—Dæ‚Éƒrƒ‹ƒh•Žæ‚èž‚Ü‚ê‚éj
-exp/@@ŒŸØ—p‚ÌŽÀƒ\[ƒXƒcƒŠ[‚ÉˆË‘¶‚µ‚È‚¢Unix/WindowsƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒrƒ‹ƒhŠÂ‹«
-
+unix/   å®Ÿã‚½ãƒ¼ã‚¹ã‚’ä½¿ã£ãŸUnix/Windowsã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ç‰ˆãƒ“ãƒ«ãƒ‰ç’°å¢ƒ
+	(ã‚«ãƒ¬ãƒ³ãƒˆã«ã‚½ãƒ¼ã‚¹ãƒ„ãƒªãƒ¼ã‹ã‚‰æŒã£ã¦ãã¦ãŠã‘ã°ãã£ã¡ãŒå„ªå…ˆã«ãƒ“ãƒ«ãƒ‰ï¼†å–ã‚Šè¾¼ã¾ã‚Œã‚‹ï¼‰
+exp/ã€€ã€€æ¤œè¨¼ç”¨ã®å®Ÿã‚½ãƒ¼ã‚¹ãƒ„ãƒªãƒ¼ã«ä¾å­˜ã—ãªã„Unix/Windowsã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ“ãƒ«ãƒ‰ç’°å¢ƒ
