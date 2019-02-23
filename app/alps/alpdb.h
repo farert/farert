@@ -230,395 +230,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define MASK_ROUTE_FLAG_LFLG	0xff000000
 #define MASK_ROUTE_FLAG_SFLG	0x0000ffff
 
-class RouteItem
-{
-	RouteItem() {}
-public:
-	IDENT lineId;
-	IDENT stationId;
-	SPECIFICFLAG flag;
-//    unsigned int salesKm;        /* =0 is uninitialized. add by iPhone */
-//    unsigned int fare;           /* =0 is uninitialized. add by iPhone */
-	RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_);
-	RouteItem(IDENT lineId_, IDENT stationId_);
-
-	RouteItem(const RouteItem& item_) {
-		lineId = item_.lineId;
-		stationId = item_.stationId;
-		flag = item_.flag;
-//        salesKm = fare = 0;
-	}
-	RouteItem& operator=(const RouteItem& item_) {
-		lineId = item_.lineId;
-		stationId = item_.stationId;
-		flag = item_.flag;
-//        salesKm = fare = 0;
-		return *this;
-	}
-
-	void refresh();
-	bool operator==(const RouteItem& item_) const {
-		return lineId == item_.lineId &&
-			   stationId == item_.stationId /* &&
-			   flag == item_.flag */;
-	}
-	bool is_equal(const RouteItem& item_) const {
-		return lineId == item_.lineId &&
-			   stationId == item_.stationId /* &&
-			   flag == item_.flag */;
-	}
-};
-
-class FARE_INFO {
-    /* result_flag bit */
-    #define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
-    #define BRF_COMAPANY_END		1		/* 会社線で終了 */
-    										/* 通常OFF-OFF, ON-ONは会社線のみ */
-    #define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
-    #define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
-    #define BRF_ROUTE_EMPTY         4       /* empty */
-    #define BRF_FATAL_ERROR         5       /* fatal error in aggregate_fare_info() */
-public:
-	FARE_INFO() { reset(); FARE_INFO::tax = g_tax; }
-private:
-	int32_t sales_km;			//*** 有効日数計算用(会社線含む)
-
-	int32_t base_sales_km;		//*** JR本州3社
-	int32_t base_calc_km;		//***
-
-	int32_t kyusyu_sales_km;	//***
-	int32_t kyusyu_calc_km;		//***
-
-	int32_t hokkaido_sales_km;
-	int32_t hokkaido_calc_km;
-
-	int32_t shikoku_sales_km;
-	int32_t shikoku_calc_km;
-
-	bool local_only;				/* True: 地方交通線のみ (0 < base_sales_km時のみ有効)*/
-	bool local_only_as_hokkaido;	/* True: 北海道路線地方交通線のみ(0 < hokkaidou_sales_km時のみ有効) */
-	//幹線のみ
-	// (base_sales_km == base_calc_km) && (kyusyu_sales_km == kyusyu_calc_km) &&
-	// (hokkaido_sales_km == hokkaido_calc_km) && (shikoku_sales_km == shikoku_calc_km)
-	bool major_only;				/* 幹線のみ */
-	int32_t total_jr_sales_km;			//***
-	int32_t total_jr_calc_km;			//***
-
-	int32_t company_fare;				/* 会社線料金 */
-	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
-	int32_t company_fare_child;			/* 会社線小児運賃 */
-
-	int32_t result_flag;				/* 結果状態: BRF_xxx */
-private:
-	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
-	int32_t jr_fare;					//***
-	int32_t fare_ic;					//*** 0以外で有効
-	int32_t avail_days;					//***
-	static int32_t tax;					/* 消費税 */
-	int32_t companymask;
-
-    /* 114 */
-    int32_t rule114_fare;
-    int32_t rule114_sales_km;
-    int32_t rule114_calc_km;
-
-    bool roundTripDiscount;
-
-    tstring route_for_disp;
-    int32_t beginTerminalId;
-    int32_t endTerminalId;
-
-    bool bEnableTokaiStockSelect;
-
-	bool retr_fare();
-	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
-	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
-public:
-    void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
-        beginTerminalId = begin_station_id;
-        endTerminalId = end_station_id;
-    }
-	bool calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
-    void setRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
-	void reset() {				//***
-		companymask = 0;
-		sales_km = 0;
-
-		base_sales_km = 0;
-		base_calc_km = 0;
-
-		kyusyu_sales_km = 0;
-		kyusyu_calc_km = 0;
-
-		hokkaido_sales_km = 0;
-		hokkaido_calc_km = 0;
-
-		shikoku_sales_km = 0;
-		shikoku_calc_km = 0;
-
-		local_only = false;
-		local_only_as_hokkaido = false;
-
-		major_only = false;
-		total_jr_sales_km = 0;
-		total_jr_calc_km = 0;
-
-		company_fare = 0;
-		company_fare_ac_discount = 0;
-		company_fare_child = 0;
-		flag = 0;
-		jr_fare = 0;
-		fare_ic = 0;
-		avail_days = 0;
-
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
-
-        roundTripDiscount = false;
-
-        //beginTerminalId = 0;          /* for Use isCityterminalWoTokai() / isNotCityterminalWoTokai() */
-        //endTerminalId = 0;
-
-		result_flag = 0;
-
-        bEnableTokaiStockSelect = false;
-
-        route_for_disp.clear();
-	}
-    class FareResult {
-    public:
-        int fare;
-        bool isDiscount;
-        FareResult() { fare = 0; isDiscount = false; }
-        FareResult(int fare_, bool isDiscount_) {
-            fare = fare_;
-            isDiscount = isDiscount_;
-        }
-    };
-    void setEmpty() {
-        BIT_ON(result_flag, BRF_ROUTE_EMPTY);
-    }
-    void setInComplete() {
-        BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE);
-    }
-    bool isMultiCompanyLine() const {
-        return BIT_CHK(result_flag, BRF_COMPANY_INCORRECT);
-    }
-    bool isBeginEndCompanyLine() const {
-        return (result_flag & ((1 << BRF_COMAPANY_FIRST) | (1 << BRF_COMAPANY_END))) != 0;
-    }
-    int     resultCode() const {
-        if (BIT_CHK(result_flag, BRF_ROUTE_INCOMPLETE)) {
-            return -1;
-        } else if (BIT_CHK(result_flag, BRF_ROUTE_EMPTY)) {
-            return -2;
-        } else if (BIT_CHK(result_flag, BRF_FATAL_ERROR)) {
-            return -3;
-        } else {
-            return 0;
-        }
-    }
-
-	// [名]以外の都区市内・山手線が発着のいずれかにあり
-	bool isCityterminalWoTokai() const {
-		return ((STATION_ID_AS_CITYNO < beginTerminalId) &&
-             (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO))) ||
-            ((STATION_ID_AS_CITYNO < endTerminalId) &&
-             (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)));
-	}
-
-	// [名]か単駅のみ発着の場合
-    bool isNotCityterminalWoTokai() const {
-		return ((beginTerminalId < STATION_ID_AS_CITYNO) ||
-             (CITYNO_NAGOYA == (beginTerminalId - STATION_ID_AS_CITYNO))) &&
-            ((endTerminalId < STATION_ID_AS_CITYNO) ||
-             (CITYNO_NAGOYA == (endTerminalId - STATION_ID_AS_CITYNO)));
-	}
-    bool isEnableTokaiStockSelect() const {
-        return bEnableTokaiStockSelect;
-    }
-	FareResult 	roundTripFareWithCompanyLine() const;
-    int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
-    int32_t 	roundTripChildFareWithCompanyLine() const;
-	bool 		isUrbanArea() const;
-	int32_t 	getTotalSalesKm() const;
-	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
-	int32_t		getRule114CalcKm() const  { return rule114_calc_km;  }
-	int32_t		getJRSalesKm() const;
-	int32_t		getJRCalcKm() const;
-	int32_t		getCompanySalesKm() const;
-	int32_t		getSalesKmForHokkaido() const;
-	int32_t		getSalesKmForShikoku() const;
-	int32_t		getSalesKmForKyusyu() const;
-	int32_t		getCalcKmForHokkaido() const;
-	int32_t		getCalcKmForShikoku() const;
-	int32_t		getCalcKmForKyusyu() const;
-	int32_t		getTicketAvailDays() const;
-	int32_t		getFareForCompanyline() const;
-	int32_t		getChildFareForDisplay() const;
-	int32_t		getFareForJR() const;	/* 114判定用 */
-	int32_t 	countOfFareStockDiscount() const;
-	int32_t 	getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 = false) const;
-	int32_t     getStockDiscountCompany() const;
-	int32_t		getAcademicDiscountFare() const;
-	int32_t		roundTripAcademicFareWithCompanyLine() const;
-	int32_t		getFareForDisplay() const;
-    int32_t     getFareForDisplayPriorRule114() const;
-	int32_t		getFareForIC() const;
-    class Fare {
-    public:
-        int fare;
-        int sales_km;
-        int calc_km;
-        Fare() { fare = sales_km = calc_km = 0; }
-        Fare(int f, int sk, int ck) {
-            set(f, sk, ck);
-        }
-        void set(int f, int sk, int ck) {
-            fare = f;
-            sales_km = sk;
-            calc_km = ck;
-        }
-    };
-    Fare     getRule114() const {
-        Fare f(rule114_fare, rule114_sales_km, rule114_calc_km);
-        return f;
-    }
-    void     setRule114(const Fare fare) {
-        rule114_fare = fare.fare;
-        rule114_sales_km = fare.sales_km;
-        rule114_calc_km = fare.calc_km;
-    }
-    void     clrRule114() {
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
-    }
-    bool	isRule114() const { return 0 != rule114_fare; }
-    bool	isRoundTripDiscount() const { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
-    int32_t getBeginTerminalId() const { return beginTerminalId;}
-    int32_t getEndTerminalId() const { return endTerminalId; }
-    tstring getRoute_string() const { return route_for_disp; }
-    static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
-	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
-private:
-           int32_t      jrFare() const;
-	static int32_t	 	Fare_basic_f(int32_t km);
-	static int32_t	 	Fare_sub_f(int32_t km);
-	static int32_t	 	Fare_tokyo_f(int32_t km);
-	static int32_t	 	Fare_osaka(int32_t km);
-	static int32_t	 	Fare_yamate_f(int32_t km);
-	static int32_t	 	Fare_osakakan(int32_t km);
-	static int32_t	 	Fare_hokkaido_basic(int32_t km);
-	static int32_t	 	Fare_hokkaido_sub(int32_t km);
-	static int32_t	 	Fare_shikoku(int32_t skm, int32_t ckm);
-	static int32_t	 	Fare_kyusyu(int32_t skm, int32_t ckm);
-	static int32_t		days_ticket(int32_t sales_km);
-	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, vector<int32_t>& companyFare);
-	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
-	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
-	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
-	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
-	       vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t> GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
-
-	static bool     IsIC_area(int32_t urban_id);
-
-	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
-	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
-}; // FARE_INFO
-
-#define BCRULE70	            6		/* DB:lflag */
-
-
-/****************/
-
-// station_id & line_id
-//
-class Station
-{
-public:
-	IDENT lineId;
-	IDENT stationId;
-
-	Station(){
-		lineId = stationId = 0;
-	}
-
-	Station(IDENT lineId_, IDENT stationId_) {
-		lineId = lineId_;
-		stationId = stationId_;
-	}
-
-	Station(const Station& item_) {
-		lineId = item_.lineId;
-		stationId = item_.stationId;
-	}
-	Station& operator=(const Station& item_) {
-		lineId = item_.lineId;
-		stationId = item_.stationId;
-		return *this;
-	}
-
-	void set(int32_t lineId_, int32_t stationId_) {
-		lineId = lineId_;
-		stationId = stationId_;
-	}
-
-	void set(const RouteItem& routeItem) {
-		lineId = routeItem.lineId;
-		stationId = routeItem.stationId;
-	}
-
-	bool operator==(const Station& item_) const {
-		return lineId == item_.lineId &&
-			   stationId == item_.stationId;
-	}
-	bool is_equal(const Station& item_) const {
-		return lineId == item_.lineId &&
-			   stationId == item_.stationId;
-	}
-	bool is_equal(const RouteItem& item_) const {
-		return lineId == item_.lineId &&
-			   stationId == item_.stationId;
-	}
-};
-
-class Node
-{
-public:
-	IDENT lineId;
-	IDENT stationId1;
-	IDENT stationId2;
-	Node() { lineId = 0; stationId1 = 0; stationId2 = 0; }
-};
-
-class DbidOf
-{
-    DbidOf();
-    map<tstring, int> retrieve_id_pool;
-    int32_t companyline_align_id;			// 会社線路線ID境界(JR線のLast Index)
-public:
-    static DbidOf& getInstance() {
-        static DbidOf obj;
-        return obj;
-    }
-    int32_t cline_align_id();
-    int32_t id_of_station(tstring name);
-    int32_t id_of_line(tstring name);
-};
-
-typedef struct
-{
-	int32_t		jctSpMainLineId;		// 分岐特例:本線(b)
-	int32_t		jctSpStationId;			// 分岐特例:分岐駅(c)
-	int32_t		jctSpMainLineId2;		// 分岐特例:本線(b)
-	int32_t		jctSpStationId2;		// 分岐特例:分岐駅(c)
-} JCTSP_DATA;
-
 /* last_flag */
 #define LASTFLG_OFF				MASK(BLF_NOTSAMEKOKURAHAKATASHINZAI)   // all bit clear at removeAll()
 
@@ -725,6 +336,451 @@ typedef struct
 #define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
 
 
+class RouteItem
+{
+	RouteItem() {}
+public:
+	IDENT lineId;
+	IDENT stationId;
+	SPECIFICFLAG flag;
+//    unsigned int salesKm;        /* =0 is uninitialized. add by iPhone */
+//    unsigned int fare;           /* =0 is uninitialized. add by iPhone */
+	RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_);
+	RouteItem(IDENT lineId_, IDENT stationId_);
+
+	RouteItem(const RouteItem& item_) {
+		lineId = item_.lineId;
+		stationId = item_.stationId;
+		flag = item_.flag;
+//        salesKm = fare = 0;
+	}
+	RouteItem& operator=(const RouteItem& item_) {
+		lineId = item_.lineId;
+		stationId = item_.stationId;
+		flag = item_.flag;
+//        salesKm = fare = 0;
+		return *this;
+	}
+
+	void refresh();
+	bool operator==(const RouteItem& item_) const {
+		return lineId == item_.lineId &&
+			   stationId == item_.stationId /* &&
+			   flag == item_.flag */;
+	}
+	bool is_equal(const RouteItem& item_) const {
+		return lineId == item_.lineId &&
+			   stationId == item_.stationId /* &&
+			   flag == item_.flag */;
+	}
+};
+
+class RouteList
+{
+protected:
+//public:
+    vector<RouteItem> route_list_raw;
+    SPECIFICFLAG last_flag;	// add() - removeTail() work
+public:
+    RouteList() {}
+    RouteList(const RouteList& route_list);
+    void    assign(const RouteList& source_route, int32_t count = -1);
+    virtual ~RouteList() { route_list_raw.clear(); }
+
+    int32_t startStationId() const {
+        return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId;
+    }
+	int32_t endStationId() const {
+		return (route_list_raw.size() <= 0) ? 0 : route_list_raw.back().stationId;
+	}
+	const vector<RouteItem>& routeList() const { return route_list_raw; }
+    SPECIFICFLAG getLastFlag() const { return last_flag; }
+	SPECIFICFLAG sync_flag(const RouteList& source_route) { last_flag = source_route.getLastFlag(); return last_flag; }
+
+    bool isModified() const {
+		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
+	}
+	bool isEnd() const {
+		return BIT_CHK(last_flag, BLF_END);
+	}
+    tstring         route_script();
+
+    bool 			checkPassStation(int32_t stationId);    /* not used current */
+
+	void            setFareOption(uint16_t cooked, uint16_t availbit);
+
+	virtual uint32_t   getFareOption();
+	bool			isRoundTrip() const {
+		return !BIT_CHK(last_flag, BLF_END) || BIT_CHK(last_flag, BLF_COMPNDA);
+	}
+protected:
+};
+
+class FARE_INFO {
+    /* result_flag bit */
+    #define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
+    #define BRF_COMAPANY_END		1		/* 会社線で終了 */
+    										/* 通常OFF-OFF, ON-ONは会社線のみ */
+    #define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
+    #define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
+    #define BRF_ROUTE_EMPTY         4       /* empty */
+    #define BRF_FATAL_ERROR         5       /* fatal error in aggregate_fare_info() */
+public:
+	FARE_INFO() { reset(); FARE_INFO::tax = g_tax; }
+private:
+	int32_t sales_km;			//*** 有効日数計算用(会社線含む)
+
+	int32_t base_sales_km;		//*** JR本州3社
+	int32_t base_calc_km;		//***
+
+	int32_t kyusyu_sales_km;	//***
+	int32_t kyusyu_calc_km;		//***
+
+	int32_t hokkaido_sales_km;
+	int32_t hokkaido_calc_km;
+
+	int32_t shikoku_sales_km;
+	int32_t shikoku_calc_km;
+
+	bool local_only;				/* True: 地方交通線のみ (0 < base_sales_km時のみ有効)*/
+	bool local_only_as_hokkaido;	/* True: 北海道路線地方交通線のみ(0 < hokkaidou_sales_km時のみ有効) */
+	//幹線のみ
+	// (base_sales_km == base_calc_km) && (kyusyu_sales_km == kyusyu_calc_km) &&
+	// (hokkaido_sales_km == hokkaido_calc_km) && (shikoku_sales_km == shikoku_calc_km)
+	bool major_only;				/* 幹線のみ */
+	int32_t total_jr_sales_km;			//***
+	int32_t total_jr_calc_km;			//***
+
+	int32_t company_fare;				/* 会社線料金 */
+	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
+	int32_t company_fare_child;			/* 会社線小児運賃 */
+
+	int32_t result_flag;				/* 結果状態: BRF_xxx */
+private:
+	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
+	int32_t jr_fare;					//***
+	int32_t fare_ic;					//*** 0以外で有効
+	int32_t avail_days;					//***
+	static int32_t tax;					/* 消費税 */
+	int32_t companymask;
+
+    /* 114 */
+    int32_t rule114_fare;
+    int32_t rule114_sales_km;
+    int32_t rule114_calc_km;
+
+    bool roundTripDiscount;
+
+    tstring route_for_disp;
+    tstring calc_route_for_disp;
+    int32_t beginTerminalId;
+    int32_t endTerminalId;
+
+    int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
+
+	bool retr_fare();
+	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
+	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
+public:
+    void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
+        beginTerminalId = begin_station_id;
+        endTerminalId = end_station_id;
+    }
+	bool calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
+    bool reCalcFareForOptiomizeRoute(const RouteList& route_list, int32_t begin_id, int32_t term_id);
+    void setRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+    void clrCalcRoute() {calc_route_for_disp.clear();}
+    void setCalcRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+    void sync(const FARE_INFO& src) {
+        memcpy(this, &src, sizeof(FARE_INFO));
+    }
+	void reset() {				//***
+		companymask = 0;
+		sales_km = 0;
+
+		base_sales_km = 0;
+		base_calc_km = 0;
+
+		kyusyu_sales_km = 0;
+		kyusyu_calc_km = 0;
+
+		hokkaido_sales_km = 0;
+		hokkaido_calc_km = 0;
+
+		shikoku_sales_km = 0;
+		shikoku_calc_km = 0;
+
+		local_only = false;
+		local_only_as_hokkaido = false;
+
+		major_only = false;
+		total_jr_sales_km = 0;
+		total_jr_calc_km = 0;
+
+		company_fare = 0;
+		company_fare_ac_discount = 0;
+		company_fare_child = 0;
+		flag = 0;
+		jr_fare = 0;
+		fare_ic = 0;
+		avail_days = 0;
+
+        rule114_fare = 0;
+        rule114_sales_km = 0;
+        rule114_calc_km = 0;
+
+        roundTripDiscount = false;
+
+        //beginTerminalId = 0;          /* for Use isCityterminalWoTokai() / isNotCityterminalWoTokai() */
+        //endTerminalId = 0;
+
+		result_flag = 0;
+
+        enableTokaiStockSelect = 0;
+
+        route_for_disp.clear();
+        calc_route_for_disp.clear();
+	}
+    class FareResult {
+    public:
+        int fare;
+        bool isDiscount;
+        FareResult() { fare = 0; isDiscount = false; }
+        FareResult(int fare_, bool isDiscount_) {
+            fare = fare_;
+            isDiscount = isDiscount_;
+        }
+    };
+    void setEmpty() {
+        BIT_ON(result_flag, BRF_ROUTE_EMPTY);
+    }
+    void setInComplete() {
+        BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE);
+    }
+    bool isMultiCompanyLine() const {
+        return BIT_CHK(result_flag, BRF_COMPANY_INCORRECT);
+    }
+    bool isBeginEndCompanyLine() const {
+        return (result_flag & ((1 << BRF_COMAPANY_FIRST) | (1 << BRF_COMAPANY_END))) != 0;
+    }
+    int     resultCode() const {
+        if (BIT_CHK(result_flag, BRF_ROUTE_INCOMPLETE)) {
+            return -1;
+        } else if (BIT_CHK(result_flag, BRF_ROUTE_EMPTY)) {
+            return -2;
+        } else if (BIT_CHK(result_flag, BRF_FATAL_ERROR)) {
+            return -3;
+        } else {
+            return 0;
+        }
+    }
+	// [名]以外の都区市内・山手線が発着のいずれかにあり
+	bool isCityterminalWoTokai() const {
+		return ((STATION_ID_AS_CITYNO < beginTerminalId) &&
+             (CITYNO_NAGOYA != (beginTerminalId - STATION_ID_AS_CITYNO))) ||
+            ((STATION_ID_AS_CITYNO < endTerminalId) &&
+             (CITYNO_NAGOYA != (endTerminalId - STATION_ID_AS_CITYNO)));
+	}
+
+	// [名]か単駅のみ発着の場合
+    bool isNotCityterminalWoTokai() const {
+		return ((beginTerminalId < STATION_ID_AS_CITYNO) ||
+             (CITYNO_NAGOYA == (beginTerminalId - STATION_ID_AS_CITYNO))) &&
+            ((endTerminalId < STATION_ID_AS_CITYNO) ||
+             (CITYNO_NAGOYA == (endTerminalId - STATION_ID_AS_CITYNO)));
+	}
+    bool isEnableTokaiStockSelect() const {
+        return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
+    }
+    bool isJrTokaiOnly() const {
+        return enableTokaiStockSelect == 2; // JR東海TOICA有効
+    }
+	FareResult 	roundTripFareWithCompanyLine() const;
+    int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
+    int32_t 	roundTripChildFareWithCompanyLine() const;
+	bool 		isUrbanArea() const;
+	int32_t 	getTotalSalesKm() const;
+	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
+	int32_t		getRule114CalcKm() const  { return rule114_calc_km;  }
+	int32_t		getJRSalesKm() const;
+	int32_t		getJRCalcKm() const;
+	int32_t		getCompanySalesKm() const;
+	int32_t		getSalesKmForHokkaido() const;
+	int32_t		getSalesKmForShikoku() const;
+	int32_t		getSalesKmForKyusyu() const;
+	int32_t		getCalcKmForHokkaido() const;
+	int32_t		getCalcKmForShikoku() const;
+	int32_t		getCalcKmForKyusyu() const;
+	int32_t		getTicketAvailDays() const;
+	int32_t		getFareForCompanyline() const;
+	int32_t		getChildFareForDisplay() const;
+	int32_t		getFareForJR() const;	/* 114判定用 */
+	int32_t 	countOfFareStockDiscount() const;
+	int32_t 	getFareStockDiscount(int32_t index, tstring& title, bool applied_r114 = false) const;
+	int32_t     getStockDiscountCompany() const;
+	int32_t		getAcademicDiscountFare() const;
+	int32_t		roundTripAcademicFareWithCompanyLine() const;
+	int32_t		getFareForDisplay() const;
+    int32_t     getFareForDisplayPriorRule114() const;
+	int32_t		getFareForIC() const;
+    class Fare {
+    public:
+        int fare;
+        int sales_km;
+        int calc_km;
+        Fare() { fare = sales_km = calc_km = 0; }
+        Fare(int f, int sk, int ck) {
+            set(f, sk, ck);
+        }
+        void set(int f, int sk, int ck) {
+            fare = f;
+            sales_km = sk;
+            calc_km = ck;
+        }
+    };
+    Fare     getRule114() const {
+        Fare f(rule114_fare, rule114_sales_km, rule114_calc_km);
+        return f;
+    }
+    void     setRule114(const Fare fare) {
+        rule114_fare = fare.fare;
+        rule114_sales_km = fare.sales_km;
+        rule114_calc_km = fare.calc_km;
+    }
+    void     clrRule114() {
+        rule114_fare = 0;
+        rule114_sales_km = 0;
+        rule114_calc_km = 0;
+    }
+    bool	isRule114() const { return 0 != rule114_fare; }
+    bool	isRoundTripDiscount() const { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
+    int32_t getBeginTerminalId() const { return beginTerminalId;}
+    int32_t getEndTerminalId() const { return endTerminalId; }
+    tstring getRoute_string() const { return route_for_disp; }
+    tstring getCalcRoute_string() const { return calc_route_for_disp; }
+    static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
+	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
+    static int32_t      centerStationIdFromCityId(int32_t cityId);
+
+private:
+           int32_t      jrFare() const;
+	static int32_t	 	Fare_basic_f(int32_t km);
+	static int32_t	 	Fare_sub_f(int32_t km);
+	static int32_t	 	Fare_tokyo_f(int32_t km);
+	static int32_t	 	Fare_osaka(int32_t km);
+	static int32_t	 	Fare_yamate_f(int32_t km);
+	static int32_t	 	Fare_osakakan(int32_t km);
+	static int32_t	 	Fare_hokkaido_basic(int32_t km);
+	static int32_t	 	Fare_hokkaido_sub(int32_t km);
+	static int32_t	 	Fare_shikoku(int32_t skm, int32_t ckm);
+	static int32_t	 	Fare_kyusyu(int32_t skm, int32_t ckm);
+	static int32_t		days_ticket(int32_t sales_km);
+	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, vector<int32_t>& companyFare);
+	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
+	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
+	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
+	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
+	       vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t> GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
+
+	static bool     IsIC_area(int32_t urban_id);
+
+	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
+	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
+    static std::vector<RouteItem> IsHachikoLineHaijima(const std::vector<RouteItem>& route_list);
+}; // FARE_INFO
+
+#define BCRULE70	            6		/* DB:lflag */
+
+
+/****************/
+
+// station_id & line_id
+//
+class Station
+{
+public:
+	IDENT lineId;
+	IDENT stationId;
+
+	Station(){
+		lineId = stationId = 0;
+	}
+
+	Station(IDENT lineId_, IDENT stationId_) {
+		lineId = lineId_;
+		stationId = stationId_;
+	}
+
+	Station(const Station& item_) {
+		lineId = item_.lineId;
+		stationId = item_.stationId;
+	}
+	Station& operator=(const Station& item_) {
+		lineId = item_.lineId;
+		stationId = item_.stationId;
+		return *this;
+	}
+
+	void set(int32_t lineId_, int32_t stationId_) {
+		lineId = lineId_;
+		stationId = stationId_;
+	}
+
+	void set(const RouteItem& routeItem) {
+		lineId = routeItem.lineId;
+		stationId = routeItem.stationId;
+	}
+
+	bool operator==(const Station& item_) const {
+		return lineId == item_.lineId &&
+			   stationId == item_.stationId;
+	}
+	bool is_equal(const Station& item_) const {
+		return lineId == item_.lineId &&
+			   stationId == item_.stationId;
+	}
+	bool is_equal(const RouteItem& item_) const {
+		return lineId == item_.lineId &&
+			   stationId == item_.stationId;
+	}
+};
+
+class Node
+{
+public:
+	IDENT lineId;
+	IDENT stationId1;
+	IDENT stationId2;
+	Node() { lineId = 0; stationId1 = 0; stationId2 = 0; }
+};
+
+class DbidOf
+{
+    DbidOf();
+    map<tstring, int> retrieve_id_pool;
+    int32_t companyline_align_id;			// 会社線路線ID境界(JR線のLast Index)
+public:
+    static DbidOf& getInstance() {
+        static DbidOf obj;
+        return obj;
+    }
+    int32_t cline_align_id();
+    int32_t id_of_station(tstring name);
+    int32_t id_of_line(tstring name);
+};
+
+typedef struct
+{
+	int32_t		jctSpMainLineId;		// 分岐特例:本線(b)
+	int32_t		jctSpStationId;			// 分岐特例:分岐駅(c)
+	int32_t		jctSpMainLineId2;		// 分岐特例:本線(b)
+	int32_t		jctSpStationId2;		// 分岐特例:分岐駅(c)
+} JCTSP_DATA;
+
+
 /*   route
  *
  */
@@ -792,46 +848,6 @@ public: /* only user route */
     static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
 };
 
-class RouteList
-{
-protected:
-//public:
-    vector<RouteItem> route_list_raw;
-    SPECIFICFLAG last_flag;	// add() - removeTail() work
-public:
-    RouteList() {}
-    RouteList(const RouteList& route_list);
-    void    assign(const RouteList& source_route, int32_t count = -1);
-    virtual ~RouteList() { route_list_raw.clear(); }
-
-    int32_t startStationId() {
-        return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId;
-    }
-	int32_t endStationId() {
-		return (route_list_raw.size() <= 0) ? 0 : route_list_raw.back().stationId;
-	}
-	const vector<RouteItem>& routeList() const { return route_list_raw; }
-    SPECIFICFLAG getLastFlag() const { return last_flag; }
-	SPECIFICFLAG sync_flag(const RouteList& source_route) { last_flag = source_route.getLastFlag(); return last_flag; }
-
-    bool isModified() const {
-		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
-	}
-	bool isEnd() const {
-		return BIT_CHK(last_flag, BLF_END);
-	}
-    tstring         route_script();
-
-    bool 			checkPassStation(int32_t stationId);    /* not used current */
-
-	void            setFareOption(uint16_t cooked, uint16_t availbit);
-
-	virtual uint32_t   getFareOption();
-	bool			isRoundTrip() const {
-		return !BIT_CHK(last_flag, BLF_END) || BIT_CHK(last_flag, BLF_COMPNDA);
-	}
-protected:
-};
 
 class Route : public RouteList
 {

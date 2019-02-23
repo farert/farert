@@ -11,7 +11,7 @@
 
 
 
-#define ASSERT(cond) if (!(cond)) {  printf("\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", __FILE__, __LINE__); for (;;); }
+#define ASSERT(cond) if (!(cond)) {  fprintf(stderr, "\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", __FILE__, __LINE__); for (;;); }
 
 
 #if !defined _WINDOWS
