@@ -1134,7 +1134,8 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 	}
 	/*	‰^’À•\¦ğŒƒtƒ‰ƒOæ“¾ */
 	CalcRoute croute(m_route);
-	SetDlgItemText(IDC_EDIT_RESULT, croute.showFare().c_str());
+	CString s = croute.showFare().c_str();
+	SetDlgItemText(IDC_EDIT_RESULT, s);
 
 	opt = croute.getFareOption();
 

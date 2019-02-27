@@ -81,6 +81,7 @@
 @property (nonatomic) NSInteger rule114_calcKm;
 @property (nonatomic) BOOL isRule114Applied;
 @property (nonatomic) BOOL isArbanArea;
+@property (nonatomic) BOOL isSpecificFare;
 
 
 @property (nonatomic) NSInteger totalSalesKm;
@@ -140,6 +141,6 @@
 // 経路
 @property (nonatomic) NSString* routeList;
 
-
+@property (nonatomic) NSString* routeListForTOICA;
 
 @end

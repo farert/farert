@@ -477,6 +477,7 @@ private:
     int32_t endTerminalId;
 
     int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
+    bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
 	bool retr_fare();
 	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
@@ -488,12 +489,10 @@ public:
     }
 	bool calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
     bool reCalcFareForOptiomizeRoute(const RouteList& route_list, int32_t begin_id, int32_t term_id);
+    RouteList reRouteForToica(const RouteList& route);
     void setRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
-    void clrCalcRoute() {calc_route_for_disp.clear();}
-    void setCalcRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
-    void sync(const FARE_INFO& src) {
-        memcpy(this, &src, sizeof(FARE_INFO));
-    }
+    void clrTOICACalcRoute() {calc_route_for_disp.clear();}
+    void setTOICACalcRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	void reset() {				//***
 		companymask = 0;
 		sales_km = 0;
@@ -537,6 +536,8 @@ public:
 		result_flag = 0;
 
         enableTokaiStockSelect = 0;
+
+        applied_specic_fare = false;
 
         route_for_disp.clear();
         calc_route_for_disp.clear();
@@ -657,7 +658,8 @@ public:
     int32_t getBeginTerminalId() const { return beginTerminalId;}
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
-    tstring getCalcRoute_string() const { return calc_route_for_disp; }
+    tstring getTOICACalcRoute_string() const { return calc_route_for_disp; }
+    bool    isAppliedSpecificFare() const { return applied_specic_fare; }
     static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
     static int32_t      centerStationIdFromCityId(int32_t cityId);
