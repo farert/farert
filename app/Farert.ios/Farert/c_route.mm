@@ -770,6 +770,7 @@ int g_tax; /* main.m */
 
     /* route */
     result.routeList = [NSString stringWithUTF8String:fi.getRoute_string().c_str()];
+    result.routeListForTOICA = [NSString stringWithUTF8String:fi.getTOICACalcRoute_string().c_str()];
 
     /* stock discount (114 no applied) */
     w2 = fi.getFareStockDiscount(0, str1);
@@ -800,7 +801,7 @@ int g_tax; /* main.m */
     }
 
     result.isArbanArea = fi.isUrbanArea();
-
+    result.isSpecificFare = fi.isAppliedSpecificFare();
 
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();
