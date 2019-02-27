@@ -118,8 +118,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             return num_of_fare; /* Fare */
         case 3:
             return self.contentsForMessage.count
-        case 4, 5:            /* route list */
+        case 4:
             return 1;
+        case 5:            /* route list */
+            if (self.fareInfo.routeListForTOICA.isEmpty) {
+                return 1;
+            } else {
+                return 2;
+            }
         default:
             break;
         }
@@ -298,7 +304,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         case 5:
             /* ROUTE */
             let rcell : RouteListTableViewCell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell", for: indexPath) as! RouteListTableViewCell
-            rcell.routeString.text = self.fareInfo.routeList!
+            if (indexPath.row == 0) {
+                rcell.routeString.text = self.fareInfo.routeList!
+            } else if (indexPath.row == 1) {
+                rcell.routeString.text = "＜IC運賃計算経路＞\n\(self.fareInfo.routeListForTOICA!)"
+            }
             cell = rcell
         default:
             cell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell", for: indexPath) 
@@ -361,7 +371,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         case 1:
             return "キロ程" /* sales, calc km */
         case 2:
-            return "運賃" /* Fare */
+            if (self.fareInfo.isSpecificFare) {
+                return "運賃(特定区間運賃)"
+            } else {
+                return "運賃" /* Fare */
+            }
         case 3:
             return ""
         case 4:
@@ -562,9 +576,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("特例を適用する")
             }
         }
-        if (self.fareInfo.isArbanArea) {
-            items.append("最短経路算出")
-        }
+        //b#18122902
+        //if (self.fareInfo.isArbanArea) {
+        //    items.append("最短経路算出")
+        //}
         
         if self.fareInfo.isJRCentralStockEnable() {
             if self.fareInfo.isJRCentralStock() {
