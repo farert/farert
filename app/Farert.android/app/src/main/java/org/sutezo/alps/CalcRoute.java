@@ -8,8 +8,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import static org.sutezo.alps.RouteUtil.CEND;
+import static org.sutezo.alps.RouteUtil.CSTART;
 import static org.sutezo.alps.RouteUtil.JR_CENTRAL;
-
+import static org.sutezo.alps.farertAssert.*;
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -51,7 +53,7 @@ public class CalcRoute extends RouteList {
 
     List<RouteItem> route_list_cooked = new ArrayList<RouteItem>(0);
 
-//not used    List<RouteItem> cookedRouteList() { return route_list_cooked; }
+    List<RouteItem> cookedRouteList() { return route_list_cooked; }
 
     private CalcRoute() {
 
@@ -85,7 +87,7 @@ public class CalcRoute extends RouteList {
     //
     public String showFare() {
 //	final static int MAX_BUF = 1024;
-        StringBuffer sqlbuf = new StringBuffer();
+        StringBuffer buffer = new StringBuffer();
 
         FARE_INFO fare_info = calcFare();
         switch (fare_info.resultCode()) {
@@ -100,80 +102,91 @@ public class CalcRoute extends RouteList {
         }
 
 	    /* 発駅→着駅 */
-        sqlbuf.append(BeginOrEndStationName(fare_info.getBeginTerminalId()) +
+        buffer.append(BeginOrEndStationName(fare_info.getBeginTerminalId()) +
                 " -> " +
                 BeginOrEndStationName(fare_info.getEndTerminalId()) +
                 "\r\n経由：" +
                 fare_info.getRoute_string());
 
-        RouteUtil.ASSERT (100<=fare_info.getFareForDisplay());
+        ASSERT (100<=fare_info.getFareForDisplay());
 
         if (fare_info.isUrbanArea()) {
 
-			 /* 全経路が近郊区間内で新幹線未利用のとき最短距離で算出可能 */
-            sqlbuf.append(String.format(Locale.JAPANESE,
+            /* 全経路が近郊区間内で新幹線未利用のとき最短距離で算出可能 */
+            if (fare_info.getBeginTerminalId() != fare_info.getEndTerminalId()) {
+                if (last_flag.no_rule) {
+                    buffer.append("近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n");
+                } else {
+                    buffer.append("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n");
+                }
+            } else {
+                buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
+            }
+
+            /* 全経路が近郊区間内で新幹線未利用のとき最短距離で算出可能 */
+            buffer.append(String.format(Locale.JAPANESE,
                     "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n")
             );
-            //RouteUtil.ASSERT (fare_info.getTicketAvailDays() <= 2);
+            //ASSERT (fare_info.getTicketAvailDays() <= 2);
         } else {
-            // 東京電車特定運賃区間があるので：RouteUtil.ASSERT (fare_info.getFareForIC() == 0);
+            // 東京電車特定運賃区間があるので：ASSERT (fare_info.getFareForIC() == 0);
         }
 
         if ((0 < fare_info.getJRCalcKm()) &&
                 (fare_info.getJRSalesKm() != fare_info.getJRCalcKm())) {
-            sqlbuf.append(String.format(Locale.JAPANESE,
+            buffer.append(String.format(Locale.JAPANESE,
                     (fare_info.getCompanySalesKm() <= 0) ?
                             "営業キロ： %s km     計算キロ： %s km\r\n" :
                             "営業キロ： %s km JR線計算キロ： %s km\r\n",
                     RouteUtil.num_str_km(fare_info.getTotalSalesKm()),
                     RouteUtil.num_str_km(fare_info.getJRCalcKm())));
         } else {
-            sqlbuf.append(String.format(Locale.JAPANESE,
+            buffer.append(String.format(Locale.JAPANESE,
                     "営業キロ： %s km\r\n",
                     RouteUtil.num_str_km(fare_info.getTotalSalesKm())));
         }
 
 		/* 会社線(通過連絡運輸)あり */
         if (fare_info.getJRSalesKm() != fare_info.getTotalSalesKm()) {
-            RouteUtil.ASSERT (0 != fare_info.getCompanySalesKm());
-            sqlbuf.append(String.format(Locale.JAPANESE,
+            ASSERT (0 != fare_info.getCompanySalesKm());
+            buffer.append(String.format(Locale.JAPANESE,
                     "(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n",
                     RouteUtil.num_str_km(fare_info.getJRSalesKm()),
                     RouteUtil.num_str_km(fare_info.getCompanySalesKm())));
         } else {
-            RouteUtil.ASSERT (0 == fare_info.getCompanySalesKm());
+            ASSERT (0 == fare_info.getCompanySalesKm());
         }
 
         if (0 < fare_info.getSalesKmForHokkaido()) {
             if ((0 < fare_info.getCalcKmForHokkaido()) &&
                     (fare_info.getCalcKmForHokkaido() != fare_info.getSalesKmForHokkaido())) {
-                sqlbuf.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForHokkaido()),
                         RouteUtil.num_str_km(fare_info.getCalcKmForHokkaido())));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForHokkaido())));
             }
         }
         if (0 < fare_info.getSalesKmForShikoku()) {
             if ((0 < fare_info.getCalcKmForShikoku()) &&
                     (fare_info.getSalesKmForShikoku() != fare_info.getCalcKmForShikoku())) {
-                sqlbuf.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km 計算キロ： %s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForShikoku()),
                         RouteUtil.num_str_km(fare_info.getCalcKmForShikoku())));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km \r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForShikoku())));
             }
         }
         if (0 < fare_info.getSalesKmForKyusyu()) {
             if ((0 < fare_info.getCalcKmForKyusyu()) &&
                     (fare_info.getSalesKmForKyusyu() != fare_info.getCalcKmForKyusyu())) {
-                sqlbuf.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForKyusyu()),
                         RouteUtil.num_str_km(fare_info.getCalcKmForKyusyu())));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km \r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(fare_info.getSalesKmForKyusyu())));
             }
         }
@@ -196,52 +209,54 @@ public class CalcRoute extends RouteList {
         int fare_ic = fare_info.getFareForIC();
 
         if (fare_info.isRule114()) {
-            sqlbuf.append(String.format(Locale.JAPANESE, "規程114条適用 営業キロ： %s km 計算キロ： %s km\r\n",
+            buffer.append(String.format(Locale.JAPANESE, "規程114条適用 営業キロ： %s km 計算キロ： %s km\r\n",
                     RouteUtil.num_str_km(fare_info.getRule114SalesKm()),
                     RouteUtil.num_str_km(fare_info.getRule114CalcKm())));
         }
         String company_option;
         if (0 < company_fare) {
             company_option = String.format(Locale.JAPANESE, " (うち会社線： ¥%s)", RouteUtil.num_str_yen(company_fare));
+        } else if (fare_info.isAppliedSpecificFare()) {
+            company_option = " (特定区間運賃)";
         } else {
             company_option = "";
         }
         if (fare_ic == 0) {
             if (!isRoundTrip()) {
-                sqlbuf.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s\r\n",
                         RouteUtil.num_str_yen(normal_fare),
                         company_option));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s     往復： ¥%-5s",
+                buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s     往復： ¥%-5s",
                         RouteUtil.num_str_yen(normal_fare),
                         company_option,
                         RouteUtil.num_str_yen(fareW.fare)));
                 if (fareW.isDiscount) {
-                    sqlbuf.append("(割)\r\n");
+                    buffer.append("(割)\r\n");
                 } else {
-                    sqlbuf.append("\r\n");
+                    buffer.append("\r\n");
                 }
             }
             if (fare_info.isRule114()) {
                 if (!isRoundTrip()) {
-                    sqlbuf.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s}\r\n",
+                    buffer.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s}\r\n",
                             RouteUtil.num_str_yen(fare_info.getFareForDisplayPriorRule114())));
                 } else {
-                    sqlbuf.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n",
+                    buffer.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n",
                             RouteUtil.num_str_yen(fare_info.getFareForDisplayPriorRule114()),
                             RouteUtil.num_str_yen(fare_info.roundTripFareWithCompanyLinePriorRule114())));
                 }
             }
         } else {
-            RouteUtil.ASSERT (!fareW.isDiscount);
-            RouteUtil.ASSERT (company_fare == 0);
-            RouteUtil.ASSERT (normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
+            ASSERT (!fareW.isDiscount);
+            ASSERT (company_fare == 0);
+            ASSERT (normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
             if (!isRoundTrip()) {
-                sqlbuf.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s\r\n",
                         RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
                         company_option));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s    往復： ¥%s(¥%s)\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s    往復： ¥%s(¥%s)\r\n",
                         RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
                         company_option,
                         RouteUtil.num_str_yen(normal_fare * 2), RouteUtil.num_str_yen(fare_ic * 2)));
@@ -255,18 +270,18 @@ public class CalcRoute extends RouteList {
                 break;
             }
             if (0 < i) {
-                sqlbuf.append("\r\n");
+                buffer.append("\r\n");
             }
 
             if (fare_info.isRule114()) {
                 FARE_INFO.StockFare stockFare114 = fare_info.getFareStockDiscount(i, true);
-                sqlbuf.append(String.format(Locale.JAPANESE, "%s： ¥%s{¥%s}",
+                buffer.append(String.format(Locale.JAPANESE, "%s： ¥%s{¥%s}",
                         stockFare114.title,
                         RouteUtil.num_str_yen(stockFare114.fare +
                                 company_fare),
                         RouteUtil.num_str_yen(stockFare.fare + company_fare)));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE, "%s： ¥%s",
+                buffer.append(String.format(Locale.JAPANESE, "%s： ¥%s",
                         stockFare.title,
                         RouteUtil.num_str_yen(stockFare.fare + company_fare)));
             }
@@ -274,37 +289,42 @@ public class CalcRoute extends RouteList {
 
 		/* child fare */
         if (!isRoundTrip()) {
-            sqlbuf.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s\r\n",
+            buffer.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s\r\n",
                     RouteUtil.num_str_yen(fare_info.getChildFareForDisplay())));
         } else {
-            sqlbuf.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s 往復： ¥%-5s\r\n",
+            buffer.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s 往復： ¥%-5s\r\n",
                     RouteUtil.num_str_yen(fare_info.getChildFareForDisplay()),
                     RouteUtil.num_str_yen(fare_info.roundTripChildFareWithCompanyLine())));
         }
         normal_fare = fare_info.getAcademicDiscountFare();
         if (0 < normal_fare) {
             if (!isRoundTrip()) {
-                sqlbuf.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s\r\n",
+                buffer.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s\r\n",
                         RouteUtil.num_str_yen(normal_fare)));
             } else {
-                sqlbuf.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s 往復： ¥%-5s\r\n",
+                buffer.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s 往復： ¥%-5s\r\n",
                         RouteUtil.num_str_yen(normal_fare),
                         RouteUtil.num_str_yen(fare_info.roundTripAcademicFareWithCompanyLine())));
             }
         }
-        sqlbuf.append(String.format(Locale.JAPANESE,
+        buffer.append(String.format(Locale.JAPANESE,
                 "\r\n有効日数：%4d日\r\n",
                 fare_info.getTicketAvailDays()));
 
         if (fare_info.isMultiCompanyLine()) {
-    		sqlbuf.append("\r\n複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.");
+    		buffer.append("\r\n複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.");
     	} else if (fare_info.isBeginEndCompanyLine()) {
-    		sqlbuf.append("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
+    		buffer.append("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
     	}
         if (fare_info.isEnableTokaiStockSelect()) {
-            sqlbuf.append("\r\nJR東海株主優待券使用オプション選択可");
+            buffer.append("\r\nJR東海株主優待券使用オプション選択可");
         }
-        return sqlbuf.toString();
+        String sWork = fare_info.getTOICACalcRoute_string();
+        if (!sWork.isEmpty()) {
+            buffer.append("\r\nIC運賃計算経路: ");
+            buffer.append(sWork);
+        }
+        return buffer.toString();
     }
 
     public int getFareOption() {
@@ -323,7 +343,7 @@ public class CalcRoute extends RouteList {
     //		FARE_INFO fi = calcFare();
     //		if ((fi.resultCode() != 0) || (route_list_cooked.size() <= 0)) {
 
-    			RouteUtil.ASSERT(false);
+    			ASSERT(false);
     			return 0xc0 | rc;	// calc error
     		}
             rc = super.getFareOption();
@@ -355,9 +375,9 @@ public class CalcRoute extends RouteList {
         if (!applied_agree) {
             return route_list_raw.get(0).stationId;
         } else {
-            stid = coreAreaIDByCityId(RouteUtil.CSTART);
+            stid = coreAreaIDByCityId(CSTART);
             if (stid == 0) {
-                RouteUtil.ASSERT(route_list_cooked.get(0).stationId == route_list_raw.get(0).stationId);
+                ASSERT(route_list_cooked.get(0).stationId == route_list_raw.get(0).stationId);
                 return route_list_cooked.get(0).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
@@ -377,9 +397,9 @@ public class CalcRoute extends RouteList {
             return route_list_raw.get(route_list_raw.size() - 1).stationId;
 
         } else {
-            stid = coreAreaIDByCityId(RouteUtil.CEND);
+            stid = coreAreaIDByCityId(CEND);
             if (stid == 0) {
-                 RouteUtil.ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
+                 ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
                 return route_list_cooked.get(route_list_cooked.size() - 1).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
@@ -768,7 +788,7 @@ public class CalcRoute extends RouteList {
 
                 route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
                 route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
-                RouteUtil.ASSERT (((0x03 & chk) == 1) || ((0x03 & chk) == 2));
+                ASSERT (((0x03 & chk) == 1) || ((0x03 & chk) == 2));
                 r114 = CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
                                 (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000));
             }
@@ -826,7 +846,7 @@ public class CalcRoute extends RouteList {
     		// 仮↑
 
     		if ((route_list_cooked == null) || (route_list_cooked.size() <= 1)) {
-    RouteUtil.ASSERT(false);
+    ASSERT(false);
     			// Don't come here
     			///////////////////////////////////////////////////
     			// calc fare
@@ -834,16 +854,30 @@ public class CalcRoute extends RouteList {
                 fare_info.calc_fare(last_flag, route_list_raw, null);
 
     		} else {
-    			///////////////////////////////////////////////////
+                /*  大都市近郊区間では最短経路にしてから計算
+                　　　　aggregate_fare_infoの中でやるか？否か？
+                 　 但し八王子ー拝島間は立川経由の場合でも計算してそちらが安ければ、そちらを
+                  　JR東海区間の場合は最短経路にしてから計算し、距離が低ければ、IC運賃としてそれを表示する
+                 */
+                ///////////////////////////////////////////////////
     			// calc fare
                 fare_info.setTerminal(this.beginStationId(true),
                         this.endStationId(true));
     			if (fare_info.calc_fare(last_flag, route_list_raw, route_list_cooked)) {
+                    boolean b_more_low_cost;
+
                     fare_info.setRoute(this.route_list_cooked, last_flag);
-    				RouteUtil.ASSERT(fare_info.getBeginTerminalId() == this.beginStationId(true));
-                    RouteUtil.ASSERT(fare_info.getEndTerminalId() == this.endStationId(true));
-    			                                // rule 114 applied
-                    fare_info.setRule114(rule114);
+
+                    FARE_INFO f = fare_info.reCalcFareForOptiomizeRoute(this,
+                            coreAreaIDByCityId(CSTART),
+                            coreAreaIDByCityId(CEND));
+                    if (f != null) {
+                        last_flag.rule_en = true ;    // applied rule
+                        fare_info = f;
+                    } else {
+                        // rule 114 applied
+                        fare_info.setRule114(rule114);
+                    }
                 } else {
 				    fare_info.reset();
 			    }
@@ -857,8 +891,8 @@ public class CalcRoute extends RouteList {
     		 					  this.endStationId(false));
     		if (fare_info.calc_fare(last_flag, route_list_raw, null)) {
                 fare_info.setRoute(this.route_list_raw, last_flag);
-    			RouteUtil.ASSERT(fare_info.getBeginTerminalId() == this.beginStationId(false));
-    			RouteUtil.ASSERT(fare_info.getEndTerminalId() == this.endStationId(false));
+    			ASSERT(fare_info.getBeginTerminalId() == this.beginStationId(false));
+    			ASSERT(fare_info.getEndTerminalId() == this.endStationId(false));
             }
     	}
     	// success
@@ -884,7 +918,7 @@ public class CalcRoute extends RouteList {
 
     //  public
     //  着（終了）駅を得る
-    //  @param [in] applied_agree : True=特例適用 / false=特例非適用
+    //  @param [in] dent 都区市内 or 駅ID
     //  @return 終了駅名文字列を返す(String)
     //
     public static String BeginOrEndStationName(int ident) {
@@ -906,13 +940,13 @@ public class CalcRoute extends RouteList {
         int cityno;
 
         if (last_flag.rule_en) {
-    		if (((startEndFlg == RouteUtil.CSTART) && last_flag.ter_begin_yamate) ||
-    		    ((startEndFlg == RouteUtil.CEND)   && last_flag.ter_fin_yamate)) {
+    		if (((startEndFlg == CSTART) && last_flag.ter_begin_yamate) ||
+    		    ((startEndFlg == CEND)   && last_flag.ter_fin_yamate)) {
     			return RouteUtil.CITYNO_YAMATE;	/* 山手線内*/
-    		} else if (((startEndFlg == RouteUtil.CSTART) && last_flag.ter_begin_city) ||
-    				   ((startEndFlg == RouteUtil.CEND)   && last_flag.ter_fin_city)) {
+    		} else if (((startEndFlg == CSTART) && last_flag.ter_begin_city) ||
+    				   ((startEndFlg == CEND)   && last_flag.ter_fin_city)) {
     			int flags;
-    			if (startEndFlg == RouteUtil.CSTART) {
+    			if (startEndFlg == CSTART) {
     				flags = route_list_cooked.get(0).flag;
     			} else {
     				flags = route_list_cooked.get(route_list_cooked.size() - 1).flag;
@@ -921,10 +955,10 @@ public class CalcRoute extends RouteList {
     			if ((0 < cityno) && (cityno < RouteUtil.CITYNO_YAMATE)) {
     				return cityno;
     			} else {
-    				RouteUtil.ASSERT(false);
+    				ASSERT(false);
     			}
-    		} else if (((startEndFlg == RouteUtil.CSTART) && last_flag.ter_begin_oosaka) ||
-    				   ((startEndFlg == RouteUtil.CEND)   && last_flag.ter_fin_oosaka)) {
+    		} else if (((startEndFlg == CSTART) && last_flag.ter_begin_oosaka) ||
+    				   ((startEndFlg == CEND)   && last_flag.ter_fin_oosaka)) {
     			return RouteUtil.CITYNO_SHINOOSAKA;	/* 大阪・新大阪 */
     		}
             // else
@@ -967,7 +1001,7 @@ public class CalcRoute extends RouteList {
                     (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
                     (chk_distance1 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), route.get(2).stationId).get(0))) {
 
-                RouteUtil.ASSERT (route.get(1).stationId == DbIdOf.INSTANCE.station("神戸"));
+                ASSERT (route.get(1).stationId == DbIdOf.INSTANCE.station("神戸"));
 				/*	新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
                 route.get(0).let(new RouteItem(0, DbIdOf.INSTANCE.station("大阪")));	// 新大阪->大阪
 
@@ -978,7 +1012,7 @@ public class CalcRoute extends RouteList {
                     (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
                     (chk_distance1 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), route.get(lastIndex - 2).stationId).get(0))) {
 
-                RouteUtil.ASSERT (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("神戸"));
+                ASSERT (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("神戸"));
 				/*	新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
                 route.get(route.size() - 1).let(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("大阪")));	// 新大阪->大阪
 
@@ -990,7 +1024,7 @@ public class CalcRoute extends RouteList {
                     (route.get(1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
                     (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(2).stationId).get(0))) {
 
-                RouteUtil.ASSERT (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線"));
+                ASSERT (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線"));
 
 				/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
@@ -1008,7 +1042,7 @@ public class CalcRoute extends RouteList {
                     (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
                     (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(lastIndex - 2).stationId).get(0))) {
 
-                RouteUtil.ASSERT ((route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")));
+                ASSERT ((route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")));
 
 				/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
@@ -1126,7 +1160,7 @@ public class CalcRoute extends RouteList {
             station_id1 = route.get(1).stationId;
             station_id2 = route.get(0).stationId;
         } else {
-            RouteUtil.ASSERT (false);
+            ASSERT (false);
             return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
         // ex. 国母-横浜-長津田の場合、身延線.富士-国母 間の距離を引く
@@ -1137,8 +1171,8 @@ public class CalcRoute extends RouteList {
             return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
 
-        RouteUtil.ASSERT (0 <= aSales_km);
-        RouteUtil.ASSERT (0 < dkm);
+        ASSERT (0 <= aSales_km);
+        ASSERT (0 < dkm);
 
         if (RouteUtil.LINE_DIR.LDIR_ASC != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
 			/* 上り */
@@ -1148,7 +1182,7 @@ public class CalcRoute extends RouteList {
 		/* 富士から身延線で甲府方向に */
         station_id3 = Retreive_SpecificCoreAvailablePoint(km, aSales_km, line_id, station_id1);
 
-        //#2013.6.28:modified>> RouteUtil.ASSERT (0 < station_id3);
+        //#2013.6.28:modified>> ASSERT (0 < station_id3);
         if (station_id3 <= 0) {
             return null;
         }
@@ -1164,24 +1198,24 @@ public class CalcRoute extends RouteList {
         } else if ((kind & 2) != 0) {	/* 着駅が特定都区市内 */
             route_work.get(0).stationId = station_id3;	/* 始発駅を置き換える */
         } else {
-            RouteUtil.ASSERT (false);
+            ASSERT (false);
             return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
 
 		/* 通常運賃を得る */
         if (!fi.calc_fare(last_flag, route, route)) {
-            RouteUtil.ASSERT (false);
+            ASSERT (false);
             return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
         fare_normal = fi.getFareForJR();			/* 200(100)km以下により, 86 or 87 非適用の通常計算運賃(長津田-横浜-国母) */
 
         if (RouteDB.debug) {
-            RouteUtil.ASSERT (km_raw.sales_km == fi.getJRSalesKm());
-            RouteUtil.ASSERT (km_raw.calc_km == fi.getJRCalcKm());
+            ASSERT (km_raw.sales_km == fi.getJRSalesKm());
+            ASSERT (km_raw.calc_km == fi.getJRCalcKm());
         }
 		/* 86,87適用した最短駅の運賃を得る(上例では甲斐住吉-横浜間) */
         if (!fi.calc_fare(last_flag, route_work, route_work)) {
-            RouteUtil.ASSERT (false);
+            ASSERT (false);
             return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
         fare_applied = fi.getFareForJR();			/* より遠い駅までの都区市内発着の仮適用運賃(横浜-甲斐住吉) */
@@ -1234,7 +1268,7 @@ public class CalcRoute extends RouteList {
                 } else {
                     vkms = RouteUtil.GetDistance(it.lineId, stationId, it.stationId);
                 }
-                RouteUtil.ASSERT (vkms.size() == 2);
+                ASSERT (vkms.size() == 2);
                 total_sales_km += vkms.get(0);
                 total_calc_km  += vkms.get(1);
                 if (RouteUtil.IS_COMPANY_LINE(it.lineId)) {
@@ -1348,7 +1382,7 @@ public class CalcRoute extends RouteList {
                         Query_rule69t(in_route_list, out_route_list.get(i), dbrec[0][1], trule69list);
                         if (1 == trule69list.size()) {
                             if (0 == a69list.size()) {
-                                RouteUtil.ASSERT (false);
+                                ASSERT (false);
                             } else if (1 == a69list.size()) {
 								/* 置換処理1 */
                                 if (out_route_list.get(i).stationId == a69list.get(0)[1]) { /* a69list.station2 ? */
@@ -1411,10 +1445,10 @@ public class CalcRoute extends RouteList {
                                     }
                                 }
                             } else {
-                                RouteUtil.ASSERT (false);	/* not implement for 3 <= a69list.size() */
+                                ASSERT (false);	/* not implement for 3 <= a69list.size() */
                             }
                         } else if (0 == trule69list.size()) {
-                            // RouteUtil.ASSERT (false);
+                            // ASSERT (false);
                             // 69条 「…かつこ内の両線路にまたがる場合を除いて」の場合
                         } else if (2 == trule69list.size()) {
 							/* 置換処理2 */
@@ -1430,13 +1464,13 @@ public class CalcRoute extends RouteList {
                                 i++;
                             }
                         } else {
-                            RouteUtil.ASSERT (false);	/* 0 or <=2 then failured */
+                            ASSERT (false);	/* 0 or <=2 then failured */
                         }
                         a69list.clear();
                         change++;
                     }
                     if (continue_flag) {
-                        //RouteUtil.ASSERT ((2 <= dbrecord.size()) && ((size_t)i == (dbrecord.size() - 2)));
+                        //ASSERT ((2 <= dbrecord.size()) && ((size_t)i == (dbrecord.size() - 2)));
                         a69list.add(new Integer[] {dbrec[0][0], dbrec[1][0]});
                     }
                     else {	// continue_flag
@@ -1487,7 +1521,7 @@ public class CalcRoute extends RouteList {
                     stage = 2;					/* 2: on */ /* 外から進入した */
 									/* 路線より最外側の大環状線内(70条適用)駅を得る */
                     stationId_o70 = RetrieveOut70Station(route_item.lineId);
-                    RouteUtil.ASSERT (0 < stationId_o70);
+                    ASSERT (0 < stationId_o70);
                     ri.stationId = (short)stationId_o70;
                     flag = route_item.flag;
                 } else {	// 外のまま
@@ -1501,7 +1535,7 @@ public class CalcRoute extends RouteList {
 									/* 路線より最外側の大環状線内(70条適用)駅を得る */
                     stationId_tmp = RetrieveOut70Station(route_item.lineId);
                     if (stationId_tmp <= 0)
-                    RouteUtil.ASSERT (0 < stationId_tmp);
+                    ASSERT (0 < stationId_tmp);
                     if (stationId_tmp != stationId_o70) {
                         out_route_list.add(new RouteItem(RouteUtil.ID_L_RULE70, (short)stationId_tmp, flag));
                     }
@@ -1700,7 +1734,7 @@ public class CalcRoute extends RouteList {
             s1 = 0;
             in1 = 0;
             int leng = results.size();
-            RouteUtil.ASSERT (0 < leng);
+            ASSERT (0 < leng);
             leave: for (RouteItem route_item : in_route_list) {
                 s2 = route_item.stationId;
                 if (s1 != 0) { /* 2回目以降 ? */
@@ -1850,7 +1884,7 @@ public class CalcRoute extends RouteList {
                             c = 2;		// 戻ってきた
                             in_line.set(in_route_list[fite]);
                         } else {
-                            RouteUtil.ASSERT (c == 2);
+                            ASSERT (c == 2);
                         }
                     } else {
                         if ((c == 2) || (0 < InCityStation(city_no_s,
@@ -1860,7 +1894,7 @@ public class CalcRoute extends RouteList {
                             c = 3;		// 戻ってまた抜けた
                             break;
                         }
-                        RouteUtil.ASSERT (c == 1);
+                        ASSERT (c == 1);
                     }
                 }
                 stationId = in_route_list[fite].stationId;	// 発
@@ -1883,7 +1917,7 @@ public class CalcRoute extends RouteList {
                     // 8の字(いったん離れて戻ってきてまた離れた) (単駅(特定都区市内無効))
                     break;
                 default:
-                    RouteUtil.ASSERT (false);
+                    ASSERT (false);
                     break;
             }
         }
@@ -1905,14 +1939,14 @@ public class CalcRoute extends RouteList {
                         if (c == 1) {
                             c = 2;
                         } else {
-                            RouteUtil.ASSERT (c == 2);
+                            ASSERT (c == 2);
                         }
                     } else {
                         if ((c == 2) || (0 < InCityStation(city_no_e, lineId, stationId, in_route_list[rite].stationId))) {
                             c = 3;
                             break;
                         }
-                        RouteUtil.ASSERT (c == 1);
+                        ASSERT (c == 1);
                     }
                 }
                 stationId = in_route_list[rite].stationId;	// 発
@@ -1927,7 +1961,7 @@ public class CalcRoute extends RouteList {
                     // 8の字(いったん離れて戻ってきてまた離れた) (単駅(特定都区市内無効))
                     break;
                 default:
-                    RouteUtil.ASSERT (false);
+                    ASSERT (false);
                     break;
             }
         }
@@ -1967,7 +2001,7 @@ public class CalcRoute extends RouteList {
                         if (c == 1) {
                             c = 2;
                         } else {
-                            RouteUtil.ASSERT (c == 2);
+                            ASSERT (c == 2);
                         }
                     } else {
                         if (c == 2) {
@@ -1992,7 +2026,7 @@ public class CalcRoute extends RouteList {
                     return 0;		/* 単駅とする */
 //				break;
                 default:
-                    RouteUtil.ASSERT (false);
+                    ASSERT (false);
                     break;
             }
         }
@@ -2019,14 +2053,14 @@ public class CalcRoute extends RouteList {
             }
             switch (c) {
                 case 1:
-                    RouteUtil.ASSERT (r == 0);		/* 上で0x83で返しているはずなので */
+                    ASSERT (r == 0);		/* 上で0x83で返しているはずなので */
                     r |= 0x02;			/* 着駅山手線内 */
                     break;
                 case 3:
                     // 8の字(いったん離れて戻ってきてまた離れた) (単駅(特定都区市内無効))
                     break;				/* 単駅 */
                 default:
-                    RouteUtil.ASSERT (false);
+                    ASSERT (false);
                     break;
             }
         }
@@ -2073,10 +2107,10 @@ public class CalcRoute extends RouteList {
             } else {
                 if (exit.lineId == firstTransferStation.get(firstTransferStation.size() - 1).lineId) {
                     work_route_list.add(new RouteItem(0, firstTransferStation.get(firstTransferStation.size() - 1).stationId));	/* 発駅:都区市内代表駅 */
-                    // RouteUtil.ASSERT (firstTransferStation[firstTransferStation.length - 1].stationId == Retrieve_SpecificCoreStation(short(cityId))); (新横浜とか新神戸があるので)
+                    // ASSERT (firstTransferStation[firstTransferStation.length - 1].stationId == Retrieve_SpecificCoreStation(short(cityId))); (新横浜とか新神戸があるので)
                 } else {
                     coreStationId = Retrieve_SpecificCoreStation(cityId[0]);
-                    RouteUtil.ASSERT (0 < coreStationId);
+                    ASSERT (0 < coreStationId);
                     work_route_list.add(new RouteItem(0, coreStationId));			/* 発駅:都区市内代表駅 */
                     ListIterator rite = firstTransferStation.listIterator(firstTransferStation.size());
                     while (rite.hasPrevious()) {
@@ -2124,12 +2158,12 @@ public class CalcRoute extends RouteList {
             }
             firstTransferStation = SpecificCoreAreaFirstTransferStationBy(enter.lineId, cityId[1]);
             if (firstTransferStation.size() <= 0) {
-                // 博多南線で引っかかる RouteUtil.ASSERT (false);
+                // 博多南線で引っかかる ASSERT (false);
                 cpyRouteItems(work_route_list, out_route_list);
             } else {
                 if (enter.lineId == firstTransferStation.get(0).lineId) {
                     out_route_list.add(new RouteItem(firstTransferStation.get(0).lineId, firstTransferStation.get(0).stationId));
-                    // RouteUtil.ASSERT (firstTransferStation[0].stationId == Retrieve_SpecificCoreStation(cityId[1])); 新横浜とかあるので
+                    // ASSERT (firstTransferStation[0].stationId == Retrieve_SpecificCoreStation(cityId[1])); 新横浜とかあるので
                 } else {
                     out_route_list.add(new RouteItem(enter.lineId, firstTransferStation.get(0).stationId));
                     lineId = firstTransferStation.get(0).lineId;
@@ -2139,7 +2173,7 @@ public class CalcRoute extends RouteList {
                         lineId = firstTransferStation.get(sta_ite).lineId;
                     }
                     coreStationId = Retrieve_SpecificCoreStation(cityId[1]);
-                    RouteUtil.ASSERT (0 < coreStationId);
+                    ASSERT (0 < coreStationId);
                     out_route_list.add(new RouteItem(lineId, coreStationId));
                 }
                 System.out.printf("end station is re-route rule86/87\n");
@@ -2438,7 +2472,7 @@ public class CalcRoute extends RouteList {
                                 }
                             } else {
                                 // 大宮-新潟 / 信越線 - 0
-                                RouteUtil.ASSERT (zroute.get(zroute.size() - 1) == (0xffff & zline.get(i)));
+                                ASSERT (zroute.get(zroute.size() - 1) == (0xffff & zline.get(i)));
                             }
                         }
                     }
@@ -2500,7 +2534,7 @@ public class CalcRoute extends RouteList {
                             }
                             ++replace;
                         } else {
-                            RouteUtil.ASSERT (false);
+                            ASSERT (false);
                         }
                     } else {
                         if (0 < zroute.size()) {
@@ -2620,7 +2654,7 @@ public class CalcRoute extends RouteList {
 					last_flag = RouteUtil.BIT_OFF(last_flag, osakakan_detour);
 				}
 			} else {
-				RouteUtil.ASSERT (false);
+				ASSERT (false);
 				return;
 			}
 		}
