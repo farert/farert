@@ -8671,7 +8671,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 				if (0 < special_fare) {
 		            this->jr_fare = special_fare - this->company_fare;	/* IRいしかわ 乗継割引 */
 				}
-		} else if ((!BIT_CHK(*last_flag, BLF_NO_RULE)) && 
+		} else if ((!BIT_CHK(*last_flag, BLF_NO_RULE)) &&
                     ((this->flag & (1 << BCBULURB)) == 0) /* b#18111401: 新幹線乗車なく、 */
 		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))) {
 			special_fare = FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId, 1);
@@ -8940,15 +8940,15 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
                 // 東海道新幹線(新大阪-米原間は大都市近郊区間適用)利用は
                 // 新幹線を使用しているけど、最短経路は新幹線を使わないで算出しているので
                 // 新幹線経路が在来線経路に勝手に書き換わってしまうので。
-                // 最短経路=際安
+                // 最短経路=最安
 				*this = fare_info_shorts;
                 setRoute(shortRoute.routeList(), short_last_flag);
             } else {
                 jr_fare = fare_info_shorts.jr_fare;
             }
             b_change_route = true;
-        } else if (decision == 2/*立川経由が際安*/) {
-            // 立川経由が際安
+        } else if (decision == 2/*立川経由が最安*/) {
+            // 立川経由が最安
             if (getStockDiscountCompany() != JR_CENTRAL) {
                 *this = fare_info_via_tachikawa;
                 setRoute(route_via_tachikawa, short_last_flag);

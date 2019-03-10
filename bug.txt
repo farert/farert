@@ -1,3 +1,12 @@
+FolderRecyclerAdapter
+　onBindViewHolder
+　　OnItemSelected()に定期的にきてしまう
+
+iOS 結果共有で特例運賃が出力されない(IC運賃経路は大丈夫だと思う)
+androi も。
+
+--
+special_fare 東京、名京阪神以外にもIRいしかわとかもあるけど、そっちは、特定区間運賃の表示はだしていない、
 
 ----
 2019.3.3

@@ -125,6 +125,7 @@
     　
     <string name="result_comapanyline">会社線</string>
     <string name="result_fare">運賃</string>
+    <string name="result_specific_fare">運賃(特定区間運賃)</string>
     <string name="result_normalfare">普通</string>
     <string name="result_companyfare">うち会社線</string>
     <string name="result_farevalue">¥84,558-</string>
@@ -179,6 +180,8 @@
     <string name="result_yen">¥%1$s-</string>
 
     <string name="result_mailtitle_faredetail">運賃詳細</string>
+
+    <string name="result_toica_calc_route">＜IC運賃計算経路＞</string>
 
     <!-- Archive Route -->
     <string name="menu_item_save">保存</string>

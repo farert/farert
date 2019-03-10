@@ -1,5 +1,7 @@
 package org.sutezo.alps
 
+import org.sutezo.alps.farertAssert.*
+
 class FareInfo {
     // 株主割引
     var fareForStockDiscounts : List<Triple<String, Int, Int>>? = null
@@ -26,6 +28,7 @@ class FareInfo {
     var rule114_calcKm : Int = 0
     var isRule114Applied : Boolean = false
     var isArbanArea : Boolean = false
+    var isSpecificFare : Boolean = false
 
     var totalSalesKm : Int = 0
     var jrCalcKm : Int = 0
@@ -76,7 +79,7 @@ class FareInfo {
 
 // 経路
     var routeList : String = ""
-
+    var routeListForTOICA : String = "" // TOICA IC運賃計算経路
 
 
 
