@@ -825,6 +825,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // 普通運賃
     result.fare = fi.getFareForDisplay();
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
+    result.isSpecificFare = fi.applied_specic_fare
 
     // 往復
     val fareResult = fi.roundTripFareWithCompanyLine()
@@ -850,6 +851,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
     }
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
+
+    result.routeListForTOICA = fi.calc_route_for_disp
 
     return result;
 }

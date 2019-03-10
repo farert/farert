@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.sutezo.farert.FarertApp;
 
+import static org.sutezo.alps.farertAssert.*;
+
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -79,12 +81,12 @@ public class RouteDB {
     }
 
     private RouteDB() {
-        RouteUtil.ASSERT(false, "bug");
+        ASSERT(false, "bug");
     }
 
     public static RouteDB getInstance() {
         if (obj == null) {
-            RouteUtil.ASSERT(false, "bug");
+            ASSERT(false, "bug");
         }
         return obj;
     }
@@ -99,7 +101,7 @@ public class RouteDB {
 
     static SQLiteDatabase db() {
         if (_db == null) {
-            RouteUtil.ASSERT(false, "Must be call createFactory(SQLiteDatabase)");
+            ASSERT(false, "Must be call createFactory(SQLiteDatabase)");
         }
         return obj._db;
     }

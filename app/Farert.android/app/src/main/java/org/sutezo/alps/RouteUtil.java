@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import static org.sutezo.alps.farertAssert.ASSERT;
+
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -1113,7 +1115,7 @@ public class RouteUtil {
          int sales_km;
 
          if (line_id != DbIdOf.INSTANCE.line("大阪環状線"))  {
-             RouteUtil.ASSERT (false);
+             ASSERT (false);
              return GetDistance(line_id, station_id1, station_id2);
          }
 
@@ -1168,13 +1170,13 @@ public class RouteUtil {
          try {
              if (dbo.moveToNext()) {
                  km = dbo.getInt(0);
-                 RouteUtil.ASSERT (0 < km);
+                 ASSERT (0 < km);
                  return km;
              }
          } finally {
              dbo.close();
          }
-         RouteUtil.ASSERT (false);
+         ASSERT (false);
          return km;
      }
 
@@ -1238,7 +1240,7 @@ public class RouteUtil {
          List<Integer> hzl = EnumHZLine(line_id, station_id, station_id2);
 
          if (hzl.size() < 3) {
-             //RouteUtil.ASSERT (false);
+             //ASSERT (false);
              return 0;
          }
          for (i = 0; i < (int)hzl.size(); i++) {
@@ -1327,7 +1329,7 @@ public class RouteUtil {
                  String.valueOf(station_id),
                  String.valueOf(station_id2)});
 
-         RouteUtil.ASSERT (IS_SHINKANSEN_LINE(line_id));
+         ASSERT (IS_SHINKANSEN_LINE(line_id));
 
          try {
              while (dbo.moveToNext()) {
@@ -1528,16 +1530,5 @@ public class RouteUtil {
              dbo.close();
          }
          return rc;
-     }
-
-     static void ASSERT(boolean condition) {
-         if (!condition) {
-             throw new AssertionError("ASSERT Error occured!!!!!!");
-         }
-     }
-     static void ASSERT(boolean condition, String message) {
-         if (!condition) {
-             throw new AssertionError("RouteUtil.ASSERT !!!!!!" + message);
-         }
      }
 }

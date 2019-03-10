@@ -153,6 +153,8 @@ class ResultViewActivity : AppCompatActivity() {
         return "${resources.getString(R.string.result_mailtitle_faredetail)}(${terminalName(fi.beginStationId)} - ${terminalName(fi.endStationId)})"
     }
 
+    // Result for Export text.
+    //
     private fun resultText(subject : String, ds : CalcRoute, fi: FareInfo) : String {
 
         var body = "$subject\n\n${ds.showFare()}\n"
@@ -287,6 +289,11 @@ class ResultViewActivity : AppCompatActivity() {
 
         //------------------------- 運賃 -----------------------------------
 
+        if (fi.isSpecificFare) {
+            text_title_fare.text = getText(R.string.result_specific_fare)
+        } else {
+            text_title_fare.text = getText(R.string.result_fare)
+        }
         /* 1行目 普通＋会社 or 普通 + IC */
         /* 2行目 (往復）同上 */
         var strFareOpt = resources.getString(if (fi.isRoundtripDiscount) R.string.result_value_discount else R.string.blank)
@@ -446,7 +453,12 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         /* ROUTE */
-        text_via.text = fi.routeList
+        var s = fi.routeList
+        if (!fi.routeListForTOICA.isNullOrEmpty()) {
+            s += "\n${resources.getString(R.string.result_toica_calc_route)}\n${fi.routeListForTOICA}"
+        }
+        text_via.text = s
+
     }
 
     private fun setRouteChange(ds: Route) {

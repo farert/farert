@@ -1,4 +1,4 @@
-package org.sutezo.farert;
+package org.sutezo.alps;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,7 +15,7 @@ public class NullPrintStream extends PrintStream {
 
         @Override
         public void write(int b) {
-            // do nothing
+
         }
 
         @Override

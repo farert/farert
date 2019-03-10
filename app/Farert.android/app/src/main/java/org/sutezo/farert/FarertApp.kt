@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import org.json.JSONArray
+import org.sutezo.alps.NullPrintStream
 import org.sutezo.alps.Route
 import org.sutezo.alps.RouteDB
 import org.sutezo.alps.readParam

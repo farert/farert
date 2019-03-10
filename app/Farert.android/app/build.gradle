@@ -5,22 +5,47 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
+    signingConfigs {
+        config {
+            storeFile file('/Users/ntake/farertkeystorepass')
+            storePassword 'hj87IJk'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "org.sutezo.farert"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 4
-        versionName "0.0.4"
+        versionCode 5
+        versionName "19.03"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        release {
+        }
     }
-    buildToolsVersion '28.0.3'
+    flavorDimensions "default"
+    productFlavors {
+        production {
+        }
+        prototype {
+        }
+    }
+    variantFilter { variant ->
+        if ((variant.buildType.name == "debug" && variant.flavors*.name.contains("production")) || (variant.buildType.name == "release" && variant.flavors*.name.contains("prototype"))) {
+            setIgnore(true)
+        }
+    }
+    lintOptions {
+        checkReleaseBuilds false
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
+    }
 }
 
 dependencies {

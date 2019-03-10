@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import static org.sutezo.alps.farertAssert.ASSERT;
+
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -198,8 +200,8 @@ public class RouteList {
                     return true;
                 }
             } else {
-                RouteUtil.ASSERT (route_item == route_list_raw.get(0));
-                RouteUtil.ASSERT (startStationId() == route_item.stationId);
+                ASSERT (route_item == route_list_raw.get(0));
+                ASSERT (startStationId() == route_item.stationId);
             }
             stationIdFrom = route_item.stationId;
         }
@@ -241,7 +243,7 @@ public class RouteList {
                     last_flag.meihancityflag = false;	/* 発駅=単駅、着駅市内駅 */
                 }
             } else {
-                // RouteUtil.ASSERT (false);
+                // ASSERT (false);
                 return;
             }
         }
