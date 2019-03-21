@@ -23,8 +23,9 @@ else:
   print("Usage:" + sys.argv[0] + " dbname.db")
   exit(-1)
 
-# database
+# database(引数指定したDBファイルがjrdbで読む環境変数より優先)
 jrdb.con = sqlite3.connect(dbfn)  # , isolation_level=None)
+
 
 n = 0
 items = []
@@ -68,7 +69,7 @@ create table t_node (
 	neer_id	integer not null references t_jct(id),
 	cost	integer not null,
 	line_id	integer not null references t_line(rowid),
-	
+
 	primary key (jct_id, neer_id, line_id)
 	);
 """)
@@ -76,7 +77,7 @@ create table t_node (
 items = list(map(lambda x:[x[2], x[3], x[1], x[0]], items2))
 items.sort()
 for item in items:
-	print(jrdb.station_from_jctid(item[0]) + "\t" + 
+	print(jrdb.station_from_jctid(item[0]) + "\t" +
 		  jrdb.station_from_jctid(item[1]) + "\t" +
 		  str(item[2]) + "\t" + jrdb.line_name(item[3]))
 

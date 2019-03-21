@@ -41,14 +41,15 @@ class ResultViewActivity : AppCompatActivity() {
         // back arrow button(戻るボタン有効)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        val opts = Option.values()
+
         if (savedInstanceState != null) {
-            opt_stocktokai = savedInstanceState.get("stocktokai") as Option
-            opt_osakakan = savedInstanceState.get("osakakan") as Option
-            opt_neerest = savedInstanceState.get("neerest") as Option
-            opt_sperule = savedInstanceState.get("sperule") as Option
-            opt_meihancity = savedInstanceState.get("meihancity") as Option
+            opt_stocktokai = opts[savedInstanceState.getInt("stocktokai")]
+            opt_osakakan = opts[savedInstanceState.getInt("osakakan")]
+            opt_neerest = opts[savedInstanceState.getInt("neerest")]
+            opt_sperule = opts[savedInstanceState.getInt("sperule")]
+            opt_meihancity = opts[savedInstanceState.getInt("meihancity")]
         } else {
-            val opts = Option.values()
             opt_stocktokai =  opts[intent.getIntExtra("stocktokai", Option.N_A.ordinal)]
             opt_osakakan = opts[intent.getIntExtra("osakakan", Option.N_A.ordinal)]
             opt_neerest = opts[intent.getIntExtra("neerest", Option.N_A.ordinal)]

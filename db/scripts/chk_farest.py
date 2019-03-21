@@ -5,9 +5,12 @@
 farest table ref.
 2駅間にfarest内にマッチする駅があるか
 
+2019.Mar. This program doesn't work.
+
 """
 import sys
 import os
+import sqlite3
 import jrdb
 import time
 
@@ -61,8 +64,8 @@ select station_id1, station_id2, fare from t_farest f where kind=0
 
 """
 
-for inf in jrdb.sqlexec(sql2, [ jrdb.line_id(sys.argv[1]), 
-							   jrdb.station_id(sys.argv[2]), 
+for inf in jrdb.sqlexec(sql2, [ jrdb.line_id(sys.argv[1]),
+							   jrdb.station_id(sys.argv[2]),
 							   jrdb.station_id(sys.argv[3])]):
 		print(jrdb.station_name(inf[0]), jrdb.station_name(inf[1]), inf[2])
 
@@ -90,4 +93,3 @@ insert into ta values(109, 105, 220);
 select * from ta left joi
 
 """
-
