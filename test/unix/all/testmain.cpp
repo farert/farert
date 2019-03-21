@@ -10,13 +10,15 @@ char tbuf[1024];
 char tbuf2[64];
 const TCHAR* tr[] = { tbuf,  _T("") };
 const TCHAR* tr_a[] = { tbuf,  tbuf2, _T("") };
+// _T("../../../db/jrdb2018.db")
 
 int main(int argc, char** argv)
 {
 #if defined _WINDOWS
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
-	if (! DBS::getInstance()->open(_T("../../../db/jrdb2018.db"))) {
+	char* dbpath = getenv("farertDB");
+	if (! DBS::getInstance()->open(dbpath)) {
 		printf("Can't db open\n");
 		return -1;
 	}

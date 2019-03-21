@@ -7,6 +7,8 @@ apply plugin: 'kotlin-android-extensions'
 android {
     signingConfigs {
         config {
+            keyAlias 'farert.sutezo.org'
+            keyPassword 'hj87IJk'
             storeFile file('/Users/ntake/farertkeystorepass')
             storePassword 'hj87IJk'
         }
@@ -23,9 +25,13 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable true
         }
         release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+            debuggable true
         }
     }
     flavorDimensions "default"

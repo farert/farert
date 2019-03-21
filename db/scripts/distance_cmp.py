@@ -20,13 +20,13 @@ select l1.sales_km - l2.sales_km, l1.calc_km - l2.calc_km,
  left join t_lines l2
  where l1.line_id=?1
  and l2.line_id=?1
- and l1.sales_km>l2.sales_km 
- and ((l1.station_id=?2 and l2.station_id=?3) 
+ and l1.sales_km>l2.sales_km
+ and ((l1.station_id=?2 and l2.station_id=?3)
  or (l1.station_id=?3 and l2.station_id=?2));
 """
 
 sql2 = """
-select max(sales_km)-min(sales_km), max(calc_km)-min(calc_km), 
+select max(sales_km)-min(sales_km), max(calc_km)-min(calc_km),
  case when sum(calc_km)=0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end
  from t_lines
  where line_id=?1
@@ -35,18 +35,18 @@ select max(sales_km)-min(sales_km), max(calc_km)-min(calc_km),
 """
 
 # result list
-for inf in jrdb.sqlexec(sql1, [ jrdb.line_id(sys.argv[1]), 
+for inf in jrdb.sqlexec(sql1, [ jrdb.line_id(sys.argv[1]),
 							   jrdb.station_id(sys.argv[2]), jrdb.station_id(sys.argv[3]) ] ):
 	print(inf[0], inf[1], inf[2])
 
-for inf in jrdb.sqlexec(sql2, [ jrdb.line_id(sys.argv[1]), 
+for inf in jrdb.sqlexec(sql2, [ jrdb.line_id(sys.argv[1]),
 							   jrdb.station_id(sys.argv[2]), jrdb.station_id(sys.argv[3]) ] ):
 	print(inf[0], inf[1], inf[2])
 
 
 t0 = time.time()
 for n in range(1000):
-	for inf in jrdb.sqlexec(sql1, [ jrdb.line_id(sys.argv[1]), 
+	for inf in jrdb.sqlexec(sql1, [ jrdb.line_id(sys.argv[1]),
 							   jrdb.station_id(sys.argv[2]), jrdb.station_id(sys.argv[3]) ] ):
 		pass
 
@@ -54,7 +54,7 @@ print("lapse time", time.time() - t0)
 
 t0 = time.time()
 for n in range(1000):
-	for inf in jrdb.sqlexec(sql2, [ jrdb.line_id(sys.argv[1]), 
+	for inf in jrdb.sqlexec(sql2, [ jrdb.line_id(sys.argv[1]),
 							   jrdb.station_id(sys.argv[2]), jrdb.station_id(sys.argv[3]) ] ):
 		pass
 
