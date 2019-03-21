@@ -38,5 +38,10 @@ nmake /f Makefile.nmk
   　./test 新山口 神戸
   　./test 新山口 山陽線 神戸 横浜
 
+* データベースは、環境変数 farertDB にパスを指定する。
+   例)
+    $ export farertDB=/Users/ntake/exports/devel/farert.repos/db/jrdb2018.db     
 
+   (../../db/scripts/jrdb.py と同様)
+　　
  --
