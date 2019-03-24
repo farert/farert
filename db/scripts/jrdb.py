@@ -4,18 +4,22 @@
 import sqlite3
 import os
 
-
 # database
 #con = sqlite3.connect('jr.db')  # , isolation_level=None)
-dbpath = os.environ['farertDB']
+try:
+	dbpath = os.environ['farertDB']
+except:
+	dbpath = ''
+
 con = sqlite3.connect(dbpath)  # , isolation_level=None)
-con.text_factory = '日本語'   # MAX-OSでUTF-８日本語を使用する場合必要
+
+#con.text_factory = '日本語'   # MAX-OSでUTF-８日本語を使用する場合必要(python2系では必要だがPython3系では日本語文字列返すクエリで"TypeError: 'str' object is not callable"になる)
 
 # sql
 #
-def sqlexec(sql, param):
+def sqlexec(sqlstr, param):
   cur = con.cursor()
-  cur.execute(sql, param)
+  cur.execute(sqlstr, param)
   return list(cur)
 
 
@@ -34,10 +38,10 @@ def is_shinkansen(line_id):
 #	line_idは新幹線であること
 #	lineIdは並行在来線、0は並行在来線はないことを示す
 #
-def getHZline(line_id, station_id, station_id2 = -1):
+def getHZline(line_id, id_station, station_id2 = -1):
 	cur = con.cursor()
 	try:
-	 cur.execute("select line_id from t_hzline where rowid=(select (lflg>>19)&15 from t_lines where line_id=? and station_id=?)", [line_id, station_id])
+	 cur.execute("select line_id from t_hzline where rowid=(select (lflg>>19)&15 from t_lines where line_id=? and station_id=?)", [line_id, id_station])
 	 lid = cur.fetchone()[0]
 	 if 0 < lid and lid < 32768:
 	  return lid
@@ -51,7 +55,7 @@ def getHZline(line_id, station_id, station_id2 = -1):
 		else
 		sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2)
 		end
-	) limit(1);""", [line_id, station_id, station_id2]);
+	) limit(1);""", [line_id, id_station, station_id2]);
 	 return cur.fetchone()[0]
 	except:
 	 return 0;
@@ -62,14 +66,14 @@ def getHZline(line_id, station_id, station_id2 = -1):
 #
 # line_id = f(station_id)
 #
-def line_from_station_id(station_id):
+def line_from_station_id(id_station):
   cur = con.cursor()
   cur.execute("""
   select line_id
   from t_lines
   where station_id=?
   and 0<=sales_km
-  and 0=(lflg & ((1 << 31)|(1 << 17)))""", [station_id])
+  and 0=(lflg & ((1 << 31)|(1 << 17)))""", [id_station])
   return cur.fetchone()[0]
 
 # 駅ID(分岐駅)の最寄りの分岐駅を得る(全路線）
@@ -142,7 +146,7 @@ def node_next_db(jct_id):
 #
 #  [station_id, calc_km][2 or 1]
 #
-def neer_node(station_id):
+def neer_node(id_station):
 	sql = """
 select 	station_id , abs((
 	select case when calc_km>0 then calc_km else sales_km end
@@ -179,7 +183,7 @@ where 	0<=sales_km and 0=(lflg&((1<<31)|(1<<17)))
 """
 	result = []
 	cur = con.cursor()
-	cur.execute(sql, [station_id])
+	cur.execute(sql, [id_station])
 	for st in cur:
 		result.append([st[0], st[1]])
 
@@ -214,12 +218,12 @@ or (l1.station_id=?3 and l2.station_id=?2))
 #
 # station_id = f("駅名")
 #
-def station_id(station_name):
-  if 0 <= station_name.find('('):
-    name = station_name[:station_name.find('(')]
-    samename = station_name[station_name.find('('):]
+def station_id(station_s):
+  if 0 <= station_s.find('('):
+    name = station_s[:station_s.find('(')]
+    samename = station_s[station_s.find('('):]
   else:
-  	name = station_name
+  	name = station_s
   	samename = ''
 
   cur = con.cursor()
@@ -233,9 +237,9 @@ def station_id(station_name):
 #
 # "駅名" = f(station_id)
 #
-def station_name(station_id):
+def station_name(id_station):
   cur = con.cursor()
-  cur.execute("select name from t_station where rowid=?", [station_id])
+  cur.execute("select name from t_station where rowid=?", [id_station])
   try:
    return cur.fetchone()[0]
   except:
@@ -282,9 +286,9 @@ def station_from_jctid(id):
 #
 # jct_id = f(station_id)
 #
-def id_from_station_id(station_id):
+def id_from_station_id(id_station):
   cur = con.cursor()
-  cur.execute("select id from t_jct where station_id=?", [station_id])
+  cur.execute("select id from t_jct where station_id=?", [id_station])
   try:
    return cur.fetchone()[0]
   except:
