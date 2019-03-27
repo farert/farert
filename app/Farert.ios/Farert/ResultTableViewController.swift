@@ -51,11 +51,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         //[self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"Cell"];
         
-        NotificationCenter.default.addObserver(self, selector: Selector(("preferredContentSizeChanged")), name: NSNotification.Name.UIContentSizeCategoryDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: Selector(("preferredContentSizeChanged")), name: UIContentSizeCategory.didChangeNotification, object: nil)
         
         self.tableView.estimatedRowHeight = 100.0
         if 8.0 <= ((UIDevice.current.systemVersion as NSString).floatValue) {
-            self.tableView.rowHeight = UITableViewAutomaticDimension
+            self.tableView.rowHeight = UITableView.automaticDimension
         }
         //NSLog(@"ResultView didLoad entry");
         // Uncomment the following line to preserve selection between presentations.
@@ -141,7 +141,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             cell = tableView.dequeueReusableCell(withIdentifier: "rsRouteListCell", for: indexPath) 
             //lbl = (UILabel*)[cell viewWithTag:1];
             //lbl.text = [self.fareInfo routeList];
-            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
+            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body)
             cell.textLabel?.numberOfLines = 0;
             
             if (nil == self.fareInfo) {
@@ -157,7 +157,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     break;
                 }
             }
-            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
+            cell.textLabel?.font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.body)
             cell.textLabel?.numberOfLines = 0;
             return cell;   // Error message
         }
@@ -454,7 +454,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             return cell.heightForTitle(self.fareInfo.routeList)
 
         default:
-            value = UITableViewAutomaticDimension
+            value = UITableView.automaticDimension
             break;
         }
         
@@ -897,11 +897,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         self.frontView.backgroundColor = UIColor.clear
         self.navigationController!.view!.addSubview(self.frontView)
         
-        self.indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
+        self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
         self.indicator.color = UIColor.black
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
-        self.frontView.bringSubview(toFront: self.indicator)
+        self.frontView.bringSubviewToFront(self.indicator)
         self.indicator.startAnimating()
     }
     
@@ -923,7 +923,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         let subject : String = self.resultTitle()
         let shareText : String = self.resultMessage(subject)
         let activityItems : [AnyObject] = [shareText as AnyObject]
-        let excludeActivities : [UIActivityType] = [UIActivityType.postToWeibo]
+        let excludeActivities : [UIActivity.ActivityType] = [UIActivity.ActivityType.postToWeibo]
         
         let activityController : UIActivityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
         

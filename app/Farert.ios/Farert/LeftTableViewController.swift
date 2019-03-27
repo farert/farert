@@ -178,7 +178,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             
             mcPicker.show() { selections in
                 if let sel : String = selections[0] {
-                    if let bidx : Int = self.aggregate_label.index(of: sel) {
+                    if let bidx : Int = self.aggregate_label.firstIndex(of: sel) {
                         self.routeFolder.setAggregateType(index: row, aggr: bidx)
                         //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
                         btn.setTitle(sel, for: .normal) // self.tableView.reloadData()
@@ -193,7 +193,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             let ac : UIAlertController = UIAlertController(title: "運賃種別", message: nil, preferredStyle: .actionSheet)
             for item in aggregate_label {
                 ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction!) -> Void in
-                    if let bidx : Int = self.aggregate_label.index(of: item) {
+                    if let bidx : Int = self.aggregate_label.firstIndex(of: item) {
                         self.routeFolder.setAggregateType(index: row, aggr: bidx)
                         //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
                         btn.setTitle(item, for: .normal) // self.tableView.reloadData()
@@ -291,12 +291,12 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     }
     
     // When delete or append cell
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt  indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt  indexPath: IndexPath) {
         
-        if editingStyle == UITableViewCellEditingStyle.delete {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             self.routeFolder.remove(index: indexPath.row)
             
-            tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade)
+            tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
             
             if self.routeFolder.count() <= 0 {
                 self.editButton.isHidden = true
@@ -306,7 +306,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             }
             updateAggregate()
 
-        } else if (editingStyle == UITableViewCellEditingStyle.insert) {
+        } else if (editingStyle == UITableViewCell.EditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }
     }
@@ -321,7 +321,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         self.routeFolder.exchange(index_source: sourceIndexPath.row, index_destination: destinationIndexPath.row)
     }
 
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         // Disable swipe to delete, but still have delete in edit mode.
         if self.tableView.isEditing {
             return .delete

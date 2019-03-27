@@ -53,7 +53,7 @@ class VersionInfoViewController: UIViewController {
         //webView.loadRequest(urq)
     }
     
-    func webView(_ webView: UIWebView!, shouldStartLoadWithRequest request: URLRequest!, navigationType: UIWebViewNavigationType) -> Bool {
+    func webView(_ webView: UIWebView!, shouldStartLoadWithRequest request: URLRequest!, navigationType: UIWebView.NavigationType) -> Bool {
         return true
     }
     

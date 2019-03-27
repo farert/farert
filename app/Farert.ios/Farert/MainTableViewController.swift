@@ -526,7 +526,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         if section == 0 {
             return HEADER_HEIGHT     // cell.contentView.bounds.size.height
         } else {
-            return UITableViewAutomaticDimension
+            return UITableView.automaticDimension
         }
     }
     
@@ -540,7 +540,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 return FOOTER_HEIGHT
             }
         }
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     //  行の高さ
@@ -548,7 +548,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //
     override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath : IndexPath) -> CGFloat {
      
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     // MARK: - delegate
@@ -567,7 +567,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             if (0 <= lastIndex) {
                 scroll_flag = true; // Tableview scroll-up
                 let indexPath : IndexPath = IndexPath(row: lastIndex, section: 0)
-                self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableViewScrollPosition.none)
+                self.tableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableView.ScrollPosition.none)
                 self.performSegue(withIdentifier: "fareInfoDetailSegue", sender:self)
             }
         }
@@ -793,11 +793,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         self.frontView.backgroundColor = UIColor.clear
         self.navigationController!.view!.addSubview(self.frontView)
     
-        self.indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
+        self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
         self.indicator.color = UIColor.black
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
-        self.frontView.bringSubview(toFront: self.indicator)
+        self.frontView.bringSubviewToFront(self.indicator)
         self.indicator.startAnimating()
         
     }
@@ -1088,7 +1088,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         let lastIndex : Int = ds.getCount() - 1;
         if (0 < lastIndex) {
             let idxpath : IndexPath = IndexPath(row: lastIndex, section:0)
-            tableView.scrollToRow(at: idxpath, at: UITableViewScrollPosition.bottom, animated: true)
+            tableView.scrollToRow(at: idxpath, at: UITableView.ScrollPosition.bottom, animated: true)
         }
     }
     

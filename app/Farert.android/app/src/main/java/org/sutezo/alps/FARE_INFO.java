@@ -1261,8 +1261,8 @@ public class FARE_INFO  {
         if (((RouteUtil.MASK_URBAN & flag) != 0) &&
                 (((1 << RouteUtil.BCBULURB) & flag) == 0)) {
 
-            ASSERT ((IsIC_area(RouteUtil.URBAN_ID(flag)) && (fare_ic != 0)) ||
-                    (!IsIC_area(RouteUtil.URBAN_ID(flag)) && (fare_ic == 0)));
+//            ASSERT ((IsIC_area(RouteUtil.URBAN_ID(flag)) && (fare_ic != 0)) ||
+//                    (!IsIC_area(RouteUtil.URBAN_ID(flag)) && (fare_ic == 0)));
 
             return true;
         } else {

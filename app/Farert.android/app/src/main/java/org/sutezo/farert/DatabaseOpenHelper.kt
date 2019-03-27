@@ -9,7 +9,7 @@ import java.sql.SQLException
 import java.util.zip.ZipInputStream
 
 
-class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context, DB_NAME, null, dbver(validDBidx(dbid), DATABASE_VERSION)) {
+class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context, DB_NAME, null, DATABASE_VERSION) {
 
     val mContext : Context
     val mDatabasePath : File
@@ -23,24 +23,34 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
         val DB_NAME = "jrdb.db"
         //val DB_NAME_ASSET = "routeDB/jrdb2017.db"
         val DATABASE_VERSION = 3    // 2019.3.10
-        val DEFAULT_DB_VER = 4  // "2018"     // !!! DB更新してされたらDATABASE_VERSION, DEFAULT_DB_VERを更新
+        val DEFAULT_DB_IDX = 4  // "2018"     // !!! DB更新してされたらDATABASE_VERSION, DEFAULT_DB_VERを更新
         val MIN_DB_IDX = 0
         val MAX_DB_IDX = 4
 
+        var mDatabaseIndex : Int = DEFAULT_DB_IDX
+
         fun dbIdx2Name(dbidx : Int) : String {
             return when (dbidx) {
-                0, 1 -> { "2014" } // 消費税3%, 2014
+                0, 1 -> { "2014" } // 消費税5%, 2014
                 2 -> { "2015" }
                 3 -> { "2017" }
                 else -> { "2018" }
             }
         }
-        fun dbver(dbid : Int, dbver: Int) : Int = dbid * 0x10000 + dbver
-        fun dbidxFromDBver(dbVer: Int) : Int = dbVer shr 16
+        fun dbIdx2NameWithTax(dbidx : Int) : String {
+            return when (dbidx) {
+                0 -> { "2014(5%tax)" }
+                1 -> { "2014" }
+                2 -> { "2015" }
+                3 -> { "2017" }
+                else -> { "2018" }
+            }
+        }
+        fun dbIndex() : Int = mDatabaseIndex
 
         fun validDBidx(dbidx: Int) : Int {
             return if (dbidx < MIN_DB_IDX || MAX_DB_IDX < dbidx) {
-                DEFAULT_DB_VER
+                DEFAULT_DB_IDX
             } else {
                 dbidx
             }
@@ -53,7 +63,7 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
      fun createEmptyDataBase(dbidx : Int)  {
         val dbExist : Boolean = checkDatabaseExists(dbidx)
 
-        if (dbExist) {
+        if (dbExist && (DatabaseOpenHelper.mDatabaseIndex == dbidx)) {
             // すでにデータベースは作成されている
 
         } else {
@@ -68,7 +78,8 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
                 val dbPath = mDatabasePath.absolutePath
                 val checkDb = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE)
 
-                checkDb.version = dbver(dbidx, DATABASE_VERSION)
+                checkDb.version = DATABASE_VERSION
+                DatabaseOpenHelper.mDatabaseIndex = dbidx
                 checkDb.close()
 
             } catch (e: Exception) {
@@ -98,7 +109,7 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
             return false
         }
 
-        if (checkDb.version == dbver(dbid, DATABASE_VERSION)) {
+        if (checkDb.version == DATABASE_VERSION) {
             // データベースは存在していて最新
             checkDb.close()
             return true

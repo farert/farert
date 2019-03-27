@@ -1,5 +1,6 @@
 package org.sutezo.farert
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -34,6 +35,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         NEAR,
     }
     var mOsakakan_detour : OSAKA_KAN = OSAKA_KAN.DISABLE
+
+    companion object {
+        val RESULT_CODE_SETTING = 3948
+    }
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
@@ -128,6 +133,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             val cv = getVersionCode()
             saveParam(this, "hasLaunched", cv.toString())
         }
+
+        /* database index reset */
+        if (num < 5) {
+            saveParam(this, "datasource", "0".toString())
+        }
+
     }
 
     private fun getVersionCode(): Int {
@@ -164,6 +175,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     override fun onResume() {
         super.onResume()
         main_constraint_layout.invalidate()
+
+        setTitlebar()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -378,7 +391,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             //設定
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
-                startActivity(intent)
+                startActivityForResult(intent, RESULT_CODE_SETTING)
                 true
             }
             // バージョン情報
@@ -404,6 +417,25 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             main_drawer_layout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // from SettingsActivity
+        if (requestCode == RESULT_CODE_SETTING) {
+            if (resultCode == Activity.RESULT_OK) {
+                // val r = data!!.getIntExtra("test", 0)
+                setTitlebar()
+            }
+        }
+    }
+
+    private fun setTitlebar() {
+        // Show database name on titlebar if isn't default DB.
+        if (DatabaseOpenHelper.dbIndex() != DatabaseOpenHelper.DEFAULT_DB_IDX) {
+            toolbar.title = "${resources.getString(R.string.title_main_view)}(${RouteDB.getInstance().name()}tax${RouteDB.getInstance().tax()})"
+        } else {
+            toolbar.title = resources.getString(R.string.title_main_view)
         }
     }
 

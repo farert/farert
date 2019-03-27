@@ -25,19 +25,19 @@ class FarertApp : Application() {
     }
 
     private fun setDatabase() {
-        val dbname = readParam(this, "datasource").toString()
+        val dbno = readParam(this, "datasource").toString()
         var dbidx : Int
         try {
-            dbidx = Integer.parseInt(dbname)
+            dbidx = Integer.parseInt(dbno)
         } catch (e: NumberFormatException) {
             dbidx = -1
         }
         dbidx = DatabaseOpenHelper.validDBidx(dbidx)
+        DatabaseOpenHelper.mDatabaseIndex = dbidx
         mDbHelper = DatabaseOpenHelper(this, dbidx)
         mDbHelper.createEmptyDataBase(dbidx)
         RouteDB.createFactory(mDbHelper.openDataBase(), if (dbidx == 0) 5 else 8)
     }
-
 
     fun changeDatabase(dbidx: Int) {
         val idx = DatabaseOpenHelper.validDBidx(dbidx)

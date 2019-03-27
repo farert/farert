@@ -40,6 +40,15 @@ class ArchiveRouteActivity : AppCompatActivity(),
         ds.assign((application as FarertApp).ds)
 
         var listItems = readParams(this, KEY_ARCHIVE)
+
+        if (RouteDB.getInstance().isLatest()) {
+            listItems = listItems.filter { item -> !item.contains("{") }
+        } else {
+            val dbknd = "{${RouteDB.getInstance().name()}}"
+            listItems.filter { item-> item.contains(dbknd) }
+            listItems = listItems.map { item-> item.replaceFirst(dbknd, "") }
+        }
+
         mNumOfArchive = listItems.count()
         mContainCurRoute = false
         if (0 < ds.count) {
@@ -247,6 +256,11 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     }
 
     fun saveParams(context : Context) {
+        if (!RouteDB.getInstance().isLatest) {
+            val dbkind = RouteDB.getInstance().name()
+            val v = values.map { item -> "{${dbkind}}${item}" }
+            values = v
+        }
         saveParam(context, ArchiveRouteActivity.KEY_ARCHIVE, values)
         saveFlag = true
         notifyDataSetChanged()

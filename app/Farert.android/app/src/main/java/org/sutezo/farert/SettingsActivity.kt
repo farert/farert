@@ -1,5 +1,6 @@
 package org.sutezo.farert
 
+import android.app.Activity
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
@@ -11,6 +12,9 @@ import org.sutezo.alps.saveParam
 import org.sutezo.farert.R.id.spinner
 import org.sutezo.farert.R.id.swKokuraShinZai
 import java.lang.NumberFormatException
+import android.content.Intent
+
+
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -52,27 +56,40 @@ class SettingsActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        // DB ver
-        val cSelIdx = spinner.selectedItemPosition
-        if (mSelIndex != cSelIdx) {
-            saveParam(this, "datasource", cSelIdx.toString())
-            mSelIndex = cSelIdx
-            (application as FarertApp).changeDatabase(cSelIdx)
-        }
-
-        // 小倉-博多間新幹線在来線同一視
-        val value = swKokuraShinZai.isChecked
-        if (mKokuraSZopt != value) {
-            val svalue = if (value) "true" else "false"
-            saveParam(this, "kokura_hakata_shinzai", svalue)
-            mKokuraSZopt = value
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         when (id) {
             android.R.id.home -> {
+                var rc : Int = Activity.RESULT_CANCELED
+
+                // DB ver
+                val cSelIdx = spinner.selectedItemPosition
+                if (mSelIndex != cSelIdx) {
+                    saveParam(this, "datasource", cSelIdx.toString())
+                    mSelIndex = cSelIdx
+                    (application as FarertApp).changeDatabase(cSelIdx)
+
+                    rc = Activity.RESULT_OK
+                }
+
+                // 小倉-博多間新幹線在来線同一視
+                val value = swKokuraShinZai.isChecked
+                if (mKokuraSZopt != value) {
+                    val svalue = if (value) "true" else "false"
+                    saveParam(this, "kokura_hakata_shinzai", svalue)
+                    mKokuraSZopt = value
+
+                    rc = Activity.RESULT_OK
+                }
+
+                //現在値は返さないで終了コードのみ返す
+                //val intent = Intent()
+                //intent.putExtra("TestName", "テスト")
+
+                setResult(rc, intent)
+
                 finish()
                 return true
             }
