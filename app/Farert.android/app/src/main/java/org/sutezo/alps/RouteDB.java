@@ -7,6 +7,7 @@ import android.app.Application;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.sutezo.farert.DatabaseOpenHelper;
 import org.sutezo.farert.FarertApp;
 
 import static org.sutezo.alps.farertAssert.*;
@@ -53,7 +54,6 @@ public class RouteDB {
     private String name;          // [128] UTF-8 max 42character
     private int tax;
     private String createdate;    // [64] UTF-8 max 42character '2015/03/14 12:43:43'
-    private int options;
 
     private static SQLiteDatabase _db = null;
     private static RouteDB obj = null;
@@ -73,10 +73,6 @@ public class RouteDB {
         } finally {
             ctx.close();
         }
-        tax = tax_;
-    }
-
-    public void setTax(int tax_) {
         tax = tax_;
     }
 
@@ -114,6 +110,9 @@ public class RouteDB {
     }
     public String dbDate() {
         return createdate;
+    }
+    public boolean isLatest() {
+        return DatabaseOpenHelper.Companion.dbIndex() == DatabaseOpenHelper.Companion.getDEFAULT_DB_IDX();
     }
 
 }

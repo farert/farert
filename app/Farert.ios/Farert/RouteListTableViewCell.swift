@@ -32,12 +32,12 @@ class RouteListTableViewCell: UITableViewCell {
     
     func heightForTitle(_ title : String) -> CGFloat {
         if 8.0 <= ((UIDevice.current.systemVersion as NSString).floatValue) {
-            return UITableViewAutomaticDimension
+            return UITableView.automaticDimension
         } else {
             self.routeString.text = title
             self.setNeedsLayout()
             self.layoutIfNeeded()
-            let r : CGFloat = self.contentView.systemLayoutSizeFitting(UILayoutFittingCompressedSize).height
+            let r : CGFloat = self.contentView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
             if r < 44.0 {
                 return 44.0
             } else {

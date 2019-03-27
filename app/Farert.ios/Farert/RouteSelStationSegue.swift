@@ -41,7 +41,7 @@ class RouteSelStationSegue: UIStoryboardSegue {
             
         } else if (destinationViewController.transit_state == FGD.FA_TRANSIT_HISTORY) {
             /* 履歴 (Jan.2017,4th - removed) */
-            UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionCrossDissolve,
+            UIView.transition(with: navigationController.view, duration:0.3, options:UIView.AnimationOptions.transitionCrossDissolve,
                 animations: {
                  navigationController.pushViewController(destinationViewController, animated: false)
                 }, completion: nil)
@@ -50,7 +50,7 @@ class RouteSelStationSegue: UIStoryboardSegue {
                 // Unwind segueの場合は、右からflipするアニメーション
                 // 着駅→分岐駅
                 navigationController.popViewController(animated: false)
-                UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionFlipFromRight, animations: {
+                UIView.transition(with: navigationController.view, duration:0.3, options:UIView.AnimationOptions.transitionFlipFromRight, animations: {
                     navigationController.pushViewController(destinationViewController, animated: false)
                     }, completion: nil)
                 //[navigationController popViewControllerAnimated:NO];
@@ -58,7 +58,7 @@ class RouteSelStationSegue: UIStoryboardSegue {
             } else {    // segueの場合は、左からflipするアニメーション
                 // 分岐駅→着駅
                 navigationController.popViewController(animated: false)
-                UIView.transition(with: navigationController.view, duration:0.3, options:UIViewAnimationOptions.transitionFlipFromLeft, animations: {
+                UIView.transition(with: navigationController.view, duration:0.3, options:UIView.AnimationOptions.transitionFlipFromLeft, animations: {
                      navigationController.pushViewController(destinationViewController, animated: false)
                     }, completion: nil)
                 //[navigationController popViewControllerAnimated:NO];
