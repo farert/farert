@@ -41,7 +41,7 @@ class TerminalSelectTableViewController: CSTableViewController {
         
         searchController.searchBar.placeholder = "駅名（よみ）入力"
 
-        searchController.searchBar.searchBarStyle = UISearchBarStyle.prominent
+        searchController.searchBar.searchBarStyle = UISearchBar.Style.prominent
         searchController.searchBar.sizeToFit()
         
         //tableView.register(UITableViewCell.self, forCellReuseIdentifier: "termSearchbarCell")
@@ -135,7 +135,7 @@ class TerminalSelectTableViewController: CSTableViewController {
             (scopeBar.selectedSegmentIndex == SEGIDX_HISTORY) && (section == 0) && (self.historyTerms.count <= 0) {
                 return HEADER_HEIGHT
         }
-        return UITableViewAutomaticDimension;
+        return UITableView.automaticDimension;
     }
 
     // Section Header
@@ -170,7 +170,7 @@ class TerminalSelectTableViewController: CSTableViewController {
         if searchController.isActive && searchController.searchBar.text != "" {
             cell = tableView.dequeueReusableCell(withIdentifier: cell_identifier)
             if (cell == nil) {
-                cell = UITableViewCell(style: UITableViewCellStyle.value1, reuseIdentifier: cell_identifier)
+                cell = UITableViewCell(style: UITableViewCell.CellStyle.value1, reuseIdentifier: cell_identifier)
                 if (cell == nil) {
                     return cell
                 }
@@ -202,21 +202,21 @@ class TerminalSelectTableViewController: CSTableViewController {
     
     // edit cell
     //  start Edit history
-    override func tableView(_ tableView : UITableView, editingStyleForRowAt indexPath : IndexPath) -> UITableViewCellEditingStyle {
+    override func tableView(_ tableView : UITableView, editingStyleForRowAt indexPath : IndexPath) -> UITableViewCell.EditingStyle {
         historyEditBegin()
-        return UITableViewCellEditingStyle.delete   // Enable 'delete' action
+        return UITableViewCell.EditingStyle.delete   // Enable 'delete' action
     }
     
     // Override to support editing the table view.
-    override func tableView(_ tableView : UITableView, commit editingStyle : UITableViewCellEditingStyle, forRowAt indexPath : IndexPath) {
+    override func tableView(_ tableView : UITableView, commit editingStyle : UITableViewCell.EditingStyle, forRowAt indexPath : IndexPath) {
         
-        if (editingStyle == UITableViewCellEditingStyle.delete) {
+        if (editingStyle == UITableViewCell.EditingStyle.delete) {
             // Delete the row from the data source
             tableView.beginUpdates()
             let n : Int = self.historyTerms.count
             if (0 < n) {
                 self.historyTerms.remove(at: indexPath.row) // model
-                tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade)
+                tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
             }
             tableView.endUpdates()
             if (n == 1) {
@@ -227,7 +227,7 @@ class TerminalSelectTableViewController: CSTableViewController {
             }
             cRouteUtil.saveToTerminalHistory(with: self.historyTerms)
             
-        } else if (editingStyle == UITableViewCellEditingStyle.insert) {
+        } else if (editingStyle == UITableViewCell.EditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }
     }

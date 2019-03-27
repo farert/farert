@@ -41,13 +41,13 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.navigationItem.rightBarButtonItem = self.editButtonItem
         
         self.tableView.estimatedRowHeight = 44.0
-        self.tableView.rowHeight = UITableViewAutomaticDimension // for iOS8
+        self.tableView.rowHeight = UITableView.automaticDimension // for iOS8
 
         // Straged route read from filesystem
         self.routeList = cRouteUtil.loadStrageRoute() as! [String]
         
         if !self.currentRouteString.isEmpty {
-            if let idx = self.routeList.index(of: self.currentRouteString) {      // is exist ?
+            if let idx = self.routeList.firstIndex(of: self.currentRouteString) {      // is exist ?
                 self.routeList.remove(at: idx)
                 self.routeList.insert(self.currentRouteString, at: 0)  // 入れ替え
                 cRouteUtil.save(toRouteArray: self.routeList)   // して保存
@@ -136,15 +136,15 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     
     // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
     
-        if editingStyle == UITableViewCellEditingStyle.delete {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             tableView.beginUpdates()
             let c : Int = self.routeList.count
             if (0 < c) {
                 // Delete the row from the data source
                 self.routeList.remove(at: indexPath.row)       // model
-                tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.fade)
+                tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
             }
             tableView.endUpdates()
             if (c == 1) {   // last deleted
@@ -157,14 +157,14 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             }
             cRouteUtil.save(toRouteArray: self.routeList)
             
-        } else if (editingStyle == UITableViewCellEditingStyle.insert) {
+        } else if (editingStyle == UITableViewCell.EditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }
     }
 
-    override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+    override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         self.editBegin()
-        return UITableViewCellEditingStyle.delete
+        return UITableViewCell.EditingStyle.delete
     }
     /*
     // Override to support conditional rearranging of the table view.
@@ -212,7 +212,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 return 44.0
             }
         }
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
 
@@ -257,7 +257,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                     let ac : UIAlertController = UIAlertController(title: "経路は保存されていません.", message: nil, preferredStyle: .actionSheet)
                     ac.addAction(UIAlertAction(title: "選択した経路を表示", style: .default, handler: { (action) in self.actionSelectProc(0, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
                     ac.addAction(UIAlertAction(title: "経路選択画面へ元の経路を保持したまま戻る", style: .default, handler: { (action) in self.actionSelectProc(1, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
-                    ac.addAction(UIAlertAction(title: "キャンセル", style: UIAlertActionStyle.cancel, handler:  { (action) in self.actionSelectProc(2, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
+                    ac.addAction(UIAlertAction(title: "キャンセル", style: UIAlertAction.Style.cancel, handler:  { (action) in self.actionSelectProc(2, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
                     // for iPad
                     ac.modalPresentationStyle = UIModalPresentationStyle.popover
                     ac.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: self.tableView.indexPathForSelectedRow!)
