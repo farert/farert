@@ -1,6 +1,44 @@
 
 
 
+b#19032701
+
+修正方針
+Windowsは修正しない
+iOS, androidは修正する。
+「最新データ以外のデータベースへ変更すると経路は保存できません。また、保存されている経路はすべてクリアされます」
+設定のデータベース変更時にメイン経路をクリアする（警告ダイアログが必要）
+Leftview は読み直すようにする。
+
+セットアップでエラー経路を弾く
+保存もみんな可能
+
+
+Android
+git diff してDB分けた前提の保存経路のロジックを削除すること
+
+Android 経路読み直し（チケットホルダ）
+ActionBarDrawerToggle onDrawerOpened()
+  MainActivityのmDrawerFragmentを介して、FolderFragment内のメンバ変数を変更し、
+  bool dbChange みたいなの。か、直接 ticketFolder.load()をMainから呼ぶ
+ MainはonActivityResultから設定Activityの抜けた後。
+
+Android 経路読み直し（Archive）
+ onCreate()で、readParamしている。onCreateは毎回呼ばれているから問題なし？？？
+
+Android 設定切り替え
+ ダイアログの表示。いいえだと切り替えキャンセル
+ はいだとチケットホルダ読み直し（上記）。
+
+
+iOS:
+viewDidLoadに必ずきて、そこでロードしている
+
+viewDidAppearに画面を閉じたら必ずきてしまう。
+
+LeftViewないのdelegate経由で、MainTableView内のメンバ関数を呼んでLoadしなおすか判断する。
+タイミングはLeftViewのviewWillAppearでやる。
+
 成瀬-福生は670(669)
 新横浜ー福生は920(918)
 新横浜ー拝島840(842)
