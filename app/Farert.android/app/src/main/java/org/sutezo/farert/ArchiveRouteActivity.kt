@@ -41,14 +41,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
         var listItems = readParams(this, KEY_ARCHIVE)
 
-        if (RouteDB.getInstance().isLatest()) {
-            listItems = listItems.filter { item -> !item.contains("{") }
-        } else {
-            val dbknd = "{${RouteDB.getInstance().name()}}"
-            listItems.filter { item-> item.contains(dbknd) }
-            listItems = listItems.map { item-> item.replaceFirst(dbknd, "") }
-        }
-
         mNumOfArchive = listItems.count()
         mContainCurRoute = false
         if (0 < ds.count) {
