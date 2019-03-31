@@ -15,7 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var selectTerminalId:Int!
     var selectLineId:Int!
-    var context:Int!
+    var context: FGD.CONTEXT!
     
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {

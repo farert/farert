@@ -29,16 +29,16 @@ class SelectStationTableViewController: CSTableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
-        if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) || (apd.context == FGD.CONTEXT_TERMINAL_VIEW) {
+        if (apd.context == FGD.CONTEXT.AUTOROUTE_VIEW) || (apd.context == FGD.CONTEXT.TERMINAL_VIEW) {
             self.navigationItem.setRightBarButtonItems(nil, animated:true)
             stations = cRouteUtil.stationsWith(inCompanyOrPrefectAnd: companyOrPrefectId, lineId: lineId) as! [Int]
-            if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) {
+            if (apd.context == FGD.CONTEXT.AUTOROUTE_VIEW) {
                 self.title = "着駅指定";
             } else {
                 self.title = "発駅指定";
             }
         } else { //CONTEXT_ROUTESELECT_VIEW
-            if (FGD.FA_TRANSIT_STA2JCT != self.transit_state) {
+            if (FGD.TRANSIT.STA2JCT != self.transit_state) {
                 self.stations = cRouteUtil.stationsIds(ofLineId: lineId) as! [Int]
                 self.title = "着駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "分岐駅指定";
@@ -89,7 +89,7 @@ class SelectStationTableViewController: CSTableViewController {
         var cell : UITableViewCell! = nil
         
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-        if ((apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) && (self.lastStationId == stationId)) {
+        if ((apd.context == FGD.CONTEXT.ROUTESELECT_VIEW) && (self.lastStationId == stationId)) {
             //インデント付き＋チェックマーク付き（起点駅)
             cell = tableView.dequeueReusableCell(withIdentifier: "terminalStationCell2", for: indexPath) 
         } else {
@@ -145,7 +145,7 @@ class SelectStationTableViewController: CSTableViewController {
         } else if (segid == "stationViewSegue") {
             let thisViewController : SelectStationTableViewController = segue.destination as! SelectStationTableViewController
             //NSLog(@"prepare segue: transit set %d-> ", self.transit_state);
-            thisViewController.transit_state = (self.transit_state == FGD.FA_TRANSIT_STA2JCT) ? FGD.FA_TRANSIT_JCT2STA : FGD.FA_TRANSIT_STA2JCT;
+            thisViewController.transit_state = (self.transit_state == FGD.TRANSIT.STA2JCT) ? FGD.TRANSIT.JCT2STA : FGD.TRANSIT.STA2JCT;
             thisViewController.lineId = self.lineId;
             thisViewController.companyOrPrefectId = self.companyOrPrefectId;
             assert(self.companyOrPrefectId == 0, "bug")
