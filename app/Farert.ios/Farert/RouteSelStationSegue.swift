@@ -35,18 +35,18 @@ class RouteSelStationSegue: UIStoryboardSegue {
         
         let navigationController : UINavigationController = sourceViewController.navigationController! as UINavigationController
         
-        if (destinationViewController.transit_state == FGD.FA_TRANSIT_AUTOROUTE) {
+        if (destinationViewController.transit_state == FGD.TRANSIT.AUTOROUTE) {
             destinationViewController.modalTransitionStyle = UIModalTransitionStyle.partialCurl;
             sourceViewController.present(destinationViewController, animated:true, completion:nil)
             
-        } else if (destinationViewController.transit_state == FGD.FA_TRANSIT_HISTORY) {
+        } else if (destinationViewController.transit_state == FGD.TRANSIT.HISTORY) {
             /* 履歴 (Jan.2017,4th - removed) */
             UIView.transition(with: navigationController.view, duration:0.3, options:UIView.AnimationOptions.transitionCrossDissolve,
                 animations: {
                  navigationController.pushViewController(destinationViewController, animated: false)
                 }, completion: nil)
         } else {
-            if (destinationViewController.transit_state == FGD.FA_TRANSIT_STA2JCT) {
+            if (destinationViewController.transit_state == FGD.TRANSIT.STA2JCT) {
                 // Unwind segueの場合は、右からflipするアニメーション
                 // 着駅→分岐駅
                 navigationController.popViewController(animated: false)

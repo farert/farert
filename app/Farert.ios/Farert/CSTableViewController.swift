@@ -11,7 +11,7 @@ import UIKit
 
 class CSTableViewController: UITableViewController {
 
-    var transit_state : Int = 0
+    var transit_state : FGD.TRANSIT = .UNKNOWN
     
     override func viewDidLoad() {
         super.viewDidLoad()

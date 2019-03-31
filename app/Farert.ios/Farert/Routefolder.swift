@@ -179,6 +179,7 @@ public class Routefolder {
     
     func load() {
         do {
+            self.routeList.removeAll()
             var num : Int = 0
             let text = try String(contentsOf: URL(fileURLWithPath: filePath), encoding: String.Encoding.utf8)
             text.enumerateLines { line, stop in

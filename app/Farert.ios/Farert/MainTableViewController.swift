@@ -50,7 +50,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
     // MARK: - Global variables
     
-    var viewContextMode: Int = 0;
+    var viewContextMode: FGD.CONTEXT = .FIRST
     var routeStat: ROUTE = .OK
     var scroll_flag: Bool = false;
     var longTermFuncMode: LPROC = .UNKNOWN
@@ -89,7 +89,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
                     
-        viewContextMode = 0;
+        viewContextMode = FGD.CONTEXT.FIRST;
                     
         //NSLog(@"MainView didLoad");
         
@@ -99,6 +99,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         self.tableView.rowHeight = 44.0;
         self.actionBarButton.isEnabled = false;
         ds = cRoute()
+        
+        let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
+        lvd.delegate = self as MainTableViewControllerDelegate
+        //  self.navigationController.toolbarHidden = NO;
+
+        self.setViewTitle()
     }
 
     override func didReceiveMemoryWarning() {
@@ -117,9 +123,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         self.slideMenuController()?.removeLeftGestures()
         self.slideMenuController()?.addLeftGestures()
 
-        let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
-        lvd.delegate = self as MainTableViewControllerDelegate
-        //  self.navigationController.toolbarHidden = NO;
     }
     
     
@@ -128,93 +131,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated);
-    
-        // remove old(before ver 15.10)
-        UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
-        
-        let cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
-        let verno = Int(version.replacingOccurrences(of: ".", with: ""), radix: 16)
-        if 0x1603 <= cnt {
-            if (0x1810 <= cnt) {                                        //!!!!1810
-                // ２回目以降の起動時
-
-            } else {
-                UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
-                cRouteUtil.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
-                UserDefaults.standard.synchronize();
-            }
-        } else {
-            // 初回起動時
-            // AlertView(iOS7, iOS8)
-            if #available(iOS 8, OSX 10.10, *) {
-                /* iOS8 */
-                let ac = UIAlertController(title: WELCOME_TITLE, message: WELCOME_MESSAGE, preferredStyle: .alert)
-                let otherAction = UIAlertAction(title: "了解", style: .default) {
-                    action in
-                }
-                ac.addAction(otherAction)
-                self.present(ac, animated: true, completion: nil)
-                
-            } else {
-                /* iOS7 */
-                let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
-                av.show()
-            }
-            UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
-            cRouteUtil.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
-            UserDefaults.standard.synchronize();
-        }
-
-        
-        
-        // ここから
-        switch viewContextMode {
-        case FGD.CONTEXT_AUTOROUTE_ACTION:
-            let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
-            if let selid = appDelegate.selectTerminalId {
-                self.actionSheetController(
-                    ["新幹線を使う", "新幹線をつかわない（在来線のみ）"],
-                    title: cRouteUtil.stationName(selid) + "までの最短経路追加",
-                    message: "",
-                    from: TAG_UIACTIONSHEET_AUTOROUTE)
-            }
-    
-        case FGD.CONTEXT_ROUTESELECT_VIEW:
-            /* from 経路追加 */
-            scroll_flag = true
-            
-        case FGD.CONTEXT_BEGIN_TERMINAL_ACTION:
-            // 開始駅選択による経路破棄の確認
-            self.actionSheetController(["はい", "いいえ"],
-                title: "表示経路を破棄してよろしいですか？",
-                message: "",
-                from: TAG_UIACTIONSHEET_QUERYSETUPROUTE)
-            
-        case FGD.CONTEXT_TICKETHOLDER_VIEW:
-            // ticker holder : from changeRoute()
-            self.actionSheetController(["はい", "いいえ"],
-                                       title: "表示経路を破棄してよろしいですか？",
-                                       message: "",
-                                       from: TAG_UIACTIONSHEET_ROUTEHOLDER)
-            // to actionSheetController()
-            
-        case FGD.CONTEXT_ROUTESETUP_VIEW:
-            // from 保持経路ビュー(ArchiveRouteTableView)
-            showIndicate();    /* start Activity and Disable UI */
-            self.navigationController!.view!.isUserInteractionEnabled = false;
-            longTermFuncMode = .SETUPROUTE;
-            let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-            DispatchQueue.main.asyncAfter(deadline: time, execute: {
-                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
-                self.processDuringIndicatorAnimating(self.routeScript as AnyObject? ?? "" as AnyObject)
-            })
-        default:
-            break
-        }
-    
-        viewContextMode = 0;
-        // ここまでは ObjCまでは、viewWillApear にあったが、こっちに写してみた
 
         // セルの選択を解除
         if let idx : IndexPath = self.tableView.indexPathForSelectedRow {
@@ -226,6 +142,95 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             scrollTableView() // Tableview scroll-up
             scroll_flag = false;
         }
+
+        if (viewContextMode == .FIRST) {
+            // remove old(before ver 15.10)
+            UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
+            
+            let cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
+            let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+            let verno = Int(version.replacingOccurrences(of: ".", with: ""), radix: 16)
+            if 0x1603 <= cnt {
+                if (0x1810 <= cnt) {                                        //!!!!1810
+                    // ２回目以降の起動時
+
+                } else {
+                    UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
+                    cRouteUtil.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
+                    UserDefaults.standard.synchronize();
+                }
+            } else {
+                // 初回起動時
+                // AlertView(iOS7, iOS8)
+                if #available(iOS 8, OSX 10.10, *) {
+                    /* iOS8 */
+                    let ac = UIAlertController(title: WELCOME_TITLE, message: WELCOME_MESSAGE, preferredStyle: .alert)
+                    let otherAction = UIAlertAction(title: "了解", style: .default) {
+                        action in
+                    }
+                    ac.addAction(otherAction)
+                    self.present(ac, animated: true, completion: nil)
+                    
+                } else {
+                    /* iOS7 */
+                    let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
+                    av.show()
+                }
+                UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
+                cRouteUtil.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
+                UserDefaults.standard.synchronize();
+            }
+        }
+        
+        
+        // ここから
+        switch viewContextMode {
+        case .AUTOROUTE_ACTION:
+            let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
+            if let selid = appDelegate.selectTerminalId {
+                self.actionSheetController(
+                    ["新幹線を使う", "新幹線をつかわない（在来線のみ）"],
+                    title: cRouteUtil.stationName(selid) + "までの最短経路追加",
+                    message: "",
+                    from: TAG_UIACTIONSHEET_AUTOROUTE)
+            }
+    
+        case .ROUTESELECT_VIEW:
+            /* from 経路追加 */
+            scroll_flag = true
+            
+        case .BEGIN_TERMINAL_ACTION:
+            // 開始駅選択による経路破棄の確認
+            self.actionSheetController(["はい", "いいえ"],
+                title: "表示経路を破棄してよろしいですか？",
+                message: "",
+                from: TAG_UIACTIONSHEET_QUERYSETUPROUTE)
+            
+        case .TICKETHOLDER_VIEW:
+            // ticker holder : from changeRoute()
+            self.actionSheetController(["はい", "いいえ"],
+                                       title: "表示経路を破棄してよろしいですか？",
+                                       message: "",
+                                       from: TAG_UIACTIONSHEET_ROUTEHOLDER)
+            // to actionSheetController()
+            
+        case .ROUTESETUP_VIEW:
+            // from 保持経路ビュー(ArchiveRouteTableView)
+            // or SettingビューでDBインデックス変更のとき
+            showIndicate();    /* start Activity and Disable UI */
+            self.navigationController!.view!.isUserInteractionEnabled = false;
+            longTermFuncMode = .SETUPROUTE;
+            let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+            DispatchQueue.main.asyncAfter(deadline: time, execute: {
+                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
+                self.processDuringIndicatorAnimating(self.routeScript as AnyObject? ?? "" as AnyObject)
+            })
+        default:
+            break
+        }
+        
+        viewContextMode = .NOTHING;
+        // ここまでは ObjCまでは、viewWillApear にあったが、こっちに写してみた
     }
     
     //  長い処理
@@ -596,11 +601,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 // すぐやる
                 setRouteList(routeList: route)
                 dsPre = nil
-                viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW
+                viewContextMode = .ROUTESELECT_VIEW
             } else {
                 // 聞いてからやる
                 dsPre = route
-                viewContextMode = FGD.CONTEXT_TICKETHOLDER_VIEW
+                viewContextMode = .TICKETHOLDER_VIEW
             }
         }
         // to: viewDidAppear()
@@ -614,10 +619,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         let segid : String = segue.identifier!
         let apd:AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
-        viewContextMode = 0
+        viewContextMode = .NOTHING
 
         if segid == "terminalSelectSegue" {
-            apd.context = FGD.CONTEXT_TERMINAL_VIEW;
+            apd.context = .TERMINAL_VIEW;
             //        vc.delegate = self;
         } else if segid == "routeLineSegue" {
             /* 経路追加(駅に属する路線一覧 */
@@ -626,14 +631,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             selectLineTblViewController.companyOrPrefectId = 0
             selectLineTblViewController.lastLineId = ds.lastLineId()
             
-            apd.context = FGD.CONTEXT_ROUTESELECT_VIEW;
+            apd.context = .ROUTESELECT_VIEW;
             
         } else if segid == "fareInfoDetailSegue" {
             /* 運賃詳細ビュー */
             let idx = self.tableView.indexPathForSelectedRow?.row ?? 0
             let resultViewCtlr : ResultTableViewController = segue.destination as! ResultTableViewController
             resultViewCtlr.ds = cCalcRoute(route: self.ds, count: idx + 2)
-            apd.context = 0;
+            apd.context = .NOTHING;
 
         } else if segid == "routeManagerSegue" {
             /* 経路一覧ビュー */
@@ -644,7 +649,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             } else {
                 routeMngViewCtlr.currentRouteString = ds.routeScript()
             }
-            apd.context = 0;
+            apd.context = .NOTHING
         } else if segid == "versionInfoTransitSegue" {
             // バージョン情報
         } else if segid == "settingsSegue" {
@@ -653,7 +658,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             let settingViewCtrl : SettingsTableViewController = naviCtlr.topViewController as! SettingsTableViewController
             let b : Bool = ds.isNotSameKokuraHakataShinZai()
             settingViewCtrl.isSameShinkanzanKokuraHakataOther = b;
-            /// // save Route
+            /// // save Route (データベース切り替わりで経路が破壊される前に文字列経路をとっておく）
             self.routeScript = ds.routeScript().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         } else {
             assert(false, "bug:\(#file) \(#line) segid=\(segid)")
@@ -669,7 +674,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         //NSLog(@"doneTerminal:%@", seg_id);
         
-        viewContextMode = 0;
+        viewContextMode = .NOTHING
         
         if seg_id == "termSelectDone" ||
            seg_id == "terminalSelectDoneSegue" ||
@@ -683,19 +688,19 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
             //termId = [[app selectTerminalId] intValue];
             termId = apd.selectTerminalId ?? 0
-            if (apd.context == FGD.CONTEXT_TERMINAL_VIEW) {
+            if (apd.context == .TERMINAL_VIEW) {
                 // from 発駅
                 //NSLog(@"begin station=%d, %@", termId, [cRouteUtil StationName:termId]);
                 //if ([_ds startStationId] == termId) {
                 //    return;
                 //}
                 if (1 < ds.getCount()) && !cRouteUtil.isRoute(inStrage: ds.routeScript()) {
-                    viewContextMode = FGD.CONTEXT_BEGIN_TERMINAL_ACTION;
+                    viewContextMode = .BEGIN_TERMINAL_ACTION;
                     // つつきは、viewDidApear:　で
                 } else {
                     self.setBeginTerminal()
                 }
-            } else if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) {
+            } else if (apd.context == .AUTOROUTE_VIEW) {
                 // from 最短経路
                 // auto route
                 //NSLog(@"autoroute end station=%d, %@", termId, [cRouteUtil StationName:termId]);
@@ -703,11 +708,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
                 // AlartViewで、新幹線を使うか否かを訊いてautoroute
                 //BOOL bulletUse = [self queryDialog:@"新幹線を使用しますか?"];
-                viewContextMode = FGD.CONTEXT_AUTOROUTE_ACTION;
+                viewContextMode = .AUTOROUTE_ACTION;
                 cRouteUtil.save(toTerminalHistory: cRouteUtil.stationNameEx(termId))
                 // つつきは、viewWilApear:　で
                 
-            } else if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
+            } else if (apd.context == .ROUTESELECT_VIEW) {
                 // from 経路追加
                 /* add route */
                 let result : Int = ds.add(apd.selectLineId, stationId: apd.selectTerminalId)
@@ -733,7 +738,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     assert(false, "bug!!!!!!")
                     routeStat = .UNKNOWN
                 }
-                viewContextMode = FGD.CONTEXT_ROUTESELECT_VIEW;
+                viewContextMode = .ROUTESELECT_VIEW;
                 self.tableView.reloadData()
             } else {
                 assert(false, "bug");
@@ -743,7 +748,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // setup route
             let routeViewCtrl : ArchiveRouteTableViewController = segue.source as! ArchiveRouteTableViewController
             if !routeViewCtrl.selectRouteString.isEmpty {
-                viewContextMode = FGD.CONTEXT_ROUTESETUP_VIEW;
+                viewContextMode = .ROUTESETUP_VIEW;
                 self.routeScript = routeViewCtrl.selectRouteString;
             }
         } else {
@@ -760,7 +765,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     @IBAction func cancelTerminal(_ segue: UIStoryboardSegue) {
         _ = self.navigationController?.popViewController(animated: false)
 
-        viewContextMode = 0
+        viewContextMode = .NOTHING
         print("canelTerminal segue=\(segue.identifier ?? "(null)")")
     }
     
@@ -769,15 +774,26 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //
     @IBAction func closeModal(_ segue: UIStoryboardSegue) {
         print("MainView: closeModal:")
-        viewContextMode = 0
+        viewContextMode = .NOTHING
         if segue.identifier == "settingsSegue" {
+            // from 設定
             let view : SettingsTableViewController = segue.source as! SettingsTableViewController
             if (0 < view.selectDbId) {  // is change DB
-                viewContextMode = FGD.CONTEXT_ROUTESETUP_VIEW;
+                // データベースが変更されたら経路を再セットアップするように、保存経路ビューの経路選択と同様な動作に。
+                viewContextMode = .ROUTESETUP_VIEW;
+                /// // reLoad Routeしたいところだが既にDBは切り替わり壊れた矛盾した経路文字列が返されるので
+                //     prepare()でとっておいてあるを使いここでは経路文字列をセットしない
+                //xxxxx self.routeScript = ds.routeScript().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                // と、同時にチケットホルダの経路も読み直す
+                // delegate the Leftview load script
+                let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
+                lvd.reload()
+                self.setViewTitle()
             }
             ds.setNotSameKokuraHakataShinZai(view.isSameShinkanzanKokuraHakataOther)
             /* settingsのあとでは「while a presentation or dismiss is in progress!」警告が表示される */
         } else if (segue.identifier == "versionInfoExitSegue") {
+            // from VersionInfo View
             //if self.navigationController?.isBeingDismissed() != true {
                 self.dismiss(animated: true, completion: nil)
             //}
@@ -953,11 +969,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         var rc : Int
         
-        viewContextMode = 0
+        viewContextMode = .NOTHING
         
         switch from {
         case TAG_UIACTIONSHEET_AUTOROUTE:
-            if (apd.context != FGD.CONTEXT_AUTOROUTE_VIEW) {
+            if (apd.context != .AUTOROUTE_VIEW) {
                 return;
             }
             if (nil != title.range(of: "キャンセル")) {
@@ -1106,6 +1122,33 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             let alertView : UIAlertView = UIAlertView(title: title, message: message, delegate: self, cancelButtonTitle: nil, otherButtonTitles: "OK")
             alertView.alertViewStyle = UIAlertViewStyle.default;
             alertView.show()
+        }
+    }
+    
+    // Set View Caption
+    func setViewTitle() {
+        var title : String
+        if let s : String = self.navigationItem.title {
+            if let t = s.firstIndex(of: "-") {
+                title = String(s[..<t])
+            } else {
+                title = s
+            }
+
+            let cur_db_idx = cRouteUtil.getDatabaseId()
+            if (cur_db_idx != DbId.DB_MAX_ID) {
+                // データベースは最新以外
+                let dbverInf : DbSys = cRouteUtil.databaseVersion()
+                var dbname : String
+                if cur_db_idx == DbId.DB_TAX5 /* dbverInf.tax == 5*/ {
+                    dbname = dbverInf.name! + "(5%tax)"
+                } else {
+                    dbname = dbverInf.name!
+                }
+                self.navigationItem.title = "\(title) - \(dbname)"
+            } else {
+                self.navigationItem.title = title
+            }
         }
     }
 }

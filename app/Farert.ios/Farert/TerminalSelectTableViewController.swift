@@ -57,7 +57,7 @@ class TerminalSelectTableViewController: CSTableViewController {
         
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
 
-        if (apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) {
+        if (apd.context == FGD.CONTEXT.AUTOROUTE_VIEW) {
             //self.navigationController.title = @"着駅指定(最短経路)";
             self.title = "着駅指定(最短経路)"
             self.navigationItem.prompt = "着駅指定(最短経路)"
@@ -282,7 +282,7 @@ class TerminalSelectTableViewController: CSTableViewController {
         } else if segid == "toHistorySegue" {
             // 過去指定 履歴駅一覧 (Jan.2017,4th removed)
             let dvc : CSTableViewController = segue.destination as! CSTableViewController
-            dvc.transit_state = FGD.FA_TRANSIT_HISTORY
+            dvc.transit_state = FGD.TRANSIT.HISTORY
             
         } /* else termSelectDone(unwind)(検索結果から駅選択) */
         /* else termCancelSegue(unwind)(return to Main) */
