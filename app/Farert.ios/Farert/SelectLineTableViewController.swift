@@ -32,10 +32,10 @@ class SelectLineTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
         let apd:AppDelegate = UIApplication.shared.delegate as! AppDelegate
-        if ((apd.context == FGD.CONTEXT_AUTOROUTE_VIEW) || (apd.context == FGD.CONTEXT_TERMINAL_VIEW)) {
+        if ((apd.context == .AUTOROUTE_VIEW) || (apd.context == .TERMINAL_VIEW)) {
             self.navigationItem.setRightBarButtonItems(nil, animated: true)
         }
-        if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
+        if (apd.context == .ROUTESELECT_VIEW) {
             lineList = cRouteUtil.lineIds(fromStation: self.baseStationId) as! [Int]
         } else { /* TAG_TERMINAL_VIEW */
             lineList = cRouteUtil.lines(fromCompanyOrPrefect: self.companyOrPrefectId) as! [Int]
@@ -70,7 +70,7 @@ class SelectLineTableViewController: UITableViewController {
         let lineId : Int = lineList[indexPath.row]
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         
-        if ((apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) && (self.lastLineId == lineId)) {
+        if ((apd.context == .ROUTESELECT_VIEW) && (self.lastLineId == lineId)) {
             cell = tableView.dequeueReusableCell(withIdentifier: "termLineCell2", for: indexPath) 
         } else {
             cell = tableView.dequeueReusableCell(withIdentifier: "termLineCell", for: indexPath) 
@@ -119,7 +119,7 @@ class SelectLineTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section : Int) -> String? {
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
     
-        if (apd.context == FGD.CONTEXT_ROUTESELECT_VIEW) {
+        if (apd.context == .ROUTESELECT_VIEW) {
             return cRouteUtil.stationName(baseStationId)
         } else {
             return cRouteUtil.companyOrPrefectName(self.companyOrPrefectId)
@@ -140,11 +140,11 @@ class SelectLineTableViewController: UITableViewController {
             selStationViewController.companyOrPrefectId = self.companyOrPrefectId;
             selStationViewController.lineId = Int(self.lineList[self.tableView.indexPathForSelectedRow?.row ?? 0])
             selStationViewController.lastStationId = self.baseStationId
-            selStationViewController.transit_state = FGD.FA_TRANSIT_STA2JCT
+            selStationViewController.transit_state = FGD.TRANSIT.STA2JCT
         } else if (segid  == "autoRouteSegue") {
             // 最短経路ボタン(to TermSelectTableView)
             let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-            apd.context = FGD.CONTEXT_AUTOROUTE_VIEW;
+            apd.context = .AUTOROUTE_VIEW;
             //UINavigationController* nvc = [segue destinationViewController];
             //CSTableViewController* vc = [nvc.viewControllers  objectAtIndex:0];
             //CSTableViewController* vc = [segue destinationViewController];

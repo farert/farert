@@ -11,22 +11,28 @@ import Foundation
 struct FGD {
     static let  MAX_HISTORY                    = 20
     static let  MAX_ARCHIVE_ROUTE             = 100
-    static let  CONTEXT_TERMINAL_VIEW         = 23900  // Terminal select series
-    static let  CONTEXT_AUTOROUTE_VIEW        = 23901  // End station select for Auto route select series
-    static let  CONTEXT_ROUTESELECT_VIEW      = 23902  // Route select
-    static let  CONTEXT_AUTOROUTE_ACTION      = 34392  // Action sheet
-    static let  CONTEXT_BEGIN_TERMINAL_ACTION = 34393
-    static let  CONTEXT_ROUTESETUP_VIEW       = 34394
-    static let  CONTEXT_TICKETHOLDER_VIEW     = 34395
     
+    enum CONTEXT {
+        case  FIRST
+        case  NOTHING
+        case  TERMINAL_VIEW           // Terminal select series
+        case  AUTOROUTE_VIEW          // End station select for Auto route select series
+        case  ROUTESELECT_VIEW        // Route select
+        case  AUTOROUTE_ACTION        // Action sheet
+        case  BEGIN_TERMINAL_ACTION
+        case  ROUTESETUP_VIEW
+        case  TICKETHOLDER_VIEW
+    }
     //static let  CONTEXT_AUTOROUTE_BUTTON 23943  // Auto route barbutton
     //static let  CONTEXT_JUNCTION_SWITCH_BUTTON 23945    // Arrive station barbutton
     
-    static let  FA_TRANSIT_HISTORY = 3
-    static let  FA_TRANSIT_STA2JCT = 0
-    static let  FA_TRANSIT_JCT2STA = 1
-    static let  FA_TRANSIT_AUTOROUTE = 2
-
+    enum TRANSIT {
+        case  UNKNOWN
+        case  HISTORY
+        case  STA2JCT
+        case  JCT2STA
+        case  AUTOROUTE
+    }
     /**** public ****/
     
     static let  ADDRC_LAST  = 0   // add() return code

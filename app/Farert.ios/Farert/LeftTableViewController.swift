@@ -59,9 +59,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         self.editButton.isHidden = true
         self.clearButton.isHidden = true
         
-        self.routeFolder.load()
-
-        self.tableView.reloadData()
+        self.reload()
     }
 
     override func didReceiveMemoryWarning() {
@@ -73,10 +71,21 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
 
         super.viewWillAppear(animated)
         
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        ///self.imageHeaderView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 160)
+        self.view.layoutIfNeeded()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         updateAggregate()
         
-        if (delegate != nil) {
-            appendButton.isHidden = (delegate?.getRoute() != nil) ? false : true
+        if let deleg = delegate {
+            appendButton.isHidden = (deleg.getRoute() != nil) ? false : true
+        } else {
+            appendButton.isHidden = true
         }
         self.editButton.isHidden = self.routeFolder.count() <= 0
         if let indexPathForSelectedRow = tableView.indexPathForSelectedRow {
@@ -84,10 +93,12 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         }
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        ///self.imageHeaderView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 160)
-        self.view.layoutIfNeeded()
+    // MARK: helper method
+    
+    func reload() {
+        self.routeFolder.load()
+        updateAggregate()
+        self.tableView.reloadData()
     }
     
     // MARK: Delegate method

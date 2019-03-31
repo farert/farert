@@ -39,6 +39,19 @@ viewDidAppearに画面を閉じたら必ずきてしまう。
 LeftViewないのdelegate経由で、MainTableView内のメンバ関数を呼んでLoadしなおすか判断する。
 タイミングはLeftViewのviewWillAppearでやる。
 
+
+iOS 設定ビューから、longTermFuncModeをセットしてprocessDureingIndicatorAnimatingへいく
+設定画面->DidApper
+closeModalで、db IDXが変更されていたら、vieContextMode=FGD.CONTEXT_ROUTESETUP_VIEW を設定している
+viewDidAppear
+つまりiOSでは設定ビューでデータソースを切り替えるとメイン経路をスクリプトで再読み込みさせている。
+その方法は経路保存ビューの経路変更と同じ処理で行なっている。
+注意することとして、設定ビューへ行く前に、メイン経路スクリプトをとっておいて、設定ビューから戻ってきてから
+メイン経路スクリプトを作ることなどをしていない。それは設定ビューで既にデータベースが切り替わっており、
+設定ビューから帰ってきてから経路スクリプトを作成しても、ぶっ壊れたものが作成されてしまうからである。
+
+
+
 成瀬-福生は670(669)
 新横浜ー福生は920(918)
 新横浜ー拝島840(842)
