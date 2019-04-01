@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
 
     private lateinit var mDrawerFragment: FolderViewFragment
     private lateinit var mRoute : Route
+    private var mRouteScript : String = ""
 
     enum class OSAKA_KAN {
         DISABLE,
@@ -390,6 +391,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         return when (item.itemId) {
             //設定
             R.id.action_settings -> {
+                mRouteScript = mRoute.route_script()
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivityForResult(intent, RESULT_CODE_SETTING)
                 true
@@ -426,10 +428,23 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             if (resultCode == Activity.RESULT_OK) {
                 // val r = data!!.getIntExtra("test", 0)
                 setTitlebar()
+
+                if (!mRouteScript.isEmpty()) {
+                    // データベース変更されたら経路を再パースする
+                    val rc = mRoute.setup_route(mRouteScript)
+                    update_fare(rc)
+                }
+                // LeftViewも
+                mDrawerFragment.reload()
             }
         }
+        mRouteScript = ""
     }
 
+
+    // Main titlebar
+    //  最新以外のDBを選択しているときにタイトルバーにDB名を表示する
+    //
     private fun setTitlebar() {
         // Show database name on titlebar if isn't default DB.
         if (DatabaseOpenHelper.dbIndex() != DatabaseOpenHelper.DEFAULT_DB_IDX) {

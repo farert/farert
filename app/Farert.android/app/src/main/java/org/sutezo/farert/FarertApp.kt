@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import org.json.JSONArray
+import org.sutezo.alps.NullPrintStream
 import org.sutezo.alps.Route
 import org.sutezo.alps.RouteDB
 import org.sutezo.alps.readParam
@@ -21,6 +22,7 @@ class FarertApp : Application() {
     override fun onCreate() {
         super.onCreate()
         //System.setOut(PrintStream("C:\\debug.log") )
+        System.setOut(NullPrintStream())
         setDatabase()
     }
 
@@ -29,20 +31,21 @@ class FarertApp : Application() {
         var dbidx : Int
         try {
             dbidx = Integer.parseInt(dbno)
-        } catch (e: NumberFormatException) {
+        } catch (e: Throwable) {
             dbidx = -1
         }
         dbidx = DatabaseOpenHelper.validDBidx(dbidx)
-        DatabaseOpenHelper.mDatabaseIndex = dbidx
-        mDbHelper = DatabaseOpenHelper(this, dbidx)
+        DatabaseOpenHelper.mDatabaseIndex = dbidx // これがないと毎回DB展開する
+        mDbHelper = DatabaseOpenHelper(this)
         mDbHelper.createEmptyDataBase(dbidx)
         RouteDB.createFactory(mDbHelper.openDataBase(), if (dbidx == 0) 5 else 8)
     }
 
     fun changeDatabase(dbidx: Int) {
-        val idx = DatabaseOpenHelper.validDBidx(dbidx)
+        val idx = DatabaseOpenHelper.validDBidx(dbidx) // retrieve the available index of database.
+        //不要！これがあるとDB切り替わりません. DatabaseOpenHelper.mDatabaseIndex = idx
         mDbHelper.closeDatabase()
         mDbHelper.createEmptyDataBase(idx)
-        RouteDB.createFactory(mDbHelper.openDataBase(), if (idx == 0) 5 else 8);
+        RouteDB.createFactory(mDbHelper.openDataBase(), if (idx == 0) 5 else 8)
     }
 }

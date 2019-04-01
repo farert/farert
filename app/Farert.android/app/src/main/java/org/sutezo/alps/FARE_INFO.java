@@ -836,7 +836,7 @@ public class FARE_INFO  {
                     }
                     applied_specic_fare = true; // 私鉄競合区間特別運賃適用
                 }
-    			ASSERT(this.company_fare == 0);	// 会社線は通っていない
+    			//ASSERT(this.company_fare == 0);	// 会社線は通っていない(しなの鉄道、伊勢線をとおるかも）
     		}
 
             // 特別加算区間分

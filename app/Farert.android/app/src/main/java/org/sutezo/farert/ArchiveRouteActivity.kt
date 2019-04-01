@@ -248,11 +248,6 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     }
 
     fun saveParams(context : Context) {
-        if (!RouteDB.getInstance().isLatest) {
-            val dbkind = RouteDB.getInstance().name()
-            val v = values.map { item -> "{${dbkind}}${item}" }
-            values = v
-        }
         saveParam(context, ArchiveRouteActivity.KEY_ARCHIVE, values)
         saveFlag = true
         notifyDataSetChanged()

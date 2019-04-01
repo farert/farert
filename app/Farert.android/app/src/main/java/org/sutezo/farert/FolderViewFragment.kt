@@ -137,6 +137,13 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         updateFareInfo()
     }
 
+    fun reload() {
+        mContext?:return
+        ticketFolder.load(mContext!!)
+        rv_drawer_list.adapter.notifyDataSetChanged()
+        updateFareInfo()
+    }
+
     fun init(fragmentId: Int, drawerLayout: DrawerLayout, toolbar: Toolbar) {
         mContainerView = activity!!.findViewById(fragmentId)
         mDrawerLayout = drawerLayout
