@@ -9,7 +9,7 @@ import java.sql.SQLException
 import java.util.zip.ZipInputStream
 
 
-class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context, DB_NAME, null, DATABASE_VERSION) {
+class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DATABASE_VERSION) {
 
     val mContext : Context
     val mDatabasePath : File
@@ -61,9 +61,8 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
      * asset に格納したデータベースをコピーするための空のデータベースを作成する
      */
      fun createEmptyDataBase(dbidx : Int)  {
-        val dbExist : Boolean = checkDatabaseExists(dbidx)
 
-        if (dbExist && (DatabaseOpenHelper.mDatabaseIndex == dbidx)) {
+        if (checkDatabaseExists(dbidx)) {
             // すでにデータベースは作成されている
 
         } else {
@@ -109,7 +108,7 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
             return false
         }
 
-        if (checkDb.version == DATABASE_VERSION) {
+        if ((checkDb.version == DATABASE_VERSION) && (dbid == mDatabaseIndex)) {
             // データベースは存在していて最新
             checkDb.close()
             return true
@@ -188,6 +187,5 @@ class DatabaseOpenHelper(context: Context, dbid: Int) : SQLiteOpenHelper(context
     fun closeDatabase() {
         super.close()
     }
-
 }
 

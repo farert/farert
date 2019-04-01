@@ -284,7 +284,7 @@
     <!-- Settings -->
     <string name="setting_title_datasource">データソース</string>
     <string-array name="setting_list_datasource">
-        <item>"消費税3%"</item>
+        <item>"消費税5%(2014)"</item>
         <item>"2014版"</item>
         <item>"2015版"</item>
         <item>"2017版"</item>
