@@ -4725,9 +4725,9 @@ bool CalcRoute::Query_rule69t(const vector<RouteItem>& in_route_list, const Rout
 						 * 1駅のみ置換路線上にある場合、その駅が端駅でなければ置換しない
 						 */
 						if (results->size() == 1) {
-							if (((in != 0) && (in1 != 0)) ||
-						        ((in  != 0) && ((s2 != stationId1) && (s2 != stationId2))) ||
-						        ((in1 != 0) && ((s1 != stationId1) && (s1 != stationId2)))) {
+                            if (((in != 0) && (in1 != 0)) ||
+                                ((0 != RouteUtil::InStation(stationId1, lineId, s1, s2)) &&
+                                 (0 != RouteUtil::InStation(stationId2, lineId, s1, s2)))) {
 								results->clear();	/* 置換対象外とする */
 								return false;
 							}
@@ -4746,6 +4746,7 @@ bool CalcRoute::Query_rule69t(const vector<RouteItem>& in_route_list, const Rout
 								return false;
 							}
 						} else {
+                            // Don't come here.
 							if ((in != 0) || (in1 != 0)) {
 								results->clear();	/* 置換対象外とする */
 								return false;
