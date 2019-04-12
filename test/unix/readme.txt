@@ -13,13 +13,17 @@ nmake /f Makefile.nmk
 
 2019.2.24 all/test を仕様拡張し、exp, autoroute を不要とした。
 以降は、all/test だけを使用すれば良い。
-すなわち、all/test 内で、
+使い方は、all/test 内で、
 
 ./test
   引数なしではすべてのtestパターン(app/win_mfc/fjr_mfc/test_exec.cpp)を実行する.
   .test >log.txt
   として実行し、結果は、test_result.txt として作成される。
   (現状どおり)
+
+./test 引数1つ
+　引数のテキストファイルを1行ずつ逐次処理する
+
 
 ./test 引数奇数個
 　指定した経路を実行してその結果を返す
@@ -40,7 +44,7 @@ nmake /f Makefile.nmk
 
 * データベースは、環境変数 farertDB にパスを指定する。
    例)
-    $ export farertDB=/Users/ntake/exports/devel/farert.repos/db/jrdb2018.db     
+    $ export farertDB=/Users/ntake/exports/devel/farert.repos/db/jrdb2018.db
 
    (../../db/scripts/jrdb.py と同様)
 　　
