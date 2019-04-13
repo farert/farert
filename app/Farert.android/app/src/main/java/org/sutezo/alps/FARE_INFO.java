@@ -967,7 +967,9 @@ public class FARE_INFO  {
                     ASSERT(false);
                 }
             }
-            if ((0 == decision) && fare_info_shorts.jr_fare < jr_fare) {
+            if ((0 == decision) && ((fare_info_shorts.jr_fare < jr_fare) ||
+                ((fare_info_shorts.jr_fare == jr_fare) &&
+                (fare_info_shorts.total_jr_calc_km < total_jr_calc_km)))) {
                 /* ユーザ指定は最短経路ではない */
                 decision = 1;
             }

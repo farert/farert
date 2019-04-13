@@ -1750,8 +1750,8 @@ public class CalcRoute extends RouteList {
 							 */
                             if (leng == 1) {
                                 if (((in != 0) && (in1 != 0)) ||
-                                        ((in  != 0) && ((s2 != stationId1) && (s2 != stationId2))) ||
-                                        ((in1 != 0) && ((s1 != stationId1) && (s1 != stationId2)))) {
+                                        ((0 != RouteUtil.InStation(stationId1, lineId, s1, s2)) ||
+                                         (0 != RouteUtil.InStation(stationId2, lineId, s1, s2)))) {
                                     results.clear();	/* 置換対象外とする */
                                     break leave;
                                 }
@@ -1771,6 +1771,7 @@ public class CalcRoute extends RouteList {
                                     break leave;
                                 }
                             } else {
+                                /* Don't come here */
                                 if ((in != 0) || (in1 != 0)) {
                                     results.clear();	/* 置換対象外とする */
                                     break leave;
