@@ -4724,6 +4724,7 @@ bool CalcRoute::Query_rule69t(const vector<RouteItem>& in_route_list, const Rout
 						/* 2駅とも置換路線上にあれば置換しない
 						 * 1駅のみ置換路線上にある場合、その駅が端駅でなければ置換しない
 						 */
+//fprintf(stderr, "@@@@results->size():%d, in:%d, in1:%d, s1:%d, s2:%d, stationId1:%d, stationId2:%d %d\n", results->size(), in, in1, s1, s2, stationId1, stationId2);
 						if (results->size() == 1) {
                             if (((in != 0) && (in1 != 0)) ||
                                 ((0 != RouteUtil::InStation(stationId1, lineId, s1, s2)) &&
@@ -8930,7 +8931,9 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
                 ASSERT(FALSE);
             }
         }
-        if ((0 == decision) && fare_info_shorts.jr_fare < jr_fare) {
+        if ((0 == decision) && ((fare_info_shorts.jr_fare < jr_fare) ||
+            ((fare_info_shorts.jr_fare == jr_fare) &&
+            (fare_info_shorts.total_jr_calc_km < total_jr_calc_km)))) {
             /* ユーザ指定は最短経路ではない */
             decision = 1;
         }
