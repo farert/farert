@@ -1149,14 +1149,22 @@ public class Route extends RouteList {
             System.out.printf("JCT: h_(B)detect\n");
             jct_flg_on = RouteUtil.BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
         } else {
-			/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
-            if (!RouteUtil.BIT_CHK(ctlflg, 8) &&
-                    (1 < num) && !RouteUtil.BIT_CHK2(route_list_raw.get(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) &&
-                    !CheckTransferShinkansen(route_list_raw.get(num - 1).lineId, line_id,
-                            route_list_raw.get(num - 2).stationId, stationId1, stationId2)) {
-                System.out.printf("JCT: F-3b\n");
-                return -1;		// F-3b
+            /* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
+            int shinzairev = 0;
+            jct_flg_on = RouteUtil.BIT_OFF(jct_flg_on, BSRSHINZAIREV);
+            if ((0 == (ctlflg & ADD_BULLET_NC)) && (1 < num)) {
+                shinzairev = Route.CheckTransferShinkansen(route_list_raw.get(num - 1).lineId, line_id,
+                                        route_list_raw.get(num - 2).stationId, stationId1, stationId2);
+                if (shinzairev == 1) {
+                    jct_flg_on = RouteUtil.BIT_ON(jct_flg_on, BSRSHINZAIREV);
+                }
             }
+    		if ((0 == (ctlflg & ADD_BULLET_NC)) &&
+    			(1 < num) && !RouteUtil.BIT_CHK2(route_list_raw.get(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) &&
+                (shinzairev < 0)) {
+                System.out.printf("JCT: F-3b\n");
+    			return -1;		// F-3b
+    		}
         }
         System.out.printf("add %s(%d)-%s(%d), %s(%d)\n", RouteUtil.LineName(line_id), line_id, RouteUtil.StationName(stationId1), stationId1, RouteUtil.StationName(stationId2), stationId2);
 
@@ -1699,6 +1707,10 @@ public class Route extends RouteList {
             if (RouteUtil.BIT_CHK(lflg2, BSRNOTYET_NA)) {
                 System.out.printf("？？？西小倉・吉塚.rc=%d\n", rc);
                 return RouteUtil.ADDRC_OK;	/* 西小倉、吉塚 */
+            } else if (RouteUtil.BIT_CHK(lflg2, BSRSHINZAIREV)) {
+                System.out.printf("deletect shinkansen-zairaisen too return.\n");
+                removeTail();
+                return -1;  /* route is duplicate */
             } else {
                 last_flag.end  = true;
                 System.out.printf("detect finish.\n");
@@ -2959,17 +2971,18 @@ public class Route extends RouteList {
     //	@param [in] station_id2  接続駅
     //	@param [in] station_id3  着駅
     //
-    //	@return true: OK / false: NG
+    //	@return 0: N/A(OK) / 1:OK / -1: NG
     //
     //                 国府津 s1                東京
     // l1 東海道線     小田原 s2 東海道新幹線   静岡
     // l2 東海道新幹線 名古屋 s3 東海道線       草薙
     //
-    private static boolean CheckTransferShinkansen(int line_id1, int line_id2, int station_id1, int station_id2, int station_id3) {
+    private static int CheckTransferShinkansen(int line_id1, int line_id2, int station_id1, int station_id2, int station_id3) {
         int bullet_line;
         int local_line;
         RouteUtil.LINE_DIR dir;
         int hzl;
+        int flgbit;
 
         if (RouteUtil.IS_SHINKANSEN_LINE(line_id2)) {
             bullet_line = line_id2;		// 在来線->新幹線乗換
@@ -2982,23 +2995,28 @@ public class Route extends RouteList {
             hzl = RouteUtil.GetHZLine(bullet_line, station_id2, station_id1);
 
         } else {
-            return true;				// それ以外は対象外
+            return 0;				// それ以外は対象外
         }
         if (local_line != hzl) {
-            return true;
+            return 0;
         }
 
         // table.A
         dir = RouteUtil.DirLine(line_id1, station_id1, station_id2);
         if (dir == RouteUtil.DirLine(line_id2, station_id2, station_id3)) {
-            return true;		// 上り→上り or 下り→下り
+            return 0;		// 上り→上り or 下り→下り
         }
         if (dir == RouteUtil.LINE_DIR.LDIR_ASC) {	// 下り→上り
-            return (((RouteUtil.AttrOfStationOnLineLine(local_line, station_id2) >>> 19) & 0x01) != 0);
-        } else {				// 上り→下り
-            return (((RouteUtil.AttrOfStationOnLineLine(local_line, station_id2) >>> 19) & 0x02) != 0);
+            flgbit = 0x01;
+        } else {        		                    // 上り→下り
+            flgbit = 0x02;
         }
-        //return true;
+
+        if (((RouteUtil.AttrOfStationOnLineLine(local_line, station_id2) >>> 19) & flgbit) != 0) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
 /*
 //	経路内を着駅で終了する(以降の経路はキャンセル)
