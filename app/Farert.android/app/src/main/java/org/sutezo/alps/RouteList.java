@@ -54,6 +54,7 @@ public class RouteList {
 
     final static int BSRNOTYET_NA	= 30;		// [w]不完全ルート
     final static int BSRJCTSP_B	= 29;		// [w]分岐特例B
+    final static int BSRSHINZAIREV	= 28;		// [w]新幹線-在来線折り返し
 
     final static int BSR69TERM	= 24;    // [r]
     final static int BSR69CONT	= 23;    // [r]
