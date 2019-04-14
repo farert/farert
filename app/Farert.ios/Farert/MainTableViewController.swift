@@ -1135,7 +1135,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 title = s
             }
 
-            let cur_db_idx = cRouteUtil.getDatabaseId()
+            var cur_db_idx = cRouteUtil.getDatabaseId()
+            if ((cur_db_idx < DbId.DB_MIN_ID) || (DbId.DB_MAX_ID < cur_db_idx)) {
+                cur_db_idx = DbId.DB_MAX_ID
+            }
             if (cur_db_idx != DbId.DB_MAX_ID) {
                 // データベースは最新以外
                 let dbverInf : DbSys = cRouteUtil.databaseVersion()
