@@ -89,6 +89,7 @@ typedef uint32_t SPECIFICFLAG;
 
 #define BSRNOTYET_NA	30		// [w]不完全ルート
 #define BSRJCTSP_B		29		// [w]分岐特例B
+#define BSRSHINZAIREV   28     // [w]新幹線、在在来線折り返し
 
 #define BSR69TERM		24		// [r]
 #define BSR69CONT		23		// [r]
@@ -998,7 +999,7 @@ private:
 public:
 #endif
 	static bool		IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2);
-	static bool		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
+	static int		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
 };
 
 class CalcRoute : public RouteList

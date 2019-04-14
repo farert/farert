@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -1824,11 +1824,19 @@ first_station_id1 = stationId1;
 		BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
 	} else {
 		/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
-		if (!BIT_CHK(ctlflg, 8) &&
+        int shinzairev = 0;
+        BIT_OFF(jct_flg_on, BSRSHINZAIREV);
+        if ((0 == (ctlflg & ADD_BULLET_NC)) && (1 < num)) {
+            shinzairev = Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
+                                    route_list_raw.at(num - 2).stationId, stationId1, stationId2);
+            if (shinzairev == 1) {
+                BIT_ON(jct_flg_on, BSRSHINZAIREV);
+            }
+        }
+		if ((0 == (ctlflg & ADD_BULLET_NC)) &&
 			(1 < num) && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) &&
-			!Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
-										route_list_raw.at(num - 2).stationId, stationId1, stationId2)) {
-			TRACE("JCT: F-3b\n");
+            (shinzairev < 0)) {
+            TRACE("JCT: F-3b\n");
 			return -1;		// F-3b
 		}
 	}
@@ -2378,7 +2386,11 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 		if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
 			TRACE(_T("？？？西小倉・吉塚.rc=%d\n"), rc);
 			return ADDRC_OK;	/* 西小倉、吉塚 */
-		} else {
+		} else if (BIT_CHK(lflg2, BSRSHINZAIREV)) {
+            TRACE(_T("deletect shinkansen-zairaisen too return.\n"));
+            removeTail();
+            return -1;  /* route is duplicate */
+        } else {
 			BIT_ON(last_flag, BLF_END);
 			TRACE(_T("detect finish.\n"));
 			return ADDRC_LAST;
@@ -6875,18 +6887,19 @@ const char tsql_hzl[] =
 //	@param [in] station_id2  接続駅
 //	@param [in] station_id3  着駅
 //
-//	@return true: OK / false: NG
+//	@return 0: N/A(OK) / 1: OK / -1: NG
 //
 //                 国府津 s1                東京
 // l1 東海道線     小田原 s2 東海道新幹線   静岡
 // l2 東海道新幹線 名古屋 s3 東海道線       草薙
 //
-bool Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3)
+int Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3)
 {
 	int32_t bullet_line;
 	int32_t local_line;
 	int32_t dir;
 	int32_t hzl;
+    int32_t flgbit;
 
 	if (IS_SHINKANSEN_LINE(line_id2)) {
 		bullet_line = line_id2;		// 在来線->新幹線乗換
@@ -6899,23 +6912,27 @@ bool Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t 
 		hzl = RouteUtil::GetHZLine(bullet_line, station_id2, station_id1);
 
 	} else {
-		return true;				// それ以外は対象外
+		return 0;				// それ以外は対象外
 	}
 	if (local_line != hzl) {
-		return true;
+		return 0;
 	}
 
 	// table.A
 	dir = RouteUtil::DirLine(line_id1, station_id1, station_id2);
 	if (dir == RouteUtil::DirLine(line_id2, station_id2, station_id3)) {
-		return true;		// 上り→上り or 下り→下り
+		return 0;		// 上り→上り or 下り→下り
 	}
 	if (dir == RouteUtil::LDIR_ASC) {	// 下り→上り
-		return (((RouteUtil::AttrOfStationOnLineLine(local_line, station_id2) >> 19) & 0x01) != 0);
-	} else {				// 上り→下り
-		return (((RouteUtil::AttrOfStationOnLineLine(local_line, station_id2) >> 19) & 0x02) != 0);
-	}
-	return true;
+        flgbit = 0x01;
+    } else {
+        flgbit = 0x02;
+    }
+	if (((RouteUtil::AttrOfStationOnLineLine(local_line, station_id2) >> 19) & flgbit) != 0) {
+        return 1;
+    } else {
+        return -1;
+    }
 }
 
 
@@ -8931,6 +8948,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
                 ASSERT(FALSE);
             }
         }
+        ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
         if ((0 == decision) && ((fare_info_shorts.jr_fare < jr_fare) ||
             ((fare_info_shorts.jr_fare == jr_fare) &&
             (fare_info_shorts.total_jr_calc_km < total_jr_calc_km)))) {
