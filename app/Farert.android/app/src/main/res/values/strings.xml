@@ -57,7 +57,7 @@
     <string name="disagree">いいえ</string>
 
     <string name="title_version_close">ok</string>
-    <string name="copyright">Copyright(c) Sutezo 2014-2018</string>
+    <string name="copyright">Copyright(c) Sutezo 2014-2019</string>
 
     <string name="btn_edit">編集</string>
     <string name="btn_del">削除</string>
@@ -291,7 +291,7 @@
         <item>"最新版"</item>
     </string-array>
 
-    <string name="setting_descipt_datasource">駅、路線、運賃データを過去データで見ることもできます。通常は最新（2018年）版を指定してください
+    <string name="setting_descipt_datasource">駅、路線、運賃データを過去データで見ることもできます。通常は最新版を指定してください
 また保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示も不正になりますが保存時のデータソースに戻すと元どおりになります</string>
 
     <string name="setting_title_option">オプション</string>
