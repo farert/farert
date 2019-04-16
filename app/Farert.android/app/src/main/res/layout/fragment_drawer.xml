@@ -113,7 +113,7 @@
             android:layout_marginEnd="16dp"
             android:text="@string/btn_add"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/btnEdit"
+            app:layout_constraintLeft_toRightOf="@+id/btnDelete"
             app:layout_constraintTop_toBottomOf="@+id/txtKmTitle" />
 
     </android.support.constraint.ConstraintLayout>

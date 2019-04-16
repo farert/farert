@@ -136,10 +136,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
 
         /* database index reset */
-        if (num < 5) {
-            saveParam(this, "datasource", "0".toString())
+        if (num < 5) {  // 5=19.04
+            // set current default database index
+            saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
         }
-
     }
 
     private fun getVersionCode(): Int {
