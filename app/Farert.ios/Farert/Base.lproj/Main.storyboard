@@ -1515,7 +1515,7 @@
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="98" id="tIf-Dg-u1J"/>
                                                     </constraints>
-                                                    <string key="text">駅、路線、運賃データを過去データで見ることもできます。通常は最新（2018年）版を指定してください
+                                                    <string key="text">駅、路線、運賃データを過去データで見ることもできます。通常は最新版を指定してください
 また保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示も不正になりますが保存時のデータソースに戻すと元どおりになります</string>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
