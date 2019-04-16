@@ -258,7 +258,7 @@ class ResultViewActivity : AppCompatActivity() {
 
         // JR四国 km
         if (fi.salesKmForShikoku != 0) {
-            text_jrgroup_km3.text = resources.getString(R.string.result_jrcompany_kyusyu)
+            text_jrgroup_km3.text = resources.getString(R.string.result_jrcompany_shikoku)
             text_jrgroup_saleskm3.text = resources.getString(R.string.result_km, kmNumStr(fi.salesKmForShikoku))
             if (fi.salesKmForShikoku != fi.calcKmForShikoku) {
                 text_jrgroup_calckm3.text = resources.getString(R.string.result_km, kmNumStr(fi.calcKmForShikoku))
