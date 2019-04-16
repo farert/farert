@@ -1524,7 +1524,7 @@
                                                 <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="f5l-4U-U80">
                                                     <rect key="frame" x="15" y="21" width="344" height="29"/>
                                                     <segments>
-                                                        <segment title="消費税3%"/>
+                                                        <segment title="消費税5%"/>
                                                         <segment title="2014版"/>
                                                         <segment title="2015版"/>
                                                         <segment title="2017版"/>
