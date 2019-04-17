@@ -85,7 +85,7 @@ class TerminalSelectActivity : AppCompatActivity() {
             override fun onPageSelected(position: Int) {
                 val m = toolbar.menu
                 val mi = m.findItem(R.id.menu_item_all_delete)
-                mi.setVisible(position == TAB_PAGE.HISTORY.rowValue) // show 'History' tab only
+                mi.isVisible = (position == TAB_PAGE.HISTORY.rowValue) // show 'History' tab only
                 if (position == TAB_PAGE.HISTORY.rowValue) {
                     //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
                     //mi.setEnabled(0 < trv.itemCount)
@@ -119,7 +119,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                     tabs.visibility = View.GONE
                     tabcontainer.visibility = View.GONE
                     container.visibility = View.VISIBLE
-                    val fragment = PlaceholderFragment.newInstance(PlaceholderFragment.LIST_TYPE.SEARCH.ordinal, text!!, mode!!)
+                    val fragment = PlaceholderFragment.newInstance(PlaceholderFragment.LIST_TYPE.SEARCH.ordinal, text, mode!!)
                     supportFragmentManager
                             .beginTransaction()
                             .replace(R.id.container, fragment)

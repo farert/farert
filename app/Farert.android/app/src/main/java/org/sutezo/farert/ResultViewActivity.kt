@@ -188,7 +188,7 @@ class ResultViewActivity : AppCompatActivity() {
         val m = menu?: return super.onPrepareOptionsMenu(menu)
 
         mCalcRoute?.let {
-            menuControl(menu)
+            menuControl(m)
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -355,10 +355,11 @@ class ResultViewActivity : AppCompatActivity() {
             if (it.isNotEmpty()) {
                 sn++
                 text_title_stock_discount1.text = it[0].first
-                var s = ""
+                var s : String
                 if (fi.isRule114Applied) {
-                    s = resources.getString(R.string.result_yen, fareNumStr(it[0].third))
-                    s += "(${resources.getString(R.string.result_yen, fareNumStr(it[0].second))})"
+                    s = "${resources.getString(R.string.result_yen,
+                            fareNumStr(it[0].third))}(${resources.getString(
+                            R.string.result_yen, fareNumStr(it[0].second))})"
                 } else {
                     s = resources.getString(R.string.result_yen, fareNumStr(it[0].second))
                 }
@@ -368,8 +369,8 @@ class ResultViewActivity : AppCompatActivity() {
                     sn++
                     text_title_stock_discount2.text = it[1].first
                     if (fi.isRule114Applied) {
-                        s = resources.getString(R.string.result_yen, fareNumStr(it[1].third))
-                        s += "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
+                        s = "${resources.getString(R.string.result_yen, fareNumStr(it[1].third))}" +
+                            "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
                     } else {
                         s = resources.getString(R.string.result_yen, fareNumStr(it[1].second))
                     }
@@ -384,8 +385,8 @@ class ResultViewActivity : AppCompatActivity() {
             val row = row_stock_option2
             result_table.removeView(row)
             if (sn < 1) {
-                val row = row_stock_option1
-                result_table.removeView(row)
+                val rrow = row_stock_option1
+                result_table.removeView(rrow)
             }
         }
 
