@@ -1713,7 +1713,7 @@ public class FARE_INFO  {
         };
 
         for (int n : cityIds) {
-            if (n == cityId) {
+            if (cityId == cityIds[n]) {
                 return DbIdOf.INSTANCE.station(centerName[n]);
             }
         }
@@ -3046,7 +3046,7 @@ public class FARE_INFO  {
     }
 
     static List<RouteItem> IsHachikoLineHaijima(final List<RouteItem> route_list) {
-        // TODO
+
         List<RouteItem> out_route_list = new ArrayList<RouteItem>();
         int sid1;
         boolean b;
