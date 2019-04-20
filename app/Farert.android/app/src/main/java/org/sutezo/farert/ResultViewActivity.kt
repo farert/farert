@@ -30,7 +30,7 @@ class ResultViewActivity : AppCompatActivity() {
     var opt_osakakan : Option = Option.N_A      // TRUEは遠回り、FALSEは近回り
     var opt_meihancity : Option = Option.N_A    // TRUEは着駅を単駅指定、FALSEは発駅を単駅指定
     var opt_stocktokai : Option = Option.N_A    // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
-    var opt_neerest : Option = Option.N_A       // TRUEは適用、FALSEは非適用
+    //var opt_neerest : Option = Option.N_A       // TRUEは適用、FALSEは非適用
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,13 +46,13 @@ class ResultViewActivity : AppCompatActivity() {
         if (savedInstanceState != null) {
             opt_stocktokai = opts[savedInstanceState.getInt("stocktokai")]
             opt_osakakan = opts[savedInstanceState.getInt("osakakan")]
-            opt_neerest = opts[savedInstanceState.getInt("neerest")]
+            //opt_neerest = opts[savedInstanceState.getInt("neerest")]
             opt_sperule = opts[savedInstanceState.getInt("sperule")]
             opt_meihancity = opts[savedInstanceState.getInt("meihancity")]
         } else {
             opt_stocktokai =  opts[intent.getIntExtra("stocktokai", Option.N_A.ordinal)]
             opt_osakakan = opts[intent.getIntExtra("osakakan", Option.N_A.ordinal)]
-            opt_neerest = opts[intent.getIntExtra("neerest", Option.N_A.ordinal)]
+            //opt_neerest = opts[intent.getIntExtra("neerest", Option.N_A.ordinal)]
             opt_sperule = opts[intent.getIntExtra("sperule", Option.N_A.ordinal)]
             opt_meihancity = opts[intent.getIntExtra("meihancity", Option.N_A.ordinal)]
         }
@@ -82,7 +82,7 @@ class ResultViewActivity : AppCompatActivity() {
 
         outState?.putInt("stocktokai", opt_stocktokai.ordinal)
         outState?.putInt("osakakan", opt_osakakan.ordinal)
-        outState?.putInt("neerest", opt_neerest.ordinal)
+        //outState?.putInt("neerest", opt_neerest.ordinal)
         outState?.putInt("sperule", opt_sperule.ordinal)
         outState?.putInt("meihancity", opt_meihancity.ordinal)
     }
@@ -112,12 +112,14 @@ class ResultViewActivity : AppCompatActivity() {
                     refresh()
                 }
             }
-            R.id.menu_neerest -> {
-                if (opt_neerest != Option.N_A) {
-                    opt_neerest = Option.DO_TRUE
-                    refresh()
-                }
-            }
+/*
+ *          R.id.menu_neerest -> {
+ *              if (opt_neerest != Option.N_A) {
+ *                  opt_neerest = Option.DO_TRUE
+ *                  refresh()
+ *              }
+ *          }
+ */
             R.id.menu_osakakan -> {
                 if (Option.N_A != opt_osakakan) {
                     opt_osakakan = if (item.title.equals(resources.getString(R.string.result_menu_osakakan_far))) Option.DO_TRUE else Option.DO_FALSE
@@ -463,8 +465,10 @@ class ResultViewActivity : AppCompatActivity() {
 
     }
 
+    // create first
     private fun setRouteChange(ds: Route) {
 
+        /*
         if (opt_neerest == Option.DO_TRUE) {
             val end_id  = ds.endStationId()
             val begin_id = ds.startStationId()
@@ -489,6 +493,7 @@ class ResultViewActivity : AppCompatActivity() {
             }
             return
         }
+        */
 
         if (opt_osakakan == Option.DO_TRUE || opt_osakakan == Option.DO_FALSE) {
             val rc = ds.setDetour( (opt_osakakan == Option.DO_TRUE)  )  // 遠回り・近回り
@@ -572,10 +577,10 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // "最短経路算出"
-        if (opt_neerest != Option.DO_TRUE) {
+/*        if (opt_neerest != Option.DO_TRUE) {
             opt_neerest = if (fi.isArbanArea) Option.FALSE else Option.N_A    // 最初は無効(メニューのチェック状態を頼る)
         }
-
+ */
         // JR東海株主
         if (opt_stocktokai != Option.DO_TRUE && opt_stocktokai != Option.DO_FALSE) {
             opt_stocktokai =
@@ -618,9 +623,9 @@ class ResultViewActivity : AppCompatActivity() {
             val mi_osakakan = findItem(R.id.menu_osakakan)
             val mi_meihancity = findItem(R.id.menu_meihancity)
             val mi_stocktokai = findItem(R.id.menu_stocktokai)
-            val mi_neerest = findItem(R.id.menu_neerest)
+            //val mi_neerest = findItem(R.id.menu_neerest)
 
-            if ((mi_specialrule == null) || (mi_osakakan == null) || (mi_meihancity == null) || (mi_stocktokai == null) || (mi_neerest == null)) {
+            if ((mi_specialrule == null) || (mi_osakakan == null) || (mi_meihancity == null) || (mi_stocktokai == null)/* || (mi_neerest == null)*/) {
                 return
             }
 
@@ -655,9 +660,9 @@ class ResultViewActivity : AppCompatActivity() {
             }
 
             // "最短経路算出"
-            mi_neerest.setVisible(opt_neerest != Option.N_A)
+/*            mi_neerest.setVisible(opt_neerest != Option.N_A)
             mi_neerest.setEnabled(opt_neerest != Option.N_A && !mi_neerest.isChecked)
-
+ */
             // stock
             if (opt_stocktokai != Option.N_A) { // fi.isJRCentralStockEnable()) {
                 val tok = resources.getString(R.string.result_menu_stocktokai)
@@ -692,7 +697,7 @@ class ResultViewActivity : AppCompatActivity() {
         finish()
         this.intent.putExtra("stocktokai", opt_stocktokai.ordinal)
         this.intent.putExtra("osakakan", opt_osakakan.ordinal)
-        this.intent.putExtra("neerest", opt_neerest.ordinal)
+        //this.intent.putExtra("neerest", opt_neerest.ordinal)
         this.intent.putExtra("sperule", opt_sperule.ordinal)
         this.intent.putExtra("meihancity", opt_meihancity.ordinal)
         startActivity(this.intent)

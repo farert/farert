@@ -984,7 +984,7 @@ public class FARE_INFO  {
                     fare_info_shorts.setRoute(shortRoute.routeList(), short_last_flag);
                     fare_info_return = fare_info_shorts;
                 } else {
-                    jr_fare = fare_info_shorts.jr_fare;
+                    fare_info_return.jr_fare = fare_info_shorts.jr_fare;
                 }
             } else if (decision == 2/*立川経由が最安*/) {
                 // 立川経由が最安
@@ -1712,10 +1712,13 @@ public class FARE_INFO  {
                 "新大阪",
         };
 
+
+        int idx = 0;
         for (int n : cityIds) {
-            if (cityId == cityIds[n]) {
-                return DbIdOf.INSTANCE.station(centerName[n]);
+            if (cityId == n) {
+                return DbIdOf.INSTANCE.station(centerName[idx]);
             }
+            idx += 1;
         }
         return 0;   /* notfound */
     }
