@@ -864,16 +864,15 @@ public class CalcRoute extends RouteList {
                 fare_info.setTerminal(this.beginStationId(true),
                         this.endStationId(true));
     			if (fare_info.calc_fare(last_flag, route_list_raw, route_list_cooked)) {
-                    boolean b_more_low_cost;
 
                     fare_info.setRoute(this.route_list_cooked, last_flag);
 
-                    FARE_INFO f = fare_info.reCalcFareForOptiomizeRoute(this,
+                    FARE_INFO fret = fare_info.reCalcFareForOptiomizeRoute(this,
                             coreAreaIDByCityId(CSTART),
                             coreAreaIDByCityId(CEND));
-                    if (f != null) {
+                    if (fret != null) {
                         last_flag.rule_en = true ;    // applied rule
-                        fare_info = f;
+                        fare_info = fret;
                     } else {
                         // rule 114 applied
                         fare_info.setRule114(rule114);
