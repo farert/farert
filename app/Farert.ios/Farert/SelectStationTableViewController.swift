@@ -13,6 +13,7 @@ class SelectStationTableViewController: CSTableViewController {
     var companyOrPrefectId : Int = 0
     var lineId : Int = 0
     var lastStationId : Int = 0
+    var startStationId : Int = 0
 
     //
     var stations : [Int] = [];
@@ -43,7 +44,7 @@ class SelectStationTableViewController: CSTableViewController {
                 self.title = "着駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "分岐駅指定";
             } else {
-                stations = cRouteUtil.junctionIds(ofLineId: lineId) as! [Int]
+                stations = cRouteUtil.junctionIds(ofLineId: lineId, stationId: startStationId) as! [Int]
                 self.title = "分岐駅指定"
                 self.navigationItem.rightBarButtonItem!.title = "着駅指定"
             }
@@ -97,7 +98,12 @@ class SelectStationTableViewController: CSTableViewController {
         }
         
         // Configure the cell...;
-        cell!.textLabel?.text = cRouteUtil.stationName(stationId)
+        if (self.startStationId == stationId) {
+            let t = cRouteUtil.stationName(stationId)!
+            cell!.textLabel?.text = "＞ \(t)"        // 発駅
+        } else {
+            cell!.textLabel?.text = cRouteUtil.stationName(stationId)
+        }
         
         var details : String = "(\(cRouteUtil.getKanaFromStationId(stationId)!))"
         if (cRouteUtil.isJunction(stationId) &&
@@ -150,6 +156,7 @@ class SelectStationTableViewController: CSTableViewController {
             thisViewController.companyOrPrefectId = self.companyOrPrefectId;
             assert(self.companyOrPrefectId == 0, "bug")
             thisViewController.lastStationId = self.lastStationId;
+            thisViewController.startStationId = self.startStationId;
         }
     }
 }

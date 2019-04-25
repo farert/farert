@@ -14,6 +14,7 @@ class SelectLineTableViewController: UITableViewController {
     var companyOrPrefectId : Int = 0
     var baseStationId : Int = 0
     var lastLineId : Int = 0
+    var startStationId : Int = 0
 
     var lineList : [Int] = []
     
@@ -140,6 +141,7 @@ class SelectLineTableViewController: UITableViewController {
             selStationViewController.companyOrPrefectId = self.companyOrPrefectId;
             selStationViewController.lineId = Int(self.lineList[self.tableView.indexPathForSelectedRow?.row ?? 0])
             selStationViewController.lastStationId = self.baseStationId
+            selStationViewController.startStationId = self.startStationId
             selStationViewController.transit_state = FGD.TRANSIT.STA2JCT
         } else if (segid  == "autoRouteSegue") {
             // 最短経路ボタン(to TermSelectTableView)

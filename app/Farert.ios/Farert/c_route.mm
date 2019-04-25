@@ -256,9 +256,9 @@ int g_tax; /* main.m */
     return stations;
 }
 
-+ (NSArray*)JunctionIdsOfLineId:(NSInteger)lineId
++ (NSArray*)JunctionIdsOfLineId:(NSInteger)lineId stationId:(NSInteger)station_id
 {
-    int stationId = 0;
+    int stationId = (int)station_id;
     NSMutableArray* stations = [NSMutableArray array];
     DBO dbo = RouteUtil::Enum_junction_of_lineId((int)lineId, (int)stationId);
     while (dbo.moveNext()) {
@@ -800,7 +800,7 @@ int g_tax; /* main.m */
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
 
-    result.isArbanArea = fi.isUrbanArea();
+    result.isUrbanArea = fi.isUrbanArea();
     result.isSpecificFare = fi.isAppliedSpecificFare();
 
     result.totalSalesKm = fi.getTotalSalesKm();

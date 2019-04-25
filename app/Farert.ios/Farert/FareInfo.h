@@ -80,7 +80,7 @@
 @property (nonatomic) NSInteger rule114_salesKm;
 @property (nonatomic) NSInteger rule114_calcKm;
 @property (nonatomic) BOOL isRule114Applied;
-@property (nonatomic) BOOL isArbanArea;
+@property (nonatomic) BOOL isUrbanArea;
 @property (nonatomic) BOOL isSpecificFare;
 
 

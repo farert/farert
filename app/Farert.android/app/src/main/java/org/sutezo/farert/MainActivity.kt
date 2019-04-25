@@ -20,6 +20,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.route_list.view.*
+import kotlinx.android.synthetic.main.route_list_last.*
+import kotlinx.android.synthetic.main.route_list_last.view.*
 import org.sutezo.alps.*
 import java.lang.NumberFormatException
 
@@ -41,8 +43,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         val RESULT_CODE_SETTING = 3948
     }
 
+    // 再下端のバーボタン
+
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
+            // back to erase
             R.id.navigation_back -> {
                 if (1 < mRoute.count) {
                     mRoute.removeTail()
@@ -57,10 +62,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 }
                 update_fare(1)
             }
+            // reverse route
             R.id.navigation_reverse -> {
                 val rc = mRoute.reverse()
                 update_fare(rc)
             }
+            // 大阪環状線 大回り/近回り
             R.id.navigation_detour -> {
                 if (mOsakakan_detour != OSAKA_KAN.DISABLE) {
                     mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) OSAKA_KAN.NEAR else OSAKA_KAN.FAR
@@ -92,6 +99,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             startActivity(intent)
         }
 
+        // Show Detail Information of Result
         buttonFareDetail.setOnClickListener {
             if (1 < mRoute.count) {
                 val intent = Intent(this, ResultViewActivity::class.java)
@@ -205,6 +213,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         val rc = mRoute.changeNeerest(false, stationId)
                         update_fare(rc)
                     }
+                    // scroll to last
+                    recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
                 }
                 val dlg = build.create()
                 dlg.show()
@@ -232,10 +242,14 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             "route" -> {
                 val rc = mRoute.add(lineId, stationId)
                 update_fare(rc)
+                // scroll to last
+                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
             }
             "archive" -> {
                 val rc = mRoute.setup_route(newScr)
                 update_fare(rc)
+                // scroll to last
+                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
             }
             else -> {
                 // illegal(nothing)
@@ -322,7 +336,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             saleskm_value.text = resources.getString(R.string.result_km, kmNumStr(fi.totalSalesKm))
             // 有効日数
             availday_value.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
-            buttonFareDetail.text = ""
+            (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
             // 大阪環状線
             if (fi.isOsakakanDetourEnable()) {
                 if (fi.isOsakakanDetourShortcut()) {
@@ -338,7 +352,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             fare_value.visibility = View.INVISIBLE
             saleskm_value.visibility = View.INVISIBLE
             availday_value.visibility = View.INVISIBLE
-            buttonFareDetail.text = msg
+            (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
             footer_group.visibility = View.INVISIBLE
             mDrawerFragment.route = null
         }
@@ -378,12 +392,14 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         update_fare(1)
     }
 
+    // menu
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
 
+    // menu selected
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -414,6 +430,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
     }
 
+    // <- bottun
     override fun onBackPressed() {
         if (main_drawer_layout.isDrawerOpen(GravityCompat.START)) {
             main_drawer_layout.closeDrawer(GravityCompat.START)
@@ -479,6 +496,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
     }
 
+    //  select row item
+    //
     override fun onClickRow(selectItem: Int) {
         if (0 < mRoute.count) {
             if ((mRoute.count - 1) <= selectItem) {
@@ -488,6 +507,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 intent.putExtra("mode", "route")
                 intent.putExtra("src_station_id", mRoute.item(lastIdx).stationId())
                 intent.putExtra("src_line_id", mRoute.item(lastIdx).lineId())
+                intent.putExtra("start_station_id", mRoute.item(0).stationId())
                 startActivity(intent)
             } else {
                 // result display
@@ -504,10 +524,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
  }
 
-class RouteRecyclerAdapter(private val listener : RouteRecyclerAdapter.RecyclerListener,
-                           private val route : RouteList) : RecyclerView.Adapter<RouteRecyclerAdapter.MyViewHolder>() {
+class RouteRecyclerAdapter(private val listener : RecyclerListener,
+                           private val route : RouteList) : RecyclerView.Adapter<RouteRecyclerAdapter.RouteListViewHolder>() {
 
     private val onClickListener: View.OnClickListener
+    private var status : String = ""
 
     init {
         onClickListener = View.OnClickListener { v ->
@@ -517,17 +538,18 @@ class RouteRecyclerAdapter(private val listener : RouteRecyclerAdapter.RecyclerL
     }
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.route_list, parent, false)
-        return MyViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RouteListViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(
+                if (viewType == 1) R.layout.route_list_last
+                else R.layout.route_list,
+                parent, false)
+        return RouteListViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RouteListViewHolder, position: Int) {
         if (position == route.count - 1) {
             // last item
-            holder.line_item.text = holder.itemView.resources.getString(R.string.main_last_list_caption)
-            holder.line_item.setTextColor(holder.line_item.linkTextColors)
-            holder.line_item.gravity = Gravity.RIGHT
+            holder.status_message.text = status
         } else {
             val current = route.item(position + 1)
             holder.line_item.text = RouteUtil.LineName(current.lineId())
@@ -549,10 +571,17 @@ class RouteRecyclerAdapter(private val listener : RouteRecyclerAdapter.RecyclerL
         return if (position == route.count - 1) 1 else 0
     }
 
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    fun status_message(msg : String) : Unit {
+        status = msg
+        if (1 < route.count) {
+            notifyItemChanged(route.count - 1)
+        }
+    }
+
+    inner class RouteListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var line_item = itemView.junction_line
         var station_item = itemView.junction_station
-
+        var status_message = itemView.status_message
         init {
         }
     }

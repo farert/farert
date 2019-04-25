@@ -16,11 +16,14 @@ class FarertApp : Application() {
     val ds = Route()
 
     companion object {
-        lateinit var mDbHelper : DatabaseOpenHelper
+        lateinit var instance: Application private set
     }
+
+    lateinit var mDbHelper : DatabaseOpenHelper
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         //System.setOut(PrintStream("C:\\debug.log") )
         System.setOut(NullPrintStream())
         setDatabase()

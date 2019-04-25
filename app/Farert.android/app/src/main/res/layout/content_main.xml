@@ -28,8 +28,8 @@
         android:padding="10dp"
         android:scrollbars="vertical"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@+id/buttonTerminal"
-        app:layout_constraintBottom_toTopOf="@+id/footer_fare"/>
+        app:layout_constraintTop_toBottomOf="@id/buttonTerminal"
+        app:layout_constraintBottom_toTopOf="@id/footer_fare"/>
 
     <TextView
         android:id="@+id/footer_fare"
@@ -102,14 +102,30 @@
         app:layout_constraintBottom_toBottomOf="@+id/footer_saleskm"
         app:layout_constraintLeft_toRightOf="@+id/footer_availday"
         app:layout_constraintTop_toTopOf="@+id/footer_fare" />
+
+    <ImageView
+        android:id="@+id/imageView_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="@id/footer_fare"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/availday_value"
+        app:srcCompat="@drawable/ic_kb_arrow_right"
+        />
+
     <Button
         android:id="@+id/buttonFareDetail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@null"
         android:padding="10dp"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
         android:theme="@style/AppTheme.FlatButton"
-        app:layout_constraintTop_toBottomOf="@+id/recycler_view_route"
+        app:layout_constraintTop_toBottomOf="@id/recycler_view_route"
+        app:layout_constraintBottom_toTopOf="@id/bottombar"
         />
 
     <android.support.design.widget.BottomNavigationView
@@ -130,7 +146,7 @@
         android:id="@+id/footer_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="footer_fare,fare_value,footer_saleskm,saleskm_value,footer_availday,availday_value,textView" />
+        app:constraint_referenced_ids="imageView_right,footer_fare,fare_value,footer_saleskm,saleskm_value,footer_availday,availday_value" />
 
 
 </android.support.constraint.ConstraintLayout>
