@@ -40,6 +40,7 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
     private var mLineId : Int = 0    // select line_id at this view
     private var mIdType : Int = 0    // "prefect=2"|"company=1"
     private var mSrcStationId : Int = 0
+    private var mStartStationId : Int = 0
     private var mSrcLineId: Int = 0
     private var mStationSelMode : Int = 0 // twoPane and mode="route"
 
@@ -52,6 +53,7 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
             mMode = getStringExtra("mode")
             if (mMode == "route") {
                 mSrcStationId = getIntExtra("src_station_id", 0)
+                mStartStationId = getIntExtra("start_station_id", 0)
                 mSrcLineId = getIntExtra("src_line_id", 0)
             } else {
                 // mode = autoroute|terminal
@@ -79,17 +81,20 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
             twoPane = true
         }
 
+        // View subject
+
         val listItems =
                 when (mIdType) {
                     1-> {
+                        // 会社名(JRグループ名)
                         supportActionBar?.subtitle =  RouteUtil.CompanyName(mIdent)
                         linesFromCompanyOrPrefect(mIdent)
                     }
-                    2 -> {   //prefect
+                    2 -> {   //prefect 都道府県
                         supportActionBar?.subtitle =  RouteUtil.PrefectName(mIdent)
                         linesFromCompanyOrPrefect(mIdent)
                     }
-                    0 -> {
+                    0 -> {  // 起点駅
                         supportActionBar?.subtitle = RouteUtil.StationName(mSrcStationId)
                         lineIdsFromStation(mSrcStationId)
                     }
@@ -163,6 +168,7 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
                             putString("mode", mMode)
                             putInt("line_id", mLineId)
                             putInt("src_station_id", mSrcStationId)
+                            putInt("start_station_id", mStartStationId)
                             if (mStationSelMode == 1) {
                                 putString("station_mode", "all")
                                 mStationSelMode = 2
@@ -208,7 +214,9 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
                     putString("line_to_type", type)
                     if (mMode == "route") {
                         putInt("src_station_id", mSrcStationId)
+                        putInt("start_station_id", mStartStationId)
                     } else {
+                        //
                         putInt("line_to_id",  mIdent)
                     }
                     putString("station_mode", stationList)
@@ -229,6 +237,7 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
                 putExtra("line_to_type", type)
                 if (mMode == "route") {
                     putExtra("src_station_id", mSrcStationId)
+                    putExtra("start_station_id", mStartStationId)
                 } else {
                     putExtra("line_to_id", mIdent)
                 }
@@ -259,7 +268,8 @@ private class LineListRecyclerViewAdapter(private val values: List<Int>,
                 .inflate(R.layout.row_line_list, parent, false)
         if (viewType == 1) {
             with(view.id_line) {
-                setBackgroundColor(Color.parseColor("gray"))
+                //setBackgroundColor(Color.parseColor("gray"))
+                setBackgroundResource(R.color.colorBackOriginTerm)
                 typeface = Typeface.DEFAULT_BOLD
             }
         }

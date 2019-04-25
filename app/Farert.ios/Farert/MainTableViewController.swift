@@ -630,6 +630,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             selectLineTblViewController.baseStationId = ds.lastStationId()
             selectLineTblViewController.companyOrPrefectId = 0
             selectLineTblViewController.lastLineId = ds.lastLineId()
+            selectLineTblViewController.startStationId = ds.startStationId()
             
             apd.context = .ROUTESELECT_VIEW;
             

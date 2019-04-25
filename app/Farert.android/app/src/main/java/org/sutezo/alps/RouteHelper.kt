@@ -153,10 +153,10 @@ fun stationsIdsOfLineId(lineId:Int):List<Int>
     return stations;
 }
 
-fun junctionIdsOfLineId(lineId:Int):List<Int>
+fun junctionIdsOfLineId(lineId:Int, stationId: Int = 0):List<Int>
 {
     val stations = mutableListOf<Int>()
-    val dbo = RouteUtil.Enum_junction_of_lineId(lineId, 0)
+    val dbo = RouteUtil.Enum_junction_of_lineId(lineId, stationId)
     dbo.use {
         while (dbo.moveToNext()) {
             stations.add(dbo.getInt (1))

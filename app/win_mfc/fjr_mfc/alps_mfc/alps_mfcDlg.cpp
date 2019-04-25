@@ -313,7 +313,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(TRUE);		// Enable [-] button
 
 		m_selMode = SEL_JUNCTION;
-		setupForStationlistByLine(selId, m_curStationId);
+		setupForStationlistByLine(selId, m_curStationId, m_route.startStationId());
 	}
 	else {
 		// add route list ‰wId
@@ -429,7 +429,7 @@ void Calps_mfcDlg::OnBnClickedRadioBranchSel()
 			((itemcnt < 2) || (m_curStationId == IDENT2(pLRoute->GetItemData(pLRoute->GetItemCount() - 2)))));	// current select line
 
 	if (0 < curLineId) {
-		setupForStationlistByLine(curLineId, m_curStationId);
+		setupForStationlistByLine(curLineId, m_curStationId, m_route.startStationId());
 	} else {
 		ASSERT(FALSE);
 	}
@@ -476,7 +476,7 @@ void Calps_mfcDlg::OnBnClickedButtonBs()
 		m_route.removeTail();
 
 		curLineId = IDENT1(pLRoute->GetItemData(numList - 1));	// last line
-		setupForStationlistByLine(curLineId, m_curStationId);
+		setupForStationlistByLine(curLineId, m_curStationId, m_route.startStationId());
 
 		pLRoute->SetItemText(numList - 1, 1, _T(""));
 		pLRoute->SetItemData(numList - 1, MAKEPAIR(curLineId, 0));
@@ -653,10 +653,11 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 //	ListView<IDC_LIST_LINESTATIONS>
 //	˜Hü“à‚Ì•ªŠò‰w^‘S‰wˆê——‚ğ•\¦
 //
-//	@param [in]				lineId			˜Hü
-//	@param [in][optional]	curStationId	‘I‘ğ•s‰Â‰w
+//	@param [in]	lineId			˜Hü
+//	@param [in]	curStationId	‘I‘ğ•s‰Â‰w
+//	@param [in]	startStationId	ŠJn‰w(‘I‘ğ‰Â)
 //
-void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId /* =0 */)
+void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int startStationId)
 {
 	CListCtrl* pLSel = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_LINESTATIONS));
 	LVCOLUMN column;
@@ -692,7 +693,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId /* =0 
 
 	DBO dbo;
 	if (m_selMode == SEL_JUNCTION) {
-		dbo = RouteUtil::Enum_junction_of_lineId(lineId, -1);
+		dbo = RouteUtil::Enum_junction_of_lineId(lineId, startStationId);
 	} else if (m_selMode == SEL_TERMINATE) {
 		dbo = RouteUtil::Enum_station_of_lineId(lineId);
 	} else {
@@ -712,7 +713,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId /* =0 
 		int stationId = dbo.getInt(1);
 
 		stationName.Format(_T("%s%s"),
-			(stationId == curStationId) ? _T("- ") : _T(""), dbo.getText(0).c_str());
+			(stationId == curStationId) ? _T("- ") : (stationId == startStationId) ? _T("> ") : _T(""), dbo.getText(0).c_str());
 
 		CString jctLines;
 		if (0 != dbo.getInt(2)) { /* •ªŠò‰w */

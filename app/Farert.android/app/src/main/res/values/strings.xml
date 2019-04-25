@@ -14,6 +14,8 @@
     <string name="main_alert_query_bullet">新幹線を使いますか？</string>
     <string name="main_head_caption">　発：　%1$s  %2$s</string>
 
+    <string name="route_start_station_mark">　＞</string>
+
     <string name="title_back">経路戻り</string>
     <string name="title_reverse">リバース</string>
     <string name="title_oskkanrev">大阪環状線回り</string>
@@ -74,7 +76,6 @@
 
     <string name="term_menu_title">検索</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="tab_company">会社</string>
     <string name="tab_prefect">都道府県</string>
     <string name="tab_history">履歴</string>

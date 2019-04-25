@@ -273,7 +273,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             
         case 4:
             /* avail days */
-            if (false == self.fareInfo.isArbanArea) {
+            if (false == self.fareInfo.isUrbanArea) {
                 cell = tableView.dequeueReusableCell(withIdentifier: "rsAvailDaysCell", for: indexPath) 
                 var lbl : UILabel = cell.viewWithTag(1) as! UILabel
                 lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
@@ -294,11 +294,21 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     lbl.text = "(途中下車前途無効)"
                 }
             } else {
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath) 
+                // 近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath)
+                let lbl : UILabel = cell.viewWithTag(1) as! UILabel
+                var s : String
                 if nil == self.fareInfo {
-                    cell.textLabel?.text = "エラー"
+                    s = "エラー"
                     assert(false)
+                } else if (self.fareInfo.beginStationId != self.fareInfo.endStationId) {
+                    s = (self.fareInfo.isRuleApplied()) ?
+                    "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)":
+                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
+                } else {
+                    s = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
                 }
+                lbl.text = s
             }
             
         case 5:
@@ -440,7 +450,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             value = 44
         case 4:
             /* avail days */
-            if !self.fareInfo.isArbanArea  {
+            if !self.fareInfo.isUrbanArea  {
                 ident = "rsAvailDaysCell"
                 value = 44
             } else {
@@ -708,7 +718,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.tableView.reloadData()
         }
 
-        if self.fareInfo.isFareOptEnabled() || self.fareInfo.isArbanArea {
+        //if self.fareInfo.isFareOptEnabled() || self.fareInfo.isUrbanArea
+        if self.fareInfo.isRuleAppliedEnable() || self.fareInfo.isFareOptEnabled() {
             self.chgOptionButton.isEnabled = true
         } else {
             self.chgOptionButton.isEnabled = false
