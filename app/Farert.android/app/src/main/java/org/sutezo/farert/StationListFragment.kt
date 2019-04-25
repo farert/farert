@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.provider.Settings.Global.getString
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +34,7 @@ class StationListFragment : Fragment() {
     var srcCompanyOrPrefectId: Int = 0
     var stationMode : String = ""    // junction|
     var srcStationId : Int = 0
+    var startStationId : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,7 @@ class StationListFragment : Fragment() {
             mode = it.getString("mode", "")
             lineId = it.getInt("line_id", 0)
             srcStationId = it.getInt("src_station_id", 0)
+            startStationId = it.getInt("start_station_id", 0)
             srcType = it.getString("line_to_type", "")
             srcCompanyOrPrefectId = it.getInt("line_to_id", 0)
             stationMode = it.getString("station_mode", "")
@@ -58,13 +61,13 @@ class StationListFragment : Fragment() {
                 stationsWithInCompanyOrPrefectAnd(srcCompanyOrPrefectId, lineId)
             } else {
                 if (stationMode == "junction") {
-                    junctionIdsOfLineId(lineId)
+                    junctionIdsOfLineId(lineId, startStationId)
                 } else {
                     stationsIdsOfLineId(lineId)
                 }
             }
         }
-        rootView.station_list.adapter = StationListRecyclerViewAdapter(lineId, srcStationId, list(), onClickRow)
+        rootView.station_list.adapter = StationListRecyclerViewAdapter(lineId, srcStationId, startStationId, list(), onClickRow)
         return rootView
     }
 
@@ -87,6 +90,7 @@ class StationListFragment : Fragment() {
 
 class StationListRecyclerViewAdapter(private val lineId: Int,
                                      private val seledStaionId: Int,
+                                     private val startStationId: Int,
                                      private val values: List<Int>,
                                      private val onClickCallBack: (Int) -> Unit) :
         RecyclerView.Adapter<StationListRecyclerViewAdapter.ViewHolder>() {
@@ -104,10 +108,14 @@ class StationListRecyclerViewAdapter(private val lineId: Int,
                 .inflate(R.layout.row_station_list, parent, false)
         if (viewType == 1) {
             with(view.row_station_item) { //行全体背景をグレーに
-                setBackgroundColor(Color.parseColor("gray"))
+                //setBackgroundColor(Color.parseColor("lightgray"))
+                setBackgroundResource(R.color.colorBackOriginTerm)
             }
             view.id_text_station.typeface  = Typeface.DEFAULT_BOLD
             view.id_text_lines_of_station.typeface  = Typeface.DEFAULT_BOLD
+        } else if (viewType == 2) {
+            // 発駅
+            view.id_text_station.typeface  = Typeface.DEFAULT_BOLD
         }
         return ViewHolder(view)
     }
@@ -116,7 +124,12 @@ class StationListRecyclerViewAdapter(private val lineId: Int,
         val item = values[position]
 
         // 駅名
-        holder.idView.text = RouteUtil.StationNameEx(item)
+        if (getItemViewType(position) == 2) {
+            val lbl = holder.idView.context.getString(R.string.route_start_station_mark)
+            holder.idView.text = "%s%s".format(lbl, RouteUtil.StationNameEx(item))
+        } else {
+            holder.idView.text = RouteUtil.StationNameEx(item)
+        }
 
         // 駅の所属する路線一覧を表示(item:駅, lineId:除外する路線)
         holder.contentView.text = getDetailStationInfoForSelList(lineId, item)
@@ -133,7 +146,11 @@ class StationListRecyclerViewAdapter(private val lineId: Int,
     override fun getItemCount() = values.size
 
     override fun getItemViewType(position: Int): Int {
-        return if (values[position] == seledStaionId) 1 else 0
+        return when (values[position]) {
+            seledStaionId -> 1
+            startStationId -> 2
+            else -> 0
+        }
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {

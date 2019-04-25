@@ -87,7 +87,7 @@ enum DBIDX {
 // enum stations by lineId
 + (NSArray*)StationsIdsOfLineId:(NSInteger)lineId;
 // enum junction by lineId
-+ (NSArray*)JunctionIdsOfLineId:(NSInteger)lineId;
++ (NSArray*)JunctionIdsOfLineId:(NSInteger)lineId stationId:(NSInteger)station_id;
 
 + (NSString*)TerminalName:(NSInteger)ident;
 + (BOOL)IsJunction:(NSInteger)station_id;

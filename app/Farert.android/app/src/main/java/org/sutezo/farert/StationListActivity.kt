@@ -45,6 +45,7 @@ class StationListActivity : AppCompatActivity() {
             val srcCompanyOrPrefectId = intent.getIntExtra("line_to_id", 0)
             val stationMode = intent.getStringExtra("station_mode") ?:""// junction | all
             val srcStationId = intent.getIntExtra("src_station_id", 0)
+            val startStationId = intent.getIntExtra("start_station_id", 0)
 
             val title = {
                 if (mode == "route") {
@@ -69,6 +70,7 @@ class StationListActivity : AppCompatActivity() {
                     putInt("line_to_id", srcCompanyOrPrefectId)
                     putString("station_mode", stationMode)
                     putInt("src_station_id", srcStationId)
+                    putInt("start_station_id", startStationId)
                 }
             }
             supportFragmentManager.beginTransaction()
