@@ -206,12 +206,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                     setPositiveButton("Yes") { _, _ ->
                         // 新幹線
                         val rc = mRoute.changeNeerest(true, stationId)
-                        update_fare(rc)
+                        update_fare(if (rc == 4) 40 else rc)
                     }
                     setNegativeButton("No") { _, _ ->
                         // 在来線のみ
                         val rc = mRoute.changeNeerest(false, stationId)
-                        update_fare(rc)
+                        update_fare(if (rc == 4) 40 else rc)
                     }
                     // scroll to last
                     recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
@@ -295,6 +295,9 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         }
                         5 -> {
                             resources.getString(R.string.main_rc_neerested)
+                        }
+                        40 -> {
+                            resources.getString(R.string.main_rc_auto_not_enough)
                         }
                         -200 -> {
                             // 不正な駅名が含まれています.

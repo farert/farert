@@ -129,7 +129,6 @@ enum DBIDX {
 - (NSInteger)lastStationId;
 - (NSString*)routeScript;
 
-
 @end
 /* End of Route */
 
@@ -189,6 +188,8 @@ enum DBIDX {
 - (NSInteger)lastLineId;
 
 - (BOOL)isReverseAllow;
+
+- (BOOL)isEnd;
 
 @end
 /* End of cRoute */

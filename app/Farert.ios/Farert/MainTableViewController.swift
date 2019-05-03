@@ -1088,7 +1088,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         } else {
             self.ds = cRoute(routeList: routeList!)
         }
-        routeStat = .OK
+        if (self.ds.isEnd()) {
+            routeStat = .FINISH
+        } else {
+            routeStat = .OK
+        }
         if let cds = cCalcRoute(route: ds) {
             fareInfo = cds.calcFare()
         } else {
