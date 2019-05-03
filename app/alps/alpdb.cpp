@@ -3305,19 +3305,20 @@ int32_t CalcRoute::coreAreaIDByCityId(int32_t startEndFlg)
 //	経路を逆転
 //
 //	@retval 1   sucess
-//	@retval 0   sucess(empty)
+//	@retval 0   sucess(end)
 //	@retval -1	failure(6の字を逆転すると9になり経路重複となるため)
 //
 int32_t Route::reverse()
 {
 	int32_t station_id;
 	int32_t line_id;
+    int32_t rc = -1;
 	vector<RouteItem> route_list_rev;
 	vector<RouteItem>::const_reverse_iterator rev_pos;
 	vector<RouteItem>::const_iterator pos;
 
 	if (route_list_raw.size() <= 1) {
-		return 0;
+		return rc;  // -1
 	}
 
 	for (rev_pos = route_list_raw.crbegin(); rev_pos != route_list_raw.crend(); rev_pos++) {
@@ -3331,7 +3332,7 @@ int32_t Route::reverse()
 	add(station_id);
 	line_id = pos->lineId;
 	for (pos++; pos != route_list_rev.cend(); pos++) {
-		int32_t rc = add(line_id, /*station_id,*/ pos->stationId);
+		rc = add(line_id, /*station_id,*/ pos->stationId);
 		if (rc < 0) {
 			/* error */
 			/* restore */
@@ -3342,18 +3343,18 @@ int32_t Route::reverse()
 			station_id = rev_pos->stationId;
 			add(station_id);
 			for (rev_pos++; rev_pos != route_list_rev.crend(); rev_pos++) {
-				rc = add(rev_pos->lineId, /*station_id,*/ rev_pos->stationId, 1<<8);
-				ASSERT(0 <= rc);
+				int r = add(rev_pos->lineId, /*station_id,*/ rev_pos->stationId, 1<<8);
+				ASSERT(0 <= r);
 				station_id = rev_pos->stationId;
 			}
 			TRACE(_T("cancel reverse route\n"));
-			return -1;
+			return rc;
 		}
 		station_id = pos->stationId;
 		line_id = pos->lineId;
 	}
 	TRACE(_T("reverse route\n"));
-	return 1;
+	return rc;
 }
 
 
