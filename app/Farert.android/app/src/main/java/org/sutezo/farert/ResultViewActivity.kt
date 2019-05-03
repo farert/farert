@@ -61,9 +61,9 @@ class ResultViewActivity : AppCompatActivity() {
         ds.assign((application as FarertApp).ds, routeEndIndex)
         setRouteChange(ds)
         mIsRoundTrip = ds.isRoundTrip
-        mCalcRoute = CalcRoute(ds)
-        mCalcRoute?.let {
-            setRouteOption(it)
+        mCalcRoute = CalcRoute(ds).also {
+            it.calcFareInfo()   // apply lastFlag.rule_en
+            setRouteOption(it)  // setFareOption()
         }
     }
 
@@ -73,7 +73,7 @@ class ResultViewActivity : AppCompatActivity() {
         mCalcRoute?.let {
             val fi = it.calcFareInfo()
             setContentData(fi)
-            setOptionFlag(fi)
+            setOptionFlag(fi)   // getFareOption() -> this member attributes(opt_xxx)
         }
     }
 
@@ -452,7 +452,13 @@ class ResultViewActivity : AppCompatActivity() {
                 text_availdays2.text = resources.getString(R.string.result_availday_dontstopover)
             }
         } else {
-            text_availdays.text = resources.getString(R.string.result_availday_metroarea)
+            if (fi.beginStationId != fi.endStationId) {
+                text_availdays.text = resources.getString(
+                        if (fi.isRuleApplied()) R.string.result_days_metro1
+                        else R.string.result_days_metro2)
+            } else {
+                text_availdays.text = resources.getString(R.string.result_days_metro_return)
+            }
             text_availdays2.visibility = View.INVISIBLE
         }
 
@@ -514,33 +520,33 @@ class ResultViewActivity : AppCompatActivity() {
     }
 
     // create last
-    private fun setRouteOption(cds : CalcRoute) {
+    private fun setRouteOption(ds : RouteList) {
 
         // 特例
         if (Option.DO_TRUE == opt_sperule) {
             // @"特例を適用しない";
-            cds.setFareOption(RouteUtil.FAREOPT_RULE_NO_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
+            ds.setFareOption(RouteUtil.FAREOPT_RULE_NO_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
         } else if (Option.DO_FALSE == opt_sperule) {
             // @"特例を適用する";
-            cds.setFareOption(RouteUtil.FAREOPT_RULE_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
+            ds.setFareOption(RouteUtil.FAREOPT_RULE_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
         }
 
         // 大高-杉本町
         if (Option.DO_TRUE == opt_meihancity) {
             // "着駅を単駅指定";
-            cds.setFareOption(RouteUtil.FAREOPT_APPLIED_START, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+            ds.setFareOption(RouteUtil.FAREOPT_APPLIED_START, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
         } else if (Option.DO_FALSE == opt_meihancity) {
             // "発駅を単駅指定";
-            cds.setFareOption(RouteUtil.FAREOPT_APPLIED_TERMINAL, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+            ds.setFareOption(RouteUtil.FAREOPT_APPLIED_TERMINAL, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
         }
 
         // JR東海株主
         if (Option.DO_FALSE == opt_stocktokai) {
             // @"JR東海株主優待券を適用しない";
-            cds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
+            ds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
         } else if (Option.DO_TRUE == opt_stocktokai) {
             // @"JR東海株主優待券を使用する";
-            cds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
+            ds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
         }
     }
 

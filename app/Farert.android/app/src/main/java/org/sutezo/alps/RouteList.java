@@ -316,10 +316,10 @@ public class RouteList {
     	// 特例有無 bit 4-5
     	if (last_flag.rule_en) {
     		if (last_flag.no_rule) {
-    			rc |= 0x30;     //
+    			rc |= (1 << 5);     //
     		}
     		else {
-    			rc |= 0x10;     // default: Applied
+    			rc |= (1 << 4);     // default: Applied
     		}
     	}
         // JR東海株主 有無 bit 4-5

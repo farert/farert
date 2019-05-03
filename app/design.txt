@@ -1,5 +1,25 @@
 
 
+<Android>
+駅データアクセス部 Java
+Android UI Kotlin
+
+<iOS>
+駅データアクセス部 C++ Windows版と共有・同一ソース
+データアクセス、UI I/F部 Objective-C
+UI部 Swift
+
+<Windows>
+駅データアクセス部 C++ Windows版と共有・同一ソース
+Windows UI C++/MFC
+汎用部 C++
+SQLite3 I/F C++
+
+
+2019.5.2 Androidで大都市近郊区間で遠回りし、運賃詳細画面で、特例を適用しないにして計算はして結果も表示するが再メニュー表示がされない不具合がある。
+問題はNoRULEフラグがRouteList側にありCalc側に無い点？
+AndroidではRouteは毎回構築しなおすのでRuleEnが消えちゃうので。
+
 
 b#19032701
 
