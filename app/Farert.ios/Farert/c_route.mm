@@ -658,6 +658,11 @@ int g_tax; /* main.m */
     return (obj_route->getFareOption() & 0x400) == 0;
 }
 
+- (BOOL)isEnd
+{
+    return obj_route->isEnd();
+}
+
 @end
 /* End of cRoute */
 
