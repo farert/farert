@@ -857,9 +857,12 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 
 	rc = m_route.reverse();
 
-	if (0 < rc) {
+	if (0 <= rc) {
 		GetDlgItem(IDC_EDIT_START)->SetWindowText(RouteUtil::StationName(m_route.startStationId()).c_str());	// 発駅表示
 		UpdateRouteList();
+		if (rc == 0 || rc == 5) {
+			SetDlgItemText(IDC_EDIT_STAT, _T("経路は片道条件に達しています."));
+		}
 	} else if (rc < 0) {
 		AfxMessageBox(_T("経路が重複しています"));
 	}

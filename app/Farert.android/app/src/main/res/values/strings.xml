@@ -106,6 +106,7 @@
     <string name="main_rc_cantautostart">経路を算出できません.</string>
     <string name="main_rc_duplicate_route">経路が重複しているため追加できません.</string>
     <string name="main_rc_company_end">会社線利用路線はこれ以上追加できません</string>
+    <string name="main_rc_auto_not_enough">開始駅へ戻るにはもう少し経路を指定してからにしてください</string>
 
     <!-- Result view -->
     <string name="result_section">区間</string>
@@ -141,7 +142,9 @@
     <string name="result_availdays">有効日数</string>
     <string name="result_days">199日間</string>
     <string name="result_days_long">(発着駅都区市内の駅を除き途中下車可能)</string>
-    <string name="result_days_metro">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、当日限り有効)</string>
+    <string name="result_days_metro1">近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)</string>
+    <string name="result_days_metro2">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、当日限り有効)</string>
+    <string name="result_days_metro_return">近郊区間内ですので同一駅発着のきっぷは購入できません.</string>
     <string name="result_days_short">途中下車不可</string>
     <string name="result_via">経由</string>
     <string name="result_value_discount"> (割引)</string>
@@ -160,7 +163,6 @@
     <string name="result_availday_empty">(</string>
     <string name="result_availday_stopover">%1$s途中下車可能)</string>
     <string name="result_availday_dontstopover">(途中下車前途無効)</string>
-    <string name="result_availday_metroarea">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)</string>
     <string name="result_note_company">会社線発着のため一枚の乗車券として発行されない場合があります.\n</string>
     <string name="result_note_multicompany">複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.\n</string>
     <string name="result_note_jrtokaistock">JR東海株主優待券使用オプション選択可\n</string>
