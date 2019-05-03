@@ -1841,16 +1841,18 @@ public class Route extends RouteList {
     //	経路を逆転
     //
     //	@retval 1   sucess
-    //	@retval 0   sucess(empty)
+    //	@retval 0   sucess(end)
     //	@retval -1	failure(6の字を逆転すると9になり経路重複となるため)
     //
     public int reverse() {
         int station_id;
         int line_id;
+        int rc = -1;
+
         List<RouteItem> route_list_rev = new ArrayList<RouteItem>(route_list_raw.size());
 
         if (route_list_raw.size() <= 1) {
-            return 0;
+            return rc;  // -1
         }
 
         ListIterator<RouteItem> revIterator = route_list_raw.listIterator(route_list_raw.size());
@@ -1865,11 +1867,11 @@ public class Route extends RouteList {
         if (ite.hasNext()) {
             RouteItem ri = ite.next();
             station_id = ri.stationId;
-            add(station_id);
+            rc = add(station_id);
             line_id = ri.lineId;
             while (ite.hasNext()) {
                 ri = ite.next();
-                int rc = add(line_id, /*station_id,*/ ri.stationId);
+                rc = add(line_id, /*station_id,*/ ri.stationId);
                 if (rc < 0) {
 					/* error */
 					/* restore */
@@ -1883,14 +1885,14 @@ public class Route extends RouteList {
                         add(station_id);
                         while (ite.hasPrevious()) {
                             ri = ite.previous();
-                            rc = add(ri.lineId, /*station_id,*/ ri.stationId, 1<<8);
-                            ASSERT (0 <= rc);
+                            int r = add(ri.lineId, /*station_id,*/ ri.stationId, 1<<8);
+                            ASSERT (0 <= r);
                         }
                     } else {
                         ASSERT(false);
                     }
                     System.out.printf("cancel reverse route\n");
-                    return -1;
+                    return rc;
                 }
                 station_id = ri.stationId;
                 line_id = ri.lineId;
@@ -1899,7 +1901,7 @@ public class Route extends RouteList {
             ASSERT(false);
         }
         System.out.printf("reverse route\n");
-        return 1;
+        return rc;
     }
 
     //public:
