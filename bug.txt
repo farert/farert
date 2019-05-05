@@ -21,6 +21,13 @@ pending
 海尻 小諸 篠ノ井 がいけるのはおかしくないか？
 小海 小諸 篠ノ井 はOKだが。
 
+-- Release 19.05.01  Windows(24), Android(10), iOS(52)
+
+b#19050501
+放出-新加美が大阪市内扱いされていない
+->
+DB定義を修正(86tableは不要)
+
 -- Release 19.05  Windows(23), Android(9), iOS(51)
 
 b#19050201
