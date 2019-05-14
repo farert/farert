@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -9190,7 +9190,7 @@ bool FARE_INFO::retr_fare()
 		ASSERT(this->total_jr_calc_km == this->hokkaido_calc_km);
 		ASSERT(this->jr_fare == 0);
 
-		if (this->local_only_as_hokkaido) {
+		if (this->local_only_as_hokkaido || this->total_jr_sales_km <= 100) {
 			/* JR北海道 地方交通線のみ */
 			// (j)<s>
 			TRACE("fare(hokkaido_sub)\n");
