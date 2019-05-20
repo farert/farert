@@ -189,7 +189,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
             if let selid = appDelegate.selectTerminalId {
                 self.actionSheetController(
-                    ["新幹線を使う", "新幹線をつかわない（在来線のみ）"],
+                    ["在来線のみ","新幹線を使う", "会社線を使う", "新幹線も会社線も使う"],
                     title: cRouteUtil.stationName(selid) + "までの最短経路追加",
                     message: "",
                     from: TAG_UIACTIONSHEET_AUTOROUTE)
@@ -252,18 +252,21 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         case .AUTOROUTE:
             // auto route
-            // buttonIndex : 0 = 新幹線を使う
-            //               1 = 新幹線を使わない
+            // param    0 在来線のみ
+            //          1 新幹線をつかう
+            //          2 会社線をつかう
+            //          3 新幹線も在来線も使う
             var bullet : Int
             if let nsid : NSNumber = param as? NSNumber {
                 bullet = nsid.intValue
+                bullet = (bullet < 0 || 3 < bullet) ? 0 : bullet
             } else {
                 bullet = 0
             }
             //let n = param as? Int
             let saveRoute = cRouteList(route: ds)
 
-            rc = ds.autoRoute(bullet != 1, arrive: appDelegate.selectTerminalId!);
+            rc = ds.autoRoute(bullet, arrive: appDelegate.selectTerminalId!);
             if (rc < 0) {
                 //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
                 routeStat = .AUTO_ROUTE;
@@ -884,8 +887,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         if #available(iOS 8, OSX 10.10, *) {
             // iOS8
             let ac : UIAlertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+            var idx : Int = 0
             for item : String in menu_list {
-                ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item)}))
+                let itemIdx = idx
+                ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item, index: itemIdx)}))
+                idx += 1
             }
             if nil == menu_list.last!.range(of: "いいえ") {
                 ac.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: {(action: UIAlertAction) in self.actionSelectProcFrom(from, label: "キャンセル")}))
@@ -956,16 +962,17 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //   - Query clear remove by change begin terminal.
     //   - Change root for OOSAKA Kanjyou-sen
     //
-    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
-        if buttonIndex < 0 {
-            actionSelectProcFrom(actionSheet.tag, label: "キャンセル")
-        } else {
-            // <swift1> actionSelectProcFrom(actionSheet.tag, label: actionSheet.buttonTitleAtIndex(buttonIndex))
-            actionSelectProcFrom(actionSheet.tag, label: (actionSheet.buttonTitle(at: buttonIndex))!)
-        }
-    }
+    //func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
+    //    if buttonIndex < 0 {
+    //        actionSelectProcFrom(actionSheet.tag, label: "キャンセル")
+    //    } else {
+    //        // <swift1> actionSelectProcFrom(actionSheet.tag, label: actionSheet.buttonTitleAtIndex(buttonIndex))
+    //        actionSelectProcFrom(actionSheet.tag, label: (actionSheet.buttonTitle(at: buttonIndex))!, index: buttonIndex)
+    //    }
+    //}
+    // 使ってなさげなのでコメントにしてみた
     
-    func actionSelectProcFrom(_ from : Int, label title : String) {
+    func actionSelectProcFrom(_ from : Int, label title : String, index: Int = -1) {
 
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
         var rc : Int
@@ -989,7 +996,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             //[self performSelector:@selector(processDuringIndicatorAnimating:)
             //withObject:[NSNumber numberWithInteger:buttonIndex]
             //afterDelay:0.1];
-            let selectIndex : Int = (nil != title.range(of: "使う")) ? 0 : 1
+            let selectIndex : Int = index
             let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
             DispatchQueue.main.asyncAfter(deadline: time, execute: {
                 //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: selectIndex)

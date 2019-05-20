@@ -49,6 +49,7 @@ typedef std::basic_string<TCHAR> tstring;
 #include "../lib/db/db.h"
 #include "../../../alps/alpdb.h"
 #include "../lib/alps/alpfile.h"
+#include <afxcontrolbars.h>
 
 
 

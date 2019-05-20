@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -2701,18 +2701,23 @@ JR東日本 株主優待4： \123,456
 			}
 		}
 	} else {
-		ASSERT(!fareW.isDiscount);
+        //ASSERT(!fareW.isDiscount);
 		ASSERT(company_fare == 0);
-		ASSERT(normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
+		//ASSERT(normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
 		if (!isRoundTrip()) {
 			_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： ¥%s(¥%s)%s\r\n"),
 			             num_str_yen(normal_fare).c_str(), num_str_yen(fare_ic).c_str(),
 		                 sWork.c_str());
 		} else {
-			_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： ¥%s(¥%s)%s    往復： ¥%s(¥%s)\r\n"),
+			_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： ¥%s(¥%s)%s    往復： ¥%s(¥%s)"),
 			             num_str_yen(normal_fare).c_str(), num_str_yen(fare_ic).c_str(),
 		                 sWork.c_str(),
 			             num_str_yen(normal_fare * 2).c_str(), num_str_yen(fare_ic * 2).c_str());
+            if (fareW.isDiscount) {
+ 				_tcscat_s(cb, NumOf(cb), _T("(割)\r\n"));
+ 			} else {
+ 				_tcscat_s(cb, NumOf(cb), _T("\r\n"));
+ 			}
 		}
 	}
 
@@ -7077,7 +7082,12 @@ int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t statio
 //
 //	最短経路に変更(raw immidiate)
 //
-//	@param [in] useBulletTrain (bool)新幹線使用有無
+//	@param [in] useBulletTrain 0 在来線のみ
+//                             1 新幹線を利用
+//                             2 会社線を利用
+//                             3 新幹線も会社線も利用
+//
+//
 //	@retval true success
 //	@retval 1 : success
 //	@retval 0 : loop end.
@@ -7119,7 +7129,7 @@ public:
 	IDENT lineId(int index) { return d[index].line_id; }
 };
 
-int32_t Route::changeNeerest(bool useBulletTrain, int end_station_id)
+int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 {
 	ASSERT(0 < startStationId());
 	//ASSERT(0 < end_station_id);
@@ -7322,8 +7332,9 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 
 			if ((!IsJctMask(jct_mask, a + 1) /**/|| ((nLastNode == 0) && (lastNode == (a + 1))) ||
                  ((0 < nLastNode) && (lastNode1 == (a + 1))) ||
-                 ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ &&
-			    (useBulletTrain || !IS_SHINKANSEN_LINE(ite->at(2)))) {
+                 ((1 < nLastNode) && (lastNode2 == (a + 1)))) &&
+                ((((0x01 & useBulletTrain) != 0) || !IS_SHINKANSEN_LINE(ite->at(2))) &&
+                 (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(ite->at(2))))) {
                 /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
 				/* 新幹線でない */
 				cost = dijkstra.minCost(doneNode) + ite->at(1); // cost
@@ -9087,8 +9098,8 @@ bool FARE_INFO::retr_fare()
 				this->jr_fare = FARE_INFO::Fare_osaka(this->total_jr_sales_km);
 			}
 		} else if ((this->total_jr_sales_km == this->total_jr_calc_km) &&   /* b#18122801 */
-                   (IS_TKMSP(this->flag) && (((1 << (JR_CENTRAL - 1)) & companymask) == 0))) {
-			/* 東京電車特定区間のみ */          /* b#18083101 */
+                   (IS_TKMSP(this->flag) && (IS_YAMATE(this->flag) || (((1 << (JR_CENTRAL - 1)) & companymask) == 0)))) {
+			/* 東京電車特定区間のみ (東海道新幹線ではない) )*/ /* b#18083101, b#19051701 */
 			ASSERT(this->jr_fare == 0); /* 特別加算区間を通っていないはずなので */
 			ASSERT(this->company_fare == 0);	// 会社線は通っていない
 			ASSERT(this->base_sales_km == this->total_jr_sales_km);
