@@ -10,6 +10,7 @@
 #include "afxdialogex.h"
 #include "TermSel.h"
 #include "RouteInputDlg.h"
+#include "CQueryNeerest.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -560,40 +561,47 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 	}
 
 	RouteList route(m_route);
-	rc = m_route.changeNeerest((IDYES == MessageBox(_T("新幹線を含めますか?"),
-								_T("確認"), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2)), endStationId);
-	if ((rc == 5) || (rc == 0)) {
-		if (m_route.isModified()) {
-			UpdateRouteList();
+	CQueryNeerest queryDlg(this);
+	if (IDOK == queryDlg.DoModal()) {
+		rc = m_route.changeNeerest(queryDlg.choice, endStationId);
+		if ((rc == 5) || (rc == 0)) {
+			if (m_route.isModified()) {
+				UpdateRouteList();
+			}
+			SetDlgItemText(IDC_EDIT_STAT, _T("経路は片道条件に達しています."));
+			return;	/* already finished */
+			}
+		else if (rc == 4) { /* already routed */
+			SetDlgItemText(IDC_EDIT_STAT, _T("開始駅へ戻るにはもう少し経路を指定してからにしてください"));
+			m_route.assign(route);	/* such as 代々木 新大久保 -> 代々木 */
+			return;
 		}
-		SetDlgItemText(IDC_EDIT_STAT, _T("経路は片道条件に達しています."));
-		return;	/* already finished */
-	} else if (rc == 4) { /* already routed */
-		SetDlgItemText(IDC_EDIT_STAT, _T("開始駅へ戻るにはもう少し経路を指定してからにしてください"));
-		m_route.assign(route);	/* such as 代々木 新大久保 -> 代々木 */
-		return;
-	}
-	if (0 < rc) {
-		int numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
-		if (0 < numList) {
-			ASSERT(m_curStationId == endStationId);
-			return;				/* success */
-		} else {
-			ASSERT(FALSE);
+		if (0 < rc) {
+			int numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
+			if (0 < numList) {
+				ASSERT(m_curStationId == endStationId);
+				return;				/* success */
+			}
+			else {
+				ASSERT(FALSE);
+				m_route.assign(route);
+				UpdateRouteList();	/* IDC_LIST_ROUTE update view */
+			}
+		}
+		else if (-100 < rc) {
+			MessageBox(_T("経路が重複しているため算出できませんでした."),
+				_T("自動ルート"), MB_OK | MB_ICONEXCLAMATION);
 			m_route.assign(route);
 			UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		}
-	} else if (-100 < rc) {
-		MessageBox(_T("経路が重複しているため算出できませんでした."),
-				   _T("自動ルート"), MB_OK | MB_ICONEXCLAMATION);
-		m_route.assign(route);
-		UpdateRouteList();	/* IDC_LIST_ROUTE update view */
-	} else { /* < -1000 */
-		MessageBox(_T("算出できませんでした."),
-				   _T("確認"), MB_OK | MB_ICONEXCLAMATION);
-		m_route.assign(route);
-		UpdateRouteList();	/* IDC_LIST_ROUTE update view */
+		else { /* < -1000 */
+			MessageBox(_T("算出できませんでした."),
+				_T("確認"), MB_OK | MB_ICONEXCLAMATION);
+			m_route.assign(route);
+			UpdateRouteList();	/* IDC_LIST_ROUTE update view */
+		}
 	}
+
 }
 
 //	ListView<IDC_LIST_LINESTATIONS>

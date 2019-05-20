@@ -200,24 +200,18 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 // 履歴へ追加
                 appendHistory(this, RouteUtil.StationNameEx(stationId))
 
-                val build = AlertDialog.Builder(this).apply {
+                val titles = arrayOf("在来線のみ", "新幹線を使う", "会社線を使う", "新幹線も会社線も使う")
+
+                AlertDialog.Builder(this).apply {
                     setTitle(R.string.title_line_select_autoroute)
-                    setMessage(R.string.main_alert_query_bullet)
-                    setPositiveButton("Yes") { _, _ ->
-                        // 新幹線
-                        val rc = mRoute.changeNeerest(true, stationId)
+                    setItems(titles) { _, which ->
+                        val rc = mRoute.changeNeerest(which, stationId)
                         update_fare(if (rc == 4) 40 else rc)
+                        recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
                     }
-                    setNegativeButton("No") { _, _ ->
-                        // 在来線のみ
-                        val rc = mRoute.changeNeerest(false, stationId)
-                        update_fare(if (rc == 4) 40 else rc)
-                    }
-                    // scroll to last
-                    recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
+                    create()
+                    show()
                 }
-                val dlg = build.create()
-                dlg.show()
             }
             "terminal" -> {
                 // 履歴へ追加

@@ -248,18 +248,23 @@ public class CalcRoute extends RouteList {
                 }
             }
         } else {
-            ASSERT (!fareW.isDiscount);
+            //ASSERT (!fareW.isDiscount);
             ASSERT (company_fare == 0);
-            ASSERT (normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
+            //ASSERT (normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
             if (!isRoundTrip()) {
                 buffer.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s\r\n",
                         RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
                         company_option));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s    往復： ¥%s(¥%s)\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s    往復： ¥%s(¥%s)",
                         RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
                         company_option,
                         RouteUtil.num_str_yen(normal_fare * 2), RouteUtil.num_str_yen(fare_ic * 2)));
+                if (fareW.isDiscount) {
+                    buffer.append("(割)\r\n");
+                } else {
+                    buffer.append("\r\n");
+                }
             }
         }
 

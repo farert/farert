@@ -161,8 +161,8 @@ public class FARE_INFO  {
                     this.jr_fare = Fare_osaka(this.total_jr_sales_km);
                 }
             } else if ((total_jr_sales_km == total_jr_calc_km) &&   /* b#18122801 */
-                        (IS_TKMSP(flag) && (((1 << (JR_CENTRAL - 1)) & companymask) == 0))) {
-                /* 東京電車特定区間のみ */                    /* b#18083101 */
+                        (IS_TKMSP(flag) && (RouteUtil.IS_YAMATE(this.flag) || (((1 << (JR_CENTRAL - 1)) & companymask) == 0)))) {
+                /* 東京電車特定区間のみ */                    /* b#18083101, b#19051701 */
                 ASSERT (this.jr_fare == 0); /* 特別加算区間を通っていないはずなので */
                 ASSERT (this.company_fare == 0);	// 会社線は通っていない
                 ASSERT (this.base_sales_km == this.total_jr_sales_km);
@@ -932,7 +932,7 @@ public class FARE_INFO  {
             int rc = shortRoute.add(start_station_id);
 
             // 最短経路算出
-            rc = shortRoute.changeNeerest(false, end_station_id);
+            rc = shortRoute.changeNeerest(0, end_station_id);
             if (rc < 0) {
                 ASSERT(false);
                 return null;
@@ -1042,7 +1042,7 @@ public class FARE_INFO  {
                 bNeer = true;
             } else {
                 if (bNeer == true) {
-                    rc = shortRoute.changeNeerest(false, id);
+                    rc = shortRoute.changeNeerest(0, id);
                     if (rc < 0) {
                         ASSERT(false);
                         /* error */
@@ -1062,7 +1062,7 @@ public class FARE_INFO  {
             return route;
         }
         if (bNeer == true) {
-            rc = shortRoute.changeNeerest(false, route.endStationId());
+            rc = shortRoute.changeNeerest(0, route.endStationId());
             if (rc < 0) {
                 ASSERT(false);
                 return route;

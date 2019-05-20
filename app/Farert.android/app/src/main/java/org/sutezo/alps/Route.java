@@ -1908,7 +1908,10 @@ public class Route extends RouteList {
     //
     //	最短経路に変更(raw immidiate)
     //
-    //	@param [in] useBulletTrain (boolean)新幹線使用有無
+    //	@param [in] useBulletTrain 0 在来線のみ
+    //                             1 新幹線を利用
+    //                             2 会社線を利用
+    //                             3 新幹線も会社線も利用
     //	@retval true success
     //	@retval 1 : success
     //	@retval 0 : loop end.
@@ -1917,7 +1920,7 @@ public class Route extends RouteList {
     //	@retval -n: add() error(re-track)
     //	@retval -32767 unknown error(DB error or BUG)
     //
-    public int changeNeerest(boolean useBulletTrain, int end_station_id) {
+    public int changeNeerest(int useBulletTrain, int end_station_id) {
         class Dijkstra	{
         	class NODE_JCT {
         		int minCost;
@@ -2158,8 +2161,9 @@ public class Route extends RouteList {
                 if ((!routePassed.check(a + 1) /**/|| ((nLastNode == 0) && (lastNode == (a + 1))) ||
                         ((0 < nLastNode) && (lastNode1 == (a + 1))) ||
                         ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ &&
-                        (useBulletTrain || !RouteUtil.IS_SHINKANSEN_LINE(node[2]))) {
-                    /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
+                        ((((0x01 & useBulletTrain) != 0) || !RouteUtil.IS_SHINKANSEN_LINE(node[2])) &&
+                         (((0x02 & useBulletTrain) != 0) || !RouteUtil.IS_COMPANY_LINE(node[2])))) {
+                                 /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
 					/* 新幹線でない */
                     cost = dijkstra.minCost(doneNode) + node[1]; // cost
 

@@ -158,7 +158,7 @@ enum DBIDX {
 - (void)removeTail;
 
 // Auto route
-- (NSInteger)autoRoute:(BOOL)useBullet arrive:(NSInteger)stationId;
+- (NSInteger)autoRoute:(NSInteger)useLine arrive:(NSInteger)stationId;
 
 // reverse
 - (NSInteger)reverseRoute;
