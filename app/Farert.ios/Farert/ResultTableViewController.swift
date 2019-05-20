@@ -679,7 +679,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     
         if let route = cRoute() {
             route.add(begin_id)
-            let rc : Int = route.autoRoute(false, arrive: end_id)
+            let rc : Int = route.autoRoute(0, arrive: end_id)
             if 1 == rc {
                 self.ds.sync(route)
                 self.reCalcFareInfo()

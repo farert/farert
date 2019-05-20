@@ -930,7 +930,7 @@ public:
 	void 			removeAll(bool bWithStart =true/* Dec.2017:Remove terminal, bool bWithEnd =true*/);
 	int32_t			reverse();
 
-	int32_t			changeNeerest(bool useBulletTrain, int end_station_id);
+	int32_t			changeNeerest(uint8_t useBulletTrain, int end_station_id);
 
 protected:
 	int32_t			companyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);

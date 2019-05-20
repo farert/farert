@@ -983,7 +983,12 @@ const static TCHAR *auto_route_def[] = {
 			_T("逗子 横須賀線 大船"), _T("藤沢"),
 			_T("横浜 根岸線 大船"), _T("衣笠"),
 			_T("保土ケ谷 東海道線 大船"), _T("衣笠"),
-//			_T(""), _T(""),
+			_T("甲府"), _T("直江津"),
+			_T("中込"), _T("新潟"),
+			_T("大前"), _T("松本"),
+			_T("外城田"), _T("清水原"),
+			_T("新青森"), _T("宮古"),
+	//			_T(""), _T(""),
 //			_T(""), _T(""),
 /* 39 */    _T(""),
 };
@@ -1925,7 +1930,16 @@ const static TCHAR *test_route3_tbl[] = {
 		_T("新琴似 札沼線 桑園 函館線 札幌"),
 		_T("神楽岡 富良野線 旭川 函館線 近文"),
 
-// append new test pattern is here
+		_T("大前 吾妻線 渋川 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 新松戸 武蔵野線 南浦和 東北線 赤羽 埼京線 池袋 山手線 田端 東北線 秋葉原 総武線(錦糸町-御茶ノ水) 錦糸町 総武線 佐倉 成田線 松岸 総武線 成東 東金線 大網 外房線 安房鴨川 内房線 蘇我 京葉線 東京 東北線 神田 中央東線 西国分寺 武蔵野線 武蔵浦和 埼京線 大宮 高崎線 倉賀野 八高線 拝島 青梅線 立川 南武線 武蔵小杉 東海道線(西大井経由) 品川 東海道線 川崎 南武線 尻手 南武線(浜川崎支線) 浜川崎 鶴見線 鶴見 東海道線 横浜 根岸線 大船 東海道線 茅ケ崎 相模線 橋本(横) 横浜線 八王子 中央東線 岡谷 中央東線(辰野支線) 塩尻 篠ノ井線 松本"),
+
+		_T("東京 東海道新幹線 品川"),
+		_T("東京 東海道線 品川"),
+		_T("東京 東海道新幹線 新横浜"),
+		_T("東京 東海道線  東神奈川 横浜線 新横浜"),
+		_T("品川 東海道新幹線 新横浜"),
+		_T("品川 東海道線 東神奈川 横浜線 新横浜"),
+
+			// append new test pattern is here
 		_T(""),
 };
 /////////////////////////////////////////////////////////////////////////////////////
@@ -2197,7 +2211,7 @@ void test_autoroute(const TCHAR *route_def[])
 		_ftprintf(os, _T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
 
 		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
-		rc = route.changeNeerest(false, RouteUtil::GetStationId(p));
+		rc = route.changeNeerest(0, RouteUtil::GetStationId(p));
 		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
 			ASSERT(fail != 0);
@@ -2219,7 +2233,7 @@ void test_autoroute(const TCHAR *route_def[])
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
-		rc = route.changeNeerest(true, RouteUtil::GetStationId(p));
+		rc = route.changeNeerest(1, RouteUtil::GetStationId(p));
 		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
 			ASSERT(fail != 0);
@@ -2235,6 +2249,51 @@ void test_autoroute(const TCHAR *route_def[])
 			s = cr_remove(s);
 			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 		}
+		//
+		route.removeAll();
+		STRCPY(1024, buffer, route_def[i]);
+		rc = route.setup_route(buffer);
+		ASSERT(0 <= rc);
+		_ftprintf(os, _T("* auto route(会社線使用) >>>>>>>\n"));
+		rc = route.changeNeerest(2, RouteUtil::GetStationId(p));
+		if ((rc < 0) || (rc == 5)) {
+			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
+			//ASSERT(fail != 0);
+		} else {
+			ASSERT(0 <= fail);
+			CalcRoute croute(route);
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
+			s = cr_remove(s);
+			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
+			s = cr_remove(s);
+			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+		}
+		//
+		route.removeAll();
+		STRCPY(1024, buffer, route_def[i]);
+		rc = route.setup_route(buffer);
+		ASSERT(0 <= rc);
+		_ftprintf(os, _T("* auto route(会社線+新幹線使用) >>>>>>>\n"));
+		rc = route.changeNeerest(3, RouteUtil::GetStationId(p));
+		if ((rc < 0) || (rc == 5)) {
+			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
+			//ASSERT(fail != 0);
+		} else {
+			ASSERT(0 <= fail);
+			CalcRoute croute(route);
+			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			tstring s = croute.showFare();
+			s = cr_remove(s);
+			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+			s = croute.showFare();
+			s = cr_remove(s);
+			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+		}
+		//
 	}
 
 }

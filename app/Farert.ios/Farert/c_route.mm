@@ -570,9 +570,9 @@ int g_tax; /* main.m */
 //	@retval -n: add() error(re-track)
 //	@retval -32767 unknown error(DB error or BUG)
 //
-- (NSInteger)autoRoute:(BOOL)useBullet arrive:(NSInteger)stationId
+- (NSInteger)autoRoute:(NSInteger)useLine arrive:(NSInteger)stationId
 {
-    return obj_route->changeNeerest(useBullet, (int)stationId);
+    return obj_route->changeNeerest(useLine, (int)stationId);
 }
 
 // reverse
