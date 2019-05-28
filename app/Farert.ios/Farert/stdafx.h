@@ -21,9 +21,11 @@ typedef const char* LPCTSTR;
 typedef char* LPSTR;
 typedef char TCHAR;
 
-
+#if DEBUG   // for XCODE
+#define TRACE printf
+#else
 #define TRACE(c, ...)   {}  //printf
-//#define TRACE printf
+#endif
 
 extern char* strcat_s(char* str, int len, const char* at);
 extern char* strcpy_s(char* str, int len, const char* at);

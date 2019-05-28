@@ -2213,7 +2213,7 @@ void test_autoroute(const TCHAR *route_def[])
 		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
 		rc = route.changeNeerest(0, RouteUtil::GetStationId(p));
 		if ((rc < 0) || (rc == 5)) {
-			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
+			_ftprintf(os, _T("Can't route.%s, rc=%d\n"), fail != 0 ? _T("(OK)") : _T("(NG)"), rc);
 			ASSERT(fail != 0);
 		} else {
 			ASSERT(fail == 0);

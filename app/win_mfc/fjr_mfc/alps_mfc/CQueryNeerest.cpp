@@ -65,3 +65,14 @@ void CQueryNeerest::OnBnClickedMfcbuttonBulletCompanu()
 	choice = 3;
 	CDialogEx::OnOK();
 }
+
+
+BOOL CQueryNeerest::OnInitDialog()
+{
+	CDialogEx::OnInitDialog();
+
+	GetDlgItem(IDC_STATIC_TITLE)->SetWindowTextW(target);
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+				  // 例外 : OCX プロパティ ページは必ず FALSE を返します。
+}

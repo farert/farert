@@ -560,8 +560,9 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 		return;
 	}
 
-	RouteList route(m_route);
+	RouteList route(m_route);		// backup to route
 	CQueryNeerest queryDlg(this);
+	queryDlg.target.Format(_T("%sÇ‹Ç≈ÇÃç≈íZåoòH"), RouteUtil::StationNameEx(endStationId).c_str());
 	if (IDOK == queryDlg.DoModal()) {
 		rc = m_route.changeNeerest(queryDlg.choice, endStationId);
 		if ((rc == 5) || (rc == 0)) {
@@ -601,7 +602,6 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 			UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		}
 	}
-
 }
 
 //	ListView<IDC_LIST_LINESTATIONS>
@@ -897,7 +897,7 @@ void Calps_mfcDlg::OnBnClickedButtonNeerest()
 	RouteList route_backup(m_route);
 	rc = route.add(m_route.startStationId());
 	ASSERT(rc == 1);
-	rc = route.changeNeerest(false, m_route.endStationId());
+	rc = route.changeNeerest(0, m_route.endStationId());
 	if ((rc == 5) || (rc == 0) || (rc == 4)) {
 		SetDlgItemText(IDC_EDIT_STAT, _T("åoòHÇÕï–ìπèåèÇ…íBÇµÇƒÇ¢Ç‹Ç∑."));
 		if (m_route.isModified()) {

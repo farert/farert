@@ -58,25 +58,37 @@ int main(int argc, char** argv)
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
 	char* dbpath = getenv("farertDB");
-	if (! DBS::getInstance()->open(dbpath)) {
+
+	if (!dbpath) {
+		printf("Should be set environment variable the 'farertDB' for use database.\n");
+		return -1;
+	}
+
+	if (!DBS::getInstance()->open(dbpath)) {
 		printf("Can't db open\n");
 		return -1;
 	}
 	if (argc < 2) {
+		/* normal: execute all test pattern */
 		test_exec();
 	} else {
 		if ('-' == *(*(argv + 1))) {
+			/* Usage */
 			if (('h' == *((*(argv + 1)) + 1)) || ('H' == *((*(argv + 1)) + 1))) {
 				usage(*argv);
 				return -1;
 			}
+			/* result variation */
 			option_num = atoi((*(argv + 1)) + 1);
 			++argv;
 			--argc;
 		}
 		if (argc == 2) {
+			/* route from read file */
 			from_stream(*++argv, option_num);
 		} else {
+			/* route as command line direct */
+			/* even of num = auto, odd of num 0 route(start, line, end) */
 			char *t = tbuf;
 
 			for (int i = 1; i < argc; i++) {

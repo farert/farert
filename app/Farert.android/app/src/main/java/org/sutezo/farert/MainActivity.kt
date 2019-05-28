@@ -66,6 +66,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             R.id.navigation_reverse -> {
                 val rc = mRoute.reverse()
                 update_fare(rc)
+                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
+
             }
             // 大阪環状線 大回り/近回り
             R.id.navigation_detour -> {
@@ -201,9 +203,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 appendHistory(this, RouteUtil.StationNameEx(stationId))
 
                 val titles = arrayOf("在来線のみ", "新幹線を使う", "会社線を使う", "新幹線も会社線も使う")
+                val subtitle = RouteUtil.StationNameEx(stationId)
 
                 AlertDialog.Builder(this).apply {
                     setTitle(R.string.title_line_select_autoroute)
+                    setMessage(subtitle)
                     setItems(titles) { _, which ->
                         val rc = mRoute.changeNeerest(which, stationId)
                         update_fare(if (rc == 4) 40 else rc)
@@ -309,7 +313,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             // 許可されていない会社線通過です
                             resources.getString(R.string.main_rc_wrongcompany_pass)
                         }
-                        -10, -11 -> {
+                        -10, -11, -1002 -> {
                             // -10, -11 経路を算出できません
                             resources.getString(R.string.main_rc_cantautostart)
                         }
