@@ -20,8 +20,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	int choice;
+	CString target;
 	afx_msg void OnBnClickedMfcbuttonNormal();
 	afx_msg void OnBnClickedMfcbuttonBullet();
 	afx_msg void OnBnClickedMfcbuttonCompany();
 	afx_msg void OnBnClickedMfcbuttonBulletCompanu();
+	virtual BOOL OnInitDialog();
 };

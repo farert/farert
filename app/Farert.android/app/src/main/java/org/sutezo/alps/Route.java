@@ -2230,7 +2230,7 @@ public class Route extends RouteList {
                     return a;	//>>>>>>>>>>>>>>>>>>>>>>>>>
                 }
             }
-            System.out.printf( "can't lowcost route.###\n");
+            System.out.printf( "can't lowcost route.-1002\n");
             return -1002;
         }
         //------------------------------------------

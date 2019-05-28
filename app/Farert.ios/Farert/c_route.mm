@@ -564,9 +564,11 @@ int g_tax; /* main.m */
 //	最短経路に変更(raw immidiate)
 //
 //	@param [in] useBulletTrain (bool)新幹線使用有無
-//	@retval true success
+//
 //	@retval 1 : success
-//	@retval 0 : loop end.
+//	@retval 0 : loop end.(modified was to be update)
+//  @retval 4 : already routed.(destroy)
+//  @retval 5 : already finished.(modified was to be update)
 //	@retval -n: add() error(re-track)
 //	@retval -32767 unknown error(DB error or BUG)
 //

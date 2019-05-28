@@ -41,19 +41,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     let TAG_UIACTIONSHEET_OSAKAKANDETOUR:Int    = 12
     let TAG_UIACTIONSHEET_ROUTEHOLDER:Int       = 13
   
-    enum LPROC {
-        case UNKNOWN
-        case REVERSE
-        case AUTOROUTE
-        case SETUPROUTE
-    }
 
     // MARK: - Global variables
     
     var viewContextMode: FGD.CONTEXT = .FIRST
     var routeStat: ROUTE = .OK
     var scroll_flag: Bool = false;
-    var longTermFuncMode: LPROC = .UNKNOWN
     
     // MARK: - UI variables
 
@@ -69,7 +62,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     var routeScript: String?
     var frontView: UIView!
     var indicator: UIActivityIndicatorView!
-    var dsPre: cRouteList? //左画面から受信、適用前の仮格納庫
     
     // MARK: - View functions
     
@@ -217,14 +209,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         case .ROUTESETUP_VIEW:
             // from 保持経路ビュー(ArchiveRouteTableView)
             // or SettingビューでDBインデックス変更のとき
-            showIndicate();    /* start Activity and Disable UI */
-            self.navigationController!.view!.isUserInteractionEnabled = false;
-            longTermFuncMode = .SETUPROUTE;
-            let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-            DispatchQueue.main.asyncAfter(deadline: time, execute: {
-                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: self.routeScript)
-                self.processDuringIndicatorAnimating(self.routeScript as AnyObject? ?? "" as AnyObject)
-            })
+            setUpRoute()
         default:
             break
         }
@@ -233,106 +218,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         // ここまでは ObjCまでは、viewWillApear にあったが、こっちに写してみた
     }
     
-    //  長い処理
-    //  longTermFuncMode != 0
-    //
-    func processDuringIndicatorAnimating(_ param: AnyObject) {
-        var rc: Int = -1;
-        let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
-
-        switch (longTermFuncMode) {
-        case .REVERSE:
-            // reverse route
-            rc = ds.reverse()
-            let cds : cCalcRoute = cCalcRoute(route: ds)
-            fareInfo = cds.calcFare()
-            if rc < 0 {
-                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等反転できません."];
-                routeStat = .DUP_ERROR;
-            }
-        case .AUTOROUTE:
-            // auto route
-            // param    0 在来線のみ
-            //          1 新幹線をつかう
-            //          2 会社線をつかう
-            //          3 新幹線も在来線も使う
-            var bullet : Int
-            if let nsid : NSNumber = param as? NSNumber {
-                bullet = nsid.intValue
-                bullet = (bullet < 0 || 3 < bullet) ? 0 : bullet
-            } else {
-                bullet = 0
-            }
-            //let n = param as? Int
-            let saveRoute = cRouteList(route: ds)
-
-            rc = ds.autoRoute(bullet, arrive: appDelegate.selectTerminalId!);
-            if (rc < 0) {
-                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
-                routeStat = .AUTO_ROUTE;
-                ds.assign(saveRoute)
-            } else if (1 == rc) {
-                /* Do nothing, success */
-            } else {
-                if (rc == 4) {    /* 0, 4 or 5 */
-                    /* already routed *//* such as 代々木 新大久保 -> 代々木 */
-                    ds.assign(saveRoute)
-                    routeStat = .AUTO_NOTENOUGH
-                } else {
-                    routeStat = .FINISH;   /* 経路が終端に達しました */
-                }
-            }
-            if let cds = cCalcRoute(route: ds) {
-                fareInfo = cds.calcFare()
-            } else {
-                fareInfo = FareInfo()
-            }
-            scroll_flag = true;
-            
-        case .SETUPROUTE:
-            // 保持経路のロード
-            let rs : String? = param as? String
-            if (nil == rs) || (rs!.isEmpty == true) {
-                longTermFuncMode = .UNKNOWN
-                hideIndicate()          /* hide Activity and enable UI */
-                return
-            }
-            rc = ds.setupRoute(rs)
-            if (rc < 0) {
-                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
-                switch (rc) {
-                case -200:
-                    routeStat = .SCRIPT_STATION_ERR;
-                case -300:
-                    routeStat = .SCRIPT_LINE_ERR;
-                case -2:
-                    routeStat = .SCRIPT_ROUTE_ERR;
-                case -4:
-                    routeStat = .COMPANYPASS_ERROR
-                default:
-                    routeStat = .DUP_ERROR;    // -1: 経路重複エラー
-                }
-            } else { // (0 <= result)
-                // 0=end, plus=continue
-                if ((rc == 0) && (1 < ds.getCount())) {
-                    routeStat = .FINISH;
-                } else {
-                    routeStat = .OK  // success
-                }
-            }
-            if let cds = cCalcRoute(route: ds) {
-                fareInfo = cds.calcFare()
-            } else {
-                fareInfo = FareInfo()
-            }
-        default:
-            assert(false, "bug:\(#file) : \(#line))")
-            break
-        }
-        fareResultSetting(rc)   /* 簡易結果(Footer section) */
-        longTermFuncMode = .UNKNOWN
-        hideIndicate()          /* hide Activity and enable UI */
-    }
 
     // MARK: - Table view data source
 
@@ -433,40 +318,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         }
     }
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the item to be re-orderable.
-        return true
-    }
-    */
 
     //  ヘッダタイトル
     //
@@ -602,13 +453,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         if (curscr != newscr) {
             if (ds.getCount() <= 1) || cRouteUtil.isRoute(inStrage: curscr) {
                 // すぐやる
-                setRouteList(routeList: route)
-                dsPre = nil
-                viewContextMode = .ROUTESELECT_VIEW
+                viewContextMode = .ROUTESETUP_VIEW;
+                self.routeScript = newscr
+
             } else {
                 // 聞いてからやる
-                dsPre = route
                 viewContextMode = .TICKETHOLDER_VIEW
+                self.routeScript = newscr
             }
         }
         // to: viewDidAppear()
@@ -841,13 +692,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         
         self.showIndicate()    /* start Activity and Disable UI */
         self.navigationController?.view?.isUserInteractionEnabled = false;
-        longTermFuncMode = .REVERSE
-        // [self performSelector:@selector(processDuringIndicatorAnimating:) withObject:nil afterDelay:0.1];
+
         let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-        DispatchQueue.main.asyncAfter(deadline: time, execute: {
-            //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
-            self.processDuringIndicatorAnimating(NSNull.self)
-        })
+        DispatchQueue.main.asyncAfter(deadline: time) {
+            // reverse route
+            let rc = self.ds.reverse()
+            let cds : cCalcRoute = cCalcRoute(route: self.ds)
+            self.fareInfo = cds.calcFare()
+            if rc < 0 {
+                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等反転できません."];
+                self.routeStat = .DUP_ERROR;
+            }
+            self.fareResultSetting(rc)   /* 簡易結果(Footer section) */
+            self.hideIndicate()          /* hide Activity and enable UI */
+        }
     }
     
     // バック（1つ前に戻る)
@@ -881,7 +739,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     }
     
     
-    // begin Action select menu.
+    // begin Action select menu.(クエリ系UI表示前処理) -> このあと、ユーザ操作により、actionSelectProcFrom へ
     func actionSheetController(_ menu_list : [String], title : String, message : String, from : Int) {
         
         if #available(iOS 8, OSX 10.10, *) {
@@ -972,6 +830,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     //}
     // 使ってなさげなのでコメントにしてみた
     
+    //  UI User action transaction
+    //
     func actionSelectProcFrom(_ from : Int, label title : String, index: Int = -1) {
 
         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -992,22 +852,52 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             */
             self.showIndicate()    /* start Activity and Disable UI */
             self.navigationController?.view?.isUserInteractionEnabled = false;
-            longTermFuncMode = .AUTOROUTE;
-            //[self performSelector:@selector(processDuringIndicatorAnimating:)
-            //withObject:[NSNumber numberWithInteger:buttonIndex]
-            //afterDelay:0.1];
-            let selectIndex : Int = index
+            
             let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-            DispatchQueue.main.asyncAfter(deadline: time, execute: {
-                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: selectIndex)
-                self.processDuringIndicatorAnimating(selectIndex as AnyObject)
-            })
+            DispatchQueue.main.asyncAfter(deadline: time) {
+                let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
+                // auto route
+                // param    0 在来線のみ
+                //          1 新幹線をつかう
+                //          2 会社線をつかう
+                //          3 新幹線も在来線も使う
+                let bullet : Int = (((index < 0) || (3 < index)) ? 0 : index)
+
+                //let n = param as? Int
+                let saveRoute = cRouteList(route: self.ds)
+                
+                let rc = self.ds.autoRoute(bullet, arrive: appDelegate.selectTerminalId!);
+                if (rc < 0) {
+                    //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
+                    self.routeStat = .AUTO_ROUTE;
+                    self.ds.assign(saveRoute)
+                } else if (1 == rc) {
+                    /* Do nothing, success */
+                } else {
+                    if (rc == 4) {    /* 0, 4 or 5 */
+                        /* already routed *//* such as 代々木 新大久保 -> 代々木 */
+                        self.ds.assign(saveRoute)
+                        self.routeStat = .AUTO_NOTENOUGH
+                    } else {
+                        /* 0 or 5 */
+                        self.routeStat = .FINISH;   /* 経路が終端に達しました */
+                    }
+                }
+                if let cds = cCalcRoute(route: self.ds) {
+                    self.fareInfo = cds.calcFare()
+                } else {
+                    self.fareInfo = FareInfo()
+                }
+                self.scroll_flag = true;
+                self.fareResultSetting(rc)   /* 簡易結果(Footer section) */
+                self.hideIndicate()          /* hide Activity and enable UI */
+
+            }
             
         case TAG_UIACTIONSHEET_QUERYSETUPROUTE:
             /*  経路表示時の１行目の発駅変更(既存経路破棄→新規発駅設定)
             * doneTerminal: -> willApear
             */
-//            if (selectIndex == 0) {
             if nil != title.range(of: "はい") {
                 self.setBeginTerminal()
                 self.tableView.reloadData()
@@ -1037,7 +927,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         case TAG_UIACTIONSHEET_ROUTEHOLDER:
             /* きっぷホルダ 経路選択 from changeRoute, viewDidApear, actionSheetController */
             if nil != title.range(of: "はい") {
-                self.setRouteList(routeList: nil)
+                setUpRoute()
             }
         default:
             // don't come here
@@ -1087,27 +977,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         cRouteUtil.save(toTerminalHistory: cRouteUtil.stationNameEx(termId))
     }
     
-    //  経路設定
-    //
-    func setRouteList(routeList : cRouteList?) {
-        if nil == routeList {
-            self.ds = cRoute(routeList: self.dsPre)
-        } else {
-            self.ds = cRoute(routeList: routeList!)
-        }
-        if (self.ds.isEnd()) {
-            routeStat = .FINISH
-        } else {
-            routeStat = .OK
-        }
-        if let cds = cCalcRoute(route: ds) {
-            fareInfo = cds.calcFare()
-        } else {
-            fareInfo = FareInfo()
-        }
-        tableView.reloadData()
-    }
-    
     
     //  TableView scroll-up(追加後、削除後、最短経路、保持経路)
     //
@@ -1119,7 +988,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             tableView.scrollToRow(at: idxpath, at: UITableView.ScrollPosition.bottom, animated: true)
         }
     }
-    
     
     // Message view
     //
@@ -1166,4 +1034,53 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         }
     }
+    
+    //  setup route
+    //
+    func setUpRoute() {
+        showIndicate();    /* start Activity and Disable UI */
+        self.navigationController!.view!.isUserInteractionEnabled = false;
+        
+        let time = DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+        DispatchQueue.main.asyncAfter(deadline: time) {
+            // 保持経路のロード
+            let rs : String? = self.routeScript
+            self.routeScript = nil
+            if (nil == rs) || (rs!.isEmpty == true) {
+                self.hideIndicate()          /* hide Activity and enable UI */
+                return
+            }
+            let rc = self.ds.setupRoute(rs)
+            if (rc < 0) {
+                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
+                switch (rc) {
+                case -200:
+                    self.routeStat = .SCRIPT_STATION_ERR;
+                case -300:
+                    self.routeStat = .SCRIPT_LINE_ERR;
+                case -2:
+                    self.routeStat = .SCRIPT_ROUTE_ERR;
+                case -4:
+                    self.routeStat = .COMPANYPASS_ERROR
+                default:
+                    self.routeStat = .DUP_ERROR;    // -1: 経路重複エラー
+                }
+            } else { // (0 <= result)
+                // 0=end, plus=continue
+                if ((rc == 0) && (1 < self.ds.getCount())) {
+                    self.routeStat = .FINISH;
+                } else {
+                    self.routeStat = .OK  // success
+                }
+            }
+            if let cds = cCalcRoute(route: self.ds) {
+                self.fareInfo = cds.calcFare()
+            } else {
+                self.fareInfo = FareInfo()
+            }
+            self.fareResultSetting(rc)   /* 簡易結果(Footer section) */
+            self.hideIndicate()          /* hide Activity and enable UI */
+        }
+    }
+    
 }
