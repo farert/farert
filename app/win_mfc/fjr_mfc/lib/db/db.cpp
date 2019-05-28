@@ -19,33 +19,34 @@ map<string, STMT_CACHE*> DBS::cache_pool;
 
 bool DBS::open(LPCTSTR dbpath) 
 {
+	int rc;
+
 #ifdef READ_ONLY_FILE_DIRECT
 #ifdef _WIN32
 	CT2A sjispath(dbpath);
-	if (0 != sqlite3_open_v2(sjispath, &m_db, SQLITE_OPEN_READONLY, 0)) {
+	if (SQLITE_OK != (rc = sqlite3_open_v2(sjispath, &m_db, SQLITE_OPEN_READONLY, 0))) {
 #else
-	if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY, 0)) {
+	if (SQLITE_OK != (rc = sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY, 0))) {
 #endif
-		TRACE("Database can't open\n");
+		TRACE("Database can't open(%d)\n", rc);
 		cleanup();
 		return false;
 	}
 #else
-	int rc;
 	int rtc;
 
 	sqlite3_backup* pBackup;
 	sqlite3* dbtmp;
 #ifdef UNICODE
 	CT2A utf8_dbpath(dbpath, CP_UTF8);
-	if (0 != sqlite3_open_v2(utf8_dbpath, &dbtmp, SQLITE_OPEN_READONLY, 0)) {
-		TRACE("temporary database can't open\n");
+	if (SQLITE_OK != (rc = sqlite3_open_v2(utf8_dbpath, &dbtmp, SQLITE_OPEN_READONLY, 0))) {
+		TRACE("temporary database can't open(%d)\n", rc);
 		cleanup();
 		return false;
 	}
 #else
-	if (0 != sqlite3_open_v2(dbpath, &dbtmp, SQLITE_OPEN_READONLY, 0)) {
-		TRACE("temporary database can't open\n");
+	if (SQLITE_OK != (rc = sqlite3_open_v2(dbpath, &dbtmp, SQLITE_OPEN_READONLY, 0))) {
+		TRACE("temporary database can't open(%d)\n", rc);
 		cleanup();
 		return false;
 	}

@@ -8925,7 +8925,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
         int32_t rc = shortRoute.add(start_station_id);
 
         // 最短経路算出
-        rc = shortRoute.changeNeerest(false, end_station_id);
+        rc = shortRoute.changeNeerest(0, end_station_id);
         if (rc < 0) {
             ASSERT(FALSE);
             return false;
@@ -9029,7 +9029,7 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
             bNeer = true;
         } else {
             if (bNeer == true) {
-                rc = shortRoute.changeNeerest(false, id);
+                rc = shortRoute.changeNeerest(0, id);
                 if (rc < 0) {
                     ASSERT(FALSE);
                     /* error */
@@ -9049,7 +9049,7 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
         return route;
     }
     if (bNeer == true) {
-        rc = shortRoute.changeNeerest(false, route.endStationId());
+        rc = shortRoute.changeNeerest(0, route.endStationId());
         if (rc < 0) {
             ASSERT(FALSE);
             return route;
