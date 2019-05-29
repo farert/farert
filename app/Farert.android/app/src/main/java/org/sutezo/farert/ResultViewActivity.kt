@@ -462,11 +462,12 @@ class ResultViewActivity : AppCompatActivity() {
             text_availdays2.visibility = View.INVISIBLE
         }
 
-        /* ROUTE */
+        /* ROUTE 経由 */
         var s = fi.routeList
         if (!fi.routeListForTOICA.isNullOrEmpty()) {
             s += "\n${resources.getString(R.string.result_toica_calc_route)}\n${fi.routeListForTOICA}"
         }
+        s += "\n\n"
         text_via.text = s
 
     }

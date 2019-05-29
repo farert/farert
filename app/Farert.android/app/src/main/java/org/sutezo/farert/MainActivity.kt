@@ -204,10 +204,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
 
                 val titles = arrayOf("在来線のみ", "新幹線を使う", "会社線を使う", "新幹線も会社線も使う")
                 val subtitle = RouteUtil.StationNameEx(stationId)
+                val dlg_title = resources.getString(R.string.title_autoroute_selection, subtitle)
 
                 AlertDialog.Builder(this).apply {
-                    setTitle(R.string.title_line_select_autoroute)
-                    setMessage(subtitle)
+                    setTitle(dlg_title)
                     setItems(titles) { _, which ->
                         val rc = mRoute.changeNeerest(which, stationId)
                         update_fare(if (rc == 4) 40 else rc)
@@ -230,6 +230,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             beginRoute(stationId)
                         }
                         setNegativeButton("No", null)
+                        create()
                         show()
                     }
                 } else {
@@ -325,7 +326,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         var revButton = false
 
         mOsakakan_detour = OSAKA_KAN.DISABLE
-        if (0 <= rc && 1 < mRoute.count) {
+        if (1 < mRoute.count) {
             fare_value.visibility = View.VISIBLE
             saleskm_value.visibility = View.VISIBLE
             availday_value.visibility = View.VISIBLE
@@ -348,6 +349,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             }
             revButton = ((cr.fareOption and 0x400) == 0)
             footer_group.visibility = View.VISIBLE
+            buttonFareDetail.isEnabled = true
+
             mDrawerFragment.route = mRoute
         } else {
             fare_value.visibility = View.INVISIBLE
@@ -355,6 +358,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             availday_value.visibility = View.INVISIBLE
             (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
             footer_group.visibility = View.INVISIBLE
+
+            buttonFareDetail.isEnabled = false
             mDrawerFragment.route = null
         }
 
@@ -491,6 +496,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         update_fare(rc)
                     }
                     setNegativeButton("No", null)
+                    create()
                     show()
                 }
             }

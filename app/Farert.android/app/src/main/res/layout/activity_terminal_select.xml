@@ -21,7 +21,6 @@
             android:layout_height="?android:attr/actionBarSize"
             android:layout_weight="1"
             android:background="?android:attr/colorPrimary"
-            app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
 
