@@ -84,6 +84,7 @@
     <string name="title_station_select_arrive">着駅指定</string>
     <string name="title_station_select_junction">分岐駅指定</string>
     <string name="title_line_select_autoroute">最短経路</string>
+    <string name="title_autoroute_selection">%1$sまでの最短経路</string>
     <string name="title_linelistactivity">路線選択</string>
     <string name="title_stationlistactivity">駅選択</string>
     <string name="label_search_title">駅名（よみ）入力</string>

@@ -18,8 +18,7 @@
             android:scrollbars="vertical"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"
             tools:context=".ArchiveRouteActivity"
-            tools:listitem="@layout/content_archive_route_list"
-            android:background="?android:attr/activatedBackgroundIndicator"/>
+            tools:listitem="@layout/content_archive_route_list"/>
 
 
 </android.support.constraint.ConstraintLayout>

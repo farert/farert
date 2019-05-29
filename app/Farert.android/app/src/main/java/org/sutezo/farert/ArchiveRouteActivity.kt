@@ -116,6 +116,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                         item.setEnabled(false)
                     }
                     setNegativeButton("No", null)
+                    create()
                     show()
                 }
             }
@@ -137,6 +138,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
                 }
                 setCancelable(false)
+                create()
                 show()
             }
         } else {
