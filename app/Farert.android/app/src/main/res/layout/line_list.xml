@@ -11,5 +11,4 @@
     android:scrollbars="vertical"
     app:layoutManager="android.support.v7.widget.LinearLayoutManager"
     tools:context=".LineListActivity"
-
     tools:listitem="@layout/content_line_list" />

@@ -571,7 +571,7 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 			}
 			SetDlgItemText(IDC_EDIT_STAT, _T("経路は片道条件に達しています."));
 			return;	/* already finished */
-			}
+		}
 		else if (rc == 4) { /* already routed */
 			SetDlgItemText(IDC_EDIT_STAT, _T("開始駅へ戻るにはもう少し経路を指定してからにしてください"));
 			m_route.assign(route);	/* such as 代々木 新大久保 -> 代々木 */

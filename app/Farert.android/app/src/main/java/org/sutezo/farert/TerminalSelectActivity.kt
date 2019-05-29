@@ -193,6 +193,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         saveHistory(context, listOf())
                     }
                     setNegativeButton("No", null)
+                    create()
                     show()
                 }
             }

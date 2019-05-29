@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:layout_margin="@dimen/text_margin"
     android:id="@+id/row_station_item"
+    android:background="?android:attr/selectableItemBackground"
     >
     <TextView
         android:id="@+id/id_text_station"
