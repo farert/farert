@@ -12,4 +12,5 @@
     <dimen name="text_margin">8dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
     <dimen name="text_large">24sp</dimen>
+    <dimen name="text_spinner">18sp</dimen>
 </resources>

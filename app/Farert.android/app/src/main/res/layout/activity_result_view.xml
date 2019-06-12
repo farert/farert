@@ -57,7 +57,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="#abe2f0"
+                    android:background="@color/colorSubtitleBar"
                     android:text="@string/result_section"
                     android:textStyle="bold" />
             </TableRow>
@@ -85,7 +85,7 @@
                 <TextView
                     android:id="@+id/text_title_kiro"
                     android:layout_width="wrap_content"
-                    android:background="#abe2f0"
+                    android:background="@color/colorSubtitleBar"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/result_kiro"
@@ -303,7 +303,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="#abe2f0"
+                    android:background="@color/colorSubtitleBar"
                     android:text="@string/result_fare"
                     android:textStyle="bold" />
 
@@ -528,7 +528,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="#abe2f0"
+                    android:background="@color/colorSubtitleBar"
                     android:text="@string/result_availdays"
                     android:textStyle="bold" />
             </TableRow>
@@ -571,7 +571,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="#abe2f0"
+                    android:background="@color/colorSubtitleBar"
                     android:text="@string/result_via"
                     android:textStyle="bold" />
             </TableRow>

@@ -1,5 +1,31 @@
 
 
+b#19060601
+Android クラッシュログ MainActivity - onNewIntent - changeNeerest() のあとでぶっ飛んでいる
+-->
+
+
+b#19060901
+ステータスバーが白くなる
+.NoActionBarのテーマスタイルの画面全て
+ステータスバーが白くて見えなくなる
+メイン：ダメ
+バージョン情報：ダメ
+選択：ダメ
+発駅：ダメ
+きっぷホルダ：ダメ
+経路保存：良い
+設定：良い
+詳細：良い
+->
+修正した
+app/Farert.android/app/src/main/res/values-v21/styles.xml
+の
+<item name="android:statusBarColor">@android:color/transparent</item>
+を削除する
+
+-- release 19.05.02
+
 -- iOSでデバック時、DBがからっぽになる現象時のログ
 2019-05-22 13:10:34.088039+0900 Farert[2589:102916] libMobileGestalt MobileGestalt.c:890: MGIsDeviceOneOfType is not supported on this platform.
 2019-05-22 13:10:38.290246+0900 Farert[2589:103162] [logging] BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use: <unresolvable path>
