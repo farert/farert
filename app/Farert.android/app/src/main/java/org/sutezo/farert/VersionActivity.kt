@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 
 import kotlinx.android.synthetic.main.activity_version.*
-import kotlinx.android.synthetic.main.content_version.*
 import org.sutezo.alps.RouteDB
 
 
@@ -17,7 +16,6 @@ class VersionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_version)
-        setSupportActionBar(toolbar)
 
         // back arrow button(戻るボタン有効)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

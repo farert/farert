@@ -881,3 +881,20 @@ route.checkOfRuleSpecificCoreLine:  86、87条、69条判定＆経路算出 show
 
 	長津田-国母の例
 	国母は横浜から200
+
+
+...............
+viewDidAppear   viewContextMode をセット
+actionSelectProcFrom   longTermFuncMode
+processDuringIndicatorAnimating
+
+
+doneTerminal segue
+ viewContextMode = .ROUTESETUP_VIEW;
+ self.routeScript = routeViewCtrl.selectRouteString;
+viewDidAppear
+ 　longTermFuncMode = .SETUPROUTE;
+  長い処理を仕掛ける　引数にScriptを渡しているがメンバ変数にしているので意味なし。相手も拾えるって。 longTermFuncModeもそうだし。
+
+長い処理：processDuringIndicatorAnimating
+  longTermFuncModeで分岐 setup_route()する。あとよろ

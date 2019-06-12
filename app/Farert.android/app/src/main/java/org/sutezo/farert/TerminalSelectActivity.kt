@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 
 import kotlinx.android.synthetic.main.activity_terminal_select.*
-import kotlinx.android.synthetic.main.content_list_empty.*
 import kotlinx.android.synthetic.main.content_list_empty.view.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.view.*

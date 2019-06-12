@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:singleLine="true"
+    android:showDividers="none"
+    android:dividerHeight="0dp"
+    android:scrollbarAlwaysDrawVerticalTrack="true"
+    android:ellipsize="marquee"
+    android:textColor="@color/colorTicketTypeDropDownText"
+    android:background="@color/colorTicketTypeDropDownBackground"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:textSize="@dimen/text_spinner"
+    android:layout_width="match_parent"
+    android:paddingTop="16dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="6dp"
+    android:paddingEnd="6dp"
+    android:layout_height="match_parent">
+</TextView>
