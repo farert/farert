@@ -1,6 +1,7 @@
 package org.sutezo.farert
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.widget.DrawerLayout
@@ -11,12 +12,11 @@ import android.support.v7.widget.Toolbar
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.*
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.CheckBox
-import android.widget.Toast
-import kotlinx.android.synthetic.main.content_main.view.*
+import android.widget.TextView
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
-import kotlinx.android.synthetic.main.fragment_drawer.view.*
 import org.sutezo.alps.*
 import java.lang.Exception
 
@@ -318,6 +318,11 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             var fareValue = itemView.itemFare
             var deleteCheck = itemView.chk_delete
             init {
+                if (mContext != null) {
+                    val adapter = ArrayAdapter.createFromResource(mContext!!, R.array.list_ticket_type, R.layout.tv_folder_ticket_type)
+                    adapter.setDropDownViewResource(R.layout.tv_folder_ticket_type_drop_down)
+                    fareType.adapter = adapter
+                }
             }
         }
     }

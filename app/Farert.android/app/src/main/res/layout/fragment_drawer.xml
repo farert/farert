@@ -5,11 +5,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical">
 
-    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary">
+        android:background="@drawable/side_nav_bar">
 
         <ImageView
             android:id="@+id/imgHolder"
@@ -85,6 +84,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:text=""
+            android:textColor="@color/colorChkBoxFolder"
             android:theme="@style/FolderDrawCheckBox"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent" />
@@ -94,9 +94,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/btn_del"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:theme="@style/AppTheme.FlatButton"
-            android:textColor="@color/colorAccent"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:textColor="@color/colorTicketTypeText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toRightOf="@id/checkBox"
@@ -105,9 +104,8 @@
         <Button
             android:id="@+id/btnAppend"
             android:layout_width="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:theme="@style/AppTheme.FlatButton"
-            android:textColor="@color/colorAccent"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:textColor="@color/colorTicketTypeText"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
@@ -118,10 +116,9 @@
 
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:background="@android:color/white">
 
@@ -131,6 +128,7 @@
         android:layout_height="match_parent"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager"
         android:scrollbars="vertical"
+        android:background="@color/colorLeftHeadEnd"
         />
 
 
