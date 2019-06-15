@@ -1,4 +1,4 @@
-﻿#include <stdafx.h>
+#include <stdafx.h>
 
 
 #if defined _DEBUG || !defined _WINDOWS || defined TEST
@@ -1468,7 +1468,7 @@ const static TCHAR *test_route_tbl[] = {
 			_T("呼野,日田彦山線,城野,日豊線,小倉,山陽新幹線,新神戸"),	/***/
 			// NG route _T("若松,筑豊線,折尾,鹿児島線,小倉,山陽新幹線,博多,九州新幹線,鹿児島中央"),	/***/
 			// NG route _T("若松,筑豊線,新飯塚,後藤寺線,田川後藤寺,日田彦山線,城野,日豊線,小倉,山陽新幹線,博多,九州新幹線,鹿児島中央"),	/***/
-			// 小倉―博多は新幹線、在来線同一視なので重複経路となりダメ
+			// 小倉—博多は新幹線、在来線同一視なので重複経路となりダメ
 			_T("若松"),	/***/
 			_T("若松,筑豊線,折尾,鹿児島線,小倉,山陽新幹線,新大阪"),	/***/
 			_T("門司港,鹿児島線,小倉,山陽新幹線,博多,九州新幹線,鹿児島中央"),	/***/
@@ -1757,7 +1757,7 @@ const static TCHAR *test_route3_tbl[] = {
 		_T("掛川 東海道新幹線 米原"),
 		_T("新富士(東) 東海道新幹線 三島"),
 		_T("新横浜 東海道新幹線 三河安城"),
-		_T("c新幹線小倉―博多間在来線同一視"),
+		_T("c新幹線小倉—博多間在来線同一視"),
 		_T("広島 山陽新幹線 博多 鹿児島線 原田 筑豊線 桂川(九) 篠栗線 e吉塚 鹿児島線 西小倉 日豊線  城野 日田彦山線 夜明"),
 		_T("s広島 山陽新幹線 博多 鹿児島線 原田 筑豊線 桂川(九) 篠栗線 吉塚 鹿児島線 西小倉 日豊線  城野 日田彦山線 夜明"),
 		_T("c------------------"),
@@ -2174,13 +2174,17 @@ static void test_hzl2(const TCHAR *param[])
 	}
 }
 
-
-void test_autoroute(const TCHAR *route_def[])
+// option  0 or 5~9 線パターン  1 在来線のみ 2 新幹線使う 3 会社線もつかう 4 新幹線も会社線もつかう
+//        +10 特例適用のみ表示
+void test_autoroute(const TCHAR *route_def[], int option = 0)
 {
 	TCHAR buffer[1024];
 	Route route;
 	int i;
 	int rc;
+	bool resopt = 10 <= option;
+	int  autotype = 10 <= option ? option - 10 : option;
+
 	for (i = 0; _T('\0') != *route_def[i]; i += 2) {
 		int fail;	// 0 success (!)1 fail bullet line only (x)-1 fail always
 		LPCTSTR p;
@@ -2210,88 +2214,108 @@ void test_autoroute(const TCHAR *route_def[])
 		}
 		_ftprintf(os, _T("* pre route >>>>>>>\n  {%s -> %s}\n"), route_def[i], p);
 
-		_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
-		rc = route.changeNeerest(0, RouteUtil::GetStationId(p));
-		if ((rc < 0) || (rc == 5)) {
-			_ftprintf(os, _T("Can't route.%s, rc=%d\n"), fail != 0 ? _T("(OK)") : _T("(NG)"), rc);
-			ASSERT(fail != 0);
-		} else {
-			ASSERT(fail == 0);
-			CalcRoute croute(route);
-			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+		if (0 == autotype || 4 < autotype || 1 == autotype) {
+			_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
+			rc = route.changeNeerest(0, RouteUtil::GetStationId(p));
+			if ((rc < 0) || (rc == 5)) {
+				_ftprintf(os, _T("Can't route.%s, rc=%d\n"), fail != 0 ? _T("(OK)") : _T("(NG)"), rc);
+				if (!resopt) {
+					ASSERT(fail != 0);
+				}
+			} else {
+				if (!resopt) {
+					ASSERT(fail == 0);
+				}
+				CalcRoute croute(route);
+				if (!resopt) {
+					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					tstring s = croute.showFare();
+					s = cr_remove(s);
+					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+				}
+				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				tstring s = croute.showFare();
+				s = cr_remove(s);
+				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+			}
+		}
 
-			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
-		}
-		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
-		rc = route.setup_route(buffer);
-		ASSERT(0 <= rc);
-		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
-		rc = route.changeNeerest(1, RouteUtil::GetStationId(p));
-		if ((rc < 0) || (rc == 5)) {
-			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
-			ASSERT(fail != 0);
-		} else {
-			ASSERT(0 <= fail);
-			CalcRoute croute(route);
-			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
-			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
-		}
-		//
-		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
-		rc = route.setup_route(buffer);
-		ASSERT(0 <= rc);
-		_ftprintf(os, _T("* auto route(会社線使用) >>>>>>>\n"));
-		rc = route.changeNeerest(2, RouteUtil::GetStationId(p));
-		if ((rc < 0) || (rc == 5)) {
-			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
-			//ASSERT(fail != 0);
-		} else {
-			ASSERT(0 <= fail);
-			CalcRoute croute(route);
-			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
-			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+		if (0 == autotype || 4 < autotype || 2 == autotype) {
+			route.removeAll();
+			STRCPY(1024, buffer, route_def[i]);
+			rc = route.setup_route(buffer);
+			ASSERT(0 <= rc);
+			_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
+			rc = route.changeNeerest(1, RouteUtil::GetStationId(p));
+			if ((rc < 0) || (rc == 5)) {
+				_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
+				if (!resopt) { ASSERT(fail != 0); }
+			} else {
+				if (!resopt) { ASSERT(0 <= fail); }
+				CalcRoute croute(route);
+				if (!resopt) {
+					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					tstring s = croute.showFare();
+					s = cr_remove(s);
+					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+				}
+				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				tstring s = croute.showFare();
+				s = cr_remove(s);
+				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+			}
 		}
 		//
-		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
-		rc = route.setup_route(buffer);
-		ASSERT(0 <= rc);
-		_ftprintf(os, _T("* auto route(会社線+新幹線使用) >>>>>>>\n"));
-		rc = route.changeNeerest(3, RouteUtil::GetStationId(p));
-		if ((rc < 0) || (rc == 5)) {
-			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
-			//ASSERT(fail != 0);
-		} else {
-			ASSERT(0 <= fail);
-			CalcRoute croute(route);
-			croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			tstring s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
-			croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-			s = croute.showFare();
-			s = cr_remove(s);
-			_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+		if (0 == autotype || 4 < autotype || 3 == autotype) {
+			route.removeAll();
+			STRCPY(1024, buffer, route_def[i]);
+			rc = route.setup_route(buffer);
+			ASSERT(0 <= rc);
+			_ftprintf(os, _T("* auto route(会社線使用) >>>>>>>\n"));
+			rc = route.changeNeerest(2, RouteUtil::GetStationId(p));
+			if ((rc < 0) || (rc == 5)) {
+				_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
+				//ASSERT(fail != 0);
+			} else {
+				if (!resopt) { ASSERT(0 <= fail); }
+				CalcRoute croute(route);
+				if (!resopt) {
+					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					tstring s = croute.showFare();
+					s = cr_remove(s);
+					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+				}
+				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				tstring s = croute.showFare();
+				s = cr_remove(s);
+				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+			}
+		}
+		//
+		if (0 == autotype || 4 <= autotype) {
+			route.removeAll();
+			STRCPY(1024, buffer, route_def[i]);
+			rc = route.setup_route(buffer);
+			ASSERT(0 <= rc);
+			_ftprintf(os, _T("* auto route(会社線+新幹線使用) >>>>>>>\n"));
+			rc = route.changeNeerest(3, RouteUtil::GetStationId(p));
+			if ((rc < 0) || (rc == 5)) {
+				_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
+				//ASSERT(fail != 0);
+			} else {
+				if (!resopt) { ASSERT(0 <= fail); }
+				CalcRoute croute(route);
+				if (!resopt) {
+					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					tstring s = croute.showFare();
+					s = cr_remove(s);
+					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+				}
+				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				tstring s = croute.showFare();
+				s = cr_remove(s);
+				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+			}
 		}
 		//
 	}
