@@ -383,7 +383,7 @@ public class CalcRoute extends RouteList {
             stid = coreAreaIDByCityId(CSTART);
             if (stid == 0) {
                 ASSERT(route_list_cooked.get(0).stationId == route_list_raw.get(0).stationId);
-                return route_list_cooked.get(0).stationId;
+                return route_list_raw.get(0).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
             }
@@ -405,7 +405,7 @@ public class CalcRoute extends RouteList {
             stid = coreAreaIDByCityId(CEND);
             if (stid == 0) {
                  ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
-                return route_list_cooked.get(route_list_cooked.size() - 1).stationId;
+                return route_list_raw.get(route_list_cooked.size() - 1).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
             }
@@ -572,7 +572,7 @@ public class CalcRoute extends RouteList {
                 if (!last_flag.jrtokaistock_enable || !last_flag.jrtokaistock_applied) {
 
     				last_flag.terCityReset();
-                    switch (chk & 0x03) {
+                    switch (rtky & 0x03) {
                         case 0:
                             break;
                         case 1:
@@ -589,6 +589,26 @@ public class CalcRoute extends RouteList {
                     }
     				System.out.printf("applied for rule87\n");
     			}
+
+                flg = 0;
+                if (((chk & 0x01) != 0) && ((rtky & 0x01) == 0) && (RouteUtil.CITYNO_TOKYO == cityId[0])) {
+                    // 都区内発で山手線内発ではない場合には、着駅が山手線内と言うことで着駅だけ東京に
+                    flg = 2;
+                }
+                if (((chk & 0x02) != 0) && ((rtky & 0x02) == 0) && (RouteUtil.CITYNO_TOKYO == cityId[1])) {
+                    // 都区内着で山手線内着ではない
+                    flg = 1;
+                }
+
+                if (flg != 0) {
+                    // 要らない。(ReRouteRule86j87j()が第2引数で制御できるので）cityId = MAKEPAIR(0, IDENT2(cityId));
+                    /* route_list_tmp = route_list_tmp2 */
+                    cpyRouteItems(route_list_tmp2, route_list_tmp);
+                    ReRouteRule86j87j(cityId, flg, exit, enter, route_list_tmp);
+                    // 69を適用したものをroute_list_tmp3へ
+                    n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+                }
+
                 // route_list_cooked = route_list_tmp3
                 cpyRouteItems(route_list_tmp3, route_list_cooked);
 
