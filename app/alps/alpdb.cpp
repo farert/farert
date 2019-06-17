@@ -5625,7 +5625,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	vector<int32_t> km_raw;
 
     BIT_OFF(last_flag, BLF_RULE_EN);    // initialize
-	// 69を適用したものをroute_list_tmp2へ
+	// 69を適用したものをroute_list_tmpへ
 	n = CalcRoute::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
 	TRACE("Rule 69 applied %dtimes.\n", n);
     if (0 < n) {
@@ -5743,8 +5743,28 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 				last_flag |= ((rtky & 0x03) << BLF_TER_BEGIN_YAMATE);	// BLF_TER_BEGIN_YAMATE, BLF_TER_FIN_YAMATE
 				TRACE("applied for rule87\n");
 			}
-				// route_list_cooked = route_list_tmp3
-			route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
+
+            flg = 0;
+            if (((chk & 0x01) != 0) && ((rtky & 0x01) == 0) && (CITYNO_TOKYO == IDENT1(cityId))) {
+                // 都区内発で山手線内発ではない場合には、着駅が山手線内と言うことで着駅だけ東京に
+                flg = 2;
+            }
+            if (((chk & 0x02) != 0) && ((rtky & 0x02) == 0) && (CITYNO_TOKYO == IDENT2(cityId))) {
+                // 都区内着で山手線内着ではない
+                flg = 1;
+            }
+
+            if (flg != 0) {
+                // 要らない。(ReRouteRule86j87j()が第2引数で制御できるので）cityId = MAKEPAIR(0, IDENT2(cityId));
+                /* route_list_tmp = route_list_tmp2 */
+                route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
+                CalcRoute::ReRouteRule86j87j(cityId, flg, exit, enter, &route_list_tmp);
+                // 69を適用したものをroute_list_tmp3へ
+                n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+                TRACE("Rule 69(2) applied %dtimes.\n", n);
+            }
+  				// route_list_cooked = route_list_tmp3
+  			route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
 			BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
 
