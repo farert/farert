@@ -4,6 +4,9 @@ extern int test_exec(void);
 extern void test_route(const TCHAR *route_def[], int round = 0);
 extern void test_autoroute(const TCHAR *route_def[], int option = 0);
 static void from_stream(char* file, int option_num);
+static const char* subword(const char* src_str, int num);
+static int num_of_word(const char* buf);
+static void rtrim(char* str);
 
 int g_tax = 8;
 
@@ -125,67 +128,6 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-static void rtrim(char* str)
-{
-	int len = strlen(str);
-
-	for (len--; 0 <= len; --len) {
-		if ((unsigned char)str[len] <= ' ') {
-			str[len] = '\0';
-		} else {
-			break;
-		}
-	}
-}
-
-int num_of_word(const char* buf)
-{
-	char* p;
-	const char* sep = " \t";
-	int c = 0;
-	char* str = (char*)malloc(strlen(buf) + 1);
-
-	if (NULL == str) {
-		return 0;
-	}
-
-	strcpy(str, buf);
-
-	p = strtok(str, sep);
-	while (p != NULL) {
-		c++;
-		p = strtok(NULL, sep);
-	}
-	free(str);
-	return c;
-}
-
-// numワードめの文字列ポインタを返す. numは1~Nで、1ならstrを返す
-const char* subword(const char* src_str, int num)
-{
-	char* p;
-	const char* sep = " \t";
-	int c = 0;
-	char* str = (char*)malloc(strlen(src_str) + 1);
-
-	if (NULL == str) {
-		return src_str + strlen(src_str); // empty string
-	}
-
-	strcpy(str, src_str);
-
-	p = strtok(str, sep);
-	while (p != NULL) {
-		c++;
-		if (num <= c) {
-			return src_str + (p - str);
-		}
-		p = strtok(NULL, sep);
-	}
-	free(str);
-	return src_str + strlen(src_str); // empty
-}
-
 
 static void from_stream(char* file, int option_num)
 {
@@ -216,4 +158,65 @@ static void from_stream(char* file, int option_num)
 		}
 	}
 	fclose(fp);
+}
+
+static void rtrim(char* str)
+{
+	int len = strlen(str);
+
+	for (len--; 0 <= len; --len) {
+		if ((unsigned char)str[len] <= ' ') {
+			str[len] = '\0';
+		} else {
+			break;
+		}
+	}
+}
+
+static int num_of_word(const char* buf)
+{
+	char* p;
+	const char* sep = " \t";
+	int c = 0;
+	char* str = (char*)malloc(strlen(buf) + 1);
+
+	if (NULL == str) {
+		return 0;
+	}
+
+	strcpy(str, buf);
+
+	p = strtok(str, sep);
+	while (p != NULL) {
+		c++;
+		p = strtok(NULL, sep);
+	}
+	free(str);
+	return c;
+}
+
+// numワードめの文字列ポインタを返す. numは1~Nで、1ならstrを返す
+static const char* subword(const char* src_str, int num)
+{
+	char* p;
+	const char* sep = " \t";
+	int c = 0;
+	char* str = (char*)malloc(strlen(src_str) + 1);
+
+	if (NULL == str) {
+		return src_str + strlen(src_str); // empty string
+	}
+
+	strcpy(str, src_str);
+
+	p = strtok(str, sep);
+	while (p != NULL) {
+		c++;
+		if (num <= c) {
+			return src_str + (p - str);
+		}
+		p = strtok(NULL, sep);
+	}
+	free(str);
+	return src_str + strlen(src_str); // empty
 }
