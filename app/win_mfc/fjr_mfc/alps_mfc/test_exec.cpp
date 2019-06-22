@@ -1,4 +1,4 @@
-#include <stdafx.h>
+﻿#include <stdafx.h>
 
 
 #if defined _DEBUG || !defined _WINDOWS || defined TEST
