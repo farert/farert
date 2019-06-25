@@ -405,7 +405,7 @@ public class CalcRoute extends RouteList {
             stid = coreAreaIDByCityId(CEND);
             if (stid == 0) {
                  ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
-                return route_list_raw.get(route_list_cooked.size() - 1).stationId;
+                return route_list_raw.get(route_list_raw.size() - 1).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
             }
