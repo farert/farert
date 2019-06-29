@@ -2425,6 +2425,16 @@ public class FARE_INFO  {
         return (sales_km + 1999) / 2000 + 1;
     }
 
+    /* t_clinfar */
+    final static boolean IS_ROUND_UP_CHILDREN_FARE(int d) {
+        return (((d) & 0x01) != 0);
+    }
+
+    final static boolean IS_CONNECT_NON_DISCOUNT_FARE(int d) {
+        return (((d) & 0x02) != 0);
+    }
+
+
     //	会社線の運賃を得る
     //	calc_fare() => aggregate_fare_info() =>
     //
@@ -2458,9 +2468,9 @@ public class FARE_INFO  {
         		companyFare.fareAcademic = dbo.getInt(1);	// academic
         		flg = dbo.getInt(2);	// flg
                 rc = true;
-                companyFare.passflg = RouteUtil.IS_CONNECT_NON_DISCOUNT_FARE(flg);
+                companyFare.passflg = IS_CONNECT_NON_DISCOUNT_FARE(flg);
         		// (0=5円は切り捨て, 1=5円未満切り上げ)
-        		if (RouteUtil.IS_ROUND_UP_CHILDREN_FARE(flg)) {
+        		if (IS_ROUND_UP_CHILDREN_FARE(flg)) {
         			companyFare.fareChild = RouteUtil.round_up(fare_work / 2);
         		} else {
         			companyFare.fareChild = RouteUtil.round_down(fare_work / 2);

@@ -152,10 +152,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define fare_discount5(fare, per) ((((fare) / 10 * (10 - (per))) + 5) / 10 * 10)
 
 
-/* t_clinfar */
-#define IS_ROUND_UP_CHILDREN_FARE(d)	(((d) & 0x01) != 0)
-#define IS_CONNECT_NON_DISCOUNT_FARE(d)	(((d) & 0x02) != 0)
-
 #define CSTART	1
 #define CEND	2
 
@@ -483,6 +479,7 @@ private:
 	bool retr_fare();
 	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
 	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
+	bool aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw);
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
         beginTerminalId = begin_station_id;
@@ -654,6 +651,17 @@ public:
         rule114_sales_km = 0;
         rule114_calc_km = 0;
     }
+    class CompanyFare {
+    public:
+        int32_t fare;
+        int32_t fareChild;
+        int32_t fareAcademic;
+        int32_t passflg;        // 弊算割引有無, 子供切り捨て
+        /* t_clinfar */
+        bool is_round_up_children_fare()	const { return (passflg & 0x01) != 0; }
+        bool is_connect_non_discount_fare() const { return (passflg & 0x02) != 0; }
+        CompanyFare() { fare = 0; fareChild = 0; fareAcademic = 0; passflg = 0; }
+    };
     bool	isRule114() const { return 0 != rule114_fare; }
     bool	isRoundTripDiscount() const { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
     int32_t getBeginTerminalId() const { return beginTerminalId;}
@@ -678,7 +686,7 @@ private:
 	static int32_t	 	Fare_shikoku(int32_t skm, int32_t ckm);
 	static int32_t	 	Fare_kyusyu(int32_t skm, int32_t ckm);
 	static int32_t		days_ticket(int32_t sales_km);
-	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, vector<int32_t>& companyFare);
+	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, FARE_INFO::CompanyFare* companyFare);
 	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
 	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
 	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
