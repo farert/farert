@@ -8254,62 +8254,40 @@ bool FARE_INFO::IsIC_area(int32_t urban_id)
 		(urban_id == URB_SENDAI));
 }
 
-//	1経路の営業キロ、計算キロを集計
-//	calc_fare() =>
-//
-//	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
-//	@retval -1 Fatal error
-//  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
-//  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
-//
-int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
+
+/* 近郊区間ではない条件となる新幹線乗車があるか */
+  //  経路はJR東海管内のみか？
+  //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
+  //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
+  /*
+      b:発駅が境界駅ならtrue
+      f:着駅が境界駅ならtrue
+      -:true
+      n:新幹線ならtrue
+      x:false
+  */
+bool FARE_INFO::aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw)
 {
-	IDENT station_id1;		/* station_id1, (station_id2=ite->stationId) */
-	IDENT station_id_0;		/* last station_id1(for Company line) */
+    IDENT station_id1 = 0;		/* station_id1, (station_id2=ite->stationId) */
 	vector<RouteItem>::const_iterator ite;
-	uint32_t   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
     int32_t cid1 = 0;
 	int32_t cid_s1;
 	int32_t cid_e1;
 	int32_t cid_s2;
 	int32_t cid_e2;
 	int32_t id_line_tokaido_shinkansen = DbidOf::getInstance().id_of_line(_T("東海道新幹線"));
-    bool b_jrtokaiOnly;
-	                                //
-	int32_t fare_add = 0;						// 運賃特別区間加算値
-	const vector<RouteItem>& routeList = (routeList_cooked.size() <= 1) ? routeList_raw : routeList_cooked;
 
-	this->local_only = true;
-	this->local_only_as_hokkaido = true;
-	osakakan_aggregate = *last_flag;
-	BIT_OFF(osakakan_aggregate, BLF_OSAKAKAN_1PASS);
+    bool b_jrtokaiOnly = true;
 
-    enableTokaiStockSelect = 0;
-	BIT_OFF(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
-
-	station_id1 = 0;
-
-	/* 近郊区間ではない条件となる新幹線乗車があるか */
-    //  経路はJR東海管内のみか？
-    //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
-    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-    /*
-        b:発駅が境界駅ならtrue
-        f:着駅が境界駅ならtrue
-        -:true
-        n:新幹線ならtrue
-        x:false
-    */
-    b_jrtokaiOnly = true;
 	for (ite = routeList_raw.cbegin(); ite != routeList_raw.cend(); ite++) {
         int32_t cid = RouteUtil::CompanyIdFromStation(ite->stationId);
 		if (station_id1 != 0) {
             /* JR東海以外 and 東海道新幹線でない場合false */
             if (ite->lineId != id_line_tokaido_shinkansen) {
-				cid_e1 = IDENT1(cid);
-				cid_s1 = IDENT1(cid1);
-				cid_e2 = IDENT2(cid);
-				cid_s2 = IDENT2(cid1);
+                cid_e1 = IDENT1(cid);
+                cid_s1 = IDENT1(cid1);
+                cid_e2 = IDENT2(cid);
+                cid_s2 = IDENT2(cid1);
 				if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
 					((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
 					((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
@@ -8325,6 +8303,36 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 		station_id1 = ite->stationId;
         cid1 = cid;
 	}
+    return b_jrtokaiOnly;
+}
+
+//	1経路の営業キロ、計算キロを集計
+//	calc_fare() =>
+//
+//	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
+//	@retval -1 Fatal error
+//  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
+//  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
+//
+int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
+{
+	IDENT station_id1;		/* station_id1, (station_id2=ite->stationId) */
+	IDENT station_id_0;		/* last station_id1(for Company line) */
+	vector<RouteItem>::const_iterator ite;
+	uint32_t   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+
+    bool b_jrtokaiOnly = aggregate_fare_is_jrtokai(routeList_raw);
+	                                //
+	int32_t fare_add = 0;						// 運賃特別区間加算値
+	const vector<RouteItem>& routeList = (routeList_cooked.size() <= 1) ? routeList_raw : routeList_cooked;
+
+	this->local_only = true;
+	this->local_only_as_hokkaido = true;
+	osakakan_aggregate = *last_flag;
+	BIT_OFF(osakakan_aggregate, BLF_OSAKAKAN_1PASS);
+
+    enableTokaiStockSelect = 0;
+	BIT_OFF(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
 
 	//TRACE("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", isNotCityterminalWoTokai(), isCityterminalWoTokai(), *last_flag & LF_TER_CITY_MASK);
 	//TRACE("@@@ en=%d, aply=%d rule=%d norule=%d\n", BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_ENABLE),
@@ -8389,47 +8397,47 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 				this->sales_km += d.at(0);			// total 営業キロ(会社線含む、有効日数計算用)
 				if (GDIS_COMPANY_LINE(d.at(5))) {	/* 会社線 */
 
-					vector<int32_t> comfare(4, 0);	//[0]fare, [1]children, [2]academic, [3]no-connect-discount
+					FARE_INFO::CompanyFare comfare;	//[0]fare, [1]children, [2]academic, [3]no-connect-discount
 
 					if (0 < station_id_0) {
 						/* 2回以上連続で会社線の場合(タンゴ鉄道とか) */
 							/* a+++b+++c : */
-						if (!FARE_INFO::Fare_company(station_id_0, ite->stationId, comfare)) {
+						if (!FARE_INFO::Fare_company(station_id_0, ite->stationId, &comfare)) {
 							/* 乗継割引なし */
-							if (!FARE_INFO::Fare_company(station_id1, ite->stationId, comfare)) {
+							if (!FARE_INFO::Fare_company(station_id1, ite->stationId, &comfare)) {
 								ASSERT(FALSE);
 							}
 							station_id_0 = station_id1;
 						} else {
-							vector<int32_t> comfare_1(4, 0);	// a+++b
+							FARE_INFO::CompanyFare comfare_1;	// a+++b
 
 							// if ex. 氷見-金沢 併算割引非適用
-							if (IS_CONNECT_NON_DISCOUNT_FARE(comfare.at(3)) && (((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN)) != (*last_flag & ((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN))))) {
+							if (comfare.is_connect_non_discount_fare() && (((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN)) != (*last_flag & ((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN))))) {
 								/* 乗継割引なし */
-								if (!FARE_INFO::Fare_company(station_id1, ite->stationId, comfare)) {
+								if (!FARE_INFO::Fare_company(station_id1, ite->stationId, &comfare)) {
 									ASSERT(FALSE);
 								}
 							} else {
 								/* normal or 併算割引適用 */
-								if (!FARE_INFO::Fare_company(station_id_0, station_id1, comfare_1)) {
+								if (!FARE_INFO::Fare_company(station_id_0, station_id1, &comfare_1)) {
 									ASSERT(FALSE);
 								}
-								if (0 < comfare_1.at(2)) {
+								if (0 < comfare_1.fareAcademic) {
 									/* 学割ありの場合は割引額を戻す */
-									ASSERT(comfare_1.at(2) < comfare_1.at(0));
-									this->company_fare_ac_discount -= (comfare_1.at(0) - comfare_1.at(2));
+									ASSERT(comfare_1.fareAcademic < comfare_1.fare);
+									this->company_fare_ac_discount -= (comfare_1.fare - comfare_1.fareAcademic);
 								}
-								this->company_fare -= comfare_1.at(0);	// 戻す(直前加算分を取消)
-								this->company_fare_child -= comfare_1.at(1);
+								this->company_fare -= comfare_1.fare;	// 戻す(直前加算分を取消)
+								this->company_fare_child -= comfare_1.fareChild;
 							}
 						}
-						if (0 < comfare.at(2)) {
+						if (0 < comfare.fareAcademic) {
 							/* 学割ありの場合は割引額を加算 */
-							ASSERT(comfare.at(2) < comfare.at(0));
-							this->company_fare_ac_discount += (comfare.at(0) - comfare.at(2));
+							ASSERT(comfare.fareAcademic < comfare.fare);
+							this->company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
 						}
-						this->company_fare += comfare.at(0);
-						this->company_fare_child += comfare.at(1);
+						this->company_fare += comfare.fare;
+						this->company_fare_child += comfare.fareChild;
 					} else {
 						/* 1回目の会社線 */
 						if (this->sales_km == d.at(0)) {
@@ -8440,16 +8448,16 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 							BIT_ON(result_flag, BRF_COMPANY_INCORRECT);
 							ASSERT(FALSE);
 						}
-						if (!FARE_INFO::Fare_company(station_id1, ite->stationId, comfare)) {
+						if (!FARE_INFO::Fare_company(station_id1, ite->stationId, &comfare)) {
 							ASSERT(FALSE);
 						}
-						if (0 < comfare.at(2)) {
+						if (0 < comfare.fareAcademic) {
 							/* 学割ありの場合は割引額を加算 */
-							ASSERT(comfare.at(2) < comfare.at(0));
-							this->company_fare_ac_discount += (comfare.at(0) - comfare.at(2));
+							ASSERT(comfare.fareAcademic < comfare.fare);
+							this->company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
 						}
-						this->company_fare += comfare.at(0);
-						this->company_fare_child += comfare.at(1);
+						this->company_fare += comfare.fare;
+						this->company_fare_child += comfare.fareChild;
 
 						station_id_0 = station_id1;
 
@@ -9306,7 +9314,7 @@ int32_t FARE_INFO::days_ticket(int32_t sales_km)
 //	@param [in/out] compantFare   [0]区間運賃 / [1]小児運賃 / [2]学割運賃(非適用は0) / [3]併算割引運賃有無(1=無)
 //	@return true : success / false : failuer
 //
-bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, vector<int32_t>& campanyFare)
+bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, CompanyFare* campanyFare)
 {
 	char sql[256];
 	int32_t fare_work;
@@ -9323,15 +9331,15 @@ bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, vector<in
 	dbo.setParam(2, station_id2);
 
 	if (dbo.moveNext()) {
-		fare_work = campanyFare.at(0) = dbo.getInt(0);	// fare
-		campanyFare.at(2) = dbo.getInt(1);	// academic
-		campanyFare.at(3) = dbo.getInt(2);	// flg
+		fare_work = campanyFare->fare = dbo.getInt(0);	// fare
+		campanyFare->fareAcademic = dbo.getInt(1);	// academic
+		campanyFare->passflg = dbo.getInt(2);	// flg
 
 		// (0=5円は切り捨て, 1=5円未満切り上げ)
-		if (IS_ROUND_UP_CHILDREN_FARE(campanyFare.at(3))) {
-			campanyFare.at(1) = round_up(fare_work / 2);
+		if (campanyFare->is_round_up_children_fare()) {
+			campanyFare->fareChild = round_up(fare_work / 2);
 		} else {
-			campanyFare.at(1) = round_down(fare_work / 2);
+			campanyFare->fareChild = round_down(fare_work / 2);
 		}
 		return true;
 	}
