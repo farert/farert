@@ -326,53 +326,30 @@ public class FARE_INFO  {
         return true;
     }
 
-    //	1経路の営業キロ、計算キロを集計
-    //	calc_fare() =>
-    //
-    //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
-    //	@retval -1 Fatal error
-    //  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
-    //  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
-    //
-    private int aggregate_fare_info(LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
-        short station_id1;		/* station_id1, (station_id2=ite.stationId) */
-        short station_id_0;		/* last station_id1(for Company line) */
-        LastFlag osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+    /* 近郊区間ではない条件となる新幹線乗車があるか */
+    //  経路はJR東海管内のみか？
+    //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
+    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
+    /*
+        b:発駅が境界駅ならtrue
+        f:着駅が境界駅ならtrue
+        -:true
+        n:新幹線ならtrue
+        x:false
+    */
+    /* JR東海以外 and 東海道新幹線でない場合false */
+    private Boolean aggregate_fare_is_jrtokai(final List<RouteItem> routeList_raw) {
         int [] cid1 = {0, 0};
         int cid_s1;
         int cid_e1;
         int cid_s2;
         int cid_e2;
         int id_line_tokaido_shinkansen = DbIdOf.INSTANCE.line("東海道新幹線");
-        boolean b_jrtokaiOnly;
-        //
-        int fare_add = 0;						// 運賃特別区間加算値
-        final List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
 
-        this.local_only = true;
-        this.local_only_as_hokkaido = true;
-        osakakan_aggregate = last_flag.clone();
-        osakakan_aggregate.setOsakaKanPass(false);
-
-        enableTokaiStockSelect = 0;
-        last_flag.jrtokaistock_enable = true;
+        boolean b_jrtokaiOnly = true;
 
         station_id1 = 0;
 
-        /* 近郊区間ではない条件となる新幹線乗車があるか */
-        //  経路はJR東海管内のみか？
-        //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
-        //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-
-        b_jrtokaiOnly = true;
-        /*
-            b:発駅が境界駅ならtrue
-            f:着駅が境界駅ならtrue
-            -:true
-            n:新幹線ならtrue
-            x:false
-        */
-        /* JR東海以外 and 東海道新幹線でない場合false */
         for (RouteItem ri : routeList_raw) {
             int [] cid = RouteUtil.CompanyIdFromStation(ri.stationId);
             if (station_id1 != 0) {
@@ -399,6 +376,34 @@ public class FARE_INFO  {
         if (b_jrtokaiOnly) {
             System.out.printf("isJrTokai true\n");
         }
+        return b_jrtokaiOnly;
+    }
+
+    //	1経路の営業キロ、計算キロを集計
+    //	calc_fare() =>
+    //
+    //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
+    //	@retval -1 Fatal error
+    //  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
+    //  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
+    //
+    private int aggregate_fare_info(LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
+        short station_id1;		/* station_id1, (station_id2=ite.stationId) */
+        short station_id_0;		/* last station_id1(for Company line) */
+        LastFlag osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+
+        boolean b_jrtokaiOnly = aggregate_fare_is_jrtokai(routeList_raw);
+        //
+        int fare_add = 0;						// 運賃特別区間加算値
+        final List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
+
+        this.local_only = true;
+        this.local_only_as_hokkaido = true;
+        osakakan_aggregate = last_flag.clone();
+        osakakan_aggregate.setOsakaKanPass(false);
+
+        enableTokaiStockSelect = 0;
+        last_flag.jrtokaistock_enable = true;
 
         station_id_0 = station_id1 = 0;
 
@@ -2425,6 +2430,16 @@ public class FARE_INFO  {
         return (sales_km + 1999) / 2000 + 1;
     }
 
+    /* t_clinfar */
+    final static boolean IS_ROUND_UP_CHILDREN_FARE(int d) {
+        return (((d) & 0x01) != 0);
+    }
+
+    final static boolean IS_CONNECT_NON_DISCOUNT_FARE(int d) {
+        return (((d) & 0x02) != 0);
+    }
+
+
     //	会社線の運賃を得る
     //	calc_fare() => aggregate_fare_info() =>
     //
@@ -2458,9 +2473,9 @@ public class FARE_INFO  {
         		companyFare.fareAcademic = dbo.getInt(1);	// academic
         		flg = dbo.getInt(2);	// flg
                 rc = true;
-                companyFare.passflg = RouteUtil.IS_CONNECT_NON_DISCOUNT_FARE(flg);
+                companyFare.passflg = IS_CONNECT_NON_DISCOUNT_FARE(flg);
         		// (0=5円は切り捨て, 1=5円未満切り上げ)
-        		if (RouteUtil.IS_ROUND_UP_CHILDREN_FARE(flg)) {
+        		if (IS_ROUND_UP_CHILDREN_FARE(flg)) {
         			companyFare.fareChild = RouteUtil.round_up(fare_work / 2);
         		} else {
         			companyFare.fareChild = RouteUtil.round_down(fare_work / 2);
