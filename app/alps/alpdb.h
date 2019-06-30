@@ -104,9 +104,10 @@ typedef uint32_t SPECIFICFLAG;
 
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
-#define MAX_LINE        223
-#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))		/* 新幹線は将来的にも10または15以内 !! */
-#define IS_COMPANY_LINE(id)	    (DbidOf::getInstance().cline_align_id()<(id))	/* 会社線id */
+//#define MAX_LINE        223
+#define IS_SHINKANSEN_LINE(id)  ((0x1000<(id)) && ((id) < 0x2000))	 /* 新幹線は将来的にも10または15以内 !! */
+#define IS_COMPANY_LINE(id)	    ((0x2000<(id)) && ((id) < 0x3000))	 /* 会社線id */
+#define IS_BRT_LINE(id)	        ((0x3000<(id)) && ((id) < 0x4000))	 /* BRT id */
 #define MAX_JCT 330
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
@@ -214,9 +215,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
-
-// 会社線か？(GetDistanceEx()[5])
-#define GDIS_COMPANY_LINE(d)		(((d) & (1<<31)) != 0)
 
 #define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
@@ -764,13 +762,11 @@ class DbidOf
 {
     DbidOf();
     map<tstring, int> retrieve_id_pool;
-    int32_t companyline_align_id;			// 会社線路線ID境界(JR線のLast Index)
 public:
     static DbidOf& getInstance() {
         static DbidOf obj;
         return obj;
     }
-    int32_t cline_align_id();
     int32_t id_of_station(tstring name);
     int32_t id_of_line(tstring name);
 };
