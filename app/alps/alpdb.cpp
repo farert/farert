@@ -64,24 +64,6 @@ using namespace std;
 DbidOf::DbidOf()
 {
     /**** global variables *****/
-    companyline_align_id = 0;
-}
-
-int32_t DbidOf::cline_align_id() {
-    if (0 < companyline_align_id) {
-        return companyline_align_id;
-    }
-
-    DBO dbo = DBS::getInstance()->compileSql("select cline_align_id from t_global limit(1)");
-    if (dbo.isvalid()) {
-        if (dbo.moveNext()) {
-            companyline_align_id = dbo.getInt(0);		/* 会社線 路線ID 境界 含まない */
-        }
-    } else {
-        companyline_align_id = 300;
-        ASSERT(FALSE);
-    }
-    return companyline_align_id;
 }
 
 int32_t DbidOf::id_of_station(tstring name) {
@@ -7996,7 +7978,7 @@ int32_t		FARE_INFO::getFareForIC() const
  *	@return vector<int32_t> [1] 計算キロ
  *	@return vector<int32_t> [2] 駅1の会社区間部の営業キロ(駅1の会社ID≠駅2の会社ID時のみ有効)
  *                          駅1が境界駅なら-1を返す, 境界駅が駅1～駅2間になければ、Noneを返す
- *	@return vector<int32_t> [3] 駅1の会社区間部の計算キロ(駅1の会社ID≠駅2の会社ID時のみ有効)
+ *	@return vector<int32_t> [3] 駅2の会社区間部の計算キロ(駅1の会社ID≠駅2の会社ID時のみ有効)
  *                          駅2が境界駅なら-1を返す, 境界駅が駅1～駅2間になければ、Noneを返す
  *	@return vector<int32_t> [4] IDENT1(駅1の会社ID) + IDENT2(駅2の会社ID)
  *	@return vector<int32_t> [5] bit31:1=JR以外の会社線／0=JRグループ社線 / IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
@@ -8028,7 +8010,7 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
 "   (select company_id from t_station where rowid=?3),"	            // [4](5)
 "	(select sub_company_id from t_station where rowid=?2),"			// [4](6)
 "	(select sub_company_id from t_station where rowid=?3),"         // [4](7)
-"	((select 2147483648*(1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3) + "
+/*"	((select 2147483648*(1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3) + " */
 "	(select sflg&4095 from t_station where rowid=?2) + (select sflg&4095 from t_station where rowid=?3) * 65536)"		// [5](8)
 );
 	uint32_t company_id1;
@@ -8387,7 +8369,7 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 				}
 
 				this->sales_km += d.at(0);			// total 営業キロ(会社線含む、有効日数計算用)
-				if (GDIS_COMPANY_LINE(d.at(5))) {	/* 会社線 */
+				if (IS_COMPANY_LINE(ite->lineId)) {	/* 会社線 */
 
 					vector<int32_t> comfare(4, 0);	//[0]fare, [1]children, [2]academic, [3]no-connect-discount
 

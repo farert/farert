@@ -87,7 +87,6 @@ class Dbreg:
 		###########################################
 		sql = """
 		create table t_global (
-			cline_align_id integer not null,
 			max_station integer not null,
 			max_line integer not null,
 			max_jct integer not null,
@@ -96,7 +95,7 @@ class Dbreg:
 		);
 		"""
 		self.con.execute(sql)
-		self.con.execute("insert into t_global values(0, 0, 0, 0, 0, 0);")
+		self.con.execute("insert into t_global values(0, 0, 0, 0, 0);")
 		###########################################
 		sql = """
 		create table t_coreareac (
@@ -131,7 +130,8 @@ class Dbreg:
 		###########################################
 		sql = """
 		create table t_line(
-			name text not null primary key
+			name text not null primary key,
+            kana text not null
 		);
 		"""
 		self.con.execute(sql)
@@ -342,9 +342,19 @@ class Dbreg:
 		);
 		""")
 		###########################################
+        self.con.execute("""
+            create table t_brtsp(
+                station_id1 integer not null default(0),
+                station_id2 integer not null default(0),
+                line_id integer not null,
 
-	n_line_Index_of_CompanyLine = 0
-	n_line_Index_of_Shinkansen = 0
+                primary key (station_id1, station_id2, line_id)
+            );
+        """)
+		###########################################
+
+	#n_line_Index_of_CompanyLine = 0
+	#n_line_Index_of_Shinkansen = 0
 
 
 	def first_regist(self):
@@ -383,8 +393,6 @@ class Dbreg:
 		h_items = [defaultdict(int), defaultdict(int)]
 		n_segment = 0
 
-		pre_items = []
-		post_items = []
 		self.num_of_line = 0
 		for lin in open(fn, 'r', encoding='shift-jis'):
 			self.num_of_line += 1
@@ -410,28 +418,21 @@ class Dbreg:
 					continue
 
 				h_items[i][key] += 1
-				if 1 == h_items[i][key]:
-					if i == 1 and key.endswith("新幹線"):
-						pre_items.append([key])				# 新幹線
-					elif i == 1 and not linitems[1].startswith("JR"):
-						post_items.append([key])			# 会社線
+				if 1 == h_items[i][key]:    # 1st appear
+                    if i == 1 and not linitems[1].startswith("JR"):
+						items[i].append([key + "|company|"])	# 会社線
 					else:
-						items[i].append([key])
+						items[i].append([key]) # 会社 or 線区（JR、新幹線)
 
 		prefects = None
+
 		#会社
 		self.con.executemany('insert into t_company values(?)', items[0])
 		print("registered t_company {0} affected.".format(len(items[0])))
 		#線区
-		self.con.executemany('insert into t_line values(?)', pre_items)
-		self.n_line_Index_of_Shinkansen = len(pre_items)
 		self.con.executemany('insert into t_line values(?)', items[1])
-		self.n_line_Index_of_CompanyLine = len(pre_items) + len(items[1])
-		self.con.executemany('insert into t_line values(?)', post_items)
 
-		self.cur.execute("update t_global set cline_align_id={0}".format(self.n_line_Index_of_CompanyLine))
-
-		print("registered t_line {0} affected.".format(len(pre_items) + len(items[1]) + len(post_items)))
+		print("registered t_line {0} affected.".format(len(items[1])))
 
 		self.con.commit()
 
@@ -440,6 +441,22 @@ class Dbreg:
 		# 2 pass
 		###########
 
+        # convert line_id
+        #新幹線 0x1000~
+        #会社線 0x2000~
+        #BRT   0x3000~
+
+        self.con.execute("""
+        update t_line set rowid=rowid + 0x1000 where name like '%新幹線';
+        """)
+
+        self.con.execute("""
+        update t_line set rowid=rowid + 0x2000, name=substr(name, 1, length(name) - length('|company|')) where name like '%|company|';
+        """)
+
+        self.con.execute("""
+        update t_line set rowid=rowid + 0x3000 where name like '%(BRT)';
+        """)
 
 		dispatch = {
 			'line'			: self.reg_line,
@@ -458,6 +475,7 @@ class Dbreg:
 			't_farehla5p'	: self.reg_t_farehla,
 			't_compnpass'	: self.reg_t_compnpass,
 			't_compnconc'	: self.reg_t_compnconc,
+            't_brtsp'       : self.reg_t_brtsp,
 		}
 
 		self.num_of_line = 0
@@ -624,8 +642,8 @@ class Dbreg:
 
 		# BSRCOMPANY
 		# (会社線)
-		if not linitems[1].strip().startswith("JR"):
-			lflg |= (1 << 18)
+		#if not linitems[1].strip().startswith("JR"):
+		#	lflg |= (1 << 18)
 
 		# BSRJCTSP_B: 分岐特例
 		tmp = linitems[19].strip()
@@ -1112,8 +1130,8 @@ insert into t_farespp values(
 
 		#self.cur.execute("select max(rowid) from t_line where name like '%新幹線'")
 		#n = self.cur.fetchone()[0]
-		print("(old)#define IS_SHINKANSEN_LINE(id)	((0<(id))&&((id)<={0}))".format(self.n_line_Index_of_Shinkansen))
-		print("(old)#define IS_COMPANY_LINE(id)	({0}<(id))".format(self.n_line_Index_of_CompanyLine))
+		#print("(old)#define IS_SHINKANSEN_LINE(id)	((0<(id))&&((id)<={0}))".format(self.n_line_Index_of_Shinkansen))
+		#print("(old)#define IS_COMPANY_LINE(id)	({0}<(id))".format(self.n_line_Index_of_CompanyLine))
 
 		# 以下のクエリー文でも会社線路線かどうか判定可(0でJR、非0で会社線)
 		# select count(*) from t_lines where line_id=? and (lflg & (1 << 18))!=0;
