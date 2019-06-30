@@ -112,15 +112,6 @@ public class RouteUtil {
 
     final static int MAX_COMPNPASSSET = 3;       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 
-    /* t_clinfar */
-    final static boolean IS_ROUND_UP_CHILDREN_FARE(int d) {
-        return (((d) & 0x01) != 0);
-    }
-
-    final static boolean IS_CONNECT_NON_DISCOUNT_FARE(int d) {
-        return (((d) & 0x02) != 0);
-    }
-
     final static int CSTART = 1;
     final static int CEND = 2;
 
