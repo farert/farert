@@ -1,5 +1,5 @@
 /*
- *   Farert 
+ *   Farert
  *   excel to text. db prepare transction.
  *
  *   Jan.23, 2015 / Sutezo
@@ -13,9 +13,9 @@
 var jrdb2014 = [ "lines(2014)", "clinfar(2014)", "rule69", "rule70_new", "rule86", "fare2" ]
 var jrdb2015 = [ "lines2015", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
 var jrdb2017 = [ "lines2017", "clinfar (2015)", "rule69", "rule70_new", "rule86", "fare2" ]
-var jrdb2018 = [ "lines2018", "clinfar (2019)", "rule69", "rule70_new", "rule86", "fare2" ]
-var dbfiles = [ jrdb2014, jrdb2015, jrdb2017, jrdb2018 ]
-var dbfilename = [ "jrdb2014.txt", "jrdb2015.txt", "jrdb2017.txt", "jrdb2018.txt" ]
+var jrdb2019 = [ "lines2019", "clinfar (2019)", "rule69", "rule70_new", "rule86", "fare2", "BRT" ]
+var dbfiles = [ jrdb2014, jrdb2015, jrdb2017, jrdb2019 ]
+var dbfilename = [ "jrdb2014.txt", "jrdb2015.txt", "jrdb2017.txt", "jrdb2019.txt" ]
 var tmpfn = "~~~00dfe.txt"
 
 var file_count = WScript.Arguments.Count();
@@ -28,7 +28,7 @@ if (file_count == 0) {
 }
 
 var shell = new ActiveXObject("WScript.Shell");
-
+ 
 var filename = WScript.Arguments.Item(0)
 if (filename.lastIndexOf("\\") <= 0) {
 	filename = shell.CurrentDirectory + "\\" + filename
@@ -48,7 +48,7 @@ for (var ite in dbfiles) {
 		}
 	}
 	//WScript.echo(pathname + dbfilename[ite])
-	removeDoubleQuatationChar(pathname + dbfilename[ite]) 
+	removeDoubleQuatationChar(pathname + dbfilename[ite])
 }
 shell.Run("cmd /c del " + pathname + tmpfn, 0, true);
 excel.Quit()
@@ -72,7 +72,7 @@ function xls2txtv(sheetname, o_txtfile) {
 	sheet.select
 	sheet.cells.select
 	excel.selection.copy
-	
+
 	var newbook = excel.workbooks.add
 	newbook.worksheets(1).select
 	newbook.worksheets(1).activate
@@ -116,9 +116,9 @@ function removeDoubleQuatationChar(infile)
 	ofile.Close()
 	ifile = null
 	ofile = null
-	
+
 	shell.Run("cmd /c del " + infile, 0, true);
 	shell.Run("cmd /c move " + pathname + tmpfn + " " + infile, 0, true);
-	
+
 	fs = null
 }
