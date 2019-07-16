@@ -42,6 +42,29 @@ import sys
 import re
 from collections import defaultdict
 
+COL_COMMENT = 0
+COL_PREFECT = 0
+COL_COMPANY = 1
+COL_LINE = 2
+COL_LINE_KANA = 3
+COL_STATION = 4
+COL_STATION_KANA = 5
+COL_SALES_KM = 6
+COL_CALC_KM = 7
+COL_JUNCTION = 8
+COL_SAME_STATION = 9
+COL_SPE_CITY = 10
+COL_SHINKTRSALW = 11
+COL_LOCAL_AREA = 12
+COL_METRO = 13
+COL_YAMATE = 14
+COL_RULE70 = 15
+COL_SHINZAI = 16
+COL_COMPANY_BORDER = 17
+COL_RULE69 = 18
+COL_SHINZAI_JCT = 19
+COL_SPE_JCT = 20
+COL_NUM = 21
 
 def IntValue(txt):
 	a = 0
@@ -342,15 +365,16 @@ class Dbreg:
 		);
 		""")
 		###########################################
-        self.con.execute("""
-            create table t_brtsp(
-                station_id1 integer not null default(0),
-                station_id2 integer not null default(0),
-                line_id integer not null,
+		self.con.execute("""
+			create table t_brtsp(
+				line_id integer not null,
+				station_id1 integer not null default(0),
+				station_id2 integer not null default(0),
+				type integer not null default(0),
 
-                primary key (station_id1, station_id2, line_id)
-            );
-        """)
+				primary key (line_id, station_id1, station_id2)
+			);
+		""")
 		###########################################
 
 	#n_line_Index_of_CompanyLine = 0
@@ -389,14 +413,13 @@ class Dbreg:
 		###########
 		# 1 pass
 		###########
-		items = [[], []]
-		h_items = [defaultdict(int), defaultdict(int)]
+		h_items = [defaultdict(int), defaultdict(lambda:"")]
 		n_segment = 0
 
 		self.num_of_line = 0
 		for lin in open(fn, 'r', encoding='shift-jis'):
 			self.num_of_line += 1
-			if lin[0] == '#':
+			if lin[COL_COMMENT] == '#':
 				continue		# コメントスキップ
 
 			if lin.startswith('*line'):
@@ -409,30 +432,35 @@ class Dbreg:
 				continue
 
 			linitems = lin.split('\t')
-			if linitems[0] not in list(map(lambda x:x[0], prefects)):	# 都道府県
+			if linitems[COL_PREFECT] not in list(map(lambda x:x[0], prefects)):	# 都道府県
 				continue
 
-			for i in range(2):				# 会社、線区
+			for i in range(2):				# 会社(COL_PREFECT)、線区(COL_LINE)
 				key = linitems[i + 1].strip();
 				if i == 0 and 0 <= key.find('/'):		# 所属会社2つはシカト
 					continue
 
-				h_items[i][key] += 1
-				if 1 == h_items[i][key]:    # 1st appear
-                    if i == 1 and not linitems[1].startswith("JR"):
-						items[i].append([key + "|company|"])	# 会社線
-					else:
-						items[i].append([key]) # 会社 or 線区（JR、新幹線)
+				if i == 0:
+					h_items[i][key] += 1
+				else:	# i==1
+					if not key in h_items[i]:
+						if not linitems[COL_COMPANY].startswith("JR"):
+							key += "|company|"		# 会社線
+						h_items[i][key] = "" 
+						
+					kana = linitems[COL_LINE_KANA].strip()
+					if h_items[i][key] == "" and  kana != "":
+						h_items[i][key] = kana
 
 		prefects = None
 
 		#会社
-		self.con.executemany('insert into t_company values(?)', items[0])
-		print("registered t_company {0} affected.".format(len(items[0])))
-		#線区
-		self.con.executemany('insert into t_line values(?)', items[1])
+		self.con.executemany('insert into t_company values(?)', list(map(lambda x:[x], h_items[0].keys())))
+		print("registered t_company {0} affected.".format(len(list(h_items[0].keys()))))
 
-		print("registered t_line {0} affected.".format(len(items[1])))
+		#線区
+		self.con.executemany('insert into t_line values(?, ?)', list(map(lambda x:[x, h_items[1][x]], h_items[1].keys())))
+		print("registered t_line {0} affected.".format(len(list(h_items[1].keys()))))
 
 		self.con.commit()
 
@@ -441,22 +469,22 @@ class Dbreg:
 		# 2 pass
 		###########
 
-        # convert line_id
-        #新幹線 0x1000~
-        #会社線 0x2000~
-        #BRT   0x3000~
+		# convert line_id
+		#新幹線 0x1000~
+		#会社線 0x2000~
+		#BRT   0x3000~
 
-        self.con.execute("""
-        update t_line set rowid=rowid + 0x1000 where name like '%新幹線';
-        """)
+		self.con.execute("""
+		update t_line set rowid=rowid + 0x1000 where name like '%新幹線';
+		""")
 
-        self.con.execute("""
-        update t_line set rowid=rowid + 0x2000, name=substr(name, 1, length(name) - length('|company|')) where name like '%|company|';
-        """)
+		self.con.execute("""
+		update t_line set rowid=rowid + 0x2000, name=substr(name, 1, length(name) - length('|company|')) where name like '%|company|';
+		""")
 
-        self.con.execute("""
-        update t_line set rowid=rowid + 0x3000 where name like '%(BRT)';
-        """)
+		self.con.execute("""
+		update t_line set rowid=rowid + 0x3000 where name like '%(BRT)';
+		""")
 
 		dispatch = {
 			'line'			: self.reg_line,
@@ -475,7 +503,7 @@ class Dbreg:
 			't_farehla5p'	: self.reg_t_farehla,
 			't_compnpass'	: self.reg_t_compnpass,
 			't_compnconc'	: self.reg_t_compnconc,
-            't_brtsp'       : self.reg_t_brtsp,
+			't_brtsp'       : self.reg_t_brtsp,
 		}
 
 		self.num_of_line = 0
@@ -491,7 +519,7 @@ class Dbreg:
 			linitems = lin.split('\t')
 
 			if lin.startswith('*'):
-				proc_stage = re.match(r'\w+', linitems[0][1:]).group(0)
+				proc_stage = re.match(r'\w+', linitems[COL_COMMENT][1:]).group(0)
 
 			elif proc_stage in dispatch:
 				dispatch[proc_stage](proc_stage, linitems, lin)
@@ -504,16 +532,17 @@ class Dbreg:
 	#
 	def reg_line(self, label, linitems, lin):
 	# 路線
-		if 0 <= linitems[1].find("branch"):
-			self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip(),
-						   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(),
-						   linitems[7].strip(), 0 if linitems[7].strip() == '' else (1 << 15)])
+			# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg
+		if 0 <= linitems[COL_COMPANY].find("branch"):
+			self.branch.append([linitems[COL_LINE].strip(), linitems[COL_STATION].strip(), linitems[COL_STATION_KANA].strip(),
+						   linitems[COL_SALES_KM].strip(), linitems[COL_CALC_KM].strip(), linitems[COL_SAME_STATION].strip(),
+						   linitems[COL_JUNCTION].strip(), 0 if linitems[COL_JUNCTION].strip() == '' else (1 << 15)])
 			return			# 分岐特例はあとで
 
-		if linitems[3].strip().startswith("-"):
+		if linitems[COL_STATION].strip().startswith("-"):
 			return
 
-		if 20 != len(linitems):
+		if COL_NUM != len(linitems):
 			print(self.num_of_line, lin)
 			raise ValueError
 
@@ -522,7 +551,7 @@ class Dbreg:
 ######################################################
 
 		# BSRJCTFLG: 分岐フラグ
-		tmp = linitems[7].strip()
+		tmp = linitems[COL_JUNCTION].strip()
 		sflg = 0
 		lflg = 0
 		if (tmp == 'x'):
@@ -532,7 +561,7 @@ class Dbreg:
 
 		# 規則69条 t_rule69.id
 		# BSR69NOMASK, BSR69TERM, BSR69CONT
-		tmp = int(linitems[17])
+		tmp = int(linitems[COL_RULE69])
 		if 0 < tmp:
 			if 100 <= tmp:
 				lflg |= (1 << 23)		# BSR69CONT
@@ -542,17 +571,17 @@ class Dbreg:
 
 
 		# BSRBORDER: 本州3社、3島会社境界駅
-		tmp = int(linitems[16])
+		tmp = int(linitems[COL_COMPANY_BORDER])
 		if 0 < tmp:
 			lflg |= (1 << 16)
 
 		# BSRVIRJCT: 新幹線で新幹線の駅の無い在来線分岐駅
-		tmp = int(linitems[18])
+		tmp = int(linitems[COL_SHINZAI_JCT])
 		if 0 < tmp:
 			lflg |= (1 << 17)
 
 		# BSRHZLIN: 新幹線＜－＞並行在来線乗換
-		tmp = linitems[15].strip()
+		tmp = linitems[COL_SHINZAI].strip()
 		if tmp[0] != '!' and tmp != "":
 			if tmp.startswith('-'):
 				tmp = tmp[1:]
@@ -596,24 +625,24 @@ class Dbreg:
 			lflg |= (tmp << 19)		# BSRHZLIN: bit16-13 -> 22-19
 
 		# BCRULE70:規則70条
-		tmp = int(linitems[14])
+		tmp = int(linitems[COL_RULE70])
 		if 0 != tmp:
 			sflg |= (1 << 6)
 
 		# BCYAMATE
-		tmp = int(linitems[13])
+		tmp = int(linitems[COL_YAMATE])
 		if 0 != tmp:
 			sflg |= (1 << 5)
 
 		# BCOSMSP, BCTKMSP
-		tmp = int(linitems[12])
+		tmp = int(linitems[COL_METRO])
 		if 1 == tmp:
 			sflg |= (1 << 10)	# BCTKMSP: 東京電車特定区間
 		elif 2 == tmp:
 			sflg |= (1 << 11)	# BCOSMSP: 大阪電車特定区間
 
 		# BCSUBURB: 近郊区間
-		tmp = int(linitems[11])
+		tmp = int(linitems[COL_LOCAL_AREA])
 		if (10 < tmp):	# 新幹線を含む近郊区間
 			sflg |= (1 << 13)
 			tmp -= 10
@@ -623,16 +652,16 @@ class Dbreg:
 
 		# BSRSHINKTRSALW: 新幹線、在来線乗換
 		# (新幹線のみ)
-		tmp = int(linitems[10])
+		tmp = int(linitems[COL_SHINKTRSALW])
 		if 10 <= tmp and tmp <= 13:
-#140516			if 0 != int(linitems[16]):			###!!!なんの意味があったのか？
+#140516			if 0 != int(linitems[COL_COMPANY_BORDER]):			###!!!なんの意味があったのか？
 #				print(self.num_of_line, lin)
 #				raise ValueError
 			#lflg |= ((1 << 27) | ((tmp - 10) << 25))
 			lflg |= ((tmp - 10) << 19)
 
 		# BCCITYCT, BCCITYNO
-		tmp = int(linitems[9])
+		tmp = int(linitems[COL_SPE_CITY])
 		if 100 <= tmp:
 			sflg |= (1 << 4)	# BCCITYCT
 			tmp -= 100
@@ -642,11 +671,11 @@ class Dbreg:
 
 		# BSRCOMPANY
 		# (会社線)
-		#if not linitems[1].strip().startswith("JR"):
+		#if not linitems[COL_COMPANY].strip().startswith("JR"):
 		#	lflg |= (1 << 18)
 
 		# BSRJCTSP_B: 分岐特例
-		tmp = linitems[19].strip()
+		tmp = linitems[COL_SPE_JCT].strip()
 		if tmp[0] != '!' and tmp != "":
 			tmps = tmp.split('/')
 			while len(tmps) < 5:
@@ -676,39 +705,39 @@ class Dbreg:
 			lflg |= (0xff & self.cur.fetchone()[0])
 			lflg |= (1 << 29)
 
-		self.cur.execute('select rowid from t_prefect where name=?', [linitems[0].strip()])	# retrive 都道府県id
+		self.cur.execute('select rowid from t_prefect where name=?', [linitems[COL_PREFECT].strip()])	# retrive 都道府県id
 		prefect_id = self.cur.fetchone()[0]
 
-		company_name = linitems[1].strip().split('/')[0]
+		company_name = linitems[COL_COMPANY].strip().split('/')[0]
 		self.cur.execute('select rowid from t_company where name=?', [company_name])	# retrive 会社id
 		company_id = self.cur.fetchone()[0]
 
-		if 0 < linitems[1].strip().find('/'):
-			company_name = linitems[1].strip().split('/')[1]
+		if 0 < linitems[COL_COMPANY].strip().find('/'):
+			company_name = linitems[COL_COMPANY].strip().split('/')[1]
 			self.cur.execute('select rowid from t_company where name=?', [company_name])	# retrive 会社id
 			sub_company_id = self.cur.fetchone()[0]
 		else:
 			sub_company_id = 0
 
-		self.cur.execute('select rowid from t_line where name=?', [linitems[2].strip()])		# retrive 路線id
+		self.cur.execute('select rowid from t_line where name=?', [linitems[COL_LINE].strip()])		# retrive 路線id
 		line_id = self.cur.fetchone()[0]
 
-		station_name = linitems[3].strip()
-		samename = linitems[8].strip()
+		station_name = linitems[COL_STATION].strip()
+		samename = linitems[COL_SAME_STATION].strip()
 		self.cur.execute('select rowid from t_station where name=? and samename=?', [station_name, samename])
 		row = self.cur.fetchone()
 		if None != row:
 			station_id = row[0]			# 登録済み
 		else:
 			self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?, ?)', \
-						[ station_name, linitems[4].strip(), company_id, prefect_id, \
+						[ station_name, linitems[COL_STATION_KANA].strip(), company_id, prefect_id, \
 						  samename, sflg, sub_company_id])
 			self.cur.execute('select rowid from t_station where name=? and samename=?', [station_name, samename])
 			station_id = self.cur.fetchone()[0]
 			self.n_station += 1
 
-		sales_km = int(float(linitems[5]) * 10)
-		calc_km = int(float(linitems[6]) * 10)
+		sales_km = int(float(linitems[COL_SALES_KM]) * 10)
+		calc_km = int(float(linitems[COL_CALC_KM]) * 10)
 
 		self.con.execute('insert into t_lines values(?, ?, ?, ?, ?)', [line_id, station_id, sales_km, calc_km, lflg] )
 
@@ -1009,6 +1038,35 @@ insert into t_farespp values(
 				(select rowid from t_station where name=? and samename=?), ?)""", [station_id, station_id_s, allow])
 
 #------------------------------------------------------------------------------
+	def reg_t_brtsp(self, label, linitems, lin):
+		# t_brtsp
+		# BRT乗継チェック
+
+		assert(label == "t_brtsp")
+
+		station_id = [0, 0]
+		station_id_s = [0, 0]
+		for i in range(2):
+			tmp = linitems[i + 2].strip()	  # 駅1,2
+			if 0 <= tmp.find('('):
+				station_id[i] = tmp[:tmp.find('(')]
+				station_id_s[i] = tmp[tmp.find('('):]
+			else:
+				station_id[i] = tmp
+				station_id_s[i] = ''
+
+		type = int(linitems[0]) # type
+		line = linitems[1].strip() # 路線
+
+		self.cur.execute("""
+			insert into t_brtsp(station_id1, station_id2, type, line_id) values(
+				(select rowid from t_station where name=? and samename=?),
+				(select rowid from t_station where name=? and samename=?), ?,
+				(select rowid from t_line where name=?))""",
+				[station_id[0], station_id_s[1],
+				 station_id[0], station_id_s[1], type, line])
+
+#------------------------------------------------------------------------------
 	def reg_last_line(self):
 		# 分岐特例
 		for bitem in self.branch:
@@ -1070,8 +1128,8 @@ insert into t_farespp values(
 		for rec in self.cur:
 			lineid = rec[0]
 			cur2.execute("""select station_id from t_lines where
-			                line_id=?1 and (lflg&(1<<17))=0 and station_id in
-			                (select station_id from t_lines where line_id!=?1)""", [lineid])
+							line_id=?1 and (lflg&(1<<17))=0 and station_id in
+							(select station_id from t_lines where line_id!=?1)""", [lineid])
 			for rec2 in cur2:
 				stationid = rec2[0]
 				cur3.execute("select sflg from t_station where rowid=?", [stationid])

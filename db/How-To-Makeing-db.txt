@@ -1,8 +1,8 @@
-*** This document is UTF-8 Japanese only.
+﻿*** This document is UTF-8 Japanese only.
 
 データベースの作成方法      2017.2.24
  ◆ 作者環境はMAC OS-X上で開発していますが、DBメンテナンスのすべては、Windows上で動作することを前提としています。
- (MAC OS-X上にVirtualBoxでWindowsをいれて動作。Windows上にPython、Excelが必要)
+ (MAC OS-X上にVirtualBoxでWindowsをいれて動作。Windows上にPython3、Excelが必要)
 
  　Unix環境(Linux、MACなど)でも可能ですが、Excelからテキストへ変換する処理を手作業でおこなう必要があります。
  　具体的には、Excelの各シートを全選択＆テキストエディタへ貼り付けという作業をし、jrdb20xx.txt という
@@ -23,9 +23,9 @@
 　jrdb2014.db.enc        Sqlite3 データベースを暗号化したもの
 　jrdb2015.db.enc
 　jrdb2017.db.enc
-　jrdb2018.db.enc
+　jrdb2019.db.enc
 
-  最新は2018、その他は旧データベース（いつか統合したい）
+  最新は2019、その他は旧データベース（いつか統合したい）
   .encは暗号化したもので、Windows(MFC)版ではこれを使用で、リソースディレクトリ
   ../app/win_mfc/fjr_mfc/alps_mfc/res/ へ 配置される(mkdball.batでおこなう)
   *.db は、iOS版は,  ../app/Farert/Farert へ 配置される(mkdball.batでおこなう)

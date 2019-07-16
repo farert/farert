@@ -450,6 +450,12 @@ private:
 	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
 	int32_t company_fare_child;			/* 会社線小児運賃 */
 
+    int32_t brt_fare;                   // BRT 運賃
+    int32_t brt_sales_km;               // BRT 営業キロ
+    int32_t brt_calc_km;                // BRT 計算キロ
+#define BRT_DISCOUNT_FARE 100
+    int32_t brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
+
 	int32_t result_flag;				/* 結果状態: BRF_xxx */
 private:
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
@@ -475,9 +481,16 @@ private:
     bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
 	bool retr_fare();
+    void calc_brt_fare(const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
-	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
+	int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
 	bool aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw);
+    int aggregate_fare_company(bool first_company,
+                              SPECIFICFLAG last_flag,
+                              int32_t station_id_0,
+                              int32_t station_id,
+                              int32_t station_id1);
+
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
         beginTerminalId = begin_station_id;
@@ -515,6 +528,12 @@ public:
 		company_fare = 0;
 		company_fare_ac_discount = 0;
 		company_fare_child = 0;
+
+        brt_fare = 0;                   // BRT 運賃
+        brt_sales_km = 0;               // BRT 営業キロ
+        brt_calc_km = 0;                // BRT 計算キロ
+        brt_discount_fare = 0;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
+
 		flag = 0;
 		jr_fare = 0;
 		fare_ic = 0;
@@ -620,6 +639,8 @@ public:
 	int32_t		getFareForDisplay() const;
     int32_t     getFareForDisplayPriorRule114() const;
 	int32_t		getFareForIC() const;
+    int32_t     getBRTSalesKm() const;
+    int32_t     getFareForBRT() const;
     class Fare {
     public:
         int fare;
@@ -699,6 +720,7 @@ private:
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
     static std::vector<RouteItem> IsHachikoLineHaijima(const std::vector<RouteItem>& route_list);
+    static std::vector<std::vector<int>> getBRTrecord(int32_t line_id);
 }; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */
@@ -853,6 +875,8 @@ public: /* only user route */
 	static int32_t 	NumOfNeerNode(int32_t stationId);
 
     static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
+    static vector<int32_t>  getIntersectOnLine(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t station_id3, int32_t station_id4);
+    static bool  inlineOnline(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t station_id3, int32_t station_id4);
 };
 
 
