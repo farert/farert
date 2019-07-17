@@ -1,6 +1,24 @@
 b#バグタイトル
 ->
 
+どうもAutoRouteでへんなエラーLogが。実行はできているが。
+ulticompany line none detect X: 0, 0, comp1,2=2, 2, 気仙沼線(BRT):前谷地-気仙沼
+Error: prepare=1, near "%": syntax error
+Error: bind(int)=21, near "%": syntax error
+Error: step=21, near "%": syntax error
+Error: prepare=1, near "%": syntax error
+Error: bind(int)=21, near "%": syntax error
+Error: step=21, near "%": syntax error
+Error: prepare=1, near "%": syntax error
+Error: bind(int)=21, near "%": syntax error
+Error: step=21, near "%": syntax error
+Error: prepare=1, near "%": syntax error
+Error: bind(int)=21, near "%": syntax error
+Error: step=21, near "%": syntax error
+fare(basic)
+->
+
+
 b#19070601
 運賃詳細(武蔵小杉 - 山手線内[山])
 

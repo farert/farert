@@ -903,8 +903,8 @@ bool  RouteUtil::inlineOnline(int32_t line_id, int32_t station_id1, int32_t stat
 {
     const char tsql[] =
     "select case when 2=count(*) then 1 else 0 end"
-    "from t_lines"
-    "where line_id=?1 and sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?2)"
+    " from t_lines"
+    " where line_id=?1 and sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?2)"
     "                and sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?3)"
     "                and (station_id=?4 or station_id=?5)";
     bool rc = false;
@@ -8930,7 +8930,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 std::vector<std::vector<int>> FARE_INFO::getBRTrecord(int32_t line_id)
 {
     static const  char tsql[] =
-    "select station_id1, station_id2, type from t_brtsp where line_id=%1";
+    "select station_id1, station_id2, type from t_brtsp where line_id=?1";
     std::vector<std::vector<int>> results;
 
     DBO dbo = DBS::getInstance()->compileSql(tsql);
