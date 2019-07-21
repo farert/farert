@@ -76,7 +76,7 @@ int g_tax; /* main.m */
             break;
         default:
             g_tax = 8;
-            dbname = @"jrdb2018";
+            dbname = @"jrdb2019";
             break;
     }
     dbpath = [[NSBundle mainBundle] pathForResource:dbname ofType:@"db"];

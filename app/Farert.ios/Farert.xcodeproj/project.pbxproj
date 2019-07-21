@@ -30,7 +30,6 @@
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
-		2A3B45572131562F0089AC4D /* jrdb2018.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A3B45562131562F0089AC4D /* jrdb2018.db */; };
 		2A4CCE271EB556A00083260C /* Routefolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4CCE261EB556A00083260C /* Routefolder.swift */; };
 		2A57119E1EB836F800D593DD /* McPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119D1EB836F800D593DD /* McPicker.swift */; };
 		2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */; };
@@ -40,6 +39,7 @@
 		2A7BB5F61EFF5E0A00A47293 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7BB5F51EFF5E0A00A47293 /* Launch Screen.storyboard */; };
 		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
 		2ABD92E71E19EEA9002488E0 /* c_route.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2ABD92E61E19EEA9002488E0 /* c_route.mm */; };
+		2AC0FDD222E17F570007B031 /* jrdb2019.db in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0FDD122E17F570007B031 /* jrdb2019.db */; };
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
 		2ACE5A5B1AF785030026A6CA /* FareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE5A5A1AF785030026A6CA /* FareInfo.m */; };
 		2AE5B81D1E95F66500C58D92 /* SlideMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE5B81B1E95F66500C58D92 /* SlideMenuController.swift */; };
@@ -78,7 +78,6 @@
 		2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DbSys.h; sourceTree = "<group>"; };
 		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		2A3B45562131562F0089AC4D /* jrdb2018.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2018.db; sourceTree = "<group>"; };
 		2A4CCE261EB556A00083260C /* Routefolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Routefolder.swift; sourceTree = "<group>"; };
 		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
 		2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolderTableViewCell.swift; sourceTree = "<group>"; };
@@ -90,6 +89,7 @@
 		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
 		2ABD92E61E19EEA9002488E0 /* c_route.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = c_route.mm; sourceTree = "<group>"; };
 		2ABD92E81E19F685002488E0 /* c_route.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c_route.h; sourceTree = "<group>"; };
+		2AC0FDD122E17F570007B031 /* jrdb2019.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2019.db; sourceTree = "<group>"; };
 		2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteListTableViewCell.swift; sourceTree = "<group>"; };
 		2ACE5A591AF785030026A6CA /* FareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FareInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		2ACE5A5A1AF785030026A6CA /* FareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FareInfo.m; sourceTree = "<group>"; };
@@ -179,7 +179,7 @@
 		2A2BB0CA1AD6980600F7DED2 /* model */ = {
 			isa = PBXGroup;
 			children = (
-				2A3B45562131562F0089AC4D /* jrdb2018.db */,
+				2AC0FDD122E17F570007B031 /* jrdb2019.db */,
 				2A4CCE261EB556A00083260C /* Routefolder.swift */,
 				2A69CCDE1E736EF1007F478A /* jrdb2017.db */,
 				2ABD92E61E19EEA9002488E0 /* c_route.mm */,
@@ -287,9 +287,9 @@
 			files = (
 				2A7BB5F61EFF5E0A00A47293 /* Launch Screen.storyboard in Resources */,
 				2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */,
-				2A3B45572131562F0089AC4D /* jrdb2018.db in Resources */,
 				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
 				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,
+				2AC0FDD222E17F570007B031 /* jrdb2019.db in Resources */,
 				2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */,
 				2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */,
 			);

@@ -53,7 +53,7 @@ for (var ite in dbfiles) {
 shell.Run("cmd /c del " + pathname + tmpfn, 0, true);
 excel.Quit()
 
-WScript.echo("終了しました")
+WScript.echo("終了しました. mkdbAll.bat を実行してください")
 
 /*	Excelシートをタブ区切りテキストファイルとして保存
  *	@param [in] sheetname Excelシート名
