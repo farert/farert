@@ -480,7 +480,7 @@ private:
     int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
     bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
-	bool retr_fare();
+	void retr_fare();
     void calc_brt_fare(const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
 	int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
@@ -965,6 +965,7 @@ protected:
 	int32_t 		companyConnectCheck(int32_t station_id);
 	int32_t			preCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
 	int32_t			postCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
+    int32_t         brtPassCheck(int32_t stationId2);
 
 	class CompnpassSet
 	{

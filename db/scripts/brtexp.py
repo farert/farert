@@ -74,7 +74,7 @@ sql4 = """
 
 id1 = jrdb.station_id("前谷地")
 id2 = jrdb.station_id("柳津")
-line_id = jrdb.line_id("気仙沼線")
+line_id = jrdb.line_id("気仙沼線(BRT)")
 
 if sys.argv[1] == "1":
     sel_sql = sql1;
