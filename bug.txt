@@ -1,21 +1,10 @@
 b#バグタイトル
 ->
 
-どうもAutoRouteでへんなエラーLogが。実行はできているが。
-ulticompany line none detect X: 0, 0, comp1,2=2, 2, 気仙沼線(BRT):前谷地-気仙沼
-Error: prepare=1, near "%": syntax error
-Error: bind(int)=21, near "%": syntax error
-Error: step=21, near "%": syntax error
-Error: prepare=1, near "%": syntax error
-Error: bind(int)=21, near "%": syntax error
-Error: step=21, near "%": syntax error
-Error: prepare=1, near "%": syntax error
-Error: bind(int)=21, near "%": syntax error
-Error: step=21, near "%": syntax error
-Error: prepare=1, near "%": syntax error
-Error: bind(int)=21, near "%": syntax error
-Error: step=21, near "%": syntax error
-fare(basic)
+b#19071701
+奥新川 仙山線 仙台 仙石線 石巻 石巻線 小牛田 陸羽東線 古川 東北新幹線 一ノ関 大船渡線 気仙沼
+は、114条が適用されるべき
+現在は、b#19070601の問題で最短経路で計算される。
 ->
 
 

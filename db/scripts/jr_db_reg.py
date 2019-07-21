@@ -368,8 +368,8 @@ class Dbreg:
 		self.con.execute("""
 			create table t_brtsp(
 				line_id integer not null,
-				station_id1 integer not null default(0),
-				station_id2 integer not null default(0),
+				station_id1 integer not null,
+				station_id2 integer not null,
 				type integer not null default(0),
 
 				primary key (line_id, station_id1, station_id2)
@@ -1057,14 +1057,24 @@ insert into t_farespp values(
 
 		type = int(linitems[0]) # type
 		line = linitems[1].strip() # 路線
-
+	
+		# 駅1, 駅2は下りから並べないといけない。
 		self.cur.execute("""
 			insert into t_brtsp(station_id1, station_id2, type, line_id) values(
-				(select rowid from t_station where name=? and samename=?),
-				(select rowid from t_station where name=? and samename=?), ?,
-				(select rowid from t_line where name=?))""",
-				[station_id[0], station_id_s[1],
-				 station_id[0], station_id_s[1], type, line])
+				(select station_id from t_lines where line_id=(select rowid from t_line where name=?6) and sales_km=
+					(select min(sales_km) from t_lines where line_id=(select rowid from t_line where name=?6) and (
+						station_id=
+						(select rowid from t_station where name=?1 and samename=?2) or station_id=
+						(select rowid from t_station where name=?3 and samename=?4)))),
+				(select station_id from t_lines where line_id=(select rowid from t_line where name=?6) and sales_km=
+					(select max(sales_km) from t_lines where line_id=(select rowid from t_line where name=?6) and (
+						station_id=
+						(select rowid from t_station where name=?1 and samename=?2) or station_id=
+						(select rowid from t_station where name=?3 and samename=?4)))),
+				?5, (select rowid from t_line where name=?6)
+			)""",
+			[station_id[0], station_id_s[0],
+			 station_id[1], station_id_s[1], type, line])
 
 #------------------------------------------------------------------------------
 	def reg_last_line(self):
@@ -1184,20 +1194,6 @@ insert into t_farespp values(
 
 		self.cur.execute("update t_global set max_station={0}".format(self.n_station))
 		self.cur.execute("update t_global set max_line={0}".format(n_line))
-
-
-		#self.cur.execute("select max(rowid) from t_line where name like '%新幹線'")
-		#n = self.cur.fetchone()[0]
-		#print("(old)#define IS_SHINKANSEN_LINE(id)	((0<(id))&&((id)<={0}))".format(self.n_line_Index_of_Shinkansen))
-		#print("(old)#define IS_COMPANY_LINE(id)	({0}<(id))".format(self.n_line_Index_of_CompanyLine))
-
-		# 以下のクエリー文でも会社線路線かどうか判定可(0でJR、非0で会社線)
-		# select count(*) from t_lines where line_id=? and (lflg & (1 << 18))!=0;
-
-		# 以下のクエリー文で会社線路線一覧を得られる
-		# select * from t_line where rowid in (select line_id from t_lines where (lflg & (1 << 18))!=0);
-		# または以下でも同様の結果が得られる
-		# select * from t_line n where exists (select * from t_lines l where l.line_id=n.rowid and (lflg & (1 << 18))!=0);
 
 		self.cur.execute("select count(*) from t_jct")
 		n = self.cur.fetchone()[0]
