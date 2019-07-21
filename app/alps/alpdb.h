@@ -104,9 +104,10 @@ typedef uint32_t SPECIFICFLAG;
 
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
-#define MAX_LINE        223
-#define IS_SHINKANSEN_LINE(id)  ((0<(id))&&((id)<=15))		/* 新幹線は将来的にも10または15以内 !! */
-#define IS_COMPANY_LINE(id)	    (DbidOf::getInstance().cline_align_id()<(id))	/* 会社線id */
+//#define MAX_LINE        223
+#define IS_SHINKANSEN_LINE(id)  ((0x1000<(id)) && ((id) < 0x2000))	 /* 新幹線は将来的にも10または15以内 !! */
+#define IS_COMPANY_LINE(id)	    ((0x2000<(id)) && ((id) < 0x3000))	 /* 会社線id */
+#define IS_BRT_LINE(id)	        ((0x3000<(id)) && ((id) < 0x4000))	 /* BRT id */
 #define MAX_JCT 330
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
@@ -151,10 +152,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 /* discount 5円の端数切上 */
 #define fare_discount5(fare, per) ((((fare) / 10 * (10 - (per))) + 5) / 10 * 10)
 
-
-/* t_clinfar */
-#define IS_ROUND_UP_CHILDREN_FARE(d)	(((d) & 0x01) != 0)
-#define IS_CONNECT_NON_DISCOUNT_FARE(d)	(((d) & 0x02) != 0)
 
 #define CSTART	1
 #define CEND	2
@@ -214,9 +211,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
-
-// 会社線か？(GetDistanceEx()[5])
-#define GDIS_COMPANY_LINE(d)		(((d) & (1<<31)) != 0)
 
 #define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
@@ -456,6 +450,12 @@ private:
 	int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
 	int32_t company_fare_child;			/* 会社線小児運賃 */
 
+    int32_t brt_fare;                   // BRT 運賃
+    int32_t brt_sales_km;               // BRT 営業キロ
+    int32_t brt_calc_km;                // BRT 計算キロ
+#define BRT_DISCOUNT_FARE 100
+    int32_t brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
+
 	int32_t result_flag;				/* 結果状態: BRF_xxx */
 private:
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
@@ -480,9 +480,17 @@ private:
     int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
     bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
-	bool retr_fare();
+	void retr_fare();
+    void calc_brt_fare(const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
-	int32_t aggregate_fare_jr(int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
+	int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
+	bool aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw);
+    int aggregate_fare_company(bool first_company,
+                              SPECIFICFLAG last_flag,
+                              int32_t station_id_0,
+                              int32_t station_id,
+                              int32_t station_id1);
+
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
         beginTerminalId = begin_station_id;
@@ -520,6 +528,12 @@ public:
 		company_fare = 0;
 		company_fare_ac_discount = 0;
 		company_fare_child = 0;
+
+        brt_fare = 0;                   // BRT 運賃
+        brt_sales_km = 0;               // BRT 営業キロ
+        brt_calc_km = 0;                // BRT 計算キロ
+        brt_discount_fare = 0;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
+
 		flag = 0;
 		jr_fare = 0;
 		fare_ic = 0;
@@ -625,6 +639,8 @@ public:
 	int32_t		getFareForDisplay() const;
     int32_t     getFareForDisplayPriorRule114() const;
 	int32_t		getFareForIC() const;
+    int32_t     getBRTSalesKm() const;
+    int32_t     getFareForBRT() const;
     class Fare {
     public:
         int fare;
@@ -654,6 +670,17 @@ public:
         rule114_sales_km = 0;
         rule114_calc_km = 0;
     }
+    class CompanyFare {
+    public:
+        int32_t fare;
+        int32_t fareChild;
+        int32_t fareAcademic;
+        int32_t passflg;        // 弊算割引有無, 子供切り捨て
+        /* t_clinfar */
+        bool is_round_up_children_fare()	const { return (passflg & 0x01) != 0; }
+        bool is_connect_non_discount_fare() const { return (passflg & 0x02) != 0; }
+        CompanyFare() { fare = 0; fareChild = 0; fareAcademic = 0; passflg = 0; }
+    };
     bool	isRule114() const { return 0 != rule114_fare; }
     bool	isRoundTripDiscount() const { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
     int32_t getBeginTerminalId() const { return beginTerminalId;}
@@ -678,7 +705,7 @@ private:
 	static int32_t	 	Fare_shikoku(int32_t skm, int32_t ckm);
 	static int32_t	 	Fare_kyusyu(int32_t skm, int32_t ckm);
 	static int32_t		days_ticket(int32_t sales_km);
-	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, vector<int32_t>& companyFare);
+	static bool      	Fare_company(int32_t station_id1, int32_t station_id2, FARE_INFO::CompanyFare* companyFare);
 	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
 	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
 	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
@@ -693,6 +720,7 @@ private:
 	static int32_t	CheckAndApplyRule43_2j(const vector<RouteItem> &route);
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
     static std::vector<RouteItem> IsHachikoLineHaijima(const std::vector<RouteItem>& route_list);
+    static std::vector<std::vector<int>> getBRTrecord(int32_t line_id);
 }; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */
@@ -764,13 +792,11 @@ class DbidOf
 {
     DbidOf();
     map<tstring, int> retrieve_id_pool;
-    int32_t companyline_align_id;			// 会社線路線ID境界(JR線のLast Index)
 public:
     static DbidOf& getInstance() {
         static DbidOf obj;
         return obj;
     }
-    int32_t cline_align_id();
     int32_t id_of_station(tstring name);
     int32_t id_of_line(tstring name);
 };
@@ -849,6 +875,8 @@ public: /* only user route */
 	static int32_t 	NumOfNeerNode(int32_t stationId);
 
     static int32_t	 	InStation(int32_t stationId, int32_t lineId, int32_t b_stationId, int32_t e_stationId);
+    static vector<int32_t>  getIntersectOnLine(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t station_id3, int32_t station_id4);
+    static bool  inlineOnline(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t station_id3, int32_t station_id4);
 };
 
 
@@ -937,6 +965,7 @@ protected:
 	int32_t 		companyConnectCheck(int32_t station_id);
 	int32_t			preCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
 	int32_t			postCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
+    int32_t         brtPassCheck(int32_t stationId2);
 
 	class CompnpassSet
 	{
