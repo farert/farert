@@ -83,7 +83,7 @@ CAPTION "バージョン情報 JR運賃計算キ"
 FONT 9, "MS UI Gothic", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
-    LTEXT           "JR運賃計算キ, 19.06",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "JR運賃計算キ, 19.07",IDC_STATIC,42,14,114,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2014-2019 Sutezo.",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,172,58,50,14,WS_GROUP
     CONTROL         "<a href=""http://farert.blogspot.jp\n"">ホームページ</a>",IDC_SYSLINK1,
