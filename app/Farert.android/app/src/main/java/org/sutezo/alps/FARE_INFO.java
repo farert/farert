@@ -326,53 +326,30 @@ public class FARE_INFO  {
         return true;
     }
 
-    //	1経路の営業キロ、計算キロを集計
-    //	calc_fare() =>
-    //
-    //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
-    //	@retval -1 Fatal error
-    //  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
-    //  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
-    //
-    private int aggregate_fare_info(LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
-        short station_id1;		/* station_id1, (station_id2=ite.stationId) */
-        short station_id_0;		/* last station_id1(for Company line) */
-        LastFlag osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+    /* 近郊区間ではない条件となる新幹線乗車があるか */
+    //  経路はJR東海管内のみか？
+    //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
+    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
+    /*
+        b:発駅が境界駅ならtrue
+        f:着駅が境界駅ならtrue
+        -:true
+        n:新幹線ならtrue
+        x:false
+    */
+    /* JR東海以外 and 東海道新幹線でない場合false */
+    private Boolean aggregate_fare_is_jrtokai(final List<RouteItem> routeList_raw) {
         int [] cid1 = {0, 0};
         int cid_s1;
         int cid_e1;
         int cid_s2;
         int cid_e2;
         int id_line_tokaido_shinkansen = DbIdOf.INSTANCE.line("東海道新幹線");
-        boolean b_jrtokaiOnly;
-        //
-        int fare_add = 0;						// 運賃特別区間加算値
-        final List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
 
-        this.local_only = true;
-        this.local_only_as_hokkaido = true;
-        osakakan_aggregate = last_flag.clone();
-        osakakan_aggregate.setOsakaKanPass(false);
+        boolean b_jrtokaiOnly = true;
 
-        enableTokaiStockSelect = 0;
-        last_flag.jrtokaistock_enable = true;
+        int station_id1 = 0;
 
-        station_id1 = 0;
-
-        /* 近郊区間ではない条件となる新幹線乗車があるか */
-        //  経路はJR東海管内のみか？
-        //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
-        //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-
-        b_jrtokaiOnly = true;
-        /*
-            b:発駅が境界駅ならtrue
-            f:着駅が境界駅ならtrue
-            -:true
-            n:新幹線ならtrue
-            x:false
-        */
-        /* JR東海以外 and 東海道新幹線でない場合false */
         for (RouteItem ri : routeList_raw) {
             int [] cid = RouteUtil.CompanyIdFromStation(ri.stationId);
             if (station_id1 != 0) {
@@ -399,6 +376,115 @@ public class FARE_INFO  {
         if (b_jrtokaiOnly) {
             System.out.printf("isJrTokai true\n");
         }
+        return b_jrtokaiOnly;
+    }
+
+    private short aggregate_fare_company(boolean firstCompany,
+                                       LastFlag last_flag,
+                                       short station_id_0,
+                                       short stationId,
+                                       short station_id1) {
+        CompanyFare comfare = null;
+
+        if (0 < station_id_0) {
+            /* 2回以上連続で会社線の場合(タンゴ鉄道とか) */
+            /* a+++b+++c : */
+            comfare = Fare_company(station_id_0, stationId);
+            if (comfare == null) {
+                /* 乗継割引なし */
+                comfare = Fare_company(station_id1, stationId);
+                if (comfare == null) {
+                    ASSERT (false);
+                }
+                station_id_0 = station_id1;
+            } else {
+                CompanyFare comfare_1 = null;	// a+++b
+
+                // if ex. 氷見-金沢 併算割引非適用
+                if (comfare.passflg && (!last_flag.compnbegin || !last_flag.compnend)) {
+                    /* 乗継割引なし */
+                    comfare = Fare_company(station_id1, stationId);
+                    if (comfare == null) {
+                        ASSERT(false);
+                    }
+                } else {
+                    /* normal or 併算割引適用 */
+                    comfare_1 = Fare_company(station_id_0, station_id1);
+                    if (comfare_1 == null) {
+                        ASSERT(false);
+                    } else {
+                        if (0 < comfare_1.fareAcademic) {
+                            /* 学割ありの場合は割引額を戻す */
+                            ASSERT(comfare_1.fareAcademic < comfare_1.fare);
+                            this.company_fare_ac_discount -= (comfare_1.fare - comfare_1.fareAcademic);
+                        }
+                        this.company_fare -= comfare_1.fare;	// 戻す(直前加算分を取消)
+                        this.company_fare_child -= comfare_1.fareChild;
+                    }
+                }
+            }
+            if (0 < comfare.fareAcademic) {
+                /* 学割ありの場合は割引額を加算 */
+                ASSERT (comfare.fareAcademic < comfare.fare);
+                this.company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
+            }
+            this.company_fare += comfare.fare;
+            this.company_fare_child += comfare.fareChild;
+
+        } else {
+            /* 1回目の会社線 */
+            if (firstCompany) {
+                result_flag = RouteUtil.BIT_ON(result_flag, BRF_COMAPANY_FIRST);
+            } else if ((0 < this.company_fare) &&
+                    !RouteUtil.BIT_CHK(result_flag, BRF_COMAPANY_END)) {
+                /* 会社線 2回以上通過 */
+                result_flag = RouteUtil.BIT_ON(result_flag, BRF_COMPANY_INCORRECT);
+                ASSERT(false);
+            }
+            comfare = Fare_company(station_id1, stationId);
+            if (comfare == null) {
+                ASSERT (false);
+            } else {
+                if (0 < comfare.fareAcademic) {
+                    /* 学割ありの場合は割引額を加算 */
+                    ASSERT (comfare.fareAcademic < comfare.fare);
+                    this.company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
+                }
+                this.company_fare += comfare.fare;
+                this.company_fare_child += comfare.fareChild;
+            }
+            station_id_0 = station_id1;
+
+            result_flag = RouteUtil.BIT_ON(result_flag, BRF_COMAPANY_END);
+        }
+        return station_id_0;
+    }
+
+    //	1経路の営業キロ、計算キロを集計
+    //	calc_fare() =>
+    //
+    //	@retval 0 < Success(特別加算区間割増運賃額.通常は0)
+    //	@retval -1 Fatal error
+    //  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
+    //  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
+    //
+    private int aggregate_fare_info(LastFlag last_flag, final List<RouteItem> routeList_raw, final List<RouteItem> routeList_cooked) {
+        short station_id1;		/* station_id1, (station_id2=ite.stationId) */
+        short station_id_0;		/* last station_id1(for Company line) */
+        LastFlag osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+
+        boolean b_jrtokaiOnly = aggregate_fare_is_jrtokai(routeList_raw);
+        //
+        int fare_add = 0;						// 運賃特別区間加算値
+        final List<RouteItem> routeList = (routeList_cooked == null) ? routeList_raw : routeList_cooked;
+
+        this.local_only = true;
+        this.local_only_as_hokkaido = true;
+        osakakan_aggregate = last_flag.clone();
+        osakakan_aggregate.setOsakaKanPass(false);
+
+        enableTokaiStockSelect = 0;
+        last_flag.jrtokaistock_enable = true;
 
         station_id_0 = station_id1 = 0;
 
@@ -430,7 +516,7 @@ public class FARE_INFO  {
                         osakakan_aggregate.setOsakaKanPass(true);
                     }
 
-                    if (9 != dex.length) {
+                    if (8 != dex.length) {
                         ASSERT (false);
                         return -1;	/* failure abort end. >>>>>>>>> */
                     }
@@ -456,81 +542,12 @@ public class FARE_INFO  {
                     }
 
                     this.sales_km += dex[0];			// total 営業キロ(会社線含む、有効日数計算用)
-                    if (dex[8] != 0) {	/* 会社線 */
-
-                        CompanyFare comfare = null;
-
-                        if (0 < station_id_0) {
-                            /* 2回以上連続で会社線の場合(タンゴ鉄道とか) */
-                            /* a+++b+++c : */
-                            comfare = Fare_company(station_id_0, ri.stationId);
-                            if (comfare == null) {
-                                /* 乗継割引なし */
-                                comfare = Fare_company(station_id1, ri.stationId);
-                                if (comfare == null) {
-                                    ASSERT (false);
-                                }
-                                station_id_0 = station_id1;
-                            } else {
-                                CompanyFare comfare_1 = null;	// a+++b
-
-    							// if ex. 氷見-金沢 併算割引非適用
-    							if (comfare.passflg && (!last_flag.compnbegin || !last_flag.compnend)) {
-    								/* 乗継割引なし */
-    								comfare = Fare_company(station_id1, ri.stationId);
-                                    if (comfare == null) {
-    									ASSERT(false);
-    								}
-    							} else {
-    								/* normal or 併算割引適用 */
-    								comfare_1 = Fare_company(station_id_0, station_id1);
-                                    if (comfare_1 == null) {
-    									ASSERT(false);
-    								} else {
-        								if (0 < comfare_1.fareAcademic) {
-        									/* 学割ありの場合は割引額を戻す */
-        									ASSERT(comfare_1.fareAcademic < comfare_1.fare);
-        									this.company_fare_ac_discount -= (comfare_1.fare - comfare_1.fareAcademic);
-        								}
-        								this.company_fare -= comfare_1.fare;	// 戻す(直前加算分を取消)
-        								this.company_fare_child -= comfare_1.fareChild;
-                                    }
-                                }
-                            }
-                            if (0 < comfare.fareAcademic) {
-                                /* 学割ありの場合は割引額を加算 */
-                                ASSERT (comfare.fareAcademic < comfare.fare);
-                                this.company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
-                            }
-                            this.company_fare += comfare.fare;
-                            this.company_fare_child += comfare.fareChild;
-
-                        } else {
-                            /* 1回目の会社線 */
-                            if (this.sales_km == dex[0]) {
-                                result_flag = RouteUtil.BIT_ON(result_flag, BRF_COMAPANY_FIRST);
-                            } else if ((0 < this.company_fare) &&
-                                    !RouteUtil.BIT_CHK(result_flag, BRF_COMAPANY_END)) {
-                                /* 会社線 2回以上通過 */
-                                result_flag = RouteUtil.BIT_ON(result_flag, BRF_COMPANY_INCORRECT);
-                                ASSERT(false);
-                            }
-                            comfare = Fare_company(station_id1, ri.stationId);
-                            if (comfare == null) {
-                                ASSERT (false);
-                            } else {
-                                if (0 < comfare.fareAcademic) {
-                                    /* 学割ありの場合は割引額を加算 */
-                                    ASSERT (comfare.fareAcademic < comfare.fare);
-                                    this.company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
-                                }
-                                this.company_fare += comfare.fare;
-                                this.company_fare_child += comfare.fareChild;
-                            }
-                            station_id_0 = station_id1;
-
-                            result_flag = RouteUtil.BIT_ON(result_flag, BRF_COMAPANY_END);
-                        }
+                    if (RouteUtil.IS_COMPANY_LINE(ri.lineId)) {	/* 会社線 */
+                        station_id_0 = this.aggregate_fare_company(this.sales_km == dex[0],
+                                last_flag,
+                                station_id_0,
+                                ri.stationId,
+                                station_id1);
                     } else {
                         /* JR線 */
                         station_id_0 = 0;
@@ -2425,6 +2442,16 @@ public class FARE_INFO  {
         return (sales_km + 1999) / 2000 + 1;
     }
 
+    /* t_clinfar */
+    final static boolean IS_ROUND_UP_CHILDREN_FARE(int d) {
+        return (((d) & 0x01) != 0);
+    }
+
+    final static boolean IS_CONNECT_NON_DISCOUNT_FARE(int d) {
+        return (((d) & 0x02) != 0);
+    }
+
+
     //	会社線の運賃を得る
     //	calc_fare() => aggregate_fare_info() =>
     //
@@ -2458,9 +2485,9 @@ public class FARE_INFO  {
         		companyFare.fareAcademic = dbo.getInt(1);	// academic
         		flg = dbo.getInt(2);	// flg
                 rc = true;
-                companyFare.passflg = RouteUtil.IS_CONNECT_NON_DISCOUNT_FARE(flg);
+                companyFare.passflg = IS_CONNECT_NON_DISCOUNT_FARE(flg);
         		// (0=5円は切り捨て, 1=5円未満切り上げ)
-        		if (RouteUtil.IS_ROUND_UP_CHILDREN_FARE(flg)) {
+        		if (IS_ROUND_UP_CHILDREN_FARE(flg)) {
         			companyFare.fareChild = RouteUtil.round_up(fare_work / 2);
         		} else {
         			companyFare.fareChild = RouteUtil.round_down(fare_work / 2);
@@ -2686,7 +2713,6 @@ public class FARE_INFO  {
      *	@return int[] [5] 駅2の会社ID
      *	@return int[] [6] 駅1のsflg
      *	@return int[] [7] 駅2のsflg
-     *	@return int[] [8] 1=JR以外の会社線／0=JRグループ社線
     */
     private Integer[] getDistanceEx(int line_id, int station_id1, int station_id2) {
         Integer[] result = new Integer[9];
@@ -2714,9 +2740,8 @@ public class FARE_INFO  {
                         "   (select company_id from t_station where rowid=?3),"	    +       // [4](5)
                         "	(select sub_company_id from t_station where rowid=?2),"	+		// [5](6)
                         "	(select sub_company_id from t_station where rowid=?3)," +       // [5](7)
-                        "	(select sflg&4095 from t_station where rowid=?2)," +                        // [6](8)
-                        "   (select sflg&4095 from t_station where rowid=?3)," +	                    // [7](9)
-                        "	(select (1&(lflg>>18)) from t_lines where line_id=?1 and station_id=?3)" // [8](10)
+                        "	(select sflg&4095 from t_station where rowid=?2)," +            // [6](8)
+                        "   (select sflg&4095 from t_station where rowid=?3)"               // [7](9)
                 , new String[] {String.valueOf(line_id), String.valueOf(station_id1), String.valueOf(station_id2)});
         int company_id1;
     	int company_id2;
@@ -2735,7 +2760,6 @@ public class FARE_INFO  {
     			sub_company_id2 = ctx.getInt(7);
     			result[6] = (ctx.getInt(8));	// 駅1のsflg
     			result[7] = (ctx.getInt(9));	// 駅2のsflg
-    			result[8] = (ctx.getInt(10));	// 1=JR以外の会社線／0=JRグループ社線
 
     			if ((line_id == DbIdOf.INSTANCE.line("博多南線")) ||
     				(line_id == DbIdOf.INSTANCE.line("山陽新幹線"))) { //山陽新幹線、博多南線はJ九州内でもJR西日本
@@ -2808,8 +2832,6 @@ public class FARE_INFO  {
      *	@return int[] [5] 駅2の会社ID
      *	@return int[] [6] 駅1のsflg
      *	@return int[] [7] 駅2のsflg
-     *	@return int[] [8] 1=JR以外の会社線／0=JRグループ社線
-     *
      */
     private static Integer[] GetDistanceEx(final LastFlag osakakan_aggregate, int line_id, int station_id1, int station_id2) {
         List<Integer> result;
@@ -2832,7 +2854,6 @@ public class FARE_INFO  {
         }
         result.add((int)(0xffff & rslt));			// 駅1のsflg [6]
         result.add((int)(0xffff & (rslt >>> 16)));	// 駅2のsflg [7]
-        result.add((int)(0x1 & (rslt >>> 31)));		// bit31:1=JR以外の会社線／0=JRグループ社線 = 0
 
         return result.toArray(new Integer[0]);
     }

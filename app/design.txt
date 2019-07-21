@@ -1,3 +1,194 @@
+1=前谷地, 2=柳津
+
+?1 line_id1
+?2 stid1
+?3 stid2
+?4 brtid1
+?5 brtid2
+sales_kmは?4<?5
+?2と?3は入れ違いあり
+
+
+1 a b 2 : a-b 全線内なのでそのまま brt_sales_km -= (a-b)
+1 a 2 b : a-2                                    brt_sales_km -= (a-2)
+1 2 a b : 0　　通ってないので変換なし brt_sales_km -= 0
+a 1 2 b :  brt_sales_km -= (1-2)
+a b 1 2 : 0
+a 1 b 2 : brt_sales_km -= (1-b)
+
+-> brtexp.py
+
+2019.07.01
+会社線営業キロ
+
+0 < total_jr_calc_km && total_jr_sales_km == total_jr_calc_km 計算キロあり
+getCompanySalesKm() = sales_km - total_jr_sales_km;
+
+brt kmは、total_jr_sales_km - brt_sales_km
+
+brt_sales_kmは作成する(会社線はなかったがBRTは作成する)
+total_jr_sales_km はBRT営業キロを含む？
+total_jr_calc_km は？
+
+int32_t company_fare;				/* 会社線料金 */
+int32_t company_fare_ac_discount;	/* 学割用会社線割引額 */
+int32_t company_fare_child;			/* 会社線小児運賃 */
+
+データ構造(FARE_INFO)
+int32_t brt_fare
+int32_t brt_sales_km
+int32_t brt_calc_km
+int32_t brt_discount_fare
+を追加する
+
+
+BRT運賃計算処理概要
+aggregate_fare_jr()で、
+ line_idがBRTならBRTの営業キロを加算する。
+(brt_sales_kmの更新)
+
+こここで、前谷地-柳津の除外処理もする。＞しない
+// 路線内の駅1〜駅2が、駅3〜駅4内に含まれるか？重なる部分の営業キロ、計算キロを返す
+// -----
+//   == 　　==を返す
+// --
+//    == 　0を返す
+// ----
+//   ====  ==の距離を返す
+// ----
+// ====    ====の距離を返す
+// line_id [in] 路線
+// station_id1 [in] 検査する駅1
+// station_id2 [in] 検査する駅2
+// station_id3 [in] 検査する駅3
+// station_id4 [in] 検査する駅4
+int32_t inlineOnline(int32_t line_id, int32_t station_id2, int32_t station_id2, int32_t station_id3, int32_t station_id4);
+ ->テーブルから引数
+ 前谷地-柳津なら0以外の値が返ってくるので、sales_km, calc_kmに加算する
+
+t_brtsp
+
+retr_fare()のなかの先頭で,経路でまわし. brt_sales_km = 0ならなんにもしない。
+retr_fare
+
+for line_id, station_id1, station_id2 in route_list:
+  if not BRT line:
+    flg = 0
+    for stid1, stid2, type in query(t_brtsp where line_id):
+      n = inlineOnline(lid, station_id1, station_id2, stid1, stid2)  # 既存inStation()の検査対象駅が1つでなく2つにしたもの(AND条件)
+      if n != 2:
+        discount = false; // brt乗り継ぎ割引は無効
+      endif
+      flg = 1
+    next
+    if flg == 0: //テーブルレコードなし
+       discount = false;  // brt乗り継ぎ割引は無効
+    endif
+   endif
+//
+
+BRTのみ
+BRT+JR非割引区間
+BRT+JR非割引区間
+会社線区間は関係ない。
+
+aggregate_fare_infoループないですべておこなうか？独立して行うか？
+BRTのみは、brt_sales_km != 0 && total_sales_km == 0
+
+
+
+
+
+DB Scriptで、柳津-前谷地の路線IDを落とす。＞辞め
+
+前谷地-気仙沼 の扱い
+前谷地-気仙沼は、BRTでも鉄道線の扱い。
+経路から前谷地-気仙沼のキロを追加する。
+BRT線内に、前谷地-気仙沼線のマイナス分を得る。
+-----
+  ======
+なら、重なる部分のキロを返すクエリを作成する。
+
+
+km = diff_overlap_route(line_id, station_id1, station_id2)
+
+
+
+
+
+
+2019.06.30
+jrsutezo.docx 改訂
+lflg.18 を空きとする(会社線フラグ廃止)会社線はline_idで見分けられることとと認め不要になった
+
+2019.6.27
+やりたいこと。
+InStation2(station_id1, station_id2, line_id, r_station_id1, r_station_id2)
+  line_idのr_station_id1からr_station_id2の範囲内にstation_id1~station_id2の全駅が含まれているか？
+
+  →要らない？
+  2回inStation()を実行すれば良いだけ。
+
+  石巻-福田町、陸前原ノ町-仙台
+  は、
+  石巻-仙台 とした際には、石巻は前者に含まれるが、後者には含まれない。
+
+  もしやりたい場合でも、
+  select count(*)
+  	from t_lines
+  	where line_id=?1
+  	and station_id in (select station_id from t_lines
+                        and (lflg&(1<<31))=0
+                      	and sales_km>=
+                      			(select min(sales_km)
+                      			from t_lines
+                      			where line_id=?1
+                      			and (station_id=?4 or
+                      				 station_id=?5))
+                      	and sales_km<=
+                      			(select max(sales_km)
+                      			from t_lines
+                      			where line_id=?1
+                      			and (station_id=?4 or
+                      				 station_id=?5))
+                       )
+  	and (lflg&(1<<31))=0
+  	and sales_km>=
+  			(select min(sales_km)
+  			from t_lines
+  			where line_id=?1
+  			and (station_id=?2 or
+  				 station_id=?3))
+  	and sales_km<=
+  			(select max(sales_km)
+  			from t_lines
+  			where line_id=?1
+  			and (station_id=?2 or
+  				 station_id=?3));
+でいける。
+
+
+
+
+
+aggregate_fare_info
+
+
+志津川ー新庄は？ えきすぱあとは全鉄道線として計算している。2590円
+              否、新庄-柳津(2,270) + 柳津-志津川(320) = 2590
+              ()はFarert16.03で計算)
+
+BRTを実装しました。
+路線名にBRTと含まれている場合はBRTとなります。
+BRTは営業キロは通算しますが運賃計算は会社線と同様打ち切って計算します（通過前後のJR線は通算します）。
+柳津-前谷地は鉄道も並走しますがこの区間のBRT線は鉄道線として扱われます、
+BRTと鉄道線の乗り換え範囲は以下にしめす鉄道線は¥100割引されます
+https://www.jreast.co.jp/railway/train/brt/guide.html
+BRTと鉄道線、会社線の利用制限はBRT=JRグループ鉄道線としています(現状と同じく)。
+以上です。ルールが異なるということでしたら直ちに修正対応しますのでご一報ください。
+
+
+
 
 2019.6.21
 路線IDをIDで新幹線、会社線、BRTかを分けられるように
@@ -10,8 +201,18 @@ Pythonスクリプト変えてみてBranch BRTで試してみる。
 - BRT対応
   路線名はBRTとする。Pythonスクリプトで、路線IDを+10000 する
   大船渡線 盛-気仙沼間は、大船渡線(BRT)とする。既存の大船渡線は一ノ関-気仙沼間に短縮する
-  石巻線(BRT) を追加。小牛田-前谷地 とする。既存の石巻線はそのまま（小牛田-前谷地は並走区間）
-  気仙沼線(BRT)を追加。気仙沼-前谷地 とする。既存の気仙沼線は、柳津-前谷地に短縮する。（気仙沼線 柳津-前谷地、石巻線 前谷地-小牛田は並走区間）
+  気仙沼線(BRT)を追加。気仙沼-前谷地 とする。既存の気仙沼線は、柳津-前谷地に短縮する。（気仙沼線 柳津-前谷地は並走区間）
+
+ 　並走区間(前谷地-柳津)は鉄道と乗り継いでも通算する。
+
+  路線IDを以下とする。
+  #新幹線 0x1000~
+  #会社線 0x2000~
+  #BRT   0x3000~
+
+  t_brtsp を追加 BRT-鉄道乗り継ぎで、¥100をマイナスする区間を定義（駅1、駅2、路線, type）
+  type=0は乗り継ぎ割引期間
+      =1はBRT線だがBRT線とはしない区間
 
 - エクスポート／インポート対応(iOSとAndroidのみ)
 経路保存画面でインポートとエクスポートのアイコンボタンを設置する。
