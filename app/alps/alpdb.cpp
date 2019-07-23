@@ -2760,7 +2760,7 @@ JR東日本 株主優待4： \123,456
 		sWork = cb;
 	} else if ((0 < company_fare) && (0 != fare_info.getFareForBRT())) {
         _sntprintf_s(cb, MAX_BUF,
-					_T("  (うち会社線： ¥%s,   BRT線： ¥%s)"), num_str_yen(company_fare).c_str(),
+					_T("  (うち会社線： ¥%s, BRT線： ¥%s)"), num_str_yen(company_fare).c_str(),
                                                             num_str_yen(fare_info.getFareForBRT()).c_str());
 		sWork = cb;
 	} else if ((0 == company_fare) && (0 != fare_info.getFareForBRT())) {
@@ -8866,7 +8866,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 						(this->shikoku_sales_km == this->shikoku_calc_km));
 
 	retr_fare();
-    if ((this->brt_sales_km) || (0 < this->total_jr_sales_km)) {
+    if ((0 != this->brt_sales_km) || (0 < this->total_jr_sales_km)) {
         /* JR or BRT */
 
 		int32_t special_fare;
@@ -9407,7 +9407,6 @@ void FARE_INFO::retr_fare()
 			ASSERT(this->base_sales_km == _total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
             ASSERT(this->base_calc_km == _total_jr_calc_km);
-			ASSERT(_total_jr_calc_km == _total_jr_calc_km);
 
 			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(yamate)\n");
