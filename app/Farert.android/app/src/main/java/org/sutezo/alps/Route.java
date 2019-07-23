@@ -1016,6 +1016,10 @@ public class Route extends RouteList {
     	}
     }
 
+    int brtPassCheck(int stationId2) {
+        return (stationId2 == DbIdOf.INSTANCE.station("柳津")) ? -1 : 0;
+    }
+
     boolean isNotSameKokuraHakataShinZai()
     {
         return last_flag.notsamekokurahakatashinzai;
@@ -1721,6 +1725,12 @@ public class Route extends RouteList {
     			last_flag.end  = true;
     			return RouteUtil.ADDRC_CEND;
     		} else {
+                rc = brtPassCheck(stationId2);
+                if (rc < 0) {
+                    last_flag.end = true;
+                    System.out.println("detect BRT finish.\n");
+                    return RouteUtil.ADDRC_LAST;
+                }
     			return RouteUtil.ADDRC_OK;	/* OK - Can you continue */
     		}
     	}
@@ -2539,8 +2549,6 @@ public class Route extends RouteList {
     	}
     	return rc;	/* 0 / -4 */
     }
-
-
 
     static class CompnpassSet {
 		class recordset

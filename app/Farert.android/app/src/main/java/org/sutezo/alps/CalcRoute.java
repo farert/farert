@@ -157,6 +157,12 @@ public class CalcRoute extends RouteList {
             ASSERT (0 == fare_info.getCompanySalesKm());
         }
 
+        /* BRTあり */
+        if (fare_info.getBRTSalesKm() != 0) {
+            buffer.append(String.format("(うちBRT営業キロ： %-6s km)\r\n",
+                    RouteUtil.num_str_km(fare_info.getBRTSalesKm())));
+        }
+
         if (0 < fare_info.getSalesKmForHokkaido()) {
             if ((0 < fare_info.getCalcKmForHokkaido()) &&
                     (fare_info.getCalcKmForHokkaido() != fare_info.getSalesKmForHokkaido())) {
@@ -214,9 +220,18 @@ public class CalcRoute extends RouteList {
                     RouteUtil.num_str_km(fare_info.getRule114CalcKm())));
         }
         String company_option;
-        if (0 < company_fare) {
+        if ((0 < company_fare) && (0 == fare_info.getFareForBRT())) {
+            // 会社線あり
             company_option = String.format(Locale.JAPANESE, " (うち会社線： ¥%s)", RouteUtil.num_str_yen(company_fare));
+        } else if ((0 < company_fare) && (0 != fare_info.getFareForBRT())) {
+            // 会社線＋BRT線あり
+            company_option = String.format("  (うち会社線： ¥%s, BRT線： ¥%s)", RouteUtil.num_str_yen(company_fare),
+                    RouteUtil.num_str_yen(fare_info.getFareForBRT()));
+        } else if ((0 == company_fare) && (0 != fare_info.getFareForBRT())) {
+            // BRT線あり
+            company_option = String.format("  (うちBRT線： ¥%s)", RouteUtil.num_str_yen(fare_info.getFareForBRT()));
         } else if (fare_info.isAppliedSpecificFare()) {
+            // 電車特定運賃区間(私鉄競合のアレ)
             company_option = " (特定区間運賃)";
         } else {
             company_option = "";
