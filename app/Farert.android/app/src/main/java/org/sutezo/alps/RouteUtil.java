@@ -2,6 +2,7 @@ package org.sutezo.alps;
 
 //package Route;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -182,14 +183,6 @@ public class RouteUtil {
     static boolean IS_YAMATE(int flg) {
         return (((flg)&(1 << 5))!=0);	/* 山点線内／大阪環状線内 ?*/
     }
-    static boolean IS_COMPANY_LINE(int d) {
-        return DbIdOf.INSTANCE.company_line_align_id() < d;	/* 会社線id */
-    }
-
-    // 会社線か？(GetDistanceEx()[5])
-    //final static boolean GDIS_COMPANY_LINE(int d) {
-    //    //return (((d) & (1<<31)) != 0);
-    //}
 
     final static int BCBULURB = 13;	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
@@ -234,57 +227,60 @@ public class RouteUtil {
 
 
     /* util */
-        static int MASK(int bdef) { return (1 << bdef); }
-        static boolean BIT_CHK(int flg, int bdef) {
-            return (0 != (flg & MASK(bdef)));
-        }
-        static boolean BIT_CHK2(int flg, int bdef1, int bdef2) {
-            return (0 != (flg & (MASK(bdef1)|MASK(bdef2))));
-        }
-        static boolean BIT_CHK3(int flg, int bdef1, int bdef2, int bdef3) {
-            return (0 != (flg & (MASK(bdef1)|MASK(bdef2)|MASK(bdef3))));
-        }
-        static int BIT_ON(int flg, int bdef) {
-            return flg | MASK(bdef);
-        }
-        static int BIT_OFF(int flg, int bdef) {
-            return flg & ~MASK(bdef);
-        }
-        static int BIT_OFFN(int flag, int pattern) {
-            return flag & ~(pattern);
-        }
+    static int MASK(int bdef) { return (1 << bdef); }
+    static boolean BIT_CHK(int flg, int bdef) {
+        return (0 != (flg & MASK(bdef)));
+    }
+    static boolean BIT_CHK2(int flg, int bdef1, int bdef2) {
+        return (0 != (flg & (MASK(bdef1)|MASK(bdef2))));
+    }
+    static boolean BIT_CHK3(int flg, int bdef1, int bdef2, int bdef3) {
+        return (0 != (flg & (MASK(bdef1)|MASK(bdef2)|MASK(bdef3))));
+    }
+    static int BIT_ON(int flg, int bdef) {
+        return flg | MASK(bdef);
+    }
+    static int BIT_OFF(int flg, int bdef) {
+        return flg & ~MASK(bdef);
+    }
+    static int BIT_OFFN(int flag, int pattern) {
+        return flag & ~(pattern);
+    }
 
-        static final int HWORD_BIT = 16;		/* Number of bit in half word(unsigned short) */
+    static final int HWORD_BIT = 16;		/* Number of bit in half word(unsigned short) */
 
-        /* ---------------------------------------!!!!!!!!!!!!!!! */
-        static final int MAX_STATION = 4590;
-        static final int MAX_LINE = 223;
-        static boolean IS_SHINKANSEN_LINE(int id) {
-            return ((0 < (id)) && ((id) <= 15));	/* 新幹線は将来的にも10または15以内 !! */
-        }
-    //#define IS_COMPANY_LINE_OF(id)     (211<(id))			/* !!!!!!!!!!!!! */
+    /* ---------------------------------------!!!!!!!!!!!!!!! */
+    public static boolean IS_SHINKANSEN_LINE(int id) {
+        return ((0x1000 < (id)) && ((id) < 0x2000));
+    }
+    public static boolean IS_COMPANY_LINE(int id) {
+        return ((0x2000 < (id)) && ((id) < 0x3000));	/* 会社線id */
+    }
+    public static boolean IS_BRT_LINE(int id) {
+        return ((0x3000 < (id)) && ((id) < 0x4000));	/* BRT id */
+    }
     //#define MAX_JCT 325
     /* ---------------------------------------!!!!!!!!!!!!!!! */
 
-        // 駅は分岐駅か
-        public static boolean STATION_IS_JUNCTION(int sid) {
-            return (0 != (AttrOfStationId(sid) & (1<<12)));
-        }
-    //#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
-    // sflg.12は特例乗り換え駅もONなのでlflg.15にした
+    // 駅は分岐駅か
+    public static boolean STATION_IS_JUNCTION(int sid) {
+        return (0 != (AttrOfStationId(sid) & (1<<12)));
+    }
+//#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
+// sflg.12は特例乗り換え駅もONなのでlflg.15にした
 
-        static boolean STATION_IS_JUNCTION_F(int flg) {
-            return (0 != (flg & (1<<15)));
-        }
+    static boolean STATION_IS_JUNCTION_F(int flg) {
+        return (0 != (flg & (1<<15)));
+    }
 
-        // iOS版であって使ってた奴。もーわすれたよ(2018.8.23
+    // iOS版であって使ってた奴。もーわすれたよ(2018.8.23
 
     public static boolean IsSpecificJunction(int lineId, int stationId) {
         return 0 != (AttrOfStationOnLineLine(lineId, stationId) & (1 << 31));
     }
 
         /* ID for line_id on t_lines */
-        final static short ID_L_RULE70 = -10;
+    final static short ID_L_RULE70 = -10;
 
     static int Limit(int v, int l, int h) {
         return (Math.min(Math.max(v, l), h));
@@ -457,7 +453,7 @@ public class RouteUtil {
                          " left join t_station t on t.rowid=l.station_id" +
                          " where %s=%d" +
                          " and (l.lflg&((1<<18)|(1<<31)|(1<<17)))=0" +
-                         " group by l.line_id order by n.name";
+                         " group by l.line_id order by n.kana";
 
          int ident;
 
@@ -540,7 +536,7 @@ public class RouteUtil {
          final  String tsql =
                  "select n.name, line_id, lflg from t_line n left join t_lines l on n.rowid=l.line_id" +
                          //" where station_id=? and (lflg&((1<<31)|(1<<17)))=0 and sales_km>=0";
-                         " where station_id=? and (lflg&(1<<17))=0";
+                         " where station_id=? and (lflg&(1<<17))=0 order by n.kana";
 
          Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(stationId)});
 
@@ -1522,4 +1518,99 @@ public class RouteUtil {
          }
          return rc;
      }
+
+
+    //static
+    //
+    // 路線内の駅1〜駅2内に、駅3〜駅4が含まれるか？重なる部分の営業キロ、計算キロを返す
+    // ---:駅1〜駅2, ===:駅3-駅4
+    // -----
+    //   == 　　==を返す
+    // --
+    //    == 　0を返す
+    // ----
+    //   ====  ==の距離を返す
+    // ----
+    // ====    ====の距離を返す
+    // @param [in] line_id     路線
+    // @param [in] station_id1 検査する駅1
+    // @param [in] station_id2 検査する駅2 (sales_kmは駅１<駅2であることつまり下り)
+    // @param [in] station_id3 検査する駅3
+    // @param [in] station_id4 検査する駅4 (上り下り関係なし)
+    //
+    //	@retuen [0]:営業キロ, [1]:計算キロ
+    //
+    static KM  getIntersectOnLine(int line_id, int station_id1, int station_id2, int station_id3, int station_id4) {
+        final String tsql =
+            "select ifnull(max(sales_km) - min(sales_km), 0), ifnull(max(calc_km) - min(calc_km), 0)" +
+        " from t_lines" +
+        " where line_id=?1 and sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+        "                  and sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?3)" +
+        "                  and sales_km>=(select min(sales_km)" +
+        "                                  from t_lines" +
+        "                                  where line_id=?1 and (station_id=?4 or station_id=?5))" +
+        "                  and sales_km<=(select max(sales_km)" +
+        "                                  from t_lines" +
+        "                                  where line_id=?1 and (station_id=?4 or station_id=?5));";
+        List<Integer> sales_calc_km = new ArrayList<Integer>();
+
+        int sales_km = 0;
+        int calc_km = 0;
+
+        Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {
+                String.valueOf(line_id),
+                String.valueOf(station_id1),
+                String.valueOf(station_id2),
+                String.valueOf(station_id3),
+                String.valueOf(station_id4)});
+        try {
+            if (dbo.moveToNext()) {
+                sales_km = dbo.getInt(0);
+                calc_km = dbo.getInt(1);
+            }
+        } finally {
+            dbo.close();
+        }
+        return new KM(sales_km, calc_km, 0);
+    }
+
+    //static
+    //
+    // 路線内の駅1〜駅2内に、駅3〜駅4が完全に含まれるか？
+    // @param [in] line_id     路線
+    // @param [in] station_id1 検査する駅1
+    // @param [in] station_id2 検査する駅2 (sales_kmは駅１<駅2であることつまり下り)
+    // @param [in] station_id3 検査する駅3
+    // @param [in] station_id4 検査する駅4 (上り下り関係なし)
+    //
+    //	@retuen [0]:営業キロ, [1]:計算キロ
+    //
+    static boolean  inlineOnline(int line_id, int station_id1, int station_id2, int station_id3, int station_id4) {
+        final String sql =
+            "select case when 2=count(*) then 1 else 0 end" +
+        " from t_lines" +
+        " where line_id=?1 and sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+        "                and sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?3)" +
+        "                and (station_id=?4 or station_id=?5)";
+
+        boolean rc = false;
+
+        Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {
+                String.valueOf(line_id),
+                String.valueOf(station_id1),
+                String.valueOf(station_id2),
+                String.valueOf(station_id3),
+                String.valueOf(station_id4)});
+        try {
+            if (dbo.moveToNext()) {
+                int res = dbo.getInt(0);
+                if (res == 1) {
+                    rc = true;
+                }
+            }
+        } finally {
+            dbo.close();
+        }
+        return rc;
+    }
 }
