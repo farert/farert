@@ -125,11 +125,20 @@
     <string name="result_rule114">規程114条適用</string>
     <string name="result_no_rule114_title_fare">規程114条 適用しない運賃</string>
     <string name="result_jrline">JR線</string>
+    <string name="result_jr_brt_line">うちBRT線</string>
     　
     <string name="result_comapanyline">会社線</string>
+    <string name="result_brtline">BRT線</string>
+    <string name="result_inbrtline">うちBRT線</string>
+    <string name="result_brt_with_jr_line">JR線\nうちBRT線</string>
+    <string name="two_line">%1$s\n%2$s</string>
+
+    <string name="lf">\n</string>
+
     <string name="result_fare">運賃</string>
     <string name="result_specific_fare">運賃(特定区間運賃)</string>
     <string name="result_normalfare">普通</string>
+    <string name="result_normal_with_brt">普通\nBRT</string>
     <string name="result_companyfare">うち会社線</string>
     <string name="result_farevalue">¥84,558-</string>
     <string name="result_round">往復</string>

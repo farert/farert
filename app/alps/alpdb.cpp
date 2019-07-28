@@ -1567,7 +1567,7 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 		ASSERT(BIT_CHK(last_flag, BLF_COMPNCHECK));
 		ASSERT(!BIT_CHK(last_flag, BLF_COMPNPASS));
 		ASSERT(route_list_raw.back().lineId != line_id);
-		ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
+		//通常はこれでよしだが、終端エラーで再トライ時にNGとなる：ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
 
 		BIT_ON(last_flag, BLF_COMPNEND);	// if company_line
 
@@ -1889,8 +1889,8 @@ first_station_id1 = stationId1;
 	}
 
 	// 同一路線で折り返した場合
-	if ((route_list_raw.at(num - 1).lineId == line_id) && (2 <= num) &&
-	(RouteUtil::DirLine(line_id, route_list_raw.at(num - 2).stationId, stationId1) !=
+	if ((BRTMASK(route_list_raw.at(num - 1).lineId) == BRTMASK(line_id)) && (2 <= num) &&
+	(RouteUtil::DirLine(route_list_raw.at(num - 1).lineId, route_list_raw.at(num - 2).stationId, stationId1) !=
 	 RouteUtil::DirLine(line_id, stationId1, stationId2))) {
 		TRACE(_T("re-route error.\n"));
 		TRACE(_T("add_abort\n"));
@@ -2682,21 +2682,28 @@ tstring CalcRoute::showFare()
 	/* 会社線(通過連絡運輸)あり */
 	if (fare_info.getJRSalesKm() != fare_info.getTotalSalesKm()) {
 		ASSERT(0 != fare_info.getCompanySalesKm());
-		_sntprintf_s(cb, MAX_BUF,
-				_T("(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n"),
-				num_str_km(fare_info.getJRSalesKm()).c_str(),
-				num_str_km(fare_info.getCompanySalesKm()).c_str());
+        if (fare_info.getBRTSalesKm() != 0) {
+            _sntprintf_s(cb, MAX_BUF,
+    				_T("(JR線営業キロ： %-6s km うちBRT： %-6s km   会社線営業キロ： %s km)\r\n"),
+    				num_str_km(fare_info.getJRSalesKm()).c_str(),
+                    num_str_km(fare_info.getBRTSalesKm()).c_str(),
+                    num_str_km(fare_info.getCompanySalesKm()).c_str());
+        } else {
+            _sntprintf_s(cb, MAX_BUF,
+    				_T("(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n"),
+    				num_str_km(fare_info.getJRSalesKm()).c_str(),
+    				num_str_km(fare_info.getCompanySalesKm()).c_str());
+        }
 		sResult += cb;
-	} else {
+	} else if (fare_info.getBRTSalesKm() != 0) {
+            /* 会社線なし BRTあり */
+            _sntprintf_s(cb, MAX_BUF,
+    				_T("(うちBRT営業キロ： %s km)\r\n"),
+                    num_str_km(fare_info.getBRTSalesKm()).c_str());
+    		sResult += cb;
+            ASSERT(0 == fare_info.getCompanySalesKm());
+    } else {
 		ASSERT(0 == fare_info.getCompanySalesKm());
-	}
-
-    /* BRTあり */
-	if (fare_info.getBRTSalesKm() != 0) {
-		_sntprintf_s(cb, MAX_BUF,
-				_T("(うちBRT営業キロ： %-6s km)\r\n"),
-				num_str_km(fare_info.getBRTSalesKm()).c_str());
-		sResult += cb;
 	}
 
 	if (0 < fare_info.getSalesKmForHokkaido()) {
@@ -7764,15 +7771,6 @@ int32_t     FARE_INFO::getBRTSalesKm() const
     return brt_sales_km;
 }
 
-/** BRT 運賃
- *
- *  @retval BRT運賃
- */
-int32_t     FARE_INFO::getFareForBRT() const
-{
-    return brt_fare;
-}
-
 /**	JR北海道の営業キロを返す
  *
  *	@retval 営業キロ
@@ -7854,13 +7852,22 @@ int32_t		FARE_INFO::getChildFareForDisplay() const
 	return company_fare_child + fare_discount(jrFare(), 5);
 }
 
+/** BRT 運賃
+ *
+ *  @retval BRT運賃
+ */
+int32_t     FARE_INFO::getFareForBRT() const
+{
+    return brt_fare;    // BRT割引は含まれない
+}
+
 /**	JR線の運賃額を返す(114条未適用計算値)
  *
  *	@retval	[円]
  */
 int32_t		FARE_INFO::getFareForJR() const
 {
-	return jr_fare;
+	return jr_fare;    // BRT（割引も）含む
 }
 
 /**	JR線＋会社線の運賃額を返す

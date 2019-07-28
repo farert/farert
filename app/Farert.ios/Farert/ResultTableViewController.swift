@@ -20,8 +20,6 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     // MARK: Local property
     
-    var num_of_km : Int = 0
-    var num_of_fare : Int = 0
     var contentsForKm : [[String : String]] = []
     var contentsForFare : [[String : String]] = []
 
@@ -113,9 +111,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         case 0:
             return 1; /* section */
         case 1:
-            return num_of_km; /* sales, calc km */
+            return contentsForKm.count; /* sales, calc km */
         case 2:
-            return num_of_fare; /* Fare */
+            return contentsForFare.count; /* Fare */
         case 3:
             return self.contentsForMessage.count
         case 4:
@@ -135,6 +133,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
+        let dic_tags = ["title", "value1", "subtitle", "value2"]
         var cell : UITableViewCell
         
         if (nil == self.fareInfo) || (self.fareInfo.result != 0) {    // error
@@ -173,98 +172,41 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         case 1:
             /* KM */
             let dic : [String : String] = self.contentsForKm[indexPath.row]
-            
-            if indexPath.row == 0 {
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell1", for:indexPath) 
-                var lbl : UILabel = cell.viewWithTag(2) as! UILabel
-                lbl.text = dic["salesKm"]
-                if let str : String = dic["calcKm"] {
-                    lbl = cell.viewWithTag(3) as! UILabel
-                    lbl.text = dic["subTitle"]
-                    lbl = cell.viewWithTag(4) as! UILabel
-                    lbl.text = str;
-                } else {
-                    lbl = cell.viewWithTag(3) as! UILabel
-                    lbl.text = ""
-                    lbl = cell.viewWithTag(4) as! UILabel
-                    lbl.text = ""
+            if let celname = dic["cell"] {
+                cell = tableView.dequeueReusableCell(withIdentifier: celname, for: indexPath)
+                for i in 1..<5 {
+                    if let lbl : UILabel = cell.viewWithTag(i) as! UILabel? {
+                        lbl.text = dic[dic_tags[i - 1]] ?? ""
+                    }
                 }
             } else {
-                if nil == dic["Company_salesKm"] {
-                    if ((dic["title"]?.range(of: "114")) != nil) {
-                        cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell2x", for:indexPath) 
-                    } else {
-                        cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell2", for:indexPath) 
-                    }
-                    var lbl : UILabel = cell.viewWithTag(1) as! UILabel
-                    lbl.text = dic["title"]
-                    lbl = cell.viewWithTag(2) as! UILabel
-                    lbl.text = dic["salesKm"]
-                    
-                    lbl = cell.viewWithTag(4) as! UILabel
-                    if let str = dic["calcKm"] {
-                        lbl.text = str
-                    } else {
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell2x", for: indexPath)
+                for i in 1..<5 {
+                    if let lbl = cell.viewWithTag(i) as! UILabel? {
                         lbl.text = ""
                     }
-                } else {
-                    cell = tableView.dequeueReusableCell(withIdentifier: "rsKmCell3", for: indexPath) 
-                    var lbl : UILabel = cell.viewWithTag(2) as! UILabel
-                    lbl.text = dic["JR_salesKm"]
-                    lbl = cell.viewWithTag(4) as! UILabel
-                    lbl.text = dic["Company_salesKm"]
                 }
             }
             
         case 2:
             /* FARE */
             let dic : [String : String] = self.contentsForFare[indexPath.row]
-            
-            if indexPath.row == 0 {
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell", for: indexPath)
-                var lbl : UILabel = cell.viewWithTag(2) as! UILabel
-                lbl.text = dic["fare"];
-                
-                lbl = cell.viewWithTag(3) as! UILabel
-                lbl.text = dic["subTitle"];
-                
-                lbl = cell.viewWithTag(4) as! UILabel
-                lbl.text = dic["subFare"]; /* company or IC */
-                
-            } else if (indexPath.row == 1) && (self.fareInfo.isRoundtrip) {
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsFareCell2", for: indexPath) 
-                var lbl : UILabel = cell.viewWithTag(2) as! UILabel
-                lbl.text = dic["fare"];
-
-                lbl = cell.viewWithTag(4) as! UILabel
-                lbl.text = dic["subFare"];
-            
+            if let celname = dic["cell"] {
+                cell = tableView.dequeueReusableCell(withIdentifier: celname, for: indexPath)
+                for i in 1..<5 {
+                    if let lbl : UILabel = cell.viewWithTag(i) as! UILabel? {
+                        lbl.text = dic[dic_tags[i - 1]] ?? ""
+                    }
+                }
             } else {
-                var lbl : UILabel
-                
-                if dic["person"] != nil {
-                    cell = tableView.dequeueReusableCell(withIdentifier: "rsPersonDiscountFareCell", for: indexPath)
-
-                    lbl = cell.viewWithTag(3) as! UILabel
-                    if let subtitle = dic["subTitle"] {
-                        lbl.text = subtitle
-                        lbl = cell.viewWithTag(4) as! UILabel
-                        lbl.text = dic["subFare"]
-                    } else {
-                        lbl.text = ""
-                        lbl = cell.viewWithTag(4) as! UILabel
+                cell = tableView.dequeueReusableCell(withIdentifier: "rsPersonDiscountFareCell", for: indexPath)
+                for i in 1..<5 {
+                    if let lbl = cell.viewWithTag(i) as! UILabel? {
                         lbl.text = ""
                     }
-                    
-                } else {
-                    cell = tableView.dequeueReusableCell(withIdentifier: "rsDiscountFareCell", for: indexPath) 
                 }
-                lbl = cell.viewWithTag(1) as! UILabel
-                lbl.text = dic["title"];
-
-                lbl = cell.viewWithTag(2) as! UILabel
-                lbl.text = dic["fare"];
             }
+
         case 3:
             let message : String = self.contentsForMessage[indexPath.row]
             cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath) 
@@ -407,54 +349,55 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if self.fareInfo == nil {
             return super.tableView(tableView, heightForRowAt: indexPath)
         }
-
-        var ident : String = ""
         
         switch indexPath.section {
         case 0:
             /* section */
-            ident = "rsTitleCell"
+            // "rsTitleCell"
             value = 51
 
         case 1:
             /* KM */
-            if indexPath.row == 0 {
-                ident = "rsKmCell1"
+            
+            switch contentsForKm[indexPath.row]["cell"] {
+            case "rsKmCell1":
                 value = 44
-                
-            } else {
-                let dic : [String : String] = self.contentsForKm[indexPath.row]
-                if nil == dic["Company_salesKm"] {
-                    ident = "rsKmCell2"
-                    value = 21
-                } else {
-                    ident = "rsKmCell3"
-                    value = 34
-                }
+            case "rsKmCell2":
+                value = 21
+            case "rsKmCell2x":
+                value = 18
+            case "rsKmCell3":
+                value = 34
+            default:
+                value = 10
+                break
             }
 
         case 2:
             /* FARE */
-            if indexPath.row == 0 {
-                ident = "rsFareCell"
+            switch contentsForFare[indexPath.row]["cell"] {
+            case "rsFareCell":
                 value = 44
-            } else if indexPath.row == 1 {
-                ident = "rsFareCell2"
+            case "rsFareCell2":
                 value = 36
-            } else {
-                ident = "rsDiscountFareCell"
+            case "rsDiscountFareCell":
                 value = 24
+            case "rsPersonDiscountFareCell":
+                value = 22
+            default:
+                value = 22
+                break
             }
         case 3:
-            ident = "rsMetroAvailDaysCell"
+            // "rsMetroAvailDaysCell"
             value = 44
         case 4:
             /* avail days */
             if !self.fareInfo.isUrbanArea  {
-                ident = "rsAvailDaysCell"
+                // "rsAvailDaysCell"
                 value = 44
             } else {
-                ident = "rsMetroAvailDaysCell"
+                // "rsMetroAvailDaysCell"
                 value = 44
             }
 
@@ -468,7 +411,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             break;
         }
         
-        if !ident.isEmpty || 0 < value {
+        if 0 < value {
             return value
         }
         return super.tableView(tableView, heightForRowAt: indexPath)
@@ -738,121 +681,212 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         
         /* KM */
         
-        num_of_km = 1;
-
         if (self.fareInfo.jrCalcKm == self.fareInfo.jrSalesKm) {
-            contentsForKm = [["salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.totalSalesKm)!)km"]]
+            // 営業キロ
+            contentsForKm = [["cell" : "rsKmCell1",
+                              "title" : "営業キロ",
+                              "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.totalSalesKm)!)km",
+                              "subtitle" : "",
+                              "value2" : "" ]]
         } else {
-            contentsForKm = [["salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.totalSalesKm)!)km",
-                             "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrCalcKm)!)km",
-                             "subTitle" : (self.fareInfo.companySalesKm != 0) ? "計算キロ(JR)" : "計算キロ"]]
+            // 営業キロ、計算キロ
+            contentsForKm = [["cell" : "rsKmCell1",
+                              "title" : "営業キロ",
+                             "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.totalSalesKm)!)km",
+                             "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrCalcKm)!)km",
+                             "subtitle" : (self.fareInfo.companySalesKm != 0) ? "計算キロ(JR)" : "計算キロ"]]
         }
     
         if self.fareInfo.salesKmForHokkaido != 0 {
-            num_of_km += 1;
             if self.fareInfo.calcKmForHokkaido == self.fareInfo.salesKmForHokkaido {
-                contentsForKm += [["title" : "JR北海道",
-                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR北海道",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km"]]
             } else {
-                contentsForKm += [["title" : "JR北海道",
-                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km",
-                                   "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForHokkaido)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR北海道",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForHokkaido)!)km",
+                                   "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForHokkaido)!)km"]]
             }
         }
         if (self.fareInfo.salesKmForKyusyu != 0) {
-            num_of_km += 1;
             if self.fareInfo.calcKmForKyusyu == self.fareInfo.salesKmForKyusyu {
-                contentsForKm += [["title" : "JR九州",
-                                  "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2",
+                                  "title" : "JR九州",
+                                  "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km"]]
             } else {
-                contentsForKm += [["title" : "JR九州",
-                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km",
-                                   "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForKyusyu)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR九州",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForKyusyu)!)km",
+                                   "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForKyusyu)!)km"]]
             }
         }
         if self.fareInfo.salesKmForShikoku != 0 {
-            num_of_km += 1;
             if (self.fareInfo.calcKmForShikoku == self.fareInfo.salesKmForShikoku) {
-                contentsForKm += [["title" : "JR四国",
-                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForShikoku)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR四国",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForShikoku)!)km"]]
             } else {
-                contentsForKm += [["title" : "JR四国",
-                                   "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForShikoku)!)km",
-                                   "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForShikoku)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR四国",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForShikoku)!)km",
+                                   "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForShikoku)!)km"]]
             }
         }
         if (self.fareInfo.isRule114Applied) {
-            num_of_km += 1;
             //if (self.fareInfo.rule114_salesKm != self.fareInfo.rule114_calcKm) && (0 != self.fareInfo.rule114_calcKm) {
             if (self.fareInfo.jrCalcKm != self.fareInfo.jrSalesKm) {
-                contentsForKm += [["title" : "規程114条適用",
-                                    "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_salesKm)!)km",
-                                    "calcKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_calcKm)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2x",
+                                    "title" : "規程114条適用",
+                                    "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_salesKm)!)km",
+                                    "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_calcKm)!)km"]]
             } else {
-                contentsForKm += [["title" : "規程114条適用",
-                    "salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_salesKm)!)km"]]
+                contentsForKm += [["cell" : "rsKmCell2x",
+                                   "title" : "規程114条適用",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.rule114_salesKm)!)km"]]
             }
         }
-        if (self.fareInfo.companySalesKm != 0) {
-            num_of_km += 1;
-            contentsForKm += [["Company_salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.companySalesKm)!)km",
-                               "JR_salesKm" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrSalesKm)!)km"]]
+
+        if ((self.fareInfo.companySalesKm != 0) && (self.fareInfo.brtSalesKm != 0)) {
+                // 2行
+                // JR線、会社線
+                contentsForKm += [[
+                    "cell" : "rsKmCell3",
+                    "title" : "JR線",
+                    "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrSalesKm)!)km",
+                    "subtitle": "会社線",
+                    "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.companySalesKm)!)km",
+                    ]]
+                // BRT線
+                contentsForKm += [["cell" : "rsKmCell2x",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.brtSalesKm)!)km",
+                                    "title" : "BRT線",
+                                    "subtitle": "",
+                                    "value2" : "" ]]
+        } else if (self.fareInfo.companySalesKm != 0) {
+                    // 1行
+                    // JR線、会社線
+                contentsForKm += [["cell" : "rsKmCell3",
+                                   "title" : "JR線",
+                                   "subtitle" : "会社線",
+                                   "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.companySalesKm)!)km",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrSalesKm)!)km"]]
+        } else if (self.fareInfo.brtSalesKm != 0) {
+                // 1行
+                // JR線、BRT線
+                contentsForKm += [["cell" : "rsKmCell3",
+                                   "title" : "JR線",
+                                   "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.brtSalesKm)!)km",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.jrSalesKm)!)km",
+                                   "subtitle" : "BRT線"]]
         }
         
         
         /* FARE */
         
-        num_of_fare = (self.fareInfo.isRoundtrip) ? 3 : 2;    /* normal + round + child */
-        
-        /* 1行目 普通＋会社 or 普通 + IC */
-        /* 2行目 (往復）同上 */
+        /* 1行目 普通＋会社 or 普通 + IC or 普通+BRT */
+        /* 2行目 BRT */
+        /* 2 or 3行目 (往復）同上 */
         var strFareOpt : String = (self.fareInfo.isRoundtripDiscount) ? " (割引)" : ""
 
         if (self.fareInfo.isRule114Applied) {
             strFareOpt +=  "(¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLinePriorRule114)!))"
         }
 
-        if (self.fareInfo.fareForCompanyline != 0) {
+        if ((self.fareInfo.fareForBRT != 0) && (self.fareInfo.fareForCompanyline != 0)) {
+            // 1: 普通運賃+会社線
+            // 2: BRT
+            contentsForFare = [[
+                "cell" : "rsFareCell",
+                "title" : "普通",
+                "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
+                "subtitle" : "うち会社線",
+                "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
+            contentsForFare += [[
+                "cell" : "rsPersonDiscountFareCell",
+                "title" : "うちBRT",
+                "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForBRT)!)"
+                ]]
+            /* 3: 往復運賃(割引可否) ＋ 会社線往復 */
+            if (self.fareInfo.isRoundtrip) {
+                contentsForFare += [[
+                    "cell" : "rsFareCell2",
+                    "title": "往復",
+                    "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                    "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
+            }
+        } else if (self.fareInfo.fareForCompanyline != 0) {
             /* 1: 普通運賃＋会社線 */
-            contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
-                                "subTitle" : "うち会社線",
-                                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
+            contentsForFare = [[
+                "cell" : "rsFareCell",
+                "title" : "普通",
+                "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
+                "subtitle" : "うち会社線",
+                "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline)!)"]]
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
             if (self.fareInfo.isRoundtrip) {
-                contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
-                                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
+                contentsForFare += [[
+                    "cell" : "rsFareCell2",
+                    "title" : "往復",
+                    "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                    "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForCompanyline * 2)!)"]]
             }
+        } else if (self.fareInfo.fareForBRT != 0) {
+            /* 1: 普通運賃＋BRT線 */
+            contentsForFare = [[
+                "cell" : "rsFareCell",
+                "title" : "普通",
+                "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
+                "subtitle" : "うちBRT線",
+                "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForBRT)!)"]]
+            /* 2: 往復運賃(割引可否) ＋ BRT線往復 */
+            if (self.fareInfo.isRoundtrip) {
+                contentsForFare += [[
+                    "cell" : "rsFareCell2",
+                    "title" : "往復",
+                    "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                    "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForBRT * 2)!)"]]
+            }
+
         } else if (self.fareInfo.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
-            contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
-                                "subTitle" : "IC運賃",
-                                "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC)!)"]]
+            contentsForFare = [[
+                "cell" : "rsFareCell",
+                "title" : "普通",
+                "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
+                "subtitle" : "IC運賃",
+                "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC)!)"]]
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
             if (self.fareInfo.isRoundtrip) {
-                contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
-                                 "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC * 2)!)"]]
+                contentsForFare += [[
+                    "cell" : "rsFareCell2",
+                    "title": "往復",
+                    "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                    "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fareForIC * 2)!)"]]
             }
         } else {
             /* 1: 普通運賃 */
-            contentsForFare = [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
-                                "subTitle" : "", "subFare" : ""]]
+            contentsForFare = [["cell" : "rsFareCell",
+                                "title" : "普通",
+                                "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare)!)",
+                                "subtitle" : "",
+                                "value2" : ""]]
             /* 2: 往復運賃(割引可否) */
             if (self.fareInfo.isRoundtrip) {
-                contentsForFare += [["fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
-                                 "subFare" : ""]]
+                contentsForFare += [["cell" : "rsFareCell2",
+                                     "title" : "往復",
+                                     "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundTripFareWithCompanyLine)!)" + strFareOpt,
+                                     "value2" : ""]]
             }
         }
         
         /* 114 exception */
         if (self.fareInfo.isRule114Applied) {
-            num_of_fare += 1;
             let fare_str : String = "(¥\(cRouteUtil.fareNumStr(self.fareInfo.farePriorRule114)!))"
-            contentsForFare += [["title" : "規程114条 適用しない運賃",
-                                 "fare" : fare_str]]
+            contentsForFare += [["cell" : "rsDiscountFareCell",
+                                 "title" : "規程114条 適用しない運賃",
+                                 "value1" : fare_str]]
         }
-        
-        /* stock discount */
-        num_of_fare += self.fareInfo.availCountForFareOfStockDiscount;
         
         for i in 0 ..< self.fareInfo.availCountForFareOfStockDiscount {
             var fare_str : String
@@ -861,31 +895,41 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             } else {
                 fare_str = "¥\(cRouteUtil.fareNumStr(self.fareInfo.fare(forStockDiscount: i))!)"
             }
-            contentsForFare += [["title" : self.fareInfo.fare(forStockDiscountTitle: i), "fare" : fare_str]]
+            contentsForFare += [["cell" : "rsDiscountFareCell",
+                                 "title" : self.fareInfo.fare(forStockDiscountTitle: i),
+                                 "value1" : fare_str]]
         }
         
         // Child fare
         if (self.fareInfo.isRoundtrip) {
-            contentsForFare += [["person":"",
-              "title" : "小児運賃",
-              "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
-              "subTitle" : "往復",
-                             "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare * 2)!)"]]
+            contentsForFare += [["cell" : "rsPersonDiscountFareCell",
+                                 "title" : "小児運賃",
+                                 "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
+                                 "subtitle" : "往復",
+                                 "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare * 2)!)"]]
         } else {
-            contentsForFare += [["person":"", "title" : "小児運賃",
-                                 "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)"]]
+            contentsForFare += [["cell" : "rsPersonDiscountFareCell",
+                                 "title" : "小児運賃",
+                                 "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
+                                 "subtitle": "",
+                                 "value2": "" ]]
         }
 
         if self.fareInfo.isAcademicFare {
-            num_of_fare += 1
             if (self.fareInfo.isRoundtrip) {
-                contentsForFare += [["person":"","title" : "学割運賃",
-                    "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)",
-                    "subTitle" : "往復",
-                    "subFare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
+                contentsForFare += [[
+                    "cell" : "rsPersonDiscountFareCell",
+                    "title" : "学割運賃",
+                    "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)",
+                    "subtitle" : "往復",
+                    "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripAcademicFare)!)"]]
             } else {
-                contentsForFare += [["person":"","title" : "学割運賃",
-                                     "fare" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)"]]
+                contentsForFare += [[
+                    "cell" : "rsPersonDiscountFareCell",
+                    "title" : "学割運賃",
+                    "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.academicFare)!)",
+                    "subtitle": "",
+                    "value2":""]]
             }
         }
 
