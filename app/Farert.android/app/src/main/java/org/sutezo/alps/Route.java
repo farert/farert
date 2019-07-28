@@ -1135,9 +1135,10 @@ public class Route extends RouteList {
         }
 
         // 同一路線で折り返した場合
-        if ((route_list_raw.get(num - 1).lineId == line_id) && (2 <= num) &&
-                (RouteUtil.DirLine(line_id, route_list_raw.get(num - 2).stationId, stationId1) !=
-                        RouteUtil.DirLine(line_id, stationId1, stationId2))) {
+        if ((RouteUtil.BRTMASK(route_list_raw.get(num - 1).lineId) == RouteUtil.BRTMASK(line_id)) &&
+                (2 <= num) &&
+                (RouteUtil.DirLine(route_list_raw.get(num - 1).lineId, route_list_raw.get(num - 2).stationId, stationId1) !=
+                 RouteUtil.DirLine(line_id, stationId1, stationId2))) {
             System.out.printf("re-route error.\n");
             System.out.printf("add_abort\n");
             return -1;		//  >>>>>>>>>>>>>>>>>>
@@ -2421,7 +2422,7 @@ public class Route extends RouteList {
     		ASSERT(last_flag.compncheck);
     		ASSERT(!last_flag.compnpass);
     		ASSERT(route_list_raw.get(route_list_raw.size() - 1).lineId != line_id);
-    		ASSERT(RouteUtil.IS_COMPANY_LINE(route_list_raw.get(route_list_raw.size() - 1).lineId));
+    		//ASSERT(RouteUtil.IS_COMPANY_LINE(route_list_raw.get(route_list_raw.size() - 1).lineId));
 
     		last_flag.compnend  = true;	// if company_line
 

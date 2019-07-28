@@ -39,6 +39,7 @@ class FareInfo {
     var salesKmForHokkaido : Int = 0
     var calcKmForHokkaido : Int = 0
 
+    var brtSalesKm : Int = 0
 
     var salesKmForShikoku : Int = 0
     var calcKmForShikoku : Int = 0
@@ -53,6 +54,9 @@ class FareInfo {
 
 // 会社線部分の運賃
     var fareForCompanyline: Int = 0
+
+// BRT運賃
+    var fareForBRT : Int = 0
 
 // 普通運賃
     var fare : Int = 0

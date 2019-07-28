@@ -820,6 +820,7 @@ int g_tax; /* main.m */
     result.salesKmForHokkaido = fi.getSalesKmForHokkaido();
     result.calcKmForHokkaido = fi.getCalcKmForHokkaido();
 
+    result.brtSalesKm = fi.getBRTSalesKm();
 
     result.salesKmForShikoku = fi.getSalesKmForShikoku();
     result.calcKmForShikoku = fi.getCalcKmForShikoku();
@@ -838,6 +839,9 @@ int g_tax; /* main.m */
     result.fare = fi.getFareForDisplay();
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
 
+    // BRT運賃
+    result.fareForBRT = fi.getFareForBRT();
+    
     // 往復
     fareResult = fi.roundTripFareWithCompanyLine();
     result.roundTripFareWithCompanyLine = fareResult.fare;

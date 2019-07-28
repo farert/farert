@@ -293,6 +293,37 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
             </TableRow>
+            <!-- : BRT km -->
+            <TableRow
+                android:id="@+id/row_brtkm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/text_title_inbrtline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/result_inbrtline" />
+
+                <TextView
+                    android:id="@+id/text_brtline_km"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/result_kmval" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/blank" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </TableRow>
             <!-- 8: 運賃(Title) -->
             <TableRow
                 android:layout_width="match_parent"
@@ -340,6 +371,37 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/result_farevalue" />
+            </TableRow>
+            <!-- : BRT yen -->
+            <TableRow
+                android:id="@+id/row_brtyen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/text_title_inbrtfare"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/result_inbrtline" />
+
+                <TextView
+                    android:id="@+id/text_brtline_fare"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/result_farevalue" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/blank" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
             </TableRow>
             <!-- 10: 往復 -->
             <TableRow

@@ -197,13 +197,13 @@ public class FARE_INFO  {
                     fare_tmp = Fare_tokyo_f(_total_jr_sales_km);
                 }
                 if (RouteDB.getInstance().tax() == 5) {
-                    _total_jr_sales_km = RouteUtil.round(fare_tmp);
+                    _total_jr_fare = RouteUtil.round(fare_tmp);
                 } else {
                     /* 新幹線乗車はIC運賃適用外(東北新幹線も) */
                     if (((1 << RouteUtil.BCBULURB) & this.flag) == 0) {
                         this.fare_ic = fare_tmp;
                     }
-                    _total_jr_sales_km = RouteUtil.round_up(fare_tmp);
+                    _total_jr_fare = RouteUtil.round_up(fare_tmp);
                 }
             } else if (this.local_only || (!this.major_only && (_total_jr_sales_km <= 100))) {
                 /* 本州3社地方交通線のみ or JR東+JR北 */
@@ -239,7 +239,7 @@ public class FARE_INFO  {
 
                     this.fare_ic = fare_tmp;
                 }
-                _total_jr_sales_km = RouteUtil.round(fare_tmp);
+                _total_jr_fare = RouteUtil.round(fare_tmp);
             }
 
             // JR北あり?
@@ -2759,7 +2759,7 @@ public class FARE_INFO  {
      *	@return int[] [7] 駅2のsflg
     */
     private Integer[] getDistanceEx(int line_id, int station_id1, int station_id2) {
-        Integer[] result = new Integer[9];
+        Integer[] result = new Integer[8];
 
         Cursor ctx = RouteDB.db().rawQuery(
                 "select" +

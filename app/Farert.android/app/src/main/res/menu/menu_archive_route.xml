@@ -4,11 +4,13 @@
     <item
         android:title="@string/menu_item_all_delete"
         android:id="@+id/menu_item_all_delete"
+        android:icon="@drawable/ic_clear_all_black_24dp"
         app:showAsAction="always"
         />
     <item
         android:title="@string/menu_item_save"
         android:id="@+id/menu_item_save"
+        android:icon="@drawable/ic_sd_card_black_24dp"
         app:showAsAction="always"
         />
 

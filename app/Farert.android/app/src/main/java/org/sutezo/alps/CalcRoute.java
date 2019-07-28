@@ -148,19 +148,26 @@ public class CalcRoute extends RouteList {
 
 		/* 会社線(通過連絡運輸)あり */
         if (fare_info.getJRSalesKm() != fare_info.getTotalSalesKm()) {
+            /* BRTあり */
+            if (fare_info.getBRTSalesKm() != 0) {
+                buffer.append(String.format(Locale.JAPANESE,
+                        "(JR線営業キロ： %-6s km うちBRT： %-6s km   会社線営業キロ： %s km)\r\n",
+                        RouteUtil.num_str_km(fare_info.getJRSalesKm()),
+                        RouteUtil.num_str_km(fare_info.getBRTSalesKm()),
+                        RouteUtil.num_str_km(fare_info.getCompanySalesKm())));
+            } else {
+                buffer.append(String.format(Locale.JAPANESE,
+                        "(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n",
+                        RouteUtil.num_str_km(fare_info.getJRSalesKm()),
+                        RouteUtil.num_str_km(fare_info.getCompanySalesKm())));
+            }
             ASSERT (0 != fare_info.getCompanySalesKm());
+        } else if (fare_info.getBRTSalesKm() != 0) {
+            /* 会社線なし BRTあり */
             buffer.append(String.format(Locale.JAPANESE,
-                    "(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n",
-                    RouteUtil.num_str_km(fare_info.getJRSalesKm()),
-                    RouteUtil.num_str_km(fare_info.getCompanySalesKm())));
-        } else {
-            ASSERT (0 == fare_info.getCompanySalesKm());
-        }
-
-        /* BRTあり */
-        if (fare_info.getBRTSalesKm() != 0) {
-            buffer.append(String.format("(うちBRT営業キロ： %-6s km)\r\n",
+                    "(うちBRT営業キロ： %s km)\r\n",
                     RouteUtil.num_str_km(fare_info.getBRTSalesKm())));
+            ASSERT (0 == fare_info.getCompanySalesKm());
         }
 
         if (0 < fare_info.getSalesKmForHokkaido()) {
