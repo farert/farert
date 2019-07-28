@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.support.design.internal.BottomNavigationItemView
@@ -152,12 +153,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
     }
 
-    private fun getVersionCode(): Int {
+    private fun getVersionCode(): Long {
         val pm = this.packageManager
-        var versionCode = 0
+        var versionCode : Long = 0
         try {
             val packageInfo = pm.getPackageInfo(this.packageName, 0)
-            versionCode = packageInfo.versionCode
+            versionCode = if (Build.VERSION.SDK_INT >= 28) packageInfo.longVersionCode else packageInfo.versionCode.toLong()
             // versionCode:通算バージョン(数値)
             // versionName: "18.11" とか
         } catch (e: PackageManager.NameNotFoundException) {

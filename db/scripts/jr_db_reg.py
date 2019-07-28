@@ -446,8 +446,8 @@ class Dbreg:
 					if not key in h_items[i]:
 						if not linitems[COL_COMPANY].startswith("JR"):
 							key += "|company|"		# 会社線
-						h_items[i][key] = "" 
-						
+						h_items[i][key] = ""
+
 					kana = linitems[COL_LINE_KANA].strip()
 					if h_items[i][key] == "" and  kana != "":
 						h_items[i][key] = kana
@@ -472,7 +472,7 @@ class Dbreg:
 		# convert line_id
 		#新幹線 0x1000~
 		#会社線 0x2000~
-		#BRT   0x3000~
+		#BRT    0x4000~   BRTは、~0x4000 & id として使うので。
 
 		self.con.execute("""
 		update t_line set rowid=rowid + 0x1000 where name like '%新幹線';
@@ -482,9 +482,18 @@ class Dbreg:
 		update t_line set rowid=rowid + 0x2000, name=substr(name, 1, length(name) - length('|company|')) where name like '%|company|';
 		""")
 
-		self.con.execute("""
-		update t_line set rowid=rowid + 0x3000 where name like '%(BRT)';
+		## begin exp
+		cur = self.con.cursor()
+		cur.execute("""
+		select substr(name, 0, length("(BRT)")) from t_line where name like '%(BRT)'
 		""")
+		for c in cur:
+			 lname = c[0]
+			 self.con.execute("""
+			 update t_line set rowid=(select rowid from t_line where name=?1)+0x4000 where name=?2
+			 """, [lname, lname + "(BRT)"])
+	   
+		## end exp
 
 		dispatch = {
 			'line'			: self.reg_line,
@@ -1057,7 +1066,7 @@ insert into t_farespp values(
 
 		type = int(linitems[0]) # type
 		line = linitems[1].strip() # 路線
-	
+
 		# 駅1, 駅2は下りから並べないといけない。
 		self.cur.execute("""
 			insert into t_brtsp(station_id1, station_id2, type, line_id) values(

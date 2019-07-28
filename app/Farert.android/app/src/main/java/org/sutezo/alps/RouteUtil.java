@@ -257,7 +257,10 @@ public class RouteUtil {
         return ((0x2000 < (id)) && ((id) < 0x3000));	/* 会社線id */
     }
     public static boolean IS_BRT_LINE(int id) {
-        return ((0x3000 < (id)) && ((id) < 0x4000));	/* BRT id */
+        return ((0x4000 < (id)) && ((id) < 0x5000));	/* BRT id */
+    }
+    public static int BRTMASK(int id) {
+        return (~0x4000 & id);
     }
     //#define MAX_JCT 325
     /* ---------------------------------------!!!!!!!!!!!!!!! */

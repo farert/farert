@@ -93,6 +93,7 @@
 @property (nonatomic) NSInteger salesKmForHokkaido;
 @property (nonatomic) NSInteger calcKmForHokkaido;
 
+@property (nonatomic) NSInteger brtSalesKm;
 
 @property (nonatomic) NSInteger salesKmForShikoku;
 @property (nonatomic) NSInteger calcKmForShikoku;
@@ -113,6 +114,9 @@
 // 普通運賃
 @property (nonatomic) NSInteger fare;
 @property (nonatomic) NSInteger farePriorRule114;
+
+// BRT運賃
+@property (nonatomic) NSInteger fareForBRT;
 
 // 普通運賃は, fareForJR + fareForCompanyline;
 // 往復
