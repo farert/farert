@@ -768,7 +768,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
     for (i in 0..1) {
         val stk = fi.getFareStockDiscount(i)
         if (0 < stk.fare) {
-            stks.add(Triple(stk.title, stk.fare, 0))
+            stks.add(Triple(stk.title, stk.fare + fi.fareForCompanyline, 0))
         }
     }
 
@@ -788,7 +788,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
         for (i in 0..1) {
             val stk = fi.getFareStockDiscount(i, true)
             if (0 < stk.fare) {
-                stks[i] = Triple(stks[i].first, stks[i].second, stk.fare)
+                stks[i] = Triple(stks[i].first, stks[i].second + fi.fareForCompanyline, stk.fare + fi.fareForCompanyline)
             }
         }
         result.fareForStockDiscounts = stks
@@ -807,6 +807,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.salesKmForHokkaido = fi.getSalesKmForHokkaido();
     result.calcKmForHokkaido = fi.getCalcKmForHokkaido();
 
+    // BRT営業キロ
+    result.brtSalesKm = fi.brtSalesKm
 
     result.salesKmForShikoku = fi.getSalesKmForShikoku();
     result.calcKmForShikoku = fi.getCalcKmForShikoku();
@@ -821,6 +823,9 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     // 会社線部分の運賃
     result.fareForCompanyline = fi.getFareForCompanyline();
+
+    // BRT運賃
+    result.fareForBRT = fi.fareForBRT
 
     // 普通運賃
     result.fare = fi.getFareForDisplay();

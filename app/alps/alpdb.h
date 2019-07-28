@@ -102,12 +102,17 @@ typedef uint32_t SPECIFICFLAG;
 #define JCTSP_B_YOSHIZUKA	 	4
 #define JCTSP_B_NAGAOKA 		5
 
+#define LID_BRT        0x4000
+#define BRTMASK(id)    (~LID_BRT & (id))
+#define LID_SHINKANZEN 0x1000
+#define LID_COMPANY    0x2000
+
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
 //#define MAX_LINE        223
-#define IS_SHINKANSEN_LINE(id)  ((0x1000<(id)) && ((id) < 0x2000))	 /* 新幹線は将来的にも10または15以内 !! */
-#define IS_COMPANY_LINE(id)	    ((0x2000<(id)) && ((id) < 0x3000))	 /* 会社線id */
-#define IS_BRT_LINE(id)	        ((0x3000<(id)) && ((id) < 0x4000))	 /* BRT id */
+#define IS_SHINKANSEN_LINE(id)  ((LID_SHINKANZEN<(id)) && ((id) < (LID_SHINKANZEN+0x100)))	 /* 新幹線は将来的にも10または15以内 !! */
+#define IS_COMPANY_LINE(id)	    ((LID_COMPANY<(id)) && ((id) < (LID_COMPANY+0x100)))	     /* 会社線id */
+#define IS_BRT_LINE(id)	        ((LID_BRT<(id)) && ((id) < (LID_BRT+0x100)))            	 /* BRT id */
 #define MAX_JCT 330
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 

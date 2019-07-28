@@ -230,7 +230,7 @@ class ResultViewActivity : AppCompatActivity() {
             text_title_calckm.visibility = View.INVISIBLE
         } else {
             text_title_calckm.text = resources.getString(
-                    if (fi.companySalesKm != 0) R.string.result_calckm_wo_jr else R.string.result_calckm)
+                    if (fi.companySalesKm != 0) R.string.result_calckm else R.string.result_calckm_wo_jr)
             text_calckm.text = resources.getString(R.string.result_km, kmNumStr(fi.jrCalcKm))
         }
 
@@ -282,12 +282,32 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // KM 会社線
-        if (fi.companySalesKm != 0) {
-            text_jrline_km.text = resources.getString(R.string.result_km, kmNumStr(fi.jrSalesKm))
-            text_company_km.text = resources.getString(R.string.result_km, kmNumStr(fi.companySalesKm))
+        if ((fi.brtSalesKm != 0) || (fi.companySalesKm != 0)) {
+            if ((fi.brtSalesKm != 0) && (fi.companySalesKm != 0)) {
+                // 会社線+BRT
+                // Change title JR線->JR線+BRT線
+                text_jrline_km.text = resources.getString(R.string.result_km, kmNumStr(fi.jrSalesKm))
+                text_company_km.text = resources.getString(R.string.result_km, kmNumStr(fi.companySalesKm))
+                text_brtline_km.text = resources.getString(R.string.result_km, kmNumStr(fi.brtSalesKm))
+            } else if (fi.companySalesKm != 0) {
+                // 会社線のみ
+                text_jrline_km.text = resources.getString(R.string.result_km, kmNumStr(fi.jrSalesKm))
+                text_company_km.text = resources.getString(R.string.result_km, kmNumStr(fi.companySalesKm))
+                val row_brt = row_brtkm
+                result_table.removeView(row_brt)   // BRT km
+            } else {
+                // BRTのみ
+                text_jrline_km.text = resources.getString(R.string.result_km, kmNumStr(fi.jrSalesKm))
+                text_title_company_km.text = resources.getString(R.string.result_inbrtline)
+                val row_brt = row_brtkm
+                result_table.removeView(row_brt)   // BRT km
+                text_company_km.text = resources.getString(R.string.result_km, kmNumStr(fi.brtSalesKm))
+            }
         } else {
             val row = row_jr_or_company_line_km
             result_table.removeView(row)
+            val row_brt = row_brtkm
+            result_table.removeView(row_brt)   // BRT km
         }
 
         //------------------------- 運賃 -----------------------------------
@@ -304,15 +324,40 @@ class ResultViewActivity : AppCompatActivity() {
         if (fi.isRule114Applied) strFareOpt += "(${fareNumStr(fi.roundTripFareWithCompanyLinePriorRule114)})"
 
         if (fi.fareForCompanyline != 0) {
-            /* 1: 普通運賃＋会社線 */
-            text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-            text_title_company_fare.text = resources.getString(R.string.result_companyfare)
-            text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
+            /* 1: 普通運賃 + 会社線 */
+            if (fi.fareForBRT == 0) {
+                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                text_title_company_fare.text = resources.getString(R.string.result_companyfare)
+                text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
 
+                val row_brt = row_brtyen
+                result_table.removeView(row_brtyen)   // BRT fare
+
+            } else {
+                // 普通運賃,BRT運賃 + 会社線
+                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                text_title_company_fare.text = resources.getString(R.string.result_companyfare)
+                text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
+                text_brtline_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT))
+            }
             /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
             val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
             text_round.text = s
             text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline * 2))
+            // BRT往復までイラン!
+        } else if (fi.fareForBRT != 0) {
+            // 1: 普通運賃 + BRT運賃
+            text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+            text_title_company_fare.text = resources.getString(R.string.result_inbrtline)
+            text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT))
+
+            val row_brt = row_brtyen
+            result_table.removeView(row_brtyen)   // BRT fare
+
+            /* 2: 往復運賃(割引可否) ＋ BRT往復 */
+            val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
+            text_round.text = s
+            text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT * 2))
 
         } else if (fi.fareForIC != 0) {
             /* 1: 普通運賃 ＋ IC運賃 */
@@ -320,15 +365,22 @@ class ResultViewActivity : AppCompatActivity() {
             text_title_company_fare.text = resources.getString(R.string.result_icfare)
             text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForIC))
 
+            val row_brt = row_brtyen
+            result_table.removeView(row_brtyen)   // BRT fare
+
             /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
             val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
             text_round.text = s
             text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForIC * 2))
+
         } else {
             /* 1: 普通運賃 */
             text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
             text_title_company_fare.text = resources.getString(R.string.blank)
             text_company_fare.text = resources.getString(R.string.blank)
+
+            val row_brt = row_brtyen
+            result_table.removeView(row_brtyen)   // BRT fare
 
             /* 2: 往復運賃(割引可否) */
             val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
