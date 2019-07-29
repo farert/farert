@@ -237,9 +237,6 @@ public class CalcRoute extends RouteList {
         } else if ((0 == company_fare) && (0 != fare_info.getFareForBRT())) {
             // BRT線あり
             company_option = String.format("  (うちBRT線： ¥%s)", RouteUtil.num_str_yen(fare_info.getFareForBRT()));
-        } else if (fare_info.isAppliedSpecificFare()) {
-            // 電車特定運賃区間(私鉄競合のアレ)
-            company_option = " (特定区間運賃)";
         } else {
             company_option = "";
         }
@@ -346,10 +343,19 @@ public class CalcRoute extends RouteList {
         if (fare_info.isEnableTokaiStockSelect()) {
             buffer.append("\r\nJR東海株主優待券使用オプション選択可");
         }
+        if (fare_info.isBRT_discount()) {
+            buffer.append("\r\nBRT乗り継ぎ割引適用");
+        }
+        if (fare_info.isAppliedSpecificFare()) {
+            // 電車特定運賃区間(私鉄競合のアレ)
+            buffer.append("\r\n特定区間割引運賃適用");
+        }
         String sWork = fare_info.getTOICACalcRoute_string();
         if (!sWork.isEmpty()) {
             buffer.append("\r\nIC運賃計算経路: ");
             buffer.append(sWork);
+        } else {
+            buffer.append("\r\n");
         }
         return buffer.toString();
     }

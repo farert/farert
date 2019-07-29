@@ -2906,6 +2906,8 @@ JR東日本 株主優待4： \123,456
     if (sWork != _T("")) {
         sResult += _T("\r\nIC運賃計算経路: ");
         sResult += sWork;
+    } else {
+        sResult += _T("\r\n");
     }
 	return sResult;
 }
