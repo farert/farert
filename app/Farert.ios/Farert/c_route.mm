@@ -841,6 +841,7 @@ int g_tax; /* main.m */
 
     // BRT運賃
     result.fareForBRT = fi.getFareForBRT();
+    result.isBRTdiscount = fi.getIsBRT_discount();
     
     // 往復
     fareResult = fi.roundTripFareWithCompanyLine();
