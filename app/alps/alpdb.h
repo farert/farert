@@ -1,4 +1,4 @@
-﻿#if !defined _ALPDB_H__
+#if !defined _ALPDB_H__
 
 #define _ALPDB_H__
 
@@ -646,6 +646,7 @@ public:
 	int32_t		getFareForIC() const;
     int32_t     getBRTSalesKm() const;
     int32_t     getFareForBRT() const;
+    bool        getIsBRT_discount() const { return brt_discount_fare != 0; }
     class Fare {
     public:
         int fare;

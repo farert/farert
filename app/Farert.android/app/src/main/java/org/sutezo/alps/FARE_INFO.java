@@ -1380,6 +1380,11 @@ public class FARE_INFO  {
         return brt_fare;
     }
 
+    /** BRT乗り継ぎ割引
+     * @retval あり
+     */
+    boolean getIsBRT_discount() { return brt_discount_fare != 0; }
+
     /**	JR北海道の営業キロを返す
      *
      *	@retval 営業キロ
