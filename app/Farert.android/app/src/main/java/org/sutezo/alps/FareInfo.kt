@@ -57,6 +57,7 @@ class FareInfo {
 
 // BRT運賃
     var fareForBRT : Int = 0
+    var isBRT_discount : Boolean = false
 
 // 普通運賃
     var fare : Int = 0

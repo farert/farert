@@ -117,6 +117,7 @@
 
 // BRT運賃
 @property (nonatomic) NSInteger fareForBRT;
+@property (nonatomic) BOOL isBRTdiscount;
 
 // 普通運賃は, fareForJR + fareForCompanyline;
 // 往復

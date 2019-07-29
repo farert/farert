@@ -944,6 +944,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if self.fareInfo.isEnableTokaiStockSelect {
             contentsForMessage.append("JR東海株主優待券使用オプション選択可")
         }
+        if self.fareInfo.isBRTdiscount {
+            contentsForMessage.append("BRT乗り継ぎ割引適用")
+        }
     }
     
     
