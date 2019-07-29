@@ -482,6 +482,9 @@ class ResultViewActivity : AppCompatActivity() {
             //contentsForMessage += "JR東海株主優待券使用オプション選択可\n"
             contentsForMessage += resources.getString(R.string.result_note_jrtokaistock)
         }
+        if (fi.isBRT_discount) {
+            contentsForMessage += resources.getString(R.string.result_brt_discount)
+        }
         text_note.text = contentsForMessage
 
         // 有効日数

@@ -195,6 +195,7 @@
     <string name="result_mailtitle_faredetail">運賃詳細</string>
 
     <string name="result_toica_calc_route">＜IC運賃計算経路＞</string>
+    <string name="result_brt_discount">BRT乗継ぎ割引適用</string>
 
     <!-- Archive Route -->
     <string name="menu_item_save">保存</string>
