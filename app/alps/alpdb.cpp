@@ -2775,11 +2775,7 @@ JR東日本 株主優待4： \123,456
 					_T("  (うちBRT線： ¥%s)"), num_str_yen(fare_info.getFareForBRT()).c_str());
 		sWork = cb;
 	} else {
-        if (fare_info.isAppliedSpecificFare()) {
-            sWork = _T(" (特定区間運賃)");
-        } else {
-            sWork = _T("");
-        }
+        sWork = _T("");
 	}
 	if (fare_info.isRule114()) {
 		_sntprintf_s(cb, MAX_BUF, _T("規程114条適用 営業キロ： %s km 計算キロ： %s km\r\n"),
@@ -2900,6 +2896,12 @@ JR東日本 株主優待4： \123,456
 	if (fare_info.isEnableTokaiStockSelect()) {
 		sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
 	}
+    if (fare_info.getIsBRT_discount()) {
+        sResult += _T("\r\nBRT乗継ぎ割引適用");
+    }
+    if (fare_info.isAppliedSpecificFare()) {
+        sResult += _T("\r\n特定区間割引運賃適用");
+    }
     sWork = fare_info.getTOICACalcRoute_string();
     if (sWork != _T("")) {
         sResult += _T("\r\nIC運賃計算経路: ");

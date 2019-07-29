@@ -827,6 +827,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // BRT運賃
     result.fareForBRT = fi.fareForBRT
 
+    result.isBRT_discount = fi.isBRT_discount
+
     // 普通運賃
     result.fare = fi.getFareForDisplay();
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
