@@ -215,43 +215,29 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             
         case 4:
             /* avail days */
-            if (false == self.fareInfo.isUrbanArea) {
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsAvailDaysCell", for: indexPath) 
-                var lbl : UILabel = cell.viewWithTag(1) as! UILabel
-                lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
-                lbl = cell.viewWithTag(2) as! UILabel
-                if 1 < self.fareInfo.ticketAvailDays {
-                    var str : String
-                    if (self.fareInfo.isBeginInCity && self.fareInfo.isEndInCity) {
-                        str = "(発着駅都区市内の駅を除き"
-                    } else if (self.fareInfo.isBeginInCity) {
-                        str = "(発駅都区市内の駅を除き"
-                    } else if (self.fareInfo.isEndInCity) {
-                        str = "(着駅都区市内の駅を除き"
-                    } else {
-                        str = "("
-                    }
-                    lbl.text = str + "途中下車可能)"
+            cell = tableView.dequeueReusableCell(withIdentifier: "rsAvailDaysCell", for: indexPath)
+            var lbl : UILabel = cell.viewWithTag(1) as! UILabel
+            lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
+            lbl = cell.viewWithTag(2) as! UILabel
+            if 1 < self.fareInfo.ticketAvailDays {
+                var str : String
+                if (self.fareInfo.isBeginInCity && self.fareInfo.isEndInCity) {
+                    str = "(発着駅都区市内の駅を除き"
+                } else if (self.fareInfo.isBeginInCity) {
+                    str = "(発駅都区市内の駅を除き"
+                } else if (self.fareInfo.isEndInCity) {
+                    str = "(着駅都区市内の駅を除き"
                 } else {
-                    lbl.text = "(途中下車前途無効)"
+                    str = "("
                 }
+                lbl.text = str + "途中下車可能)"
             } else {
+                lbl.text = "(途中下車前途無効)"
+            }
+            /* isUrban
                 // 近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)
                 cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath)
-                let lbl : UILabel = cell.viewWithTag(1) as! UILabel
-                var s : String
-                if nil == self.fareInfo {
-                    s = "エラー"
-                    assert(false)
-                } else if (self.fareInfo.beginStationId != self.fareInfo.endStationId) {
-                    s = (self.fareInfo.isRuleApplied()) ?
-                    "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)":
-                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
-                } else {
-                    s = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
-                }
-                lbl.text = s
-            }
+            */
             
         case 5:
             /* ROUTE */
@@ -393,13 +379,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             value = 44
         case 4:
             /* avail days */
-            if !self.fareInfo.isUrbanArea  {
-                // "rsAvailDaysCell"
-                value = 44
-            } else {
-                // "rsMetroAvailDaysCell"
-                value = 44
-            }
+            value = 44
 
         case 5:
             /* ROUTE */
@@ -529,10 +509,9 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("特例を適用する")
             }
         }
-        //b#18122902
-        //if (self.fareInfo.isArbanArea) {
-        //    items.append("最短経路算出")
-        //}
+        if (self.fareInfo.isPossibleAutoroute) {
+            items.append("最短経路算出")
+        }
         
         if self.fareInfo.isJRCentralStockEnable() {
             if self.fareInfo.isJRCentralStock() {
@@ -946,6 +925,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
         if self.fareInfo.isBRTdiscount {
             contentsForMessage.append("BRT乗り継ぎ割引適用")
+        }
+        if let s = self.fareInfo.resultMessage {
+            if !s.isEmpty {
+                let ss : [String] = s.components(separatedBy: "\r\n")
+                for sss in ss {
+                    contentsForMessage.append(sss)
+                }
+            }
         }
     }
     

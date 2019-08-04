@@ -591,7 +591,7 @@ public class FARE_INFO  {
                         // ビット13のみ保持(既にflagのビット13のみにはcalc_fare()の最初でセットしているから)
                         this.flag &= (1<<RouteUtil.BCBULURB);
                         // 次回以降から駅1不要、駅1 sflgの下12ビット,
-                        // bit12以上はGetDistanceEx()のクエリでOffしているので不要
+                        // bit12以上はGetDistanceEx()のクエリでOxfffしているので不要
                         this.flag |= (RouteUtil.FLAG_FARECALC_INITIAL | (/*~(1<<RouteUtil.BCBULURB) & */dex[6]));
                     }
                     flag = (RouteUtil.FLAG_FARECALC_INITIAL | (1<<RouteUtil.BCBULURB) | dex[7]);
