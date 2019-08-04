@@ -218,6 +218,9 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
 
 #define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
+#define BCSPECTERM                  14  // FARE_INFO.flag: 特定都区市内発着
+#define BCABILSPECTERM              12   // FARE_INFO.flag: Possible the 86, 87
+#define MASK_FARECALC_INITIAL       ((1<<BCBULURB)|(1<<BCSPECTERM)|(1<<BCABILSPECTERM))
 
 #if 0
   vector<RouteItem> 先頭のlineId
@@ -620,6 +623,9 @@ public:
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
     int32_t 	roundTripChildFareWithCompanyLine() const;
 	bool 		isUrbanArea() const;
+	bool 		isUseBulletInUrban() const;
+    bool        isSpecialTermInUrban() const;
+    bool        isPossibleSpecialTermInUrban() const;
 	int32_t 	getTotalSalesKm() const;
 	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
 	int32_t		getRule114CalcKm() const  { return rule114_calc_km;  }
@@ -647,6 +653,7 @@ public:
     int32_t     getBRTSalesKm() const;
     int32_t     getFareForBRT() const;
     bool        getIsBRT_discount() const { return brt_discount_fare != 0; }
+
     class Fare {
     public:
         int fare;
