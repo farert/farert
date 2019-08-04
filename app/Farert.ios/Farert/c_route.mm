@@ -756,6 +756,8 @@ int g_tax; /* main.m */
     int w3;
     FARE_INFO::Fare rule114Fare;
     FARE_INFO::FareResult fareResult;
+    const static char msgPossibleLowcost[] = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
+    const static char msgAppliedLowcost[] = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)";
 
     result = [[FareInfo alloc] init];
 
@@ -807,7 +809,37 @@ int g_tax; /* main.m */
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
 
-    result.isUrbanArea = fi.isUrbanArea();
+    result.isUrbanArea = fi.isUrbanArea() && !fi.isUseBulletInUrban() && !fi.isSpecialTermInUrban();
+    result.isPossibleAutoroute = fi.isUrbanArea() && !fi.isUseBulletInUrban() && !fi.isSpecialTermInUrban();
+
+    if (fi.isUrbanArea()) {
+        if (!fi.isUseBulletInUrban() && !fi.isPossibleSpecialTermInUrban()) {
+            if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
+                result.resultMessage = [NSString stringWithUTF8String:"近郊区間内ですので同一駅発着のきっぷは購入できません."];
+            } else {
+                if (!result.isRuleApplied) {    //  BIT_CHK(last_flag, BLF_NO_RULE))
+                    result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
+                } else {
+                    result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
+                }
+            }
+        } else if (fi.isPossibleSpecialTermInUrban()) {
+            if (fi.getBeginTerminalId() != fi.getEndTerminalId()) {
+                if (!result.isRuleApplied) {  // BIT_CHK(last_flag, BLF_NO_RULE) ?
+                    result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
+                                            [NSString stringWithUTF8String:msgPossibleLowcost],
+                                            [NSString stringWithUTF8String:"「特例適用」で特定都区市内発着が選択可能です"]];
+                } else {
+                    result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
+                                            [NSString stringWithUTF8String:msgPossibleLowcost],
+                                            [NSString stringWithUTF8String:"「特例非適用」で単駅発着が選択可能です"]];
+                }
+            }
+        } else {
+            // 近郊区間で新幹線利用で特定都区市内発着ナイので、通常通り
+        }
+    }
+
     result.isSpecificFare = fi.isAppliedSpecificFare();
 
     result.totalSalesKm = fi.getTotalSalesKm();
