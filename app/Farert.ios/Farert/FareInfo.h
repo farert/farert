@@ -57,7 +57,7 @@
 - (BOOL)isJRCentralStockEnable;
 - (BOOL)isJRCentralStock;
 
-
+@property (nonatomic) NSString* resultMessage;
 
 @property (nonatomic) NSInteger resultState;
 // 1 会社線で始まっている
@@ -82,7 +82,7 @@
 @property (nonatomic) BOOL isRule114Applied;
 @property (nonatomic) BOOL isUrbanArea;
 @property (nonatomic) BOOL isSpecificFare;
-
+@property (nonatomic) BOOL isPossibleAutoroute;
 
 @property (nonatomic) NSInteger totalSalesKm;
 @property (nonatomic) NSInteger jrCalcKm;
