@@ -972,7 +972,7 @@ public class FARE_INFO  {
             if (fare_info_shorts.getFareForJR() < this.getFareForJR()) {
                 //
                 fare_ic = fare_info_shorts.getFareForJR();
-                setTOICACalcRoute(shortRoute.routeList(), short_last_flag);
+                setRoute(shortRoute.routeList(), short_last_flag);
             } else {
                 clrTOICACalcRoute();
             }
@@ -1138,12 +1138,6 @@ public class FARE_INFO  {
     void clrTOICACalcRoute() {
         calc_route_for_disp = "";
     }
-
-    void setTOICACalcRoute(final List<RouteItem> routeList, LastFlag last_flag) {
-        calc_route_for_disp = RouteUtil.Show_route(routeList.toArray(new RouteItem [0]), last_flag);
-    }
-
-
 
     //public:
     public  void reset() {				//***
