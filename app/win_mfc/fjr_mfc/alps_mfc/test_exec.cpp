@@ -2046,7 +2046,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 
 		for (int j = 0; j < rev; j++) {
 			if (0 < j) {
-				rc = route.getFareOption() & 0x400;
+				//TODO rc = route.getFareOption() & 0x400;
 				if (route.reverse() < 0) {
 					_ftprintf(os, _T("------ 反転は無効---%s---\n\n"), rc == 0 ? _T("enable") : _T("disable"));
 					//ASSERT(rc != 0);
@@ -2064,52 +2064,59 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				_ftprintf(os, _T("\n"));
 			}
 
+			FARE_INFO fi;
 			CalcRoute croute(route);
 			tstring s;
 
 			if (0 == (4 & round)) {
-				croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-				s = croute.showFare();
+				// TODO croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				croute.calcFare(&fi);
+				s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 			}
 
 			if (0 == (2 & round)) {
-				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-				s = croute.showFare();
+				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				croute.calcFare(&fi);
+				s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
-			opt = croute.getFareOption();
+			//TODO opt = croute.getFareOption();
 			if ((opt & 0x03) != 0) {
 				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
-				croute.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
-				s = croute.showFare();
+				// TODO croute.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+				croute.calcFare(&fi);
+				s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 
-				rc = croute.getFareOption();
+				//TODO rc = croute.getFareOption();
 				ASSERT(IS_MAIHAN_CITY_START(rc));
 
-				croute.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
-				s = croute.showFare();
+				// TODO croute.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
+				croute.calcFare(&fi);
+				s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 
-				rc = croute.getFareOption();
+				//TODO rc = croute.getFareOption();
 				ASSERT(IS_MAIHAN_CITY_TERMINAL(rc));
 			} else {
 				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
 			}
 			// JR東海株主優待券使用
 			if ((opt & 0x300) != 0) {
-				croute.setFareOption(FAREOPT_JRTOKAI_STOCK_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
-				s = croute.showFare();
+				// TODO croute.setFareOption(FAREOPT_JRTOKAI_STOCK_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+				croute.calcFare(&fi);
+				s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券使用\n%s\n"), s.c_str());
 
-				croute.setFareOption(FAREOPT_JRTOKAI_STOCK_NO_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
-				s = croute.showFare();
+				//TODO croute.setFareOption(FAREOPT_JRTOKAI_STOCK_NO_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
+				croute.calcFare(&fi);
+				s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券未使用\n%s\n"), s.c_str());
 			}
@@ -2274,15 +2281,18 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) {
 					ASSERT(fail == 0);
 				}
+				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-					tstring s = croute.showFare();
+					// croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					croute.calcFare(&fi);
+					tstring s = fi.showFare();
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-				tstring s = croute.showFare();
+//TODO				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				croute.calcFare(&fi);
+				tstring s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2300,15 +2310,18 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) { ASSERT(fail != 0); }
 			} else {
 				if (!resopt) { ASSERT(0 <= fail); }
+				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-					tstring s = croute.showFare();
+					//TODO croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					croute.calcFare(&fi);
+					tstring s = fi.showFare();
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-				tstring s = croute.showFare();
+				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				croute.calcFare(&fi);
+				tstring s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2326,15 +2339,18 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				//ASSERT(fail != 0);
 			} else {
 				if (!resopt) { ASSERT(0 <= fail); }
+				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-					tstring s = croute.showFare();
+					//TODO croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					croute.calcFare(&fi);
+					tstring s = fi.showFare();
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-				tstring s = croute.showFare();
+				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				croute.calcFare(&fi);
+				tstring s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2352,15 +2368,18 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				//ASSERT(fail != 0);
 			} else {
 				if (!resopt) { ASSERT(0 <= fail); }
+				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-					tstring s = croute.showFare();
+					// croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+					croute.calcFare(&fi);
+					tstring s = fi.showFare();
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-				tstring s = croute.showFare();
+				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+				croute.calcFare(&fi);
+				tstring s = fi.showFare();
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2391,7 +2410,9 @@ void test_jctspecial(const TCHAR *route_def[])
 		rc = test_setup_route(pbuffer, route);
 		ASSERT(0 <= rc);
 
-		tstring s = CalcRoute(route).showFare();
+		FARE_INFO fi;
+		CalcRoute(route).calcFare(&fi);
+		tstring s = fi.showFare();
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
@@ -2500,8 +2521,10 @@ void test_shin2zai(void)
 		}
 		TRACE(_T("------------------------------------------------\n"));
 		_ftprintf(os, _T("%s\n"), test_shin2_zai_tbl[i]);
+		FARE_INFO fi;
 		CalcRoute croute(route);
-		s = croute.showFare();
+		croute.calcFare(&fi);
+		s = fi.showFare();
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
@@ -2509,7 +2532,8 @@ void test_shin2zai(void)
 //		s = cr_remove(s);
 //		TRACE(_T("\n%s-------------\n"), s.c_str());
 		croute.convertShinkansen2ZairaiFor114Judge();
-		s = croute.showFare();
+		croute.calcFare(&fi);
+		s = fi.showFare();
 		s = cr_remove(s);
 //		xxx(route.routeList());
 		_ftprintf(os, _T("---------------\n%s\n"), s.c_str());
@@ -2534,9 +2558,11 @@ void test_temp()
 		TRACE(_T("Error!!!!(%d)\n"), rc);
 		return;
 	}
+	FARE_INFO fi;
 	CalcRoute croute(route);
-	croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
-	s = croute.showFare();
+	//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+	croute.calcFare(&fi);
+	s = fi.showFare();
 	s = cr_remove(s);
 	TRACE(_T("%s\n"), s.c_str());
 }
