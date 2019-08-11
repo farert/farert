@@ -1,5 +1,138 @@
 
 
+2019-08-11
+大改造
+FARE_INFO.calc_fare() -> CalcRouteのメンバへ。
+CalcRoute.calc_fare(FARE_INFO fi, )
+
+
+2019-08-10
+LAST_FLAG周りをAndroidライクにした。
+ビットいじりはヤメ。
+
+
+Disable_Rule ビットがONなら禁止。デフォルトAll0
+Avail_Rule 　ビットがONなら該当。 実行後にわかる
+
+FARE_INFOが持つ。CalcRouteのLast_Flagからもらう。
+Last_Flagは増やし、RuleFlagを設ける。ビットフィールドにする。か。
+FARE_INFOはFILE構造体のようにアプリ側で持たせ捨てさせない。
+いまのように、getFareOptionとかでcalcRouteは無駄なのでやらせない。
+Androidのようにオブジェクト保持が面倒な場合（できなくはないが）、
+int値のFARE_INFO圧縮値をもつ。packedValue ? handle, identifier, flag, fi_id ? fi_idに決定
+RuleFlag
+  86,87
+  69
+  70
+  88
+  近郊最短
+
+test_exec.cpp の以下はどーする？
+  croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+  s = croute.showFare();
+  s = cr_remove(s);
+  _ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+--
+tstring CalcRoute::showFare()
+{
+#define MAX_BUF	1024
+	TCHAR cb[MAX_BUF];
+	tstring sResult;
+	tstring sWork;
+
+    FARE_INFO fare_info = calcFare();
+----
+
+  FARE_INFO fi = croute.calcFare()
+  s = fi.showFare();
+
+  とする
+
+  getFareOption() なくす？
+  setFareOption() なくす
+
+  FARE_INFOに、getFareOption()をバラしたメソッドを含める
+
+  test_exec()は、
+0)-------------------(now)
+ Route route;
+ CalcRoute croute(route):
+ s = croute.showFare();
+ :
+ int flag = croute.getFareOption();
+ croute.setFareOption();
+ s = croute.showFare();
+ :
+
+ FARE_INFO fi = croute.calcFare()
+ は、iOS, android、Winは、croute.showFare()の中にいる。
+
+
+1)-------------------
+  FARE_INFO fi = croute.calcFare()
+  s = fi.showFare();
+  :
+  int flag = fi.getFareOption();
+  fi = croute.calcFare(flag); // flag is bitpattern NO_RULE that all on .
+  s = fi.showFare();
+  -> fiを2回上書きするのがキモい
+2)-------------------
+  FARE_INFO fi;
+  croute.calcFare(&fi);
+  s = fi.showFare();
+  :
+  int flag = fi.enablesRules();  appliedRules()とは別でability,capabilityを返す
+  :
+  FARE_INFO fi(flag);
+  fi.setFareOption(flag);
+  croute.calcFare(fi);
+  -> なんか冗長っぽい。直感的でなくまどろっこしい
+3)----------
+  FARE_INFO fi(croute(route));
+  fi.calcFare()
+  s = fi.showFare();
+  int flag = fi.getApplyRules();
+  flag &= ~DISABLE_APPLY;
+  fi.calcFare(flag);
+  fi.showFare();
+
+  -> これできまり！！
+  cRouteを持つので大きくなるがいずれにしてもとなりにいるのだから関係ねし。
+
+＝＝＞やっぱ3辞め、2)にする。
+
+
+calcRoute.getFareOption()
+ で得られるものを、FareInfoへ
+ //     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
+ //			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
+ //	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
+ //	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
+ fun isMeihanCityStartTerminalEnable() : Boolean = (calcResultFlag and 0x03) != 0x00  名阪有効で、
+fun isMeihanCityStart() : Boolean = (calcResultFlag and 0x03) == 0x01 　　　　　　　　　開始が
+fun isMeihanCityTerminal() : Boolean = (calcResultFlag and 0x03) == 0x02
+
+// bit 2-3
+fun isOsakakanDetourEnable() :Boolean = (calcResultFlag and 0x0c) != 0x00
+
+// TRUE: Detour / FALSE: Shortcut
+fun isOsakakanDetourShortcut() : Boolean = (calcResultFlag and 0x0c) == 0x08
+
+// bit 4-5
+fun isRuleAppliedEnable(): Boolean = (calcResultFlag and 0x30) != 0x00
+fun isRuleApplied(): Boolean = (calcResultFlag and 0x30) == 0x10
+fun isFareOptEnabled() : Boolean = (calcResultFlag and 0x33f) != 0x00
+
+// bit 8-9
+fun isJRCentralStockEnable(): Boolean = (calcResultFlag and 0x300) != 0x000　　Trueなら有効で、False:非該当
+fun isJRCentralStock() : Boolean = (calcResultFlag and 0x300) == 0x200　　　　　Trueなら適用されていて、False：未適用
+
+>>>>>>>
+
+
+
+........................................
+
 大都市近郊区間適用　19.8.1
 
   近郊 86 新幹 最短 日数 近郊         x   特例 特例非適用時
@@ -18,6 +151,7 @@
 [または、「特例適用」で特定都区市内発着か選択可能です.] - d
 
 最短算出するのは,     近郊 and !86 and !bullet  3
+最短算出有効なのは、   近郊 and 86
 有効日数を1にするのは, 近郊 and (86 || !bullet)  1,2,3
 showFare()でメッセージa: 近郊 and 86
          メッセージb: 近郊 and !86 and !bullet

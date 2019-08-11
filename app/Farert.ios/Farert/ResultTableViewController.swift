@@ -309,11 +309,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         case 1:
             return "キロ程" /* sales, calc km */
         case 2:
-            if (self.fareInfo.isSpecificFare) {
-                return "運賃(特定区間運賃)"
-            } else {
-                return "運賃" /* Fare */
-            }
+            return "運賃" /* Fare */
         case 3:
             return ""
         case 4:
