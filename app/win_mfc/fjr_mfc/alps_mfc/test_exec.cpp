@@ -2071,7 +2071,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			if (0 == (4 & round)) {
 				// TODO croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 				croute.calcFare(&fi);
-				s = fi.showFare();
+				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 			}
@@ -2079,30 +2079,30 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			if (0 == (2 & round)) {
 				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 				croute.calcFare(&fi);
-				s = fi.showFare();
+				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
 			//TODO opt = croute.getFareOption();
 			if ((opt & 0x03) != 0) {
-				ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
+				//TODO ASSERT(IS_MAIHAN_CITY_TERMINAL(opt));
 				// TODO croute.setFareOption(FAREOPT_APPLIED_START | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 				croute.calcFare(&fi);
-				s = fi.showFare();
+				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///着駅=単駅\n%s\n"), s.c_str());
 
 				//TODO rc = croute.getFareOption();
-				ASSERT(IS_MAIHAN_CITY_START(rc));
+				//TODO ASSERT(IS_MAIHAN_CITY_START(rc));
 
 				// TODO croute.setFareOption(FAREOPT_APPLIED_TERMINAL | FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED | FAREOPT_AVAIL_APPLIED_START_TERMINAL);
 				croute.calcFare(&fi);
-				s = fi.showFare();
+				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 
 				//TODO rc = croute.getFareOption();
-				ASSERT(IS_MAIHAN_CITY_TERMINAL(rc));
+				//TODO ASSERT(IS_MAIHAN_CITY_TERMINAL(rc));
 			} else {
 				ASSERT((opt & 0x03) == 0);	/* opt=1はあり得ない */
 			}
@@ -2110,13 +2110,13 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			if ((opt & 0x300) != 0) {
 				// TODO croute.setFareOption(FAREOPT_JRTOKAI_STOCK_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
 				croute.calcFare(&fi);
-				s = fi.showFare();
+				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券使用\n%s\n"), s.c_str());
 
 				//TODO croute.setFareOption(FAREOPT_JRTOKAI_STOCK_NO_APPLIED, FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK);
 				croute.calcFare(&fi);
-				s = fi.showFare();
+				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券未使用\n%s\n"), s.c_str());
 			}
@@ -2286,13 +2286,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) {
 					// croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 					croute.calcFare(&fi);
-					tstring s = fi.showFare();
+					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
 //TODO				croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 				croute.calcFare(&fi);
-				tstring s = fi.showFare();
+				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2315,13 +2315,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) {
 					//TODO croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 					croute.calcFare(&fi);
-					tstring s = fi.showFare();
+					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
 				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 				croute.calcFare(&fi);
-				tstring s = fi.showFare();
+				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2344,13 +2344,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) {
 					//TODO croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 					croute.calcFare(&fi);
-					tstring s = fi.showFare();
+					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
 				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 				croute.calcFare(&fi);
-				tstring s = fi.showFare();
+				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2373,13 +2373,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) {
 					// croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 					croute.calcFare(&fi);
-					tstring s = fi.showFare();
+					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
 				//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 				croute.calcFare(&fi);
-				tstring s = fi.showFare();
+				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
@@ -2411,8 +2411,9 @@ void test_jctspecial(const TCHAR *route_def[])
 		ASSERT(0 <= rc);
 
 		FARE_INFO fi;
-		CalcRoute(route).calcFare(&fi);
-		tstring s = fi.showFare();
+		CalcRoute croute(route);
+		croute.calcFare(&fi);
+		tstring s = fi.showFare(croute.getRouteFlag());
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
@@ -2524,7 +2525,7 @@ void test_shin2zai(void)
 		FARE_INFO fi;
 		CalcRoute croute(route);
 		croute.calcFare(&fi);
-		s = fi.showFare();
+		s = fi.showFare(croute.getRouteFlag());
 		s = cr_remove(s);
 		_ftprintf(os, _T("%s\n"), s.c_str());
 
@@ -2533,7 +2534,7 @@ void test_shin2zai(void)
 //		TRACE(_T("\n%s-------------\n"), s.c_str());
 		croute.convertShinkansen2ZairaiFor114Judge();
 		croute.calcFare(&fi);
-		s = fi.showFare();
+		s = fi.showFare(croute.getRouteFlag());
 		s = cr_remove(s);
 //		xxx(route.routeList());
 		_ftprintf(os, _T("---------------\n%s\n"), s.c_str());
@@ -2562,7 +2563,7 @@ void test_temp()
 	CalcRoute croute(route);
 	//TODO croute.setFareOption(FAREOPT_RULE_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
 	croute.calcFare(&fi);
-	s = fi.showFare();
+	s = fi.showFare(croute.getRouteFlag());
 	s = cr_remove(s);
 	TRACE(_T("%s\n"), s.c_str());
 }
