@@ -809,8 +809,10 @@ int g_tax; /* main.m */
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
 
+    // 近郊区間？(旧互換)
     result.isUrbanArea = fi.isUrbanArea() && !fi.isUseBulletInUrban() && !fi.isSpecialTermInUrban();
-    result.isPossibleAutoroute = fi.isUrbanArea() && !fi.isUseBulletInUrban() && !fi.isSpecialTermInUrban();
+    // 最短経路算出可能
+    result.isPossibleAutoroute = fi.isUrbanArea() && fi.isPossibleSpecialTermInUrban();
 
     if (fi.isUrbanArea()) {
         if (!fi.isUseBulletInUrban() && !fi.isPossibleSpecialTermInUrban()) {
@@ -841,6 +843,10 @@ int g_tax; /* main.m */
     }
 
     result.isSpecificFare = fi.isAppliedSpecificFare();
+    if (fi.isAppliedSpecificFare()) {
+        result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@", result.resultMessage,
+                                [NSString stringWithUTF8String:"特定区間割引運賃適用"]];
+    }
 
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();

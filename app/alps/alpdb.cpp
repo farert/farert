@@ -316,7 +316,6 @@ void alp_strcat(size_t maxlen, char* dest, const char* src)
 
 Route::Route()
 {
-	last_flag = 0;
 	JctMaskClear(jct_mask);
 }
 
@@ -340,7 +339,7 @@ void Route::assign(const RouteList& source_route, int32_t count /* = -1 */)
 	} else {
 		route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
 	}
-    last_flag = source_route.getLastFlag();
+    route_flag = source_route.getRouteFlag();
     reBuild();
 }
 
@@ -359,9 +358,10 @@ void RouteList::assign(const RouteList& source_route, int32_t count /* = -1 */)
 	} else {
 		route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
 	}
-    last_flag = source_route.getLastFlag();
+    route_flag = source_route.getRouteFlag();
     if ((0 < count) && source_route.routeList().size() != count) {
-		last_flag &= ~((1 << BLF_END) | (1 << BLF_COMPNDA));
+        route_flag.end = false;
+        route_flag.compnda = false;
     }
 
     /* It's necessary to rebuild() if Route object. */
@@ -391,9 +391,10 @@ void CalcRoute::sync(const RouteList& route, int count)
     } else {
         route_list_raw.assign(route.routeList().cbegin(), route.routeList().cbegin() + count);
     }
-    last_flag = route.getLastFlag();
+    route_flag = route.getRouteFlag();
     if ((0 < count) && route.routeList().size() != count) {
-		last_flag &= ~((1 << BLF_END) | (1 << BLF_COMPNDA));
+        route_flag.end = false;
+        route_flag.compnda = false;
     }
     route_list_cooked.clear();
 }
@@ -935,7 +936,7 @@ bool  RouteUtil::inlineOnline(int32_t line_id, int32_t station_id1, int32_t stat
 //	@param [in]  station_id1	 発 or 至
 //	@param [in]  station_id2     至 or 発
 //
-Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id /* =0 */)
+Route::RoutePass::RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id /* =0 */)
 {
 	JctMaskClear(_jct_mask);
 
@@ -945,7 +946,7 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
 	_station_id2 = station_id2;
 	_start_station_id = start_station_id;
 
-	_last_flag = last_flag;
+	_route_flag = rRoute_flag;
 
 	_err = false;
 
@@ -955,7 +956,7 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_
         if (line_id == DbidOf::getInstance().id_of_line(_T("大阪環状線"))) {
 			_num = enum_junctions_of_line_for_osakakan();
         } else if ((line_id == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
-					BIT_CHK(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI)) {
+					rRoute_flag.notsamekokurahakatashinzai) {
 			if (station_id1 == DbidOf::getInstance().id_of_station(_T("博多"))) {
 				if (station_id2 == DbidOf::getInstance().id_of_station(_T("小倉"))) {
 					/* 山陽新幹線 博多 -> 小倉 */
@@ -1102,26 +1103,29 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 
 	if (_source_jct_mask == NULL) {
 		/* removeTail() */
-		if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_2PASS)) {
-			if (BIT_CHK(_last_flag, BLF_OSAKAKAN_2DIR)) {
+		if (_route_flag.is_osakakan_2pass()) {
+			if (_route_flag.osakakan_2dir) {
 			    jnum = enum_junctions_of_line_for_oskk_rev();
 			} else {
 				jnum = enum_junctions_of_line();
 			}
-			_last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_2DIR));
-			_last_flag |= LF_OSAKAKAN_1PASS;
+            _route_flag.osakakan_2dir = false;
+            _route_flag.setOsakaKanFlag(RouteFlag::OSAKAKAN_1PASS);
 
-		} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
-			if (BIT_CHK(_last_flag, BLF_OSAKAKAN_1DIR)) {
+        } else if (_route_flag.is_osakakan_1pass()) {
+            if (_route_flag.osakakan_1dir) {
 			    jnum = enum_junctions_of_line_for_oskk_rev();
 			} else {
 				jnum = enum_junctions_of_line();
 			}
-			_last_flag &= ~(MLF_OSAKAKAN_PASS | (1 << BLF_OSAKAKAN_1DIR) | (1 << BLF_OSAKAKAN_2DIR) | (1 << BLF_OSAKAKAN_DETOUR));
+            _route_flag.setOsakaKanFlag(RouteFlag::OSAKAKAN_NOPASS);
+            _route_flag.osakakan_1dir = false;
+            _route_flag.osakakan_2dir = false;
+            _route_flag.osakakan_detour = false;
 
 		} else {
 			/* 一回も通っていないはあり得ない */
-			TRACE("osaka-kan pass flag is not 1 or 2 (%d)\n", _last_flag & MLF_OSAKAKAN_PASS);
+			TRACE("osaka-kan pass flag is not 1 or 2 (%d)\n", _route_flag.getOsakaKanPassValue());
 			ASSERT(FALSE);
 		}
 		return jnum;
@@ -1129,7 +1133,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 
 	dir = RouteUtil::DirOsakaKanLine(_station_id1, _station_id2);
 
-	if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_NOPASS)) {
+	if (_route_flag.is_osakakan_nopass()) {
 		// 始めての大阪環状線
 		//    detour near far
 		// a:   1       o    o  far,1p,
@@ -1140,7 +1144,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		// f:   0       o    x  near,2p
 		// g:   0       x    o  far, 2p
 		// h:   0       x    x  x
-		if (BIT_CHK(_last_flag, BLF_OSAKAKAN_DETOUR)) {
+		if (_route_flag.osakakan_detour) {
 			// 大回り指定
 			dir ^= 1;
         	TRACE("Osaka-kan: 1far\n");
@@ -1162,7 +1166,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		// (始発ポイントなら1回通過でなく2回通過とするため)
 
 		check_result = (uint8_t)(check() & 0x01);
-		if (((0x01 & check_result) == 0) || !BIT_CHK(_last_flag, BLF_OSAKAKAN_DETOUR)) {
+		if (((0x01 & check_result) == 0) || !_route_flag.osakakan_detour) {
 			// 近回りがOK または
 			// 近回りNGだが遠回り指定でない場合(大阪環状線内駅が始発ポイントである)
 			// a, c, e, f, g, h
@@ -1188,13 +1192,12 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 		if ((0x11 & check_result) == 0) {
 			// a, e
 			/* 両方向OK */
-			_last_flag &= ~MLF_OSAKAKAN_PASS;
-			_last_flag |= LF_OSAKAKAN_1PASS;
+            _route_flag.setOsakaKanFlag(RouteFlag::OSAKAKAN_1PASS);
 			if ((0x01 & dir) == 0) {
-				_last_flag &= ~(1 << BLF_OSAKAKAN_1DIR);
+				_route_flag.osakakan_1dir = false;
         		TRACE("Osaka-kan: 5fwd\n");
 			} else {
-				_last_flag |= (1 << BLF_OSAKAKAN_1DIR);
+				_route_flag.osakakan_1dir = true;
 	        	TRACE("Osaka-kan: 5rev\n");
 			}
 		} else if ((0x11 & check_result) != 0x11) {
@@ -1206,19 +1209,18 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 				dir ^= 1;                        /* 戻す */
 				jnum = i;
 				update(farRoutePass);	// 遠回りを採用
-										// updateは_last_flagを壊す
+										// updateは_route_flagを壊す
 	        	TRACE("Osaka-kan: 6far\n");
 			} else {
 				// c, g
 	        	TRACE("Osaka-kan: 6near\n");
 			}
-			_last_flag &= ~MLF_OSAKAKAN_PASS;
-			_last_flag |= LF_OSAKAKAN_2PASS; /* 大阪環状線駅始発 */
+            _route_flag.setOsakaKanFlag(RouteFlag::OSAKAKAN_2PASS); /* 大阪環状線駅始発 */
 			if ((0x01 & dir) == 0) {
 	        	TRACE("Osaka-kan:7fwd\n");
-				_last_flag &= ~(1 << BLF_OSAKAKAN_1DIR);
+				_route_flag.osakakan_1dir = false;
 			} else {                                      // 計算時の経路上では1回目なので、
-				_last_flag |= (1 << BLF_OSAKAKAN_1DIR);   // BLF_OSAKAKAN_2DIRでなく、BLF_OSAKAKAN_1DIR
+				_route_flag.osakakan_1dir = true;   // BLF_OSAKAKAN_2DIRでなく、BLF_OSAKAKAN_1DIR
 	        	TRACE("Osaka-kan:7rev\n");
 			}
 		} else {
@@ -1228,7 +1230,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
         	TRACE("Osaka-kan:8\n");
         	//ASSERT(FALSE); 大阪 東海道線 草津 草津線 柘植 関西線 今宮 大阪環状線 x鶴橋
 		}
-	} else if (IS_LF_OSAKAKAN_PASS(_last_flag, LF_OSAKAKAN_1PASS)) {
+	} else if (_route_flag.is_osakakan_1pass()) {
 
 		// 2回目の大阪環状線
 		// 最初近回りで試行しダメなら遠回りで。
@@ -1265,14 +1267,13 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 
 		if (i < 2) {
 			/* OK */
-			_last_flag &= ~MLF_OSAKAKAN_PASS;
-			_last_flag |= LF_OSAKAKAN_2PASS;
+            _route_flag.setOsakaKanFlag(RouteFlag::OSAKAKAN_2PASS); /* 大阪環状線駅始発 */
 
 			if ((dir & 0x01) == 0) {
-				_last_flag &= ~(1 << BLF_OSAKAKAN_2DIR);
+				_route_flag.osakakan_2dir = false;
 	        	TRACE("Osaka-kan: 10ok_fwd\n");
 			} else {
-				_last_flag |= (1 << BLF_OSAKAKAN_2DIR);
+				_route_flag.osakakan_2dir = true;
 	        	TRACE("Osaka-kan: 10ok_rev\n");
 			}
 		} else {
@@ -1538,40 +1539,40 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 {
 	int rc;
 
-    if (BIT_CHK(last_flag, BLF_COMPNDA) ||
-    (IS_COMPANY_LINE(line_id) && BIT_CHK(last_flag, BLF_COMPNPASS))) {
+    if (route_flag.compnda ||
+    (IS_COMPANY_LINE(line_id) && route_flag.compnpass)) {
         return -4;      /* error x a c */
     }
     if (IS_COMPANY_LINE(line_id) &&
-    (0 == (last_flag & ((1 << BLF_COMPNCHECK)|(1 << BLF_COMPNPASS))))) {
+    (!route_flag.compnpass && !route_flag.compnpass)) {
 
-		BIT_ON(last_flag, BLF_COMPNEND);	// if company_line
+		route_flag.compnend = true;	// if company_line
 
         /* pre block check d */
-		BIT_ON(last_flag, BLF_COMPNCHECK);
+		route_flag.compncheck = true;
 		return preCompanyPassCheck(line_id, stationId1, stationId2, num);
 
-    } else if (!IS_COMPANY_LINE(line_id) && (BIT_CHK(last_flag, BLF_COMPNCHECK))) {
+    } else if (!IS_COMPANY_LINE(line_id) && (route_flag.compncheck)) {
 
         /* after block check e f */
 		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
 		if (rc == 0) {
-			BIT_ON(last_flag, BLF_COMPNPASS);
-			BIT_OFF(last_flag, BLF_COMPNEND);	// if company_line
+			route_flag.compnpass = true;
+			route_flag.compnend = false;	// if company_line
 		}
 		return rc;
 
     } else if (IS_COMPANY_LINE(line_id)) {
 		/* b */
-		ASSERT(!BIT_CHK(last_flag, BLF_COMPNDA));
-		ASSERT(BIT_CHK(last_flag, BLF_COMPNCHECK));
-		ASSERT(!BIT_CHK(last_flag, BLF_COMPNPASS));
+		ASSERT(!route_flag.compnda);
+		ASSERT(route_flag.compncheck);
+		ASSERT(!route_flag.compnpass);
 		ASSERT(route_list_raw.back().lineId != line_id);
 		//通常はこれでよしだが、終端エラーで再トライ時にNGとなる：ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
 
-		BIT_ON(last_flag, BLF_COMPNEND);	// if company_line
+		route_flag.compnend = true;	// if company_line
 
-		if (BIT_CHK(last_flag, BLF_COMPNBEGIN)) {
+		if (route_flag.compnbegin) {
 			return 0;	/* 会社線始発はとりあえず許す！ */
 		}
 
@@ -1580,7 +1581,7 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 		return rc;
 	} else {
         /* g h */
-		BIT_OFF(last_flag, BLF_COMPNEND);	// if company_line
+		route_flag.compnend = false;	// if company_line
         return 0;
     }
 }
@@ -1701,7 +1702,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 
 	if (num <= 1) {
 		/* 会社線で始まる */
-		BIT_ON(last_flag, BLF_COMPNBEGIN);
+		route_flag.compnbegin = true;
 		return 0;
 	}
 	rc = cs.open(station_id1, station_id2);
@@ -1719,7 +1720,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	if (i < num) {
 		return 0;		/* Error or Non-record(always pass) as continue */
 	} else {
-		BIT_ON(last_flag, BLF_COMPNDA); /* 通過連絡運輸不正 */
+		route_flag.compnda = true; /* 通過連絡運輸不正 */
 		return 0;	/* -4 受け入れて（追加して）から弾く */
 	}
 }
@@ -1754,8 +1755,8 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	}
 	TRACE(_T("  key1=%s, key2=%s\n"), RouteUtil::StationName(key1).c_str(), RouteUtil::StationName(key2).c_str());
 	if (i <= 0) {
-		BIT_ON(last_flag, BLF_COMPNDA); /* 通過連絡運輸不正 */
-		if (BIT_CHK(last_flag, BLF_COMPNBEGIN)) {
+		route_flag.compnda = true; /* 通過連絡運輸不正 */
+		if (route_flag.compnbegin) {
 			return 0;	/* 会社線始発なら終了 */
 		}
 		else {
@@ -1769,7 +1770,7 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	}
 	rc = cs.check(line_id, station_id1, station_id2);
 	if (rc < 0) {
-		// BIT_ON(last_flag, BLF_COMPNDA); /* 通過連絡運輸不正 */
+		// route_flag.compnda = true; /* 通過連絡運輸不正 */
 	}
 	return rc;	/* 0 / -4 */
 }
@@ -1834,14 +1835,13 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 	int32_t first_station_id1;
 #endif
 
-TRACE("last_flag=%x\n", last_flag);
-
-	if (BIT_CHK(last_flag, BLF_END)) {
+	if (route_flag.end) {
 		TRACE(_T("route.add(): already terminated.\n"));
 		return	ADDRC_END;		/* already terminated. */
 	}
 
-	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_JCTSP_ROUTE_CHANGE));
+    route_flag.trackmarkctl = false;
+    route_flag.jctsp_route_change = false;
 
 	num = (int32_t)route_list_raw.size();
 	if (num <= 0) {
@@ -1950,7 +1950,7 @@ first_station_id1 = stationId1;
 				                                       jctspdt.jctSpStationId);
 					// 上越線-宮内追加
 				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId2, ADD_BULLET_NC);		//****************
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+				route_flag.jctsp_route_change = true;;	/* route modified */
 				if (rc != ADDRC_OK) {
 					TRACE(_T("junction special (JSBS001) error.\n"));
 					TRACE(_T("add_abort\n"));
@@ -2021,7 +2021,7 @@ first_station_id1 = stationId1;
 					ASSERT(rc == ADDRC_OK);
 					stationId1 = j;
 				}
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+				route_flag.jctsp_route_change = true;;	/* route modified */
 			} else {
 				TRACE("JCT: B-2\n");
 			}
@@ -2083,7 +2083,7 @@ ASSERT(first_station_id1 == stationId1);
 					ASSERT(rc == ADDRC_OK);
 					num++;
 					if (rc != ADDRC_OK) {			// safety
-						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+						route_flag.jctsp_route_change = true;	/* route modified */
 						TRACE(_T("A-1/C-1(special junction 2)\n"));
 						TRACE(_T("add_abort\n"));
 						return -1;
@@ -2127,7 +2127,7 @@ ASSERT(first_station_id1 == stationId1);
 					ASSERT(rc == ADDRC_OK);
 					num++;
 					if (rc != ADDRC_OK) {				// safety
-						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+						route_flag.jctsp_route_change = true;	/* route modified */
 						TRACE(_T("A-0, I, A-2\n"));
 						TRACE(_T("add_abort\n"));
 						return -1;					//>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2137,7 +2137,7 @@ ASSERT(first_station_id1 == stationId1);
 						num++;
 						ASSERT(rc == ADDRC_OK);
 						if (rc != ADDRC_OK) {			// safety
-							BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+							route_flag.jctsp_route_change = true;	/* route modified */
 							TRACE(_T("A-0, I, A-2(special junction 2)\n"));
 							TRACE(_T("add_abort\n"));
 							return -1;				//>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2166,7 +2166,7 @@ ASSERT(first_station_id1 == stationId1);
 						// 新幹線の発駅には並行在来線(路線b)に所属しているか?
 						if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId,
 														route_list_raw.at(num - 2).stationId)) {
-							BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+							route_flag.jctsp_route_change = true;	/* route modified */
 							TRACE(_T("next station is not found in shinkansen.\n"));
 							TRACE(_T("add_abort\n"));
 							return -1;			// >>>>>>>>>>>>>>>>>>>
@@ -2185,7 +2185,7 @@ ASSERT(first_station_id1 == stationId1);
 					}
 				}
 			}
-			BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+			route_flag.jctsp_route_change = true;	/* route modified */
 		} else {
 			// E, G		(stationId2 == jctspdt.jctSpStationId)
 			TRACE("JCT: E, G\n");
@@ -2219,7 +2219,7 @@ ASSERT(first_station_id1 == stationId1);
 				// E-2, G, G-3, G-2, G-4
 				TRACE("JCT: E-2, G, G-3, G-2, G-4\n");
 			}
-			BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+			route_flag.jctsp_route_change = true;	/* route modified */
 		}
 		break;
 	}
@@ -2257,7 +2257,7 @@ ASSERT(original_line_id == line_id);
 				rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);		//**************
 				num++;
 				if (rc != ADDRC_OK) {
-					BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+					route_flag.jctsp_route_change = true;	/* route modified */
 					TRACE(_T("junction special (KJ) error.\n"));
 					TRACE(_T("add_abort\n"));
 					return rc;			// >>>>>>>>>>>>>>>>>>>>>
@@ -2273,7 +2273,7 @@ ASSERT(original_line_id == line_id);
 						num++;
 					}
 					if (rc != ADDRC_OK) {
-						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+						route_flag.jctsp_route_change = true;	/* route modified */
 						TRACE(_T("junction special horizen type convert error.\n"));
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
@@ -2283,7 +2283,7 @@ ASSERT(original_line_id == line_id);
 					rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
 					num++;
 					if (rc != ADDRC_OK) {
-						BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+						route_flag.jctsp_route_change = true;	/* route modified */
 						TRACE(_T("junction special horizen type convert error.\n"));
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
@@ -2298,7 +2298,7 @@ ASSERT(original_line_id == line_id);
 			line_id = jctspdt.jctSpMainLineId;
 			stationId1 = jctspdt.jctSpStationId;
 		}
-		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+		route_flag.jctsp_route_change = true;	/* route modified */
 	}
 
 	// 長岡周りの段差型
@@ -2327,7 +2327,7 @@ ASSERT(original_line_id == line_id);
 
                 // 上越線 宮内→浦佐
 				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, ADD_BULLET_NC);		//****************
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+				route_flag.jctsp_route_change = true;	/* route modified */
 				if (ADDRC_OK != rc) {
 					TRACE(_T("junction special 2(JSBH001) error.\n"));
 					TRACE(_T("add_abort\n"));
@@ -2339,7 +2339,7 @@ ASSERT(original_line_id == line_id);
 	    }
 	}
 
-	RoutePass route_pass(jct_mask, last_flag, line_id, stationId1, stationId2, start_station_id);
+	RoutePass route_pass(jct_mask, route_flag, line_id, stationId1, stationId2, start_station_id);
 	if (route_pass.num_of_junction() < 0) {
 		TRACE(_T("DB error(add-junction-enum)\n"));
 		TRACE(_T("add_abort\n"));
@@ -2421,7 +2421,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 		// 不正ルートなのでmaskを反映しないで破棄する
 
 		TRACE(_T("add_abort(%d)\n"), rc);
-		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
+		route_flag.trackmarkctl = false;
 		// E-12, 6, b, c, d, e
 		return -1;	/* already passed error >>>>>>>>>>>>>>>>>>>> */
 
@@ -2431,7 +2431,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 		route_pass.on(jct_mask);
 
 		// 大阪環状線通過フラグを設定
-		last_flag = route_pass.update_flag(last_flag); /* update last_flag LF_OSAKAKAN_MASK */
+		route_pass.update_flag(&route_flag); /* update last_flag LF_OSAKAKAN_MASK */
 	}
 
 	/* 追加か置換か */
@@ -2454,14 +2454,14 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 
 	if (rc == 0) {
 		TRACE(_T("added continue.\n"));
-		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
+		route_flag.trackmarkctl = false;
 	} else if (rc == 1) {
-		BIT_ON(last_flag, BLF_TRACKMARKCTL);
+		route_flag.trackmarkctl = true;
 	} else if (rc == 2) {
-		BIT_OFF(last_flag, BLF_TRACKMARKCTL);	/* 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので) */
+		route_flag.trackmarkctl = true;	/* 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので) */
 	} else {
 		ASSERT(FALSE);
-		BIT_ON(last_flag, BLF_TRACKMARKCTL);
+		route_flag.trackmarkctl = true;
 	}
 
 	TRACE(_T("added fin.(%d).\n"), rc);
@@ -2475,18 +2475,18 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
             removeTail();
             return -1;  /* route is duplicate */
         } else {
-			BIT_ON(last_flag, BLF_END);
+			route_flag.end = true;
 			TRACE(_T("detect finish.\n"));
 			return ADDRC_LAST;
 		}
 	} else {
-		if (BIT_CHK(last_flag, BLF_COMPNDA)) {
-			BIT_ON(last_flag, BLF_END);
+		if (route_flag.compnda) {
+			route_flag.end = true;
 			return ADDRC_CEND;
 		} else {
             rc = brtPassCheck(stationId2);
             if (rc < 0) {
-                BIT_ON(last_flag, BLF_END);
+                route_flag.end = true;
     			TRACE(_T("detect BRT finish.\n"));
                 return ADDRC_LAST;
             }
@@ -2512,7 +2512,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 
 	list_num = (int32_t)route_list_raw.size();
 	if (list_num < 2) {
-		BIT_OFF(last_flag, BLF_TRACKMARKCTL);
+		route_flag.trackmarkctl = false;
 		return;
 	}
 
@@ -2527,7 +2527,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	to_station_id = route_list_raw[list_num - 1].stationId;	// tail
 	begin_station_id = route_list_raw[list_num - 2].stationId;	// tail - 1
 
-	RoutePass route_pass(NULL, last_flag, line_id, to_station_id, begin_station_id);
+	RoutePass route_pass(NULL, route_flag, line_id, to_station_id, begin_station_id);
 
 	if (!begin_off) {
 		/* 開始駅はOffしない(前路線の着駅なので) */
@@ -2538,18 +2538,19 @@ void Route::removeTail(bool begin_off/* = false*/)
 	}
 
 	i = Route::Id2jctId(to_station_id);
-	if ((0 < i) && BIT_CHK(last_flag, BLF_TRACKMARKCTL)) {
+	if ((0 < i) && route_flag.trackmarkctl) {
 		/* 最近分岐駅でO型経路、P型経路の着駅の場合は除外 */
 		route_pass.off(i);
 	}
 
 	route_pass.off(jct_mask);
 
-	last_flag = route_pass.update_flag(last_flag); /* update last_flag LF_OSAKAKAN_MASK */
-	last_flag &= ~((1 << BLF_TRACKMARKCTL) | (1 << BLF_END));
+	route_pass.update_flag(&route_flag); /* update last_flag LF_OSAKAKAN_MASK */
+    route_flag.end = false;
+    route_flag.trackmarkctl = false;
 	if (IS_COMPANY_LINE(route_list_raw.back().lineId)) {
 		if (!IS_COMPANY_LINE(route_list_raw.at(list_num - 2).lineId)) {
-			BIT_OFF(last_flag, BLF_COMPNCHECK);
+            route_flag.compncheck = false;
 		}
 	}
 
@@ -2557,16 +2558,16 @@ void Route::removeTail(bool begin_off/* = false*/)
 
 	/* 後半リストチェック */
 	if (IS_COMPANY_LINE(route_list_raw.back().lineId)) {
-		BIT_ON(last_flag, BLF_COMPNEND);
-		BIT_OFF(last_flag, BLF_COMPNPASS);
+		route_flag.compnend = true;
+		route_flag.compnpass = false;
 	} else {
-		BIT_OFF(last_flag, BLF_COMPNEND);
+		route_flag.compnend = false;
 	}
-	BIT_OFF(last_flag, BLF_COMPNDA);
+	route_flag.compnda = false;
 }
 
 //private:
-//	大阪環状線経路変更による経路再構成(update rebuild last_flag)
+//	大阪環状線経路変更による経路再構成
 //
 //	@return 0 success(is last)
 //	@retval 1 success
@@ -2586,7 +2587,8 @@ int32_t Route::reBuild()
 	routeWork.add(pos->stationId);
 
 	// add() の開始駅追加時removeAll()が呼ばれlast_flagがリセットされるため)
-	routeWork.last_flag |= last_flag & ((1 << BLF_OSAKAKAN_DETOUR) | (1 << BLF_NOTSAMEKOKURAHAKATASHINZAI));
+    routeWork.route_flag.osakakan_detour = route_flag.osakakan_detour;
+    routeWork.route_flag.notsamekokurahakatashinzai = route_flag.notsamekokurahakatashinzai;
 
 	for (++pos; pos != route_list_raw.cend(); pos++) {
 		rc = routeWork.add(pos->lineId, pos->stationId);
@@ -2596,16 +2598,13 @@ int32_t Route::reBuild()
 		}
 	}
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
-        BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
+        route_flag.osakakan_detour = false;
 		return -1;	/* error */
 	}
 
     // 経路自体は変わらない。フラグのみ
 	// 特例適用、発着駅を単駅指定フラグは保持(大阪環状線廻りは既に持っている)
-    last_flag = routeWork.last_flag |
-	            (last_flag & ((1 << BLF_MEIHANCITYFLAG) |
-				              (1 << BLF_NO_RULE) | (1 << BLF_RULE_EN) |
-							  (1 << BLF_JRTOKAISTOCK_ENABLE) | (1 << BLF_JRTOKAISTOCK_APPLIED)));
+    route_flag = routeWork.route_flag;
     memcpy(jct_mask, routeWork.jct_mask, sizeof(jct_mask));
 
     return rc;
@@ -2616,21 +2615,20 @@ int32_t Route::reBuild()
 //	運賃表示
 //	@return 運賃、営業キロ情報 表示文字列
 //
-tstring CalcRoute::showFare()
+tstring FARE_INFO::showFare()
 {
 #define MAX_BUF	1024
 	TCHAR cb[MAX_BUF];
 	tstring sResult;
 	tstring sWork;
 
-    FARE_INFO fare_info = calcFare();
-    switch (fare_info.resultCode()) {
+    switch (this->resultCode()) {
     case 0:     // success, company begin/first or too many company
         break;  // OK
     case -1:    /* In completed */
         return tstring(_T("この経路の片道乗車券は購入できません.続けて経路を指定してください."));	//"));
         break;
-    case -2:     // empty.
+    case -2:     // empty. BRF_ROUTE_EMPTY Dont yet calcRoute()
         return tstring(_T(""));
         break;
     default:
@@ -2639,36 +2637,38 @@ tstring CalcRoute::showFare()
     }
 
     /* 発駅→着駅 */
-    sResult = CalcRoute::BeginOrEndStationName(fare_info.getBeginTerminalId());
+    sResult = CalcRoute::BeginOrEndStationName(this->getBeginTerminalId());
 	sResult += _T(" -> ");
-    sResult += CalcRoute::BeginOrEndStationName(fare_info.getEndTerminalId());
+    sResult += CalcRoute::BeginOrEndStationName(this->getEndTerminalId());
 
 	sResult += _T("\r\n経由：");
-	sResult += fare_info.getRoute_string();
+	sResult += this->getRoute_string();
 
-    ASSERT(100<=fare_info.getFareForDisplay());
+    ASSERT(100<=this->getFareForDisplay());
 
     const static TCHAR msgPossibleLowcost[] = _T("近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n");
     const static TCHAR msgAppliedLowcost[] = _T("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n");
 
-    if (fare_info.isUrbanArea()) {
-        if (!fare_info.isUseBulletInUrban() && !fare_info.isPossibleSpecialTermInUrban()) {
-            if (fare_info.getBeginTerminalId() == fare_info.getEndTerminalId()) {
+    if (this->isUrbanArea()) {
+        if (!this->isUseBulletInUrban() && !this->isPossibleSpecialTermInUrban()) {
+            if (this->getBeginTerminalId() == this->getEndTerminalId()) {
                 _sntprintf_s(cb, MAX_BUF,
                     _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
             } else {
                 _sntprintf_s(cb, MAX_BUF,
-                    BIT_CHK(last_flag, BLF_NO_RULE) ?
+                    //TODO BIT_CHK(last_flag, BLF_NO_RULE) ?
+                    1 ? // todo
                     msgPossibleLowcost : msgAppliedLowcost);
             }
             sResult += cb;
-        } else if (fare_info.isPossibleSpecialTermInUrban()) {
-            if (fare_info.getBeginTerminalId() != fare_info.getEndTerminalId()) {
+        } else if (this->isPossibleSpecialTermInUrban()) {
+            if (this->getBeginTerminalId() != this->getEndTerminalId()) {
                 _sntprintf_s(cb, MAX_BUF, msgPossibleLowcost);
                 sResult += cb;
             }
             _sntprintf_s(cb, MAX_BUF,
-                BIT_CHK(last_flag, BLF_NO_RULE) ?
+                // todo BIT_CHK(last_flag, BLF_NO_RULE) ?
+                1? // todo
                 _T("「特例適用」で特定都区市内発着が選択可能です\r\n") :
                 _T("「特例非適用」で単駅発着が選択可能です\r\n"));
             sResult += cb;
@@ -2677,81 +2677,81 @@ tstring CalcRoute::showFare()
         }
     }
 
-	if ((0 < fare_info.getJRCalcKm()) &&
-		(fare_info.getJRSalesKm() != fare_info.getJRCalcKm())) {
+	if ((0 < this->getJRCalcKm()) &&
+		(this->getJRSalesKm() != this->getJRCalcKm())) {
 		_sntprintf_s(cb, MAX_BUF,
-				(fare_info.getCompanySalesKm() <= 0) ?
+				(this->getCompanySalesKm() <= 0) ?
 				_T("営業キロ： %s km     計算キロ： %s km\r\n") :
 				_T("営業キロ： %s km JR線計算キロ： %s km\r\n"),
-				num_str_km(fare_info.getTotalSalesKm()).c_str(),
-				num_str_km(fare_info.getJRCalcKm()).c_str());
+				num_str_km(this->getTotalSalesKm()).c_str(),
+				num_str_km(this->getJRCalcKm()).c_str());
 	} else {
 		_sntprintf_s(cb, MAX_BUF,
 				_T("営業キロ： %s km\r\n"),
-				num_str_km(fare_info.getTotalSalesKm()).c_str());
+				num_str_km(this->getTotalSalesKm()).c_str());
 	}
 	sResult += cb;
 
 	/* 会社線(通過連絡運輸)あり */
-	if (fare_info.getJRSalesKm() != fare_info.getTotalSalesKm()) {
-		ASSERT(0 != fare_info.getCompanySalesKm());
-        if (fare_info.getBRTSalesKm() != 0) {
+	if (this->getJRSalesKm() != this->getTotalSalesKm()) {
+		ASSERT(0 != this->getCompanySalesKm());
+        if (this->getBRTSalesKm() != 0) {
             _sntprintf_s(cb, MAX_BUF,
     				_T("(JR線営業キロ： %-6s km うちBRT： %-6s km   会社線営業キロ： %s km)\r\n"),
-    				num_str_km(fare_info.getJRSalesKm()).c_str(),
-                    num_str_km(fare_info.getBRTSalesKm()).c_str(),
-                    num_str_km(fare_info.getCompanySalesKm()).c_str());
+    				num_str_km(this->getJRSalesKm()).c_str(),
+                    num_str_km(this->getBRTSalesKm()).c_str(),
+                    num_str_km(this->getCompanySalesKm()).c_str());
         } else {
             _sntprintf_s(cb, MAX_BUF,
     				_T("(JR線営業キロ： %-6s km   会社線営業キロ： %s km)\r\n"),
-    				num_str_km(fare_info.getJRSalesKm()).c_str(),
-    				num_str_km(fare_info.getCompanySalesKm()).c_str());
+    				num_str_km(this->getJRSalesKm()).c_str(),
+    				num_str_km(this->getCompanySalesKm()).c_str());
         }
 		sResult += cb;
-	} else if (fare_info.getBRTSalesKm() != 0) {
+	} else if (this->getBRTSalesKm() != 0) {
             /* 会社線なし BRTあり */
             _sntprintf_s(cb, MAX_BUF,
     				_T("(うちBRT営業キロ： %s km)\r\n"),
-                    num_str_km(fare_info.getBRTSalesKm()).c_str());
+                    num_str_km(this->getBRTSalesKm()).c_str());
     		sResult += cb;
-            ASSERT(0 == fare_info.getCompanySalesKm());
+            ASSERT(0 == this->getCompanySalesKm());
     } else {
-		ASSERT(0 == fare_info.getCompanySalesKm());
+		ASSERT(0 == this->getCompanySalesKm());
 	}
 
-	if (0 < fare_info.getSalesKmForHokkaido()) {
-		if ((0 < fare_info.getCalcKmForHokkaido()) &&
-		    (fare_info.getCalcKmForHokkaido() != fare_info.getSalesKmForHokkaido())) {
+	if (0 < this->getSalesKmForHokkaido()) {
+		if ((0 < this->getCalcKmForHokkaido()) &&
+		    (this->getCalcKmForHokkaido() != this->getSalesKmForHokkaido())) {
 			_sntprintf_s(cb, MAX_BUF, _T("JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n"),
-						num_str_km(fare_info.getSalesKmForHokkaido()).c_str(),
-						num_str_km(fare_info.getCalcKmForHokkaido()).c_str());
+						num_str_km(this->getSalesKmForHokkaido()).c_str(),
+						num_str_km(this->getCalcKmForHokkaido()).c_str());
 		} else {
 			_sntprintf_s(cb, MAX_BUF, _T("JR北海道営業キロ： %-6s km\r\n"),
-						num_str_km(fare_info.getSalesKmForHokkaido()).c_str());
+						num_str_km(this->getSalesKmForHokkaido()).c_str());
 		}
 		sResult += cb;
 	}
-	if (0 < fare_info.getSalesKmForShikoku()) {
-		if ((0 < fare_info.getCalcKmForShikoku()) &&
-		    (fare_info.getSalesKmForShikoku() != fare_info.getCalcKmForShikoku())) {
+	if (0 < this->getSalesKmForShikoku()) {
+		if ((0 < this->getCalcKmForShikoku()) &&
+		    (this->getSalesKmForShikoku() != this->getCalcKmForShikoku())) {
 			_sntprintf_s(cb, MAX_BUF, _T("JR四国営業キロ： %-6s km 計算キロ： %s km\r\n"),
-							num_str_km(fare_info.getSalesKmForShikoku()).c_str(),
-							num_str_km(fare_info.getCalcKmForShikoku()).c_str());
+							num_str_km(this->getSalesKmForShikoku()).c_str(),
+							num_str_km(this->getCalcKmForShikoku()).c_str());
 		} else {
 			_sntprintf_s(cb, MAX_BUF, _T("JR四国営業キロ： %-6s km \r\n"),
-							num_str_km(fare_info.getSalesKmForShikoku()).c_str());
+							num_str_km(this->getSalesKmForShikoku()).c_str());
 		}
 		sResult += cb;
 	}
-	if (0 < fare_info.getSalesKmForKyusyu()) {
-		if ((0 < fare_info.getCalcKmForKyusyu()) &&
-		    (fare_info.getSalesKmForKyusyu() != fare_info.getCalcKmForKyusyu())) {
+	if (0 < this->getSalesKmForKyusyu()) {
+		if ((0 < this->getCalcKmForKyusyu()) &&
+		    (this->getSalesKmForKyusyu() != this->getCalcKmForKyusyu())) {
 			_sntprintf_s(cb, MAX_BUF, _T("JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n"),
-							num_str_km(fare_info.getSalesKmForKyusyu()).c_str(),
-							num_str_km(fare_info.getCalcKmForKyusyu()).c_str());
+							num_str_km(this->getSalesKmForKyusyu()).c_str(),
+							num_str_km(this->getCalcKmForKyusyu()).c_str());
 		} else {
 			_sntprintf_s(cb, MAX_BUF, _T("JR九州営業キロ： %-6s km \r\n"),
-							num_str_km(fare_info.getSalesKmForKyusyu()).c_str());
+							num_str_km(this->getSalesKmForKyusyu()).c_str());
 		}
 		sResult += cb;
 	}
@@ -2769,31 +2769,31 @@ JR東日本 株主優待4： \123,456
 運賃: \123,456   往復: \123,45
 #endif
 
-	int32_t company_fare = fare_info.getFareForCompanyline();
-	int32_t normal_fare = fare_info.getFareForDisplay();
-	FARE_INFO::FareResult fareW = fare_info.roundTripFareWithCompanyLine();
-	int32_t fare_ic = fare_info.getFareForIC();
+	int32_t company_fare = this->getFareForCompanyline();
+	int32_t normal_fare = this->getFareForDisplay();
+	FARE_INFO::FareResult fareW = this->roundTripFareWithCompanyLine();
+	int32_t fare_ic = this->getFareForIC();
 
-	if ((0 < company_fare) && (0 == fare_info.getFareForBRT())) {
+	if ((0 < company_fare) && (0 == this->getFareForBRT())) {
 		_sntprintf_s(cb, MAX_BUF,
 					_T("  (うち会社線： ¥%s)"), num_str_yen(company_fare).c_str());
 		sWork = cb;
-	} else if ((0 < company_fare) && (0 != fare_info.getFareForBRT())) {
+	} else if ((0 < company_fare) && (0 != this->getFareForBRT())) {
         _sntprintf_s(cb, MAX_BUF,
 					_T("  (うち会社線： ¥%s, BRT線： ¥%s)"), num_str_yen(company_fare).c_str(),
-                                                            num_str_yen(fare_info.getFareForBRT()).c_str());
+                                                            num_str_yen(this->getFareForBRT()).c_str());
 		sWork = cb;
-	} else if ((0 == company_fare) && (0 != fare_info.getFareForBRT())) {
+	} else if ((0 == company_fare) && (0 != this->getFareForBRT())) {
         _sntprintf_s(cb, MAX_BUF,
-					_T("  (うちBRT線： ¥%s)"), num_str_yen(fare_info.getFareForBRT()).c_str());
+					_T("  (うちBRT線： ¥%s)"), num_str_yen(this->getFareForBRT()).c_str());
 		sWork = cb;
 	} else {
         sWork = _T("");
 	}
-	if (fare_info.isRule114()) {
+	if (this->isRule114()) {
 		_sntprintf_s(cb, MAX_BUF, _T("規程114条適用 営業キロ： %s km 計算キロ： %s km\r\n"),
-					 num_str_km(fare_info.getRule114SalesKm()).c_str(),
-					 num_str_km(fare_info.getRule114CalcKm()).c_str());
+					 num_str_km(this->getRule114SalesKm()).c_str(),
+					 num_str_km(this->getRule114CalcKm()).c_str());
 		sResult += cb;
 	}
 	if (fare_ic == 0) {
@@ -2812,21 +2812,21 @@ JR東日本 株主優待4： \123,456
 				_tcscat_s(cb, NumOf(cb), _T("\r\n"));
 			}
 		}
-		if (fare_info.isRule114()) {
+		if (this->isRule114()) {
 			sResult += cb;
 			if (!isRoundTrip()) {
 				_sntprintf_s(cb, MAX_BUF, _T("規程114条 適用前運賃： {¥%-5s}\r\n"),
-			                              num_str_yen(fare_info.getFareForDisplayPriorRule114()).c_str());
+			                              num_str_yen(this->getFareForDisplayPriorRule114()).c_str());
 			} else {
 				_sntprintf_s(cb, MAX_BUF, _T("規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n"),
-			                              num_str_yen(fare_info.getFareForDisplayPriorRule114()).c_str(),
-			                              num_str_yen(fare_info.roundTripFareWithCompanyLinePriorRule114()).c_str());
+			                              num_str_yen(this->getFareForDisplayPriorRule114()).c_str(),
+			                              num_str_yen(this->roundTripFareWithCompanyLinePriorRule114()).c_str());
 			}
 		}
 	} else {
         //ASSERT(!fareW.isDiscount);
 		ASSERT(company_fare == 0);
-		//ASSERT(normal_fare  *  2 == fare_info.roundTripFareWithCompanyLine().fare);
+		//ASSERT(normal_fare  *  2 == this->roundTripFareWithCompanyLine().fare);
 		if (!isRoundTrip()) {
 			_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： ¥%s(¥%s)%s\r\n"),
 			             num_str_yen(normal_fare).c_str(), num_str_yen(fare_ic).c_str(),
@@ -2850,7 +2850,7 @@ JR東日本 株主優待4： \123,456
 		tstring s;
 		tstring dummy;
 		TCHAR sb[64];
-		int32_t fareStock = fare_info.getFareStockDiscount(i, s);
+		int32_t fareStock = this->getFareStockDiscount(i, s);
 
 		if (fareStock <= 0) {
 			break;
@@ -2858,10 +2858,10 @@ JR東日本 株主優待4： \123,456
 		if (0 < i) {
 			sWork += _T("\r\n");
 		}
-		if (fare_info.isRule114()) {
+		if (this->isRule114()) {
 			_sntprintf_s(sb, NumOf(sb), _T("%s： ¥%s{¥%s}"),
 					     s.c_str(),
-						 num_str_yen(fare_info.getFareStockDiscount(i, dummy, true) +
+						 num_str_yen(this->getFareStockDiscount(i, dummy, true) +
 					                 company_fare).c_str(),
 						 num_str_yen(fareStock + company_fare).c_str());
 		} else {
@@ -2877,15 +2877,15 @@ JR東日本 株主優待4： \123,456
 	/* child fare */
 	if (!isRoundTrip()) {
 		_sntprintf_s(cb, MAX_BUF, _T("\r\n小児運賃： ¥%-7s\r\n"),
-		                              num_str_yen(fare_info.getChildFareForDisplay()).c_str());
+		                              num_str_yen(this->getChildFareForDisplay()).c_str());
 	} else {
 		_sntprintf_s(cb, MAX_BUF, _T("\r\n小児運賃： ¥%-7s 往復： ¥%-5s\r\n"),
-		                              num_str_yen(fare_info.getChildFareForDisplay()).c_str(),
-		                              num_str_yen(fare_info.roundTripChildFareWithCompanyLine()).c_str());
+		                              num_str_yen(this->getChildFareForDisplay()).c_str(),
+		                              num_str_yen(this->roundTripChildFareWithCompanyLine()).c_str());
 	}
 	sWork += cb;
 
-	normal_fare = fare_info.getAcademicDiscountFare();
+	normal_fare = this->getAcademicDiscountFare();
 	if (0 < normal_fare) {
 		if (!isRoundTrip()) {
 			_sntprintf_s(cb, MAX_BUF, _T("学割運賃： ¥%-7s\r\n"),
@@ -2893,29 +2893,29 @@ JR東日本 株主優待4： \123,456
 		} else {
 			_sntprintf_s(cb, MAX_BUF, _T("学割運賃： ¥%-7s 往復： ¥%-5s\r\n"),
 		    	                          num_str_yen(normal_fare).c_str(),
-		        	                      num_str_yen(fare_info.roundTripAcademicFareWithCompanyLine()).c_str());
+		        	                      num_str_yen(this->roundTripAcademicFareWithCompanyLine()).c_str());
 		}
 		sWork += cb;
 	}
 	_sntprintf_s(cb, MAX_BUF,
 				_T("\r\n有効日数：%4u日\r\n"),
-				fare_info.getTicketAvailDays());
+				this->getTicketAvailDays());
 	sResult += sWork + cb;
-	if (fare_info.isMultiCompanyLine()) {
+	if (this->isMultiCompanyLine()) {
 		sResult += _T("\r\n複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.");
-	} else if (fare_info.isBeginEndCompanyLine()) {
+	} else if (this->isBeginEndCompanyLine()) {
 		sResult += _T("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
 	}
-	if (fare_info.isEnableTokaiStockSelect()) {
+	if (this->isEnableTokaiStockSelect()) {
 		sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
 	}
-    if (fare_info.getIsBRT_discount()) {
+    if (this->getIsBRT_discount()) {
         sResult += _T("\r\nBRT乗継ぎ割引適用");
     }
-    if (fare_info.isAppliedSpecificFare()) {
+    if (this->isAppliedSpecificFare()) {
         sResult += _T("\r\n特定区間割引運賃適用");
     }
-    sWork = fare_info.getTOICACalcRoute_string();
+    sWork = this->getTOICACalcRoute_string();
     if (sWork != _T("")) {
         sResult += _T("\r\nIC運賃計算経路: ");
         sResult += sWork;
@@ -2932,93 +2932,96 @@ JR東日本 株主優待4： \123,456
  *  @retval -2 : 吉塚、西小倉における不完全ルート：この経路の片道乗車券は購入できません.
  *  @retval 1 : normal(Success)
  */
-FARE_INFO CalcRoute::calcFare()
+int32_t CalcRoute::calcFare(FARE_INFO* pFi)
 {
-    FARE_INFO fare_info;
 	FARE_INFO::Fare rule114;	// [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
 
 	if (route_list_raw.size() <= 1) {
-		fare_info.setEmpty();
+		pFi->setEmpty();
 
 #if 0 /* fare_info.result_flag は privateなので でもASSERTは正当 */
-ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
-	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
-ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
-	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && route_flag.compnbegin) ||
+	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !route_flag.compnbegin));
+ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend) ||
+	(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !route_flag.compnend));
 #endif
-		return fare_info;
+		return 0;
 	}
 
 	if (BIT_CHK(route_list_raw.back().flag, BSRNOTYET_NA)) {
 					// BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE)
-		fare_info.setInComplete();	// この経路の片道乗車券は購入できません."));
+		pFi->setInComplete();	// この経路の片道乗車券は購入できません."));
 #if 0 /* fare_info.result_flag は privateなので でもASSERTは正当 */
-		ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
-			(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
-		ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
-			(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+		ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && route_flag.compnbegin) ||
+			(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !route_flag.compnbegin));
+		ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend) ||
+			(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !route_flag.compnend));
 #endif
-		return fare_info;
+		return -2;
 	}
 
-    /* 86, 87, 69, 70条 114条適用かチェック */
-    rule114 = checkOfRuleSpecificCoreLine();	// route_list_raw -> route_list_cooked
 
-	if (!BIT_CHK(last_flag, BLF_NO_RULE)) {
-		/* 規則適用 */
-        fare_info.setTerminal(this->beginStationId(true),
+    /* 86, 87, 69, 70条 114条適用かチェック */
+	if (!rule_map.enable) {
+        // これをここに置かないと86.87＋近郊でNG
+        rule114 = checkOfRuleSpecificCoreLine();	// route_list_raw -> route_list_cooked
+ 		/* 規則適用 */
+        pFi->setTerminal(this->beginStationId(true),
                               this->endStationId(true));    // set is begin/end terminal Id.
-		if (fare_info.calc_fare(&last_flag, route_list_raw, route_list_cooked)) {
+		if (pFi->calc_fare(&route_flag, route_list_raw, route_list_cooked)) {
             bool b_more_low_cost;
 
-            fare_info.setRoute(this->route_list_cooked, last_flag);
+            pFi->setRoute(this->route_list_cooked, route_flag);
 
-            b_more_low_cost = fare_info.reCalcFareForOptiomizeRoute(*this,
+            b_more_low_cost = pFi->reCalcFareForOptiomizeRoute(*this,
                                                          this->coreAreaIDByCityId(CSTART),
                                                          this->coreAreaIDByCityId(CEND));
             if (b_more_low_cost) {
-                BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                //BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                rule_map.metro = true;
+                // これが一回非適用にしてしまうと得られん！
             } else {
                 // rule 114 applied
-                fare_info.setRule114(rule114);
+                pFi->setRule114(rule114);
             }
         } else {
-			fare_info.reset();
+			pFi->reset();
 		}
 	} else {
 		/* 規則非適用 */ /* 単駅 */
-		fare_info.setTerminal(this->beginStationId(false),
+		pFi->setTerminal(this->beginStationId(false),
 		 					  this->endStationId(false));
-		if (fare_info.calc_fare(&last_flag, route_list_raw, vector<RouteItem>())) {
-            fare_info.setRoute(this->route_list_raw, last_flag);
-			ASSERT(fare_info.getBeginTerminalId() == this->beginStationId(false));
-			ASSERT(fare_info.getEndTerminalId() == this->endStationId(false));
+		if (pFi->calc_fare(&route_flag, route_list_raw, vector<RouteItem>())) {
+            pFi->setRoute(this->route_list_raw, route_flag);
+			ASSERT(pFi->getBeginTerminalId() == this->beginStationId(false));
+			ASSERT(pFi->getEndTerminalId() == this->endStationId(false));
         }
 	}
 	// success
 #if 0 /* fare_info.result_flag は privateなので でもASSERTは正当 */
 	// というわけで BRF_COMAPANY_xxx と、BLF_COMNxxx は同じ
-	TRACE("%d, %d - %d, %d\n", BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST), BIT_CHK(last_flag, BLF_COMPNBEGIN), BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END), BIT_CHK(last_flag, BLF_COMPNEND));
-	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && BIT_CHK(last_flag, BLF_COMPNBEGIN)) ||
-		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !BIT_CHK(last_flag, BLF_COMPNBEGIN)));
-	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && BIT_CHK(last_flag, BLF_COMPNEND)) ||
-		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !BIT_CHK(last_flag, BLF_COMPNEND)));
+	TRACE("%d, %d - %d, %d\n", BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST), route_flag.compnbegin, BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END), route_flag.compnend);
+	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && route_flag.compnbegin) ||
+		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_FIRST) && !route_flag.compnbegin));
+	ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend) ||
+		(!BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && !route_flag.compnend));
 #endif
-	return fare_info;
+
+    pFi->setRoundTrip(isRoundTrip());
+    pFi->setEnableRules(rule_map);
+	return 1;
 }
 
 
-FARE_INFO CalcRoute::calcFare(int32_t count)
+int32_t CalcRoute::calcFare(FARE_INFO* pFi, int32_t count)
 {
-    FARE_INFO fare_info;
-
     if (route_list_raw.size() < (unsigned)count) {
-        return fare_info;
+        return 0;
     }
 
     CalcRoute aRoute;
     aRoute.route_list_raw.assign(route_list_raw.cbegin(), route_list_raw.cbegin() + count);
-    return aRoute.calcFare();
+    return aRoute.calcFare(pFi);
 }
 
 
@@ -3071,191 +3074,6 @@ int32_t FARE_INFO::centerStationIdFromCityId(int32_t cityId)
 }
 
 
-
-//public:
-//	運賃計算オプションを得る
-//	@return
-//     & 0xc0 = 0    : usualy
-//     & 0xc0 = 0x80 : empty or non calc.
-//	   & 0xc0 = 0x40 : Start Station only
-//	   & 0xc0 = 0xc0 : Calc error.
-//
-//     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
-//			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
-//	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
-//	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
-//     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
-//     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
-//     & 0x30 = 0x10 : 特例あり;特例適用
-//     & 0x30 = 0x20 : 特例なし:特例非適用
-//	   & 0x300= 0x200: JR東海株主優待券使用
-//	   & 0x300= 0x100: JR東海株主優待券使用しない
-//     & 0x400= 0x400: Reverse不可(6の字)
-//     & 0x400= 0x000: 通常(会社線絡みはReverseできなくてもこっち)
-//virtual
-uint32_t RouteList::getFareOption()
-{
-	uint32_t rc;
-	int32_t c = (int32_t)route_list_raw.size();
-
-	if (c == 1) {
-		rc = (1 << 6); // 0x40; 	/* start only*/
-	}
-	else if (c <= 0) {
-		rc = (1 << 7); // 0x80;	/* empty */
-	}
-	else {
-		rc = 0;
-	}
-
-	// Reverse
-	if ((c < 1) ||
-	   (!isRoundTrip() && // finished or company stop
-	    //startStationId() == endStationId()
-	    (route_list_raw.front().stationId != route_list_raw.back().stationId))) {
-	    // Qの字の大阪環状線ではダメやねん
-	    rc |= 0x400;	// Disable reverse
-	}
-
-	// 大阪環状線 1回通過で近回り時 bit 2-3
-	if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
-		if (BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR)) {
-			rc |= (1 << 3);	// 0x08;
-		}
-		else {
-			rc |= (1 << 2);	// 0x04;
-		}
-	}
-	// 特例有無 bit 4-5
-	if (BIT_CHK(last_flag, BLF_RULE_EN)) {
-		if (BIT_CHK(last_flag, BLF_NO_RULE)) {
-			rc |= (1 << 5);		// 0x20 do'nt applied
-		}
-		else {
-			rc |= (1 << 4);     // 0x10 default: Applied
-		}
-	}
-
-	// JR東海株主 有無 bit 4-5
-	if (BIT_CHK(last_flag, BLF_JRTOKAISTOCK_ENABLE)) {
-		if ((rc & 0x30) != 0x20) {	// Disable Tokai stock if applied the No Rule
-			if (BIT_CHK(last_flag, BLF_JRTOKAISTOCK_APPLIED)) {
-				rc |= (1 << 9);     // 0x200 : Enable
-			}
-			else {
-				rc |= (1 << 8);		// default: Disable 0x100
-			}
-		}
-	}
-	return rc;
-}
-
-uint32_t CalcRoute::getFareOption()
-{
-	uint32_t rc = RouteList::getFareOption();
-
-	if ((rc & 0xc0) != 0) {
-		return rc;	/* empty or start only (can't calculate) */
-	}
-
-	if (route_list_cooked.size() <= 0) {
-	//return 0x80;	/* showFare() or calcFare non called */
-#if 1
-		/* FARE_INFO::Fare fa = */(void)checkOfRuleSpecificCoreLine();
-		if (route_list_cooked.size() <= 0)
-#else	/* どっちでもOKだが */
-		FARE_INFO fi = calcFare();
-		if ((fi.resultCode() != 0) || (route_list_cooked.size() <= 0))
-#endif
-		{
-			ASSERT(FALSE);
-			return 0xc0 | rc;	// calc error
-		}
-		rc = RouteList::getFareOption();
-	}
-
-	// JR東海株主 有無 bit 4-5
-	if ((0 != (0x300 & rc)) /*&& BIT_CHK(last_flag, BLF_NO_RULE)*/) {
-		if (!BIT_CHK(last_flag, BLF_JRTOKAISTOCK_ENABLE)) {
-			rc &= ~0x300;
-		}
-	}
-	// 名阪 都区市内 - 都区市内 bit 0-1
-	if ((1 << BLF_TER_BEGIN_CITY_OFF) == (last_flag & (1 << BLF_TER_BEGIN_CITY_OFF))) {
-		rc |= 1;
-	}
-	else if ((1 << BLF_TER_FIN_CITY_OFF) == (last_flag  & (1 << BLF_TER_FIN_CITY_OFF))) {
-		rc |= 2;
-	}
-	return rc;
-}
-
-//public:
-//	運賃計算オプションを設定
-//	@param [in]  cooked : bit15=0/1  = 規則適用/非適用
-//						: bit 0
-//							= 1: 発・着が特定都区市内で発-着が100/200km以下のとき、着のみ都区市内有効
-//							= 0: 発・着が特定都区市内で発-着が100/200km以下のとき、発のみ都区市内有効
-//						x : bit 1
-//						x	= 1: 大阪環状線遠回り
-//						x	= 0: 大阪環状線近回り(規定)
-//                      x- shoud use setDetour()
-//
-//  @param [in] availbit : 有効フラグ
-//			    FAREOPT_AVAIL_OSAKAKAN_DETOUR, FAREOPT_AVAIL_APPLIED_START_TERMINAL, FAREOPT_AVAIL_RULE_APPLIED
-//
-void RouteList::setFareOption(uint16_t cooked, uint16_t availbit)
-{
-	uint32_t opt = getFareOption();
-
-	/* 規則適用 */
-	if (0 != (FAREOPT_AVAIL_RULE_APPLIED & availbit)) {
-		if (FAREOPT_RULE_NO_APPLIED == (FAREOPT_RULE_NO_APPLIED & cooked)) {
-			BIT_ON(last_flag,  BLF_NO_RULE);    /* 非適用 */
-		} else {
-			BIT_OFF(last_flag,  BLF_NO_RULE);   /* 適用 */
-		}
-	}
-
-	/* 名古屋市内[名] - 大阪市内[阪] 発駅を単駅とするか着駅を単駅とするか */
-	if (0 != (FAREOPT_AVAIL_APPLIED_START_TERMINAL & availbit)) {
-		if (((opt & 3) == 1) || ((opt & 3) == 2)) {
-			if (IS_MAIHAN_CITY_START(cooked)) {
-				BIT_ON(last_flag, BLF_MEIHANCITYFLAG);  /* 着駅=単駅、発駅市内駅 */
-			} else {
-				BIT_OFF(last_flag, BLF_MEIHANCITYFLAG);	/* 発駅=単駅、着駅市内駅 */
-			}
-		} else {
-			//ASSERT(FALSE);
-			//return;
-		}
-	}
-	/* JR東海株主適用有無 */
-	if (0 != (FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK & availbit)) {
-		if (FAREOPT_JRTOKAI_STOCK_APPLIED == (FAREOPT_JRTOKAI_STOCK_APPLIED & cooked)) {
-			BIT_ON(last_flag,  BLF_JRTOKAISTOCK_APPLIED);    /* 適用 */
-		} else {
-			BIT_OFF(last_flag,  BLF_JRTOKAISTOCK_APPLIED);   /* 非適用 */
-		}
-	}
-
-#if 0
-	// 大阪環状線 近回り(規定)／遠回り
-	if (0 != (FAREOPT_AVAIL_OSAKAKAN_DETOUR & availbit)) {
-		if (IS_LF_OSAKAKAN_PASS(last_flag, LF_OSAKAKAN_1PASS)) {
-			if (0 != (cooked & FAREOPT_OSAKAKAN_DETOUR)) {
-				BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
-			} else {
-				BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
-			}
-		} else {
-			ASSERT(FALSE);
-			return;
-		}
-	}
-#endif
-}
-
 //	遠回り/近回り設定
 //
 //	@return 0 success(is last)
@@ -3264,11 +3082,7 @@ void RouteList::setFareOption(uint16_t cooked, uint16_t availbit)
 //
 int32_t Route::setDetour(bool enabled)
 {
-	if (enabled) {
-		BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
-	} else {
-		BIT_OFF(last_flag, BLF_OSAKAKAN_DETOUR);
-	}
+    route_flag.osakakan_detour = enabled;
     return reBuild();
 }
 
@@ -3279,15 +3093,15 @@ int32_t Route::setDetour(bool enabled)
 void Route::setNotSameKokuraHakataShinZai(bool enabled)
 {
 	if (enabled) {
-		BIT_ON(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
+        route_flag.notsamekokurahakatashinzai = true;
 	} else {
-		BIT_OFF(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
+        route_flag.notsamekokurahakatashinzai = false;
 	}
 }
 
 bool Route::isNotSameKokuraHakataShinZai()
 {
-    return BIT_CHK(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
+    return route_flag.notsamekokurahakatashinzai;
 }
 
 //public
@@ -3387,12 +3201,12 @@ int32_t CalcRoute::coreAreaIDByCityId(int32_t startEndFlg)
 {
 	int32_t cityno;
 
-	if (0 != (last_flag & (1 << BLF_RULE_EN))) {
-		if (((startEndFlg == CSTART) && BIT_CHK(last_flag, BLF_TER_BEGIN_YAMATE)) ||
-		    ((startEndFlg == CEND)   && BIT_CHK(last_flag, BLF_TER_FIN_YAMATE))) {
+	if (0 != rule_map.rule86or87 /* (last_flag & (1 << BLF_RULE_EN))*/) {
+		if (((startEndFlg == CSTART) && route_flag.ter_begin_yamate) ||
+		    ((startEndFlg == CEND)   && route_flag.ter_fin_yamate)) {
 			return CITYNO_YAMATE;	/* 山手線内*/
-		} else if (((startEndFlg == CSTART) && BIT_CHK(last_flag, BLF_TER_BEGIN_CITY)) ||
-				   ((startEndFlg == CEND)   && BIT_CHK(last_flag, BLF_TER_FIN_CITY))) {
+		} else if (((startEndFlg == CSTART) && route_flag.ter_begin_city) ||
+				   ((startEndFlg == CEND)   && route_flag.ter_fin_city)) {
 			int flags;
 			if (startEndFlg == CSTART) {
 				flags = route_list_cooked.front().flag;
@@ -3405,8 +3219,8 @@ int32_t CalcRoute::coreAreaIDByCityId(int32_t startEndFlg)
 			} else {
 				ASSERT(FALSE);
 			}
-		} else if (((startEndFlg == CSTART) && BIT_CHK(last_flag, BLF_TER_BEGIN_OOSAKA)) ||
-				   ((startEndFlg == CEND)   && BIT_CHK(last_flag, BLF_TER_FIN_OOSAKA))) {
+		} else if (((startEndFlg == CSTART) && route_flag.ter_begin_oosaka) ||
+				   ((startEndFlg == CEND)   && route_flag.ter_fin_oosaka)) {
 			return CITYNO_SHINOOSAKA;	/* 大阪・新大阪 */
 		}
 		// else
@@ -3503,7 +3317,7 @@ int32_t Route::setup_route(LPCTSTR route_str)
 	_tcscpy_s(rstr, len, route_str);
 	len = _tcslen(TITLE_NOTSAMEKOKURAHAKATASHINZAI);
 	if (0 == _tcsncmp(rstr, TITLE_NOTSAMEKOKURAHAKATASHINZAI, len)) {
-		BIT_ON(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI);
+		route_flag.notsamekokurahakatashinzai = true;
 		p = rstr + len;
 	} else {
 		p = rstr;
@@ -3520,7 +3334,7 @@ int32_t Route::setup_route(LPCTSTR route_str)
 		} else if (lineId == 0) {
 			if (*p == _T('r')) {	/* 大阪環状線 遠回り */
 				++p;
-				BIT_ON(last_flag, BLF_OSAKAKAN_DETOUR);
+				route_flag.osakakan_detour = true;
 			}
 			lineId = RouteUtil::GetLineId(p);
 			if (lineId <= 0) {
@@ -3563,7 +3377,7 @@ ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
 //	@param [in] last_flag    route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
 //	@retval 文字列
 //
-tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag)
+tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag)
 {
 	tstring lineName;
 	tstring stationName;
@@ -3571,6 +3385,7 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG l
 	//TCHAR buf[MAX_BUF];
 	tstring result_str;
 	int32_t station_id1;
+    RouteFlag routeFlag_ = rRoute_flag;
 
 	if (routeList.size() == 0) {	/* 経路なし(AutoRoute) */
 		return _T("");
@@ -3580,7 +3395,7 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG l
 
 	result_str = _T("");
 	station_id1 = pos->stationId;
-    last_flag &= ~MLF_OSAKAKAN_PASS;	// BIT_OFF(last_flag, BLF_OSAKAKAN_1PASS)
+    routeFlag_.setOsakaKanFlag(RouteFlag::OSAKAKAN_NOPASS);
 
 	for (pos++; pos != routeList.cend() ; pos++) {
 
@@ -3593,8 +3408,8 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG l
 					result_str += _T("[");
 					result_str += lineName;
 					if (DbidOf::getInstance().id_of_line(_T("大阪環状線")) == pos->lineId) {
-						result_str += RouteOsakaKanDir(station_id1, pos->stationId, last_flag);
-						BIT_ON(last_flag, BLF_OSAKAKAN_1PASS);
+						result_str += RouteOsakaKanDir(station_id1, pos->stationId, routeFlag_);
+                        routeFlag_.setOsakaKanPass(true);
 					}
 					result_str += _T("]");
 				} else {
@@ -3612,8 +3427,8 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG l
 				result_str += _T("[");
 				result_str += lineName;
 				if (DbidOf::getInstance().id_of_line(_T("大阪環状線")) == pos->lineId) {
-					result_str += RouteOsakaKanDir(station_id1, pos->stationId, last_flag);
-					BIT_ON(last_flag, BLF_OSAKAKAN_1PASS);
+					result_str += RouteOsakaKanDir(station_id1, pos->stationId, routeFlag_);
+					routeFlag_.setOsakaKanPass(true);
 				}
 				result_str += _T("]");
 			}
@@ -3633,7 +3448,7 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG l
 //	@param [in] last_flag    route flag.
 //	@retval 文字列
 //
-tstring  RouteUtil::RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag)
+tstring  RouteUtil::RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, const RouteFlag& rRoute_flag)
 {
 	tstring result_str;
 	const TCHAR * const result[] = {
@@ -3696,14 +3511,20 @@ F/R      O   o O I I I i I   I I O O O   0/1 neer/far
 	uint8_t  c;
 
 	c = DirOsakaKanLine(station_id1, station_id2) == 0 ? 1 : 0;
-	c |= BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR) ? 0x02 : 0;
-	pass = BIT_CHK(last_flag, BLF_OSAKAKAN_1PASS) ? BLF_OSAKAKAN_2DIR : BLF_OSAKAKAN_1DIR;
-	c |= BIT_CHK(last_flag,  pass) ? 0x04 : 0;
+    c |= rRoute_flag.osakakan_detour ? 0x02 : 0;
+    if (rRoute_flag.getOsakaKanPass()) {
+        c |= rRoute_flag.osakakan_2dir ? 0x04 : 0;
+        pass = 2;
+    } else {
+        c |= rRoute_flag.osakakan_1dir ? 0x04 : 0;
+        pass = 1;
+    }
+
 	c |= LDIR_ASC == RouteUtil::DirLine(DbidOf::getInstance().id_of_line(_T("大阪環状線")), station_id1, station_id2) ? 0x08 : 0;
 TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"),
-      pass == BLF_OSAKAKAN_2DIR ? 2 : 1,
+      pass,
       RouteUtil::StationName(station_id1).c_str(),
-      (0 != (c & 0x02) && (pass != BLF_OSAKAKAN_2DIR)) ? _T(">>") : _T(">"),
+      (0 != (c & 0x02) && (pass != 2)) ? _T(">>") : _T(">"),
       RouteUtil::StationName(station_id2).c_str(), 0x1 & c, 0x1 & (c >> 1), 0x01 & (c >> 2), 0x01 & (c >> 3));
 
 	if (NumOf(inner_outer) <= c) {
@@ -3731,7 +3552,7 @@ tstring RouteList::route_script()
 
 	vector<RouteItem>::const_iterator pos = routeList->cbegin();
 
-	if (BIT_CHK(last_flag, BLF_NOTSAMEKOKURAHAKATASHINZAI)) {
+	if (route_flag.notsamekokurahakatashinzai) {
 		result_str = TITLE_NOTSAMEKOKURAHAKATASHINZAI;
 	} else {
 		result_str = _T("");
@@ -3742,7 +3563,7 @@ tstring RouteList::route_script()
 	for (pos++; pos != routeList->cend() ; pos++) {
 		result_str += _T(",");
 		if (!oskk_flag && (pos->lineId == DbidOf::getInstance().id_of_line(_T("大阪環状線")))) {
-			if (BIT_CHK(last_flag, BLF_OSAKAKAN_DETOUR)) {
+			if (route_flag.osakakan_detour) {
 				result_str += _T("r");
 			}
 			oskk_flag = true;
@@ -3794,9 +3615,9 @@ tstring RouteUtil::Route_script(const vector<RouteItem>& routeList)
 //
 void Route::routePassOff(int32_t line_id, int32_t to_station_id, int32_t begin_station_id)
 {
-	RoutePass route_pass(jct_mask, last_flag, line_id, to_station_id, begin_station_id);
+	RoutePass route_pass(jct_mask, route_flag, line_id, to_station_id, begin_station_id);
 	route_pass.off(jct_mask);
-	last_flag = route_pass.update_flag(last_flag); /* update last_flag LF_OSAKAKAN_MASK */
+	route_pass.update_flag(&route_flag); /* update last_flag LF_OSAKAKAN_MASK */
 }
 
 
@@ -3821,7 +3642,9 @@ void Route::removeAll(bool bWithStart /* =true */)
 
 	route_list_raw.clear();
 
-	last_flag &= LASTFLG_OFF;
+    bool shinzaikyusyu = route_flag.notsamekokurahakatashinzai; // backup
+    route_flag.clear();
+    route_flag.notsamekokurahakatashinzai = shinzaikyusyu; // restore
 
 	TRACE(_T("clear-all mask.\n"));
 
@@ -4448,7 +4271,7 @@ vector<int32_t> RouteUtil::GetDistance(int32_t line_id, int32_t station_id1, int
 //	@retuen [0]:営業キロ, [1]:計算キロ
 //	@note used aggregate_fare_info()* -> GetDistanceEx(), Get_route_distance()
 //
-vector<int32_t> RouteUtil::GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2)
+vector<int32_t> RouteUtil::GetDistance(const RouteFlag& oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	vector<int32_t> d;
 	int32_t sales_km;
@@ -4464,8 +4287,8 @@ vector<int32_t> RouteUtil::GetDistance(int32_t oskkflg, int32_t line_id, int32_t
 	//      0 0 1 0 0 1 1 1
 	// ~pass & 1dir | pass & 2dir
 
-	if ( ((oskkflg & ((1 << BLF_OSAKAKAN_1PASS) | (1 << BLF_OSAKAKAN_1DIR))) == (1 << BLF_OSAKAKAN_1DIR)) ||
-	     ((oskkflg & ((1 << BLF_OSAKAKAN_1PASS) | (1 << BLF_OSAKAKAN_2DIR))) == ((1 << BLF_OSAKAKAN_1PASS) | (1 << BLF_OSAKAKAN_2DIR)))) {
+    if ((!oskkflg.getOsakaKanPass() && oskkflg.osakakan_1dir) ||
+        (oskkflg.getOsakaKanPass() && oskkflg.osakakan_2dir)) {
 		sales_km = RouteUtil::GetDistanceOfOsakaKanjyouRvrs(line_id, station_id1, station_id2);
 		TRACE(_T("Osaka-kan reverse\n"));
 	} else {
@@ -5187,7 +5010,7 @@ int32_t CalcRoute::InCityStation(int32_t cityno, int32_t lineId, int32_t station
 //	----o 通常
 //	o---o なし(乗車駅または分岐駅～分岐駅または降車駅が都区市内だが間に非都区市内が含まれる例はなし。
 //
-uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIFICFLAG last_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair)
+uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const RouteFlag& rRoute_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair)
 {
 	vector<RouteItem>::const_iterator fite;
 	vector<RouteItem>::const_reverse_iterator rite;
@@ -5214,7 +5037,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIF
 	else if ((city_no_s != 0) && (city_no_s != CITYNO_NAGOYA)) {
 		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
 		r |= 0x80000000; // BIT_ON(last_flag, BLF_JRTOKAISTOCK_ENABLE); // for UI
-		if (BIT_CHK(last_flag, BLF_JRTOKAISTOCK_APPLIED)) { /* by user */
+		if (rRoute_flag.jrtokaistock_applied) { /* by user */
 			city_no_s = 0;
 		}
 	}
@@ -5232,7 +5055,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIF
 	else if ((city_no_e != 0) && (city_no_e != CITYNO_NAGOYA)) {
 		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
 		r |= 0x80000000; // BIT_ON(last_flag, BLF_JRTOKAISTOCK_ENABLE); // for UI
-		if (BIT_CHK(last_flag, BLF_JRTOKAISTOCK_APPLIED)) {
+		if (rRoute_flag.jrtokaistock_applied) {
 			city_no_e = 0;
 		}
 	}
@@ -5514,14 +5337,14 @@ int32_t CalcRoute::Retrieve_SpecificCoreStation(int32_t cityId)
 //	@param [in]  route     計算ルート
 //	@retuen 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]
 //
-vector<int32_t> CalcRoute::Get_route_distance(SPECIFICFLAG last_flag, const vector<RouteItem>& route)
+vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route)
 {
 	vector<RouteItem>::const_iterator it;
 	int32_t total_sales_km;
 	int32_t total_calc_km;
 	int32_t total_company_km;
 	int32_t stationId;
-	int32_t oskk_flag;
+	RouteFlag oskk_flag;
 
 	it = route.cbegin();
 	total_sales_km = 0;
@@ -5530,15 +5353,15 @@ vector<int32_t> CalcRoute::Get_route_distance(SPECIFICFLAG last_flag, const vect
 	total_company_km = 0;
 	/* 大阪環状線flag */
 
-	oskk_flag = last_flag;
-	BIT_OFF(oskk_flag, BLF_OSAKAKAN_1PASS);
+	oskk_flag = rRoute_flag;
+	oskk_flag.setOsakaKanPass(false);
 
 	while (it != route.cend()) {
 		if (stationId != 0) {
 			vector<int32_t> vkms;
 			if (it->lineId == DbidOf::getInstance().id_of_line(_T("大阪環状線"))) {
 				vkms = RouteUtil::GetDistance(oskk_flag, it->lineId, stationId, it->stationId);
-				BIT_ON(oskk_flag, BLF_OSAKAKAN_1PASS);
+                oskk_flag.setOsakaKanPass(true);
 			} else if (it->lineId == ID_L_RULE70) {
 				vkms.push_back(FARE_INFO::Retrieve70Distance(stationId, it->stationId));
 				vkms.push_back(vkms.at(0));
@@ -5732,19 +5555,22 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	int32_t aply88;
 	vector<int32_t> km_raw;
 
-    BIT_OFF(last_flag, BLF_RULE_EN);    // initialize
+    rule_map.clear();
+
 	// 69を適用したものをroute_list_tmpへ
 	n = CalcRoute::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
 	TRACE("Rule 69 applied %dtimes.\n", n);
     if (0 < n) {
-        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        //TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        rule_map.rule69 = true;
     }
 	// route_list_tmp2 = route_list_tmp
 	// 70を適用したものをroute_list_tmp2へ
 	n = CalcRoute::ReRouteRule70j(route_list_tmp, &route_list_tmp2);
 	TRACE(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
     if (0 == n) {
-        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        // TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        rule_map.rule70 = true;
     }
 
 	// 88を適用したものをroute_list_tmpへ
@@ -5752,24 +5578,25 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88 for start.\n");
-			last_flag &= ~LF_TER_CITY_MASK;
-			BIT_ON(last_flag, BLF_TER_BEGIN_OOSAKA);
+            route_flag.terCityReset();
+			route_flag.ter_begin_oosaka = true;
 		} else if ((aply88 & 2) != 0) {
 			TRACE("Apply to rule88 for arrive.\n");
-			last_flag &= ~LF_TER_CITY_MASK;
-			BIT_ON(last_flag, BLF_TER_FIN_OOSAKA);
+            route_flag.terCityReset();
+			route_flag.ter_fin_oosaka = true;
 		}
-        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        // TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        rule_map.rule88 = true;
 	}
 
 	/* 特定都区市内発着可否判定 */
-	chk = CalcRoute::CheckOfRule86(route_list_tmp2, last_flag, &exit, &enter, &cityId);
+	chk = CalcRoute::CheckOfRule86(route_list_tmp2, route_flag, &exit, &enter, &cityId);
 	TRACE("RuleSpecific:chk 0x%0x, %d -> %d\n", chk, IDENT1(cityId), IDENT2(cityId));
 	if (BIT_CHK(chk, 31)) {
-		BIT_ON(last_flag, BLF_JRTOKAISTOCK_ENABLE); // for UI
+		route_flag.jrtokaistock_enable = true; // for UI
 	}
 	else {
-		BIT_OFF(last_flag, BLF_JRTOKAISTOCK_ENABLE); // for UI
+		route_flag.jrtokaistock_enable = false; // for UI
 	}
 	chk &= ~(1 << 31);
 	/* 86, 87適用可能性None？ */
@@ -5816,23 +5643,38 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	 * route_list_tmp3	70-88-69-86-69適用
 	 */
 	/* compute of sales_km by route_list_cooked */
-	km_raw = CalcRoute::Get_route_distance(last_flag, route_list_tmp3);
+	km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
 	jsales_km = km_raw[0] - km_raw[2];
-	km_raw = CalcRoute::Get_route_distance(last_flag, route_list_raw);
+	km_raw = CalcRoute::Get_route_distance(route_flag, route_list_raw);
 	skm = km_raw[0] - km_raw[2];
 	if ((2000 < jsales_km) && ((CalcRoute::InRouteUrban(route_list_raw) != URB_TOKYO) ||
 	    (2000 < skm))) {
 		/* <<<都区市内適用>>> */
 		/* 201km <= jsales_km */
 		/* enable */
-		last_flag &= ~LF_TER_CITY_MASK;
-		last_flag |= ((chk & 0x03) << BLF_TER_BEGIN_CITY);	// BLF_TER_BEGIN_CITY, BLF_TER_FIN_CITY
+        route_flag.terCityReset();
+        switch (chk & 0x03) {
+            case 0:
+                break;
+            case 1:
+                route_flag.ter_begin_city = true;
+                break;
+            case 2:
+                route_flag.ter_fin_city = true;
+                break;
+            case 3:
+            default:
+                route_flag.ter_begin_city = true;
+                route_flag.ter_fin_city = true;
+                break;
+        }
 		TRACE("applied for rule86(%d)\n", chk & 0x03);
 
 		// route_list_cooked = route_list_tmp3
 		route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
-        BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        // TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+        rule_map.rule86or87 = true;
 
 		return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
@@ -5844,11 +5686,24 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 		if ((1000 < jsales_km) && ((CalcRoute::InRouteUrban(route_list_raw) != URB_TOKYO) ||
 		    (1000 < skm))) {
 			/* 山手線内発着 enable */
-			if ((MASK(BLF_JRTOKAISTOCK_ENABLE) | MASK(BLF_JRTOKAISTOCK_APPLIED)) !=
-				(last_flag & (MASK(BLF_JRTOKAISTOCK_ENABLE) | MASK(BLF_JRTOKAISTOCK_APPLIED)))) {
+            if (!route_flag.jrtokaistock_enable || !route_flag.jrtokaistock_applied) {
 
-				last_flag &= ~LF_TER_CITY_MASK;
-				last_flag |= ((rtky & 0x03) << BLF_TER_BEGIN_YAMATE);	// BLF_TER_BEGIN_YAMATE, BLF_TER_FIN_YAMATE
+                route_flag.terCityReset();
+                switch (rtky & 0x03) {
+                    case 0:
+                        break;
+                    case 1:
+                        route_flag.ter_begin_yamate = true;
+                        break;
+                    case 2:
+                        route_flag.ter_fin_yamate = true;
+                        break;
+                    case 3:
+                    default:
+                        route_flag.ter_begin_yamate = true;
+                        route_flag.ter_fin_yamate = true;
+                        break;
+                }
 				TRACE("applied for rule87\n");
 			}
 
@@ -5870,11 +5725,15 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
                 // 69を適用したものをroute_list_tmp3へ
                 n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
                 TRACE("Rule 69(2) applied %dtimes.\n", n);
+                rule_map.rule69 = true;
+            } else {
+                // 東京,京葉線,蘇我,外房線,勝浦 -> [山]外房線,勝浦
             }
   				// route_list_cooked = route_list_tmp3
   			route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
-			BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+			// TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+            rule_map.rule86or87 = true;
 
             return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		}
@@ -5903,7 +5762,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 			TRACE("Rule 69(3) applied %dtimes.\n", n);
 
 			/* 発駅のみ都区市内にしても201/101km以上か？ */
-			km_raw = CalcRoute::Get_route_distance(last_flag, route_list_tmp3);
+			km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
 			skm = km_raw[0] - km_raw[2];
 			if (sk2 < skm) {
 				// 発 都区市内有効
@@ -5920,14 +5779,14 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 			TRACE("Rule 69(4) applied %dtimes.\n", n);
 
 			/* 着駅のみ都区市内にしても201/101km以上か？ */
-			km_raw = CalcRoute::Get_route_distance(last_flag, route_list_tmp3);
+			km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
 			skm = km_raw[0] - km_raw[2];
 			if (sk2 < skm) {
 				// 着 都区市内有効
 				flg |= 0x02;
 			}
 			if (flg == 0x03) {	/* 発・着とも200km越えだが、都区市内間は200km以下 */
-				if (BIT_CHK(last_flag, BLF_MEIHANCITYFLAG)) {
+				if (route_flag.meihancityflag) {
 					/* 発のみ都区市内適用 */
 					/* route_list_tmp = route_list_tmp2 */
 					route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
@@ -5937,36 +5796,44 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 					// 69を適用したものをroute_list_tmp3へ
 					n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
 					TRACE("Rule 69(5) applied %dtimes.\n", n);
-
+                    if (0 < n) {
+                        rule_map.rule69 = true;
+                    }
 					/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
 					if (sk == 900) {
 						TRACE("applied for rule87(start)\n");
-						last_flag &= ~LF_TER_CITY_MASK;
-						last_flag |= (MASK(BLF_TER_BEGIN_YAMATE) | MASK(BLF_TER_BEGIN_CITY_OFF));
+                        route_flag.terCityReset();
+                        route_flag.ter_begin_yamate = true;
+                        route_flag.ter_begin_city_off = true;
 					} else {
 						TRACE("applied for rule86(start)\n");
-						last_flag &= ~LF_TER_CITY_MASK;
-						last_flag |= (MASK(BLF_TER_BEGIN_CITY) | MASK(BLF_TER_BEGIN_CITY_OFF));
+                        route_flag.terCityReset();
+                        route_flag.ter_begin_city = true;
+                        route_flag.ter_begin_city_off = true;
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-                    BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    //TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    rule_map.rule86or87 = true;
                     return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				} else {
 					/* 着のみ都区市内適用 */
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
 					if (sk == 900) {
 						TRACE("applied for rule87(end)\n");
-						last_flag &= ~LF_TER_CITY_MASK;
-						last_flag |= (MASK(BLF_TER_FIN_YAMATE) | MASK(BLF_TER_FIN_CITY_OFF));
+                        route_flag.terCityReset();
+                        route_flag.ter_fin_yamate = true;
+                        route_flag.ter_fin_city_off = true;
 					} else {
 						TRACE("applied for rule86(end)\n");
-						last_flag &= ~LF_TER_CITY_MASK;
-						last_flag |= (MASK(BLF_TER_FIN_CITY) | MASK(BLF_TER_FIN_CITY_OFF));
+                        route_flag.terCityReset();
+                        route_flag.ter_fin_city = true;
+                        route_flag.ter_fin_city_off = true;
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-                    BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    //TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                    rule_map.rule86or87 = true;
 					return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				}
 			} else if (flg == 0x01) {
@@ -5978,35 +5845,40 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 				// 69を適用したものをroute_list_tmp3へ
 				n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
 				TRACE("Rule 69(6) applied %dtimes.\n", n);
+                if (0 < n) {
+                    rule_map.rule69 = true;
+                }
 
 				/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
 				if (sk == 900) {
 					TRACE("applied for rule87(start)\n");
-					last_flag &= ~LF_TER_CITY_MASK;
-					BIT_ON(last_flag, BLF_TER_BEGIN_YAMATE);
+                    route_flag.terCityReset();
+                    route_flag.ter_begin_yamate = true;;
 				} else {
 					TRACE("applied for rule86(start)\n");
-					last_flag &= ~LF_TER_CITY_MASK;
-					BIT_ON(last_flag, BLF_TER_BEGIN_CITY);
+                    route_flag.terCityReset();
+                    route_flag.ter_begin_city = true;;
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-                BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                // TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                rule_map.rule86or87 = true;
 				return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			} else if (flg == 0x02) {
 				/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
 				if (sk == 900) {
 					TRACE("applied for rule87(end)\n");
-					last_flag &= ~LF_TER_CITY_MASK;
-					BIT_ON(last_flag, BLF_TER_FIN_YAMATE);
+                    route_flag.terCityReset();
+                    route_flag.ter_fin_yamate = true;;
 				} else {
 					TRACE("applied for rule86(end)\n");
-					last_flag &= ~LF_TER_CITY_MASK;
-					BIT_ON(last_flag, BLF_TER_FIN_CITY);
+                    route_flag.terCityReset();
+                    route_flag.ter_fin_city = true;;
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-                BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                //TODO BIT_ON(last_flag, BLF_RULE_EN);    // applied rule
+                rule_map.rule86or87 = true;
 				return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			/* flg == 0 */
@@ -6044,7 +5916,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
 			rule114 =					/* 86,87適用前,   86,87適用後 */
-			         CalcRoute::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
+			         CalcRoute::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
 									        0x01 | ((sk2 == 2000) ? 0 : 0x8000));
             if (rule114.fare == 0) {
 				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
@@ -6057,7 +5929,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
 				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
 				CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
-			    rule114 = CalcRoute::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
+			    rule114 = CalcRoute::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
 									           0x02 | ((sk2 == 2000) ? 0 : 0x8000));
             }
 		} else {
@@ -6067,7 +5939,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
 			ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
 			rule114 =
-			CalcRoute::CheckOfRule114j(last_flag, route_list_tmp, route_list_tmp3,
+			CalcRoute::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
 								   (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000));
 		}
 	} else {
@@ -6659,7 +6531,7 @@ n1:
 //
 //	@note 86/87適用後の営業キロが200km/100km以下であること.
 //
-FARE_INFO::Fare CalcRoute::CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind)
+FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind)
 {
     FARE_INFO::Fare result;
 	int32_t dkm;
@@ -6683,10 +6555,10 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(SPECIFICFLAG last_flag, const vector<
 	}
 
 #ifdef _DEBUG
-	km_raw = CalcRoute::Get_route_distance(last_flag, route); 			/* 経路距離 */
+	km_raw = CalcRoute::Get_route_distance(rRoute_flag, route); 			/* 経路距離 */
 	ASSERT(km_raw.size() == 3);			// [0]:営業キロ、[1]計算キロ
 #endif
-	km_spe = CalcRoute::Get_route_distance(last_flag, routeSpecial); 	/* 経路距離(86,87適用後) */
+	km_spe = CalcRoute::Get_route_distance(rRoute_flag, routeSpecial); 	/* 経路距離(86,87適用後) */
 	ASSERT(km_spe.size() == 3);
 
 	aSales_km = km_spe.at(0) - km_spe.at(2);			// 営業キロ
@@ -6755,8 +6627,8 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(SPECIFICFLAG last_flag, const vector<
 	}
 
 	/* 通常運賃を得る */
-	SPECIFICFLAG last_flag_ref = last_flag;
-	if (!fi.calc_fare(&last_flag_ref, route, route)) {
+	RouteFlag rRoute_flag_ref = rRoute_flag;
+	if (!fi.calc_fare(&rRoute_flag_ref, route, route)) {
 		ASSERT(FALSE);
 		return result;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
@@ -6767,7 +6639,7 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(SPECIFICFLAG last_flag, const vector<
 	ASSERT(km_raw[1] == fi.getJRCalcKm());
 #endif
 	/* 86,87適用した最短駅の運賃を得る(上例では甲斐住吉-横浜間) */
-	if (!fi.calc_fare(&last_flag_ref, route_work, route_work)) {
+	if (!fi.calc_fare(&rRoute_flag_ref, route_work, route_work)) {
 		ASSERT(FALSE);
 		return result;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
@@ -7291,7 +7163,7 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 			stationId = route_list_raw.back().stationId;
 		    if (0 == Route::Id2jctId(stationId)) {
 		    	removeTail();
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+				route_flag.jctsp_route_change = true;	/* route modified */
 			} else {
 		    	break;
 		    }
@@ -7307,7 +7179,7 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 		return 4;			/* already routed */
 	}
 
-    if (BIT_CHK(last_flag, BLF_END)) {
+    if (route_flag.end) {
 		return 5;	/* already finished */
     }
 
@@ -7526,7 +7398,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 //           		if (0 <= a) {
 //           			route_list_cooked.clear();
 //           		}
-				BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+				route_flag.jctsp_route_change = true;	/* route modified */
 				return a;	//>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
         }
@@ -7639,7 +7511,7 @@ TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), RouteUtil::LineNam
 	for (i = 0; i < (int32_t)route.size(); i++) {
 TRACE(_T("route[] add: %s\n"), RouteUtil::StationName(Route::Jct2id(route[i] + 1)).c_str());
 		a = add(dijkstra.lineId(route[i]), /*stationId,*/ Route::Jct2id(route[i] + 1));
-		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+		route_flag.jctsp_route_change = true;/* route modified */
 		if ((a <= 0) || (a == 5)) {
 			//ASSERT(FALSE);
 TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
@@ -7663,7 +7535,7 @@ TRACE(_T("fin last:%s\n"), RouteUtil::LineName(lid).c_str());
 			return -1000;
 		}
 		a = add(lid, /*stationId,*/ end_station_id);
-		BIT_ON(last_flag, BLF_JCTSP_ROUTE_CHANGE);	/* route modified */
+		route_flag.jctsp_route_change = true;/* route modified */
 		if ((a <= 0) || (a == 5)) {
 			//ASSERT(0 == a);
 			return a;
@@ -8253,7 +8125,7 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
  *	@return vector<int32_t> [5] IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
  *
  */
-vector<int32_t> FARE_INFO::GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2)
+vector<int32_t> FARE_INFO::GetDistanceEx(const RouteFlag& osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	vector<int32_t> result;
 	int32_t rslt = 0;
@@ -8447,7 +8319,7 @@ bool FARE_INFO::aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw
 }
 
 int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社線 */
-                                      SPECIFICFLAG last_flag,
+                                      const RouteFlag& rRoute_flag,
                                       int32_t station_id_0,
                                       int32_t station_id,
                                       int32_t station_id1)
@@ -8468,8 +8340,7 @@ int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社�
 
             // if ex. 氷見-金沢 併算割引非適用
             if (comfare.is_connect_non_discount_fare() &&
-                (((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN)) !=
-                (last_flag & ((1 << BLF_COMPNEND) | (1 << BLF_COMPNBEGIN))))) {
+                (!rRoute_flag.compnend || !rRoute_flag.compnbegin)) {
                 /* 乗継割引なし */
                 if (!FARE_INFO::Fare_company(station_id1, station_id, &comfare)) {
                     ASSERT(FALSE);
@@ -8531,12 +8402,12 @@ int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社�
 //  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
 //  @note isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある
 //
-int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
+int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
 {
 	IDENT station_id1;		/* station_id1, (station_id2=ite->stationId) */
 	IDENT station_id_0;		/* last station_id1(for Company line) */
 	vector<RouteItem>::const_iterator ite;
-	uint32_t   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
+	RouteFlag   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
 
     bool b_jrtokaiOnly = aggregate_fare_is_jrtokai(routeList_raw);
 	                                //
@@ -8545,16 +8416,13 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 
 	this->local_only = true;
 	this->local_only_as_hokkaido = true;
-	osakakan_aggregate = *last_flag;
-	BIT_OFF(osakakan_aggregate, BLF_OSAKAKAN_1PASS);
+	osakakan_aggregate = *pRoute_flag;
+	osakakan_aggregate.setOsakaKanPass(false);
 
     enableTokaiStockSelect = 0;
-	BIT_OFF(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
 
-	//TRACE("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", isNotCityterminalWoTokai(), isCityterminalWoTokai(), *last_flag & LF_TER_CITY_MASK);
-	//TRACE("@@@ en=%d, aply=%d rule=%d norule=%d\n", BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_ENABLE),
-	//	BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED),
-	//	BIT_CHK(*last_flag, BLF_NO_RULE), BIT_CHK(*last_flag, BLF_RULE_EN));
+    //TODO
+	pRoute_flag->jrtokaistock_enable = false ;
 
 	station_id_0 = station_id1 = 0;
 
@@ -8583,7 +8451,7 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 					d = this->getDistanceEx(ite->lineId, station_id1, ite->stationId);
 				} else {
 					d = FARE_INFO::GetDistanceEx(osakakan_aggregate, ite->lineId, station_id1, ite->stationId);
-					BIT_ON(osakakan_aggregate, BLF_OSAKAKAN_1PASS);
+					osakakan_aggregate.setOsakaKanPass(true);
 				}
 
 				if (6 != d.size()) {
@@ -8614,7 +8482,7 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 				this->sales_km += d.at(0);			// total 営業キロ(会社線含む、有効日数計算用)
 				if (IS_COMPANY_LINE(ite->lineId)) {	/* 会社線 */
                     station_id_0 = aggregate_fare_company(this->sales_km == d.at(0),
-                                                            *last_flag,
+                                                            *pRoute_flag,
                                                             station_id_0,
                                                             ite->stationId,
                                                             station_id1);
@@ -8662,15 +8530,15 @@ int32_t FARE_INFO::aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<Rou
 
 		if (isCityterminalWoTokai()) {
 			enableTokaiStockSelect = 1;	// JR東海株主優待券使用可
-			BIT_ON(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
+            pRoute_flag->jrtokaistock_enable = true;
 		}
 		else {
 			if (this->companymask == (1 << (JR_CENTRAL - 1))) {
                 enableTokaiStockSelect = 2; // JR東海TOICA有効
             }
 			this->companymask = (1 << (JR_CENTRAL - 1));
-			if (BIT_CHK(*last_flag, BLF_JRTOKAISTOCK_APPLIED)) {
-				BIT_ON(*last_flag, BLF_JRTOKAISTOCK_ENABLE);
+			if (pRoute_flag->jrtokaistock_applied) {
+				pRoute_flag->jrtokaistock_enable = true;
 			}
 		}
 	}
@@ -8840,7 +8708,7 @@ int32_t FARE_INFO::aggregate_fare_jr(bool is_brt, int32_t company_id1, int32_t c
 //  @note last_flag update bit was BLF_JRTOKAISTOCK_ENABLE only.
 //  @note aggregate_fare_info()で、isCityterminalWoTokai()を呼ぶので、setTerminal()を読んでおく必要がある(JR東海のみ)
 //
-bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
+bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked)
 {
 	int32_t fare_add;		/* 特別加算区間 */
 	int32_t adjust_km;
@@ -8848,16 +8716,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 
 	reset();
 
-    // is applied the 87 or 86 ?
-    if (0 != (*last_flag & ((1<<BLF_TER_FIN_CITY)|(1<<BLF_TER_BEGIN_CITY)|
-                      (1<<BLF_TER_FIN_YAMATE)|(1<<BLF_TER_BEGIN_YAMATE)))) {
-        this->flag = (1<<BCABILSPECTERM);   // ability for 86/87
-        if (0 == (*last_flag & (1 << BLF_NO_RULE))) {
-            this->flag |= (1<<BCSPECTERM);  // applied 86/87
-        }
-    }
-
-	if ((fare_add = FARE_INFO::aggregate_fare_info(last_flag, routeList_raw, routeList_cooked)) < 0) {
+	if ((fare_add = FARE_INFO::aggregate_fare_info(pRoute_flag, routeList_raw, routeList_cooked)) < 0) {
 		ASSERT(FALSE);
         reset();
         BIT_ON(result_flag, BRF_FATAL_ERROR);
@@ -8895,7 +8754,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 
 		int32_t special_fare;
 
-		if (BIT_CHK(*last_flag, BLF_COMPNCHECK) && (this->sales_km < 1500)) {
+		if (pRoute_flag->compncheck && (this->sales_km < 1500)) {
 										/* 大聖寺-和倉温泉は106kmある */
 										/* 大聖寺-米原-岐阜-富山-津端-和倉温泉 を弾く為 */
 	        	TRACE("specific fare section replace for IR-ishikawa change continue discount\n");
@@ -8903,7 +8762,7 @@ bool FARE_INFO::calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& rout
 				if (0 < special_fare) {
 		            this->jr_fare = special_fare - this->company_fare;	/* IRいしかわ 乗継割引 */
 				}
-		} else if ((!BIT_CHK(*last_flag, BLF_NO_RULE)) &&
+		} else if (/* TODO (!BIT_CHK(*last_flag, BLF_NO_RULE)) && TODO */
                     !isUseBulletInUrban()            /* b#18111401: 新幹線乗車なく、 */
 		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))) {
 			special_fare = FARE_INFO::SpecficFareLine(routeList.front().stationId, routeList.back().stationId, 1);
@@ -9088,18 +8947,18 @@ void FARE_INFO::calc_brt_fare(const vector<RouteItem>& routeList)
 //	@param [in]	begin_station_id  開始駅
 //	@param [in] end_station_id    終了駅
 //	@param [in] routeList         経路（規則適用時は変換後、規則非適用なら変換前）
-//	@param [in] last_flag         route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
+//	@param [in]           route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
 //
 void FARE_INFO::setRoute(const vector<RouteItem>& routeList,
-                         SPECIFICFLAG last_flag)
+                         const RouteFlag& rRoute_flag)
 {
-    route_for_disp = RouteUtil::Show_route(routeList, last_flag);
+    route_for_disp = RouteUtil::Show_route(routeList, rRoute_flag);
 }
 
 void FARE_INFO::setTOICACalcRoute(const vector<RouteItem>& routeList,
-                         SPECIFICFLAG last_flag)
+                         const RouteFlag& rRoute_flag)
 {
-    calc_route_for_disp = RouteUtil::Show_route(routeList, last_flag);
+    calc_route_for_disp = RouteUtil::Show_route(routeList, rRoute_flag);
 }
 
 /*
@@ -9229,8 +9088,8 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
         fare_info_shorts.reset();
 
         fare_info_shorts.setTerminal(start_terminal_id, end_terminal_id);
-        SPECIFICFLAG short_last_flag = shortRoute.getLastFlag();
-    	if (!fare_info_shorts.calc_fare(&short_last_flag, shortRoute.routeList(), std::vector<RouteItem>())) {
+        RouteFlag short_route_flag = shortRoute.getRouteFlag();
+    	if (!fare_info_shorts.calc_fare(&short_route_flag, shortRoute.routeList(), std::vector<RouteItem>())) {
             ASSERT(FALSE);
             return false;
         }
@@ -9238,7 +9097,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
         if (fare_info_shorts.getFareForJR() < this->getFareForJR()) {
             //
             fare_ic = fare_info_shorts.getFareForJR();
-            setTOICACalcRoute(shortRoute.routeList(), short_last_flag);
+            setTOICACalcRoute(shortRoute.routeList(), short_route_flag);
         } else {
             clrTOICACalcRoute();
         }
@@ -9260,8 +9119,8 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
         fare_info_shorts.reset();
 
         fare_info_shorts.setTerminal(shortCalcRoute.beginStationId(true), shortCalcRoute.endStationId(true));
-        SPECIFICFLAG short_last_flag = shortCalcRoute.getLastFlag();
-    	if (!fare_info_shorts.calc_fare(&short_last_flag, shortCalcRoute.routeList(), shortCalcRoute.cookedRouteList())) {
+        RouteFlag short_route_flag = shortCalcRoute.getRouteFlag();
+    	if (!fare_info_shorts.calc_fare(&short_route_flag, shortCalcRoute.routeList(), shortCalcRoute.cookedRouteList())) {
             ASSERT(FALSE);
             return false;
         }
@@ -9275,7 +9134,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
         std::vector<RouteItem>  route_via_tachikawa = IsHachikoLineHaijima(shortCalcRoute.cookedRouteList());
         if (route_via_tachikawa.size() != 0) {
             fare_info_via_tachikawa.setTerminal(start_terminal_id, end_terminal_id);
-            if (fare_info_via_tachikawa.calc_fare(&short_last_flag, route_via_tachikawa, route_via_tachikawa)) {
+            if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa, route_via_tachikawa)) {
                 if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
                     /* 立川経由の方が安い */
                     decision = 2;
@@ -9300,7 +9159,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
                 // 新幹線経路が在来線経路に勝手に書き換わってしまうので。
                 // 最短経路=最安
 				*this = fare_info_shorts;
-                setRoute(shortRoute.routeList(), short_last_flag);
+                setRoute(shortRoute.routeList(), short_route_flag);
             } else {
                 jr_fare = fare_info_shorts.jr_fare;
             }
@@ -9309,7 +9168,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
             // 立川経由が最安
             if (getStockDiscountCompany() != JR_CENTRAL) {
                 *this = fare_info_via_tachikawa;
-                setRoute(route_via_tachikawa, short_last_flag);
+                setRoute(route_via_tachikawa, short_route_flag);
             } else {
                 jr_fare = fare_info_via_tachikawa.jr_fare;
             }
