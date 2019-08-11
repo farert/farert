@@ -1,9 +1,35 @@
 
+FARE_INFO fi;
+croute.calcFare(&fi);
+s = fi.showFare();
+:
+int flag = fi.enablesRules();  appliedRules()とは別でability,capabilityを返す
+:
+FARE_INFO fi(flag);
+fi.setFareOption(flag);     階層構造とフラグの使い所
+croute.calcFare(fi);
+  checkOfRuleSpecificCoreLine
+    setTerminal
+    fi.calc_fare(pRoute_flag, RouteList)      このあとのために
+     fi.aggregate_fare_info(RouteFlag)     JR東海関連でセット。大阪環状線フラグは参照
+       GetDistanceEx(RouteList)               大阪環状線フラグ
+     fi.aggregate_fare_company(RouteFlag)    会社線通過フラグを参照
+    fi.reCalcFareForOptiomizeRoute(RouteList)  (フラグは未使用)
+    fi.setRoute(RouteList, RouteFlag) ->   RouteUtil::Show_route(routeList, rRoute_flag) 大阪環状線フラグを利用
+    CalcRoute.beginStationId(applied_agree)   applied_agreeはbool特例適用か否か=単駅使用か特定都区市内か？
+    CalcRoute.endStationId(applied_agree)
+    fi.setRoundTrip()
+    fi.setEnableRules()
+
+
 
 2019-08-11
 大改造
 FARE_INFO.calc_fare() -> CalcRouteのメンバへ。
 CalcRoute.calc_fare(FARE_INFO fi, )
+->断念　calc_fareはいろいろ使われるので面倒
+
+
 
 
 2019-08-10

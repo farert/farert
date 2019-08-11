@@ -275,62 +275,54 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 
 #define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
 
-class RULE_MAP {
+class RouteFlag {
+
+    unsigned char osakaKanPass = 0;
 public:
-    RULE_MAP() { clear(); }
+    bool no_rule;
     // メンバの数はenableMapValueに依存するので制限32個まで
+    bool jrtokaistock_applied;    // TODO あとでRuleMapへ写す検討
+    bool jrtokaistock_enable;    // TODO あとでRuleMapへ写す検討
+    bool meihancityflag;         //TODO これも
     bool rule86or87;
     bool rule88;
     bool rule69;
     bool metro;
     bool rule70;
 
-    // bit7 - 大高-杉本町とかで、[名][阪]をどっちに適用するか
-    bool meihancityflag = false;	    //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
+    bool ter_begin_city_off;    //名阪発駅単駅着駅都区市内
+    bool ter_fin_city_off;      //名阪着駅単駅発駅都区市内
+    bool trackmarkctl;	        //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
+    bool jctsp_route_change;	//6 分岐特例(add内部使用)
 
-    // bit 10 JR東海 東海道新幹線区間
-    bool jrtokaistock_enable = false;	//10 提案可能フラグ
-                                           //   東海道新幹線で[区][山][浜][京][阪]が適用する場面でセットされる
-                                           //   JR東海株主優待適用・非適用選択メニューが有効となる
-    bool jrtokaistock_applied = false; 		//11 提案適用フラグ
-                                           //   UI側からユーザが指定する
 
-    bool enable;    // user -> system
+    // bit 11-20 発着 都区市内 適用
+    bool ter_begin_city	;      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
+    bool ter_fin_city	;      //14
+    bool ter_begin_yamate;      //15/ [山]
+    bool ter_fin_yamate	;      //16
+    bool ter_begin_2city;      //17 not used
+    bool ter_fin_2city	;      //18 not used
+    bool ter_begin_oosaka;      //21 大阪・新大阪
+    bool ter_fin_oosaka	;      //22
+    // 会社線
+    bool compncheck	    ;      //23 会社線通過チェック有効
+    bool compnpass		;      //24 通過連絡運輸
+    bool compnda		;      //25 通過連絡運輸不正フラグ
+    bool compnbegin		;      //26	会社線で開始
+    bool compnend		;      //27 会社線で終了
 
-    bool no_rule;
-    bool rule_en;
+               // 28
+               // 29 used
 
-    void clear() {
-        rule86or87 = false;
-        rule88 = false;
-        rule69 = false;
-        rule88 = false;
-        metro = false;
-        rule70 = false;
-        enable = false;
-
-        meihancityflag = false;	        //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
-        no_rule = false;                //8 ON: 特例非適用(User->System)
-        rule_en = false;                //9 ON: 特例適用(System->User)
-
-        jrtokaistock_enable= false;	    //10 提案可能フラグ
-        jrtokaistock_applied= false; 	//11 提案適用フラグ
-    }
-    void assign(const RULE_MAP& src_rules) {
-        rule86or87 = src_rules.rule86or87;
-        rule88 = src_rules.rule88;
-        rule69 = src_rules.rule69;
-        rule88 = src_rules.rule88;
-        metro = src_rules.metro;
-        rule70 = src_rules.rule70;
-        enable = src_rules.enable;
-
-        meihancityflag = src_rules.meihancityflag ;	    //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
-        no_rule = src_rules.no_rule ;                   //8 ON: 特例非適用(User->System)
-        rule_en = src_rules.rule_en ;                   //9 ON: 特例適用(System->User)
-
-        jrtokaistock_enable = src_rules.jrtokaistock_enable;	//10 提案可能フラグ
-        jrtokaistock_applied = src_rules.jrtokaistock_applied; 	//11 提案適用フラグ
+    // Global
+    bool notsamekokurahakatashinzai;    //30 Route only : 小倉-博多間 新在別線扱い
+    bool end		;               //31 arrive to end.
+    // end of last_flag
+public:
+    bool rule_en() {
+        // TODO
+       return true;
     }
     int enableMapValue() {
         int value = 0;
@@ -341,19 +333,11 @@ public:
         value |= ((rule88) ? 1<<3 : 0);
         value |= ((metro) ? 1<<4 : 0);
         value |= ((rule70) ? 1<<5 : 0);
+        value |= ((ter_begin_city_off) ? 1<<6 : 0);      //19
+        value |= ((ter_fin_city_off) ? 1<<7 : 0);      //20
 
         return value;
     }
-};
-
-class RouteFlag {
-
-    unsigned char osakaKanPass = 0;
-public:
-    // bit0-1
-    bool jrtokaistock_applied;    // TODO あとでRuleMapへ写す検討
-    bool jrtokaistock_enable;    // TODO あとでRuleMapへ写す検討
-    bool meihancityflag;         //TODO これも
 
     // for debug print
     int getOsakaKanPassValue()  const { return osakaKanPass; }
@@ -401,21 +385,10 @@ public:
         this->osakakan_2dir = lf.osakakan_2dir;
     }
 
-    bool trackmarkctl = false;	        //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
-    bool jctsp_route_change = false;	//6 分岐特例(add内部使用)
+    bool isRoundTrip() const {
+		return !end || compnda;
+	}
 
-
-    // bit 11-20 発着 都区市内 適用
-    bool ter_begin_city		= false;      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
-    bool ter_fin_city		= false;      //14
-    bool ter_begin_yamate	= false;      //15/ [山]
-    bool ter_fin_yamate		= false;      //16
-    bool ter_begin_2city	= false;      //17 not used
-    bool ter_fin_2city		= false;      //18 not used
-    bool ter_begin_city_off	= false;      //19
-    bool ter_fin_city_off	= false;      //20
-    bool ter_begin_oosaka	= false;      //21 大阪・新大阪
-    bool ter_fin_oosaka		= false;      //22
     void terCityReset() {
         ter_begin_city		= false;      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
         ter_fin_city		= false;      //14
@@ -423,8 +396,7 @@ public:
         ter_fin_yamate		= false;      //16
         ter_begin_2city	= false;      //17 not used
         ter_fin_2city		= false;      //18 not used
-        ter_begin_city_off	= false;      //19
-        ter_fin_city_off	= false;      //20
+
         ter_begin_oosaka	= false;      //21 大阪・新大阪
         ter_fin_oosaka		= false;      //22
     }
@@ -436,26 +408,10 @@ public:
         ter_fin_yamate		||      //16
         ter_begin_2city	||      //17 not used
         ter_fin_2city		||      //18 not used
-        ter_begin_city_off	||      //19
-        ter_fin_city_off	||      //20
+
         ter_begin_oosaka	||      //21 大阪・新大阪
         ter_fin_oosaka		;      //22
     }
-
-    // 会社線
-    bool compncheck	    	= false;      //23 会社線通過チェック有効
-    bool compnpass			= false;      //24 通過連絡運輸
-    bool compnda			= false;      //25 通過連絡運輸不正フラグ
-    bool compnbegin			= false;      //26	会社線で開始
-    bool compnend			= false;      //27 会社線で終了
-
-               // 28
-               // 29 used
-
-    // Global
-    bool notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
-    bool end			= false;               //31 arrive to end.
-    // end of last_flag
 
     RouteFlag() {
         clear();
@@ -480,8 +436,7 @@ public:
         ter_fin_yamate		= false;      //16
         ter_begin_2city	= false;      //17 not used
         ter_fin_2city		= false;      //18 not used
-        ter_begin_city_off	= false;      //19
-        ter_fin_city_off	= false;      //20
+
         ter_begin_oosaka	= false;      //21 大阪・新大阪
         ter_fin_oosaka		= false;      //22
         compncheck		    = false;      //23 会社線通過チェック有効
@@ -491,6 +446,22 @@ public:
         compnend			= false;      //27 会社線で終了
         //notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
+
+        rule86or87 = false;
+        rule88 = false;
+        rule69 = false;
+        rule88 = false;
+        metro = false;
+        rule70 = false;
+
+        ter_begin_city_off	= false;      //19
+        ter_fin_city_off	= false;      //20
+
+        meihancityflag = false;	        //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
+        no_rule = false;                //8 ON: 特例非適用(User->System)
+
+        jrtokaistock_enable= false;	    //10 提案可能フラグ
+        jrtokaistock_applied= false; 	//11 提案適用フラグ
     }
 };
 
@@ -569,27 +540,14 @@ public:
 //	void            setFareOption(uint16_t cooked, uint16_t availbit);
 
 //TODO	virtual uint32_t   getFareOption();
-	bool			isRoundTrip() const {
-		return !route_flag.end || route_flag.compnda;
-	}
 protected:
 };
 
 
 class FARE_INFO {
-    /* result_flag bit */
-    #define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
-    #define BRF_COMAPANY_END		1		/* 会社線で終了 */
-    										/* 通常OFF-OFF, ON-ONは会社線のみ */
-    #define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
-    #define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
-    #define BRF_ROUTE_EMPTY         4       /* empty */
-    #define BRF_FATAL_ERROR         5       /* fatal error in aggregate_fare_info() */
 public:
 	FARE_INFO() { reset(); FARE_INFO::tax = g_tax; }
 private:
-    RULE_MAP enabledRules;
-
 	int32_t sales_km;			//*** 有効日数計算用(会社線含む)
 
 	int32_t base_sales_km;		//*** JR本州3社
@@ -623,8 +581,6 @@ private:
 #define BRT_DISCOUNT_FARE 100
     int32_t brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
 
-	int32_t result_flag;				/* 結果状態: BRF_xxx */
-    bool    is_roundTrip;               // 往復禁止
 private:
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 	int32_t jr_fare;					//***
@@ -648,6 +604,25 @@ private:
     int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
     bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
+    class ResultFlag {
+    public:
+        bool comapany_first;		 /* 会社線から開始 */
+        bool comapany_end;			 /* 会社線で終了  通常OFF-OFF, ON-ONは会社線のみ */
+        bool company_incorrect;		 /* 会社線2社以上通過 */
+        bool route_incomplete;	     /* 不完全経路(BSRNOTYET_NA) */
+        bool route_empty;            /* empty */
+        bool fatal_error;            /* fatal error in aggregate_fare_info() */
+        ResultFlag() { clean(); }
+        void clean() {
+            comapany_first = false;		 /* 会社線から開始 */
+            comapany_end = false;			 /* 会社線で終了  通常OFF-OFF, ON-ONは会社線のみ */
+            company_incorrect = false;		 /* 会社線2社以上通過 */
+            route_incomplete = false;	     /* 不完全経路(BSRNOTYET_NA) */
+            route_empty = false;            /* empty */
+            fatal_error = false;            /* fatal error in aggregate_fare_info() */
+        }
+    } result_flag;
+
 	void retr_fare();
     void calc_brt_fare(const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
@@ -669,7 +644,6 @@ public:
     RouteList reRouteForToica(const RouteList& route);
     void setRoute(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
     void clrTOICACalcRoute() {calc_route_for_disp.clear();}
-    void setTOICACalcRoute(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
 	void reset() {				//***
 		companymask = 0;
 		sales_km = 0;
@@ -716,8 +690,7 @@ public:
         //beginTerminalId = 0;          /* for Use isCityterminalWoTokai() / isNotCityterminalWoTokai() */
         //endTerminalId = 0;
 
-		result_flag = 0;
-        is_roundTrip = false;
+		result_flag.clean();
 
         enableTokaiStockSelect = 0;
 
@@ -725,8 +698,6 @@ public:
 
         route_for_disp.clear();
         calc_route_for_disp.clear();
-
-        enabledRules.clear();
 	}
     class FareResult {
     public:
@@ -739,39 +710,28 @@ public:
         }
     };
     void setEmpty() {
-        BIT_ON(result_flag, BRF_ROUTE_EMPTY);
+       result_flag.route_empty = true;
     }
     void setInComplete() {
-        BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE);
+       result_flag.route_incomplete = true;
     }
     bool isMultiCompanyLine() const {
-        return BIT_CHK(result_flag, BRF_COMPANY_INCORRECT);
+        return result_flag.company_incorrect;
     }
     bool isBeginEndCompanyLine() const {
-        return (result_flag & ((1 << BRF_COMAPANY_FIRST) | (1 << BRF_COMAPANY_END))) != 0;
+        return result_flag.comapany_first || result_flag.comapany_end;
     }
     int     resultCode() const {
-        if (BIT_CHK(result_flag, BRF_ROUTE_INCOMPLETE)) {
+        if (result_flag.route_incomplete) {
             return -1;
-        } else if (BIT_CHK(result_flag, BRF_ROUTE_EMPTY)) {
+        } else if (result_flag.route_empty) {
             return -2;
-        } else if (BIT_CHK(result_flag, BRF_FATAL_ERROR)) {
+        } else if (result_flag.fatal_error) {
             return -3;
         } else {
             return 0;
         }
     }
-    void setRoundTrip(bool isRoundTrip) {
-        is_roundTrip = isRoundTrip;
-    }
-    void setEnableRules(const RULE_MAP& rule) {
-        enabledRules.assign(rule);
-    }
-    int availedRules() {
-        return enabledRules.enableMapValue();
-    }
-
-    bool isRoundTrip() const { return is_roundTrip; }
 
 	// [名]以外の都区市内・山手線が発着のいずれかにあり
 	bool isCityterminalWoTokai() const {
@@ -877,7 +837,7 @@ public:
     tstring getTOICACalcRoute_string() const { return calc_route_for_disp; }
     bool    isAppliedSpecificFare() const { return applied_specic_fare; }
 
-    tstring 		showFare();
+    tstring 		showFare(const RouteFlag& routeFlag);
 
     static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
@@ -1223,7 +1183,6 @@ public:
 class CalcRoute : public RouteList
 {
     vector<RouteItem> route_list_cooked;
-    RULE_MAP rule_map;
 
     CalcRoute() {
     }
@@ -1284,43 +1243,5 @@ private:
 #define ADDRC_CEND	4
 // ADDRC_NG -1 to -N
 
-
-/* cooked flag for shoFare(), show_route() */
-// bit 15  (User->System)
-#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000	// 有効ビットマスク
-#define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
-#define	FAREOPT_RULE_APPLIED					0		// 通常
-
-// bit 0-1 (User->System)
-#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
-#define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
-#define FAREOPT_APPLIED_TERMINAL				2	// 名阪間 着駅を市内駅に適用
-
-// (System->User)
-
-#define IS_MAIHAN_CITY_START_TERMINAL_EN(flg) (((flg) & 0x03) != 0x00)
-#define IS_MAIHAN_CITY_START(flg)             (((flg) & 0x03) == 0x01)
-#define IS_MAIHAN_CITY_TERMINAL(flg)          (((flg) & 0x03) == 0x02)
-
-// bit 2-3
-#define IS_OSAKAKAN_DETOUR_EN(flg)            (((flg) & 0x0c) != 0)
-
-// TRUE: Detour / FALSE: Shortcut
-#define IS_OSAKAKAN_DETOUR_SHORTCUT(flg)      (((flg) & 0x0c) == 0x08)
-
-// bit 4-5
-#define IS_RULE_APPLIED_EN(flg)               (((flg) & 0x30) != 0)
-#define IS_RULE_APPLIED(flg)                  (((flg) & 0x30) == 0x10)
-
-
-#define IS_FAREOPT_ENABLED(flg)               (((flg) & 0x3f) != 0)
-
-// bit 6-7
-// empty or start only
-
-// bit 8-9(User->System)
-#define FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK 	(1<<6)   // 有効ビットマスク
-#define FAREOPT_JRTOKAI_STOCK_APPLIED			(1<<6)	// JR東海株主に適用
-#define FAREOPT_JRTOKAI_STOCK_NO_APPLIED			0   	// JR東海株主に非適用
 
 #endif	/* _ALPDB_H__ */
