@@ -418,10 +418,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if nil != title.range(of: "特例") {
             if nil != title.range(of: "しない") {
                 // @"特例を適用しない";
-                ds.setFareOption(FGD.FAREOPT_RULE_NO_APPLIED, availMask: FGD.FAREOPT_AVAIL_RULE_APPLIED)
+                ds.setNoRule(true);
             } else {
                 // @"特例を適用する";
-                ds.setFareOption(FGD.FAREOPT_RULE_APPLIED, availMask: FGD.FAREOPT_AVAIL_RULE_APPLIED)
+                ds.setNoRule(false);
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
@@ -429,10 +429,10 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         } else if nil != title.range(of: "単駅") {
             if nil != title.range(of: "発駅") {
                 // "発駅を単駅指定";
-                ds.setFareOption(FGD.FAREOPT_APPLIED_TERMINAL, availMask: FGD.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+                ds.setArriveAsCity();
             } else {
                 // "着駅を単駅指定";
-                ds.setFareOption(FGD.FAREOPT_APPLIED_START, availMask: FGD.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+                ds.setStartAsCity();
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
@@ -467,11 +467,19 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         } else if nil != title.range(of: "株主優待") {
             if nil != title.range(of: "しない") {
                 // @"JR東海株主優待券を適用しない";
-                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
+                ds.setJrTokaiStockApply(false);
             } else {
                 // @"JR東海株主優待券を使用する";
-                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
+                ds.setJrTokaiStockApply(true);
             }
+            self.reCalcFareInfo()
+            self.tableView.reloadData()
+        } else if nil != title.range(of: "指定した経路") {
+            ds.setUrbanNoNeerest(true);
+            self.reCalcFareInfo()
+            self.tableView.reloadData()
+        } else if nil != title.range(of: "最安経路") {
+            ds.setUrbanNoNeerest(false);
             self.reCalcFareInfo()
             self.tableView.reloadData()
         } else {
@@ -489,16 +497,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
         var items : [String] = Array<String>()
         
-        if self.fareInfo.isRuleAppliedEnable() {
-            if self.fareInfo.isRuleApplied() {
+        if self.fareInfo.isRuleAppliedEnable {
+            if self.fareInfo.isRuleApplied {
                 items.append("特例を適用しない")
 
-                if self.fareInfo.isMeihanCityStartTerminalEnable() {
-                    if self.fareInfo.isMeihanCityStart() {
+                if self.fareInfo.isMeihanCityStartTerminalEnable {
+                    if self.fareInfo.isMeihanCityTerminal {
                         // 発駅=都区市内
-                        items.append("発駅を単駅指定")
-                    } else  {
                         items.append("着駅を単駅指定")
+                    } else  {
+                        items.append("発駅を単駅指定")
                     }
                 }
             } else {
@@ -509,19 +517,27 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             items.append("最短経路算出")
         }
         
-        if self.fareInfo.isJRCentralStockEnable() {
-            if self.fareInfo.isJRCentralStock() {
+        if self.fareInfo.isJRCentralStockEnable {
+            if self.fareInfo.isJRCentralStock {
                 items.append("JR東海株主優待券を適用しない")
             } else {
                 items.append("JR東海株主優待券を適用する")
             }
         }
 
-        if self.fareInfo.isOsakakanDetourEnable() {
-            if self.fareInfo.isOsakakanDetourShortcut() {
+        if self.fareInfo.isOsakakanDetourEnable {
+            if self.fareInfo.isOsakakanDetourShortcut {
                 items.append("大阪環状線 近回り")
             } else {
                 items.append("大阪環状線 遠回り")
+            }
+        }
+        
+        if self.fareInfo.isUrban_neerest_enable {
+            if self.fareInfo.isUrban_neerest_flag {
+                items.append("最安経路で運賃計算")
+            } else {
+                items.append("指定した経路で運賃計算")
             }
         }
         
@@ -636,8 +652,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.tableView.reloadData()
         }
 
-        //if self.fareInfo.isFareOptEnabled() || self.fareInfo.isUrbanArea
-        if self.fareInfo.isRuleAppliedEnable() || self.fareInfo.isFareOptEnabled() {
+        if self.fareInfo.isFareOptEnabled {
             self.chgOptionButton.isEnabled = true
         } else {
             self.chgOptionButton.isEnabled = false
@@ -1001,8 +1016,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         // メールビュー生成
         //_mailViewCtl = [[MFMailComposeViewController alloc] init];
         
-        if self.fareInfo.isRuleAppliedEnable() {
-            if self.fareInfo.isRuleApplied() {
+        if self.fareInfo.isRuleAppliedEnable {
+            if self.fareInfo.isRuleApplied {
                 body += "(特例適用)\n"
             } else {
                 body += "(特例未適用)\n"

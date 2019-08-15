@@ -478,7 +478,7 @@ int g_tax; /* main.m */
 //////////////////////////////////////////////////////////////////////////////
 #pragma mark - cRoute
 
-@implementation cRoute 
+@implementation cRoute
 
 -(id)init {
     self = [super init];
@@ -657,7 +657,7 @@ int g_tax; /* main.m */
 // Enable Reverse
 - (BOOL)isReverseAllow
 {
-    return (obj_route->getFareOption() & 0x400) == 0;
+    return obj_route->isAvailableReverse();
 }
 
 - (BOOL)isEnd
@@ -671,7 +671,7 @@ int g_tax; /* main.m */
 //////////////////////////////////////////////////////////////
 #pragma mark - cCalcRoute
 
-@implementation cCalcRoute 
+@implementation cCalcRoute
 
 /*
 -(id)init {
@@ -721,20 +721,13 @@ int g_tax; /* main.m */
 }
 
 
-// fare option
-//
-- (void)setFareOption:(NSInteger)optMask availMask:(NSInteger) availMask
-{
-    obj_calcroute->setFareOption(optMask, availMask);
-}
-
 // fare calc
 - (FareInfo*)calcFare
 {
     FARE_INFO fi;
     int fare_result;
 
-    fi = obj_calcroute->calcFare();
+    obj_calcroute->calcFare(&fi);
     switch (fi.resultCode()) {
         case 0:     // success, company begin/first or too many company
             fare_result = 0;
@@ -747,7 +740,6 @@ int g_tax; /* main.m */
             break;
     }
 
-    int calcFlag = obj_calcroute->getFareOption();
     FareInfo* result = nil;
     string str1;
     string str2;
@@ -757,19 +749,19 @@ int g_tax; /* main.m */
     FARE_INFO::Fare rule114Fare;
     FARE_INFO::FareResult fareResult;
     const static char msgPossibleLowcost[] = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
-    const static char msgAppliedLowcost[] = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)";
-
+    const static char msgAppliedLowcost[] = "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)";
+    const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
+    
     result = [[FareInfo alloc] init];
 
     result.isRoundtrip = obj_calcroute->isRoundTrip();
-    
+
     result.result = fare_result;        /* calculate result */
-    result.calcResultFlag = calcFlag;   /* calculate flag */
     result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine();
     result.isResultCompanyMultipassed = fi.isMultiCompanyLine();
 
     result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
-    
+
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
     result.endStationId = fi.getEndTerminalId();
@@ -809,23 +801,40 @@ int g_tax; /* main.m */
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
 
-    // 近郊区間？(旧互換)
-    result.isUrbanArea = fi.isUrbanArea() && !fi.isUseBulletInUrban() && !fi.isSpecialTermInUrban();
-    // 最短経路算出可能
-    result.isPossibleAutoroute = fi.isUrbanArea() && fi.isPossibleSpecialTermInUrban();
+    result.isMeihanCityStartTerminalEnable = obj_calcroute->refRouteFlag().isMeihanCityEnable();
+    result.isMeihanCityStart = obj_calcroute->refRouteFlag().isStartAsCity();
+    result.isMeihanCityTerminal = obj_calcroute->refRouteFlag().isArriveAsCity();
 
+    result.isOsakakanDetourEnable = obj_calcroute->getRouteFlag().is_osakakan_1pass();
+
+    // TRUE: Detour / FALSE: Shortcut
+    result.isOsakakanDetourShortcut = obj_calcroute->getRouteFlag().osakakan_detour;
+
+    result.isRuleAppliedEnable = obj_calcroute->getRouteFlag().rule_en();
+    result.isRuleApplied = !obj_calcroute->getRouteFlag().no_rule;
+
+    result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
+    result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
+    
+    result.isPossibleAutoroute = obj_calcroute->refRouteFlag().isPossibleSpecialTermInUrban();
+    
+    result.isUrban_neerest_flag = obj_calcroute->refRouteFlag().urban_neerest_flag;
+    result.isUrban_neerest_enable = obj_calcroute->refRouteFlag().urban_neerest_enable;
+
+    
     if (fi.isUrbanArea()) {
-        if (!fi.isUseBulletInUrban() && !fi.isPossibleSpecialTermInUrban()) {
+        if (!obj_calcroute->refRouteFlag().isUseBulletInUrban() &&
+            !result.isPossibleAutoroute) {
             if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                 result.resultMessage = [NSString stringWithUTF8String:"近郊区間内ですので同一駅発着のきっぷは購入できません."];
             } else {
-                if (!result.isRuleApplied) {    //  BIT_CHK(last_flag, BLF_NO_RULE))
+                if (!result.isRuleApplied || result.isUrban_neerest_flag) {
                     result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
                 } else {
                     result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
                 }
             }
-        } else if (fi.isPossibleSpecialTermInUrban()) {
+        } else if (result.isPossibleAutoroute) {
             if (fi.getBeginTerminalId() != fi.getEndTerminalId()) {
                 if (!result.isRuleApplied) {  // BIT_CHK(last_flag, BLF_NO_RULE) ?
                     result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
@@ -844,8 +853,13 @@ int g_tax; /* main.m */
 
     result.isSpecificFare = fi.isAppliedSpecificFare();
     if (fi.isAppliedSpecificFare()) {
-        result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@", result.resultMessage,
-                                [NSString stringWithUTF8String:"特定区間割引運賃適用"]];
+        if (0 < [result.resultMessage length]) {
+            result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
+                                result.resultMessage,
+                                [NSString stringWithUTF8String:msgSpecificFareApply]];  // "特定区間割引運賃適用"
+        } else {
+            result.resultMessage = [NSString stringWithUTF8String:msgSpecificFareApply]; // "特定区間割引運賃適用"
+        }
     }
 
     result.totalSalesKm = fi.getTotalSalesKm();
@@ -880,7 +894,7 @@ int g_tax; /* main.m */
     // BRT運賃
     result.fareForBRT = fi.getFareForBRT();
     result.isBRTdiscount = fi.getIsBRT_discount();
-    
+
     // 往復
     fareResult = fi.roundTripFareWithCompanyLine();
     result.roundTripFareWithCompanyLine = fareResult.fare;
@@ -903,7 +917,13 @@ int g_tax; /* main.m */
     }
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
-
+    
+    // UI結果オプションメニュー
+    result.isFareOptEnabled = result.isRuleAppliedEnable ||
+                              result.isOsakakanDetourEnable ||
+                              result.isJRCentralStockEnable ||
+                              result.isPossibleAutoroute ||
+                              result.isUrban_neerest_enable;
     return result;
 }
 
@@ -911,32 +931,46 @@ int g_tax; /* main.m */
 // result (for sendmail)
 - (NSString*)showFare
 {
-    return [NSString stringWithUTF8String:obj_calcroute->showFare().c_str()];
+    FARE_INFO fi;
+    obj_calcroute->calcFare(&fi);
+    return [NSString stringWithUTF8String:fi.showFare(obj_calcroute->getRouteFlag()).c_str()];
 }
-
-// getFareOption() - 運賃計算オプションを得る
-//	@return
-//     & 0x80 = 0    : 該当なし
-//     & 0x80 = 0x80 : empty or non calc.
-//     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
-//			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
-//	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
-//	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
-//     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
-//     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
 
 // 大阪環状線 遠回りか近回りか？
 - (BOOL)isOsakakanDetourShortcut
 {
-    int option = obj_calcroute->getFareOption();
-    return 0x08 == (option & 0x0c);
+    return obj_calcroute->getRouteFlag().osakakan_detour;
 }
 
 // 大阪環状線 遠回り設定か？
 - (BOOL)isOsakakanDetourEnable
 {
-    int option = obj_calcroute->getFareOption();
-    return 0x00 != (option & 0x0c);
+    return obj_calcroute->getRouteFlag().is_osakakan_1pass();
+}
+
+- (void)setJrTokaiStockApply:(BOOL)enabled
+{
+    return obj_calcroute->refRouteFlag().setJrTokaiStockApply(enabled);
+}
+
+- (void)setNoRule:(BOOL)enabled
+{
+    obj_calcroute->refRouteFlag().setNoRule(enabled);
+}
+
+- (void)setStartAsCity
+{
+    obj_calcroute->refRouteFlag().setStartAsCity();
+}
+
+- (void)setArriveAsCity
+{
+    obj_calcroute->refRouteFlag().setArriveAsCity();
+}
+
+- (void)setUrbanNoNeerest:(BOOL)flag
+{
+    obj_calcroute->refRouteFlag().urban_neerest_flag = flag;
 }
 
 //-- cRouteList --
