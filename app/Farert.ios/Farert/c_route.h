@@ -165,7 +165,6 @@ enum DBIDX {
 
 - (NSInteger)setupRoute:(NSString*)routeString;
 
-//- (NSInteger)getFareOption;
 - (NSInteger)setDetour:(BOOL)enabled;
 
 //- 小倉博多間新幹線在来線別線扱い
@@ -209,9 +208,6 @@ enum DBIDX {
 - (void)sync:(cRoute*)source count:(NSInteger)count;
 
 
-// fare option
-- (void)setFareOption:(NSInteger)optMask availMask:(NSInteger) availMask;
-
 // fare calc
 - (FareInfo*)calcFare;
 
@@ -220,6 +216,15 @@ enum DBIDX {
 
 - (BOOL)isOsakakanDetourShortcut;
 - (BOOL)isOsakakanDetourEnable;
+
+- (void)setJrTokaiStockApply:(BOOL)enabled;
+
+- (void)setNoRule:(BOOL)enabled;
+
+- (void)setStartAsCity;
+- (void)setArriveAsCity;
+
+- (void)setUrbanNoNeerest:(BOOL)flag;
 
 //-- cRouteList --
 // Number of Route
