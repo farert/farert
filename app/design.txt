@@ -1,7 +1,61 @@
 
+
+
+近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)
+はおかしい。
+近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)
+が正しい。
+
+また、最安経路にした場合は特例非適用が選べる
+
+
+改修終了
+フラグが、RouteFlagにあったり、calcRouteにあったりごちゃ混ぜで分かりづらい
+それは許せるとしても、FARE_INFOにもあったりするともう最悪。
+iOS, Androidは上記らは統合するから良い？
+
+calcFare()
+shorRoute()
+
+非適用ー＞適用は可能
+通常は、適用ー＞非適用を想定 RouteFlagを保持したまま
+非適用ー＞8687非適用はNG
+
+
+
+val rc = ds.setDetour( (opt_osakakan == Option.DO_TRUE)  )  // 遠回り・近回り
+
+// 特例
+ if (Option.DO_TRUE == opt_sperule) {
+     // @"特例を適用しない";
+     ds.setFareOption(RouteUtil.FAREOPT_RULE_NO_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
+ } else if (Option.DO_FALSE == opt_sperule) {
+     // @"特例を適用する";
+     ds.setFareOption(RouteUtil.FAREOPT_RULE_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
+ }
+
+ // 大高-杉本町
+ if (Option.DO_TRUE == opt_meihancity) {
+     // "着駅を単駅指定";
+     ds.setFareOption(RouteUtil.FAREOPT_APPLIED_START, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+ } else if (Option.DO_FALSE == opt_meihancity) {
+     // "発駅を単駅指定";
+     ds.setFareOption(RouteUtil.FAREOPT_APPLIED_TERMINAL, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+ }
+
+ // JR東海株主
+ if (Option.DO_FALSE == opt_stocktokai) {
+     // @"JR東海株主優待券を適用しない";
+     ds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
+ } else if (Option.DO_TRUE == opt_stocktokai) {
+     // @"JR東海株主優待券を使用する";
+     ds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
+ }
+
+
 FARE_INFO fi;
 croute.calcFare(&fi);
-s = fi.showFare();
+s = fi.showFare(croute.refRouteFlag());
 :
 int flag = fi.enablesRules();  appliedRules()とは別でability,capabilityを返す
 :
