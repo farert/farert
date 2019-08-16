@@ -1,5 +1,27 @@
 b#バグタイトル
 ->
+b#19081602
+いつも便利に使わせていただいております。
+先日乗車券申込みの際、発券を断られた案件がありましたのでご連絡致します。
+乗車券  豊田から水戸
+経由  中央東、山手、品川、新幹線、東京、東北、常磐
+アプリでのキロ程 159.4km
+運賃 2590円  有効2日間、途中下車可能
+と表示されましたが
+営業規則第70条が適用され、新幹線を経由に入れた乗車券は発券出来ない、乗車券も大都市近郊区間内なので発売当日限り有効、途中下車不可、この乗車券で品川から東京間の新幹線乗車も可能との回答でした。
+また、経由を中央東、横浜線、東海道、品川、新幹線、東京、東北、常磐
+と、第70条を通過する最短経路が新幹線なら発券可能と言っていました
+>>
+70条が適用され、86, 87条が適用にならず（通って戻る経路も含め）、侵入駅〜脱出駅の間の
+新幹線乗車であるならば、70条適用営業キロが一致する場合のみその新幹線を乗車したとみなせて大都市近郊区間を適用しないことができる。
+という改修をいれる。
+上記の例は、武蔵野線経由でも運賃は同じ（営業キロは増える）なので,運賃が同じなら営業キロが多くても指定した経路のままとする(19/8/17)
+
+TODO
+
+//
+
+
 
 w#19081601
 sqlite3 + iOSでエラーメッセージに悩まされる。
@@ -9,6 +31,13 @@ BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violati
 sqlite3_shutdown();
 sqlite3_config(SQLITE_CONFIG_MULTITHREAD);
 sqlite3_initialize();
+
+-> NG
+if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY, 0)) {
+を
+if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY|SQLITE_OPEN_NOMUTEX|SQLITE_OPEN_PRIVATECACHE, 0)) {
+にしたらうまくいった
+(SQLITE_OPEN_PRIVATECACHEが有効)
 //
 
 b#19081101
