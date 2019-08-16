@@ -27,7 +27,7 @@ bool DBS::open(LPCTSTR dbpath)
 	CT2A sjispath(dbpath);
 	if (0 != sqlite3_open_v2(sjispath, &m_db, SQLITE_OPEN_READONLY, 0)) {
 #else
-       
+        TRACE("dbpath=%s\n", dbpath);
 	if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY|SQLITE_OPEN_NOMUTEX|SQLITE_OPEN_PRIVATECACHE, 0)) {
 #endif
 		TRACE("Database can't open\n");
