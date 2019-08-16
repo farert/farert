@@ -748,8 +748,10 @@ int g_tax; /* main.m */
     int w3;
     FARE_INFO::Fare rule114Fare;
     FARE_INFO::FareResult fareResult;
-    const static char msgPossibleLowcost[] = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
-    const static char msgAppliedLowcost[] = "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)";
+    const static char msgPossibleLowcost[] =
+                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
+    const static char msgAppliedLowcost[] =
+                    "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)";
     const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
     
     result = [[FareInfo alloc] init];
@@ -816,15 +818,17 @@ int g_tax; /* main.m */
     result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
     result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
     
-    result.isPossibleAutoroute = obj_calcroute->refRouteFlag().isPossibleSpecialTermInUrban();
+    result.isPossibleAutoroute = obj_calcroute->getRouteFlag().metro &&
+                                (obj_calcroute->getRouteFlag().isPossibleSpecialTerm() &&
+                                !obj_calcroute->getRouteFlag().isUseBullet());
     
     result.isUrban_neerest_flag = obj_calcroute->refRouteFlag().urban_neerest_flag;
     result.isUrban_neerest_enable = obj_calcroute->refRouteFlag().urban_neerest_enable;
 
     
     if (fi.isUrbanArea()) {
-        if (!obj_calcroute->refRouteFlag().isUseBulletInUrban() &&
-            !result.isPossibleAutoroute) {
+        if (!obj_calcroute->refRouteFlag().isUseBullet() &&
+            !obj_calcroute->getRouteFlag().isPossibleSpecialTerm()) {
             if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                 result.resultMessage = [NSString stringWithUTF8String:"近郊区間内ですので同一駅発着のきっぷは購入できません."];
             } else {
@@ -834,7 +838,7 @@ int g_tax; /* main.m */
                     result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
                 }
             }
-        } else if (result.isPossibleAutoroute) {
+        } else if (obj_calcroute->getRouteFlag().isPossibleSpecialTerm()) {
             if (fi.getBeginTerminalId() != fi.getEndTerminalId()) {
                 if (!result.isRuleApplied) {  // BIT_CHK(last_flag, BLF_NO_RULE) ?
                     result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
@@ -851,8 +855,8 @@ int g_tax; /* main.m */
         }
     }
 
-    result.isSpecificFare = fi.isAppliedSpecificFare();
-    if (fi.isAppliedSpecificFare()) {
+    result.isSpecificFare = obj_calcroute->refRouteFlag().special_fare_enable; // 私鉄競合特例運賃(大都市近郊区間)
+    if (result.isSpecificFare) {
         if (0 < [result.resultMessage length]) {
             result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
                                 result.resultMessage,
@@ -923,7 +927,8 @@ int g_tax; /* main.m */
                               result.isOsakakanDetourEnable ||
                               result.isJRCentralStockEnable ||
                               result.isPossibleAutoroute ||
-                              result.isUrban_neerest_enable;
+                              result.isUrban_neerest_enable ||
+                              result.isSpecificFare;
     return result;
 }
 

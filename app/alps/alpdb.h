@@ -284,10 +284,10 @@ public:
     bool rule86or87;
     bool rule88;
     bool rule69;
-    bool metro;
     bool rule70;
-    bool special_fare;
+    bool special_fare_enable;
 
+    bool metro;
     bool bullet_line;           // 新幹線乗車している
 
     bool meihan_city_enable;    //名阪発駅単駅着駅都区市内
@@ -361,11 +361,11 @@ public:
         rule86or87 = false;
         rule88 = false;
         rule69 = false;
-        metro = false;
         rule70 = false;
-        special_fare = false;
+        special_fare_enable = false;
 
         bullet_line = false;
+        metro = false;
 
         meihan_city_enable	= false;      //19
 
@@ -380,25 +380,25 @@ public:
         rule86or87 = false;
         rule88 = false;
         rule69 = false;
-        metro = false;
         rule70 = false;
-        special_fare = false;
+        special_fare_enable = false;
     }
 public:
     bool rule_en() {
         return rule86or87 ||
                rule88 ||
                rule69 ||
-               metro ||
                rule70 ||
-               meihan_city_enable ||
-               special_fare;
+               special_fare_enable ||
+               meihan_city_enable;
     }
     // UI側からセットする制御フラグ
     void setNoRule(bool flag) { no_rule = flag; }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
     void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
-    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; }
+    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; /* disable_rule86or87 = flag; */}
+                                                                  /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */
+                                                                  /* coreAreaIDByCityId() が影響 */
     void setDisableRule86or87() { disable_rule86or87 = true; }
     void setEnableRule86or87()  { disable_rule86or87 = false; }
     //
@@ -415,11 +415,10 @@ public:
         value |= ((rule88) ? 1<<1 : 0);
         value |= ((rule69) ? 1<<2 : 0);
 
-        value |= ((metro) ? 1<<4 : 0);
-        value |= ((rule70) ? 1<<5 : 0);
+        value |= ((rule70) ? 1<<4 : 0);
+        value |= ((special_fare_enable) ? 1<<5 : 0);
         value |= ((meihan_city_enable) ? 1<<6 : 0);      //19
         value |= ((meihan_city_flag) ? 1<<7 : 0);      //20
-        value |= ((special_fare) ? 1<<8 : 0);      //20
 
         return value;
     }
@@ -479,13 +478,13 @@ public:
         ter_fin_city		= false;      //14
         ter_begin_yamate	= false;      //15/ [山]
         ter_fin_yamate		= false;      //16
-        ter_begin_2city	= false;      //17 not used
+        ter_begin_2city 	= false;      //17 not used
         ter_fin_2city		= false;      //18 not used
 
         ter_begin_oosaka	= false;      //21 大阪・新大阪
         ter_fin_oosaka		= false;      //22
     }
-    bool isTerCity() {
+    bool isTerCity() const {
         return
         ter_begin_city		||      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
         ter_fin_city		||      //14
@@ -500,8 +499,8 @@ public:
 
     // 特例非適用ならTrueを返す。LAST_FLAG.BLF_NO_RULEのコピー
     //
-    bool isPossibleSpecialTermInUrban() const { return rule86or87; }
-	bool isUseBulletInUrban() const { return bullet_line; }
+    bool isPossibleSpecialTerm() const { return rule86or87 && isTerCity(); }
+	bool isUseBullet() const { return bullet_line; }
 };
 
 class RouteItem
@@ -652,7 +651,6 @@ private:
     int32_t endTerminalId;
 
     int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
-    bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
     class ResultFlag {
     public:
@@ -744,8 +742,6 @@ public:
 		result_flag.clean();
 
         enableTokaiStockSelect = 0;
-
-        applied_specic_fare = false;
 
         route_for_disp.clear();
         calc_route_for_disp.clear();
@@ -883,7 +879,6 @@ public:
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
     tstring getTOICACalcRoute_string() const { return calc_route_for_disp; }
-    bool    isAppliedSpecificFare() const { return applied_specic_fare; }
 
     tstring 		showFare(const RouteFlag& routeFlag);
 
