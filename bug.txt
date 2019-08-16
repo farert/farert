@@ -1,6 +1,15 @@
 b#バグタイトル
 ->
 
+w#19081601
+sqlite3 + iOSでエラーメッセージに悩まされる。
+BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while
+や、sqlite3_step()で、エラーコード10=I/O Error に悩まされる。
+以下を追加してみる。
+sqlite3_shutdown();
+sqlite3_config(SQLITE_CONFIG_MULTITHREAD);
+sqlite3_initialize();
+//
 
 b#19081101
 新幹線 小倉-博多間 在来線別線扱いの設定が効いていない。
