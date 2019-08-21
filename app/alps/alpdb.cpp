@@ -4882,7 +4882,7 @@ int32_t CalcRoute::ReRouteRule69j(const vector<RouteItem>& in_route_list, vector
 		station_id1 = route_item->stationId;
 	}
 	CalcRoute::RemoveDupRoute(out_route_list);
-	TRACE(change == 0 ? "noapplid rule69(%d)" : "applied rule69 count=%d\n", change);
+	TRACE(change == 0 ? "noapplid rule69(%d)\n" : "applied rule69 count=%d\n", change);
 	return change;
 }
 
@@ -5502,9 +5502,11 @@ void  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station
 	}
 }
 
+#if 0
 //static
 //	経路は近郊区間内にあるか(115条2項check)
-//
+//  経路すべての駅が同一近郊間都市名なら、その都市名を返す(東京、新潟、仙台、福岡、関西）
+//  (Nout used)
 uint8_t CalcRoute::InRouteUrban(const vector<RouteItem>& route_list)
 {
 	uint16_t urban;
@@ -5520,6 +5522,8 @@ uint8_t CalcRoute::InRouteUrban(const vector<RouteItem>& route_list)
 	}
 	return URBAN_ID(urban);
 }
+#endif
+
 
 //public
 //	86、87条、69条判定＆経路算出
@@ -5646,10 +5650,11 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	/* compute of sales_km by route_list_cooked */
 	km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
 	jsales_km = km_raw[0] - km_raw[2];
-	km_raw = CalcRoute::Get_route_distance(route_flag, route_list_raw);
-	skm = km_raw[0] - km_raw[2];
-	if ((2000 < jsales_km) && ((CalcRoute::InRouteUrban(route_list_raw) != URB_TOKYO) ||
-	    (2000 < skm))) {
+	//115-2の誤った解釈
+    //km_raw = CalcRoute::Get_route_distance(route_flag, route_list_raw);
+	//skm = km_raw[0] - km_raw[2];
+	if ((2000 < jsales_km) /*&& ((CalcRoute::InRouteUrban(route_list_raw) != URB_TOKYO) ||
+	    (2000 < skm))*/) {
 		/* <<<都区市内適用>>> */
 		/* 201km <= jsales_km */
 		/* enable */
@@ -5683,8 +5688,8 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	rtky = CalcRoute::CheckOfRule87(route_list_tmp2);
 	if ((3 & rtky) != 0) {
 		/* apply to 87 */  /* 都区内に限り最短が100km以下は非適用(基115-2) */
-		if ((1000 < jsales_km) && ((CalcRoute::InRouteUrban(route_list_raw) != URB_TOKYO) ||
-		    (1000 < skm))) {
+		if ((1000 < jsales_km) /*&& ((CalcRoute::InRouteUrban(route_list_raw) != URB_TOKYO) ||
+		    (1000 < skm))*/) {
 			/* 山手線内発着 enable */
             if (!route_flag.jrtokaistock_enable || !route_flag.jrtokaistock_applied) {
                 route_flag.terCityReset();
@@ -5704,7 +5709,9 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
                         break;
                 }
 				TRACE("applied for rule87\n");
-			}
+			} else {
+                TRACE("no applied rule87 reson the JR tokai stock enable.\n");
+            }
 
             flg = 0;
             if (((chk & 0x01) != 0) && ((rtky & 0x01) == 0) && (CITYNO_TOKYO == IDENT1(cityId))) {
@@ -9029,16 +9036,17 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
     int32_t end_station_id = route_original.endStationId();
 
     if (((!isUrbanArea() ||                      // 大都市近郊区間内
-           route_original.getRouteFlag().isUseBullet() ||  // 新幹線あり
-           route_original.getRouteFlag().isPossibleSpecialTerm()) &&     // 特定都区市内発着特例適用
+           route_original.getRouteFlag().isUseBullet() /*||  // 新幹線あり
+           route_original.getRouteFlag().isPossibleSpecialTerm()*/) &&     // 特定都区市内発着特例適用
         !isJrTokaiOnly()) ||                    // JR東海区間以外
         (start_station_id == end_station_id)) { // O型経路(悩みどこだがそんなルート組むやつって・・・)
         // usualy */
+        TRACE("No reCalcFareForOptiomizeRoute.\n");
         return false;
     }
     start_terminal_id = start_station_id;
     end_terminal_id = end_station_id;
-
+#if 0
     if ((begin_id == 0) || (term_id == 0)) {
         /* 蒲田ー松本のように最短経路ではなく86条適用で東京からの方が安い場合があるので、
          * この場合,東京-松本の最短経路で計算する
@@ -9050,8 +9058,9 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
         } else if (term_id != 0) {
             end_station_id = FARE_INFO::centerStationIdFromCityId(term_id);
             end_terminal_id = STATION_ID_AS_CITYNO + term_id;
-        }
+        } else { ASSERT(FALSE); }
     }
+#endif
     if (isJrTokaiOnly()) {
         // JR東海(TOICA)
         Route shortRoute(reRouteForToica(route_original));
@@ -9108,6 +9117,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
             if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa, route_via_tachikawa)) {
                 if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
                     /* 立川経由の方が安い */
+                    TRACE("Found lowcost route DENSHA special.\n");
                     decision = 2;
                 }
             } else {
@@ -9119,10 +9129,12 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
             ((fare_info_shorts.jr_fare == jr_fare) &&
             (fare_info_shorts.total_jr_calc_km < total_jr_calc_km))*/)) {
             /* ユーザ指定は最短経路ではない */ /* 経路長くても運賃同じなら入れ替えない */
+            TRACE("Found neerest lowcost route.\n");
             decision = 1;
         }
 
         if (route_original.getRouteFlag().urban_neerest_flag) {
+            TRACE("reCalcFareForOptiomizeRoute: don't applied.\n");
             return 0 < decision;        // >>>>>>>>>>>>>>>>
         }
 
@@ -9149,6 +9161,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(const RouteList& route_original,
             }
             b_change_route = true;  // 特例非適用オプション選択可
         }
+        TRACE("reCalcFareForOptiomizeRoute: applied.\n");
         clrTOICACalcRoute();
     }
     return b_change_route;
