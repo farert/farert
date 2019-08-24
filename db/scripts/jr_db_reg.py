@@ -244,6 +244,17 @@ class Dbreg:
 		""")
 		###########################################
 		self.con.execute("""
+		create table t_r70bullet (
+			station70_id1 integer not null references t_station(rowid),
+			station70_id2 integer not null references t_station(rowid),
+			station_id1 integer not null references t_station(rowid),
+			station_id2 integer not null references t_station(rowid),
+
+			primary key (station70_id1, station70_id2, station_id1, station_id2)
+		);
+		""")
+		###########################################
+		self.con.execute("""
 		create table t_rule86 (
 			line_id1 integer not null references t_line(rowid),
 			station_id integer not null references t_station(rowid),
@@ -501,6 +512,7 @@ class Dbreg:
 			't_clinfar5p'	: self.reg_t_clinfar,
 			't_rule69'		: self.reg_t_rule69,
 			'rule70'		: self.reg_rule70,
+			'r70bullet'		: self.reg_r70bullet,
 			'rule86'		: self.reg_rule86,
 			't_farebspekm'	: self.reg_t_farebspekm,
 			't_farelspekm'	: self.reg_t_farelspekm,
@@ -838,6 +850,50 @@ insert into t_rule70 values(
  (select rowid from t_station where name=? and samename=?),
  ?);""",
 		[station1, station1_s, station2, station2_s, int(linitems[2])])
+
+#------------------------------------------------------------------------------
+	def reg_r70bullet(self, label, linitems, lin):
+	# rule70
+
+		tmp = linitems[0].strip()		# station_id1
+		if 0 <= tmp.find('('):
+			station1 = tmp[:tmp.find('(')]
+			station1_s = tmp[tmp.find('('):]
+		else:
+			station1 = tmp
+			station1_s = ''
+
+		tmp = linitems[1].strip()		# station_id2
+		if 0 <= tmp.find('('):
+			station2 = tmp[:tmp.find('(')]
+			station2_s = tmp[tmp.find('('):]
+		else:
+			station2 = tmp
+			station2_s = ''
+
+		tmp = linitems[2].strip()		# station_id3
+		if 0 <= tmp.find('('):
+			station3 = tmp[:tmp.find('(')]
+			station3_s = tmp[tmp.find('('):]
+		else:
+			station3 = tmp
+			station3_s = ''
+
+		tmp = linitems[3].strip()		# station_id4
+		if 0 <= tmp.find('('):
+			station4 = tmp[:tmp.find('(')]
+			station4_s = tmp[tmp.find('('):]
+		else:
+			station4 = tmp
+			station4_s = ''
+
+		self.con.execute("""
+insert into t_r70bullet values(
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?));""",
+		[station1, station1_s, station2, station2_s, station3, station3_s, station4, station4_s])
 
 #------------------------------------------------------------------------------
 
