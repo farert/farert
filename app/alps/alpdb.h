@@ -375,6 +375,9 @@ public:
         special_fare_enable = false;
     }
 public:
+    void setAnotherRouteFlag(const RouteFlag& other) {
+        *this = other;
+    }
     bool rule_en() {
         return (0x3f & rule86or87) ||
                rule115 ||
@@ -395,11 +398,15 @@ public:
     void setEnableRule86or87()  { rule86or87 &= 0x3f; }
     bool isEnableRule86or87() const { return 0 == (rule86or87 & 0x40); }
     bool isAvailableRule86or87() const { return (rule86or87 ^ 0x0f) < 0x0f; }
+    bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
+    bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
 
-    void setEnable115Rule() { rule115 = 1; }
-    void setNA115Rule() { rule115 = -1; }
-    bool isAbailable115Rule() const { return 0 != rule115; }
-    bool isEnable115Rule() const { return 0 < rule115; }
+    void setDisableRule115() { rule115 |= 0x40; } /* U->S 適用させない */
+    void setNARule115()      { rule115 &= 0x40; } /* S->U 無効 */
+    void setEnableRule115()  { rule115 = 1 + (rule115 & 0x40); } /* S->U 適用可能 */
+    bool isAbailableRule115() const { return 0 == (0x40 & rule115); } /* U->U 無効かする(OptionOff) */
+    bool isEnableRule115()    const { return 1 == (0x3f & rule115); } /* S->U 有効(Option選択可) */
+    int  getStateOfRule115() const { return rule115; }
     //
     bool isMeihanCityEnable() const {
         return meihan_city_enable;
@@ -461,6 +468,9 @@ public:
         rule86or87 &= 0x40;
         ter_begin_oosaka	= false;      //21 大阪・新大阪
         ter_fin_oosaka		= false;      //22
+    }
+    void optionFlagReset() {
+        rule115 &= 0x40;
     }
     bool isTerCity() const {
         return
@@ -563,6 +573,7 @@ public:
     virtual int32_t  coreAreaIDByCityId(int32_t startEndFlg) const { return 0;}
 };
 
+class Route;
 
 class FARE_INFO {
 public:
@@ -652,6 +663,11 @@ private:
                               int32_t station_id_0,
                               int32_t station_id,
                               int32_t station_id1);
+    bool reCalcFareForOptiomizeRoute(Route* pShortRoute,
+                                     int32_t start_station_id,
+                                     int32_t end_station_id,
+                                     RouteFlag* pShort_route_flag,
+                                     std::vector<RouteItem> *out_cooked_route = NULL);
 
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
@@ -743,7 +759,7 @@ public:
     int     resultCode() const {
         if (result_flag.route_incomplete) {
             return -1;
-        } else if (result_flag.route_empty) {
+        } else if ((result_flag.route_empty) || (0 == (flag & FLAG_FARECALC_INITIAL))) {
             return -2;
         } else if (result_flag.fatal_error) {
             return -3;

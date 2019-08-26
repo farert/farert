@@ -2976,6 +2976,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
                 b_more_low_cost = pFi->reCalcFareForOptiomizeRoute(*this);
             }
             if (b_more_low_cost) {
+                TRACE("changed fare for lowcost\n");
                 ; // DO NOTHING
             } else {
                 // rule 114 applied
@@ -5561,6 +5562,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
     //route_flag.clearRule();
 
     route_flag.terCityReset();
+    route_flag.optionFlagReset();
 
 	// 69を適用したものをroute_list_tmpへ
 	n = CalcRoute::ReRouteRule69j(route_list_raw, &route_list_tmp);	/* 69条適用(route_list_raw->route_list_tmp) */
@@ -5581,11 +5583,9 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	if (0 != aply88) {
 		if ((aply88 & 1) != 0) {
 			TRACE("Apply to rule88 for start.\n");
-            route_flag.terCityReset();
 			route_flag.ter_begin_oosaka = true;
 		} else if ((aply88 & 2) != 0) {
 			TRACE("Apply to rule88 for arrive.\n");
-            route_flag.terCityReset();
 			route_flag.ter_fin_oosaka = true;
 		}
         route_flag.rule88 = true;          // applied rule
@@ -9040,44 +9040,22 @@ bool FARE_INFO::reCalcFareForOptiomizeRouteForToiCa(const RouteList& route_origi
  */
 bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 {
-    int32_t start_terminal_id;
-    int32_t end_terminal_id;
     FARE_INFO fare_info_shorts;         // 最短経路
     FARE_INFO fare_info_via_tachikawa;  // 八高線避けた 立川経由
     FARE_INFO fare_info_specific_shorts; // 都区市内発着最短
     bool b_change_route = false;
-    int32_t begin_id;
-    int32_t term_id;
     int8_t decision = 0;   // this or via_tachikawa or short
 
-    begin_id = route_original.coreAreaIDByCityId(CSTART);
-    term_id = route_original.coreAreaIDByCityId(CEND);
-
-    int32_t start_station_id = route_original.startStationId();
-    int32_t end_station_id = route_original.endStationId();
-
     if (!isUrbanArea() || route_original.getRouteFlag().isUseBullet()       // 大都市近郊区間内
-         || (start_station_id == end_station_id)) { // O型経路(悩みどこだがそんなルート組むやつって・・・)
-        // usualy */
+         || (route_original.startStationId() == route_original.endStationId())
+         || (0x03 == ((route_original.getRouteFlag().rule86or87 << 2) |
+                       route_original.getRouteFlag().rule86or87))) { // O型経路(悩みどこだがそんなルート組むやつって・・・)
+        // usualy or loop route */
         TRACE("No reCalcFareForOptiomizeRoute.\n");
         return false;
     }
 
     /* 大都市近郊区間 */
-
-    start_terminal_id = start_station_id;
-    end_terminal_id = end_station_id;
-
-    if ((begin_id == 0) || (term_id == 0)) {
-        /* 片側 都区市内 */
-        if (begin_id != 0) {
-            start_station_id = FARE_INFO::centerStationIdFromCityId(begin_id);
-            start_terminal_id = STATION_ID_AS_CITYNO + begin_id;
-        } else if (term_id != 0) {
-            end_station_id = FARE_INFO::centerStationIdFromCityId(term_id);
-            end_terminal_id = STATION_ID_AS_CITYNO + term_id;
-        } else { ;/* 両駅単駅 */ }
-    } // else 両側 都区市内(大回り指定)
 
     // 最短経路算出(8687 applied)
     // 近郊区間内で指定経路が8687適用で、
@@ -9088,88 +9066,104 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     // 規程115 当該中心駅からの最も短い営業キロが200km以内となるときに限り、規則第86条の規定を適用しないで、
     // 発駅から実際の営業キロ又は運賃計算キロによつて計算することができる。
     Route specificRoute;
-    CalcRoute cspecificRoute(specificRoute);
+    RouteFlag specificRouteFlag;
 
-    if ((start_terminal_id != start_station_id) ||
-        (end_terminal_id != end_station_id)) {
-        int32_t rc = specificRoute.add(start_station_id);
-        rc = specificRoute.changeNeerest(0, end_station_id);
-        if (rc < 0) {
+    if (route_original.getRouteFlag().isEnableRule86or87()) {
+        int stid;
+        int edid;
+
+        if (0 != (0x05 & route_original.getRouteFlag().rule86or87)) {
+            stid = FARE_INFO::centerStationIdFromCityId(route_original.coreAreaIDByCityId(CSTART));
+        } else {
+            stid = route_original.startStationId();
+        }
+        if (0 != (0x0a & route_original.getRouteFlag().rule86or87)) {
+            edid = FARE_INFO::centerStationIdFromCityId(route_original.coreAreaIDByCityId(CEND));
+        } else {
+            edid = route_original.endStationId();
+        }
+        ASSERT(stid != 0 && edid != 0);
+        if (!fare_info_specific_shorts.reCalcFareForOptiomizeRoute(&specificRoute,
+                                                                   stid, edid,
+                                                                   &specificRouteFlag)) {
             ASSERT(FALSE);
             return false;
         }
-        // 86 or 87
-        (void)cspecificRoute.checkOfRuleSpecificCoreLine();
-        fare_info_specific_shorts.setTerminal(cspecificRoute.beginStationId(),
-                                              cspecificRoute.endStationId());
-        RouteFlag specificRouteFlag = cspecificRoute.getRouteFlag();
-        if (!fare_info_specific_shorts.calc_fare(&specificRouteFlag,
-                                                  cspecificRoute.routeList(),
-                                                  cspecificRoute.cookedRouteList())) {
-            ASSERT(FALSE);  // error
-            decision = 0;
-        }
-        if (specificRouteFlag.isAvailableRule86or87()) {
+
+        if ((route_original.getRouteFlag().isAvailableRule86() && specificRouteFlag.isAvailableRule86()) ||
+            (route_original.getRouteFlag().isAvailableRule87() && specificRouteFlag.isAvailableRule87())) {
             // [山],[区] or [横] applied
-            decision = 10;  // A.
+            // A.
             TRACE("neerest specific terminal over 200.0km or 100.0km\n");
+            decision = 20;
         } else {
-            decision = 15;  // B. 規程115
+            // B. 規程115
             TRACE("could apply rule115.\n");
+            fare_info_specific_shorts.reset(); // 86崩れの87が適用されては困るんで
+            route_original.refRouteFlag().setNARule115();
+            decision = 15;
         }
     }
 
     // 最短経路算出
     Route shortRoute;
-    int32_t rc = shortRoute.add(start_station_id);
-    rc = shortRoute.changeNeerest(0, end_station_id);
-    if (rc < 0) {
-        ASSERT(FALSE);
-        return false;
-    }
+    RouteFlag short_route_flag;
+    std::vector<RouteItem> short_cooked_route_list;
+    std::vector<RouteItem> route_via_tachikawa;
 
-    CalcRoute shortCalcRoute(shortRoute);
-    (void)shortCalcRoute.checkOfRuleSpecificCoreLine();
-    fare_info_shorts.reset();
+    if (decision != 20) {
+        short_route_flag.setDisableRule86or87();
+        if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute,
+                                                           route_original.startStationId(),
+                                                           route_original.endStationId(),
+                                                           &short_route_flag,
+                                                           &short_cooked_route_list)) {
+            ASSERT(FALSE);
+            return false;
+        }
+        fare_info_shorts.setRoute(short_cooked_route_list, short_route_flag);
 
-    fare_info_shorts.setTerminal(shortCalcRoute.beginStationId(), shortCalcRoute.endStationId());
-    RouteFlag short_route_flag = shortCalcRoute.getRouteFlag();
-	if (!fare_info_shorts.calc_fare(&short_route_flag, shortCalcRoute.routeList(), shortCalcRoute.cookedRouteList())) {
-        ASSERT(FALSE);
-        return false;
-    }
     // 最短経路の運賃算出:fare_info_shorts
 //                          書き換えたlast_flagはJR東海株主使用可否Optionだけなので無視してよし
 //                          学割、小児、株主運賃は既存どおりなので、fare_infoのic運賃のみfare_info_shortsのic運賃へ書き換える
 //                            と拝島問題
 
-    // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある
-    std::vector<RouteItem>  route_via_tachikawa = IsHachikoLineHaijima(shortCalcRoute.cookedRouteList());
-    if (route_via_tachikawa.size() != 0) {
-        fare_info_via_tachikawa.setTerminal(start_terminal_id, end_terminal_id);
-        if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa, route_via_tachikawa)) {
-            if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
-                /* 立川経由の方が安い */
-                TRACE("Found lowcost route DENSHA special.\n");
-                decision = 2;
+        // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある
+        route_via_tachikawa = IsHachikoLineHaijima(short_cooked_route_list);
+        if (decision == 0) { /* 86or87 適用はやらん */
+            if (route_via_tachikawa.size() != 0) {
+                fare_info_via_tachikawa.setTerminal(route_original.startStationId(),
+                                                    route_original.endStationId());
+                if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa, route_via_tachikawa)) {
+                    if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
+                        /* 立川経由の方が安い */
+                        TRACE("Found lowcost route DENSHA special.\n");
+                        decision = 2;
+                    }
+                } else {
+                    ASSERT(FALSE);
+                }
             }
-        } else {
-            ASSERT(FALSE);
+        }
+        ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
+        if ((2 != decision) && ((fare_info_shorts.jr_fare < jr_fare) /* ||
+            ((fare_info_shorts.jr_fare == jr_fare) &&
+            (fare_info_shorts.total_jr_calc_km < total_jr_calc_km))*/)) {
+            /* ユーザ指定は最短経路ではない */ /* 経路長くても運賃同じなら入れ替えない */
+            ASSERT(decision == 0 || decision == 15);
+            TRACE("Found neerest lowcost route.%dyen->%dyen\n", jr_fare, fare_info_shorts.jr_fare);
+            decision = 1;
         }
     }
-    ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
-    if ((0 == decision) && ((fare_info_shorts.jr_fare < jr_fare) /* ||
-        ((fare_info_shorts.jr_fare == jr_fare) &&
-        (fare_info_shorts.total_jr_calc_km < total_jr_calc_km))*/)) {
-        /* ユーザ指定は最短経路ではない */ /* 経路長くても運賃同じなら入れ替えない */
-        TRACE("Found neerest lowcost route.\n");
-        decision = 1;
-    }
+
+    ASSERT(decision != 15);
+    ASSERT(decision == 20 || decision == 1 || decision == 2 || decision == 0);
 
     if (route_original.getRouteFlag().urban_neerest_flag) {
         TRACE("reCalcFareForOptiomizeRoute: don't applied.\n");
         return 0 < decision;        // >>>>>>>>>>>>>>>>
     }
+TRACE("@@@@@:decision=%d, this=%s->%s(%d)(%dyen),\n                  short=%s->%s(%d)(%dyen)\n", decision, CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), this->getTotalSalesKm(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_shorts.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_shorts.getEndTerminalId()).c_str(), fare_info_shorts.getTotalSalesKm(), fare_info_shorts.jr_fare);
 
     if ((decision == 1/*最短経路*/) || (route_original.getRouteFlag().special_fare_enable == true)) {
         // 私鉄競合区間特別運賃適用の場合経路が大回りのままで不自然なので最短経路を表示するように
@@ -9193,12 +9187,49 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             jr_fare = fare_info_via_tachikawa.jr_fare;
         }
         b_change_route = true;  // 特例非適用オプション選択可
+    } else if (decision == 20) {
+        TRACE("optimized 86or87: applied type A. %s->%s(%dyen), %s->%s(%dyen)\n", CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_specific_shorts.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_specific_shorts.getEndTerminalId()).c_str(), fare_info_specific_shorts.jr_fare);
+        *this = fare_info_specific_shorts;
+        setRoute(specificRoute.routeList(), specificRouteFlag);
+        b_change_route = true;
     }
     TRACE("reCalcFareForOptiomizeRoute: applied.\n");
     clrTOICACalcRoute();
 
     return b_change_route;
 }
+
+//
+bool FARE_INFO::reCalcFareForOptiomizeRoute(Route* pShortRoute,
+                                            int32_t start_station_id,
+                                            int32_t end_station_id,
+                                            RouteFlag* pShort_route_flag,
+                                            std::vector<RouteItem> *out_cooked_route)
+{
+    int32_t rc = pShortRoute->add(start_station_id);
+    rc = pShortRoute->changeNeerest(0, end_station_id);
+    if (rc < 0) {
+        ASSERT(FALSE);
+        return false;
+    }
+
+    CalcRoute shortCalcRoute(*pShortRoute);
+    shortCalcRoute.refRouteFlag().setAnotherRouteFlag(*pShort_route_flag);
+    (void)shortCalcRoute.checkOfRuleSpecificCoreLine();
+
+    setTerminal(shortCalcRoute.beginStationId(), shortCalcRoute.endStationId());
+    *pShort_route_flag = shortCalcRoute.getRouteFlag();
+    if (!calc_fare(pShort_route_flag, shortCalcRoute.routeList(), shortCalcRoute.cookedRouteList())) {
+        ASSERT(FALSE);
+        return false;
+    }
+    if (out_cooked_route) {
+        out_cooked_route->assign(shortCalcRoute.cookedRouteList().cbegin(),
+                                 shortCalcRoute.cookedRouteList().cend());
+    }
+    return true;
+}
+
 
 //  経路をJR東海 IC運賃用 最短経路にする
 //
