@@ -288,9 +288,10 @@ public:
     bool rule70;
     bool special_fare_enable;
     BYTE rule115;
+    bool rule70bullet;
 
-    bool metro;
     bool bullet_line;           // 新幹線乗車している
+    bool bJrTokaiOnly;
 
     bool meihan_city_enable;    //名阪発駅単駅着駅都区市内
     bool trackmarkctl;	        //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
@@ -350,13 +351,14 @@ public:
 
         rule86or87 = 0;
         rule115 = 0;
+        rule70bullet = false;
         rule88 = false;
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
 
         bullet_line = false;
-        metro = false;
+        bJrTokaiOnly = false;
 
         meihan_city_enable	= false;      //19
 
@@ -365,14 +367,6 @@ public:
 
         jrtokaistock_enable= false;	    //10 提案可能フラグ
         jrtokaistock_applied= false; 	//11 提案適用フラグ
-    }
-    void clearRule() {
-        rule86or87 &= 0x40;
-        rule115 = 0;
-        rule88 = false;
-        rule69 = false;
-        rule70 = false;
-        special_fare_enable = false;
     }
 public:
     void setAnotherRouteFlag(const RouteFlag& other) {
@@ -402,9 +396,8 @@ public:
     bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
 
     void setDisableRule115() { rule115 |= 0x40; } /* U->S 適用させない */
-    void setNARule115()      { rule115 &= 0x40; } /* S->U 無効 */
-    void setEnableRule115()  { rule115 = 1 + (rule115 & 0x40); } /* S->U 適用可能 */
-    bool isAbailableRule115() const { return 0 == (0x40 & rule115); } /* U->U 無効かする(OptionOff) */
+    void setEnableRule115()  { rule115 &= ~0x40; } /* S->U 無効 */
+    bool isAvailableRule115() const { return 0 == (0x40 & rule115); } /* U->U 無効かする(OptionOff) */
     bool isEnableRule115()    const { return 1 == (0x3f & rule115); } /* S->U 有効(Option選択可) */
     int  getStateOfRule115() const { return rule115; }
     //
@@ -471,6 +464,13 @@ public:
     }
     void optionFlagReset() {
         rule115 &= 0x40;
+        special_fare_enable = false;
+        meihan_city_enable = false;
+        rule88 = false;
+        rule69 = false;
+        rule70 = false;
+        rule115 = 0;
+        rule70bullet = false;
     }
     bool isTerCity() const {
         return
@@ -481,7 +481,7 @@ public:
 
     // 特例非適用ならTrueを返す。LAST_FLAG.BLF_NO_RULEのコピー
     //
-	bool isUseBullet() const { return bullet_line; }
+	bool isUseBullet() const { return bullet_line || rule70bullet; }
 };
 
 class RouteItem
@@ -653,11 +653,11 @@ private:
         }
     } result_flag;
 
-	void retr_fare(bool useBullet);
+	void retr_fare(bool useBullet, bool no_rule);
     void calc_brt_fare(const vector<RouteItem>& routeList);
-	int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
+	int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
-	bool aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw, RouteFlag* pRoute_flag);
+	static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
@@ -674,7 +674,7 @@ public:
         beginTerminalId = begin_station_id;
         endTerminalId = end_station_id;
     }
-	bool calc_fare(RouteFlag* p_route_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
+	bool calc_fare(RouteFlag* p_route_flag, const vector<RouteItem>& routeList);	//***
     bool reCalcFareForOptiomizeRouteForToiCa(const RouteList& route_list);
     bool reCalcFareForOptiomizeRoute(RouteList& route_list);
     RouteList reRouteForToica(const RouteList& route);
@@ -903,6 +903,11 @@ private:
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
     static std::vector<RouteItem> IsHachikoLineHaijima(const std::vector<RouteItem>& route_list);
     static std::vector<std::vector<int>> getBRTrecord(int32_t line_id);
+#if 0 ///@@@@@@@@@ TODO DELETE AFTER
+    static bool CheckBulletInUrban(const RouteList& route_original);
+    static bool CheckBulletInUrbanRule70(const std::vector<RouteItem>& route_list);
+    static bool CheckBulletInUrbanRule86or87orNothing(const std::vector<RouteItem>& route_list, BYTE rule86or87);
+#endif ///@@@@@@@@@@@@ TODO DELETE AFTER
 }; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */
@@ -1238,6 +1243,7 @@ public:
     static tstring  BeginOrEndStationName(int32_t ident);
     int32_t  coreAreaIDByCityId(int32_t startEndFlg) const;
 private:
+    void   checkIsJRTokaiOnly(void);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
 	static FARE_INFO::Fare	CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
 public:
@@ -1245,7 +1251,8 @@ public:
 private:
 	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
 	static int32_t	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
-	static int32_t	ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
+	       int32_t	reRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
+           bool     isBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70);
 	static bool 	Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
 	static bool 	Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
 	static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, const RouteFlag& rRoute_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
