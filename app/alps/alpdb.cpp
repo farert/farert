@@ -2650,24 +2650,28 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
     const static TCHAR msgAppliedLowcost[] = _T("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n");
 
     if (!refRouteFlag.no_rule && this->isUrbanArea() && !refRouteFlag.isUseBullet()) {
-            if (this->getBeginTerminalId() == this->getEndTerminalId()) {
-                _sntprintf_s(cb, MAX_BUF,
-                    _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
-            } else {
-                _sntprintf_s(cb, MAX_BUF,
-                    refRouteFlag.urban_neerest_flag ?
-                    msgPossibleLowcost : msgAppliedLowcost);
-            }
-            sResult += cb;
+        if (this->getBeginTerminalId() == this->getEndTerminalId()) {
+            _sntprintf_s(cb, MAX_BUF,
+                _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
+        } else if (refRouteFlag.isEnableRule115() && refRouteFlag.isDisableSpecificTermRule115()) {
+            // 115の都区市内発着指定Optionは最安最短じゃあないので.
+            cb[0] = _T('\0');
+        } else {
+            _sntprintf_s(cb, MAX_BUF,
+                refRouteFlag.isLongRoute() ?
+                msgPossibleLowcost : msgAppliedLowcost);
+        }
+        sResult += cb;
 
-            if (refRouteFlag.isEnableRule115()) {
-                _sntprintf_s(cb, MAX_BUF,
-                    refRouteFlag.isAvailableRule115() ?
-                    _T("「都区内発着適用」で特定都区市内発着が選択可能です\r\n") :
-                    _T("「単駅最短適用」で単駅発着が選択可能です\r\n"));
-                sResult += cb;
-            }
-     }
+        // 大回り指定では115適用はみない
+        if (refRouteFlag.isEnableRule115() && !refRouteFlag.isEnableLongRoute()) {
+            _sntprintf_s(cb, MAX_BUF,
+                refRouteFlag.isDisableSpecificTermRule115() ?
+                _T("「単駅最短適用」で単駅発着が選択可能です\r\n") :
+                _T("「都区内発着適用」で特定都区市内発着が選択可能です\r\n"));
+            sResult += cb;
+        }
+    }
 
 	if ((0 < this->getJRCalcKm()) &&
 		(this->getJRSalesKm() != this->getJRCalcKm())) {
@@ -9131,7 +9135,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     //       代々木 立川 用土 や 蒲田 立川 茅野 とか
     // 規程115 当該中心駅からの最も短い営業キロが200km以内となるときに限り、規則第86条の規定を適用しないで、
     // 発駅から実際の営業キロ又は運賃計算キロによつて計算することができる。
-    Route specificRoute;
+    std::vector<RouteItem> specificRoute_List;
     RouteFlag specificRouteFlag;
 
     if (route_original.getRouteFlag().isAvailableRule86or87()) {
@@ -9150,7 +9154,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         }
         ASSERT(stid != 0 && edid != 0);
 
-        if (!fare_info_specific_shorts.reCalcFareForOptiomizeRoute(&specificRoute,
+        if (!fare_info_specific_shorts.reCalcFareForOptiomizeRoute(&specificRoute_List,
                                                                    stid, edid,
                                                                    &specificRouteFlag)) {
             ASSERT(FALSE);
@@ -9168,25 +9172,28 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             // B. 規程115 近郊区間内で指定経路が8687適用で、最短中心が8687適用できないなら単駅の最安経路
             //     代々木ー用土、蒲田-茅野　など
             TRACE("could apply rule115.\n");
-            fare_info_specific_shorts.reset(); // 86崩れの87が適用されては困るんで(この下の処理で)
-            route_original.refRouteFlag().rule115 |= 1; //notify to user
-            decision = 15;
+            if (0 <= route_original.getRouteFlag().rule115) {
+                fare_info_specific_shorts.reset(); // 86崩れの87が適用されては困るんで(この下の処理で)
+                decision = 15;
+                route_original.refRouteFlag().rule115 = 1; //notify to user
+            } else {
+                TRACE("set specific term apply rule115.\n");
+                return false;
+            }
         }
     }
 
     // 最短経路算出
-    Route shortRoute;
+    std::vector<RouteItem> shortRoute_List;
     RouteFlag short_route_flag;
-    std::vector<RouteItem> short_cooked_route_list;
     std::vector<RouteItem> route_via_tachikawa;
 
     if (decision != 20) {
         short_route_flag.setDisableRule86or87();
-        if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute,
+        if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute_List,
                                                            route_original.startStationId(),
                                                            route_original.endStationId(),
-                                                           &short_route_flag,
-                                                           &short_cooked_route_list)) {
+                                                           &short_route_flag)) {
             ASSERT(FALSE);
             return false;
         }
@@ -9194,17 +9201,19 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         // 最短経路との差が、50km 越えならそのまま指定経路で一旦提示
         if (500 < (getTotalSalesKm() - fare_info_shorts.getTotalSalesKm())) {
             TRACE("The appoint route and neerest route was over the 50.0km(cancel lowcost route)\n");
-            route_original.refRouteFlag().urban_neerest_enable = true; // 近郊区間内ですので最短経路の運賃で利用可能です
-            if (route_original.getRouteFlag().urban_neerest_flag) {
+            if (route_original.getRouteFlag().urban_neerest < 0) {
                 TRACE(": don't applied.\n");
                 return false;
             }
+            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
+            route_original.refRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
+            route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
         } else {
-            route_original.refRouteFlag().urban_neerest_enable = false;
+            route_original.refRouteFlag().urban_neerest = 0;
         }
 
         short_route_flag.rule86or87 = 0;
-        fare_info_shorts.setRoute(short_cooked_route_list, short_route_flag);
+        fare_info_shorts.setRoute(shortRoute_List, short_route_flag);
 
     // 最短経路の運賃算出:fare_info_shorts
 //                          書き換えたlast_flagはJR東海株主使用可否Optionだけなので無視してよし
@@ -9212,7 +9221,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 //                            と拝島問題
 
         // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
-        route_via_tachikawa = IsHachikoLineHaijima(short_cooked_route_list);
+        route_via_tachikawa = IsHachikoLineHaijima(shortRoute_List);
         if (decision == 0) { /* 86or87 適用はやらん */
             if (route_via_tachikawa.size() != 0) {
                 fare_info_via_tachikawa.setTerminal(route_original.startStationId(),
@@ -9229,7 +9238,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             }
         }
         ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
-        if (fare_info_shorts.jr_fare < jr_fare) {
+        if ((decision != 2) && (fare_info_shorts.jr_fare < jr_fare)) {
             /* ユーザ指定は最短経路ではない */ /* 経路長くても運賃同じなら入れ替えない */
             TRACE("Found neerest lowcost route.%dyen->%dyen\n", jr_fare, fare_info_shorts.jr_fare);
             decision = 1;
@@ -9238,7 +9247,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 
     ASSERT(decision == 20 || decision == 1 || decision == 2 || decision == 0 || decision == 15);
 
-TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                         short=%s->%s(%d)(%dyen)\n", decision, CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), this->getTotalSalesKm(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_shorts.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_shorts.getEndTerminalId()).c_str(), fare_info_shorts.getTotalSalesKm(), fare_info_shorts.jr_fare);
+TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                          short=%s->%s(%d)(%dyen)\n", decision, CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), this->getTotalSalesKm(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_shorts.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_shorts.getEndTerminalId()).c_str(), fare_info_shorts.getTotalSalesKm(), fare_info_shorts.jr_fare);
 
     if ((decision == 1/*最短経路*/) ||
         (route_original.getRouteFlag().special_fare_enable == true)) {
@@ -9249,7 +9258,7 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
             // 新幹線経路が在来線経路に勝手に書き換わってしまうので。
             // 最短経路=最安
 			*this = fare_info_shorts;
-            setRoute(shortRoute.routeList(), short_route_flag);
+            setRoute(shortRoute_List, short_route_flag);
         } else {
             jr_fare = fare_info_shorts.jr_fare;
         }
@@ -9266,43 +9275,42 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
     } else if (decision == 20) {
         TRACE("optimized 86or87: applied type A. %s->%s(%dyen), %s->%s(%dyen)\n", CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_specific_shorts.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_specific_shorts.getEndTerminalId()).c_str(), fare_info_specific_shorts.jr_fare);
         *this = fare_info_specific_shorts;
-        setRoute(specificRoute.routeList(), specificRouteFlag);
+        setRoute(specificRoute_List, specificRouteFlag);
         b_change_route = true;
     }
     TRACE("reCalcFareForOptiomizeRoute: applied.\n");
-    clrTOICACalcRoute();
 
     return b_change_route;
 }
 
 //
-bool FARE_INFO::reCalcFareForOptiomizeRoute(Route* pShortRoute,
+bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_list,
                                             int32_t start_station_id,
                                             int32_t end_station_id,
-                                            RouteFlag* pShort_route_flag,
-                                            std::vector<RouteItem> *out_cooked_route)
+                                            RouteFlag* pShort_route_flag)
 {
-    int32_t rc = pShortRoute->add(start_station_id);
-    rc = pShortRoute->changeNeerest(0, end_station_id);
+    Route shortRoute;
+    int32_t rc = shortRoute.add(start_station_id);
+    rc = shortRoute.changeNeerest(0, end_station_id);
     if (rc < 0) {
         ASSERT(FALSE);
         return false;
     }
 
-    CalcRoute shortCalcRoute(*pShortRoute);
+    CalcRoute shortCalcRoute(shortRoute);
     shortCalcRoute.refRouteFlag().setAnotherRouteFlag(*pShort_route_flag);
     (void)shortCalcRoute.checkOfRuleSpecificCoreLine();
 
     setTerminal(shortCalcRoute.beginStationId(), shortCalcRoute.endStationId());
     *pShort_route_flag = shortCalcRoute.getRouteFlag();
+
     if (!calc_fare(pShort_route_flag, shortCalcRoute.routeList())) {
         ASSERT(FALSE);
         return false;
     }
-    if (out_cooked_route) {
-        out_cooked_route->assign(shortCalcRoute.cookedRouteList().cbegin(),
-                                 shortCalcRoute.cookedRouteList().cend());
-    }
+
+    pShortRoute_list->assign(shortCalcRoute.routeList().cbegin(),
+                             shortCalcRoute.routeList().cend());
     return true;
 }
 
