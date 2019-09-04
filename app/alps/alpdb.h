@@ -287,7 +287,7 @@ public:
     bool rule69;
     bool rule70;
     bool special_fare_enable;
-    BYTE rule115;
+    int8_t rule115;
     bool rule70bullet;
 
     bool bullet_line;           // 新幹線乗車している
@@ -308,11 +308,9 @@ public:
     bool compnbegin		;      //26	会社線で開始
     bool compnend		;      //27 会社線で終了
 
-    bool urban_neerest_flag;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user
-    bool urban_neerest_enable;  // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is system
-
-               // 28
-               // 29 used
+    int8_t urban_neerest;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user/system both.
+                            // 0: N/A
+                            // 1: Neer , -1: Far
 
     // Global
     bool notsamekokurahakatashinzai;    //30 Route only : 小倉-博多間 新在別線扱い
@@ -344,8 +342,7 @@ public:
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
 
-        urban_neerest_flag = false;
-        urban_neerest_enable = false;
+        urban_neerest = 0;
         notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
 
@@ -374,7 +371,6 @@ public:
     }
     bool rule_en() {
         return (0x3f & rule86or87) ||
-               rule115 ||
                rule88 ||
                rule69 ||
                rule70 ||
@@ -382,6 +378,25 @@ public:
                meihan_city_enable;
     }
     // UI側からセットする制御フラグ
+    bool isEnableLongRoute() const { return 0 != urban_neerest; }
+    bool isLongRoute() const { return urban_neerest < 0; }
+    void setLongRoute(bool far) {
+        if (far) {
+            urban_neerest = -1;
+        } else {
+            urban_neerest = 1;
+        }
+    }
+
+    bool isEnableRule115() const { return 0 != rule115; }
+    bool isDisableSpecificTermRule115() const { return rule115 < 0; }
+    void setSpecificTermRule115(bool ena) {
+        if (ena) {
+            rule115 = -1;
+        } else {
+            rule115 = 1;
+        }
+    }
     void setNoRule(bool flag) { no_rule = flag; }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
     void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
@@ -395,11 +410,6 @@ public:
     bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
     bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
 
-    void setDisableRule115() { rule115 |= 0x40; } /* U->S 適用させない */
-    void setEnableRule115()  { rule115 &= ~0x40; } /* S->U 無効 */
-    bool isAvailableRule115() const { return 0 == (0x40 & rule115); } /* U->U 無効かする(OptionOff) */
-    bool isEnableRule115()    const { return 1 == (0x3f & rule115); } /* S->U 有効(Option選択可) */
-    int  getStateOfRule115() const { return rule115; }
     //
     bool isMeihanCityEnable() const {
         return meihan_city_enable;
@@ -463,13 +473,11 @@ public:
         ter_fin_oosaka		= false;      //22
     }
     void optionFlagReset() {
-        rule115 &= 0x40;
         special_fare_enable = false;
         meihan_city_enable = false;
         rule88 = false;
         rule69 = false;
         rule70 = false;
-        rule115 = 0;
         rule70bullet = false;
     }
     bool isTerCity() const {
@@ -663,11 +671,10 @@ private:
                               int32_t station_id_0,
                               int32_t station_id,
                               int32_t station_id1);
-    bool reCalcFareForOptiomizeRoute(Route* pShortRoute,
+    bool reCalcFareForOptiomizeRoute(vector<RouteItem>* pShortRouteList,
                                      int32_t start_station_id,
                                      int32_t end_station_id,
-                                     RouteFlag* pShort_route_flag,
-                                     std::vector<RouteItem> *out_cooked_route = NULL);
+                                     RouteFlag* pShort_route_flag);
 
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
@@ -1232,7 +1239,8 @@ public:
     void sync(const RouteList& route);
     void sync(const RouteList& route, int count);
 
-    const vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
+    const vector<RouteItem>& rawRouteList() { return route_list_raw; }
+    const vector<RouteItem>& routeList() const { return route_list_cooked; }
     int32_t         beginStationId();
     int32_t         endStationId();
     FARE_INFO::Fare checkOfRuleSpecificCoreLine();

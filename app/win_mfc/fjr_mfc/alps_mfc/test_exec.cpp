@@ -1985,7 +1985,24 @@ const static TCHAR *test_route3_tbl[] = {
 		_T("茅ケ崎 相模線 橋本(横) 横浜線 東神奈川 東海道線 x早川"),
 		_T("茅ケ崎 相模線 橋本(横) 横浜線 東神奈川 東海道線 e茅ケ崎"),
 		_T("川崎 東海道線 大井町 東海道線 品川 東海道線 x蒲田"),
-
+// 20190901
+		_T("亀有 常磐線 我孫子 成田線(成田-我孫子) 成田 成田線 佐倉 総武線 錦糸町 総武線(錦糸町-御茶ノ水) 秋葉原 東北線 東京 東海道新幹線 品川"),
+		_T("高崎 高崎線 大宮 埼京線 池袋"),
+		_T("高崎 高崎線 大宮 東北線 赤羽 埼京線 池袋"),
+		_T("小岩 総武線 西船橋 武蔵野線 新松戸 常磐線 植田"),
+		_T("蒲田 東海道線 東神奈川 横浜線 八王子 中央東線 茅野"),
+		_T("蒲田 東海道線 東神奈川 横浜線 八王子 中央東線 上諏訪"),
+		_T("西荻窪 中央東線 松本"),
+		_T("西荻窪 中央東線 茅野"),
+		_T("浮間舟渡 埼京線 池袋 山手線 新宿 中央東線 松本"),
+		_T("武蔵小杉 南武線 府中本町 武蔵野線 武蔵浦和 埼京線 赤羽 東北線 東京 東海道線 品川"),
+		_T("武蔵小杉 南武線 府中本町 武蔵野線 西船橋 総武線 東京 東海道新幹線 品川"),
+		_T("武蔵小杉 南武線 府中本町 武蔵野線 西船橋 総武線 東京 東海道線 品川"),
+		_T("新宿 山手線 品川 東海道新幹線 東京 東北新幹線 那須塩原"),
+		_T("豊田 中央東線 代々木 山手線 品川 東海道新幹線 東京 東北線 日暮里 常磐線 水戸"),
+		_T("豊田 中央東線 八王子 横浜線 東神奈川 東海道線 品川 東海道新幹線 東京 東北線 日暮里 常磐線 水戸"),
+		_T("代々木 中央東線 八王子 八高線 用土"),
+		_T("代々木 山手線 池袋 埼京線 大宮 川越線 高麗川 八高線 用土"),
 
 			// append new test pattern is here TODO
 		_T(""),
@@ -2113,6 +2130,37 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券未使用\n%s\n"), s.c_str());
+			}
+			if (croute.getRouteFlag().isEnableLongRoute()) {
+				// デフォルトは最安になっているので、Optionで経路指定通りへ
+				croute.refRouteFlag().setLongRoute(true);
+				croute.calcFare(&fi);
+				s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///指定経路\n%s\n"), s.c_str());
+
+				// デフォルトは最安になっているので、Optionで経路指定通りへ
+				croute.refRouteFlag().setLongRoute(false);
+				croute.calcFare(&fi);
+				s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///最安経路\n%s\n"), s.c_str());
+			}
+			if (croute.getRouteFlag().isEnableRule115()) {
+				ASSERT(!croute.refRouteFlag().isDisableSpecificTermRule115())
+				// デフォルトは最安かつ単駅になっているので、Optionで都区市内発着へ
+				croute.refRouteFlag().setSpecificTermRule115(true);
+				croute.calcFare(&fi);
+				s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///旅客営業取扱基準規程115条(特定都区市内発着)\n%s\n"), s.c_str());
+
+				// Option 都区市内発着をデフォルトの最安かつ単駅にもどす
+				croute.refRouteFlag().setSpecificTermRule115(false);
+				croute.calcFare(&fi);
+				s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///旅客営業取扱基準規程115条(単駅最安)(Default)\n%s\n"), s.c_str());
 			}
 		}
 	}
