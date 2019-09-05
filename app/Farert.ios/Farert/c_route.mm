@@ -756,14 +756,13 @@ int g_tax; /* main.m */
     
     result = [[FareInfo alloc] init];
 
-    result.isRoundtrip = obj_calcroute->isRoundTrip();
-
     result.result = fare_result;        /* calculate result */
     result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine();
     result.isResultCompanyMultipassed = fi.isMultiCompanyLine();
 
     result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
 
+    
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
     result.endStationId = fi.getEndTerminalId();
@@ -802,42 +801,30 @@ int g_tax; /* main.m */
         [result setFareForStockDiscountsForR114:w2 + fi.getFareForCompanyline()
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
-
-    result.isMeihanCityStartTerminalEnable = obj_calcroute->refRouteFlag().isMeihanCityEnable();
-    result.isMeihanCityStart = obj_calcroute->refRouteFlag().isStartAsCity();
-    result.isMeihanCityTerminal = obj_calcroute->refRouteFlag().isArriveAsCity();
-
-    result.isOsakakanDetourEnable = obj_calcroute->getRouteFlag().is_osakakan_1pass();
-
-    // TRUE: Detour / FALSE: Shortcut
-    result.isOsakakanDetourShortcut = obj_calcroute->getRouteFlag().osakakan_detour;
-
-    result.isRuleAppliedEnable = obj_calcroute->getRouteFlag().rule_en();
-    result.isRuleApplied = !obj_calcroute->getRouteFlag().no_rule;
-
-    result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
-    result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
     
-    result.isPossibleAutoroute = obj_calcroute->getRouteFlag().metro &&
-                                (obj_calcroute->getRouteFlag().isPossibleSpecialTerm() &&
-                                !obj_calcroute->getRouteFlag().isUseBullet());
-    
-    result.isUrban_neerest_flag = obj_calcroute->refRouteFlag().urban_neerest_flag;
-    result.isUrban_neerest_enable = obj_calcroute->refRouteFlag().urban_neerest_enable;
-
-    
-    if (fi.isUrbanArea()) {
-        if (!obj_calcroute->refRouteFlag().isUseBullet() &&
-            !obj_calcroute->getRouteFlag().isPossibleSpecialTerm()) {
+    if (result.isRuleApplied &&
+        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
             if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                 result.resultMessage = [NSString stringWithUTF8String:"近郊区間内ですので同一駅発着のきっぷは購入できません."];
+            } else if (obj_calcroute->refRouteFlag().isEnableRule115() &&
+                       obj_calcroute->refRouteFlag().isDisableSpecificTermRule115()) {
+                ;;;
             } else {
-                if (!result.isRuleApplied || result.isUrban_neerest_flag) {
+                if (obj_calcroute->getRouteFlag().isLongRoute()) {
                     result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
                 } else {
                     result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
                 }
             }
+            // 大回り指定では115適用はみない
+            if (obj_calcroute->getRouteFlag().isEnableRule115() &&
+                !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
+                if (isDisableSpecificTermRule115) {
+                    result.resultMessage = [result.resultMessage stringByAppendingString:<#(nonnull NSString *)#>
+                    "「単駅最短適用」で単駅発着が選択可能です\r\n";
+                } else {
+                    "「都区内発着適用」で特定都区市内発着が選択可能です\r\n";
+                }
         } else if (obj_calcroute->getRouteFlag().isPossibleSpecialTerm()) {
             if (fi.getBeginTerminalId() != fi.getEndTerminalId()) {
                 if (!result.isRuleApplied) {  // BIT_CHK(last_flag, BLF_NO_RULE) ?
@@ -926,8 +913,6 @@ int g_tax; /* main.m */
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
                               result.isOsakakanDetourEnable ||
                               result.isJRCentralStockEnable ||
-                              result.isPossibleAutoroute ||
-                              result.isUrban_neerest_enable ||
                               result.isSpecificFare;
     return result;
 }
@@ -953,6 +938,29 @@ int g_tax; /* main.m */
     return obj_calcroute->getRouteFlag().is_osakakan_1pass();
 }
 
+// 近郊区間指定経路か
+- (BOOL)isEnableLongRoute
+{
+    return obj_calcroute->getRouteFlag().isEnableLongRoute();
+}
+
+// 旅客営業取扱基準規程第115条
+- (BOOL)isEnableRule115
+{
+    return obj_calcroute->getRouteFlag().isEnableRule115();
+}
+
+// 旅客営業取扱基準規程第115条 特定都区市内発着適用中ではなく単駅選択中か？
+- (BOOL)isDisableSpecificTermRule115
+{
+    return obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
+}
+
+- (void)setSpecificTermRule115:(BOOL)enabled
+{
+    obj_calcroute->refRouteFlag().setSpecificTermRule115(enabled);
+}
+
 - (void)setJrTokaiStockApply:(BOOL)enabled
 {
     return obj_calcroute->refRouteFlag().setJrTokaiStockApply(enabled);
@@ -973,9 +981,9 @@ int g_tax; /* main.m */
     obj_calcroute->refRouteFlag().setArriveAsCity();
 }
 
-- (void)setUrbanNoNeerest:(BOOL)flag
+- (void)setLongRoute:(BOOL)flag
 {
-    obj_calcroute->refRouteFlag().urban_neerest_flag = flag;
+    obj_calcroute->refRouteFlag().setLongRoute(flag);
 }
 
 //-- cRouteList --

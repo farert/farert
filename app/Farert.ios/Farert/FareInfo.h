@@ -30,9 +30,6 @@
 
 @property (nonatomic) BOOL isOsakakanDetourEnable;
 
-@property (nonatomic) BOOL isUrban_neerest_flag;
-@property (nonatomic) BOOL isUrban_neerest_enable;
-
 // TRUE: Detour / FALSE: Shortcut
 @property (nonatomic) BOOL isOsakakanDetourShortcut;
 

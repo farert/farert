@@ -8097,14 +8097,13 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
 "	(select max(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))-"
 "	(select min(calc_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)),"		// [1]
 "	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?2)"
-"	then -1 else"
+"	then 0 else"
 "	abs((select sales_km from t_lines where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
 "	(select sales_km from t_lines where line_id=?1 and station_id=?2)) end,"						// [2]
-"	case when exists (select * from t_lines"
-"	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?3)"
-"	then -1 else"
+"	case when exists (select * from t_lines	where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16) and station_id=?3)"
+"	then 0 else"
 "	abs((select calc_km from t_lines where line_id=?1 and (lflg&((1<<16)|(1<<31)))=(1<<16)"
 "	and	sales_km>(select min(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3))"
 "	and	sales_km<(select max(sales_km) from t_lines where line_id=?1 and (station_id=?2 or station_id=?3)))-"
@@ -8160,32 +8159,41 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
 				result[4] = MAKEPAIR(company_id1, JR_CENTRAL);
 			}
 			else {
-// 猪谷(4)(4) 富山(4)
-// 猪谷(4)(3) 名古屋(3)
-// 神戸(4)　門司(3)(4)
-// 品川(2)-新大阪(4)
-// 長野(2)-金沢(4)
- // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない
- // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
-				if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2) && (company_id1 != company_id2)) {
-					if (sub_company_id1 == company_id2) {
-						company_id1 = sub_company_id1;
-					}
-					else if (company_id1 == sub_company_id2) {
-						company_id2 = sub_company_id2;
-					}
-				}
+ TRACE("company_id1=%d, sub_company_id1=%d, company_id2=%d, sub_company_id2=%d\n", company_id1, sub_company_id1, company_id2, sub_company_id2);
+ TRACE("s1km=%d, c1km=%d, s2km=%d, c2km=%d\n", result[0], result[1], result[2], result[3]);
+
+				if (company_id1 != company_id2) {
+                    if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2)) {
+                        // 猪谷(4)(4) 富山(4)
+                        // 猪谷(4)(3) 名古屋(3)
+                        // 神戸(4)　門司(3)(4)
+                        // 品川(2)-新大阪(4)
+                        // 長野(2)-金沢(4)
+                         // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない
+                         // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
+    					if (sub_company_id1 == company_id2) {
+    						company_id1 = sub_company_id1;
+    					}
+    					else if (company_id1 == sub_company_id2) {
+    						company_id2 = sub_company_id2;
+    					}
+                    } else {
+                        if ((sub_company_id1 != 0 || sub_company_id2 != 0) &&
+                            ((result[2] == 0) && (result[3] == 0))) {
+                            /* 門司 - 下関 */
+                            /* 児島 - 宇多津 */
+                            if (company_id1 < company_id2) {
+                                /* 四国、 九州 にする */
+                                company_id1 = company_id2;
+                            } else {
+                                company_id2 = company_id1;
+                            }
+                        } else {
+                            /* 新山口 - 門司 とか */
+                        }
+                    }
+                }
 				result[4] = MAKEPAIR(company_id1, company_id2);
-#if 0
-				if (result[2] == -1) {		/* station_id1が境界駅の場合 */
-					TRACE("multicompany line detect 1: %d, %d(com1 <- com2)\n", result[2], result[3]);
-					result[4] = MAKEPAIR(IDENT2(result[4]), IDENT2(result[4]));
-				}
-				if (result[3] == -1) {		/* ite->stationId(station_id2)が境界駅の場合 */
-					TRACE("multicompany line detect 2: %d, %d(com2 <- com1)\n", result[2], result[3]);
-					result[4] = MAKEPAIR(IDENT1(result[4]), IDENT1(result[4]));
-				}
-#endif
 			}
 		}
 	}
@@ -8787,6 +8795,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 						(this->shikoku_sales_km == this->shikoku_calc_km));
 
 	retr_fare(pRoute_flag->isUseBullet(), pRoute_flag->no_rule);
+
     if ((0 != this->brt_sales_km) || (0 < this->total_jr_sales_km)) {
         /* JR or BRT */
 
@@ -8824,15 +8833,18 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 		            }
 		            this->jr_fare = round_up(special_fare);	/* 大都市特定区間運賃(東京)(\10単位切り上げ) */
 		        } else {
-		            this->jr_fare = special_fare;	/* 大都市特定区間運賃(大阪、名古屋) */
+		            this->jr_fare = special_fare;	/* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
 		        }
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
 	        }
 			ASSERT(this->company_fare == 0);	// 会社線は通っていない
 		}
 
-		// 特別加算区間分
-		this->jr_fare += fare_add;
+        // 特定区間は加算しない
+        if (!pRoute_flag->special_fare_enable) {
+            // 特別加算区間分
+    		this->jr_fare += fare_add;
+        }
 
         if (isUrbanArea() && !pRoute_flag->isUseBullet()) {
             this->avail_days = 1;	/* 当日限り */
@@ -9541,7 +9553,7 @@ void FARE_INFO::retr_fare(bool useBullet, bool no_rule)
 	} else if (0 < (this->kyusyu_sales_km + this->kyusyu_calc_km)) {
 		/* JR九州のみ */
 		ASSERT(_total_jr_sales_km == this->kyusyu_sales_km);
-		ASSERT(_total_jr_calc_km == this->kyusyu_calc_km);
+		//ASSERT(_total_jr_calc_km == this->kyusyu_calc_km);
 		ASSERT(_total_jr_fare == 0);
 
 		if (this->local_only) {
