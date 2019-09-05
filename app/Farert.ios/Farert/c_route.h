@@ -217,14 +217,19 @@ enum DBIDX {
 - (BOOL)isOsakakanDetourShortcut;
 - (BOOL)isOsakakanDetourEnable;
 
+- (BOOL)isEnableLongRoute;
+- (BOOL)isDisableSpecificTermRule115;
+- (void)setSpecificTermRule115:(BOOL)enable;
+
 - (void)setJrTokaiStockApply:(BOOL)enabled;
+
 
 - (void)setNoRule:(BOOL)enabled;
 
 - (void)setStartAsCity;
 - (void)setArriveAsCity;
 
-- (void)setUrbanNoNeerest:(BOOL)flag;
+- (void)setLongRoute:(BOOL)flag;
 
 //-- cRouteList --
 // Number of Route
