@@ -426,7 +426,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.reCalcFareInfo()
             self.tableView.reloadData()
 
-        } else if nil != title.range(of: "単駅") {
+        } else if nil != title.range(of: "を単駅指定") {
             if nil != title.range(of: "発駅") {
                 // "発駅を単駅指定";
                 ds.setArriveAsCity();
@@ -437,21 +437,21 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.reCalcFareInfo()
             self.tableView.reloadData()
             
-        } else if nil != title.range(of: "最短経路") {
-            let begin_id : Int = ds.startStationId()
-            let end_id : Int = ds.lastStationId()
-            if begin_id == end_id {
-                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
-                return
-            }
-
-            self.showIndicate() /* wait active indicator */
-            self.navigationController?.view.isUserInteractionEnabled = false
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
-                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
-                self.processDuringIndicatorAnimating(NSNull.self)
-            })
-            
+//        } else if nil != title.range(of: "最短経路") {
+//            let begin_id : Int = ds.startStationId()
+//            let end_id : Int = ds.lastStationId()
+//            if begin_id == end_id {
+//                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
+//                return
+//            }
+//
+//            self.showIndicate() /* wait active indicator */
+//            self.navigationController?.view.isUserInteractionEnabled = false
+//           DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
+ //               //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+//                self.processDuringIndicatorAnimating(NSNull.self)
+//            })
+//
         } else if nil != title.range(of: "回り") {
             if let route : cRoute = cRoute() {
                 route.sync(ds)
@@ -475,11 +475,19 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.reCalcFareInfo()
             self.tableView.reloadData()
         } else if nil != title.range(of: "指定した経路") {
-            ds.setUrbanNoNeerest(true);
+            ds.setLong(true);
             self.reCalcFareInfo()
             self.tableView.reloadData()
         } else if nil != title.range(of: "最安経路") {
-            ds.setUrbanNoNeerest(false);
+            ds.setLong(false);
+            self.reCalcFareInfo()
+            self.tableView.reloadData()
+        } else if nil != title.range(of: "規程115条") {
+            if nil != title.range(of: "単駅最安") {
+                ds.setSpecificTermRule115(false)
+            } else /* if nil != title.range(of: "特定都区市内発着") */ {
+                ds.setSpecificTermRule115(true)
+            }
             self.reCalcFareInfo()
             self.tableView.reloadData()
         } else {
@@ -513,10 +521,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("特例を適用する")
             }
         }
-        if (self.fareInfo.isPossibleAutoroute) {
-            items.append("最短経路算出")
-        }
-        
+
         if self.fareInfo.isJRCentralStockEnable {
             if self.fareInfo.isJRCentralStock {
                 items.append("JR東海株主優待券を適用しない")
@@ -533,14 +538,21 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
         }
         
-        if self.fareInfo.isUrban_neerest_enable {
-            if self.fareInfo.isUrban_neerest_flag {
+        if self.fareInfo.isEnableLongRoute {
+            if self.fareInfo.isLongRoute {
                 items.append("最安経路で運賃計算")
             } else {
                 items.append("指定した経路で運賃計算")
             }
         }
         
+        if self.fareInfo.isEnableRule115 {
+            if self.fareInfo.isDisableSpecificTermRule115 {
+                items.append("旅客営業取扱基準規程115条(単駅最安)")
+            } else {
+                items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
+            }
+        }
         if #available(iOS 8, OSX 10.10, *) {            // iOS8
             let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .actionSheet)
             for item in items {
