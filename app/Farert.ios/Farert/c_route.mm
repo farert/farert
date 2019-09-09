@@ -753,6 +753,9 @@ int g_tax; /* main.m */
     const static char msgAppliedLowcost[] =
                     "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)";
     const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
+    const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
+    const static char msgCanYouNeerestStation[] = "「単駅最安」で単駅発着が選択可能です";
+    const static char msgCanYouSpecificTerm[] = "「特定都区市内発着」で特定都区市内発着が選択可能です";
     
     result = [[FareInfo alloc] init];
 
@@ -802,55 +805,62 @@ int g_tax; /* main.m */
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
     
+    result.isMeihanCityStartTerminalEnable = obj_calcroute->refRouteFlag().isMeihanCityEnable();
+    result.isMeihanCityStart = obj_calcroute->refRouteFlag().isStartAsCity();
+    result.isMeihanCityTerminal = obj_calcroute->refRouteFlag().isArriveAsCity();
+    
+    result.isOsakakanDetourEnable = obj_calcroute->getRouteFlag().is_osakakan_1pass();
+    
+    // TRUE: Detour / FALSE: Shortcut
+    result.isOsakakanDetourShortcut = obj_calcroute->getRouteFlag().osakakan_detour;
+    
+    result.isRuleAppliedEnable = obj_calcroute->getRouteFlag().rule_en();
+    result.isRuleApplied = !obj_calcroute->getRouteFlag().no_rule;
+    
+    result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
+    result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
+    
+    result.isEnableLongRoute = obj_calcroute->getRouteFlag().isEnableLongRoute();
+    result.isLongRoute = obj_calcroute->getRouteFlag().isLongRoute();
+    result.isDisableSpecificTermRule115 = obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
+    result.isEnableRule115 = obj_calcroute->getRouteFlag().isEnableRule115();
+
+    // make message
     if (result.isRuleApplied &&
         fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
-            if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
-                result.resultMessage = [NSString stringWithUTF8String:"近郊区間内ですので同一駅発着のきっぷは購入できません."];
-            } else if (obj_calcroute->refRouteFlag().isEnableRule115() &&
-                       obj_calcroute->refRouteFlag().isDisableSpecificTermRule115()) {
-                ;;;
+        if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
+            result.resultMessage = [NSString stringWithUTF8String:msgCantMetroTicket];
+        } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
+                   !obj_calcroute->refRouteFlag().isDisableSpecificTermRule115()) {
+            if (obj_calcroute->getRouteFlag().isLongRoute()) {
+                result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
             } else {
-                if (obj_calcroute->getRouteFlag().isLongRoute()) {
-                    result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
-                } else {
-                    result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
-                }
-            }
-            // 大回り指定では115適用はみない
-            if (obj_calcroute->getRouteFlag().isEnableRule115() &&
-                !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
-                if (isDisableSpecificTermRule115) {
-                    result.resultMessage = [result.resultMessage stringByAppendingString:<#(nonnull NSString *)#>
-                    "「単駅最短適用」で単駅発着が選択可能です\r\n";
-                } else {
-                    "「都区内発着適用」で特定都区市内発着が選択可能です\r\n";
-                }
-        } else if (obj_calcroute->getRouteFlag().isPossibleSpecialTerm()) {
-            if (fi.getBeginTerminalId() != fi.getEndTerminalId()) {
-                if (!result.isRuleApplied) {  // BIT_CHK(last_flag, BLF_NO_RULE) ?
-                    result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
-                                            [NSString stringWithUTF8String:msgPossibleLowcost],
-                                            [NSString stringWithUTF8String:"「特例適用」で特定都区市内発着が選択可能です"]];
-                } else {
-                    result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
-                                            [NSString stringWithUTF8String:msgPossibleLowcost],
-                                            [NSString stringWithUTF8String:"「特例非適用」で単駅発着が選択可能です"]];
-                }
+                result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
             }
         } else {
-            // 近郊区間で新幹線利用で特定都区市内発着ナイので、通常通り
+            result.resultMessage = @"";
+        }
+    
+        // 大回り指定では115適用はみない
+        if (obj_calcroute->getRouteFlag().isEnableRule115() &&
+            !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
+            if (obj_calcroute->getRouteFlag().isDisableSpecificTermRule115()) {
+                result.resultMessage = [result.resultMessage stringByAppendingString:
+                                        [NSString stringWithUTF8String:
+                                        msgCanYouNeerestStation]];
+            } else {
+                result.resultMessage = [result.resultMessage stringByAppendingString:
+                                        [NSString stringWithUTF8String:
+                                         msgCanYouSpecificTerm]];
+            }
         }
     }
 
     result.isSpecificFare = obj_calcroute->refRouteFlag().special_fare_enable; // 私鉄競合特例運賃(大都市近郊区間)
     if (result.isSpecificFare) {
-        if (0 < [result.resultMessage length]) {
-            result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
+        result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
                                 result.resultMessage,
                                 [NSString stringWithUTF8String:msgSpecificFareApply]];  // "特定区間割引運賃適用"
-        } else {
-            result.resultMessage = [NSString stringWithUTF8String:msgSpecificFareApply]; // "特定区間割引運賃適用"
-        }
     }
 
     result.totalSalesKm = fi.getTotalSalesKm();
@@ -913,6 +923,8 @@ int g_tax; /* main.m */
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
                               result.isOsakakanDetourEnable ||
                               result.isJRCentralStockEnable ||
+                              result.isEnableRule115 ||
+                              result.isLongRoute ||
                               result.isSpecificFare;
     return result;
 }
