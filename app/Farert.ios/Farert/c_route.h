@@ -3,6 +3,7 @@
 #define _c_rotute_h_
 
 #import <Foundation/Foundation.h>
+#import "alpdb.h"
 
 #ifdef __cplusplus
 class Route;
@@ -230,6 +231,7 @@ enum DBIDX {
 - (void)setArriveAsCity;
 
 - (void)setLongRoute:(BOOL)flag;
+
 
 //-- cRouteList --
 // Number of Route

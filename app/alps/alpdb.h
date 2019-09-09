@@ -378,7 +378,7 @@ public:
                meihan_city_enable;
     }
     // UI側からセットする制御フラグ
-    bool isEnableLongRoute() const { return 0 != urban_neerest; }
+    bool isEnableLongRoute() const { return !no_rule && 0 != urban_neerest; }
     bool isLongRoute() const { return urban_neerest < 0; }
     void setLongRoute(bool far) {
         if (far) {
@@ -388,7 +388,7 @@ public:
         }
     }
 
-    bool isEnableRule115() const { return 0 != rule115; }
+    bool isEnableRule115() const { return !no_rule && 0 != rule115; }
     bool isDisableSpecificTermRule115() const { return rule115 < 0; }
     void setSpecificTermRule115(bool ena) {
         if (ena) {
@@ -898,8 +898,8 @@ private:
 	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
 	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
 	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
-	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
+	static int32_t		CheckSpecificFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t		SpecificFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
 	       vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(const RouteFlag& osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
