@@ -39,6 +39,12 @@
 @property (nonatomic) BOOL isJRCentralStockEnable;
 @property (nonatomic) BOOL isJRCentralStock;
 
+@property (nonatomic) BOOL isEnableLongRoute;
+@property (nonatomic) BOOL isLongRoute;
+@property (nonatomic) BOOL isDisableSpecificTermRule115;
+@property (nonatomic) BOOL isEnableRule115;
+
+
 @property (nonatomic) NSString* resultMessage;
 
 @property (nonatomic) BOOL isResultCompanyBeginEnd;
@@ -57,7 +63,6 @@
 @property (nonatomic) NSInteger rule114_calcKm;
 @property (nonatomic) BOOL isRule114Applied;
 @property (nonatomic) BOOL isSpecificFare;
-@property (nonatomic) BOOL isPossibleAutoroute;
 
 @property (nonatomic) NSInteger totalSalesKm;
 @property (nonatomic) NSInteger jrCalcKm;

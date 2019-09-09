@@ -17,6 +17,9 @@ TRACE("@@@@@@@@@ %d, %d, %d, %d\n\n\n", result[0], result[1], result[2], result[
 幡生 下関 4,0 4,5
 下関 幡生 4,5 4,0
 
+茶屋町 宇多津 4,0  6,4   310, 0  129, 0
+宇多津 茶屋町 6,4  4,0   310, 0  181, 0
+
 if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2) && (company_id1 != company_id2)) {
   if (sub_company_id1 == company_id2) {
       company_id1 = sub_company_id1;
@@ -27,11 +30,35 @@ if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2) && (com
   3島会社で駅１と駅２が異なる時、内側が同じなら、1<-内
   　　　　　　　　　　　　　　　 外側が同じなら、2<-外
 
+>>
+if (company_id1 != company_id2) {
+    if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2)) {
+        }
+    } else {
+        if (sub_company_id1 != 0 || sub_company_id2 != 0) {
+            if (company_id1 < company_id2) {
+                /* 四国、 九州 にする */
+                company_id1 = company_id2;
+            } else {
+                company_id2 = company_id1;
+            }
+        } else {
+            /* 新山口 - 門司 とか */
+        }
+    }
+}
+
+<<
 本四備讃線の宇多津は
 DBを、JR四国/JR西日本であったけど、JR西日本/JR四国にした。
 
+松山 岡山 営業キロ 2144 JR四国以下
+OK    NG   差
+1866 1995 12.9
 
 
+
+///////////////////////////////////////////////////////////
 d#19080001>>
 b#19081602
 b#19070601

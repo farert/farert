@@ -1241,7 +1241,7 @@
                                     <action selector="gotoSupportURL:" destination="70O-gX-2JZ" eventType="touchUpInside" id="eX4-Ha-8G1"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 19.06" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farert 19.09" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L15-Pn-kGM">
                                 <rect key="frame" x="141.5" y="150.5" width="92" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1546,48 +1546,50 @@
                             </tableViewSection>
                             <tableViewSection headerTitle="Section-2" id="LxC-xe-Jnn">
                                 <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="76" id="6Zz-dd-0b8">
-                                        <rect key="frame" x="0.0" y="199" width="375" height="76"/>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="126" id="6Zz-dd-0b8">
+                                        <rect key="frame" x="0.0" y="199" width="375" height="126"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6Zz-dd-0b8" id="2ie-oh-aoW">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="75.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="125.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vj6-Ab-ZKF">
-                                                    <rect key="frame" x="0.0" y="0.0" width="19" height="75.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="19" height="125.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5Kx-Rx-7D0">
-                                                    <rect key="frame" x="19" y="22.5" width="51" height="31"/>
-                                                </switch>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="小倉-博多間新幹線在来線別線扱い" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="7ap-iv-BpY">
-                                                    <rect key="frame" x="78" y="22.5" width="267.5" height="20.5"/>
+                                                    <rect key="frame" x="78" y="28" width="267.5" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="経路は全て選択しなおしてください" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="343" translatesAutoresizingMaskIntoConstraints="NO" id="acd-lM-SgY">
-                                                    <rect key="frame" x="78" y="43" width="196.5" height="14.5"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="343" translatesAutoresizingMaskIntoConstraints="NO" id="acd-lM-SgY">
+                                                    <rect key="frame" x="72" y="57" width="287" height="43"/>
+                                                    <string key="text">経路は全て選択しなおしてください
+設定は保存されません。「同一視」がデフォルトです。次回起動時には再度設定する必要があります</string>
                                                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5Kx-Rx-7D0">
+                                                    <rect key="frame" x="16" y="23" width="51" height="31"/>
+                                                </switch>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="acd-lM-SgY" secondAttribute="trailing" constant="20" symbolic="YES" id="0Jk-qo-Qqz"/>
-                                                <constraint firstItem="5Kx-Rx-7D0" firstAttribute="centerY" secondItem="2ie-oh-aoW" secondAttribute="centerY" id="9Xo-XT-sYl"/>
+                                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="acd-lM-SgY" secondAttribute="trailing" constant="16" id="0Jk-qo-Qqz"/>
+                                                <constraint firstItem="5Kx-Rx-7D0" firstAttribute="centerY" secondItem="2ie-oh-aoW" secondAttribute="centerY" constant="-24.25" id="9Xo-XT-sYl"/>
                                                 <constraint firstItem="vj6-Ab-ZKF" firstAttribute="height" secondItem="2ie-oh-aoW" secondAttribute="height" id="HRd-Xm-okd"/>
                                                 <constraint firstItem="vj6-Ab-ZKF" firstAttribute="top" secondItem="2ie-oh-aoW" secondAttribute="top" id="JFg-q4-v5v"/>
                                                 <constraint firstItem="vj6-Ab-ZKF" firstAttribute="width" secondItem="2ie-oh-aoW" secondAttribute="width" multiplier="0.05" id="Mur-cB-2xu"/>
                                                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="7ap-iv-BpY" secondAttribute="trailing" constant="20" symbolic="YES" id="Nxs-Vh-9no"/>
-                                                <constraint firstItem="5Kx-Rx-7D0" firstAttribute="leading" secondItem="vj6-Ab-ZKF" secondAttribute="trailing" id="RDU-ab-AvU"/>
+                                                <constraint firstItem="5Kx-Rx-7D0" firstAttribute="leading" secondItem="vj6-Ab-ZKF" secondAttribute="trailing" constant="-3" id="RDU-ab-AvU"/>
                                                 <constraint firstItem="vj6-Ab-ZKF" firstAttribute="leading" secondItem="2ie-oh-aoW" secondAttribute="leading" id="Zjr-5R-sZg"/>
-                                                <constraint firstItem="acd-lM-SgY" firstAttribute="top" secondItem="7ap-iv-BpY" secondAttribute="bottom" id="iQE-6A-YBE"/>
-                                                <constraint firstItem="7ap-iv-BpY" firstAttribute="leading" secondItem="5Kx-Rx-7D0" secondAttribute="trailing" constant="10" id="mfB-df-CLg"/>
-                                                <constraint firstItem="acd-lM-SgY" firstAttribute="leading" secondItem="5Kx-Rx-7D0" secondAttribute="trailing" constant="10" id="tuM-Fh-mLS"/>
-                                                <constraint firstItem="7ap-iv-BpY" firstAttribute="top" secondItem="5Kx-Rx-7D0" secondAttribute="top" id="xXB-dB-SCj"/>
+                                                <constraint firstItem="acd-lM-SgY" firstAttribute="top" secondItem="7ap-iv-BpY" secondAttribute="bottom" constant="8.5" id="iQE-6A-YBE"/>
+                                                <constraint firstItem="7ap-iv-BpY" firstAttribute="leading" secondItem="5Kx-Rx-7D0" secondAttribute="trailing" constant="13" id="mfB-df-CLg"/>
+                                                <constraint firstItem="acd-lM-SgY" firstAttribute="leading" secondItem="5Kx-Rx-7D0" secondAttribute="trailing" constant="7" id="tuM-Fh-mLS"/>
+                                                <constraint firstItem="7ap-iv-BpY" firstAttribute="top" secondItem="5Kx-Rx-7D0" secondAttribute="top" constant="5" id="xXB-dB-SCj"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
