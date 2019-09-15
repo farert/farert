@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "db.h"
 #if !defined _WINDOWS	// get_time_msec()
 #include <unistd.h>
@@ -19,12 +19,16 @@ map<string, STMT_CACHE*> DBS::cache_pool;
 
 bool DBS::open(LPCTSTR dbpath) 
 {
+    sqlite3_shutdown();
+    sqlite3_config(SQLITE_CONFIG_MULTITHREAD);
+    sqlite3_initialize();
 #ifdef READ_ONLY_FILE_DIRECT
 #ifdef _WIN32
 	CT2A sjispath(dbpath);
 	if (0 != sqlite3_open_v2(sjispath, &m_db, SQLITE_OPEN_READONLY, 0)) {
 #else
-	if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY, 0)) {
+        TRACE("dbpath=%s\n", dbpath);
+	if (0 != sqlite3_open_v2(dbpath, &m_db, SQLITE_OPEN_READONLY|SQLITE_OPEN_NOMUTEX|SQLITE_OPEN_PRIVATECACHE, 0)) {
 #endif
 		TRACE("Database can't open\n");
 		cleanup();

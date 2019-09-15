@@ -104,6 +104,8 @@ class Dbreg:
 		self.n_station = 0
 		self.branch = []
 		self.num_of_line = 0
+		self.tax1 = 0	# for t_clinfar
+		self.tax2 = 0	# for t_clinfar
 
 
 	def create_tables(self):
@@ -202,21 +204,9 @@ class Dbreg:
 			fare integer not null,
 			academic integer not null default(0),
 			flg integer not null default(0),
+			tax integer not null,
 			-- line_id integer not null references t_line(rowid),
-			primary key (station_id1, station_id2)
-		);
-		"""
-		self.con.execute(sql)
-		###########################################
-		sql = """
-		create table t_clinfar5p (
-			station_id1 integer not null,
-			station_id2 intege not null,
-			fare integer not null,
-			academic integer not null default(0),
-			flg integer not null default(0),
-			-- line_id integer not null references t_line(rowid),
-			primary key (station_id1, station_id2)
+			primary key (station_id1, station_id2, tax)
 		);
 		"""
 		self.con.execute(sql)
@@ -244,6 +234,17 @@ class Dbreg:
 		""")
 		###########################################
 		self.con.execute("""
+		create table t_r70bullet (
+			station70_id1 integer not null references t_station(rowid),
+			station70_id2 integer not null references t_station(rowid),
+			station_id1 integer not null references t_station(rowid),
+			station_id2 integer not null references t_station(rowid),
+
+			primary key (station70_id1, station70_id2, station_id1, station_id2)
+		);
+		""")
+		###########################################
+		self.con.execute("""
 		create table t_rule86 (
 			line_id1 integer not null references t_line(rowid),
 			station_id integer not null references t_station(rowid),
@@ -256,6 +257,9 @@ class Dbreg:
 		self.con.execute("""
 		create table t_farebspekm (
 			km	integer primary key,
+			ha	integer not null,
+			sa	integer not null,
+			ka	integer not null,
 			h8	integer not null,
 			s8	integer not null,
 			k8	integer not null,
@@ -268,6 +272,8 @@ class Dbreg:
 		create table t_farelspekm (
 			km	integer primary key,
 			ckm	integer not null,
+			ea	integer not null,
+			ha	integer not null,
 			e8	integer not null,
 			h8	integer not null,
 			e5	integer not null,
@@ -278,6 +284,8 @@ class Dbreg:
 		create table t_farels (
 			dkm	integer primary key,
 			skm	integer not null,
+			sa	integer not null,
+			ka	integer not null,
 			s8	integer not null,
 			k8	integer not null,
 			s5	integer not null,
@@ -287,35 +295,30 @@ class Dbreg:
 		self.con.execute("""
 		create table t_fareadd (
 			km	integer primary key,
-			ha	integer not null,
-			sa	integer not null,
-			ka	integer not null);
-		""")
-		###########################################
-		self.con.execute("""
-		create table t_fareadd5p (
-			km	integer primary key,
-			ha	integer not null,
-			sa	integer not null,
-			ka	integer not null);
+			ha5	integer not null,
+			sa5	integer not null,
+			ka5	integer not null,
+			ha8	integer not null,
+			sa8	integer not null,
+			ka8	integer not null,
+			haa	integer not null,
+			saa	integer not null,
+			kaa	integer not null
+			);
 		""")
 		###########################################
 		self.con.execute("""
 		create table t_farehla (
 			km	integer primary key,
-			ha	integer not null)
-		""")
-		###########################################
-		self.con.execute("""
-		create table t_farehla5p (
-			km	integer primary key,
-			ha	integer not null)
+			ha5	integer not null,
+			ha8	integer not null)
 		""")
 		###########################################
 		self.con.execute("""
 		create table t_farespp (
 			station_id1	integer not null references t_station(rowid),
 			station_id2	integer not null references t_station(rowid),
+			fare10p		integer not null,
 			fare8p		integer not null,
 			fare5p		integer not null,
 			kind		integer not null,
@@ -498,18 +501,16 @@ class Dbreg:
 		dispatch = {
 			'line'			: self.reg_line,
 			't_clinfar'		: self.reg_t_clinfar,
-			't_clinfar5p'	: self.reg_t_clinfar,
 			't_rule69'		: self.reg_t_rule69,
 			'rule70'		: self.reg_rule70,
+			'r70bullet'		: self.reg_r70bullet,
 			'rule86'		: self.reg_rule86,
 			't_farebspekm'	: self.reg_t_farebspekm,
 			't_farelspekm'	: self.reg_t_farelspekm,
 			't_farels'		: self.reg_t_farels,
 			't_fareadd'		: self.reg_t_fareadd,
-			't_fareadd5p'	: self.reg_t_fareadd,
 			't_farespp'		: self.reg_t_farespp,
 			't_farehla'		: self.reg_t_farehla,
-			't_farehla5p'	: self.reg_t_farehla,
 			't_compnpass'	: self.reg_t_compnpass,
 			't_compnconc'	: self.reg_t_compnconc,
 			't_brtsp'       : self.reg_t_brtsp,
@@ -754,6 +755,11 @@ class Dbreg:
 	def reg_t_clinfar(self, label, linitems, lin):
 # 料金表 各路線(N-1)*N/2 N=駅数
 		tmp = linitems[0].strip()
+		if tmp == "taxValue":
+			self.tax1 = int(linitems[1])
+			self.tax2 = int(linitems[2])
+			return
+
 		if 0 <= tmp.find('('):
 			station1 = tmp[:tmp.find('(')]
 			station1_s = tmp[tmp.find('('):]
@@ -771,17 +777,18 @@ class Dbreg:
 
 		sql = "insert into " + label + """
  values((select rowid from t_station where name=? and samename=?),
- 		(select rowid from t_station where name=? and samename=?), ?, ?, ?);
+ 		(select rowid from t_station where name=? and samename=?), ?, ?, ?, ?);
 """
-		if 0 < int(linitems[4]):  # 小児
+		if 0 < int(linitems[6]):  # 小児
 			tmp = 1
 		else:
 			tmp = 0
 
-		if 0 < int(linitems[5]):  # 併算割引
+		if 0 < int(linitems[7]):  # 併算割引
 			tmp |= 0x02
 
-		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2]), int(linitems[3]), tmp])
+		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2]), int(linitems[4]), tmp, self.tax1])
+		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[3]), int(linitems[5]), tmp, self.tax2])
 		#                                                                     fare            academic         flg
 #------------------------------------------------------------------------------
 	def reg_t_rule69(self, label, linitems, lin):
@@ -840,6 +847,50 @@ insert into t_rule70 values(
 		[station1, station1_s, station2, station2_s, int(linitems[2])])
 
 #------------------------------------------------------------------------------
+	def reg_r70bullet(self, label, linitems, lin):
+	# rule70
+
+		tmp = linitems[0].strip()		# station_id1
+		if 0 <= tmp.find('('):
+			station1 = tmp[:tmp.find('(')]
+			station1_s = tmp[tmp.find('('):]
+		else:
+			station1 = tmp
+			station1_s = ''
+
+		tmp = linitems[1].strip()		# station_id2
+		if 0 <= tmp.find('('):
+			station2 = tmp[:tmp.find('(')]
+			station2_s = tmp[tmp.find('('):]
+		else:
+			station2 = tmp
+			station2_s = ''
+
+		tmp = linitems[2].strip()		# station_id3
+		if 0 <= tmp.find('('):
+			station3 = tmp[:tmp.find('(')]
+			station3_s = tmp[tmp.find('('):]
+		else:
+			station3 = tmp
+			station3_s = ''
+
+		tmp = linitems[3].strip()		# station_id4
+		if 0 <= tmp.find('('):
+			station4 = tmp[:tmp.find('(')]
+			station4_s = tmp[tmp.find('('):]
+		else:
+			station4 = tmp
+			station4_s = ''
+
+		self.con.execute("""
+insert into t_r70bullet values(
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?));""",
+		[station1, station1_s, station2, station2_s, station3, station3_s, station4, station4_s])
+
+#------------------------------------------------------------------------------
 
 	def reg_rule86(self, label, linitems, lin):
 	# rule86
@@ -863,19 +914,21 @@ insert into t_rule86 values(
 	def reg_t_farebspekm(self, label, linitems, lin):
 	# t_farebspekm: 3島会社幹線例外
 		self.con.execute("""
-insert into t_farebspekm values(?, ?, ?, ?, ?, ?, ?)""",
+insert into t_farebspekm(km,h8,s8,k8,h5,s5,k5,ha,sa,ka) values(?,?,?,?,?,?,?,?,?,?)""",
 		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
 		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
 		 int(linitems[4].replace(',', '')), int(linitems[5].replace(',', '')),
-		 int(linitems[6].replace(',', ''))])
+		 int(linitems[6].replace(',', '')), int(linitems[7].replace(',', '')),
+		 int(linitems[8].replace(',', '')), int(linitems[9].replace(',', ''))])
 #------------------------------------------------------------------------------
 	def reg_t_farelspekm(self, label, linitems, lin):
 	# t_farelspekm:地方交通線例外
 		self.con.execute("""
-insert into t_farelspekm values(?, ?, ?, ?, ?, ?)""",
+insert into t_farelspekm(km,ckm,e8,h8,e5,h5,ea,ha) values(?, ?, ?, ?, ?, ?, ?, ?)""",
 		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
 		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
-		 int(linitems[4].replace(',', '')), int(linitems[5].replace(',', ''))])
+		 int(linitems[4].replace(',', '')), int(linitems[5].replace(',', '')),
+		 int(linitems[6].replace(',', '')), int(linitems[7].replace(',', ''))])
 #------------------------------------------------------------------------------
 	def reg_t_farels(self, label, linitems, lin):
 	# t_farels: 2島会社地方交通線
@@ -904,18 +957,31 @@ insert into t_farelspekm values(?, ?, ?, ?, ?, ?)""",
 		else:
 			n = -1
 
-		self.con.execute("""
-insert into t_farels values(?, ?, ?, ?, ?, ?)""",
-		[int(linitems[0].replace(',', '')), skm, k, l, m, n])
+		if linitems[6].replace(',', '').isdigit():
+			ma = int(linitems[6].replace(',', ''))
+		else:
+			ma = -1
 
+		if linitems[7].replace(',', '').isdigit():
+			na = int(linitems[7].replace(',', ''))
+		else:
+			na = -1
+
+		self.con.execute("""
+insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
+		[int(linitems[0].replace(',', '')), skm, ma, na, k, l, m, n])
+# a, 8, 5
 #------------------------------------------------------------------------------
 	def reg_t_fareadd(self, label, linitems, lin):
 	# t_fareadd: 本州3社+3島加算
 
-		self.con.execute("insert into " + label + " values(?, ?, ?, ?)",
+		self.con.execute("insert into " + label + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
-		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', ''))])
-		# km, ha, sa, ka
+		 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
+		 int(linitems[4].replace(',', '')), int(linitems[5].replace(',', '')),
+		 int(linitems[6].replace(',', '')), int(linitems[7].replace(',', '')),
+		 int(linitems[8].replace(',', '')), int(linitems[9].replace(',', '')) ])
+		# km, ha5, sa5, ka5, ha8, sa8, ka8, haa, saa, kaa
 
 #------------------------------------------------------------------------------
 	def reg_t_farespp(self, label, linitems, lin):
@@ -937,27 +1003,31 @@ insert into t_farels values(?, ?, ?, ?, ?, ?)""",
 			station2 = tmp
 			station2_s = ''
 
+		if int(db_name) <= 2017 and (station1 == "摩耶" or station2 == "摩耶"):
+			return
+		
 		kind = int(linitems[4].replace(',', ''))
+
 		if db_name != "2014" or kind != 2:
 			#print(lin, end='')
 			self.con.execute("""
-insert into t_farespp values(
+insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
- ?, ?, ?)""",
+ ?, ?, ?, ?)""",
 				[station1, station1_s, station2, station2_s,
-				 int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
+				 int(linitems[5].replace(',', '')), int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
 				 kind])
-		# station_id1, station_id2, fare, kind
+		# station_id1, station_id2, fare10p, fare8p, fare5p, kind
 
 #------------------------------------------------------------------------------
 	def reg_t_farehla(self, label, linitems, lin):
 		# t_farehla : 本州3社+JR北地方交通線会社加算
 		# t_farehla5p : 本州3社+JR北地方交通線会社加算(消費税5%版)
 
-		self.con.execute("insert into " + label + " values(?, ?)",
-		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', ''))])
-		# km, ha
+		self.con.execute("insert into " + label + " values(?, ?, ?)",
+		[int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')), int(linitems[2].replace(',', ''))])
+		# km, ha5, ha8
 #------------------------------------------------------------------------------
 	def reg_t_compnpass(self, label, linitems, lin):
 		# t_compnpass

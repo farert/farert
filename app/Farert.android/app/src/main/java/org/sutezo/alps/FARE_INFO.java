@@ -591,7 +591,7 @@ public class FARE_INFO  {
                         // ビット13のみ保持(既にflagのビット13のみにはcalc_fare()の最初でセットしているから)
                         this.flag &= (1<<RouteUtil.BCBULURB);
                         // 次回以降から駅1不要、駅1 sflgの下12ビット,
-                        // bit12以上はGetDistanceEx()のクエリでOffしているので不要
+                        // bit12以上はGetDistanceEx()のクエリでOxfffしているので不要
                         this.flag |= (RouteUtil.FLAG_FARECALC_INITIAL | (/*~(1<<RouteUtil.BCBULURB) & */dex[6]));
                     }
                     flag = (RouteUtil.FLAG_FARECALC_INITIAL | (1<<RouteUtil.BCBULURB) | dex[7]);
@@ -972,7 +972,7 @@ public class FARE_INFO  {
             if (fare_info_shorts.getFareForJR() < this.getFareForJR()) {
                 //
                 fare_ic = fare_info_shorts.getFareForJR();
-                setTOICACalcRoute(shortRoute.routeList(), short_last_flag);
+                setRoute(shortRoute.routeList(), short_last_flag);
             } else {
                 clrTOICACalcRoute();
             }
@@ -1138,12 +1138,6 @@ public class FARE_INFO  {
     void clrTOICACalcRoute() {
         calc_route_for_disp = "";
     }
-
-    void setTOICACalcRoute(final List<RouteItem> routeList, LastFlag last_flag) {
-        calc_route_for_disp = RouteUtil.Show_route(routeList.toArray(new RouteItem [0]), last_flag);
-    }
-
-
 
     //public:
     public  void reset() {				//***
@@ -1383,7 +1377,7 @@ public class FARE_INFO  {
     /** BRT乗り継ぎ割引
      * @retval あり
      */
-    boolean getIsBRT_discount() { return brt_discount_fare != 0; }
+    boolean isBRT_discount() { return brt_discount_fare != 0; }
 
     /**	JR北海道の営業キロを返す
      *

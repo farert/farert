@@ -215,43 +215,29 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             
         case 4:
             /* avail days */
-            if (false == self.fareInfo.isUrbanArea) {
-                cell = tableView.dequeueReusableCell(withIdentifier: "rsAvailDaysCell", for: indexPath) 
-                var lbl : UILabel = cell.viewWithTag(1) as! UILabel
-                lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
-                lbl = cell.viewWithTag(2) as! UILabel
-                if 1 < self.fareInfo.ticketAvailDays {
-                    var str : String
-                    if (self.fareInfo.isBeginInCity && self.fareInfo.isEndInCity) {
-                        str = "(発着駅都区市内の駅を除き"
-                    } else if (self.fareInfo.isBeginInCity) {
-                        str = "(発駅都区市内の駅を除き"
-                    } else if (self.fareInfo.isEndInCity) {
-                        str = "(着駅都区市内の駅を除き"
-                    } else {
-                        str = "("
-                    }
-                    lbl.text = str + "途中下車可能)"
+            cell = tableView.dequeueReusableCell(withIdentifier: "rsAvailDaysCell", for: indexPath)
+            var lbl : UILabel = cell.viewWithTag(1) as! UILabel
+            lbl.text = "\(self.fareInfo.ticketAvailDays)日間"
+            lbl = cell.viewWithTag(2) as! UILabel
+            if 1 < self.fareInfo.ticketAvailDays {
+                var str : String
+                if (self.fareInfo.isBeginInCity && self.fareInfo.isEndInCity) {
+                    str = "(発着駅都区市内の駅を除き"
+                } else if (self.fareInfo.isBeginInCity) {
+                    str = "(発駅都区市内の駅を除き"
+                } else if (self.fareInfo.isEndInCity) {
+                    str = "(着駅都区市内の駅を除き"
                 } else {
-                    lbl.text = "(途中下車前途無効)"
+                    str = "("
                 }
+                lbl.text = str + "途中下車可能)"
             } else {
+                lbl.text = "(途中下車前途無効)"
+            }
+            /* isUrban
                 // 近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)
                 cell = tableView.dequeueReusableCell(withIdentifier: "rsMetroAvailDaysCell", for: indexPath)
-                let lbl : UILabel = cell.viewWithTag(1) as! UILabel
-                var s : String
-                if nil == self.fareInfo {
-                    s = "エラー"
-                    assert(false)
-                } else if (self.fareInfo.beginStationId != self.fareInfo.endStationId) {
-                    s = (self.fareInfo.isRuleApplied()) ?
-                    "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)":
-                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
-                } else {
-                    s = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
-                }
-                lbl.text = s
-            }
+            */
             
         case 5:
             /* ROUTE */
@@ -323,11 +309,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         case 1:
             return "キロ程" /* sales, calc km */
         case 2:
-            if (self.fareInfo.isSpecificFare) {
-                return "運賃(特定区間運賃)"
-            } else {
-                return "運賃" /* Fare */
-            }
+            return "運賃" /* Fare */
         case 3:
             return ""
         case 4:
@@ -393,13 +375,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             value = 44
         case 4:
             /* avail days */
-            if !self.fareInfo.isUrbanArea  {
-                // "rsAvailDaysCell"
-                value = 44
-            } else {
-                // "rsMetroAvailDaysCell"
-                value = 44
-            }
+            value = 44
 
         case 5:
             /* ROUTE */
@@ -442,40 +418,40 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if nil != title.range(of: "特例") {
             if nil != title.range(of: "しない") {
                 // @"特例を適用しない";
-                ds.setFareOption(FGD.FAREOPT_RULE_NO_APPLIED, availMask: FGD.FAREOPT_AVAIL_RULE_APPLIED)
+                ds.setNoRule(true);
             } else {
                 // @"特例を適用する";
-                ds.setFareOption(FGD.FAREOPT_RULE_APPLIED, availMask: FGD.FAREOPT_AVAIL_RULE_APPLIED)
+                ds.setNoRule(false);
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
 
-        } else if nil != title.range(of: "単駅") {
+        } else if nil != title.range(of: "を単駅指定") {
             if nil != title.range(of: "発駅") {
                 // "発駅を単駅指定";
-                ds.setFareOption(FGD.FAREOPT_APPLIED_TERMINAL, availMask: FGD.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+                ds.setArriveAsCity();
             } else {
                 // "着駅を単駅指定";
-                ds.setFareOption(FGD.FAREOPT_APPLIED_START, availMask: FGD.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+                ds.setStartAsCity();
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
             
-        } else if nil != title.range(of: "最短経路") {
-            let begin_id : Int = ds.startStationId()
-            let end_id : Int = ds.lastStationId()
-            if begin_id == end_id {
-                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
-                return
-            }
-
-            self.showIndicate() /* wait active indicator */
-            self.navigationController?.view.isUserInteractionEnabled = false
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
-                //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
-                self.processDuringIndicatorAnimating(NSNull.self)
-            })
-            
+//        } else if nil != title.range(of: "最短経路") {
+//            let begin_id : Int = ds.startStationId()
+//            let end_id : Int = ds.lastStationId()
+//            if begin_id == end_id {
+//                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
+//                return
+//            }
+//
+//            self.showIndicate() /* wait active indicator */
+//            self.navigationController?.view.isUserInteractionEnabled = false
+//           DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
+ //               //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+//                self.processDuringIndicatorAnimating(NSNull.self)
+//            })
+//
         } else if nil != title.range(of: "回り") {
             if let route : cRoute = cRoute() {
                 route.sync(ds)
@@ -491,10 +467,26 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         } else if nil != title.range(of: "株主優待") {
             if nil != title.range(of: "しない") {
                 // @"JR東海株主優待券を適用しない";
-                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
+                ds.setJrTokaiStockApply(false);
             } else {
                 // @"JR東海株主優待券を使用する";
-                ds.setFareOption(FGD.FAREOPT_JRTOKAI_STOCK_APPLIED, availMask: FGD.FAREOPT_JRTOKAI_STOCK_APPLIED)
+                ds.setJrTokaiStockApply(true);
+            }
+            self.reCalcFareInfo()
+            self.tableView.reloadData()
+        } else if nil != title.range(of: "指定した経路") {
+            ds.setLong(true);
+            self.reCalcFareInfo()
+            self.tableView.reloadData()
+        } else if nil != title.range(of: "最安経路") {
+            ds.setLong(false);
+            self.reCalcFareInfo()
+            self.tableView.reloadData()
+        } else if nil != title.range(of: "規程115条") {
+            if nil != title.range(of: "単駅最安") {
+                ds.setSpecificTermRule115(false)
+            } else /* if nil != title.range(of: "特定都区市内発着") */ {
+                ds.setSpecificTermRule115(true)
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
@@ -513,43 +505,54 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
         var items : [String] = Array<String>()
         
-        if self.fareInfo.isRuleAppliedEnable() {
-            if self.fareInfo.isRuleApplied() {
+        if self.fareInfo.isRuleAppliedEnable {
+            if self.fareInfo.isRuleApplied {
                 items.append("特例を適用しない")
 
-                if self.fareInfo.isMeihanCityStartTerminalEnable() {
-                    if self.fareInfo.isMeihanCityStart() {
+                if self.fareInfo.isMeihanCityStartTerminalEnable {
+                    if self.fareInfo.isMeihanCityTerminal {
                         // 発駅=都区市内
-                        items.append("発駅を単駅指定")
-                    } else  {
                         items.append("着駅を単駅指定")
+                    } else  {
+                        items.append("発駅を単駅指定")
                     }
                 }
             } else {
                 items.append("特例を適用する")
             }
         }
-        //b#18122902
-        //if (self.fareInfo.isArbanArea) {
-        //    items.append("最短経路算出")
-        //}
-        
-        if self.fareInfo.isJRCentralStockEnable() {
-            if self.fareInfo.isJRCentralStock() {
+
+        if self.fareInfo.isJRCentralStockEnable {
+            if self.fareInfo.isJRCentralStock {
                 items.append("JR東海株主優待券を適用しない")
             } else {
                 items.append("JR東海株主優待券を適用する")
             }
         }
 
-        if self.fareInfo.isOsakakanDetourEnable() {
-            if self.fareInfo.isOsakakanDetourShortcut() {
+        if self.fareInfo.isOsakakanDetourEnable {
+            if self.fareInfo.isOsakakanDetourShortcut {
                 items.append("大阪環状線 近回り")
             } else {
                 items.append("大阪環状線 遠回り")
             }
         }
         
+        if self.fareInfo.isEnableLongRoute {
+            if self.fareInfo.isLongRoute {
+                items.append("最安経路で運賃計算")
+            } else {
+                items.append("指定した経路で運賃計算")
+            }
+        }
+        
+        if self.fareInfo.isEnableRule115 {
+            if self.fareInfo.isDisableSpecificTermRule115 {
+                items.append("旅客営業取扱基準規程115条(単駅最安)")
+            } else {
+                items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
+            }
+        }
         if #available(iOS 8, OSX 10.10, *) {            // iOS8
             let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .actionSheet)
             for item in items {
@@ -661,8 +664,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             self.tableView.reloadData()
         }
 
-        //if self.fareInfo.isFareOptEnabled() || self.fareInfo.isUrbanArea
-        if self.fareInfo.isRuleAppliedEnable() || self.fareInfo.isFareOptEnabled() {
+        if self.fareInfo.isFareOptEnabled {
             self.chgOptionButton.isEnabled = true
         } else {
             self.chgOptionButton.isEnabled = false
@@ -947,6 +949,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if self.fareInfo.isBRTdiscount {
             contentsForMessage.append("BRT乗り継ぎ割引適用")
         }
+        if let s = self.fareInfo.resultMessage {
+            if !s.isEmpty {
+                let ss : [String] = s.components(separatedBy: "\r\n")
+                for sss in ss {
+                    contentsForMessage.append(sss)
+                }
+            }
+        }
     }
     
     
@@ -1018,8 +1028,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         // メールビュー生成
         //_mailViewCtl = [[MFMailComposeViewController alloc] init];
         
-        if self.fareInfo.isRuleAppliedEnable() {
-            if self.fareInfo.isRuleApplied() {
+        if self.fareInfo.isRuleAppliedEnable {
+            if self.fareInfo.isRuleApplied {
                 body += "(特例適用)\n"
             } else {
                 body += "(特例未適用)\n"

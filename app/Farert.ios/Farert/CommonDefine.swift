@@ -39,7 +39,7 @@ struct FGD {
     static let  ADDRC_OK    = 1
     // ADDRC_NG -1 to -N
     
-    
+    /*
     /* cooked flag for shoFare(), show_route() */
     // bit 15  (User->System)
     static let  FAREOPT_AVAIL_RULE_APPLIED          	= 0x8000	// 有効ビットマスク
@@ -55,17 +55,7 @@ struct FGD {
     static let FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK     = 0x40   // 有効ビットマスク
     static let FAREOPT_JRTOKAI_STOCK_APPLIED           = 0x40    // JR東海株主に適用
     static let FAREOPT_JRTOKAI_STOCK_NO_APPLIED        =   0     // JR東海株主に非適用
+ */
 }
 
-struct DbId {
-// cRouteUtilにも同じような定義あり、なんとかしたい
-    static let DB_MIN_ID = 10
-    
-    static let DB_TAX5 = DB_MIN_ID
-    static let DB_2014 = 11
-    static let DB_2015 = 12
-    static let DB_2017 = 13
-    static let DB_2018 = 14
 
-    static let DB_MAX_ID = DB_2018
-}
