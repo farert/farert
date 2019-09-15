@@ -37,7 +37,7 @@ int g_tax; /* main.m */
 
     if (RouteUtil::DbVer(&c_dbsys)) {
         DbSys* dbSys = [[DbSys alloc] initWithName:[NSString stringWithUTF8String:c_dbsys.name]
-                                 sales_tax:c_dbsys.tax
+                                 sales_tax:/*c_dbsys.tax*/g_tax
                                       Date:[NSString stringWithUTF8String:c_dbsys.createdate]];
         return dbSys;
     } else {
@@ -52,7 +52,7 @@ int g_tax; /* main.m */
     return [self OpenDatabase:[self GetDatabaseId]];
 }
 
-+ (BOOL)OpenDatabase:(NSInteger)ident
++ (BOOL)OpenDatabase:(enum DB)ident
 {
     NSString* dbname;
     NSString* dbpath;
@@ -74,8 +74,13 @@ int g_tax; /* main.m */
             g_tax = 8;
             dbname = @"jrdb2017";
             break;
-        default:
+        case DB_2018:
             g_tax = 8;
+            dbname = @"jrdb2019";
+            break;
+        case DB_2019_10:
+        default:
+            g_tax = 10;
             dbname = @"jrdb2019";
             break;
     }
@@ -104,9 +109,11 @@ int g_tax; /* main.m */
 }
 
 // Retrieve database index
-+ (NSInteger)GetDatabaseId
++ (enum DB)GetDatabaseId
 {
-    return [[NSUserDefaults standardUserDefaults] integerForKey:@"JrDatabaseId"];
+    NSInteger dbid =
+    [[NSUserDefaults standardUserDefaults] integerForKey:@"JrDatabaseId"];
+    return DB(dbid);
 }
 
 
