@@ -148,7 +148,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
                 } else {
                     UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
-                    cRouteUtil.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
+                    cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                     UserDefaults.standard.synchronize();
                 }
             } else {
@@ -169,7 +169,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     av.show()
                 }
                 UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
-                cRouteUtil.save(toDatabaseId: DbId.DB_MAX_ID, sync: false)
+                cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                 UserDefaults.standard.synchronize();
             }
         }
@@ -1015,16 +1015,18 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 title = s
             }
 
-            var cur_db_idx = cRouteUtil.getDatabaseId()
-            if ((cur_db_idx < DbId.DB_MIN_ID) || (DbId.DB_MAX_ID < cur_db_idx)) {
-                cur_db_idx = DbId.DB_MAX_ID
+            var cur_db_idx = cRouteUtil.getDatabaseId().rawValue
+            if ((cur_db_idx < DB._MIN_ID.rawValue) || (DB._MAX_ID.rawValue < cur_db_idx)) {
+                cur_db_idx = DB._MAX_ID.rawValue
             }
-            if (cur_db_idx != DbId.DB_MAX_ID) {
+            if (cur_db_idx != DB._MAX_ID.rawValue) {
                 // データベースは最新以外
                 let dbverInf : DbSys = cRouteUtil.databaseVersion()
                 var dbname : String
-                if cur_db_idx == DbId.DB_TAX5 /* dbverInf.tax == 5*/ {
+                if cur_db_idx == DB._TAX5.rawValue /* dbverInf.tax == 5*/ {
                     dbname = dbverInf.name! + "(5%tax)"
+                } else if cur_db_idx == DB._2018.rawValue {
+                    dbname = dbverInf.name! + "(8%tax)"
                 } else {
                     dbname = dbverInf.name!
                 }

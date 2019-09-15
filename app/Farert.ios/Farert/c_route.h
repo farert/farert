@@ -3,6 +3,7 @@
 #define _c_rotute_h_
 
 #import <Foundation/Foundation.h>
+#import "alpdb.h"
 
 #ifdef __cplusplus
 class Route;
@@ -23,14 +24,15 @@ typedef void CalcRoute;
 @class FareInfo;
 @class DbSys;
 
-enum DBIDX {
+typedef NS_ENUM(NSInteger, DB) {
     DB_MIN_ID = 10,
     DB_TAX5 = DB_MIN_ID,
     DB_2014,
     DB_2015,
     DB_2017,
     DB_2018,
-    DB_MAX_ID = DB_2018,
+    DB_2019_10,
+    DB_MAX_ID = DB_2019_10,
 };
 
 #define MAX_HISTORY              20
@@ -54,7 +56,7 @@ enum DBIDX {
 
 + (DbSys*)DatabaseVersion;
 + (BOOL)OpenDatabase;
-+ (BOOL)OpenDatabase:(NSInteger)ident;
++ (BOOL)OpenDatabase:(enum DB)ident;
 + (void)Close;
 
 + (NSString*)fareNumStr:(NSInteger)num;
@@ -102,7 +104,7 @@ enum DBIDX {
 + (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
 
 // Retrieve database index
-+ (NSInteger)GetDatabaseId;
++ (enum DB)GetDatabaseId;
 
 + (NSArray*)loadStrageRoute;
 + (BOOL)IsRouteInStrage:(NSString*)routeString;
@@ -165,7 +167,6 @@ enum DBIDX {
 
 - (NSInteger)setupRoute:(NSString*)routeString;
 
-//- (NSInteger)getFareOption;
 - (NSInteger)setDetour:(BOOL)enabled;
 
 //- 小倉博多間新幹線在来線別線扱い
@@ -209,9 +210,6 @@ enum DBIDX {
 - (void)sync:(cRoute*)source count:(NSInteger)count;
 
 
-// fare option
-- (void)setFareOption:(NSInteger)optMask availMask:(NSInteger) availMask;
-
 // fare calc
 - (FareInfo*)calcFare;
 
@@ -220,6 +218,21 @@ enum DBIDX {
 
 - (BOOL)isOsakakanDetourShortcut;
 - (BOOL)isOsakakanDetourEnable;
+
+- (BOOL)isEnableLongRoute;
+- (BOOL)isDisableSpecificTermRule115;
+- (void)setSpecificTermRule115:(BOOL)enable;
+
+- (void)setJrTokaiStockApply:(BOOL)enabled;
+
+
+- (void)setNoRule:(BOOL)enabled;
+
+- (void)setStartAsCity;
+- (void)setArriveAsCity;
+
+- (void)setLongRoute:(BOOL)flag;
+
 
 //-- cRouteList --
 // Number of Route

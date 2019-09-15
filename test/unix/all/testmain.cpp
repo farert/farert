@@ -8,7 +8,7 @@ static const char* subword(const char* src_str, int num);
 static int num_of_word(const char* buf);
 static void rtrim(char* str);
 
-int g_tax = 8;
+int g_tax = 10;
 
 char tbuf[1024];
 char tbuf2[64];
