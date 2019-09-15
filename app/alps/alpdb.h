@@ -210,14 +210,13 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define MASK_CITYNO(flg)			((flg)&0x0f)
 
 /* 近郊区間 */
-#define BCSUBURB					7
 #define MASK_URBAN					0x380
 #define URBAN_ID(flg)				(((int32_t)(flg)>>7)&7)
 #define IS_OSMSP(flg)				(((flg)&(1 << 11))!=0)	/* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)				(((flg)&(1 << 10))!=0)	/* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)				(((flg)&(1 << 5))!=0)	/* 山点線内／大阪環状線内 ?*/
 
-#define BCBULURB                    13	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
+#define MASK_FARECALC_INITIAL       0
 
 #if 0
   vector<RouteItem> 先頭のlineId
@@ -270,71 +269,228 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 //        計算時は、bit 2 BLF_OSAKAKAN_DETOUR のみ使用し、
 //		  計算の過程では、ローカル変数フラグ使用
 
-// bit0-1
-#define MLF_OSAKAKAN_PASS   	0x03
-#define LF_OSAKAKAN_NOPASS		0	// 初期状態(大阪環状線未通過)
-#define LF_OSAKAKAN_1PASS   	1	// 大阪環状線 1回通過
-#define LF_OSAKAKAN_2PASS   	2	// 大阪環状線 2回通過
-#define BLF_OSAKAKAN_1PASS   	0	// 大阪環状線 1回通過
-
-#define IS_LF_OSAKAKAN_PASS(m, pass) (pass == ((m) & MLF_OSAKAKAN_PASS))
-
-// bit 2-3
-#define BLF_OSAKAKAN_1DIR   	2	// 大阪環状線 1回目方向
-#define BLF_OSAKAKAN_2DIR   	3	// 大阪環状線 2回目方向
-
-#define BLF_OSAKAKAN_DETOUR 	4   // 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
-
-#define LF_OSAKAKAN_MASK    	0x0f
-
-#define BLF_TRACKMARKCTL		5	// 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
-#define BLF_JCTSP_ROUTE_CHANGE	6	// 分岐特例(add内部使用)
-
-// bit7 - 大高-杉本町とかで、[名][阪]をどっちに適用するか
-#define BLF_MEIHANCITYFLAG		7	// ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
-#define BLF_NO_RULE             8   // ON: 特例非適用(User->System)
-#define BLF_RULE_EN             9   // ON: 特例適用(System->User)
-
-// bit 10 JR東海 東海道新幹線区間
-#define BLF_JRTOKAISTOCK_ENABLE 10		// 提案可能フラグ
-										//   東海道新幹線で[区][山][浜][京][阪]が適用する場面でセットされる
-										//   JR東海株主優待適用・非適用選択メニューが有効となる
-#define BLF_JRTOKAISTOCK_APPLIED 11		// 提案適用フラグ
-										//   UI側からユーザが指定する
-
-// bit 11-20 発着 都区市内 適用
-#define BLF_TER_BEGIN_CITY		13		// [区][浜][名][京][阪][神][広][九][福][仙][札]
-#define BLF_TER_FIN_CITY		14
-#define BLF_TER_BEGIN_YAMATE	15		// [山]
-#define BLF_TER_FIN_YAMATE		16
-#define BLF_TER_BEGIN_2CITY		17		// not used
-#define BLF_TER_FIN_2CITY		18		// not used
-#define BLF_TER_BEGIN_CITY_OFF	19
-#define BLF_TER_FIN_CITY_OFF	20
-#define BLF_TER_BEGIN_OOSAKA	21	// 大阪・新大阪
-#define BLF_TER_FIN_OOSAKA		22
-#define LF_TER_CITY_MASK     (0x3ff << BLF_TER_BEGIN_CITY)	// +10 bit
-
-// 会社線
-#define BLF_COMPNCHECK			23		// 会社線通過チェック有効
-#define BLF_COMPNPASS			24		// 通過連絡運輸
-#define BLF_COMPNDA				25		// 通過連絡運輸不正フラグ
-#define BLF_COMPNBEGIN			26		// 会社線で開始
-#define BLF_COMPNEND			27		// 会社線で終了
-
-			// 28
-			// 29 used
-
-// Global
-#define BLF_NOTSAMEKOKURAHAKATASHINZAI   30  // Route only : 小倉-博多間 新在別線扱い
-
-#define BLF_END					31	// arrive to end.
-
-// end of last_flag
-
-
 #define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
 
+class RouteFlag {
+
+    unsigned char osakaKanPass = 0;
+public:
+    bool no_rule;
+    // メンバの数はenableMapValueに依存するので制限32個まで
+    bool jrtokaistock_applied;  // owner is user
+    bool jrtokaistock_enable;   // owner system
+    bool meihan_city_flag;
+    BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
+                            //         bit2: term, bit3: end([山])
+                            // bit6:1= disable
+    bool rule88;
+    bool rule69;
+    bool rule70;
+    bool special_fare_enable;
+    int8_t rule115;
+    bool rule70bullet;
+
+    bool bullet_line;           // 新幹線乗車している
+    bool bJrTokaiOnly;
+
+    bool meihan_city_enable;    //名阪発駅単駅着駅都区市内
+    bool trackmarkctl;	        //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
+    bool jctsp_route_change;	//6 分岐特例(add内部使用)
+
+    // bit 11-20 発着 都区市内 適用
+    bool ter_begin_oosaka;      //21 大阪・新大阪
+    bool ter_fin_oosaka	;      //22
+
+    // 会社線
+    bool compncheck	    ;      //23 会社線通過チェック有効
+    bool compnpass		;      //24 通過連絡運輸
+    bool compnda		;      //25 通過連絡運輸不正フラグ
+    bool compnbegin		;      //26	会社線で開始
+    bool compnend		;      //27 会社線で終了
+
+    int8_t urban_neerest;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user/system both.
+                            // 0: N/A
+                            // 1: Neer , -1: Far
+
+    // Global
+    bool notsamekokurahakatashinzai;    //30 Route only : 小倉-博多間 新在別線扱い
+    bool end		;               //31 arrive to end.
+    // end of last_flag
+public:
+    RouteFlag() {
+        clear();
+    }
+    void clear() {
+        /* last_flag */
+        // boolean LASTFLG_OFF = RouteUtil.MASK(notsamekokurahakatashinzai);   // all bit clear at removeAll()
+        osakaKanPass = 0;      //0-1
+
+        // bit 2-3
+        osakakan_1dir = false;	//2 大阪環状線 1回目方向
+        osakakan_2dir = false;	//3 大阪環状線 2回目方向
+
+        osakakan_detour = false;   //4 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
+
+        trackmarkctl = false;	        //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
+        jctsp_route_change = false;	//6 分岐特例(add内部使用)
+
+        ter_begin_oosaka	= false;      //21 大阪・新大阪
+        ter_fin_oosaka		= false;      //22
+        compncheck		    = false;      //23 会社線通過チェック有効
+        compnpass			= false;      //24 通過連絡運輸
+        compnda			= false;      //25 通過連絡運輸不正フラグ
+        compnbegin			= false;      //26	会社線で開始
+        compnend			= false;      //27 会社線で終了
+
+        urban_neerest = 0;
+        notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
+        end			    = false;      //31 arrive to end.
+
+        rule86or87 = 0;
+        rule115 = 0;
+        rule70bullet = false;
+        rule88 = false;
+        rule69 = false;
+        rule70 = false;
+        special_fare_enable = false;
+
+        bullet_line = false;
+        bJrTokaiOnly = false;
+
+        meihan_city_enable	= false;      //19
+
+        meihan_city_flag = false;	        //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
+        no_rule = false;                //8 ON: 特例非適用(User->System)
+
+        jrtokaistock_enable= false;	    //10 提案可能フラグ
+        jrtokaistock_applied= false; 	//11 提案適用フラグ
+    }
+public:
+    void setAnotherRouteFlag(const RouteFlag& other) {
+        *this = other;
+    }
+    bool rule_en() {
+        return (0x3f & rule86or87) ||
+               rule88 ||
+               rule69 ||
+               rule70 ||
+               special_fare_enable ||
+               meihan_city_enable;
+    }
+    // UI側からセットする制御フラグ
+    bool isEnableLongRoute() const { return !no_rule && 0 != urban_neerest; }
+    bool isLongRoute() const { return urban_neerest < 0; }
+    void setLongRoute(bool far) {
+        if (far) {
+            urban_neerest = -1;
+        } else {
+            urban_neerest = 1;
+        }
+    }
+
+    bool isEnableRule115() const { return !no_rule && 0 != rule115; }
+    bool isDisableSpecificTermRule115() const { return rule115 < 0; }
+    void setSpecificTermRule115(bool ena) {
+        if (ena) {
+            rule115 = -1;
+        } else {
+            rule115 = 1;
+        }
+    }
+    void setNoRule(bool flag) { no_rule = flag; }
+    void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
+    void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
+    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; }
+                                                                  /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */
+                                                                  /* coreAreaIDByCityId() が影響 */
+    void setDisableRule86or87() { rule86or87 |= 0x40; }
+    void setEnableRule86or87()  { rule86or87 &= 0x3f; }
+    bool isEnableRule86or87() const { return 0 == (rule86or87 & 0x40); }
+    bool isAvailableRule86or87() const { return (rule86or87 ^ 0x0f) < 0x0f; }
+    bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
+    bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
+
+    //
+    bool isMeihanCityEnable() const {
+        return meihan_city_enable;
+    }
+    bool isArriveAsCity() const { return (meihan_city_enable == true) && (meihan_city_flag == false); }
+    bool isStartAsCity() const { return (meihan_city_enable == true) && (meihan_city_flag == true); }
+
+    // for debug print
+    int getOsakaKanPassValue()  const { return osakaKanPass; }
+
+    enum OSAKAKAN_PASS {
+        OSAKAKAN_NOPASS,	// 初期状態(大阪環状線未通過)
+        OSAKAKAN_1PASS,	    // 大阪環状線 1回通過
+        OSAKAKAN_2PASS, 	// 大阪環状線 2回通過
+   };
+
+    bool is_osakakan_1pass() const {
+        return OSAKAKAN_1PASS == (osakaKanPass & 0x03);
+    }
+
+    bool is_osakakan_2pass() const {
+        return OSAKAKAN_2PASS == (osakaKanPass & 0x03);
+    }
+
+    bool is_osakakan_nopass() const {
+        return OSAKAKAN_NOPASS == (osakaKanPass & 0x03);
+    }
+
+    void setOsakaKanPass(bool value) {
+        if (value) {
+            osakaKanPass |= (1 << 0);
+        } else {
+            osakaKanPass &= ~(1 << 0);
+        }
+    }
+    bool getOsakaKanPass() const { return 0 != (osakaKanPass & (1 << 0)); }
+
+    // bit 2-3
+    bool osakakan_1dir = false;	//2 大阪環状線 1回目方向
+    bool osakakan_2dir = false;	//3 大阪環状線 2回目方向
+
+    bool osakakan_detour = false;   //4 大阪環状線 1回目遠回り(UI側から指定, 内部はR/O)
+
+    void setOsakaKanFlag(unsigned char pass) {
+        this->osakaKanPass = pass;
+    }
+
+    void setOsakaKanFlag(const RouteFlag& lf) {
+        this->osakaKanPass = lf.osakaKanPass;
+        this->osakakan_1dir = lf.osakakan_1dir;
+        this->osakakan_2dir = lf.osakakan_2dir;
+    }
+
+    bool isRoundTrip() const {
+		return !end || compnda;
+	}
+
+    void terCityReset() {
+        rule86or87 &= 0x40;
+        ter_begin_oosaka	= false;      //21 大阪・新大阪
+        ter_fin_oosaka		= false;      //22
+    }
+    void optionFlagReset() {
+        special_fare_enable = false;
+        meihan_city_enable = false;
+        rule88 = false;
+        rule69 = false;
+        rule70 = false;
+        rule70bullet = false;
+    }
+    bool isTerCity() const {
+        return
+        (rule86or87 & 0x3f) ||
+        ter_begin_oosaka	||      //21 大阪・新大阪
+        ter_fin_oosaka		;      //22
+    }
+
+    // 特例非適用ならTrueを返す。LAST_FLAG.BLF_NO_RULEのコピー
+    //
+	bool isUseBullet() const { return bullet_line || rule70bullet; }
+};
 
 class RouteItem
 {
@@ -375,12 +531,13 @@ public:
 	}
 };
 
+
 class RouteList
 {
 protected:
 //public:
     vector<RouteItem> route_list_raw;
-    SPECIFICFLAG last_flag;	// add() - removeTail() work
+    RouteFlag route_flag;	// add() - removeTail() work
 public:
     RouteList() {}
     RouteList(const RouteList& route_list);
@@ -394,37 +551,39 @@ public:
 		return (route_list_raw.size() <= 0) ? 0 : route_list_raw.back().stationId;
 	}
 	const vector<RouteItem>& routeList() const { return route_list_raw; }
-    SPECIFICFLAG getLastFlag() const { return last_flag; }
-	SPECIFICFLAG sync_flag(const RouteList& source_route) { last_flag = source_route.getLastFlag(); return last_flag; }
+    RouteFlag getRouteFlag() const { return route_flag; }
+    RouteFlag& refRouteFlag() { return route_flag; }
+
+	RouteFlag sync_flag(const RouteList& source_route) { route_flag = source_route.getRouteFlag(); return route_flag; }
 
     bool isModified() const {
-		return (last_flag & (1 << BLF_JCTSP_ROUTE_CHANGE)) != 0;
+		return route_flag.jctsp_route_change;
 	}
 	bool isEnd() const {
-		return BIT_CHK(last_flag, BLF_END);
+		return route_flag.end;
 	}
     tstring         route_script();
 
     bool 			checkPassStation(int32_t stationId);    /* not used current */
 
-	void            setFareOption(uint16_t cooked, uint16_t availbit);
+//	void            setFareOption(uint16_t cooked, uint16_t availbit);
+    bool isAvailableReverse() const {
+        int32_t c = (int32_t)route_list_raw.size();
 
-	virtual uint32_t   getFareOption();
-	bool			isRoundTrip() const {
-		return !BIT_CHK(last_flag, BLF_END) || BIT_CHK(last_flag, BLF_COMPNDA);
-	}
-protected:
+        // Available reverse
+        return (1 <= c) && (route_flag.isRoundTrip() ||
+                (route_list_raw.front().stationId == route_list_raw.back().stationId));
+                // Qの字の大阪環状線ではダメやねん
+    }
+    bool isRoundTrip() const { return route_flag.isRoundTrip(); }
+
+//TODO	virtual uint32_t   getFareOption();
+    virtual int32_t  coreAreaIDByCityId(int32_t startEndFlg) const { return 0;}
 };
 
+class Route;
+
 class FARE_INFO {
-    /* result_flag bit */
-    #define BRF_COMAPANY_FIRST		0		/* 会社線から開始 */
-    #define BRF_COMAPANY_END		1		/* 会社線で終了 */
-    										/* 通常OFF-OFF, ON-ONは会社線のみ */
-    #define BRF_COMPANY_INCORRECT	2		/* 会社線2社以上通過 */
-    #define BRF_ROUTE_INCOMPLETE	3		/* 不完全経路(BSRNOTYET_NA) */
-    #define BRF_ROUTE_EMPTY         4       /* empty */
-    #define BRF_FATAL_ERROR         5       /* fatal error in aggregate_fare_info() */
 public:
 	FARE_INFO() { reset(); FARE_INFO::tax = g_tax; }
 private:
@@ -461,7 +620,6 @@ private:
 #define BRT_DISCOUNT_FARE 100
     int32_t brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
 
-	int32_t result_flag;				/* 結果状態: BRF_xxx */
 private:
 	int32_t flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
 	int32_t jr_fare;					//***
@@ -483,30 +641,53 @@ private:
     int32_t endTerminalId;
 
     int8_t enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
-    bool   applied_specic_fare;     // 私鉄競合特例運賃(大都市近郊区間)
 
-	void retr_fare();
+    class ResultFlag {
+    public:
+        bool comapany_first;		 /* 会社線から開始 */
+        bool comapany_end;			 /* 会社線で終了  通常OFF-OFF, ON-ONは会社線のみ */
+        bool company_incorrect;		 /* 会社線2社以上通過 */
+        bool route_incomplete;	     /* 不完全経路(BSRNOTYET_NA) */
+        bool route_empty;            /* empty */
+        bool fatal_error;            /* fatal error in agggregate_fare_info() */
+        ResultFlag() { clean(); }
+        void clean() {
+            comapany_first = false;		 /* 会社線から開始 */
+            comapany_end = false;			 /* 会社線で終了  通常OFF-OFF, ON-ONは会社線のみ */
+            company_incorrect = false;		 /* 会社線2社以上通過 */
+            route_incomplete = false;	     /* 不完全経路(BSRNOTYET_NA) */
+            route_empty = false;            /* empty */
+            fatal_error = false;            /* fatal error in aggregate_fare_info() */
+        }
+    } result_flag;
+
+	void retr_fare(bool useBullet, bool no_rule);
     void calc_brt_fare(const vector<RouteItem>& routeList);
-	int32_t aggregate_fare_info(SPECIFICFLAG *last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);
+	int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
-	bool aggregate_fare_is_jrtokai(const vector<RouteItem>& routeList_raw);
+	static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
     int aggregate_fare_company(bool first_company,
-                              SPECIFICFLAG last_flag,
+                              const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
                               int32_t station_id,
                               int32_t station_id1);
+    bool reCalcFareForOptiomizeRoute(vector<RouteItem>* pShortRouteList,
+                                     int32_t start_station_id,
+                                     int32_t end_station_id,
+                                     RouteFlag* pShort_route_flag);
 
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
         beginTerminalId = begin_station_id;
         endTerminalId = end_station_id;
     }
-	bool calc_fare(SPECIFICFLAG* last_flag, const vector<RouteItem>& routeList_raw, const vector<RouteItem>& routeList_cooked);	//***
-    bool reCalcFareForOptiomizeRoute(const RouteList& route_list, int32_t begin_id, int32_t term_id);
+	bool calc_fare(RouteFlag* p_route_flag, const vector<RouteItem>& routeList);	//***
+    bool reCalcFareForOptiomizeRouteForToiCa(const RouteList& route_list);
+    bool reCalcFareForOptiomizeRoute(RouteList& route_list);
     RouteList reRouteForToica(const RouteList& route);
-    void setRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+    void setRoute(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
+    void setTOICACalcRoute(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
     void clrTOICACalcRoute() {calc_route_for_disp.clear();}
-    void setTOICACalcRoute(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
 	void reset() {				//***
 		companymask = 0;
 		sales_km = 0;
@@ -553,11 +734,9 @@ public:
         //beginTerminalId = 0;          /* for Use isCityterminalWoTokai() / isNotCityterminalWoTokai() */
         //endTerminalId = 0;
 
-		result_flag = 0;
+		result_flag.clean();
 
         enableTokaiStockSelect = 0;
-
-        applied_specic_fare = false;
 
         route_for_disp.clear();
         calc_route_for_disp.clear();
@@ -573,28 +752,29 @@ public:
         }
     };
     void setEmpty() {
-        BIT_ON(result_flag, BRF_ROUTE_EMPTY);
+       result_flag.route_empty = true;
     }
     void setInComplete() {
-        BIT_ON(result_flag, BRF_ROUTE_INCOMPLETE);
+       result_flag.route_incomplete = true;
     }
     bool isMultiCompanyLine() const {
-        return BIT_CHK(result_flag, BRF_COMPANY_INCORRECT);
+        return result_flag.company_incorrect;
     }
     bool isBeginEndCompanyLine() const {
-        return (result_flag & ((1 << BRF_COMAPANY_FIRST) | (1 << BRF_COMAPANY_END))) != 0;
+        return result_flag.comapany_first || result_flag.comapany_end;
     }
     int     resultCode() const {
-        if (BIT_CHK(result_flag, BRF_ROUTE_INCOMPLETE)) {
+        if (result_flag.route_incomplete) {
             return -1;
-        } else if (BIT_CHK(result_flag, BRF_ROUTE_EMPTY)) {
+        } else if ((result_flag.route_empty) || (0 == (flag & FLAG_FARECALC_INITIAL))) {
             return -2;
-        } else if (BIT_CHK(result_flag, BRF_FATAL_ERROR)) {
+        } else if (result_flag.fatal_error) {
             return -3;
         } else {
             return 0;
         }
     }
+
 	// [名]以外の都区市内・山手線が発着のいずれかにあり
 	bool isCityterminalWoTokai() const {
 		return ((STATION_ID_AS_CITYNO < beginTerminalId) &&
@@ -619,7 +799,6 @@ public:
 	FareResult 	roundTripFareWithCompanyLine() const;
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
     int32_t 	roundTripChildFareWithCompanyLine() const;
-	bool 		isUrbanArea() const;
 	int32_t 	getTotalSalesKm() const;
 	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
 	int32_t		getRule114CalcKm() const  { return rule114_calc_km;  }
@@ -647,6 +826,8 @@ public:
     int32_t     getBRTSalesKm() const;
     int32_t     getFareForBRT() const;
     bool        getIsBRT_discount() const { return brt_discount_fare != 0; }
+    bool isUrbanArea() const;
+
     class Fare {
     public:
         int fare;
@@ -693,7 +874,9 @@ public:
     int32_t getEndTerminalId() const { return endTerminalId; }
     tstring getRoute_string() const { return route_for_disp; }
     tstring getTOICACalcRoute_string() const { return calc_route_for_disp; }
-    bool    isAppliedSpecificFare() const { return applied_specic_fare; }
+
+    tstring 		showFare(const RouteFlag& routeFlag);
+
     static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
     static int32_t      centerStationIdFromCityId(int32_t cityId);
@@ -715,10 +898,10 @@ private:
 	static int32_t		Fare_table(const char* tbl, const char* field, int32_t km);
 	static int32_t		Fare_table(int32_t dkm, int32_t skm, char c);
 	static int32_t		Fare_table(const char* tbl, char c, int32_t km);
-	static int32_t		CheckSpecficFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static int32_t		SpecficFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
+	static int32_t		CheckSpecificFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static int32_t		SpecificFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
 	       vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t> GetDistanceEx(uint32_t osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t> GetDistanceEx(const RouteFlag& osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 	static bool     IsIC_area(int32_t urban_id);
@@ -727,6 +910,11 @@ private:
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
     static std::vector<RouteItem> IsHachikoLineHaijima(const std::vector<RouteItem>& route_list);
     static std::vector<std::vector<int>> getBRTrecord(int32_t line_id);
+#if 0 ///@@@@@@@@@ TODO DELETE AFTER
+    static bool CheckBulletInUrban(const RouteList& route_original);
+    static bool CheckBulletInUrbanRule70(const std::vector<RouteItem>& route_list);
+    static bool CheckBulletInUrbanRule86or87orNothing(const std::vector<RouteItem>& route_list, BYTE rule86or87);
+#endif ///@@@@@@@@@@@@ TODO DELETE AFTER
 }; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */
@@ -852,16 +1040,16 @@ public:
 
     static tstring 	GetPrefectByStationId(int32_t stationId);
 
-    static tstring  Show_route(const vector<RouteItem>& routeList, SPECIFICFLAG last_flag);
+    static tstring  Show_route(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
 private:
-    static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, SPECIFICFLAG last_flag);
+    static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, const RouteFlag& rRoute_flag);
 protected:
 public:
     static int32_t  DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
     static int32_t  CompanyIdFromStation(int32_t station_id);
 
 	static vector<int32_t>	GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static vector<int32_t>	GetDistance(int32_t oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static vector<int32_t>	GetDistance(const RouteFlag&  oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static int32_t			GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
     enum LINE_DIR {
@@ -914,7 +1102,7 @@ private:
         int32_t _start_station_id;
         int32_t _num;		        // number of junction
         bool    _err;
-		SPECIFICFLAG _last_flag;	// add() - removeTail() work
+		RouteFlag _route_flag;	// add() - removeTail() work
 		RoutePass(const RoutePass& rp) // copy constructor
 		             { memcpy(this, &rp, sizeof(*this)); }
 		void clear() { memset(_jct_mask, 0, JCTMASKSIZE); _err = 0; }
@@ -922,16 +1110,14 @@ private:
 		             { memcpy(this, &rp, sizeof(*this)); }
 		RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
     public:
-        RoutePass(const BYTE* jct_mask, SPECIFICFLAG last_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id = 0);
+        RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id = 0);
         ~RoutePass() {  }
         int32_t check() const;
         void off(int32_t jid);
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
-        SPECIFICFLAG update_flag(SPECIFICFLAG source_flg) const {
-            source_flg &= ~LF_OSAKAKAN_MASK;
-            source_flg |= (LF_OSAKAKAN_MASK & _last_flag);
-            return source_flg;
+        void update_flag(RouteFlag* p_source_flg) {
+            p_source_flg->setOsakaKanFlag(_route_flag);
         }
 		int32_t num_of_junction() const { return _num; }
 
@@ -1035,6 +1221,8 @@ public:
 #endif
 	static bool		IsAbreastShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2);
 	static int		CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, int32_t station_id3);
+
+public:
 };
 
 class CalcRoute : public RouteList
@@ -1051,28 +1239,31 @@ public:
     void sync(const RouteList& route);
     void sync(const RouteList& route, int count);
 
-    const vector<RouteItem>& cookedRouteList() { return route_list_cooked; }
-    tstring 		showFare();
-    uint32_t        getFareOption();
-    int32_t         beginStationId(bool applied_agree);
-    int32_t         endStationId(bool applied_agree);
+    const vector<RouteItem>& rawRouteList() { return route_list_raw; }
+    const vector<RouteItem>& routeList() const { return route_list_cooked; }
+    int32_t         beginStationId();
+    int32_t         endStationId();
     FARE_INFO::Fare checkOfRuleSpecificCoreLine();
-    FARE_INFO       calcFare();
-    FARE_INFO       calcFare(int32_t count);
+    int32_t            calcFare(FARE_INFO* pFi);
+    int32_t            calcFare(FARE_INFO* pFi, int32_t count);
 public:
 	// alps_mfcDlg
     static tstring  BeginOrEndStationName(int32_t ident);
+    int32_t  coreAreaIDByCityId(int32_t startEndFlg) const;
 private:
-    int32_t  coreAreaIDByCityId(int32_t startEndFlg);
+    void   checkIsJRTokaiOnly(void);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
-	static FARE_INFO::Fare	CheckOfRule114j(SPECIFICFLAG last_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
-	static vector<int32_t>	Get_route_distance(SPECIFICFLAG last_flag, const vector<RouteItem>& route);
+	static FARE_INFO::Fare	CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
+public:
+	static vector<int32_t>	Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route);
+private:
 	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
 	static int32_t	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
-	static int32_t	ReRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
+	       int32_t	reRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
+           bool     isBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70);
 	static bool 	Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
 	static bool 	Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
-	static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, SPECIFICFLAG last_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
+	static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, const RouteFlag& rRoute_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
 	static uint32_t CheckOfRule87(const vector<RouteItem>& in_route_list);
 	static void  	ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
 	static uint8_t  InRouteUrban(const vector<RouteItem>& route_list);
@@ -1087,7 +1278,7 @@ private:
         void convertShinkansen2ZairaiFor114Judge() {
             ConvertShinkansen2ZairaiFor114Judge(&route_list_raw);
         }
-    #endif
+#endif
     	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
 };
 
@@ -1102,43 +1293,5 @@ private:
 #define ADDRC_CEND	4
 // ADDRC_NG -1 to -N
 
-
-/* cooked flag for shoFare(), show_route() */
-// bit 15  (User->System)
-#define FAREOPT_AVAIL_RULE_APPLIED          	0x8000	// 有効ビットマスク
-#define	FAREOPT_RULE_NO_APPLIED					0x8000	// 特別規則適用なし
-#define	FAREOPT_RULE_APPLIED					0		// 通常
-
-// bit 0-1 (User->System)
-#define FAREOPT_AVAIL_APPLIED_START_TERMINAL 	1   // 有効ビットマスク
-#define FAREOPT_APPLIED_START					1	// 名阪間 発駅を市内駅に適用
-#define FAREOPT_APPLIED_TERMINAL				2	// 名阪間 着駅を市内駅に適用
-
-// (System->User)
-
-#define IS_MAIHAN_CITY_START_TERMINAL_EN(flg) (((flg) & 0x03) != 0x00)
-#define IS_MAIHAN_CITY_START(flg)             (((flg) & 0x03) == 0x01)
-#define IS_MAIHAN_CITY_TERMINAL(flg)          (((flg) & 0x03) == 0x02)
-
-// bit 2-3
-#define IS_OSAKAKAN_DETOUR_EN(flg)            (((flg) & 0x0c) != 0)
-
-// TRUE: Detour / FALSE: Shortcut
-#define IS_OSAKAKAN_DETOUR_SHORTCUT(flg)      (((flg) & 0x0c) == 0x08)
-
-// bit 4-5
-#define IS_RULE_APPLIED_EN(flg)               (((flg) & 0x30) != 0)
-#define IS_RULE_APPLIED(flg)                  (((flg) & 0x30) == 0x10)
-
-
-#define IS_FAREOPT_ENABLED(flg)               (((flg) & 0x3f) != 0)
-
-// bit 6-7
-// empty or start only
-
-// bit 8-9(User->System)
-#define FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK 	(1<<6)   // 有効ビットマスク
-#define FAREOPT_JRTOKAI_STOCK_APPLIED			(1<<6)	// JR東海株主に適用
-#define FAREOPT_JRTOKAI_STOCK_NO_APPLIED			0   	// JR東海株主に非適用
 
 #endif	/* _ALPDB_H__ */
