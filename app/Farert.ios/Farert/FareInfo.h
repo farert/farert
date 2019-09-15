@@ -23,48 +23,30 @@
 
 @property (nonatomic) NSInteger result; /* 0: success, 1: KOKURA-pending, 2:Company only, -1: failure */
 
-/*
- * getFareOption()
- */
-@property (nonatomic) NSInteger calcResultFlag;
-//	calcResultFlag
-//     & 0x80 = 0    : 該当なし
-//     & 0x80 = 0x80 : empty or non calc.
-//     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
-//			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
-//	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
-//	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
-//     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
-//     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
-//     & 0x
-// (System->User)
-- (BOOL)isMeihanCityStartTerminalEnable;
-- (BOOL)isMeihanCityStart;
-- (BOOL)isMeihanCityTerminal;
+@property (nonatomic) BOOL isFareOptEnabled;
+@property (nonatomic) BOOL isMeihanCityStartTerminalEnable;
+@property (nonatomic) BOOL isMeihanCityStart;
+@property (nonatomic) BOOL isMeihanCityTerminal;
 
-// bit 2-3
-- (BOOL)isOsakakanDetourEnable;
+@property (nonatomic) BOOL isOsakakanDetourEnable;
 
 // TRUE: Detour / FALSE: Shortcut
-- (BOOL)isOsakakanDetourShortcut;
+@property (nonatomic) BOOL isOsakakanDetourShortcut;
 
-// bit 4-5
-- (BOOL)isRuleAppliedEnable;
-- (BOOL)isRuleApplied;
-- (BOOL)isFareOptEnabled;
+@property (nonatomic) BOOL isRuleAppliedEnable;
+@property (nonatomic) BOOL isRuleApplied;
 
-// bit 8-9
-- (BOOL)isJRCentralStockEnable;
-- (BOOL)isJRCentralStock;
+@property (nonatomic) BOOL isJRCentralStockEnable;
+@property (nonatomic) BOOL isJRCentralStock;
+
+@property (nonatomic) BOOL isEnableLongRoute;
+@property (nonatomic) BOOL isLongRoute;
+@property (nonatomic) BOOL isDisableSpecificTermRule115;
+@property (nonatomic) BOOL isEnableRule115;
 
 
+@property (nonatomic) NSString* resultMessage;
 
-@property (nonatomic) NSInteger resultState;
-// 1 会社線で始まっている
-// 2 会社線で終わっている
-// 3 会社線のみ
-// 4 会社線２回以上通過
-// 8 不完全経路（未使用というか前で弾く）
 @property (nonatomic) BOOL isResultCompanyBeginEnd;
 @property (nonatomic) BOOL isResultCompanyMultipassed;
 
@@ -80,9 +62,7 @@
 @property (nonatomic) NSInteger rule114_salesKm;
 @property (nonatomic) NSInteger rule114_calcKm;
 @property (nonatomic) BOOL isRule114Applied;
-@property (nonatomic) BOOL isUrbanArea;
 @property (nonatomic) BOOL isSpecificFare;
-
 
 @property (nonatomic) NSInteger totalSalesKm;
 @property (nonatomic) NSInteger jrCalcKm;

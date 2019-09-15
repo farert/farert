@@ -16,7 +16,7 @@ class SettingsTableViewController: UITableViewController {
     var selectDbId : Int = 0
     
     // MARK: - Private property
-    var before_dbid_idx : Int = 0
+    var before_dbid_idx : Int = DB._MAX_ID.rawValue
     
     var isSameShinkanzanKokuraHakataOther : Bool = false;
     
@@ -28,7 +28,6 @@ class SettingsTableViewController: UITableViewController {
     // MARK: Method
     
     override func viewDidLoad() {
-        super.viewDidLoad()
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -46,14 +45,13 @@ class SettingsTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
         
-        before_dbid_idx = cRouteUtil.getDatabaseId()
-        if ((before_dbid_idx < DbId.DB_MIN_ID) || (DbId.DB_MAX_ID < before_dbid_idx)) {
-            before_dbid_idx = DbId.DB_MAX_ID
+        before_dbid_idx = cRouteUtil.getDatabaseId().rawValue
+        if ((before_dbid_idx < DB._MIN_ID.rawValue) || (DB._MAX_ID.rawValue < before_dbid_idx)) {
+            before_dbid_idx = DB._MAX_ID.rawValue
         }
         
         self.selectDbId = -1;   /* is no select */
-        
-        self.sgmDataVer.selectedSegmentIndex = before_dbid_idx - DbId.DB_MIN_ID;
+        self.sgmDataVer.selectedSegmentIndex = before_dbid_idx - DB._MIN_ID.rawValue;
         self.swShinkansenKokuraHakataOther.setOn(isSameShinkanzanKokuraHakataOther, animated: false);
     }
 
@@ -139,14 +137,14 @@ class SettingsTableViewController: UITableViewController {
         // Get the new view controller using [segue destinationViewController].
         // Pass the selected object to the new view controller.
         if (segue.identifier == "settingsSegue") {
-            var dbid : Int = self.sgmDataVer.selectedSegmentIndex + DbId.DB_MIN_ID;
-            if ((dbid < DbId.DB_MIN_ID) || (DbId.DB_MAX_ID < dbid)) {
-                dbid = DbId.DB_MAX_ID
+            var dbid = self.sgmDataVer.selectedSegmentIndex + DB._MIN_ID.rawValue;
+            if ((dbid < DB._MIN_ID.rawValue) || (DB._MAX_ID.rawValue < dbid)) {
+                dbid = DB._MAX_ID.rawValue
             }
             if (before_dbid_idx != dbid) {
                 cRouteUtil.save(toDatabaseId: dbid)
                 cRouteUtil.close()
-                cRouteUtil.openDatabase(dbid)
+                cRouteUtil.openDatabase(DB(rawValue: dbid)!)
                 self.selectDbId = dbid
             } else {
                 self.selectDbId = -1;   /* no change */

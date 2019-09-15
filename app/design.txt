@@ -1,3 +1,582 @@
+
+b#19082201
+getDistanceEx() のあと
+TRACE("\n\n\n\n@@@@@@@@@ %d, %d, %d, %d\n", company_id1, sub_company_id1, company_id2, sub_company_id2);
+TRACE("@@@@@@@@@ %d, %d, %d, %d\n\n\n", result[0], result[1], result[2], result[3]);
+
+新山口 門司  4, 0   5, 0  752,0,689,0
+門司 新山口  5, 0   4, 0  752,0,63,0 　
+宇多津 茶屋町 6, 4   4, 0  310, 0, 181, 0
+茶屋町 宇多津 4, 0   6, 4  310, 0, 129, 0
+宇多津 児島  6, 4,  4, 0   181,0, 0, 0
+児島 宇多津 4, 0,  6, 4   181,0,0,0  NG
+
+下関 門司　  4, 5   5, 0  63,0,-1,0  OKだけど飛ぶ JR本 しかないとおもわれている
+門司 下関    5, 0   4, 5  63,0,0,-1 　NGだけど飛ばない JR九がないものとされている
+
+幡生 下関 4,0 4,5
+下関 幡生 4,5 4,0
+
+茶屋町 宇多津 4,0  6,4   310, 0  129, 0
+宇多津 茶屋町 6,4  4,0   310, 0  181, 0
+
+if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2) && (company_id1 != company_id2)) {
+  if (sub_company_id1 == company_id2) {
+      company_id1 = sub_company_id1;
+  }
+  else if (company_id1 == sub_company_id2) {
+      company_id2 = sub_company_id2;
+  }
+  3島会社で駅１と駅２が異なる時、内側が同じなら、1<-内
+  　　　　　　　　　　　　　　　 外側が同じなら、2<-外
+
+>>
+if (company_id1 != company_id2) {
+    if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2)) {
+        }
+    } else {
+        if (sub_company_id1 != 0 || sub_company_id2 != 0) {
+            if (company_id1 < company_id2) {
+                /* 四国、 九州 にする */
+                company_id1 = company_id2;
+            } else {
+                company_id2 = company_id1;
+            }
+        } else {
+            /* 新山口 - 門司 とか */
+        }
+    }
+}
+
+<<
+本四備讃線の宇多津は
+DBを、JR四国/JR西日本であったけど、JR西日本/JR四国にした。
+
+松山 岡山 営業キロ 2144 JR四国以下
+OK    NG   差
+1866 1995 12.9
+
+
+
+///////////////////////////////////////////////////////////
+d#19080001>>
+b#19081602
+b#19070601
+b#18111401
+
+v 代々木 山手線 池袋 埼京線 大宮 川越線 高麗川 八高線 用土
+-> 最安経路になってない。値段と表示経路に矛盾が。。。>OK
+
+v 大正 大阪環状線 大阪 東海道線 草津 草津線 柘植 関西線 木津 片町線 京橋 大阪環状線 今宮
+-> なんで名阪がつくの？ 強引に修正した
+
+v 小岩 総武線 西船橋 武蔵野線 新松戸 常磐線 植田
+-> 単駅、都区市内選べるのが良いが、都区市内になってない。
+
+蒲田 東海道線 東神奈川 横浜線 八王子 中央東線 茅野
+同様
+
+v 代々木 中央東線 八王子 八高線 用土
+同じく
+
+
+//
+
+京都 東海道線 尼崎 福知山線 谷川 加古川線, 加古川 山陽線 西明石 山陽新幹線 e新大阪
+-> 近郊区間では無いかい！？>否、合ってる！
+
+亀有 常磐線 我孫子 成田線(成田-我孫子) 成田 成田線 佐倉 総武線 東京 東海道新幹線 品川
+-> 最安運賃にされたのは良い。Optionは効くかな？
+
+v 勝浦 外房線 千葉  総武線 東京 OK
+v東京 京葉線　蘇我　外房線　勝浦 NG
+v  東京,京葉線,蘇我,内房線,袖ケ浦はOKなのに。
+v勝浦,外房線,蘇我,京葉線,東京
+v -> 京葉線経由となっている
+v東京,総武線,千葉, 外房線,勝浦 NG
+v ->わざわざ京葉線にされちゃっている。
+
+v 新横浜 横浜線 東神奈川 東海道線 川崎 南武線 府中本町 武蔵野線 西国分寺 中央東線 立川 青梅線 福生
+v 920円なのに970円
+
+蒲田 東海道線 川崎 南武線 立川 中央東線 八王子 八高線 倉賀野 高崎線 高崎 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 我孫子 成田線(成田-我孫子) 成田 成田線 佐倉 総武線 西船橋 武蔵野線 南浦和 東北線 日暮里>
+大回りなのに。まぁいいけど。なんでだっけ？
+
+
+
+
+　新大阪 東海道新幹線 名古屋 中央西線 恵那
+ 板橋 埼京線 赤羽 東北線(尾久経由) 日暮里 東北線 東京 東海道新幹線 名古屋
+ 長津田 横浜線 新横浜 東海道新幹線 名古屋
+ 保津峡 山陰線 京都 東海道新幹線 新横浜
+v 渋谷 山手線 田端 東北線 東京 東海道線 横浜        　       なぜか経路が今一歩遠回り
+v 大阪 東海道線 草津 草津線 柘植 関西線 今宮 　              都区内発着=86適用できちゃぁだめっしょ
+大阪 東海道線 草津 草津線 柘植 関西線 天王寺 大阪環状線 鶴橋
+v  蒲田 東海道線 川崎 南武線 立川 中央東線 八王子 八高線 倉賀野 高崎線 高崎 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 我孫子 成田線\(成田-我孫子\) 成田 成田線 佐倉 総武線 西船橋 武蔵野線 南浦和 東北線 日暮里>
+
+v 神戸 東海道線 京都 奈良線 木津 片町線 京橋 大阪環状線 e大阪　最安の経路にしました〜って33kが150k越えじゃん。特別運賃の処理ですな
+v 神田 東北線 東京 東海道新幹線 三島 東海道線 富士 身延線 甲府
+v 新大阪 東海道新幹線 熱海  株主優待Optionが提示されない。論理が逆だぜ
+
+
+
+
+
+
+fi.calc_fare(raw, cooked)
+  cookedが空ならrawとしてつかっている。rawのみ、cookedのみは不使用
+  aggregate_fare_info(raw, cooked)
+
+
+FARE_INFOとCalcRoute
+なんで別なの？
+一緒にすると？
+
+FARE_INFO fi;
+CalcRoute croute(route);
+croute.calcFare(&fi);
+s = fi.showFare(croute.getRouteFlag());
+
+CalcRoute croute(route);
+croute.calcFare();
+croute.showFare();
+
+のほうがスッキリでは？？？
+Androidは、FareInfoで被せているし、もういいや。
+
+Flag
+
+Bullet
+Urban
+
+
+
+FARE_INFOはcrouteの内部に隠蔽？
+
+bool bUnconditionBulletCheck = !pRoute_flag->rule70 && !pRoute_flag->rule86or87 &&
+                             (0x03 != (0x03 & ((pRoute_flag->rule86or87 >> 2) |
+                                                pRoute_flag->rule86or87)));
+:
+cityId_c = (uint16_t)MASK_CITYNO(ite->flag);
+if ((bUnconditionBulletCheck || ((cityId == 0) || (cityId_c == 0))) &&
+    IsBulletInUrban(ite->lineId, station_id1, ite->stationId)) {
+    pRoute_flag->bullet_line = true; // ONの場合大都市近郊区間特例無効(新幹線乗車している)
+}
+
+
+都区市内区間外 　|         |
+(一部含)       |         |
+cityId == 0|| | rule70  |  rule86or87
+cityId_c == 0 |         |
+--------------+---------+------------
+    F(区間外)      F          F         -> T  区間外なのでチェックする 区間外は無条件で近郊間内新幹線NGなので
+    F             F          T         -> T 仙台->遠く とか。普通の。
+	F             T          F         -> T 100km未満　千葉-立川 とか。千葉 東京 上野 大宮 とか。新幹線チェックも不要では？
+	F             T          T         -> T 仙台->東京->どっか とか
+	T             F          F         -> T 100km未満か。乗ったことにする。東京 品川 茅ヶ崎 とか。
+	T             F          T         -> F 亀有-品川の例 で新幹線乗車は乗ったことにしたく無い
+	T             T          F         -> F ありえる？ 都区内通過して戻ってきて？　品川 東京 西船橋 秋葉原 八王子 とか
+	T             T          T         -> F　ありえない。70と86の同時適用はありえない。あったとしても名古屋-仙台とか？
+
+ciryId が変わらない新幹線乗車は東京上野品川以外にない。どこも同一特定区間内で新幹線の駅は2駅以上はない
+X && shinkansen() -> useBullet
+ 　useBullet = true
+
+->T 新幹線チェックをおこなう。チェックによって新幹線に乗ったか否かを設定する
+->F 新幹線チェックしない。新幹線は乗ってないものとする
+
+つまり、、、~b~c + ~a
+
+if (( !rule70 && !rule86or87 || ((cityId != 0) && (cityId_c != 0))) && IsBulletInUrban()) {
+
+}
+にできる。
+
+//
+
+亀有 常磐線 我孫子 成田線\(成田-我孫子\) 成田 成田線 佐倉 総武線 錦糸町 総武線\(錦糸町-御茶ノ水\) 秋葉原 東北線 東京 東海道新幹線 品川
+高崎 高崎線 大宮 埼京線 池袋
+高崎 高崎線 大宮 東北線 赤羽 埼京線 池袋
+小岩 総武線 西船橋 武蔵野線 新松戸 常磐線 植田
+蒲田 東海道線 東神奈川 横浜線 八王子 中央東線 茅野
+蒲田 東海道線 東神奈川 横浜線 八王子 中央東線 上諏訪
+西荻窪 中央東線 松本
+西荻窪 中央東線 茅野
+浮間舟渡 埼京線 池袋 山手線 新宿 中央東線 松本
+武蔵小杉 南武線 府中本町 武蔵野線 武蔵浦和 埼京線 赤羽 東北線 東京 東海道線 品川
+武蔵小杉 南武線 府中本町 武蔵野線 西船橋 総武線 東京 東海道新幹線 品川
+武蔵小杉 南武線 府中本町 武蔵野線 西船橋 総武線 東京 東海道線 品川
+新宿 山手線 品川 東海道新幹線 東京 東北新幹線 那須塩原
+豊田 中央東線 代々木 山手線 品川 東海道新幹線 東京 東北線 日暮里 常磐線 水戸			<< とちゅげダメの1日
+豊田 中央東線 八王子 横浜線 東神奈川 東海道線 品川 東海道新幹線 東京 東北線 日暮里 常磐線 水戸	＜＜とちゅげOKの2日きっぷ
+
+
+
+            a             b            c
+            経路中心      最短中心     単駅            備考(経由)      えきねっと
+1  高崎 池袋  　  105(¥1940)  105(¥1940)! *973(¥1660) 　　大宮　　　　　¥1940 a,b
+2  代々木 用土   1029(¥1940)　 982(¥1940)　*933(¥1660)!　　立川拝島　　　立川拝島経由で1660
+3  小岩 植田  　  202(¥3670)　1936(¥3350)! *1892(¥3350)!   西船橋、新松戸　　3350 西船橋、新松戸。東京からの最短は日暮里
+4  蒲田 茅野     2174(¥3670)　1952(¥3350)! 2030(¥3670)　 東神奈川 　    ¥3350東神奈川でも東京経由でも.  単駅最短(立川)1970(3350)
+5  蒲田 上諏訪   2181(¥3670)!　2019(¥3670)! 2097(¥3670)!　 東神奈川経由 　 ¥3670 新宿経由も東神奈川経由も 単駅最短(立川)も2037(3670)
+6  蒲田 松本     2576(¥4430)　2354(¥4000)! 2432(¥4430)　　東神奈川　　　 ¥4000東神奈川でも東京経由でも 単駅最短(立川)2372(4000)
+7  西荻窪 松本  　2354(¥4000)! 2354(¥4000)! *2138(¥3670)  最短　　　　　　¥4000
+8  浮間舟渡 松本　2523(¥4430) 2354(¥4000)!　*2360(¥4000)! 　　　　　　　　　¥4000
+9  西荻窪 茅野  　　　　　　　　　　　　　　　　　3030　　　　　　　　　　　　　　　　　¥3030
+10 蒲田 信濃大町 2927(¥5080)!  2705(¥4750)! *2783(¥5080)　  東神奈川　　　　 東神奈川経由で5080 東京経由で4750
+代々木 用土　c単駅最短は立川拝島で933(¥1660)
+ 　a単駅最短に沿った[山]で1029(¥1940)
+   b最短中心は大宮経由で982(¥1940)
+えきねっとが最短中心を選んでいるのか？単駅最短を選んでいるのか？どっち？？？例が見つからない・・・
+
+都区内適用中心駅からの最短>a
+単駅で最短>b
+八高線>c.   from b
+If c <b ?
+    b <- c
+If a is 86or87?
+    Result is a
+Else
+     Result is b.    Assert  fate is b < a
+
+RouteFlagは
+
+
+近郊区間内＋8687
+最短中心駅
+最短単駅
+
+最短中心が100越えないと都区内発は有り得ない(用土)
+最短中心が100越えたら単駅安くても採用されない(池袋)
+
+西荻窪 茅野3030で都区内ではない,
+蒲田茅野は最短単駅
+
+●0 Finalまとめ
+A.近郊区間内で指定経路が8687適用で、最短中心が8687適用ならその運賃を採用（最短中心駅で算出）1, 3, 5,6,7,8
+X B.近郊区間内で指定経路が8687適用で、最短中心が8687適用できないなら単駅の運賃と比較し、安い方を採用 4
+C.近郊区間内で指定経路が8687適用で、最短中心が8687適用できないなら単駅の最安経路 2、４
+
+Cをみるに、謎だった4は、Cの最短単駅！？
+Cは115だとおもうが、Cの単駅最短＞最短中心 の例は？
+Aで最短中心より単駅が安いとしても単駅で
+
+(規程115)"当該中心駅からの最も短い営業キロが200km以内となるときに限り、規則第86条の規定を適用しないで、
+発駅から実際の営業キロ又は運賃計算キロによつて計算することができる。"
+
+2と4は東京都区内[区]発に変更可能です。というオプションを追加する。
+適用後は最安経路が選択可能にするオプションを追加する。
+「特定都区市内(発着)」に変更可能です。にする。> opt_specific_terminal
+
+経路と最短が50キロ離れてたら最安経路指定できます／指定経路の切り替え可能 > opt_lowcost_route
+opt_はcharで、0 無効 1 有効 −1無効
+
+●1 駅1〜駅2 が70の経路内か？
+(70適用していることが条件)
+reCalcの先頭でOK
+
+　新幹線乗車は上野、東京 か？
+ 　　ID_L_RULE70の経路が、以下ならOK
+　品川、日暮里
+　日暮里、東京
+　東京、赤羽
+　赤羽、錦糸町
+    のどれか。　
+  新幹線乗車は、東京、品川か？
+品川	日暮里
+品川	東京
+品川	赤羽
+品川	錦糸町
+東京	赤羽
+
+というテーブルを作って該当すれば近郊区間内新幹線乗車としてみなす
+テーブル名, t_r70bullet
+station70_id1, station70_id2
+station_id1, station_id2
+
+unique station_id1, station_id2
+station70_id1,  ... station_id2
+東京	品川	品川	日暮里
+東京	品川	品川	東京
+東京	品川	品川	赤羽
+東京	品川	品川	錦糸町
+東京	品川	東京	赤羽
+上野	東京	品川	日暮里
+上野	東京	日暮里	東京
+上野	東京	東京	赤羽
+上野	東京	赤羽	錦糸町
+*//
+
+●2 駅1〜駅2 が86の経路内か？
+（●1のt_r70bulletでFalseのときで、8687適用時(最短適用ではなく経路適用でOK))
+新幹線乗車が上野、東京かまたは、東京、品川か？
+それは終端か？先頭か？ 　checkTrailSpecificTerm(station_id1, station_id2), checkFailSpecificTerm(station_id1, station_id2)
+-> 86or87か？  　　　　どこでやるか？経路適用でOKなのでreCalcの先頭でOK
+
+●1も●2もreCalcの前でやる。
+
+
+
+<<d#19080001
+---
+reCalcFareForOptiomizeRouteの現処理
+
+shortRouteに最短経路作成
+route_via_tachikawaに立川、拝島経由に変更した経路を作成（とおっていれば）
+上の３経路で、一番安い経路をFARE_INFOに適用させて戻る。
+
+--
+
+近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)
+はおかしい。
+近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)
+が正しい。
+
+また、最安経路にした場合は特例非適用が選べる
+
+
+改修終了
+フラグが、RouteFlagにあったり、calcRouteにあったりごちゃ混ぜで分かりづらい
+それは許せるとしても、FARE_INFOにもあったりするともう最悪。
+iOS, Androidは上記らは統合するから良い？
+
+calcFare()
+shorRoute()
+
+非適用ー＞適用は可能
+通常は、適用ー＞非適用を想定 RouteFlagを保持したまま
+非適用ー＞8687非適用はNG
+
+
+
+val rc = ds.setDetour( (opt_osakakan == Option.DO_TRUE)  )  // 遠回り・近回り
+
+// 特例
+ if (Option.DO_TRUE == opt_sperule) {
+     // @"特例を適用しない";
+     ds.setFareOption(RouteUtil.FAREOPT_RULE_NO_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
+ } else if (Option.DO_FALSE == opt_sperule) {
+     // @"特例を適用する";
+     ds.setFareOption(RouteUtil.FAREOPT_RULE_APPLIED, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED)
+ }
+
+ // 大高-杉本町
+ if (Option.DO_TRUE == opt_meihancity) {
+     // "着駅を単駅指定";
+     ds.setFareOption(RouteUtil.FAREOPT_APPLIED_START, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+ } else if (Option.DO_FALSE == opt_meihancity) {
+     // "発駅を単駅指定";
+     ds.setFareOption(RouteUtil.FAREOPT_APPLIED_TERMINAL, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL)
+ }
+
+ // JR東海株主
+ if (Option.DO_FALSE == opt_stocktokai) {
+     // @"JR東海株主優待券を適用しない";
+     ds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_NO_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
+ } else if (Option.DO_TRUE == opt_stocktokai) {
+     // @"JR東海株主優待券を使用する";
+     ds.setFareOption(RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED, RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED)
+ }
+
+
+FARE_INFO fi;
+croute.calcFare(&fi);
+s = fi.showFare(croute.refRouteFlag());
+:
+int flag = fi.enablesRules();  appliedRules()とは別でability,capabilityを返す
+:
+FARE_INFO fi(flag);
+fi.setFareOption(flag);     階層構造とフラグの使い所
+croute.calcFare(fi);
+  checkOfRuleSpecificCoreLine
+    setTerminal
+    fi.calc_fare(pRoute_flag, RouteList)      このあとのために
+     fi.aggregate_fare_info(RouteFlag)     JR東海関連でセット。大阪環状線フラグは参照
+       GetDistanceEx(RouteList)               大阪環状線フラグ
+     fi.aggregate_fare_company(RouteFlag)    会社線通過フラグを参照
+    fi.reCalcFareForOptiomizeRoute(RouteList)  (フラグは未使用)
+    fi.setRoute(RouteList, RouteFlag) ->   RouteUtil::Show_route(routeList, rRoute_flag) 大阪環状線フラグを利用
+    CalcRoute.beginStationId(applied_agree)   applied_agreeはbool特例適用か否か=単駅使用か特定都区市内か？
+    CalcRoute.endStationId(applied_agree)
+    fi.setRoundTrip()
+    fi.setEnableRules()
+
+
+
+2019-08-11
+大改造
+FARE_INFO.calc_fare() -> CalcRouteのメンバへ。
+CalcRoute.calc_fare(FARE_INFO fi, )
+->断念　calc_fareはいろいろ使われるので面倒
+
+
+
+
+2019-08-10
+LAST_FLAG周りをAndroidライクにした。
+ビットいじりはヤメ。
+
+
+Disable_Rule ビットがONなら禁止。デフォルトAll0
+Avail_Rule 　ビットがONなら該当。 実行後にわかる
+
+FARE_INFOが持つ。CalcRouteのLast_Flagからもらう。
+Last_Flagは増やし、RuleFlagを設ける。ビットフィールドにする。か。
+FARE_INFOはFILE構造体のようにアプリ側で持たせ捨てさせない。
+いまのように、getFareOptionとかでcalcRouteは無駄なのでやらせない。
+Androidのようにオブジェクト保持が面倒な場合（できなくはないが）、
+int値のFARE_INFO圧縮値をもつ。packedValue ? handle, identifier, flag, fi_id ? fi_idに決定
+RuleFlag
+  86,87
+  69
+  70
+  88
+  近郊最短
+
+test_exec.cpp の以下はどーする？
+  croute.setFareOption(FAREOPT_RULE_NO_APPLIED, FAREOPT_AVAIL_RULE_APPLIED);
+  s = croute.showFare();
+  s = cr_remove(s);
+  _ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+--
+tstring CalcRoute::showFare()
+{
+#define MAX_BUF	1024
+	TCHAR cb[MAX_BUF];
+	tstring sResult;
+	tstring sWork;
+
+    FARE_INFO fare_info = calcFare();
+----
+
+  FARE_INFO fi = croute.calcFare()
+  s = fi.showFare();
+
+  とする
+
+  getFareOption() なくす？
+  setFareOption() なくす
+
+  FARE_INFOに、getFareOption()をバラしたメソッドを含める
+
+  test_exec()は、
+0)-------------------(now)
+ Route route;
+ CalcRoute croute(route):
+ s = croute.showFare();
+ :
+ int flag = croute.getFareOption();
+ croute.setFareOption();
+ s = croute.showFare();
+ :
+
+ FARE_INFO fi = croute.calcFare()
+ は、iOS, android、Winは、croute.showFare()の中にいる。
+
+
+1)-------------------
+  FARE_INFO fi = croute.calcFare()
+  s = fi.showFare();
+  :
+  int flag = fi.getFareOption();
+  fi = croute.calcFare(flag); // flag is bitpattern NO_RULE that all on .
+  s = fi.showFare();
+  -> fiを2回上書きするのがキモい
+2)-------------------
+  FARE_INFO fi;
+  croute.calcFare(&fi);
+  s = fi.showFare();
+  :
+  int flag = fi.enablesRules();  appliedRules()とは別でability,capabilityを返す
+  :
+  FARE_INFO fi(flag);
+  fi.setFareOption(flag);
+  croute.calcFare(fi);
+  -> なんか冗長っぽい。直感的でなくまどろっこしい
+3)----------
+  FARE_INFO fi(croute(route));
+  fi.calcFare()
+  s = fi.showFare();
+  int flag = fi.getApplyRules();
+  flag &= ~DISABLE_APPLY;
+  fi.calcFare(flag);
+  fi.showFare();
+
+  -> これできまり！！
+  cRouteを持つので大きくなるがいずれにしてもとなりにいるのだから関係ねし。
+
+＝＝＞やっぱ3辞め、2)にする。
+
+
+calcRoute.getFareOption()
+ で得られるものを、FareInfoへ
+ //     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
+ //			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
+ //	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
+ //	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
+ fun isMeihanCityStartTerminalEnable() : Boolean = (calcResultFlag and 0x03) != 0x00  名阪有効で、
+fun isMeihanCityStart() : Boolean = (calcResultFlag and 0x03) == 0x01 　　　　　　　　　開始が
+fun isMeihanCityTerminal() : Boolean = (calcResultFlag and 0x03) == 0x02
+
+// bit 2-3
+fun isOsakakanDetourEnable() :Boolean = (calcResultFlag and 0x0c) != 0x00
+
+// TRUE: Detour / FALSE: Shortcut
+fun isOsakakanDetourShortcut() : Boolean = (calcResultFlag and 0x0c) == 0x08
+
+// bit 4-5
+fun isRuleAppliedEnable(): Boolean = (calcResultFlag and 0x30) != 0x00
+fun isRuleApplied(): Boolean = (calcResultFlag and 0x30) == 0x10
+fun isFareOptEnabled() : Boolean = (calcResultFlag and 0x33f) != 0x00
+
+// bit 8-9
+fun isJRCentralStockEnable(): Boolean = (calcResultFlag and 0x300) != 0x000　　Trueなら有効で、False:非該当
+fun isJRCentralStock() : Boolean = (calcResultFlag and 0x300) == 0x200　　　　　Trueなら適用されていて、False：未適用
+
+>>>>>>>
+
+
+
+........................................
+
+大都市近郊区間適用　19.8.1
+
+  近郊 86 新幹 最短 日数 近郊         x   特例 特例非適用時
+ 1 T   T  F : n    1   Y(最短可能)  ac  y    ad
+ 2 T   T  T : n    1   Y(最短可能)  ac  y    ad
+ 3 T   F  F : Y    1   Y           b   n
+ 4 T   F  T : n    *   n           -   n
+ 5 F   -  - : n    *   n           -   n
+
+ 最短は復活
+ [近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)] -a
+ は、近郊区間で特例非適用時に表示していた。
+[近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)] -b
+
+[または、「特例非適用」で単駅発着が選択可能です.] - c
+[または、「特例適用」で特定都区市内発着か選択可能です.] - d
+
+最短算出するのは,     近郊 and !86 and !bullet  3
+最短算出有効なのは、   近郊 and 86
+有効日数を1にするのは, 近郊 and (86 || !bullet)  1,2,3
+showFare()でメッセージa: 近郊 and 86
+         メッセージb: 近郊 and !86 and !bullet
+         メッセージc: 86 is Tのとき
+calc_route.BLF_NO_RULE -a
+
+適用
+NO_RULEがONでも86,87を無効にしているのか、69を無効にしているのか、70を無効にしているのかわからん。
+NO_RULEがONでも
+adは、わからへんのでは？86、87が適用できる実力かはNO_RULEがONではわからなくなってしまう。
+
+蒲田 東海道線 川崎 南武線 立川 中央東線 塩尻 篠ノ井線 松本
+は、神田経由で計算されていたが、今度は、南武線経由となる。
+
+
+
+
+
+
 1=前谷地, 2=柳津
 
 ?1 line_id1
