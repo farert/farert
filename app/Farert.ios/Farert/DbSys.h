@@ -11,7 +11,7 @@
 @interface DbSys : NSObject
 
 @property (nonatomic) NSString* create_date;
-@property (nonatomic) NSInteger tax;    /* not used */
+@property (nonatomic) NSInteger tax;
 @property (nonatomic) NSString* name;
 
 - (id)initWithName:(NSString*)name sales_tax:(NSInteger)tax Date:(NSString*)date;

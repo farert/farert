@@ -29,9 +29,13 @@ class VersionInfoViewController: UIViewController {
 
         super.viewWillAppear(true)
     
+        let dbverInf : DbSys = cRouteUtil.databaseVersion()
+
         if let lbl : UILabel = self.view.viewWithTag(1023432) as! UILabel? {
-            let dbverInf : DbSys = cRouteUtil.databaseVersion()
             lbl.text = "DB Rev. [\(dbverInf.name!)](\(dbverInf.create_date!))"
+        }
+        if let lbl2 : UILabel = self.view.viewWithTag(190915) as! UILabel? {
+            lbl2.text = "消費税: \(dbverInf.tax)%"
         }
     }
     
