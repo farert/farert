@@ -9505,13 +9505,13 @@ void FARE_INFO::retr_fare(bool useBullet, bool no_rule)
 				/* or 幹線+地方交通線でトータル営業キロが10km以下 */
 				// (r) sales_km add
 				TRACE("fare(hla)\n");		// TRACE("fare(r,r)\n");
-				_total_jr_fare += FARE_INFO::Fare_table((FARE_INFO::tax == 5) ? "hla5p" : "hla", "ha",
+				_total_jr_fare += FARE_INFO::Fare_table("hla", "ha",
 				                                    this->hokkaido_sales_km);
-
+                //過去DBもつかうんで。。。ASSERT(FALSE); // 北海道新幹線ができてから不要
 			} else { /* 幹線のみ／幹線+地方交通線で10km越え */
 				// (o) calc_km add
 				TRACE("fare(add, ha)\n");	// TRACE("fare(opq, o)\n");
-				_total_jr_fare += FARE_INFO::Fare_table((FARE_INFO::tax == 5) ? "add5p" : "add", "ha",
+				_total_jr_fare += FARE_INFO::Fare_table("add", "ha",
 				                                    this->hokkaido_calc_km);
 			}
 		}				// JR九あり？
@@ -9521,7 +9521,7 @@ void FARE_INFO::retr_fare(bool useBullet, bool no_rule)
 
 			// JR九州側(q)<s><c> 加算
 			TRACE("fare(add, ka)\n");	// TRACE("fare(opq, q)\n");
-			_total_jr_fare += FARE_INFO::Fare_table((FARE_INFO::tax == 5) ? "add5p" : "add", "ka",
+			_total_jr_fare += FARE_INFO::Fare_table("add", "ka",
 			                                    this->kyusyu_calc_km);
 		}				// JR四あり?
 		if (0 < (this->shikoku_sales_km + this->shikoku_calc_km)) {
@@ -9530,7 +9530,7 @@ void FARE_INFO::retr_fare(bool useBullet, bool no_rule)
 
 			// JR四国側(p)<s><c> 加算
 			TRACE("fare(add, sa)\n");	// TRACE("fare(opq, p)\n");
-			_total_jr_fare += FARE_INFO::Fare_table((FARE_INFO::tax == 5) ? "add5p" : "add", "sa",
+			_total_jr_fare += FARE_INFO::Fare_table("add", "sa",
 			                                    this->shikoku_calc_km);
 		}				// JR北
 	} else if (0 < (this->hokkaido_sales_km + this->hokkaido_calc_km)) {
@@ -9630,13 +9630,12 @@ bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, CompanyFa
 	char sql[256];
 	int32_t fare_work;
 	static const char tsql[] =
-"select fare, academic, flg from %s"
-" where "
+"select fare, academic, flg from t_clinfar"
+" where tax=%d and "
 " ((station_id1=?1 and station_id2=?2) or"
 "  (station_id1=?2 and station_id2=?1))";
-	const char* const tbl[] = { "t_clinfar", "t_clinfar5p"};
 
-	sqlite3_snprintf(sizeof(sql), sql, tsql, tbl[(FARE_INFO::tax == 5) ? 1 : 0]);
+	sqlite3_snprintf(sizeof(sql), sql, tsql, FARE_INFO::tax);
 	DBO dbo(DBS::getInstance()->compileSql(sql, false));
 	dbo.setParam(1, station_id1);
 	dbo.setParam(2, station_id2);
@@ -9669,9 +9668,9 @@ bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, CompanyFa
 int32_t	FARE_INFO::Fare_table(const char* tbl, const char* field, int32_t km)
 {
 	static const char tsql[] =
-"select %s from t_fare%s where km<=? order by km desc limit(1)";
+"select %s%x from t_fare%s where 0<=%s%x and km<=? order by km desc limit(1)";
 	char sql[128];
-	sqlite3_snprintf(sizeof(sql), sql, tsql, field, tbl);
+	sqlite3_snprintf(sizeof(sql), sql, tsql, field, FARE_INFO::tax, tbl, field, FARE_INFO::tax);
 	DBO dbo(DBS::getInstance()->compileSql(sql));
 	dbo.setParam(1, KM(km));
 	if (dbo.moveNext()) {
@@ -9697,7 +9696,7 @@ int32_t	FARE_INFO::Fare_table(const char* tbl, char c, int32_t km)
 	int32_t fare;
 
 	sql = sqlite3_mprintf(
-	"select ckm, %c%u from t_fare%s where km<=? order by km desc limit(1)",
+	"select ckm, %c%x from t_fare%s where km<=? order by km desc limit(1)",
 	                      c, FARE_INFO::tax, tbl);
 
 	DBO dbo(DBS::getInstance()->compileSql(sql));
@@ -9730,7 +9729,7 @@ int32_t FARE_INFO::Fare_table(int32_t dkm, int32_t skm, char c)
 
 	char* sql = sqlite3_mprintf(
 #if 1
-	"select %c%u from t_farels where dkm=?2 and (skm=-1 or skm=?1)",
+	"select %c%x from t_farels where dkm=?2 and (skm=-1 or skm=?1)",
 	c, FARE_INFO::tax);
 #else
 "select k,l from t_farels where "
@@ -9863,21 +9862,27 @@ int32_t FARE_INFO::Fare_basic_f(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 147;
+		} else if (FARE_INFO::tax == 5) {
 			return 140;
 		} else {
 			return 144;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 189;
+		} else if (FARE_INFO::tax == 5) {
 			return 180;
 		} else {
 			return 185;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 199;
+        } else if (FARE_INFO::tax == 5) {
 			return 190;
 		} else {
 			return 195;
@@ -9923,21 +9928,27 @@ int32_t FARE_INFO::Fare_sub_f(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 147;
+        } else if (FARE_INFO::tax == 5) {
 			return 140;
 		} else {
 			return 144;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 189;
+        } else if (FARE_INFO::tax == 5) {
 			return 180;
-		} else {
+		} else {  // 8%
 			return 185;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 210;
+        } else if (FARE_INFO::tax == 5) {
 			return 200;
 		} else {
 			return 206;
@@ -9990,21 +10001,27 @@ int32_t FARE_INFO::Fare_tokyo_f(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 136;
+        } else if (FARE_INFO::tax == 5) {
 			return 130;
 		} else {
 			return 133;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 157;
+        } else if (FARE_INFO::tax == 5) {
 			return 150;
 		} else {
 			return 154;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 168;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 165;
@@ -10050,21 +10067,27 @@ int32_t FARE_INFO::Fare_osaka(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 130;
+        } else if (FARE_INFO::tax == 5) {
 			return 120;
 		} else {
 			return 120;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 160;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 160;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 180;
+        } else if (FARE_INFO::tax == 5) {
 			return 170;
 		} else {
 			return 180;
@@ -10110,21 +10133,27 @@ int32_t FARE_INFO::Fare_yamate_f(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 136;
+        } else if (FARE_INFO::tax == 5) {
 			return 130;
 		} else {
 			return 133;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 157;
+        } else if (FARE_INFO::tax == 5) {
 			return 150;
 		} else {
 			return 154;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 168;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 165;
@@ -10166,21 +10195,27 @@ int32_t FARE_INFO::Fare_osakakan(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 130;
+        } else if (FARE_INFO::tax == 5) {
 			return 120;
 		} else {
 			return 120;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 160;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 160;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 180;
+        } else if (FARE_INFO::tax == 5) {
 			return 170;
 		} else {
 			return 180;
@@ -10220,32 +10255,36 @@ int32_t FARE_INFO::Fare_hokkaido_basic(int32_t km)
 {
 	int32_t fare;
 	int32_t c_km;
-	char tbl[16];
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 200;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 170;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 250;
+        } else if (FARE_INFO::tax == 5) {
 			return 200;
 		} else {
 			return 210;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 290;
+        } else if (FARE_INFO::tax == 5) {
 			return 210;
 		} else {
 			return 220;
 		}
 	}
 
-	sprintf_s(tbl, NumOf(tbl), "h%u", FARE_INFO::tax);
-	fare = FARE_INFO::Fare_table("bspekm", tbl, km);
+	fare = FARE_INFO::Fare_table("bspekm", "h", km);
 	if (0 != fare) {
 		return fare;
 	}
@@ -10293,21 +10332,27 @@ int32_t FARE_INFO::Fare_hokkaido_sub(int32_t km)
 	int32_t c_km;
 
 	if (km < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 200;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 170;
 		}
 	}
 	if (km < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 250;
+        } else if (FARE_INFO::tax == 5) {
 			return 200;
 		} else {
 			return 210;
 		}
 	}
 	if (km < 101) {							// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 300;
+        } else if (FARE_INFO::tax == 5) {
 			return 220;
 		} else {
 			return 230;
@@ -10362,7 +10407,15 @@ int32_t FARE_INFO::Fare_shikoku(int32_t skm, int32_t ckm)
 
 	/* JTB時刻表 C-3表 */
 	if (ckm != skm) {
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+                /* JR四国 幹線+地方交通線 */
+                /* (m) */
+            if ((KM(ckm) == 4) && (KM(skm) == 3)) {
+                return 160;	/* \ TODO */
+            } else if ((KM(ckm) == 11) && (KM(skm) == 10)) {
+                return 230;	/* \ TODO */
+            }
+        } else if (FARE_INFO::tax == 5) {
 			/* JR四国 幹線+地方交通線 */
 			/* (m) */
 			if ((KM(ckm) == 4) && (KM(skm) == 3)) {
@@ -10383,28 +10436,34 @@ int32_t FARE_INFO::Fare_shikoku(int32_t skm, int32_t ckm)
 	}
 
 	if (ckm < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 170;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 160;
 		}
 	}
 	if (ckm < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 210;
+        } else if (FARE_INFO::tax == 5) {
 			return 200;
 		} else {
 			return 210;
 		}
 	}
 	if (ckm < 101) {						// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 220;
+        } else if (FARE_INFO::tax == 5) {
 			return 210;
 		} else {
 			return 220;
 		}
 	}
 
-	fare = FARE_INFO::Fare_table("bspekm", (FARE_INFO::tax == 5) ? "s5" : "s8", ckm);
+	fare = FARE_INFO::Fare_table("bspekm", "s", ckm);
 	if (0 != fare) {
 		return fare;
 	}
@@ -10457,7 +10516,15 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 
 	/* JTB時刻表 C-3表 */
 	if (ckm != skm) {
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            /* JR九州 幹線+地方交通線 */
+            /* (n) */
+            if ((KM(ckm) == 4) && (KM(skm) == 3)) {
+                return 180;	/* \ */
+            } else if ((KM(ckm) == 11) && (KM(skm) == 10)) {
+                return 260;	/* \ */
+            }
+        } else if (FARE_INFO::tax == 5) {
 			/* JR九州 幹線+地方交通線 */
 			/* (n) */
 			if ((KM(ckm) == 4) && (KM(skm) == 3)) {
@@ -10477,28 +10544,35 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 	}
 
 	if (ckm < 31) {							// 1 to 3km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 170;
+        } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
 			return 160;
 		}
 	}
 	if (ckm < 61) {							// 4 to 6km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 210;
+        } else if (FARE_INFO::tax == 5) {
 			return 200;
 		} else {
-			return 220;
+			return 210;
 		}
 	}
 	if (ckm < 101) {						// 7 to 10km
-		if (FARE_INFO::tax == 5) {
+        if (FARE_INFO::tax == 10) {
+            return 230;
+        } else if (FARE_INFO::tax == 5) {
 			return 220;
 		} else {
 			return 230;
 		}
 	}
 
-	fare = FARE_INFO::Fare_table("bspekm", (FARE_INFO::tax == 5) ? "k5" : "k8", ckm);
+    // 多分、このブロックはなくてもいけるんだが。
+	fare = FARE_INFO::Fare_table("bspekm", "k", ckm);
 	if (0 != fare) {
 		return fare;
 	}
