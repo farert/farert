@@ -279,7 +279,7 @@ public:
     // メンバの数はenableMapValueに依存するので制限32個まで
     bool jrtokaistock_applied;  // owner is user
     bool jrtokaistock_enable;   // owner system
-    bool meihan_city_flag;
+    bool meihan_city_flag;      // True: 発のみ都区市内
     BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
                             //         bit2: term, bit3: end([山])
                             // bit6:1= disable
@@ -406,7 +406,7 @@ public:
     void setDisableRule86or87() { rule86or87 |= 0x40; }
     void setEnableRule86or87()  { rule86or87 &= 0x3f; }
     bool isEnableRule86or87() const { return 0 == (rule86or87 & 0x40); }
-    bool isAvailableRule86or87() const { return (rule86or87 ^ 0x0f) < 0x0f; }
+    bool isAvailableRule86or87() const { return ((rule86or87 & 0x0f) != 0) && ((rule86or87 & 0x40) == 0); }
     bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
     bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
 
@@ -910,11 +910,6 @@ private:
 	static int32_t	CheckOfRule89j(const vector<RouteItem> &route);
     static std::vector<RouteItem> IsHachikoLineHaijima(const std::vector<RouteItem>& route_list);
     static std::vector<std::vector<int>> getBRTrecord(int32_t line_id);
-#if 0 ///@@@@@@@@@ TODO DELETE AFTER
-    static bool CheckBulletInUrban(const RouteList& route_original);
-    static bool CheckBulletInUrbanRule70(const std::vector<RouteItem>& route_list);
-    static bool CheckBulletInUrbanRule86or87orNothing(const std::vector<RouteItem>& route_list, BYTE rule86or87);
-#endif ///@@@@@@@@@@@@ TODO DELETE AFTER
 }; // FARE_INFO
 
 #define BCRULE70	            6		/* DB:lflag */
