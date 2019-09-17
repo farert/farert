@@ -1950,7 +1950,7 @@ first_station_id1 = stationId1;
 				                                       jctspdt.jctSpStationId);
 					// 上越線-宮内追加
 				rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId2, ADD_BULLET_NC);		//****************
-				route_flag.jctsp_route_change = true;;	/* route modified */
+				route_flag.jctsp_route_change = true;	/* route modified */
 				if (rc != ADDRC_OK) {
 					TRACE(_T("junction special (JSBS001) error.\n"));
 					TRACE(_T("add_abort\n"));
@@ -2021,7 +2021,7 @@ first_station_id1 = stationId1;
 					ASSERT(rc == ADDRC_OK);
 					stationId1 = j;
 				}
-				route_flag.jctsp_route_change = true;;	/* route modified */
+				route_flag.jctsp_route_change = true;	/* route modified */
 			} else {
 				TRACE("JCT: B-2\n");
 			}
@@ -2458,7 +2458,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 	} else if (rc == 1) {
 		route_flag.trackmarkctl = true;
 	} else if (rc == 2) {
-		route_flag.trackmarkctl = true;	/* 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので) */
+		route_flag.trackmarkctl = false;	/* 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので) */
 	} else {
 		ASSERT(FALSE);
 		route_flag.trackmarkctl = true;
