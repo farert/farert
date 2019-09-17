@@ -1,6 +1,13 @@
 b#バグタイトル
 ->
 
+***
+CalcRoute.sync()
+以下、なんか必要？不具合は？
+route_flag.end = false;
+route_flag.compnda = false;
+--
+
 19.09.01(56)リリース(iOS)
 JR九州 消費税8時代、3~6kmの運賃が誤り(220円ではなく210円)
 消費税10%暫定対応(以下情報未盛込み)
