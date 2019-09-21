@@ -2,7 +2,7 @@ package org.sutezo.alps;
 
 import static org.sutezo.alps.farertAssert.*;
 
-class RouteFlag implements Cloneable {
+class RouteFlag {
     private byte osakaKanPass = 0;
 
     boolean no_rule = false;               //8 ON: 特例非適用(User->System)
@@ -37,8 +37,6 @@ class RouteFlag implements Cloneable {
     boolean ter_fin_city		= false;      //14
     boolean ter_begin_yamate	= false;      //15/ [山]
     boolean ter_fin_yamate		= false;      //16
-    boolean ter_begin_city_off	= false;      //19
-    boolean ter_fin_city_off	= false;      //20
     boolean ter_begin_oosaka	= false;      //21 大阪・新大阪
     boolean ter_fin_oosaka		= false;      //22
     void terCityReset() {
@@ -46,9 +44,7 @@ class RouteFlag implements Cloneable {
         ter_fin_city		= false;      //14
         ter_begin_yamate	= false;      //15/ [山]
         ter_fin_yamate		= false;      //16
-        ter_begin_city_off	= false;      //19
-        ter_fin_city_off	= false;      //20
-        ter_begin_oosaka	= false;      //21 大阪・新大阪
+         ter_begin_oosaka	= false;      //21 大阪・新大阪
         ter_fin_oosaka		= false;      //22
     }
     boolean isTerCity() {
@@ -57,8 +53,6 @@ class RouteFlag implements Cloneable {
                 ter_fin_city		||      //14
                 ter_begin_yamate	||      //15/ [山]
                 ter_fin_yamate		||      //16
-                ter_begin_city_off	||      //19
-                ter_fin_city_off	||      //20
                 ter_begin_oosaka	||      //21 大阪・新大阪
                 ter_fin_oosaka		;      //22
     }
@@ -108,8 +102,6 @@ class RouteFlag implements Cloneable {
         ter_fin_city		= false;      //14
         ter_begin_yamate	= false;      //15/ [山]
         ter_fin_yamate		= false;      //16
-        ter_begin_city_off	= false;      //19
-        ter_fin_city_off	= false;      //20
         ter_begin_oosaka	= false;      //21 大阪・新大阪
         ter_fin_oosaka		= false;      //22
         compncheck		    = false;      //23 会社線通過チェック有効
@@ -140,16 +132,48 @@ class RouteFlag implements Cloneable {
         jrtokaistock_applied= false; 	//11 提案適用フラグ
     }
 
-    protected RouteFlag clone() {
-        try {
-            return (RouteFlag) super.clone();
-        } catch (Exception e) {
-            return new RouteFlag();
-        }
-    }
 
-    void setAnotherRouteFlag(final RouteFlag other) {
-        other.clone();
+    void setAnotherRouteFlag(final RouteFlag o) {
+        osakaKanPass = o.osakaKanPass;
+        no_rule = o.no_rule;
+        jrtokaistock_enable = o.jrtokaistock_enable;
+        jrtokaistock_applied = o.jrtokaistock_applied;
+        meihan_city_flag = o.meihan_city_flag;
+        rule88 = o.rule88;
+        rule69 = o.rule69;
+        rule70 = o.rule70;
+        special_fare_enable = o.special_fare_enable;
+        rule115 = o.rule115;
+        rule70bullet = o.rule70bullet;
+        bullet_line = o.bullet_line;
+        bJrTokaiOnly = o.bJrTokaiOnly;
+        meihan_city_enable = o.meihan_city_enable;
+        trackmarkctl = o.trackmarkctl;
+        jctsp_route_change = o.jctsp_route_change;
+        disable_rule86or87 = o.disable_rule86or87;
+        ter_begin_city = o.ter_begin_city;
+        ter_fin_city = o.ter_fin_city;
+        ter_begin_yamate = o.ter_begin_yamate;
+        ter_fin_yamate = o.ter_fin_yamate;
+        ter_begin_oosaka = o.ter_begin_oosaka;
+        ter_fin_oosaka = o.ter_fin_oosaka;
+        compncheck = o.compncheck;
+        compnpass = o.compnpass;
+        compnda = o.compnda;
+        compnbegin = o.compnbegin;
+        compnend = o.compnend;
+        urban_neerest = o.urban_neerest;
+        notsamekokurahakatashinzai = o.notsamekokurahakatashinzai;
+        end = o.end	;
+    }
+    boolean rule_en() {
+        return isEnableRule86() ||
+                isEnableRule87() ||
+                rule88 ||
+                rule69 ||
+                rule70 ||
+                special_fare_enable ||
+                meihan_city_enable;
     }
 
     // UI側からセットする制御フラグ
