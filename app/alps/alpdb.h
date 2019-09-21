@@ -229,7 +229,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define MASK_ROUTE_FLAG_LFLG	0xff000000
 #define MASK_ROUTE_FLAG_SFLG	0x0000ffff
 
-/* last_flag */
+/* route_flag */
 #define LASTFLG_OFF				MASK(BLF_NOTSAMEKOKURAHAKATASHINZAI)   // all bit clear at removeAll()
 
 // 大阪環状線 通過制御フラグ定義
@@ -315,13 +315,13 @@ public:
     // Global
     bool notsamekokurahakatashinzai;    //30 Route only : 小倉-博多間 新在別線扱い
     bool end		;               //31 arrive to end.
-    // end of last_flag
+    // end of route_flag
 public:
     RouteFlag() {
         clear();
     }
     void clear() {
-        /* last_flag */
+        /* route_flag */
         // boolean LASTFLG_OFF = RouteUtil.MASK(notsamekokurahakatashinzai);   // all bit clear at removeAll()
         osakaKanPass = 0;      //0-1
 
@@ -487,7 +487,7 @@ public:
         ter_fin_oosaka		;      //22
     }
 
-    // 特例非適用ならTrueを返す。LAST_FLAG.BLF_NO_RULEのコピー
+    // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
     //
 	bool isUseBullet() const { return bullet_line || rule70bullet; }
 };
@@ -879,7 +879,7 @@ public:
 
     static bool   IsCityId(int32_t id) { return STATION_ID_AS_CITYNO <= id; }
 	static int32_t		Retrieve70Distance(int32_t station_id1, int32_t station_id2);
-    static int32_t      centerStationIdFromCityId(int32_t cityId);
+    static int32_t      CenterStationIdFromCityId(int32_t cityId);
 
 private:
            int32_t      jrFare() const;
