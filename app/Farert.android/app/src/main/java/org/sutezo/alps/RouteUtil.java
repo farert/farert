@@ -136,6 +136,10 @@ public class RouteUtil {
         return (((flg)&(1 << 5))!=0);	/* 山点線内／大阪環状線内 ?*/
     }
 
+    static final int MASK_FARECALC_INITIAL = 0;
+
+    final static int BCBULURB = 13;     // FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
+
 /*
   RouteItem[] 先頭のlineId
   0x01 発駅が都区市内
@@ -971,6 +975,7 @@ public class RouteUtil {
      //	(境界駅はあいまい)
      //
      //	@param [in] station_id   駅id
+     // @return int[0]: 会社1 / int[1]: 会社2
      //
      static int[]  CompanyIdFromStation(int station_id) {
          int results[] = {0, 0};
