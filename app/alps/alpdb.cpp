@@ -3634,7 +3634,7 @@ void Route::removeAll(bool bWithStart /* =true */)
 	JctMaskClear(jct_mask);
 
 	if (!bWithStart) {
-		begin_station_id = startStationId();
+		begin_station_id = departureStationId();
 	}
 
 	route_list_raw.clear();
@@ -3669,7 +3669,7 @@ bool RouteList::checkPassStation(int32_t stationId)
 			}
 		} else {
 			ASSERT(route_item == route_list_raw.cbegin());
-			ASSERT(startStationId() == route_item->stationId);
+			ASSERT(departureStationId() == route_item->stationId);
 		}
 		stationIdFrom = route_item->stationId;
 	}
@@ -7218,9 +7218,9 @@ public:
 
 int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 {
-	ASSERT(0 < startStationId());
+	ASSERT(0 < departureStationId());
 	//ASSERT(0 < end_station_id);
-	//ASSERT(startStationId() != end_station_id);
+	//ASSERT(departureStationId() != end_station_id);
 
 	IDENT startNode;
 	IDENT lastNode = 0;
@@ -7259,7 +7259,7 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 		stationId = route_list_raw.back().stationId;
 
 	} else {
-		stationId = startStationId();
+		stationId = departureStationId();
 	}
 
 	if ((stationId == end_station_id) || (end_station_id <= 0)) {
@@ -7341,9 +7341,9 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 				Route::IsSameNode(route_list_raw.back().lineId,
 				                  route_list_raw.front().stationId,
 				                  route_list_raw.back().stationId)) {
-		id = Route::Id2jctId(startStationId());
+		id = Route::Id2jctId(departureStationId());
 		if (id == 0) {
-			neer_node = RouteUtil::GetNeerNode(startStationId());
+			neer_node = RouteUtil::GetNeerNode(departureStationId());
 			if (neer_node.size() == 2) {
 				excNode1 = Route::Id2jctId(IDENT1(neer_node.at(0)));		/* 渋谷 品川 代々木 */
 				excNode2 = Route::Id2jctId(IDENT1(neer_node.at(1)));		/* 渋谷 品川 新宿 */
@@ -9093,7 +9093,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRouteForToiCa(const RouteList& route_origi
     // JR東海(TOICA)
     Route shortRoute(reRouteForToica(route_original));
 
-    fare_info_shorts.setTerminal(route_original.startStationId(), route_original.endStationId());
+    fare_info_shorts.setTerminal(route_original.departureStationId(), route_original.arriveStationId());
     RouteFlag short_route_flag = shortRoute.getRouteFlag();
 	if (!fare_info_shorts.calc_fare(&short_route_flag, shortRoute.routeList())) {
         ASSERT(FALSE);
@@ -9129,7 +9129,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     int8_t decision = 0;   // this or via_tachikawa or short
 
     if ( !isUrbanArea() || route_original.getRouteFlag().isUseBullet()      // 大都市近郊区間内
-         || (route_original.startStationId() == route_original.endStationId())
+         || (route_original.departureStationId() == route_original.arriveStationId())
          || (0x03 == ((route_original.getRouteFlag().rule86or87 << 2) |
                        route_original.getRouteFlag().rule86or87))) { // O型経路(悩みどこだがそんなルート組むやつって・・・)
         // usualy or loop route */
@@ -9158,12 +9158,12 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         if (0 != (0x05 & route_original.getRouteFlag().rule86or87)) {
             stid = FARE_INFO::CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CSTART));
         } else {
-            stid = route_original.startStationId();
+            stid = route_original.departureStationId();
         }
         if (0 != (0x0a & route_original.getRouteFlag().rule86or87)) {
             edid = FARE_INFO::CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CEND));
         } else {
-            edid = route_original.endStationId();
+            edid = route_original.arriveStationId();
         }
         ASSERT(stid != 0 && edid != 0);
 
@@ -9204,8 +9204,8 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     if (decision != 20) {
         short_route_flag.setDisableRule86or87();
         if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute_List,
-                                                           route_original.startStationId(),
-                                                           route_original.endStationId(),
+                                                           route_original.departureStationId(),
+                                                           route_original.arriveStationId(),
                                                            &short_route_flag)) {
             ASSERT(FALSE);
             return false;
@@ -9237,8 +9237,8 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         route_via_tachikawa = IsHachikoLineHaijima(shortRoute_List);
         if (decision == 0) { /* 86or87 適用はやらん */
             if (route_via_tachikawa.size() != 0) {
-                fare_info_via_tachikawa.setTerminal(route_original.startStationId(),
-                                                    route_original.endStationId());
+                fare_info_via_tachikawa.setTerminal(route_original.departureStationId(),
+                                                    route_original.arriveStationId());
                 if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa)) {
                     if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
                         /* 立川経由の方が安い */
@@ -9381,7 +9381,7 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
         return route;
     }
     if (bNeer == true) {
-        rc = shortRoute.changeNeerest(0, route.endStationId());
+        rc = shortRoute.changeNeerest(0, route.arriveStationId());
         if (rc < 0) {
             ASSERT(FALSE);
             return route;
@@ -9821,8 +9821,8 @@ int32_t FARE_INFO::CheckSpecificFarePass(int32_t line_id, int32_t station_id1, i
 //	特別運賃区間か判定し該当していたら運賃額を返す
 //	calc_fare() =>
 //
-//	@param [in] station_id1 駅1(startStationId)
-//	@param [in] station_id2 駅2(end_station_id)
+//	@param [in] station_id1 駅1(departureStationId)
+//	@param [in] station_id2 駅2(arriveStationId)
 //
 //	@return 特別区間運賃
 //

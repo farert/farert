@@ -341,14 +341,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             availday_value.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
             (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
             // 大阪環状線
-            if (fi.isOsakakanDetourEnable()) {
-                if (fi.isOsakakanDetourShortcut()) {
+            if (fi.isOsakakanDetourEnable) {
+                if (fi.isOsakakanDetourShortcut) {
                     mOsakakan_detour = OSAKA_KAN.NEAR
                 } else {
                     mOsakakan_detour = OSAKA_KAN.FAR
                 }
             }
-            revButton = ((cr.fareOption and 0x400) == 0)
+            revButton = cr.isAvailableReverse()
+
             footer_group.visibility = View.VISIBLE
             buttonFareDetail.isEnabled = true
 
@@ -379,7 +380,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         // リバースボタンの有効化／無効化
         (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
             (getChildAt(1) as BottomNavigationItemView).apply {
-                setEnabled(1 < mRoute.count && revButton)
+                this.isEnabled = (1 < mRoute.count && revButton)
             }
         }
         //大阪環状線遠回り／近回りボタン

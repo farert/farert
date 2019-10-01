@@ -544,10 +544,10 @@ public:
     void    assign(const RouteList& source_route, int32_t count = -1);
     virtual ~RouteList() { route_list_raw.clear(); }
 
-    int32_t startStationId() const {
+    int32_t departureStationId() const {
         return (route_list_raw.size() <= 0) ? 0 : route_list_raw.front().stationId;
     }
-	int32_t endStationId() const {
+	int32_t arriveStationId() const {
 		return (route_list_raw.size() <= 0) ? 0 : route_list_raw.back().stationId;
 	}
 	const vector<RouteItem>& routeList() const { return route_list_raw; }

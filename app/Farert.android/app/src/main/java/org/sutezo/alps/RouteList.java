@@ -83,7 +83,7 @@ public class RouteList {
 
     public void assign(RouteList source_route, int count) {
         route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = source_route.route_flag.clone();
+        route_flag = source_route.route_flag;
         if ((0 < count) && source_route.route_list_raw.size() != count) {
             route_flag.end = false;
             route_flag.compnda = false;
@@ -123,7 +123,7 @@ public class RouteList {
     }
 
     //public:
-    public int startStationId() {
+    public int departureStationId() {
         return (route_list_raw.size() <= 0) ? 0 : route_list_raw.get(0).stationId;
     }
 
@@ -137,7 +137,7 @@ public class RouteList {
 
     public RouteFlag getRouteFlag() { return route_flag; }
     public RouteFlag sync_flag(RouteList source_route) {
-        route_flag = source_route.getRouteFlag().clone();
+        route_flag = source_route.getRouteFlag();
         return route_flag;
     }
 
@@ -202,14 +202,14 @@ public class RouteList {
                 }
             } else {
                 ASSERT (route_item == route_list_raw.get(0));
-                ASSERT (startStationId() == route_item.stationId);
+                ASSERT (departureStationId() == route_item.stationId);
             }
             stationIdFrom = route_item.stationId;
         }
         return false;
     }
 
-    boolean isAvailableReverse() {
+    public boolean isAvailableReverse() {
         int c = route_list_raw.size();
 
         // Available reverse

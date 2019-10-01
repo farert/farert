@@ -1,4 +1,91 @@
 
+
+2019.10.01
+- alpdb.cpp, alpdb.h
+Javaだとvirtual つけなくても、ポリモーフィズムが効くが、C++は効かない。
+なので、
+RouteList startStationId / endStationId()
+CalcRoute beginStationId / endStationId()
+となっているのを、
+RouteList departureStationId / arriveStationId()
+にする。
+
+
+
+$/Applications/Android\ Studio.app/Contents/jre/jdk/Contents/Home/bin/keytool -genkey -v -keystore ~/key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key
+/Applications/Android\ Studio.app/Contents/jre/jdk/Contents/Home/bin
+
+pass: sute7840
+
+---C++
+FARE_INFO fi;
+CalcRoute croute(route);
+tstring s;
+
+croute.refRouteFlag().setNoRule(true);
+croute.calcFare(&fi);
+s = fi.showFare(croute.getRouteFlag());
+s = cr_remove(s);
+_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+------
+c_route.m
+--
+// fare calc
+- (FareInfo*)calcFare
+{
+    FARE_INFO fi;
+    int fare_result;
+
+    obj_calcroute->calcFare(&fi);
+    switch (fi.resultCode()) {
+        case 0:     // success, company begin/first or too many company
+            fare_result = 0;
+            break;  // OK
+        case -1:    /* In completed (吉塚、西小倉における不完全ルート) */
+            fare_result = 1;     //"この経路の片道乗車券は購入できません.続けて経路を指定してください."
+            break;
+        default:
+            return nil; /* -2:empty or -3:fail */
+            break;
+    }
+
+    FareInfo* result = nil;
+    string str1;
+    :
+    全必要情報がFareInfoに格納される
+
+
+ ---
+ self.fareInfo = self.ds.calcFare()
+if self.fareInfo == nil {
+    self.navigationItem.title = "エラー"
+    self.navigationItem.prompt = ""
+    return
+}
+----------- android(既存)
+
+val ds = Route()
+ds.assign((application as FarertApp).ds, routeEndIndex)
+setRouteChange(ds)
+mIsRoundTrip = ds.isRoundTrip
+mCalcRoute = CalcRoute(ds).also {
+    it.calcFareInfo()   // apply lastFlag.rule_en
+    setRouteOption(it)  // setFareOption()
+}
+
+.... onResume()
+mCalcRoute?.let {
+    val fi = it.calcFareInfo()
+    setContentData(fi)
+    setOptionFlag(fi)   // getFareOption() -> this member attributes(opt_xxx)
+}
+
+mCalcRoute どうせこわれるならメンバにおいても。。。グローバル変数として有用
+
+
+-----
+
+
 b#19082201
 getDistanceEx() のあと
 TRACE("\n\n\n\n@@@@@@@@@ %d, %d, %d, %d\n", company_id1, sub_company_id1, company_id2, sub_company_id2);
