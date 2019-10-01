@@ -27,8 +27,9 @@ class FareInfo {
     var rule114_salesKm : Int = 0
     var rule114_calcKm : Int = 0
     var isRule114Applied : Boolean = false
-    var isArbanArea : Boolean = false
+
     var isSpecificFare : Boolean = false
+    var isArbanArea : Boolean = false
 
     var totalSalesKm : Int = 0
     var jrCalcKm : Int = 0
@@ -86,36 +87,28 @@ class FareInfo {
     var routeList : String = ""
     var routeListForTOICA : String = "" // TOICA IC運賃計算経路
 
+    var isEnableLongRoute : Boolean = false
+    var isLongRoute : Boolean = false
+    var isDisableSpecificTermRule115 : Boolean = false
+    var isEnableRule115 : Boolean = false
 
+    var resultMessage : String = ""
 
-    var calcResultFlag : Int = 0
-//	calcResultFlag
-//     & 0x80 = 0    : 該当なし
-//     & 0x80 = 0x80 : empty or non calc.
-//     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
-//			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
-//	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
-//	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
-//     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
-//     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
-// (System->User)
-    fun isMeihanCityStartTerminalEnable() : Boolean = (calcResultFlag and 0x03) != 0x00
-    fun isMeihanCityStart() : Boolean = (calcResultFlag and 0x03) == 0x01
-    fun isMeihanCityTerminal() : Boolean = (calcResultFlag and 0x03) == 0x02
+    var isMeihanCityStartTerminalEnable : Boolean = false
+    var isMeihanCityStart : Boolean = false
+    var isMeihanCityTerminal : Boolean = false
 
-// bit 2-3
-    fun isOsakakanDetourEnable() :Boolean = (calcResultFlag and 0x0c) != 0x00
+    var isOsakakanDetourEnable :Boolean = false
 
-// TRUE: Detour / FALSE: Shortcut
-    fun isOsakakanDetourShortcut() : Boolean = (calcResultFlag and 0x0c) == 0x08
+    // TRUE: Detour / FALSE: Shortcut
+    var isOsakakanDetourShortcut : Boolean = false
 
-// bit 4-5
-    fun isRuleAppliedEnable(): Boolean = (calcResultFlag and 0x30) != 0x00
-    fun isRuleApplied(): Boolean = (calcResultFlag and 0x30) == 0x10
-    fun isFareOptEnabled() : Boolean = (calcResultFlag and 0x33f) != 0x00
+    var isRuleAppliedEnable: Boolean = false
+    var isRuleApplied: Boolean = false
+    var isFareOptEnabled : Boolean = false
 
 // bit 8-9
     //fun isJRCentralStockEnable(): Boolean = (calcResultFlag and 0x300) != 0x000
-    fun isJRCentralStockEnable(): Boolean = (calcResultFlag and 0x300) != 0x000
-    fun isJRCentralStock() : Boolean = (calcResultFlag and 0x300) == 0x200
+    var isJRCentralStockEnable: Boolean = false
+    var isJRCentralStock : Boolean = false
 }

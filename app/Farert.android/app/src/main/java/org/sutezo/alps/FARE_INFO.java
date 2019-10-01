@@ -227,10 +227,10 @@ public class FARE_INFO {
                 ASSERT(this.base_calc_km == _total_jr_calc_km);
                 ASSERT(_total_jr_calc_km == _total_jr_calc_km);
                 if (RouteUtil.IS_YAMATE(this.flag)) {
-                    System.out.printf("fare(osaka-kan)\n");
+                    System.out.print("fare(osaka-kan)\n");
                     _total_jr_fare = Fare_osakakan(_total_jr_sales_km);
                 } else {
-                    System.out.printf("fare(osaka)\n");
+                    System.out.print("fare(osaka)\n");
                     _total_jr_fare = Fare_osaka(_total_jr_sales_km);
                 }
             } else if ((_total_jr_sales_km == _total_jr_calc_km) &&   /* 地方交通線(八高線)含まず:b#18122801 */
@@ -243,10 +243,10 @@ public class FARE_INFO {
                 ASSERT(this.base_calc_km == _total_jr_calc_km);
 
                 if (RouteUtil.IS_YAMATE(this.flag)) {
-                    System.out.printf("fare(yamate)\n");
+                    System.out.print("fare(yamate)\n");
                     fare_tmp = Fare_yamate_f(_total_jr_sales_km);
                 } else {
-                    System.out.printf("fare(tokyo)\n");
+                    System.out.print("fare(tokyo)\n");
                     fare_tmp = Fare_tokyo_f(_total_jr_sales_km);
                 }
                 if (RouteDB.getInstance().tax() == 5) {
@@ -262,7 +262,7 @@ public class FARE_INFO {
                 /* 本州3社地方交通線のみ or JR東+JR北 */
                 /* 幹線+地方交通線でトータル営業キロが10km以下 */
                 // (i)<s>
-                System.out.printf("fare(sub)\n");
+                System.out.print("fare(sub)\n");
 
                 fare_tmp = Fare_sub_f(_total_jr_sales_km);
 
@@ -278,7 +278,7 @@ public class FARE_INFO {
 
             } else { /* 幹線のみ／幹線+地方交通線 */
                 // (a) + this.calc_kmで算出
-                System.out.printf("fare(basic)\n");
+                System.out.print("fare(basic)\n");
 
                 fare_tmp = Fare_basic_f(_total_jr_calc_km);
 
@@ -301,13 +301,13 @@ public class FARE_INFO {
                     /* JR北は地方交通線のみ */
                     /* or 幹線+地方交通線でトータル営業キロが10km以下 */
                     // (r) sales_km add
-                    System.out.printf("fare(hla)\n");		// System.out.printf("fare(r,r)\n");
+                    System.out.print("fare(hla)\n");		// System.out.print("fare(r,r)\n");
                     _total_jr_fare += Fare_table("hla", "ha", this.hokkaido_sales_km);
                     //過去DBもつかうんで。。。ASSERT(FALSE); // 北海道新幹線ができてから不要
 
                 } else { /* 幹線のみ／幹線+地方交通線で10km越え */
                     // (o) calc_km add
-                    System.out.printf("fare(add, ha)\n");	// System.out.printf("fare(opq, o)\n");
+                    System.out.print("fare(add, ha)\n");	// System.out.print("fare(opq, o)\n");
                     _total_jr_fare += Fare_table("add", "ha", this.hokkaido_calc_km);
                 }
             }				// JR九あり？
@@ -316,7 +316,7 @@ public class FARE_INFO {
                 /* 幹線のみ、幹線+地方交通線 */
 
                 // JR九州側(q)<s><c> 加算
-                System.out.printf("fare(add, ka)\n");	// System.out.printf("fare(opq, q)\n");
+                System.out.print("fare(add, ka)\n");	// System.out.print("fare(opq, q)\n");
                 _total_jr_fare += Fare_table("add", "ka", this.kyusyu_calc_km);
             }				// JR四あり?
             if (0 < (this.shikoku_sales_km + this.shikoku_calc_km)) {
@@ -324,7 +324,7 @@ public class FARE_INFO {
                 /* 幹線のみ、幹線+地方交通線 */
 
                 // JR四国側(p)<s><c> 加算
-                System.out.printf("fare(add, sa)\n");	// System.out.printf("fare(opq, p)\n");
+                System.out.print("fare(add, sa)\n");	// System.out.print("fare(opq, p)\n");
                 _total_jr_fare += Fare_table("add", "sa", this.shikoku_calc_km);
             }				// JR北
         } else if (0 < (this.hokkaido_sales_km + this.hokkaido_calc_km)) {
@@ -336,12 +336,12 @@ public class FARE_INFO {
             if (this.local_only_as_hokkaido || _total_jr_sales_km <= 100) {
                 /* JR北海道 地方交通線のみ */
                 // (j)<s>
-                System.out.printf("fare(hokkaido_sub)\n");
+                System.out.print("fare(hokkaido_sub)\n");
                 _total_jr_fare = Fare_hokkaido_sub(_total_jr_sales_km);
             } else {
                 /* JR北海道 幹線のみ、幹線+地方交通線 */
                 // (f)<c>
-                System.out.printf("fare(hokkaido-basic)\n");
+                System.out.print("fare(hokkaido-basic)\n");
                 _total_jr_fare = Fare_hokkaido_basic(_total_jr_calc_km);
 
             }				// JR九
@@ -353,7 +353,7 @@ public class FARE_INFO {
 
             if (this.local_only) {
                 /* JR九州 地方交通線 */
-                System.out.printf("fare(ls)'k'\n");
+                System.out.print("fare(ls)'k'\n");
                 /* (l) */
                 _total_jr_fare = Fare_table(_total_jr_calc_km, _total_jr_sales_km, 'k');
 
@@ -361,7 +361,7 @@ public class FARE_INFO {
             if (_total_jr_fare == 0) {
                 /* JR九州 幹線のみ、幹線＋地方交通線、地方交通線のみ の(l), (n)非適用 */
                 // (h)<s><c>
-                System.out.printf("fare(kyusyu)\n");			// System.out.printf("fare(m, h)[9]\n");
+                System.out.print("fare(kyusyu)\n");			// System.out.print("fare(m, h)[9]\n");
                 _total_jr_fare = Fare_kyusyu(_total_jr_sales_km,
                         _total_jr_calc_km);
             }
@@ -374,7 +374,7 @@ public class FARE_INFO {
 
             if (this.local_only) {
                 /* JR四国 地方交通線 */
-                System.out.printf("fare(ls)'s'\n");
+                System.out.print("fare(ls)'s'\n");
                 /* (k) */
                 _total_jr_fare = Fare_table(_total_jr_calc_km, _total_jr_sales_km, 's');
 
@@ -382,7 +382,7 @@ public class FARE_INFO {
             if (_total_jr_fare == 0) {
                 /* JR四国 幹線のみ、幹線＋地方交通線、地方交通線のみ の(l), (n)非適用 */
                 // (g)<s><c>
-                System.out.printf("fare(shikoku)[4]\n");		// System.out.printf("fare(m, g)[4]\n");
+                System.out.print("fare(shikoku)[4]\n");		// System.out.print("fare(m, g)[4]\n");
                 _total_jr_fare = Fare_shikoku(_total_jr_sales_km,
                         _total_jr_calc_km);
             }
@@ -444,7 +444,7 @@ public class FARE_INFO {
             System.arraycopy(cid, 0, cid1, 0, cid.length);
         }
         if (b_jrtokaiOnly) {
-            System.out.printf("isJrTokai true\n");
+            System.out.print("isJrTokai true\n");
         }
         return b_jrtokaiOnly;
     }
@@ -637,12 +637,12 @@ public class FARE_INFO {
                     }
                     if ((this.flag & RouteUtil.FLAG_FARECALC_INITIAL) == 0) { // b15が0の場合最初なので駅1のフラグも反映
                         // 保持bit(既にflagのbitのみにはcheckIsBulletInUrbanOnSpecificTerm()でセットしているから)=いまはないので0
-                        this.flag &= (1<<RouteUtil.BCBULURB);
+                        this.flag &= RouteUtil.MASK_FARECALC_INITIAL;
                         // 次回以降から駅1不要、駅1 sflgの下12ビット,
                         // bit12以上はGetDistanceEx()のクエリでOxfffしているので不要
                         this.flag |= (RouteUtil.FLAG_FARECALC_INITIAL | (/*~(1<<RouteUtil.BCBULURB) & */dex[6]));
                     }
-                    flag = (RouteUtil.FLAG_FARECALC_INITIAL | MASK_FARECALC_INITIAL | dex[7]);
+                    flag = (RouteUtil.FLAG_FARECALC_INITIAL | RouteUtil.MASK_FARECALC_INITIAL | dex[7]);
                     if ((flag & RouteUtil.MASK_URBAN) != (this.flag & RouteUtil.MASK_URBAN)) {/* 近郊区間(b7-9) の比較 */
                         flag &= ~RouteUtil.MASK_URBAN;				/* 近郊区間 OFF */
                     }
@@ -657,9 +657,9 @@ public class FARE_INFO {
             station_id1 = ri.stationId;
         }
         //System.out.padb kill-serverrintf("@@@:isNotCityterminalWoTokai()=%d, isCityterminalWoTokai()=%d, %d\n", RouteUtil.isNotCityterminalWoTokai(), RouteUtil.isCityterminalWoTokai(), last_flag.isTerCity());
-        System.out.printf("@@@ en=%s, aply=%s rule=%s norule=%s\n", routeFlag_.jrtokaistock_enable,
-            routeFlag_.jrtokaistock_applied,
-            routeFlag_.no_rule, routeFlag_.rule_en());
+        System.out.printf("@@@ en=%d, aply=%d rule=%d norule=%d\n", routeFlag_.jrtokaistock_enable?1:0,
+            routeFlag_.jrtokaistock_applied?1:0,
+            routeFlag_.no_rule?1:0, routeFlag_.rule_en()?1:0);
 
         enableTokaiStockSelect = 0;
         routeFlag_.jrtokaistock_enable = false;
@@ -1209,7 +1209,7 @@ public class FARE_INFO {
     		if (route_flag_.compncheck && (this.sales_km < 1500)) {
     										/* 大聖寺-和倉温泉は106kmある */
     										/* 大聖寺-米原-岐阜-富山-津端-和倉温泉 を弾く為 */
-    	        	System.out.printf("specific fare section replace for IR-ishikawa change continue discount\n");
+    	        	System.out.print("specific fare section replace for IR-ishikawa change continue discount\n");
     				special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 2);
     				if (0 < special_fare) {
     		            this.jr_fare = special_fare - this.company_fare;	/* IRいしかわ 乗継割引 */
@@ -1218,7 +1218,7 @@ public class FARE_INFO {
                 && (((RouteUtil.MASK_URBAN & this.flag) != 0) || (this.sales_km < 500))) {
     			special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 1);
     			if (0 < special_fare) {
-                    System.out.printf("specific fare section replace for Metro or Shikoku-Big-bridge\n");
+                    System.out.print("specific fare section replace for Metro or Shikoku-Big-bridge\n");
                     if (!route_flag_.no_rule) {
                         // 品川-青森-横浜 なども適用されてはいけないので,近郊区間内なら適用するように。
                         // 品川-横浜などの特別区間は近郊区間内の場合遠回り指定でも特別運賃を表示
@@ -2849,8 +2849,8 @@ public class FARE_INFO {
     //
     private static int	Fare_table(final String tbl, final String field, int km) {
         final String tsql =
-                "select %s%x from t_fare%s where 0<=%s%x and km<=? order by km desc limit(1)";
-        String sql = String.format(Locale.JAPANESE, tsql, field, RouteDB.getInstance().tax(), tbl, RouteDB.getInstance().tax());
+                "select %1$s%3$x from t_fare%2$s where 0<=%1$s%3$x and km<=? order by km desc limit(1)";
+        String sql = String.format(Locale.JAPANESE, tsql, field, tbl, RouteDB.getInstance().tax());
 
         Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {String.valueOf(KM.KM(km))});
         int rc = 0;
@@ -3170,10 +3170,10 @@ public class FARE_INFO {
      *
      *	calc_fare() => aggregate_fare_info() =>
      *
-     *	@param [in] route flag 	 大阪環状線通過フラグ
-     *	@param [in] line_id   	 路線ID
-     *	@param [in] station_id1  駅1
-     *	@param [in] station_id2  駅2
+     *	@param  route flag 	 大阪環状線通過フラグ
+     *	@param  line_id   	 路線ID
+     *	@param  station_id1  駅1
+     *	@param  station_id2  駅2
      *
      *	@return int[] [0] 営業キロ
      *	@return int[] [1] 計算キロ
@@ -3350,11 +3350,11 @@ public class FARE_INFO {
             kagoshima_line_id = RouteUtil.GetLineId("鹿児島線");
             if ((rl & 1) != 0) {
                 km = RouteUtil.GetDistance(kagoshima_line_id, DbIdOf.INSTANCE.station("小倉"), DbIdOf.INSTANCE.station("西小倉")).get(0);
-                System.out.printf("applied 43-2(西小倉)\n");
+                System.out.print("applied 43-2(西小倉)\n");
             }
             if ((rl & 2) != 0) {
                 km += RouteUtil.GetDistance(kagoshima_line_id, DbIdOf.INSTANCE.station("博多"), DbIdOf.INSTANCE.station("吉塚")).get(0);
-                System.out.printf("applied 43-2(吉塚)\n");
+                System.out.print("applied 43-2(吉塚)\n");
             }
             return km;
         }
@@ -3522,7 +3522,9 @@ public class FARE_INFO {
             System.out.print("No reCalcFareForOptiomizeRoute.\n");
             return false;
         }
-        System.out.printf("begin reCalcFareForOptiomizeRoute.urban=%d, bullet=%d, specific term=%d\n", isUrbanArea(), route_original.getRouteFlag().isUseBullet(), route_original.getRouteFlag().isEnableRule86or87());
+        System.out.printf("begin reCalcFareForOptiomizeRoute.urban=%d, bullet=%d, specific term=%d\n",
+                isUrbanArea()?1:0, route_original.getRouteFlag().isUseBullet() ? 1:0,
+                route_original.getRouteFlag().isEnableRule86or87() ? 1:0);
 
         /* 大都市近郊区間 */
 
