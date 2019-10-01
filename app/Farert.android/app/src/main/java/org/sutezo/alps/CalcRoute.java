@@ -70,13 +70,13 @@ public class CalcRoute extends RouteList {
 
     public void sync(RouteList route) {
         assign(route);
-        route_flag = route.getRouteFlag().clone();
+        route_flag = route.getRouteFlag();
         route_list_cooked.clear();
     }
 
     public void sync(RouteList route, int count) {
         assign(route, count);
-        route_flag = route.getRouteFlag().clone();
+        route_flag = route.getRouteFlag();
         if ((0 < count) && route.routeList().size() != count) {
             route_flag.end = false;
             route_flag.compnda = false;
@@ -98,7 +98,7 @@ public class CalcRoute extends RouteList {
         } else {
             stid = coreAreaIDByCityId(CSTART);
             if (stid == 0) {
-                ASSERT(route_list_cooked.get(0).stationId == route_list_raw.get(0).stationId);
+//!                ASSERT(route_list_cooked.get(0).stationId == route_list_raw.get(0).stationId);
                 return route_list_raw.get(0).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
@@ -120,7 +120,7 @@ public class CalcRoute extends RouteList {
         } else {
             stid = coreAreaIDByCityId(CEND);
             if (stid == 0) {
-                 ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
+//!                 ASSERT(route_list_cooked.get(route_list_cooked.size() - 1).stationId == route_list_raw.get(route_list_raw.size() - 1).stationId);
                 return route_list_raw.get(route_list_raw.size() - 1).stationId;
             } else {
                 return stid + RouteUtil.STATION_ID_AS_CITYNO;
@@ -587,7 +587,7 @@ public class CalcRoute extends RouteList {
                     b_more_low_cost = fare_info.reCalcFareForOptiomizeRoute(this);
                 }
                 if (b_more_low_cost) {
-                    System.out.printf("changed fare for lowcost\n");
+                    System.out.print("changed fare for lowcost\n");
                     ; // DO NOTHING
                 } else {
                     // rule 114 applied
@@ -644,7 +644,7 @@ public class CalcRoute extends RouteList {
     int coreAreaIDByCityId(int startEndFlg)	{
         int cityno;
 
-        if (!route_flag.isAvailableRule86or87()) {
+        if (route_flag.isAvailableRule86or87()) {
             if (((startEndFlg == CSTART) && route_flag.ter_begin_yamate) ||
                     ((startEndFlg == CEND) && route_flag.ter_fin_yamate)) {
                 return RouteUtil.CITYNO_YAMATE;    /* 山手線内*/
@@ -960,7 +960,7 @@ public class CalcRoute extends RouteList {
         total_company_km = 0;
 		/* 大阪環状線flag */
 
-        oskk_flag = rRoute_flag.clone();
+        oskk_flag = rRoute_flag;
         oskk_flag.setOsakaKanPass(false);
 
         for (RouteItem it : route) {
@@ -1897,7 +1897,7 @@ public class CalcRoute extends RouteList {
                     work_route_list.add(ri);
                 }
             }
-            System.out.printf("start station is re-route rule86/87\n");
+            System.out.print("start station is re-route rule86/87\n");
         } else {
             cpyRouteItems(out_route_list, work_route_list);
         }
@@ -1943,7 +1943,7 @@ public class CalcRoute extends RouteList {
                     ASSERT (0 < coreStationId);
                     out_route_list.add(new RouteItem(lineId, coreStationId));
                 }
-                System.out.printf("end station is re-route rule86/87\n");
+                System.out.print("end station is re-route rule86/87\n");
             }
         } else {
             cpyRouteItems(work_route_list, out_route_list);

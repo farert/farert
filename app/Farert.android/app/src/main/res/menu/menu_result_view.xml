@@ -43,4 +43,16 @@
         android:enabled="false"
         app:showAsAction="never"
         />
+    <item
+        android:id="@+id/menu_longroute"
+        android:icon="@drawable/ic_stock_present"
+        android:title="@string/result_menu_longroute_long"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/menu_rule115"
+        android:icon="@drawable/ic_stock_present"
+        android:title="@string/result_menu_rule115_city"
+        app:showAsAction="never"
+        />
 </menu>

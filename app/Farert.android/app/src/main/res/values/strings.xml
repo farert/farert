@@ -188,6 +188,11 @@
     <string name="action">する</string>
     <string name="nothing">しない</string>
 
+    <string name="result_menu_longroute_long">指定した経路で運賃計算</string>
+    <string name="result_menu_longroute_lowcost">最安経路で運賃計算</string>
+    <string name="result_menu_rule115_city">旅客営業取扱基準規程115条(特定都区市内発着)</string>
+    <string name="result_menu_rule115_station">旅客営業取扱基準規程115条(単駅最安)</string>
+
     <string name="result_value_section">%1$s → %2$s</string>
     <string name="result_km">%1$skm</string>
     <string name="result_yen">¥%1$s-</string>
@@ -304,6 +309,7 @@
         <item>"2014版"</item>
         <item>"2015版"</item>
         <item>"2017版"</item>
+        <item>"2019版(消費税8%)"</item>
         <item>"最新版"</item>
     </string-array>
 
@@ -316,4 +322,14 @@
     
     
     <string name="sample_section">上越国際スキー場前 - 岩原スキー場前</string>
+
+
+    <string name="msgPossibleLowcost">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)</string>
+    <string name="msgAppliedLowcost">近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)</string>
+    <string name="msgSpecificFareApply">特定区間割引運賃適用"</string>
+    <string name="msgCantMetroTicket">近郊区間内ですので同一駅発着のきっぷは購入できません."</string>
+    <string name="msgCanYouNeerestStation">「単駅最安」で単駅発着が選択可能です"</string>
+
+    <string name="msgCanYouSpecificTerm">「特定都区市内発着」で特定都区市内発着が選択可能です"</string>
+
 </resources>
