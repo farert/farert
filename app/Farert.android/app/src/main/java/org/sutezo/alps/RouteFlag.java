@@ -2,7 +2,7 @@ package org.sutezo.alps;
 
 import static org.sutezo.alps.farertAssert.*;
 
-class RouteFlag {
+public class RouteFlag {
     private byte osakaKanPass = 0;
 
     boolean no_rule = false;               //8 ON: 特例非適用(User->System)
@@ -196,10 +196,10 @@ class RouteFlag {
             rule115 = 1;
         }
     }
-    void setNoRule(boolean flag) { no_rule = flag; }
-    void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
-    void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
-    void setJrTokaiStockApply(boolean flag) { jrtokaistock_applied = flag; }
+    public void setNoRule(boolean flag) { no_rule = flag; }
+    public void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
+    public void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
+    public void setJrTokaiStockApply(boolean flag) { jrtokaistock_applied = flag; }
     /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */
     /* coreAreaIDByCityId() が影響 */
     void setDisableRule86or87() { disable_rule86or87 = true; }

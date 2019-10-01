@@ -78,7 +78,7 @@ public class Route extends RouteList {
 
     void assign(final Route source_route, int count) {
         route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = source_route.getRouteFlag().clone();
+        route_flag = source_route.getRouteFlag();
         reBuild();
     }
 
@@ -311,7 +311,7 @@ public class Route extends RouteList {
             _start_station_id = source._start_station_id;
             _num = source._num;
             _err = source._err;
-            _routeFlag = source._routeFlag.clone();
+            _routeFlag = source._routeFlag;
         }
         RoutePass() { } // default constructor
         //    public:
@@ -340,7 +340,7 @@ public class Route extends RouteList {
             _station_id2 = station_id2;
             _start_station_id = start_station_id;
 
-            _routeFlag = route_flag.clone();
+            _routeFlag = route_flag;
 
             _err = false;
 

@@ -62,6 +62,9 @@ public class RouteUtil {
     final static int ADDRC_CEND	= 4;
     // ADDRC_NG -1 to -N
 
+    // length define(UTF-8)
+    final static int MAX_STATION_CHR = 64;             // 38
+
     final static int MAX_JCT = 330;		// 319
 
     final static int MAX_COMPNPASSSET = 3;       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
@@ -117,7 +120,7 @@ public class RouteUtil {
     static final int URB_FUKUOKA = 4;
     static final int URB_SENDAI = 5;
 
-    static final int FLAG_FARECALC_INITIAL	= 0;
+    static final int FLAG_FARECALC_INITIAL	= (1<<15);
     public static int MASK_CITYNO(int flg) {
         return ((flg) & 0x0f);
     }
@@ -803,7 +806,7 @@ public class RouteUtil {
      public static String Show_route(final RouteItem[] routeList, final RouteFlag routeFlag) {
          String lineName;
          String stationName;
-         RouteFlag _route_flag = routeFlag.clone();
+         RouteFlag _route_flag = routeFlag;
          //TCHAR buf[MAX_BUF];
          String result_str;
          int station_id1;
