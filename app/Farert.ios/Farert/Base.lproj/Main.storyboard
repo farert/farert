@@ -231,13 +231,13 @@
                         <barButtonItem width="42" style="plain" systemItem="fixedSpace" id="Oti-Gn-Qbf"/>
                         <barButtonItem systemItem="organize" id="8DM-J3-hT5">
                             <connections>
-                                <segue destination="GVl-Dw-D5G" kind="presentation" identifier="routeManagerSegue" id="bug-cn-EYA"/>
+                                <segue destination="GVl-Dw-D5G" kind="presentation" identifier="routeManagerSegue" modalPresentationStyle="fullScreen" id="bug-cn-EYA"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem width="42" style="plain" systemItem="fixedSpace" id="MdL-3O-Y2F"/>
                         <barButtonItem image="settingsbutton" id="hCB-gp-QOV">
                             <connections>
-                                <segue destination="NYM-OE-5qt" kind="presentation" identifier="settingsSegue" modalTransitionStyle="crossDissolve" id="XaC-tL-uLj"/>
+                                <segue destination="NYM-OE-5qt" kind="presentation" identifier="settingsSegue" modalPresentationStyle="fullScreen" modalTransitionStyle="crossDissolve" id="XaC-tL-uLj"/>
                             </connections>
                         </barButtonItem>
                     </toolbarItems>
@@ -250,7 +250,7 @@
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <segue destination="70O-gX-2JZ" kind="presentation" identifier="versionInfoTransitSegue" modalTransitionStyle="flipHorizontal" id="Gc0-70-fud"/>
+                                    <segue destination="70O-gX-2JZ" kind="presentation" identifier="versionInfoTransitSegue" modalPresentationStyle="pageSheet" modalTransitionStyle="flipHorizontal" id="Gc0-70-fud"/>
                                 </connections>
                             </button>
                         </barButtonItem>
@@ -262,12 +262,12 @@
                         <outlet property="organaizerBarButton" destination="8DM-J3-hT5" id="5I5-35-Eha"/>
                         <outlet property="replayBarButton" destination="Is2-7F-mCm" id="Rhs-uK-WXJ"/>
                         <outlet property="reverseBarButton" destination="ac2-5l-iwg" id="eh5-dj-rla"/>
-                        <segue destination="WZG-XY-fNl" kind="presentation" identifier="terminalSelectSegue" id="t4d-a5-LDz"/>
+                        <segue destination="WZG-XY-fNl" kind="presentation" identifier="terminalSelectSegue" modalPresentationStyle="fullScreen" id="t4d-a5-LDz"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="E0F-7f-dLF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1540" y="-1285.0074962518743"/>
+            <point key="canvasLocation" x="-1756" y="-1316"/>
         </scene>
         <!--分岐駅-->
         <scene sceneID="fSX-NE-3Yb">
@@ -370,7 +370,7 @@
             <objects>
                 <tableViewController id="cFN-eg-yP8" customClass="TerminalSelectTableViewController" customModule="Farert" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="Sba-ha-Smq">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
@@ -487,7 +487,7 @@
                             </connections>
                         </barButtonItem>
                         <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="yiV-Ct-y8c">
-                            <rect key="frame" x="78.5" y="46" width="218" height="32"/>
+                            <rect key="frame" x="78.5" y="40" width="218" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <segments>
                                 <segment title="会社"/>
@@ -1151,7 +1151,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7YW-pH-jsh" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1279.2" y="-2057.1428571428573"/>
+            <point key="canvasLocation" x="-1588" y="-2006"/>
         </scene>
         <!--路線-->
         <scene sceneID="FjL-Ig-mQD">
@@ -1214,14 +1214,14 @@
                     <navigationItem key="navigationItem" title="路線" id="Ttg-Rm-h2T">
                         <barButtonItem key="rightBarButtonItem" tag="23943" title="最短経路" id="jIb-Ap-JO3">
                             <connections>
-                                <segue destination="WZG-XY-fNl" kind="presentation" identifier="autoRouteSegue" modalTransitionStyle="flipHorizontal" id="BNa-fu-i7a"/>
+                                <segue destination="WZG-XY-fNl" kind="presentation" identifier="autoRouteSegue" modalPresentationStyle="fullScreen" modalTransitionStyle="flipHorizontal" id="BNa-fu-i7a"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3r0-aM-LtO" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-685.5" y="-1260"/>
+            <point key="canvasLocation" x="-593" y="-1403"/>
         </scene>
         <!--Version Info View Controller-->
         <scene sceneID="8Vp-YM-dKq">
@@ -1505,7 +1505,7 @@
             <objects>
                 <tableViewController id="wdT-gd-c3P" customClass="SettingsTableViewController" customModule="Farert" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="wBr-uV-lD8">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <sections>
@@ -1529,14 +1529,14 @@
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="f5l-4U-U80">
+                                                <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="fill" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="f5l-4U-U80">
                                                     <rect key="frame" x="15" y="18.5" width="344" height="32"/>
                                                     <segments>
                                                         <segment title="税5%"/>
-                                                        <segment title="2014版"/>
-                                                        <segment title="2015版"/>
-                                                        <segment title="2017版"/>
-                                                        <segment title="最新版"/>
+                                                        <segment title="2014"/>
+                                                        <segment title="2015"/>
+                                                        <segment title="2017"/>
+                                                        <segment title="最新8%"/>
                                                         <segment title="最新10%"/>
                                                     </segments>
                                                 </segmentedControl>
@@ -1632,7 +1632,7 @@
             <objects>
                 <tableViewController id="RVb-HU-myb" customClass="ArchiveRouteTableViewController" customModule="Farert" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelectionDuringEditing="YES" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="ZEI-pr-8z6">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
@@ -1724,7 +1724,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="NYM-OE-5qt" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="9ft-y0-eE2">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="56"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1742,7 +1742,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="GVl-Dw-D5G" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="0aI-Qt-UTp">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="56"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1760,7 +1760,7 @@
                 <navigationController storyboardIdentifier="TermSelectTableViewController" id="WZG-XY-fNl" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="39p-Q6-Uc7">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="56"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -1770,7 +1770,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Skb-lR-T2Y" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1318" y="-416"/>
+            <point key="canvasLocation" x="-1556" y="-448"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="Pia-09-ohk">
@@ -1793,7 +1793,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fhr-IQ-r0o" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2187" y="-1283.25"/>
+            <point key="canvasLocation" x="-2535" y="-1305"/>
         </scene>
     </scenes>
     <resources>
@@ -1803,7 +1803,7 @@
         <image name="settingsbutton" width="22" height="22"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="BNa-fu-i7a"/>
-        <segue reference="Z9l-gl-8bY"/>
+        <segue reference="t4d-a5-LDz"/>
+        <segue reference="2qt-Na-sRD"/>
     </inferredMetricsTieBreakers>
 </document>

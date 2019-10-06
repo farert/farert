@@ -284,7 +284,7 @@ class ResultViewActivity : AppCompatActivity() {
             text_jrgroup_km2.text = resources.getString(R.string.result_jrcompany_kyusyu)
             text_jrgroup_saleskm2.text = resources.getString(R.string.result_km, kmNumStr(fi.salesKmForKyusyu))
             if (fi.salesKmForKyusyu != fi.calcKmForKyusyu) {
-                text_jrgroup_calckm2.text = resources.getString(R.string.result_km, kmNumStr(fi.salesKmForKyusyu))
+                text_jrgroup_calckm2.text = resources.getString(R.string.result_km, kmNumStr(fi.calcKmForKyusyu))
             }
         } else {
             val row = row_km2

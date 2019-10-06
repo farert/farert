@@ -3,9 +3,16 @@ b#バグタイトル
 //
 
 
+iOS13 でviewWillApear vierDidApear
+にこない。
+おかげで、発駅選択が表示されなかったり経路保存から選択できなかったりした。
+StoryboardでセグエのPrsentationをFullscreenにすることで対応
+//
+
 b#19100301
 CheckIsBulletInUrbanOnSpecificTerm()
 なんかおかしい。修正のこと。
+でなければ、コメントをまともにすること.
 ->
 
 
@@ -235,7 +242,7 @@ Androidの表示の問題のよう。iOSではOK
 
 b#19080601
 近郊区間で最短経路で安くなれる経路で、非適用すると、適用が選択できなくなる。
-test_exec.cppではわからず、iOS,Androiで動かすとわかる。
+test_exec.cppではわからず、iOS,Androidで動かすとわかる。
 test_exec.cppでも、適用ー＞非適用の順に動かすべき
 ->
 他の問題も含め修正し、リリース済み 19.09
