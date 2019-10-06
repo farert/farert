@@ -68,15 +68,9 @@ public class CalcRoute extends RouteList {
         sync(route, count);
     }
 
-    public void sync(RouteList route) {
-        assign(route);
-        route_flag = route.getRouteFlag();
-        route_list_cooked.clear();
-    }
-
     public void sync(RouteList route, int count) {
         assign(route, count);
-        route_flag = route.getRouteFlag();
+        route_flag = new RouteFlag(route.getRouteFlag());
         if ((0 < count) && route.routeList().size() != count) {
             route_flag.end = false;
             route_flag.compnda = false;
@@ -489,7 +483,7 @@ public class CalcRoute extends RouteList {
 		 */
 
 		/* 未変換 */
-        System.out.printf("no applied for rule86/87(sales_km=%d)\n", jsales_km);
+        System.out.printf("no applied for rule86/87(jsales_km=%d)\n", jsales_km);
 
         FARE_INFO.Fare r114;
 
@@ -952,7 +946,7 @@ public class CalcRoute extends RouteList {
         int total_calc_km;
         int total_company_km;
         int stationId;
-        RouteFlag oskk_flag;
+        RouteFlag oskk_flag = new RouteFlag(rRoute_flag);
 
         total_sales_km = 0;
         total_calc_km = 0;
@@ -960,7 +954,6 @@ public class CalcRoute extends RouteList {
         total_company_km = 0;
 		/* 大阪環状線flag */
 
-        oskk_flag = rRoute_flag;
         oskk_flag.setOsakaKanPass(false);
 
         for (RouteItem it : route) {
@@ -1256,7 +1249,7 @@ public class CalcRoute extends RouteList {
                     skip = true;
                     flag = route_item.flag;
                     if (RouteUtil.IS_SHINKANSEN_LINE(ri.lineId)) {
-                        /* 70経路条の新幹線乗車は大都市近郊区間適用外 */
+                        /* 70条経路上の新幹線乗車は大都市近郊区間適用外 */
                         bullet_use.add(new Integer[] {(int)ri.stationId, station_id1});
                     }
                     station_id1 = ri.stationId;     /* 新幹線判定用 */                }
@@ -1516,7 +1509,7 @@ public class CalcRoute extends RouteList {
 							 */
                             if (leng == 1) {
                                 if (((in != 0) && (in1 != 0)) ||
-                                        ((0 != RouteUtil.InStation(stationId1, lineId, s1, s2)) ||
+                                        ((0 != RouteUtil.InStation(stationId1, lineId, s1, s2)) &&
                                          (0 != RouteUtil.InStation(stationId2, lineId, s1, s2)))) {
                                     results.clear();	/* 置換対象外とする */
                                     break leave;
@@ -1992,7 +1985,7 @@ public class CalcRoute extends RouteList {
         int cid_e1;
         int cid_s2;
         int cid_e2;
-        int id_line_tokaido_shinkansen = DbIdOf.INSTANCE.station("東海道新幹線");
+        int id_line_tokaido_shinkansen = DbIdOf.INSTANCE.line("東海道新幹線");
         boolean bJrTokaiOnly = true;
 
         for (RouteItem ite : route_list_raw) {

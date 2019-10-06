@@ -86,18 +86,6 @@ public class RouteUtil {
         return ((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c));
     }
 
-
-    static final int LINE_TOHOKU_SINKANSEN	= 1;	// 東北新幹線
-    static final int LINE_JYOETSU_SINKANSEN = 2;	// 上越新幹線
-    static final int LINE_HOKURIKU_SINKANSEN = 3;	// 北陸長野新幹線
-    static final int LINE_TOKAIDO_SINKANSEN = 4;	// 東海道新幹線
-    static final int LINE_SANYO_SINKANSEN	= 5;	// 山陽新幹線
-    static final int LINE_KYUSYU_SINKANSEN	= 6;	// 九州新幹線
-    static final int LINE_HOKKAIDO_SINKANSEN = 7;	// 北海道新幹線
-    static final int LINE_YAMAGATA_SINKANSEN = 8;	// 山形新幹線
-    static final int LINE_NAGASAKI_SINKANSEN = 9;	// 長崎新幹線
-
-
     static final int CITYNO_TOKYO = 1;			// 東京都区内[区]
     static final int CITYNO_YOKOHAMA = 2;		// 横浜市内[浜]
     static final int CITYNO_NAGOYA = 3;		// 名古屋市内[名]

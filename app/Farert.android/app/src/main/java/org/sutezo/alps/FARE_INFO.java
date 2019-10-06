@@ -286,7 +286,7 @@ public class FARE_INFO {
                         IsIC_area(RouteUtil.URBAN_ID(this.flag)) &&   /* 近郊区間(最短距離で算出可能) */
                         !useBullet) {                                 /* 新幹線乗車はIC運賃適用外 */
 
-                    ASSERT (companymask == (1 << (RouteUtil.JR_EAST - 1)));  /* JR East only  */
+                    // ASSERT (companymask == (1 << (RouteUtil.JR_EAST - 1)));  /* JR East only  */
 
                     this.fare_ic = fare_tmp;
                 }
@@ -541,6 +541,7 @@ public class FARE_INFO {
     private int aggregate_fare_info(RouteFlag routeFlag_, final List<RouteItem> routeList) {
         short station_id1;		/* station_id1, (station_id2=ite.stationId) */
         short station_id_0;		/* last station_id1(for Company line) */
+
         RouteFlag osakakan_aggregate = new RouteFlag();	// 大阪環状線通過フラグ bit0: 通過フラグ
 
         CheckIsBulletInUrbanOnSpecificTerm(routeList, routeFlag_);
@@ -848,7 +849,7 @@ public class FARE_INFO {
         for (RouteItem ite : routeList) {
             if (station_id1 != 0) {
                 cityId_c = MASK_CITYNO(ite.flag);
-                if (((!route_flag.rule70 && !route_flag.isEnableRule86or87()) ||
+                if (((!route_flag.rule70 && !route_flag.isAvailableRule86or87()) ||
                         !((cityId != 0) && (cityId_c != 0))) &&
                         IsBulletInUrban(ite.lineId, station_id1, ite.stationId)) {
                     System.out.print("Use bullet line.\n");
@@ -1047,10 +1048,10 @@ public class FARE_INFO {
             }
             if (this.isRule114()) {
                 if (!getRouteFlag.isRoundTrip()) {
-                    buffer.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s}\r\n",
+                    buffer.append(String.format(Locale.JAPANESE, "規程114条 適用前運賃： {¥%-5s}\r\n",
                             RouteUtil.num_str_yen(this.getFareForDisplayPriorRule114())));
                 } else {
-                    buffer.append(String.format(Locale.JAPANESE, "\r\n規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n",
+                    buffer.append(String.format(Locale.JAPANESE, "規程114条 適用前運賃： {¥%-5s} 往復： {¥%-5s}\r\n",
                             RouteUtil.num_str_yen(this.getFareForDisplayPriorRule114()),
                             RouteUtil.num_str_yen(this.roundTripFareWithCompanyLinePriorRule114())));
                 }
@@ -1133,7 +1134,7 @@ public class FARE_INFO {
             buffer.append("\r\nJR東海株主優待券使用オプション選択可");
         }
         if (this.isBRT_discount()) {
-            buffer.append("\r\nBRT乗り継ぎ割引適用");
+            buffer.append("\r\nBRT乗継ぎ割引適用");
         }
         if (!getRouteFlag.no_rule && getRouteFlag.special_fare_enable) {
             // 電車特定運賃区間(私鉄競合のアレ)
@@ -1339,7 +1340,7 @@ public class FARE_INFO {
             return route;
         }
         if (bNeer == true) {
-            rc = shortRoute.changeNeerest(0, route.endStationId());
+            rc = shortRoute.changeNeerest(0, route.arriveStationId());
             if (rc < 0) {
                 ASSERT(false);
                 return route;
@@ -3103,7 +3104,7 @@ public class FARE_INFO {
                         (line_id == DbIdOf.INSTANCE.line("山陽新幹線"))) { //山陽新幹線、博多南線はJ九州内でもJR西日本
                     result[4] = RouteUtil.JR_WEST;
                     result[5] = RouteUtil.JR_WEST;
-                } else if (line_id == RouteUtil.LINE_HOKKAIDO_SINKANSEN) {
+                } else if (line_id == DbIdOf.INSTANCE.line("北海道新幹線")) {
                     result[4] = RouteUtil.JR_HOKKAIDO;
                     result[5] = RouteUtil.JR_HOKKAIDO;
                 } else if ((line_id == DbIdOf.INSTANCE.line("東海道新幹線")) &&
@@ -3170,7 +3171,7 @@ public class FARE_INFO {
      *
      *	calc_fare() => aggregate_fare_info() =>
      *
-     *	@param  route flag 	 大阪環状線通過フラグ
+     *	@param  route_flag 	 大阪環状線通過フラグ
      *	@param  line_id   	 路線ID
      *	@param  station_id1  駅1
      *	@param  station_id2  駅2
@@ -3208,6 +3209,7 @@ public class FARE_INFO {
         result.add((int)(0xffff & rslt));			// 駅1のsflg [6]
         result.add((int)(0xffff & (rslt >>> 16)));	// 駅2のsflg [7]
 
+        System.out.print(String.format(Locale.JAPANESE, "oskkan:s1km=%d, c1km=%d\n", result.get(0), result.get(1)));
         return result.toArray(new Integer[0]);
     }
 
@@ -3474,7 +3476,7 @@ public class FARE_INFO {
         // JR東海(TOICA)
         Route shortRoute = new Route(reRouteForToica(route_original));
 
-        fare_info_shorts.setTerminal(route_original.startStationId(), route_original.endStationId());
+        fare_info_shorts.setTerminal(route_original.departureStationId(), route_original.arriveStationId());
         RouteFlag short_route_flag = shortRoute.getRouteFlag();
 
         if (!fare_info_shorts.calc_fare(short_route_flag, shortRoute.routeList())) {
@@ -3510,14 +3512,9 @@ public class FARE_INFO {
         boolean b_change_route = false;
         int decision = 0;   // this or via_tachikawa or short
 
-
+        // 大都市近郊区間内ではない、or 新幹線乗車している or 同一駅(単駅ベースで)発着 なら対象外
         if (!isUrbanArea() || route_original.getRouteFlag().isUseBullet()      // 大都市近郊区間内
-                || (route_original.startStationId() == route_original.endStationId())
-                || ((route_original.getRouteFlag().ter_begin_city ||
-                     route_original.getRouteFlag().ter_begin_yamate) &&
-                   (route_original.getRouteFlag().ter_fin_city ||
-                    route_original.getRouteFlag().ter_fin_yamate))
-            ) { // O型経路(悩みどこだがそんなルート組むやつって・・・)
+                || (route_original.departureStationId() == route_original.arriveStationId())) {
             // usualy or loop route */
             System.out.print("No reCalcFareForOptiomizeRoute.\n");
             return false;
@@ -3547,13 +3544,13 @@ public class FARE_INFO {
                 route_original.getRouteFlag().ter_begin_city) {
                 stid = this.CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CSTART));
             } else {
-                stid = route_original.startStationId();
+                stid = route_original.departureStationId();
             }
             if (route_original.getRouteFlag().ter_fin_yamate ||
                 route_original.getRouteFlag().ter_fin_city) {
                 edid = this.CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CEND));
             } else {
-                edid = route_original.endStationId();
+                edid = route_original.arriveStationId();
             }
             ASSERT(stid != 0 && edid != 0);
 
@@ -3596,8 +3593,8 @@ public class FARE_INFO {
 
         if (decision != 20) {
             short_route_flag.setDisableRule86or87();
-            shortRoute_List = fare_info_shorts.reCalcFareForOptiomizeRoute(route_original.startStationId(),
-                                                              route_original.endStationId(),
+            shortRoute_List = fare_info_shorts.reCalcFareForOptiomizeRoute(route_original.departureStationId(),
+                                                              route_original.arriveStationId(),
                                                               short_route_flag);
             if (null == shortRoute_List) {
                 ASSERT(false);
@@ -3630,8 +3627,8 @@ public class FARE_INFO {
             route_via_tachikawa = IsHachikoLineHaijima(shortRoute_List);
             if (decision == 0) { /* 86or87 適用はやらん */
                 if (route_via_tachikawa != null && route_via_tachikawa.size() != 0) {
-                    fare_info_via_tachikawa.setTerminal(route_original.startStationId(),
-                            route_original.endStationId());
+                    fare_info_via_tachikawa.setTerminal(route_original.departureStationId(),
+                            route_original.arriveStationId());
                     if (fare_info_via_tachikawa.calc_fare(short_route_flag, route_via_tachikawa)) {
                         if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
                             /* 立川経由の方が安い */
@@ -3729,7 +3726,8 @@ public class FARE_INFO {
         shortCalcRoute.checkOfRuleSpecificCoreLine();
 
         setTerminal(shortCalcRoute.beginStationId(), shortCalcRoute.endStationId());
-        short_route_flag_ = shortCalcRoute.getRouteFlag();
+        //short_route_flag_ = shortCalcRoute.getRouteFlag();
+        short_route_flag_.setAnotherRouteFlag(shortCalcRoute.getRouteFlag());
 
         if (!calc_fare(short_route_flag_, shortCalcRoute.routeList())) {
             ASSERT(false);
