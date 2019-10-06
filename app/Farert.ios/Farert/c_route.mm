@@ -466,7 +466,7 @@ int g_tax; /* main.m */
 // 開始駅id
 - (NSInteger)startStationId
 {
-    return obj_route_list->startStationId();
+    return obj_route_list->departureStationId();
 }
 
 - (NSInteger)lastStationId
@@ -641,7 +641,7 @@ int g_tax; /* main.m */
 // 開始駅id
 - (NSInteger)startStationId
 {
-    return obj_route->startStationId();
+    return obj_route->departureStationId();
 }
 
 // route string
@@ -816,6 +816,8 @@ int g_tax; /* main.m */
     result.isMeihanCityStart = obj_calcroute->refRouteFlag().isStartAsCity();
     result.isMeihanCityTerminal = obj_calcroute->refRouteFlag().isArriveAsCity();
     
+    result.isRoundtrip = obj_calcroute->refRouteFlag().isRoundTrip();
+    
     result.isOsakakanDetourEnable = obj_calcroute->getRouteFlag().is_osakakan_1pass();
     
     // TRUE: Detour / FALSE: Shortcut
@@ -898,7 +900,7 @@ int g_tax; /* main.m */
     // 普通運賃
     result.fare = fi.getFareForDisplay();
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
-
+    
     // BRT運賃
     result.fareForBRT = fi.getFareForBRT();
     result.isBRTdiscount = fi.getIsBRT_discount();
@@ -1016,7 +1018,7 @@ int g_tax; /* main.m */
 // 開始駅id
 - (NSInteger)startStationId
 {
-    return obj_calcroute->startStationId();
+    return obj_calcroute->departureStationId();
 }
 
 // route string
