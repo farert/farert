@@ -78,7 +78,7 @@ public class Route extends RouteList {
 
     void assign(final Route source_route, int count) {
         route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = source_route.getRouteFlag();
+        route_flag = new RouteFlag(source_route.getRouteFlag());
         reBuild();
     }
 
@@ -311,7 +311,7 @@ public class Route extends RouteList {
             _start_station_id = source._start_station_id;
             _num = source._num;
             _err = source._err;
-            _routeFlag = source._routeFlag;
+            _routeFlag = new RouteFlag(source._routeFlag);
         }
         RoutePass() { } // default constructor
         //    public:
@@ -340,7 +340,7 @@ public class Route extends RouteList {
             _station_id2 = station_id2;
             _start_station_id = start_station_id;
 
-            _routeFlag = route_flag;
+            _routeFlag = new RouteFlag(route_flag);;
 
             _err = false;
 
@@ -1831,7 +1831,7 @@ public class Route extends RouteList {
         routePassed.clear();
 
         if (!bWithStart) {
-            begin_station_id = startStationId();
+            begin_station_id = departureStationId();
         }
 
         route_list_raw.clear();
@@ -1965,7 +1965,7 @@ public class Route extends RouteList {
         }
         Dijkstra dijkstra = new Dijkstra();
 
-        ASSERT (0 < startStationId());
+        ASSERT (0 < departureStationId());
         //ASSERT (startStationId() != end_station_id);
 
         short startNode;
@@ -2004,7 +2004,7 @@ public class Route extends RouteList {
             stationId = route_list_raw.get(route_list_raw.size() - 1).stationId;
 
         } else {
-            stationId = (short)startStationId();
+            stationId = (short)departureStationId();
         }
 
         if ((stationId == end_station_id) || (end_station_id <= 0)) {
@@ -2093,9 +2093,9 @@ public class Route extends RouteList {
                 IsSameNode(route_list_raw.get(route_list_raw.size() - 1).lineId,
                         route_list_raw.get(0).stationId,
                         route_list_raw.get(route_list_raw.size() - 1).stationId)) {
-            id = Id2jctId(startStationId());
+            id = Id2jctId(departureStationId());
             if (id == 0) {
-                neer_node = RouteUtil.GetNeerNode(startStationId());
+                neer_node = RouteUtil.GetNeerNode(departureStationId());
                 if (neer_node[1][0] != 0) {	// neer_node.size() == 2
                     excNode1 = Id2jctId(neer_node[0][0]);		/* 渋谷 品川 代々木 */
                     excNode2 = Id2jctId(neer_node[1][0]);		/* 渋谷 品川 新宿 */
@@ -2256,7 +2256,6 @@ public class Route extends RouteList {
                     for (idb = id; (idb != startNode) && (dijkstra.lineId(idb - 1) == zline);
                          idb = dijkstra.fromNode(idb - 1)) {
                         System.out.printf( "    ? %s %s/",  RouteUtil.LineName(dijkstra.lineId(idb - 1)), RouteUtil.StationName(Jct2id(idb)));
-                        ;
                     }
                     if (dijkstra.lineId(idb - 1) == lineid) { /* もとの新幹線に戻った ? */
                         //System.out.printf(".-.-.-");

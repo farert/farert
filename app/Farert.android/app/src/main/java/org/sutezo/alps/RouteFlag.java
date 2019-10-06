@@ -3,6 +3,7 @@ package org.sutezo.alps;
 import static org.sutezo.alps.farertAssert.*;
 
 public class RouteFlag {
+
     private byte osakaKanPass = 0;
 
     boolean no_rule = false;               //8 ON: 特例非適用(User->System)
@@ -84,6 +85,10 @@ public class RouteFlag {
     RouteFlag() {
         clear();
     }
+    RouteFlag(final RouteFlag another) {
+        setAnotherRouteFlag(another);
+    }
+
     void clear() {
         /* last_flag */
         // boolean LASTFLG_OFF = RouteUtil.MASK(notsamekokurahakatashinzai);   // all bit clear at removeAll()
@@ -98,6 +103,8 @@ public class RouteFlag {
         trackmarkctl = false;	        //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
         jctsp_route_change = false;	//6 分岐特例(add内部使用)
 
+        disable_rule86or87 = false;
+
         ter_begin_city		= false;      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
         ter_fin_city		= false;      //14
         ter_begin_yamate	= false;      //15/ [山]
@@ -109,7 +116,8 @@ public class RouteFlag {
         compnda			= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
-        //notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
+
+        notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
 
         urban_neerest = 0;
@@ -135,10 +143,16 @@ public class RouteFlag {
 
     void setAnotherRouteFlag(final RouteFlag o) {
         osakaKanPass = o.osakaKanPass;
+        osakakan_1dir = o.osakakan_1dir;
+        osakakan_2dir = o.osakakan_2dir;
+        osakakan_detour = o.osakakan_detour;
+
         no_rule = o.no_rule;
         jrtokaistock_enable = o.jrtokaistock_enable;
         jrtokaistock_applied = o.jrtokaistock_applied;
         meihan_city_flag = o.meihan_city_flag;
+        meihan_city_enable = o.meihan_city_enable;
+
         rule88 = o.rule88;
         rule69 = o.rule69;
         rule70 = o.rule70;
@@ -147,7 +161,7 @@ public class RouteFlag {
         rule70bullet = o.rule70bullet;
         bullet_line = o.bullet_line;
         bJrTokaiOnly = o.bJrTokaiOnly;
-        meihan_city_enable = o.meihan_city_enable;
+
         trackmarkctl = o.trackmarkctl;
         jctsp_route_change = o.jctsp_route_change;
         disable_rule86or87 = o.disable_rule86or87;
