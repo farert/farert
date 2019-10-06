@@ -19,15 +19,20 @@ public class TestRoute {
     PrintWriter pw;
 
     public static void exec(Context ctx) {
-/////////////////////////////////////////////////////////////
-        if (true) { // TESTを有効にする場合Trueにする
-/////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////
+        if (false) { // TESTを有効にする場合Trueにする
+            if (one_test(false)) { // さらに1テストを有効にする場合Trueにする
+                                            // 全テストはFalse
+                while (true);
+            }
+            /////////////////////////////////////////////////////////////
             try {
                 TestRoute t = new TestRoute();
 
                 FileOutputStream outStream = ctx.openFileOutput("test_result.txt", MODE_PRIVATE);
                 OutputStreamWriter writer = new OutputStreamWriter(outStream, "UTF-8");
                 t.pw = new PrintWriter(new BufferedWriter(writer));
+
                 t.test();
                 long start = System.nanoTime();
                 t.pw.println("timestamp: " + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date()));
@@ -40,13 +45,63 @@ public class TestRoute {
             }
         }
     }
+    ////////////////////////////////////////////////////////
+    static boolean one_test(boolean run_flag) {
+        if (!run_flag) {
+            return run_flag;
+        }
+        /////////////////////////////////////////////////
+        // デバックしたい経路をここに書く
+        String s_test = "蒲田 東海道線 川崎 南武線 立川 中央東線 八王子 八高線 倉賀野 高崎線 高崎 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 我孫子 成田線(成田-我孫子) 成田 成田線 佐倉 総武線 西船橋 武蔵野線 南浦和 東北線 日暮里";
+        ////////////////////////////////////////////////
+
+        TestRoute t = new TestRoute();
+        Route route = new Route();
+
+        int rc = t.test_setup_route(s_test, route);
+
+        FARE_INFO fi = new FARE_INFO();
+        CalcRoute croute = new CalcRoute(route);
+
+        croute.getRouteFlag().setNoRule(false);
+        //croute.getRouteFlag().setStartAsCity();
+        //croute.getRouteFlag().setArriveAsCity();
+        //croute.calcFare(fi);
+        //croute.getRouteFlag().setJrTokaiStockApply(true);
+        //croute.getRouteFlag().setJrTokaiStockApply(false);
+        //croute.getRouteFlag().setLongRoute(true);
+        //croute.getRouteFlag().setLongRoute(false);
+        //croute.getRouteFlag().setSpecificTermRule115(true);
+        //croute.getRouteFlag().setSpecificTermRule115(false);
+        croute.calcFare(fi);
+        String s = fi.showFare(croute.getRouteFlag());
+        s = cr_remove(s);
+        System.out.printf("///Result(rc=%d)\n%s\n", rc, s);
+
+        boolean b1 = croute.getRouteFlag().isMeihanCityEnable();
+        boolean b2 = croute.getRouteFlag().jrtokaistock_enable;
+        boolean b3 = croute.getRouteFlag().isEnableLongRoute();
+        boolean b4 = croute.getRouteFlag().isEnableRule115();
+        if (b1) {
+            System.out.println("isMeihanCityEnable is true");
+        }
+        if (b2) {
+            System.out.println("jrtokaistock_enable is true");
+        }
+        if (b3) {
+            System.out.println("isEnableLongRule is true");
+        }
+        if (b4) {
+            System.out.println("isEnableRule115 is true");
+        }
+
+        return run_flag;  // true is halt
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////
     // last	test_route2()
 
     static final String [] test_route2_tbl = {
-            "横浜,東海道線,東京,京葉線,市川塩浜,京葉線(市川塩浜-西船橋),西船橋,総武線,錦糸町,総武線(錦糸町-御茶ノ水),秋葉原,東北線,宇都宮",
-
             "C会社線を含む経路(2017)",
             "茂市 山田線 盛岡 田沢湖線 大曲 奥羽線 新庄 陸羽西線 余目 羽越線 新津 信越線(直江津-新潟) 宮内 上越線 越後川口 飯山線 豊野 しなの鉄道(北) 長野",
             /*
@@ -72,9 +127,9 @@ public class TestRoute {
 
             有効日数：   5日 */
 
-            "福井,北陸線,金沢,北陸新幹線,上越妙高,妙高はねうま,直江津,信越線(直江津-新潟) 犀潟,ほくほく線,x十日町,飯山線,豊野",
+            "福井,北陸線,金沢,北陸新幹線,上越妙高,妙高はねうま,直江津,信越線(直江津-新潟),犀潟,ほくほく線,x十日町,飯山線,豊野",
             "直江津,信越線(直江津-新潟),犀潟,ほくほく線,十日町,飯山線,飯山,北陸新幹線,高崎,上越新幹線,大宮,東北新幹線,上野,東北線,秋葉原,総武線(錦糸町-御茶ノ水),御茶ノ水",
-            "福井,北陸線,金沢,北陸新幹線,上越妙高,妙高はねうま,直江津,信越線(直江津-新潟) 犀潟,ほくほく線,x六日町,上越線,高崎",
+            "福井,北陸線,金沢,北陸新幹線,上越妙高,妙高はねうま,直江津,信越線(直江津-新潟),犀潟,ほくほく線,x六日町,上越線,高崎",
             "直江津,信越線(直江津-新潟),犀潟,ほくほく線,六日町,上越線,高崎",
             "横浜,東海道線,豊橋,飯田線,辰野,中央東線(辰野支線),塩尻,篠ノ井線,松本,大糸線,糸魚川,日本海ひすい,市振,あいの風とやま,x富山",
             "糸魚川,日本海ひすい,市振,あいの風とやま,富山 高山線 p岐阜",
@@ -888,51 +943,6 @@ public class TestRoute {
     };
 
     static final String [][] auto_route_def = {
-            ////@@@@@@@@@@@@@@
-/* 10 */    {"代々木", "用土"},
-/* 11 */    {"二本松,東北線,福島(北),奥羽線,大曲,田沢湖線,盛岡,東北線,小牛田", "x宮古"},
-/* 12 */    {"二本松,東北線,福島(北),奥羽線,大曲,田沢湖線,盛岡,東北線,小牛田", "坂町"},
-/* 13 */    {"二本松,東北線,福島(北),奥羽線,横手,北上線,北上,東北線,小牛田", "坂町"},
-/* 14 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線", "x御殿場"},
-/* 15 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線", "x函南"},
-/* 16 */    {"小田原,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線", "x早川"},
-/* 17 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線", "x草薙"},
-/* 18 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線", "x焼津"},
-/* 19 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線,富士", "x御殿場"},
-/* 20 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線,富士", "x函南"},
-/* 21 */    {"小田原,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線,富士", "x早川"},
-/* 22 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線,富士", "x草薙"},
-/* 23 */    {"東京,東海道線,金山(中),中央西線,塩尻,中央東線,甲府,身延線,富士", "x焼津"},
-/* 24 */    {"田端,山手線", "品川"},
-/* 25 */    {"田端", "品川"},
-/* 26 */    {"鶴橋", "弁天町"},
-/* 27 */    {"天王寺", "新今宮"},
-/* 28 */    {"新今宮", "天王寺"},
-/* 29 */    {"綾瀬", "東川口"},
-/* 30 */    {"大崎", "田端"},
-/* 31 */    {"寒河江", "赤湯"},
-/* 33 */    {"北新地", "大阪"},
-/* 34 */    {"小海", "上田"},
-/* 35 */    {"柘植", "京橋"},
-/* 36 */    {"大阪", "鶴橋"},
-/* 37 */    {"大阪", "大正"},
-/* 38 */    {"大阪", "桜島"},
-            {"逗子 横須賀線 大船", "磯子"},
-            {"逗子 横須賀線 大船", "横浜"},
-            {"逗子 横須賀線 大船", "茅ケ崎"},
-            {"逗子 横須賀線 大船", "藤沢"},
-            {"横浜 根岸線 大船", "衣笠"},
-            {"保土ケ谷 東海道線 大船", "衣笠"},
-            {"甲府", "直江津"},
-            {"中込", "新潟"},
-            {"大前", "松本"},
-            {"外城田", "清水原"},
-            {"新青森", "宮古"},
-///@@@@@@@@@@@@@@@@@@@@
-
-
-
-
 /* */     {"品川","大井町"},
 /*  */    {"代々木","原宿"},
 /*  */    {"渋谷", "原宿"},
@@ -1038,8 +1048,6 @@ public class TestRoute {
     };
 
     static final String [] test_route_tbl = {
-            "東京,京葉線,蘇我,外房線,勝浦",
-///@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
             "c会社線を含む経路",
             "横浜,東海道線,品川,山手線,新宿,中央東線,西国分寺,武蔵野線,南浦和,東北線,大宮,東北新幹線,盛岡,IGRいわて銀河,目時,青い森鉄道,野辺地,大湊線,下北",
             //道幹開業			"横浜,東海道線,品川,山手線,池袋,埼京線,武蔵浦和,武蔵野線,南浦和,東北線,大宮,東北新幹線,盛岡,IGRいわて銀河,目時,青い森鉄道,青森,津軽線,蟹田,海峡線,木古内,江差線,五稜郭,函館線,長万部,室蘭線,沼ノ端,千歳線,白石(函),函館線,札幌",
@@ -1838,7 +1846,7 @@ public class TestRoute {
             "大阪 東海道線 金山(中) 中央西線 千種",
             "京都 東海道線 尼崎 福知山線 谷川 加古川線, 加古川 山陽線 西明石 山陽新幹線 e新大阪",
             "c-------会社線合わせて200km超えでもJRだけでは200km未満なので86条適用されないように-----------",
-            "新大阪,東海道線,神戸,山陽線,上郡,智頭線(智頭急行,智頭,因美線,鳥取",
+            "新大阪,東海道線,神戸,山陽線,上郡,智頭線(智頭急行),智頭,因美線,鳥取",
             "c-----大都市近郊区間最安運賃(八高線)---------",
             "拝島 八高線 八王子", /* b#18122801 */
             "成瀬 横浜線 八王子 八高線 拝島 青梅線 福生", /* b#18122801 */
@@ -2063,7 +2071,6 @@ public class TestRoute {
         String s = String.format(Locale.JAPANESE,"%s tax=%d [%s]", RouteDB.getInstance().name(),
                 RouteDB.getInstance().tax(),
                 RouteDB.getInstance().dbDate());
-        if (false) {
 
             pw.print("\n#---route test  ------------" + s + "-----\n");
             test_route(test_route2_tbl);
@@ -2080,12 +2087,12 @@ public class TestRoute {
 
             pw.print("\n#===auto route==================================================\n");
             test_autoroute(auto_route_def);
-        }
-        pw.print("\n#---specificial route-------------------------------------------\n");
-        test_route(test_route_tbl);
 
-        pw.print("\n#---shinkansen convert-------------------------------------------\n");
-        test_shin2zai();
+            pw.print("\n#---specificial route-------------------------------------------\n");
+            test_route(test_route_tbl);
+
+            pw.print("\n#---shinkansen convert-------------------------------------------\n");
+            test_shin2zai();
 
         pw.printf("\n#---same kokura hakata shinzai-----------------------------------\n");
         test_route(test_route3_tbl);
@@ -2095,7 +2102,7 @@ public class TestRoute {
     public short LID(String s)	{ return (short)RouteUtil.GetLineId(s); }
 
 
-    String cr_remove(String s)
+    static String cr_remove(String s)
     {
         if (false) {
             int idx = 0;
@@ -2160,9 +2167,12 @@ public class TestRoute {
 
             for (int j = 0; j < rev; j++) {
                 if (0 < j) {
+                    rc = route.isAvailableReverse() ? 1:0;
                     if (route.reverse() < 0) {
-                        pw.print("------ 反転は無効-------\n\n");
+                        pw.printf("------ 反転は無効---%s---\n\n", rc == 1 ? "enable" : "disable");
                         break;
+                    } else if (rc == 0) {
+                        pw.print("------ 反転 ---GUI disable---\n\n");
                     } else {
                         pw.print("------ 反転 ------\n\n");
                     }
@@ -2370,7 +2380,7 @@ public class TestRoute {
             pw.print("* auto route(新幹線未使用) >>>>>>>\n");
             rc = route.changeNeerest(0, RouteUtil.GetStationId(p));
             if ((rc < 0) || (rc == 5)) {
-                pw.print(String.format(Locale.JAPANESE,"Can't route.%s\n", (fail != 0) ? ("(OK)") : ("(NG)")));
+                pw.print(String.format(Locale.JAPANESE,"Can't route.%s, rc=%d\n", (fail != 0) ? ("(OK)") : ("(NG)"), rc));
                 ASSERT(fail != 0);
             } else {
                 ASSERT(0 == fail);

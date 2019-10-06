@@ -77,13 +77,14 @@ public class RouteList {
     public RouteList(RouteList route_list) {
 
     }
+
     public void assign(RouteList source_route) {
         this.assign(source_route, -1);
     }
 
     public void assign(RouteList source_route, int count) {
         route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = source_route.route_flag;
+        route_flag = new RouteFlag(source_route.route_flag);
         if ((0 < count) && source_route.route_list_raw.size() != count) {
             route_flag.end = false;
             route_flag.compnda = false;
@@ -127,7 +128,7 @@ public class RouteList {
         return (route_list_raw.size() <= 0) ? 0 : route_list_raw.get(0).stationId;
     }
 
-    public int endStationId() {
+    public int arriveStationId() {
         return (route_list_raw.size() <= 0) ? 0 : route_list_raw.get(route_list_raw.size() - 1).stationId;
     }
 
@@ -136,10 +137,6 @@ public class RouteList {
     public RouteItem item(int index) { return routeList().get(index); }
 
     public RouteFlag getRouteFlag() { return route_flag; }
-    public RouteFlag sync_flag(RouteList source_route) {
-        route_flag = source_route.getRouteFlag();
-        return route_flag;
-    }
 
     boolean isModified() {
         return route_flag.jctsp_route_change;

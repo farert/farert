@@ -173,17 +173,6 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define JR_GROUP_MASK   ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0))
 #define IS_JR_MAJOR_COMPANY(c)	((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c))
 
-#define	LINE_TOHOKU_SINKANSEN	1	// 東北新幹線
-#define	LINE_JYOETSU_SINKANSEN	2	// 上越新幹線
-#define	LINE_HOKURIKU_SINKANSEN	3	// 北陸長野新幹線
-#define	LINE_TOKAIDO_SINKANSEN	4	// 東海道新幹線
-#define	LINE_SANYO_SINKANSEN	5	// 山陽新幹線
-#define	LINE_KYUSYU_SINKANSEN	6	// 九州新幹線
-#define	LINE_HOKKAIDO_SINKANSEN	7	// 北海道新幹線
-#define	LINE_YAMAGATA_SINKANSEN	8	// 山形新幹線
-#define	LINE_NAGASAKI_SINKANSEN	9	// 長崎新幹線
-
-
 #define CITYNO_TOKYO		1		// 東京都区内[区]
 #define CITYNO_YOKOHAMA		2		// 横浜市内[浜]
 #define CITYNO_NAGOYA		3		// 名古屋市内[名]
@@ -272,8 +261,8 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define JCTMASKSIZE   ((MAX_JCT + 7) / 8)
 
 class RouteFlag {
-
     unsigned char osakaKanPass = 0;
+
 public:
     bool no_rule;
     // メンバの数はenableMapValueに依存するので制限32個まで

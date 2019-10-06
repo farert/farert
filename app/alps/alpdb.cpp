@@ -4457,7 +4457,7 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
 				skip = true;
 				flag = route_item->flag;
                 if (IS_SHINKANSEN_LINE(ri.lineId)) {
-                    /* 70経路条の新幹線乗車は大都市近郊区間適用外 */
+                    /* 70条経路上の新幹線乗車は大都市近郊区間適用外 */
                     bullet_use.push_back(MAKEPAIR(ri.stationId, station_id1));
                 }
                 station_id1 = ri.stationId;     /* 新幹線判定用 */
@@ -8240,6 +8240,7 @@ vector<int32_t> FARE_INFO::GetDistanceEx(const RouteFlag& osakakan_aggregate, in
 		}
 	}
 	result.push_back(rslt);	// bit31:1=JR以外の会社線／0=JRグループ社線 = 0 / IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
+    TRACE("oskkan:s1km=%d, c1km=%d\n", result[0], result[1]);
 
 	return result;
 }
@@ -8316,6 +8317,7 @@ bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t st
 			rsd = dbo.getInt(0);
 		}
 	}
+    TRACE("IsBulletInUrban=%d\n", 0 < rsd);
 	return 0 < rsd;
 }
 
@@ -8352,7 +8354,7 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
 	for (ite = routeList.cbegin(); ite != routeList.cend(); ite++) {
 		if (station_id1 != 0) {
             cityId_c = (uint16_t)MASK_CITYNO(ite->flag);
-            if (((!pRoute_flag->rule70 && !pRoute_flag->rule86or87) ||
+            if (((!pRoute_flag->rule70 && !pRoute_flag->isAvailableRule86or87()) ||
                  !((cityId != 0) && (cityId_c != 0))) &&
                 IsBulletInUrban(ite->lineId, station_id1, ite->stationId)) {
                 TRACE("Use bullet line.\n");
@@ -9128,10 +9130,9 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     bool b_change_route = false;
     int8_t decision = 0;   // this or via_tachikawa or short
 
-    if ( !isUrbanArea() || route_original.getRouteFlag().isUseBullet()      // 大都市近郊区間内
-         || (route_original.departureStationId() == route_original.arriveStationId())
-         || (0x03 == ((route_original.getRouteFlag().rule86or87 << 2) |
-                       route_original.getRouteFlag().rule86or87))) { // O型経路(悩みどこだがそんなルート組むやつって・・・)
+    // 大都市近郊区間内ではない、or 新幹線乗車している or 同一駅(単駅ベースで)発着 なら対象外
+    if ( !isUrbanArea() || route_original.getRouteFlag().isUseBullet()
+         || (route_original.departureStationId() == route_original.arriveStationId())) {
         // usualy or loop route */
         TRACE("No reCalcFareForOptiomizeRoute.\n");
         return false;
