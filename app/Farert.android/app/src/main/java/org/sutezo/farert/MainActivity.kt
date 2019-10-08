@@ -119,12 +119,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         bottombar.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         val menuView = bottombar.getChildAt(0) as BottomNavigationMenuView
+        // [back]
         (menuView.getChildAt(0) as BottomNavigationItemView).apply {
             setEnabled(false)
         }
+        // [reverse]
         (menuView.getChildAt(1) as BottomNavigationItemView).apply {
             isEnabled = false
         }
+        // [大阪環状線]
         (menuView.getChildAt(2) as BottomNavigationItemView).apply {
             isEnabled = false
         }
