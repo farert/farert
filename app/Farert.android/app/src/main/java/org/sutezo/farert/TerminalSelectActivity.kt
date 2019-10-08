@@ -50,6 +50,7 @@ class TerminalSelectActivity : AppCompatActivity() {
         HISTORY(2),
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terminal_select)
@@ -133,6 +134,7 @@ class TerminalSelectActivity : AppCompatActivity() {
         })
 
 
+
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem): Boolean {
                 Log.d("TAG","onMenuItemActionExpand")
@@ -203,6 +205,8 @@ class TerminalSelectActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    //PlaceholderFragment で履歴削除後に呼ばれるように仕向けた
+    //
     fun onChangeList(numItem: Int) {
         val m = toolbar.menu
         val mi = m.findItem(R.id.menu_item_all_delete)
@@ -252,7 +256,7 @@ class TerminalSelectActivity : AppCompatActivity() {
         }
         private var mIdType : LIST_TYPE = LIST_TYPE.COMPANY
         private var mode : String = ""
-        private var mNumOflist : Int = 0
+        private var mNumHistory : Int = 0
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
@@ -278,8 +282,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 }
             }
             val lists = listItems()
-            mNumOflist = lists.count()
-            if (mIdType == LIST_TYPE.HISTORY && mNumOflist <= 0) {
+            mNumHistory = lists.count()
+            if (mIdType == LIST_TYPE.HISTORY && mNumHistory <= 0) {
                 val rootView = inflater.inflate(R.layout.content_list_empty, container, false)
                 rootView.list_empty.text = resources.getString(R.string.no_history)
                 return rootView
@@ -325,10 +329,10 @@ class TerminalSelectActivity : AppCompatActivity() {
             // 検索ビューのとき、リストの上に件数(5件を越えたら)を表示する
             // それ以外ビューでは、非表示にする。
             // 履歴で件数0の場合はレイアウト自体が別物なのでなにもしない
-            if (mIdType == LIST_TYPE.SEARCH && 5 < mNumOflist) {
+            if (mIdType == LIST_TYPE.SEARCH && 5 < mNumHistory) {
                 textViewHeader.visibility =  View.VISIBLE
-                textViewHeader.text = resources.getString(R.string.match_disp, mNumOflist)
-            } else if (mIdType != LIST_TYPE.HISTORY || 0 < mNumOflist) {
+                textViewHeader.text = resources.getString(R.string.match_disp, mNumHistory)
+            } else if (mIdType != LIST_TYPE.HISTORY || 0 < mNumHistory) {
                 textViewHeader.visibility =  View.GONE
             }
         }
@@ -368,15 +372,14 @@ class TerminalSelectActivity : AppCompatActivity() {
         }
         fun numOfContent() : Int {
             view?.let {
-                return mNumOflist
-                // val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
-                // return trv.itemCount
+                return mNumHistory
             }
             return 0
         }
 
         // Item削除した直後にボタン無効にする
         override fun onChangeItem(numItem: Int) {
+            mNumHistory = numItem
             (activity as TerminalSelectActivity).onChangeList(numItem)
         }
     }

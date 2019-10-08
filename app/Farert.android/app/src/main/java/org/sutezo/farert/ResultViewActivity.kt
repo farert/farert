@@ -119,14 +119,14 @@ class ResultViewActivity : AppCompatActivity() {
                     refresh()
                 }
             }
-
+/*
             R.id.menu_neerest -> {
                 if (opt_neerest != Option.N_A) {
                     opt_neerest = Option.DO_TRUE
                     refresh()
                 }
             }
-
+*/
             R.id.menu_osakakan -> {
                 if (Option.N_A != opt_osakakan) {
                     opt_osakakan = if (item.title.equals(resources.getString(R.string.result_menu_osakakan_far))) Option.DO_TRUE else Option.DO_FALSE
@@ -564,9 +564,10 @@ class ResultViewActivity : AppCompatActivity() {
     private fun setRouteChange(ds: Route) {
 
         // 最短経路
-        /*if (opt_neerest == Option.DO_TRUE) {
-            val end_id = ds.endStationId()
-            val begin_id = ds.startStationId()
+        /*
+        if (opt_neerest == Option.DO_TRUE) {
+            val end_id = ds.arriveStationId()
+            val begin_id = ds.departureStationId()
             if (begin_id == end_id) {
                 AlertDialog.Builder(this).apply {
                     setTitle(R.string.query)
@@ -580,7 +581,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 // 在来線のみ
                 ds.changeNeerest(0, begin_id)
-                opt_neerest = Option.FALSE
+                //opt_neerest = Option.FALSE
                 opt_sperule = Option.N_A
                 opt_osakakan = Option.N_A
                 opt_meihancity = Option.N_A
@@ -674,9 +675,11 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // "最短経路算出"
+        /*
         if (opt_neerest != Option.DO_TRUE) {
             opt_neerest = if (fi.isArbanArea) Option.FALSE else Option.N_A    // 最初は無効(メニューのチェック状態を頼る)
         }
+*/
 
         // JR東海株主
         if (opt_stocktokai != Option.DO_TRUE && opt_stocktokai != Option.DO_FALSE) {
@@ -757,8 +760,9 @@ class ResultViewActivity : AppCompatActivity() {
             }
 
             // "最短経路算出"
-            mi_neerest.setVisible(opt_neerest != Option.N_A)
-            mi_neerest.setEnabled(opt_neerest != Option.N_A && !mi_neerest.isChecked)
+            //mi_neerest.setVisible(opt_neerest != Option.N_A)
+            mi_neerest.setVisible(false)
+            //mi_neerest.setEnabled(opt_neerest != Option.N_A && !mi_neerest.isChecked)
 
             // stock
             if (opt_stocktokai != Option.N_A) { // fi.isJRCentralStockEnable()) {
@@ -794,7 +798,7 @@ class ResultViewActivity : AppCompatActivity() {
         finish()
         this.intent.putExtra("stocktokai", opt_stocktokai.ordinal)
         this.intent.putExtra("osakakan", opt_osakakan.ordinal)
-        this.intent.putExtra("neerest", opt_neerest.ordinal)
+        //this.intent.putExtra("neerest", opt_neerest.ordinal)
         this.intent.putExtra("sperule", opt_sperule.ordinal)
         this.intent.putExtra("meihancity", opt_meihancity.ordinal)
         startActivity(this.intent)
