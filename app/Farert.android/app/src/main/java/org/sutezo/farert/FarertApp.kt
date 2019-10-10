@@ -11,6 +11,7 @@ import java.io.PrintStream
 
 class FarertApp : Application() {
     val ds = Route()
+    var bKokuraHakataShinZaiFlag : Boolean = false
 
     companion object {
         lateinit var instance: Application private set
@@ -26,6 +27,8 @@ class FarertApp : Application() {
         setDatabase()
 
         TestRoute.exec(this)    // test function
+
+        bKokuraHakataShinZaiFlag = (readParam(this, "kokura_hakata_shinzai") == "true")
     }
 
     private fun setDatabase() {

@@ -1003,7 +1003,7 @@ public class Route extends RouteList {
     //	小倉ー博多 新幹線・在来線別線扱い
     //	@param [in] enabled  : true = 有効／ false = 無効
     //
-    void setNotSameKokuraHakataShinZai(boolean enabled)
+    public void setNotSameKokuraHakataShinZai(boolean enabled)
     {
     	if (enabled) {
     		route_flag.notsamekokurahakatashinzai = true;
@@ -1016,7 +1016,7 @@ public class Route extends RouteList {
         return (stationId2 == DbIdOf.INSTANCE.station("柳津")) ? -1 : 0;
     }
 
-    boolean isNotSameKokuraHakataShinZai()
+    public boolean isNotSameKokuraHakataShinZai()
     {
         return route_flag.notsamekokurahakatashinzai;
     }
