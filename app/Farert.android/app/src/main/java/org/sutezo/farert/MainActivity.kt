@@ -111,7 +111,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             }
         }
 
-        mRoute = (application as FarertApp).ds
+        if (application is FarertApp) {
+            mRoute = (application as FarertApp).ds
+            mRoute.setNotSameKokuraHakataShinZai(
+                    (application as? FarertApp)?.bKokuraHakataShinZaiFlag ?: false
+            )
+        } else {
+            mRoute = Route()
+        }
+
 
         recycler_view_route.adapter = RouteRecyclerAdapter(this, mRoute)
 

@@ -27,7 +27,8 @@ class SettingsActivity : AppCompatActivity() {
         // back arrow button(戻るボタン有効)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        mKokuraSZopt = (readParam(this, "kokura_hakata_shinzai") == "true")
+        mKokuraSZopt = (application as? FarertApp)?.bKokuraHakataShinZaiFlag ?: false
+
         val selDatabase = readParam(this, "datasource")
 
         val adapter = spinner.adapter
@@ -69,7 +70,7 @@ class SettingsActivity : AppCompatActivity() {
                 if (mSelIndex != cSelIdx) {
                     saveParam(this, "datasource", cSelIdx.toString())
                     mSelIndex = cSelIdx
-                    (application as FarertApp).changeDatabase(cSelIdx)
+                    (application as? FarertApp)?.changeDatabase(cSelIdx)
 
                     rc = Activity.RESULT_OK
                 }
@@ -80,6 +81,8 @@ class SettingsActivity : AppCompatActivity() {
                     val svalue = if (value) "true" else "false"
                     saveParam(this, "kokura_hakata_shinzai", svalue)
                     mKokuraSZopt = value
+
+                    (application as? FarertApp)?.bKokuraHakataShinZaiFlag = mKokuraSZopt
 
                     rc = Activity.RESULT_OK
                 }
