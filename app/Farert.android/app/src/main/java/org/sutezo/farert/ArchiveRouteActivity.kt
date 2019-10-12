@@ -37,7 +37,9 @@ class ArchiveRouteActivity : AppCompatActivity(),
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val ds = Route()
-        ds.assign((application as FarertApp).ds)
+        (application as? FarertApp)?.ds.let {
+            ds.assign(it)
+        }
 
         var listItems = readParams(this, KEY_ARCHIVE)
 

@@ -70,13 +70,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
 
             }
-            // 大阪環状線 大回り/近回り
-            R.id.navigation_detour -> {
-                if (mOsakakan_detour != OSAKA_KAN.DISABLE) {
-                    mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) OSAKA_KAN.NEAR else OSAKA_KAN.FAR
-                    mRoute.setDetour(mOsakakan_detour == OSAKA_KAN.FAR)
-                    update_fare(1)
-                }
+            // 経路保存
+            R.id.navigation_archive -> {
+                val intent = Intent(this, ArchiveRouteActivity::class.java)
+                val param = if (mRoute.count <= 1) "" else mRoute.route_script()
+                intent.putExtra("route_script", param)
+                startActivity(intent)
             }
         }
         false
@@ -112,14 +111,14 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
 
         if (application is FarertApp) {
-            mRoute = (application as FarertApp).ds
-            mRoute.setNotSameKokuraHakataShinZai(
-                    (application as? FarertApp)?.bKokuraHakataShinZaiFlag ?: false
-            )
+            (application as FarertApp).apply {
+                mRoute = this.ds
+                mRoute.setNotSameKokuraHakataShinZai(
+                                this.bKokuraHakataShinZaiFlag)
+            }
         } else {
             mRoute = Route()
         }
-
 
         recycler_view_route.adapter = RouteRecyclerAdapter(this, mRoute)
 
@@ -305,7 +304,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             resources.getString(R.string.main_rc_company_end)
                         }
                         5 -> {
-                            resources.getString(R.string.main_rc_neerested)
+                            resources.getString(R.string.main_rc_finished)
                         }
                         40 -> {
                             resources.getString(R.string.main_rc_auto_not_enough)
@@ -352,11 +351,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             availday_value.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
             (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
             // 大阪環状線
-            if (fi.isOsakakanDetourEnable) {
-                if (fi.isOsakakanDetourShortcut) {
-                    mOsakakan_detour = OSAKA_KAN.NEAR
-                } else {
+            if (mRoute.isOsakakanDetourEnable) {
+                if (mRoute.isOsakakanDetour) {
                     mOsakakan_detour = OSAKA_KAN.FAR
+                } else {
+                    mOsakakan_detour = OSAKA_KAN.NEAR
                 }
             }
             revButton = cr.isAvailableReverse()
@@ -394,13 +393,16 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 this.isEnabled = (1 < mRoute.count && revButton)
             }
         }
-        //大阪環状線遠回り／近回りボタン
+
+        // 経路保存
         (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
             (getChildAt(2) as BottomNavigationItemView).apply {
-                setEnabled(1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
+                this.isEnabled = true   // always enable
             }
         }
-
+        val m = toolbar.menu
+        val mi = m.findItem(R.id.action_osakakanrev) ?: return
+        mi.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
     }
 
     // 発駅設定
@@ -417,6 +419,28 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
+
+    // menu didApear
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+
+        // 大阪環状線
+        val menu_osakakan = menu?.findItem(R.id.action_osakakanrev) ?: return true
+
+        if (1 < mRoute.count && mRoute.isOsakakanDetourEnable) {
+            if (mRoute.isOsakakanDetour) {
+                // 「遠回り」になっているので「近回り」と表示する
+                menu_osakakan.title = resources.getString(R.string.result_menu_osakakan_near)
+            } else {
+                // 「近回り」になっているので「遠回り」と表示する
+                menu_osakakan.title = resources.getString(R.string.result_menu_osakakan_far)
+            }
+            menu_osakakan.isEnabled = true
+        } else {
+            menu_osakakan.isEnabled = false
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
 
     // menu selected
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -437,12 +461,21 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 startActivity(intent)
                 true
             }
-            // 経路保存
-            R.id.archive_route -> {
-                val intent = Intent(this, ArchiveRouteActivity::class.java)
-                val param = if (mRoute.count <= 1) "" else mRoute.route_script()
-                intent.putExtra("route_script", param)
-                startActivity(intent)
+            // 大阪環状線 大回り/近回り
+            R.id.action_osakakanrev -> {
+                if (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE) {
+                    if (mOsakakan_detour == OSAKA_KAN.FAR) {
+                        mOsakakan_detour = OSAKA_KAN.NEAR
+                    } else {
+                        mOsakakan_detour = OSAKA_KAN.FAR
+                    }
+                    val far = (mOsakakan_detour == OSAKA_KAN.FAR)
+                    val rc = mRoute.setDetour(far)   // True=Far, False=Neerest
+
+                    update_fare(rc)
+
+                    item.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
