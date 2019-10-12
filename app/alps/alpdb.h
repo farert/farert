@@ -650,7 +650,7 @@ private:
         }
     } result_flag;
 
-	void retr_fare(bool useBullet, bool no_rule);
+	void retr_fare(bool useBullet);
     void calc_brt_fare(const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList);
 	int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);

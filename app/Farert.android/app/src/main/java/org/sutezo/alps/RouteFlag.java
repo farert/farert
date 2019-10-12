@@ -191,9 +191,9 @@ public class RouteFlag {
     }
 
     // UI側からセットする制御フラグ
-    boolean isEnableLongRoute() { return !no_rule && 0 != urban_neerest; }
-    boolean isLongRoute() { return urban_neerest < 0; }
-    void setLongRoute(boolean far) {
+    public boolean isEnableLongRoute() { return !no_rule && 0 != urban_neerest; }
+    public boolean isLongRoute() { return urban_neerest < 0; }
+    public void setLongRoute(boolean far) {
         if (far) {
             urban_neerest = -1;
         } else {
@@ -201,9 +201,9 @@ public class RouteFlag {
         }
     }
 
-    boolean isEnableRule115()  { return !no_rule && 0 != rule115; }
-    boolean isDisableSpecificTermRule115()  { return rule115 < 0; }
-    void setSpecificTermRule115(boolean ena) {
+    public boolean isEnableRule115()  { return !no_rule && 0 != rule115; }
+    public boolean isDisableSpecificTermRule115()  { return rule115 < 0; }
+    public void setSpecificTermRule115(boolean ena) {
         if (ena) {
             rule115 = -1;
         } else {

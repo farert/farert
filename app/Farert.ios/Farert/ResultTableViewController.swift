@@ -517,6 +517,21 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                         items.append("発駅を単駅指定")
                     }
                 }
+                if self.fareInfo.isEnableLongRoute {
+                    if self.fareInfo.isLongRoute {
+                        items.append("最安経路で運賃計算")
+                    } else {
+                        items.append("指定した経路で運賃計算")
+                    }
+                }
+                
+                if self.fareInfo.isEnableRule115 {
+                    if self.fareInfo.isDisableSpecificTermRule115 {
+                        items.append("旅客営業取扱基準規程115条(単駅最安)")
+                    } else {
+                        items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
+                    }
+                }
             } else {
                 items.append("特例を適用する")
             }
@@ -530,29 +545,14 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
         }
 
-        if self.fareInfo.isOsakakanDetourEnable {
-            if self.fareInfo.isOsakakanDetourShortcut {
+        if self.ds.isOsakakanDetourEnable() {
+            if self.ds.isOsakakanDetour() {
                 items.append("大阪環状線 近回り")
             } else {
                 items.append("大阪環状線 遠回り")
             }
         }
         
-        if self.fareInfo.isEnableLongRoute {
-            if self.fareInfo.isLongRoute {
-                items.append("最安経路で運賃計算")
-            } else {
-                items.append("指定した経路で運賃計算")
-            }
-        }
-        
-        if self.fareInfo.isEnableRule115 {
-            if self.fareInfo.isDisableSpecificTermRule115 {
-                items.append("旅客営業取扱基準規程115条(単駅最安)")
-            } else {
-                items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
-            }
-        }
         if #available(iOS 8, OSX 10.10, *) {            // iOS8
             let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .actionSheet)
             for item in items {

@@ -672,6 +672,19 @@ int g_tax; /* main.m */
     return obj_route->isEnd();
 }
 
+// 大阪環状線 遠回り設定か？
+- (BOOL)isOsakakanDetourEnable
+{
+    return obj_route->getRouteFlag().is_osakakan_1pass();
+}
+
+// 大阪環状線 遠回りか近回りか？
+- (BOOL)isOsakakanDetourShortcut
+{
+    return obj_route->getRouteFlag().osakakan_detour;
+}
+
+
 @end
 /* End of cRoute */
 
@@ -763,7 +776,7 @@ int g_tax; /* main.m */
     const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
     const static char msgCanYouNeerestStation[] = "「単駅最安」で単駅発着が選択可能です";
     const static char msgCanYouSpecificTerm[] = "「特定都区市内発着」で特定都区市内発着が選択可能です";
-    
+
     result = [[FareInfo alloc] init];
 
     result.result = fare_result;        /* calculate result */
@@ -772,7 +785,7 @@ int g_tax; /* main.m */
 
     result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
 
-    
+
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
     result.endStationId = fi.getEndTerminalId();
@@ -811,24 +824,19 @@ int g_tax; /* main.m */
         [result setFareForStockDiscountsForR114:w2 + fi.getFareForCompanyline()
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
-    
+
     result.isMeihanCityStartTerminalEnable = obj_calcroute->refRouteFlag().isMeihanCityEnable();
     result.isMeihanCityStart = obj_calcroute->refRouteFlag().isStartAsCity();
     result.isMeihanCityTerminal = obj_calcroute->refRouteFlag().isArriveAsCity();
-    
+
     result.isRoundtrip = obj_calcroute->refRouteFlag().isRoundTrip();
-    
-    result.isOsakakanDetourEnable = obj_calcroute->getRouteFlag().is_osakakan_1pass();
-    
-    // TRUE: Detour / FALSE: Shortcut
-    result.isOsakakanDetourShortcut = obj_calcroute->getRouteFlag().osakakan_detour;
-    
+
     result.isRuleAppliedEnable = obj_calcroute->getRouteFlag().rule_en();
     result.isRuleApplied = !obj_calcroute->getRouteFlag().no_rule;
-    
+
     result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
     result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
-    
+
     result.isEnableLongRoute = obj_calcroute->getRouteFlag().isEnableLongRoute();
     result.isLongRoute = obj_calcroute->getRouteFlag().isLongRoute();
     result.isDisableSpecificTermRule115 = obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
@@ -849,7 +857,7 @@ int g_tax; /* main.m */
         } else {
             result.resultMessage = @"";
         }
-    
+
         // 大回り指定では115適用はみない
         if (obj_calcroute->getRouteFlag().isEnableRule115() &&
             !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
@@ -900,7 +908,7 @@ int g_tax; /* main.m */
     // 普通運賃
     result.fare = fi.getFareForDisplay();
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
-    
+
     // BRT運賃
     result.fareForBRT = fi.getFareForBRT();
     result.isBRTdiscount = fi.getIsBRT_discount();
@@ -927,10 +935,10 @@ int g_tax; /* main.m */
     }
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
-    
+
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
-                              result.isOsakakanDetourEnable ||
+                              self.isOsakakanDetourEnable  ||
                               result.isJRCentralStockEnable ||
                               result.isEnableRule115 ||
                               result.isLongRoute ||
@@ -947,23 +955,12 @@ int g_tax; /* main.m */
     return [NSString stringWithUTF8String:fi.showFare(obj_calcroute->getRouteFlag()).c_str()];
 }
 
-// 大阪環状線 遠回りか近回りか？
-- (BOOL)isOsakakanDetourShortcut
-{
-    return obj_calcroute->getRouteFlag().osakakan_detour;
-}
-
-// 大阪環状線 遠回り設定か？
-- (BOOL)isOsakakanDetourEnable
-{
-    return obj_calcroute->getRouteFlag().is_osakakan_1pass();
-}
-
 // 近郊区間指定経路か
 - (BOOL)isEnableLongRoute
 {
     return obj_calcroute->getRouteFlag().isEnableLongRoute();
 }
+
 
 // 旅客営業取扱基準規程第115条
 - (BOOL)isEnableRule115
@@ -1033,7 +1030,15 @@ int g_tax; /* main.m */
     return obj_calcroute->routeList().back().stationId;
 }
 
-//-- cRouteList --
+- (BOOL)isOsakakanDetourEnable
+{
+    return obj_calcroute->refRouteFlag().is_osakakan_1pass();
+}
+
+- (BOOL)isOsakakanDetour
+{
+    return obj_calcroute->refRouteFlag().osakakan_detour;
+}
 
 @end
 /* End of CalcRoute */

@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto  ">
-    <item
-        android:id="@+id/archive_route"
-        android:title="@string/title_main_menu_archive"
-        app:showAsAction="ifRoom" />
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_settings"
         android:title="@string/title_main_menu_settings"
-        android:icon="@drawable/ic_menu_gallery"
+        android:icon="@drawable/ic_menu_manage"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_osakakanrev"
+        android:title="@string/result_menu_osakakan_far"
+        android:icon="@drawable/ic_baseline_360_24px"
         app:showAsAction="never" />
     <item
         android:id="@+id/version_view"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/title_main_menu_version"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
 </menu>

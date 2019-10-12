@@ -728,13 +728,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     // action menu
     @IBAction func checkAction(_ sender: UIBarButtonItem) {
  
-        if let cds = cCalcRoute(route: ds) {
-            if cds.isOsakakanDetourEnable() {
-                self.actionSheetController(cds.isOsakakanDetourShortcut() ?
-                    ["大阪環状線 近回り"] : ["大阪環状線 遠回り"],
-                                           title: "大阪環状線経由指定", message: "",
-                                           from: TAG_UIACTIONSHEET_OSAKAKANDETOUR)
-            }
+        if ds.isOsakakanDetourEnable() {
+            self.actionSheetController(ds.isOsakakanDetourShortcut() ?
+                ["大阪環状線 近回り"] : ["大阪環状線 遠回り"],
+                                       title: "大阪環状線経由指定", message: "",
+                                       from: TAG_UIACTIONSHEET_OSAKAKANDETOUR)
         }
     }
     
@@ -952,12 +950,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         }
         
-        if let cds = cCalcRoute(route: ds) {
-            if cds.isOsakakanDetourEnable() {
-                self.actionBarButton.isEnabled = true
-            } else {
-                self.actionBarButton.isEnabled = false
-            }
+        if ds.isOsakakanDetourEnable() {
+            self.actionBarButton.isEnabled = true
         } else {
             self.actionBarButton.isEnabled = false
         }
