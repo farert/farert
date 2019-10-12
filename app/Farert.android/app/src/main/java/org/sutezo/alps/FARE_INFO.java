@@ -194,7 +194,7 @@ public class FARE_INFO {
     //	@retval true Success
     //	@retval false Fatal error(会社線のみJR無し)
     //
-    private void retr_fare(boolean useBullet, boolean no_rule) {
+    private void retr_fare(boolean useBullet) {
         int fare_tmp;
         int _total_jr_sales_km;
         int _total_jr_calc_km;
@@ -901,8 +901,8 @@ public class FARE_INFO {
         final String msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n";
         final String msgAppliedLowcost = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n";
 
-        if (!getRouteFlag.no_rule && this.isUrbanArea() &&
-                !getRouteFlag.isUseBullet()) {
+        if (!getRouteFlag.no_rule && !getRouteFlag.osakakan_detour
+                && this.isUrbanArea() && !getRouteFlag.isUseBullet()) {
             if (this.getBeginTerminalId() == this.getEndTerminalId()) {
                 buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
             } else if (getRouteFlag.isEnableRule115() && getRouteFlag.isDisableSpecificTermRule115()) {
@@ -1136,7 +1136,8 @@ public class FARE_INFO {
         if (this.isBRT_discount()) {
             buffer.append("\r\nBRT乗継ぎ割引適用");
         }
-        if (!getRouteFlag.no_rule && getRouteFlag.special_fare_enable) {
+        if (!getRouteFlag.no_rule && !getRouteFlag.osakakan_detour
+                && getRouteFlag.special_fare_enable) {
             // 電車特定運賃区間(私鉄競合のアレ)
             buffer.append("\r\n特定区間割引運賃適用");
         }
@@ -1177,7 +1178,7 @@ public class FARE_INFO {
         }
 
         /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
-        if (!route_flag_.no_rule) {
+        if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
             adjust_km = CheckAndApplyRule43_2j(routeList.toArray(new RouteItem[0]));
             this.sales_km			-= adjust_km * 2;
             this.base_sales_km		-= adjust_km;
@@ -1187,7 +1188,7 @@ public class FARE_INFO {
         }
 
         /* 旅客営業規則89条適用 */
-        if (!route_flag_.no_rule) {
+        if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
             this.base_calc_km += CheckOfRule89j(routeList);
         }
 
@@ -1201,7 +1202,7 @@ public class FARE_INFO {
                 (this.shikoku_sales_km == this.shikoku_calc_km));
 
         /* 運賃計算 */
-    	retr_fare(route_flag_.isUseBullet(), route_flag_.no_rule);
+    	retr_fare(route_flag_.isUseBullet());
 
         if ((0 != this.brt_sales_km) || (0 < this.total_jr_sales_km)) {
             /* JR or BRT */
@@ -1220,7 +1221,7 @@ public class FARE_INFO {
     			special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 1);
     			if (0 < special_fare) {
                     System.out.print("specific fare section replace for Metro or Shikoku-Big-bridge\n");
-                    if (!route_flag_.no_rule) {
+                    if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
                         // 品川-青森-横浜 なども適用されてはいけないので,近郊区間内なら適用するように。
                         // 品川-横浜などの特別区間は近郊区間内の場合遠回り指定でも特別運賃を表示
                         // 名古屋は近郊区間でないので距離(尾頭橋-岡崎 37.7km 名古屋-岡崎 40.1km)50km以下として条件に含める

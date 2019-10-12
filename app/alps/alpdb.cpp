@@ -397,6 +397,7 @@ void CalcRoute::sync(const RouteList& route, int count)
         route_flag.compnda = false;
     }
     route_list_cooked.clear();
+    TRACE("CalcRoute::sync() %d\n", route_flag.is_osakakan_1pass());
 }
 
 
@@ -2599,6 +2600,7 @@ int32_t Route::reBuild()
 	}
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
         route_flag.osakakan_detour = false;
+        TRACE("Can't reBuild() rc=%d¥n", rc);
 		return -1;	/* error */
 	}
 
@@ -2649,7 +2651,8 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
     const static TCHAR msgPossibleLowcost[] = _T("近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n");
     const static TCHAR msgAppliedLowcost[] = _T("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n");
 
-    if (!refRouteFlag.no_rule && this->isUrbanArea() && !refRouteFlag.isUseBullet()) {
+    if (!refRouteFlag.no_rule && !refRouteFlag.osakakan_detour &&
+        this->isUrbanArea() && !refRouteFlag.isUseBullet()) {
         if (this->getBeginTerminalId() == this->getEndTerminalId()) {
             _sntprintf_s(cb, MAX_BUF,
                 _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
@@ -2908,7 +2911,8 @@ JR東日本 株主優待4： \123,456
     if (this->getIsBRT_discount()) {
         sResult += _T("\r\nBRT乗継ぎ割引適用");
     }
-    if (!refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
+    if (!refRouteFlag.no_rule && !refRouteFlag.osakakan_detour &&
+        refRouteFlag.special_fare_enable) {
         sResult += _T("\r\n特定区間割引運賃適用");
     }
     sWork = this->getTOICACalcRoute_string();
@@ -2958,7 +2962,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
 
 
     /* 86, 87, 69, 70条 114条適用かチェック */
-    if (!route_flag.no_rule) {
+    if (!route_flag.no_rule && !route_flag.osakakan_detour) {
         // これをここに置かないと86.87＋近郊でNG
         rule114 = checkOfRuleSpecificCoreLine();	// route_list_raw -> route_list_cooked
     		/* 規則適用 */
@@ -3099,7 +3103,7 @@ int32_t CalcRoute::beginStationId()
 {
 	int32_t stid;
 
-	if (route_flag.no_rule) {
+	if (route_flag.no_rule || route_flag.osakakan_detour) {
 		return route_list_raw.front().stationId;
 	}
 	else {
@@ -3123,7 +3127,7 @@ int32_t CalcRoute::endStationId()
 {
     int32_t stid;
 
-    if (route_flag.no_rule) {
+    if (route_flag.no_rule || route_flag.osakakan_detour) {
         return route_list_raw.back().stationId;
 
     } else {
@@ -8773,7 +8777,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 	}
 
 	/* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
-	if (!pRoute_flag->no_rule) {
+	if (!pRoute_flag->no_rule && !pRoute_flag->osakakan_detour) {
 		adjust_km = FARE_INFO::CheckAndApplyRule43_2j(routeList);
 		this->sales_km			-= adjust_km * 2;
 		this->base_sales_km		-= adjust_km;
@@ -8783,7 +8787,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 	}
 
 	/* 旅客営業規則89条適用 */
-	if (!pRoute_flag->no_rule) {
+	if (!pRoute_flag->no_rule && !pRoute_flag->osakakan_detour) {
 		this->base_calc_km += FARE_INFO::CheckOfRule89j(routeList);
 	}
 
@@ -8796,7 +8800,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 						(this->hokkaido_sales_km == this->hokkaido_calc_km) &&
 						(this->shikoku_sales_km == this->shikoku_calc_km));
 
-	retr_fare(pRoute_flag->isUseBullet(), pRoute_flag->no_rule);
+	retr_fare(pRoute_flag->isUseBullet());
 
     if ((0 != this->brt_sales_km) || (0 < this->total_jr_sales_km)) {
         /* JR or BRT */
@@ -8816,7 +8820,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 			special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
 			if (0 < special_fare) {
 	        	TRACE("specific fare section replace for Metro or Shikoku-Big-bridge\n");
-                if (!pRoute_flag->no_rule) {
+                if (!pRoute_flag->no_rule && !pRoute_flag->osakakan_detour) {
                     // 品川-青森-横浜 なども適用されてはいけないので,近郊区間内なら適用するように。
     				// 品川-横浜などの特別区間は近郊区間内の場合遠回り指定でも特別運賃を表示
     				// 名古屋は近郊区間でないので距離(尾頭橋-岡崎 37.7km 名古屋-岡崎 40.1km)50km以下として条件に含める
@@ -9399,7 +9403,7 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
 //	@retval true Success
 //	@retval false Fatal error(会社線のみJR無し)
 //
-void FARE_INFO::retr_fare(bool useBullet, bool no_rule)
+void FARE_INFO::retr_fare(bool useBullet)
 {
 	int32_t fare_tmp;
     int32_t _total_jr_sales_km;

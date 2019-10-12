@@ -98,11 +98,6 @@ class FareInfo {
     var isMeihanCityStart : Boolean = false
     var isMeihanCityTerminal : Boolean = false
 
-    var isOsakakanDetourEnable :Boolean = false
-
-    // TRUE: Detour / FALSE: Shortcut
-    var isOsakakanDetourShortcut : Boolean = false
-
     var isRuleAppliedEnable: Boolean = false
     var isRuleApplied: Boolean = false
     var isFareOptEnabled : Boolean = false

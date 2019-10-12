@@ -16,9 +16,9 @@
         app:showAsAction="always|withText" />
 
     <item
-        android:id="@+id/navigation_detour"
-        android:icon="@drawable/ic_baseline_360_24px"
-        android:title="@string/title_oskkanrev"
+        android:id="@+id/navigation_archive"
+        android:icon="@drawable/ic_baseline_folder_open_24px"
+        android:title="@string/title_main_menu_archive"
         app:showAsAction="always|withText"/>
 
 </menu>

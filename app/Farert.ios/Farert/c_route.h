@@ -132,7 +132,7 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSString*)routeScript;
 
 @end
-/* End of Route */
+/* End of RouteList */
 
 @class cCalcRoute;
 //////////////////////////////////////////////////////////////
@@ -192,6 +192,9 @@ typedef NS_ENUM(NSInteger, DB) {
 
 - (BOOL)isEnd;
 
+- (BOOL)isOsakakanDetourEnable;
+- (BOOL)isOsakakanDetourShortcut;
+
 @end
 /* End of cRoute */
 
@@ -215,9 +218,6 @@ typedef NS_ENUM(NSInteger, DB) {
 
 // result (for sendmail)
 - (NSString*)showFare;
-
-- (BOOL)isOsakakanDetourShortcut;
-- (BOOL)isOsakakanDetourEnable;
 
 - (BOOL)isEnableLongRoute;
 - (BOOL)isDisableSpecificTermRule115;
@@ -243,7 +243,9 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSInteger)lastStationId;
 // route string
 - (NSString*)routeScript;
-//-- cRouteList --
+
+- (BOOL)isOsakakanDetourEnable;
+- (BOOL)isOsakakanDetour;
 
 @end
 /* End of cCalcRoute */

@@ -396,11 +396,6 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isMeihanCityStart = this.route_flag.isStartAsCity
     result.isMeihanCityTerminal = this.route_flag.isArriveAsCity;
 
-    result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
-
-    // TRUE: Detour / FALSE: Shortcut
-    result.isOsakakanDetourShortcut = this.route_flag.osakakan_detour;
-
     result.isRuleAppliedEnable = this.route_flag.rule_en()
     result.isRuleApplied = !this.route_flag.no_rule;
 
@@ -445,7 +440,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
-            result.isOsakakanDetourEnable ||
+            route_flag.is_osakakan_1pass() ||
             result.isJRCentralStockEnable ||
             result.isEnableRule115 ||
             result.isLongRoute ||

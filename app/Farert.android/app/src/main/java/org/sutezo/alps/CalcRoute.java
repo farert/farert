@@ -87,7 +87,7 @@ public class CalcRoute extends RouteList {
     public int beginStationId() {
         int stid;
 
-        if (route_flag.no_rule) {
+        if (route_flag.no_rule || route_flag.osakakan_detour) {
             return route_list_raw.get(0).stationId;
         } else {
             stid = coreAreaIDByCityId(CSTART);
@@ -108,7 +108,7 @@ public class CalcRoute extends RouteList {
     public int endStationId() {
         int stid;
 
-        if (route_flag.no_rule) {
+        if (route_flag.no_rule || route_flag.osakakan_detour) {
             return route_list_raw.get(route_list_raw.size() - 1).stationId;
 
         } else {
@@ -565,7 +565,7 @@ public class CalcRoute extends RouteList {
     		fare_info.setInComplete();	// この経路の片道乗車券は購入できません."));
     		return -2;
     	}
-    	if (!route_flag.no_rule) {
+    	if (!route_flag.no_rule && !route_flag.osakakan_detour) {
     		/* 規則適用 */
     		/* 86, 87, 69, 70条 114条適用かチェック */
     		rule114 = checkOfRuleSpecificCoreLine();	// route_list_raw -> route_list_cooked
@@ -2445,5 +2445,4 @@ public class CalcRoute extends RouteList {
 
         return result_route;
     }
-
 }
