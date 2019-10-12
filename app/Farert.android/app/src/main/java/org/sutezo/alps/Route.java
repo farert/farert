@@ -964,18 +964,15 @@ public class Route extends RouteList {
             }
         }
         if ((rc < 0) || ((rc != RouteUtil.ADDRC_OK) && ((rc == RouteUtil.ADDRC_LAST) && (pos.hasNext())))) {
+            System.out.print(String.format("Can't reBuild() rc={0}\n", rc));
             route_flag.osakakan_detour = false;
             return -1;	/* error */
         }
 
         // 経路自体は変わらない。フラグのみ
         // 特例適用、発着駅を単駅指定フラグは保持(大阪環状線廻り)
-        route_flag.meihan_city_flag = routeWork.getRouteFlag().meihan_city_flag;
-        route_flag.no_rule = routeWork.getRouteFlag().no_rule;
-        route_flag.jrtokaistock_enable = routeWork.getRouteFlag().jrtokaistock_enable;
-        route_flag.jrtokaistock_applied = routeWork.getRouteFlag().jrtokaistock_applied;
-        route_flag.setOsakaKanFlag(routeWork.getRouteFlag());
 
+        route_flag.setAnotherRouteFlag(routeWork.getRouteFlag());
         routePassed.assign(routeWork.routePassed);
 
         return rc;
@@ -3031,6 +3028,16 @@ public class Route extends RouteList {
             return -1;
         }
     }
+
+    public boolean isOsakakanDetourEnable() {
+        return route_flag.is_osakakan_1pass();
+    }
+
+    public boolean isOsakakanDetour() {
+        return route_flag.osakakan_detour;
+    }
+
+
 /*
 //	経路内を着駅で終了する(以降の経路はキャンセル)
 //
