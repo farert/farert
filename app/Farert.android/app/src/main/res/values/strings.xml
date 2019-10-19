@@ -238,6 +238,13 @@
         <item>-1</item>
     </string-array>
 
+    <string-array name="select_autoroute_option">
+        <item>在来線のみ</item>
+        <item>新幹線を使う</item>
+        <item>会社線を使う</item>
+        <item>新幹線も会社線も使う"</item>
+    </string-array>
+
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
 
@@ -270,6 +277,12 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+
+    <string name="desc_specific_calc_option">%1$sに設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。
+        \n本機能は指定経路の営業キロを知るためだけのものです"</string>
+    <string name="title_specific_calc_option_osakakan">大阪環状線遠回り</string>
+    <string name="title_specific_calc_option_norule">特例非特例</string>
+    <string name="hide_specific_calc_option_info">今後、この画面は表示しない</string>
 
     <string-array name="list_ticket_type">
         <item>普通運賃</item>
@@ -319,8 +332,9 @@
     <string name="setting_title_option">オプション</string>
     <string name="setting_title_kokura_shinkansen">小倉-博多間新幹線在来線別線扱い</string>
     <string name="setting_descr_kokura_shinkansen">経路は全て選択しなおしてください</string>
-    
-    
+    <string name="setting_title_other">その他</string>
+    <string name="setting_title_reset_info_button">情報メッセージ抑制をリセット</string>
+
     <string name="sample_section">上越国際スキー場前 - 岩原スキー場前</string>
 
 

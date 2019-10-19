@@ -1,0 +1,318 @@
+
+/* Class = "UILabel"; text = "往復："; ObjectID = "0qP-tK-Seb"; */
+"0qP-tK-Seb.text" = "往復：";
+
+/* Class = "UILabel"; text = "89,999.5km"; ObjectID = "2JY-J5-EWF"; */
+"2JY-J5-EWF.text" = "89,999.5km";
+
+/* Class = "UIButton"; normalTitle = "OK"; ObjectID = "4Dp-PC-fGq"; */
+"4Dp-PC-fGq.normalTitle" = "OK";
+
+/* Class = "UILabel"; text = "99,900km"; ObjectID = "4u6-IU-sd9"; */
+"4u6-IU-sd9.text" = "99,900km";
+
+/* Class = "UILabel"; text = "¥64,555-(割引)"; ObjectID = "4wG-jM-Mb1"; */
+"4wG-jM-Mb1.text" = "¥64,555-(割引)";
+
+/* Class = "UIBarButtonItem"; title = "戻る"; ObjectID = "53s-Vf-GBm"; */
+"53s-Vf-GBm.title" = "戻る";
+
+/* Class = "UILabel"; text = "上越国際スキー場＞北九州市内[九]"; ObjectID = "5Ef-lW-Xwz"; */
+"5Ef-lW-Xwz.text" = "上越国際スキー場＞北九州市内[九]";
+
+/* Class = "UILabel"; text = "¥54,555-"; ObjectID = "5d5-IP-bPR"; */
+"5d5-IP-bPR.text" = "¥54,555-";
+
+/* Class = "UILabel"; text = "小倉-博多間新幹線在来線別線扱い"; ObjectID = "7ap-iv-BpY"; */
+"7ap-iv-BpY.text" = "小倉-博多間新幹線在来線別線扱い";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "7ez-dG-5pW"; */
+"7ez-dG-5pW.text" = "Title";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "8bT-Yj-wV1"; */
+"8bT-Yj-wV1.text" = "Title";
+
+/* Class = "UIButton"; normalTitle = "クリア"; ObjectID = "Auc-lL-9Gc"; */
+"Auc-lL-9Gc.normalTitle" = "クリア";
+
+/* Class = "UILabel"; text = "89,999.9km"; ObjectID = "ESf-i9-UkT"; */
+"ESf-i9-UkT.text" = "89,999.9km";
+
+/* Class = "UILabel"; text = "保持された経路はありません"; ObjectID = "Eqa-F9-Zy2"; */
+"Eqa-F9-Zy2.text" = "保持された経路はありません";
+
+/* Class = "UILabel"; text = "営業キロ"; ObjectID = "FGm-e2-Wsy"; */
+"FGm-e2-Wsy.text" = "営業キロ";
+
+/* Class = "UIButton"; normalTitle = "追加＜"; ObjectID = "G0O-Dh-Rzc"; */
+"G0O-Dh-Rzc.normalTitle" = "追加＜";
+
+/* Class = "UILabel"; text = "89,999.9km"; ObjectID = "H18-In-JGB"; */
+"H18-In-JGB.text" = "89,999.9km";
+
+/* Class = "UILabel"; text = "発:"; ObjectID = "HLu-aZ-63d"; */
+"HLu-aZ-63d.text" = "発:";
+
+/* Class = "UILabel"; text = "駅、路線、運賃データを過去データで見ることもできます。通常は最新版を指定してください\nまた保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示も不正になりますが保存時のデータソースに戻すと元どおりになります"; ObjectID = "HwB-uD-9rR"; */
+"HwB-uD-9rR.text" = "駅、路線、運賃データを過去データで見ることもできます。通常は最新版を指定してください\nまた保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示も不正になりますが保存時のデータソースに戻すと元どおりになります";
+
+/* Class = "UILabel"; text = "本アプリで表示される結果は必ずしも正確な情報ではないことがありえます。実際の旅行での費用とは異なることがあり得ることをご理解の上ご利用ください。\n本アプリにより発生したあらゆる損害は作者は負いません\n不具合を見つけたらサポートサイトへご連絡ください"; ObjectID = "Hxe-Fd-Len"; */
+"Hxe-Fd-Len.text" = "本アプリで表示される結果は必ずしも正確な情報ではないことがありえます。実際の旅行での費用とは異なることがあり得ることをご理解の上ご利用ください。\n本アプリにより発生したあらゆる損害は作者は負いません\n不具合を見つけたらサポートサイトへご連絡ください";
+
+/* Class = "UILabel"; text = "きっぷホルダ"; ObjectID = "ItJ-hR-6Lz"; */
+"ItJ-hR-6Lz.text" = "きっぷホルダ";
+
+/* Class = "UINavigationItem"; prompt = "はつえきしてい"; ObjectID = "IwU-2N-Cqc"; */
+"IwU-2N-Cqc.prompt" = "はつえきしてい";
+
+/* Class = "UINavigationItem"; title = "発駅指定"; ObjectID = "IwU-2N-Cqc"; */
+"IwU-2N-Cqc.title" = "発駅指定";
+
+/* Class = "UINavigationItem"; title = "分岐駅"; ObjectID = "JvD-DM-E8Z"; */
+"JvD-DM-E8Z.title" = "分岐駅";
+
+/* Class = "UILabel"; text = "Farert 19.09.01"; ObjectID = "L15-Pn-kGM"; */
+"L15-Pn-kGM.text" = "Farert 19.09.01";
+
+/* Class = "UIBarButtonItem"; title = "クリア"; ObjectID = "LK7-mg-SJ8"; */
+"LK7-mg-SJ8.title" = "クリア";
+
+/* Class = "UITableViewController"; title = "経路指定"; ObjectID = "LPq-03-SdQ"; */
+"LPq-03-SdQ.title" = "経路指定";
+
+/* Class = "UILabel"; text = "¥54,555-"; ObjectID = "LQa-Aa-2bo"; */
+"LQa-Aa-2bo.text" = "¥54,555-";
+
+/* Class = "UIButton"; normalTitle = "編集"; ObjectID = "LXV-zR-yrW"; */
+"LXV-zR-yrW.normalTitle" = "編集";
+
+/* Class = "UITableViewSection"; headerTitle = "Section-2"; ObjectID = "LxC-xe-Jnn"; */
+"LxC-xe-Jnn.headerTitle" = "Section-2";
+
+/* Class = "UIBarButtonItem"; title = "<<"; ObjectID = "NzC-SH-RkJ"; */
+"NzC-SH-RkJ.title" = "<<";
+
+/* Class = "UILabel"; text = "JR北海道"; ObjectID = "Pge-Fn-vmq"; */
+"Pge-Fn-vmq.text" = "JR北海道";
+
+/* Class = "UILabel"; text = "経路運賃営業キロ計算"; ObjectID = "QMW-H9-nBu"; */
+"QMW-H9-nBu.text" = "経路運賃営業キロ計算";
+
+/* Class = "UILabel"; text = "総運賃"; ObjectID = "SvQ-tB-UsF"; */
+"SvQ-tB-UsF.text" = "総運賃";
+
+/* Class = "UIBarButtonItem"; title = "路線"; ObjectID = "TRq-kr-oaH"; */
+"TRq-kr-oaH.title" = "路線";
+
+/* Class = "UINavigationItem"; title = "路線"; ObjectID = "Ttg-Rm-h2T"; */
+"Ttg-Rm-h2T.title" = "路線";
+
+/* Class = "UILabel"; text = "99,999.9km"; ObjectID = "Txz-gO-VhU"; */
+"Txz-gO-VhU.text" = "99,999.9km";
+
+/* Class = "UILabel"; text = "上越国際スキー場前"; ObjectID = "UkB-Nk-pk6"; */
+"UkB-Nk-pk6.text" = "上越国際スキー場前";
+
+/* Class = "UILabel"; text = "99日間"; ObjectID = "VWF-h7-46D"; */
+"VWF-h7-46D.text" = "99日間";
+
+/* Class = "UIBarButtonItem"; title = "着駅指定"; ObjectID = "VfP-57-npV"; */
+"VfP-57-npV.title" = "着駅指定";
+
+/* Class = "UILabel"; text = "小児運賃："; ObjectID = "Wcz-4y-o82"; */
+"Wcz-4y-o82.text" = "小児運賃：";
+
+/* Class = "UITableViewSection"; headerTitle = "Section-1"; ObjectID = "XMG-jt-Axf"; */
+"XMG-jt-Axf.headerTitle" = "Section-1";
+
+/* Class = "UILabel"; text = "じょうえつこくさいすきーじょうまえ"; ObjectID = "Y8v-d5-ljn"; */
+"Y8v-d5-ljn.text" = "じょうえつこくさいすきーじょうまえ";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "YBo-HP-DKb"; */
+"YBo-HP-DKb.text" = "Title";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "YRc-Dm-y0W"; */
+"YRc-Dm-y0W.text" = "Title";
+
+/* Class = "UILabel"; text = "会社線"; ObjectID = "YTs-on-97L"; */
+"YTs-on-97L.text" = "会社線";
+
+/* Class = "UILabel"; text = "東海道新幹線"; ObjectID = "YrB-Or-XCX"; */
+"YrB-Or-XCX.text" = "東海道新幹線";
+
+/* Class = "UINavigationItem"; title = "経路指定"; ObjectID = "aTx-vL-gxf"; */
+"aTx-vL-gxf.title" = "経路指定";
+
+/* Class = "UILabel"; text = "経路は全て選択しなおしてください\n設定は保存されません。「同一視」がデフォルトです。次回起動時には再度設定する必要があります"; ObjectID = "acd-lM-SgY"; */
+"acd-lM-SgY.text" = "経路は全て選択しなおしてください\n設定は保存されません。「同一視」がデフォルトです。次回起動時には再度設定する必要があります";
+
+/* Class = "UILabel"; text = "(発着駅都区市内の駅を除き途中下車可能)"; ObjectID = "bbc-rG-415"; */
+"bbc-rG-415.text" = "(発着駅都区市内の駅を除き途中下車可能)";
+
+/* Class = "UILabel"; text = "上越国際スキー場前"; ObjectID = "ceT-W7-TbC"; */
+"ceT-W7-TbC.text" = "上越国際スキー場前";
+
+/* Class = "UILabel"; text = "¥546,700-"; ObjectID = "cfi-lJ-Nli"; */
+"cfi-lJ-Nli.text" = "¥546,700-";
+
+/* Class = "UILabel"; text = "¥54,555-"; ObjectID = "d33-b5-hI0"; */
+"d33-b5-hI0.text" = "¥54,555-";
+
+/* Class = "UILabel"; text = "89,999.9km"; ObjectID = "dfI-S3-HHU"; */
+"dfI-S3-HHU.text" = "89,999.9km";
+
+/* Class = "UIButton"; normalTitle = "サポートサイト"; ObjectID = "dhG-4R-jH8"; */
+"dhG-4R-jH8.normalTitle" = "サポートサイト";
+
+/* Class = "UILabel"; text = "JR東日本 株主優待2割："; ObjectID = "dqu-JF-C5e"; */
+"dqu-JF-C5e.text" = "JR東日本 株主優待2割：";
+
+/* Class = "UILabel"; text = "¥64,555-"; ObjectID = "eMt-TT-gLU"; */
+"eMt-TT-gLU.text" = "¥64,555-";
+
+/* Class = "UILabel"; text = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)"; ObjectID = "eaZ-vd-oJI"; */
+"eaZ-vd-oJI.text" = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
+
+/* Class = "UILabel"; text = "¥64,555-"; ObjectID = "ecX-lD-0bs"; */
+"ecX-lD-0bs.text" = "¥64,555-";
+
+/* Class = "UISegmentedControl"; f5l-4U-U80.segmentTitles[0] = "税5%"; ObjectID = "f5l-4U-U80"; */
+"f5l-4U-U80.segmentTitles[0]" = "税5%";
+
+/* Class = "UISegmentedControl"; f5l-4U-U80.segmentTitles[1] = "2014"; ObjectID = "f5l-4U-U80"; */
+"f5l-4U-U80.segmentTitles[1]" = "2014";
+
+/* Class = "UISegmentedControl"; f5l-4U-U80.segmentTitles[2] = "2015"; ObjectID = "f5l-4U-U80"; */
+"f5l-4U-U80.segmentTitles[2]" = "2015";
+
+/* Class = "UISegmentedControl"; f5l-4U-U80.segmentTitles[3] = "2017"; ObjectID = "f5l-4U-U80"; */
+"f5l-4U-U80.segmentTitles[3]" = "2017";
+
+/* Class = "UISegmentedControl"; f5l-4U-U80.segmentTitles[4] = "最新8%"; ObjectID = "f5l-4U-U80"; */
+"f5l-4U-U80.segmentTitles[4]" = "最新8%";
+
+/* Class = "UISegmentedControl"; f5l-4U-U80.segmentTitles[5] = "最新10%"; ObjectID = "f5l-4U-U80"; */
+"f5l-4U-U80.segmentTitles[5]" = "最新10%";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "f8O-de-dfW"; */
+"f8O-de-dfW.normalTitle" = "Button";
+
+/* Class = "UILabel"; text = "¥532,800"; ObjectID = "fNo-Nz-ThK"; */
+"fNo-Nz-ThK.text" = "¥532,800";
+
+/* Class = "UILabel"; text = "343,454 km"; ObjectID = "fzr-AL-92X"; */
+"fzr-AL-92X.text" = "343,454 km";
+
+/* Class = "UILabel"; text = "不完全ルート：この経路の片道乗車券は購入できません."; ObjectID = "gKP-SJ-tga"; */
+"gKP-SJ-tga.text" = "不完全ルート：この経路の片道乗車券は購入できません.";
+
+/* Class = "UILabel"; text = "99,999.5km"; ObjectID = "gph-YE-Ppu"; */
+"gph-YE-Ppu.text" = "99,999.5km";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "hFf-0z-cph"; */
+"hFf-0z-cph.text" = "Title";
+
+/* Class = "UILabel"; text = "総営業キロ"; ObjectID = "hiL-T8-MYV"; */
+"hiL-T8-MYV.text" = "総営業キロ";
+
+/* Class = "UINavigationItem"; prompt = "保持経路一覧"; ObjectID = "ijF-RG-VEv"; */
+"ijF-RG-VEv.prompt" = "保持経路一覧";
+
+/* Class = "UIBarButtonItem"; title = "最短経路"; ObjectID = "jIb-Ap-JO3"; */
+"jIb-Ap-JO3.title" = "最短経路";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "khu-J2-1OL"; */
+"khu-J2-1OL.text" = "Title";
+
+/* Class = "UILabel"; text = "往復"; ObjectID = "kvm-lr-PIH"; */
+"kvm-lr-PIH.text" = "往復";
+
+/* Class = "UILabel"; text = "規程114条適用"; ObjectID = "lLr-ph-qDH"; */
+"lLr-ph-qDH.text" = "規程114条適用";
+
+/* Class = "UINavigationItem"; title = "設定"; ObjectID = "lQd-7C-Mkd"; */
+"lQd-7C-Mkd.title" = "設定";
+
+/* Class = "UILabel"; text = "Subtitle"; ObjectID = "ll7-ET-8Gs"; */
+"ll7-ET-8Gs.text" = "Subtitle";
+
+/* Class = "UILabel"; text = "上越国際スキー場前 - 上越国際スキー場前"; ObjectID = "lpV-o7-Bcl"; */
+"lpV-o7-Bcl.text" = "上越国際スキー場前 - 上越国際スキー場前";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "m5B-j4-Spa"; */
+"m5B-j4-Spa.text" = "Title";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "nAY-VK-svP"; */
+"nAY-VK-svP.text" = "Detail";
+
+/* Class = "UILabel"; text = "（追加）"; ObjectID = "nu5-o4-nAT"; */
+"nu5-o4-nAT.text" = "（追加）";
+
+/* Class = "UILabel"; text = "営業キロ"; ObjectID = "ocy-fG-4MC"; */
+"ocy-fG-4MC.text" = "営業キロ";
+
+/* Class = "UILabel"; text = "¥999,999-"; ObjectID = "pVg-if-gUf"; */
+"pVg-if-gUf.text" = "¥999,999-";
+
+/* Class = "UITableViewController"; title = "運賃詳細"; ObjectID = "ptT-uq-AW3"; */
+"ptT-uq-AW3.title" = "運賃詳細";
+
+/* Class = "UILabel"; text = "99,999.9km"; ObjectID = "rFp-rP-VeU"; */
+"rFp-rP-VeU.text" = "99,999.9km";
+
+/* Class = "UIBarButtonItem"; title = "クリア"; ObjectID = "rh5-w5-G3o"; */
+"rh5-w5-G3o.title" = "クリア";
+
+/* Class = "UILabel"; text = "有効日数"; ObjectID = "s2V-ex-ecO"; */
+"s2V-ex-ecO.text" = "有効日数";
+
+/* Class = "UILabel"; text = "¥54,898-"; ObjectID = "sFa-JY-7Wp"; */
+"sFa-JY-7Wp.text" = "¥54,898-";
+
+/* Class = "UILabel"; text = "JR線"; ObjectID = "sfL-pX-Ex2"; */
+"sfL-pX-Ex2.text" = "JR線";
+
+/* Class = "UILabel"; text = "Subtitle"; ObjectID = "tL6-Ml-hlv"; */
+"tL6-Ml-hlv.text" = "Subtitle";
+
+/* Class = "UILabel"; text = "DB rev. 2014版 2015-03-14 12:34:23"; ObjectID = "tuf-wO-Ktg"; */
+"tuf-wO-Ktg.text" = "DB rev. 2014版 2015-03-14 12:34:23";
+
+/* Class = "UILabel"; text = "普通"; ObjectID = "u8I-mQ-gpf"; */
+"u8I-mQ-gpf.text" = "普通";
+
+/* Class = "UILabel"; text = "普通運賃"; ObjectID = "uBY-1E-Mjp"; */
+"uBY-1E-Mjp.text" = "普通運賃";
+
+/* Class = "UIButton"; normalTitle = "株割4運賃"; ObjectID = "uSf-t8-g8L"; */
+"uSf-t8-g8L.normalTitle" = "株割4運賃";
+
+/* Class = "UILabel"; text = "99,999.9km"; ObjectID = "uyL-Y4-iqq"; */
+"uyL-Y4-iqq.text" = "99,999.9km";
+
+/* Class = "UILabel"; text = "999日間"; ObjectID = "v94-de-zJD"; */
+"v94-de-zJD.text" = "999日間";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "vt2-lB-fOL"; */
+"vt2-lB-fOL.text" = "Label";
+
+/* Class = "UIBarButtonItem"; title = "OK"; ObjectID = "xdC-Xa-EfF"; */
+"xdC-Xa-EfF.title" = "OK";
+
+/* Class = "UISegmentedControl"; yiV-Ct-y8c.segmentTitles[0] = "会社"; ObjectID = "yiV-Ct-y8c"; */
+"yiV-Ct-y8c.segmentTitles[0]" = "会社";
+
+/* Class = "UISegmentedControl"; yiV-Ct-y8c.segmentTitles[1] = "都道府県"; ObjectID = "yiV-Ct-y8c"; */
+"yiV-Ct-y8c.segmentTitles[1]" = "都道府県";
+
+/* Class = "UISegmentedControl"; yiV-Ct-y8c.segmentTitles[2] = "履歴"; ObjectID = "yiV-Ct-y8c"; */
+"yiV-Ct-y8c.segmentTitles[2]" = "履歴";
+
+/* Class = "UILabel"; text = "Copyright(c) Sutezo 2014-2019"; ObjectID = "zOt-sa-bMK"; */
+"zOt-sa-bMK.text" = "Copyright(c) Sutezo 2014-2019";
+
+/* Class = "UILabel"; text = "計算キロ(JR)"; ObjectID = "zZU-ap-qIi"; */
+"zZU-ap-qIi.text" = "計算キロ(JR)";
+
+/* Class = "UILabel"; text = "うち会社線"; ObjectID = "zsF-aX-RJB"; */
+"zsF-aX-RJB.text" = "うち会社線";

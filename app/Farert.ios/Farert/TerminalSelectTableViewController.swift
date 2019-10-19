@@ -74,6 +74,12 @@ class TerminalSelectTableViewController: CSTableViewController {
         
         self.navigationItem.rightBarButtonItem!.isEnabled = false // Disable [Edit] button
         self.clerBarButtonItem.isEnabled = false    // Disable [Clear] button
+
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
     }
   
     deinit {

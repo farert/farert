@@ -213,13 +213,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 // 履歴へ追加
                 appendHistory(this, RouteUtil.StationNameEx(stationId))
 
-                val titles = arrayOf("在来線のみ", "新幹線を使う", "会社線を使う", "新幹線も会社線も使う")
                 val subtitle = RouteUtil.StationNameEx(stationId)
                 val dlg_title = resources.getString(R.string.title_autoroute_selection, subtitle)
 
                 AlertDialog.Builder(this).apply {
                     setTitle(dlg_title)
-                    setItems(titles) { _, which ->
+                    setItems(R.array.select_autoroute_option) { _, which ->
                         val rc = mRoute.changeNeerest(which, stationId)
                         update_fare(if (rc == 4) 40 else rc)
                         recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
@@ -470,6 +469,9 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         mOsakakan_detour = OSAKA_KAN.FAR
                     }
                     val far = (mOsakakan_detour == OSAKA_KAN.FAR)
+                    if (far) {
+                        showInfoAsOsakaKanjyouDetour()
+                    }
                     val rc = mRoute.setDetour(far)   // True=Far, False=Neerest
 
                     update_fare(rc)
@@ -481,6 +483,26 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    fun showInfoAsOsakaKanjyouDetour() {
+        val key = "setting_key_hide_osakakan_detour_info"
+        val r = readParam(this, key)
+        if (r != "true") {
+            val title = resources.getString(R.string.title_specific_calc_option_osakakan)
+            val msg = resources.getString(R.string.desc_specific_calc_option, title)
+            val build = AlertDialog.Builder(this).apply {
+                setTitle(title)
+                setMessage(msg)
+                setNegativeButton(R.string.hide_specific_calc_option_info) { _, _ ->
+                    saveParam(context, key, "true")
+                }
+                setPositiveButton(R.string.agree, null)
+            }
+            val dlg = build.create()
+            dlg.show()
+        }
+    }
+
 
     // <- bottun
     override fun onBackPressed() {

@@ -29,7 +29,7 @@ class VersionInfoViewController: UIViewController {
 
         super.viewWillAppear(true)
     
-        let dbverInf : DbSys = cRouteUtil.databaseVersion()
+        guard let dbverInf : DbSys = cRouteUtil.databaseVersion() else {return}
 
         if let lbl : UILabel = self.view.viewWithTag(1023432) as! UILabel? {
             lbl.text = "DB Rev. [\(dbverInf.name!)](\(dbverInf.create_date!))"

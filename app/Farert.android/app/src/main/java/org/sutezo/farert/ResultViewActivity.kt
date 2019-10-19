@@ -124,7 +124,12 @@ class ResultViewActivity : AppCompatActivity() {
                             if (item.title.contains(resources.getString(R.string.nothing))) Option.DO_TRUE else Option.DO_FALSE
                     // @"特例を適用しない";
                     // @"特例を適用する"
-                    refresh()
+                    if ((opt_items[OptionItem.sperule.ordinal] == Option.DO_TRUE) ||
+                        (opt_items[OptionItem.sperule.ordinal] == Option.TRUE)) {
+                        showInfoAsNorule(R.string.title_specific_calc_option_norule)
+                    } else {
+                        refresh()
+                    }
                 }
             }
             R.id.menu_meihancity -> {
@@ -157,7 +162,13 @@ class ResultViewActivity : AppCompatActivity() {
                             } else {
                                 Option.DO_FALSE
                             }
-                    refresh()
+
+                    if ((opt_items[OptionItem.osakakan.ordinal] == Option.DO_TRUE) ||
+                            (opt_items[OptionItem.osakakan.ordinal] == Option.TRUE)) {
+                        showInfoAsNorule(R.string.title_specific_calc_option_osakakan)
+                    } else {
+                        refresh()
+                    }
                 }
             }
             R.id.menu_stocktokai -> {
@@ -946,6 +957,42 @@ class ResultViewActivity : AppCompatActivity() {
                 .intent
         if (shareIntent.resolveActivity(packageManager) != null) {
             startActivity(shareIntent)
+        }
+    }
+
+    // 情報アラートを抑制するか(最初の一回)
+
+    fun showInfoAsNorule(key : Int) {
+
+        val info = mapOf(
+                R.string.title_specific_calc_option_norule to arrayOf("setting_key_hide_no_rule_info"),
+                R.string.title_specific_calc_option_osakakan to arrayOf("setting_key_hide_osakakan_detour_info"))
+
+        val r = readParam(this, "")
+        if (r != "true") {
+            val title = resources.getString(key)
+            val msg = resources.getString(R.string.desc_specific_calc_option, title)
+            val build = AlertDialog.Builder(this).apply {
+                setTitle(title)
+                setMessage(msg)
+                setNegativeButton(R.string.hide_specific_calc_option_info) { _, _ ->
+                    info.get(key).let {
+                        it.let {
+                            it?.get(0).let {
+                                it?.let {
+                                    saveParam(context, it, "true")
+                                }
+                            }
+                        }
+                    }
+                    refresh()
+                }
+                setPositiveButton(R.string.agree) { _, _ ->
+                    refresh()
+                }
+            }
+            val dlg = build.create()
+            dlg.show()
         }
     }
 }

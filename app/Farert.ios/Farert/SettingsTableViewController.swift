@@ -20,6 +20,9 @@ class SettingsTableViewController: UITableViewController {
     
     var isSameShinkanzanKokuraHakataOther : Bool = false;
     
+    var isSaved = false
+    @IBOutlet weak var btnResetInfoMessage: UIButton!
+    
     // MARK: - UI Propery
     @IBOutlet weak var swShinkansenKokuraHakataOther: UISwitch!
     
@@ -53,6 +56,17 @@ class SettingsTableViewController: UITableViewController {
         self.selectDbId = -1;   /* is no select */
         self.sgmDataVer.selectedSegmentIndex = before_dbid_idx - DB._MIN_ID.rawValue;
         self.swShinkansenKokuraHakataOther.setOn(isSameShinkanzanKokuraHakataOther, animated: false);
+        
+        let s1 = cRouteUtil.read(fromKey: "setting_key_hide_osakakan_detour_info")
+        let s2 = cRouteUtil.read(fromKey: "setting_key_hide_no_rule_info")
+        if (s1 == "true" || s2 == "true") {
+            // どっちか1つでも抑制されてたら復活できるようにボタン有効
+            btnResetInfoMessage.isEnabled = true
+            isSaved = false
+        } else {
+            btnResetInfoMessage.isEnabled = false
+            isSaved = true
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -80,6 +94,8 @@ class SettingsTableViewController: UITableViewController {
             return "データソース"
         } else if (section == 1) {
             return "設定"
+        } else if (section == 2) {
+            return "その他"
         }
         return nil
     }
@@ -132,6 +148,16 @@ class SettingsTableViewController: UITableViewController {
 
     // MARK: - Navigation
 
+    @IBAction func actBtnResetInfoMessageTouched(_ sender: UIButton) {
+        if !isSaved {
+            cRouteUtil.save(toKey: "setting_key_hide_no_rule_info", value: "", sync: false)
+            cRouteUtil.save(toKey: "setting_key_hide_osakakan_detour_info", value: "", sync: true)
+            isSaved = true
+            sender.isEnabled = false
+        }
+    }
+    
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using [segue destinationViewController].
@@ -149,7 +175,13 @@ class SettingsTableViewController: UITableViewController {
             } else {
                 self.selectDbId = -1;   /* no change */
             }
-            self.isSameShinkanzanKokuraHakataOther = self.swShinkansenKokuraHakataOther.isOn;
+            let bKokuraHakataShinzai = self.swShinkansenKokuraHakataOther.isOn
+            if (self.isSameShinkanzanKokuraHakataOther != bKokuraHakataShinzai) {
+                self.isSameShinkanzanKokuraHakataOther = bKokuraHakataShinzai
+                let tf = bKokuraHakataShinzai ? "true" : ""
+                cRouteUtil.save(toKey: "kokura_hakata_shinzai", value: tf, sync: true)
+            }
         }
     }
+    
 }
