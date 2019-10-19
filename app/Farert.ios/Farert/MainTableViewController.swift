@@ -92,11 +92,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         self.actionBarButton.isEnabled = false;
         ds = cRoute()
         
+        let strKokuraHakataShinzai  = cRouteUtil.read(fromKey: "kokura_hakata_shinzai")
+        ds.setNotSameKokuraHakataShinZai((strKokuraHakataShinzai == "true"))
+        
         let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
         lvd.delegate = self as MainTableViewControllerDelegate
         //  self.navigationController.toolbarHidden = NO;
 
         self.setViewTitle()
+
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -173,8 +182,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 UserDefaults.standard.synchronize();
             }
         }
-        
-        
+
         // ここから
         switch viewContextMode {
         case .AUTOROUTE_ACTION:
@@ -906,7 +914,29 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             */
             if nil == title.range(of: "キャンセル") {
                 if (nil != title.range(of: "大阪環状線")) {
-                    rc = ds.setDetour(nil != title.range(of: "遠") ? true : false)
+                    let detour = nil != title.range(of: "遠")
+                    if (detour) {
+                        let sw = cRouteUtil.read(fromKey: "osakakan")
+                        if sw != "true" {
+                            let subtitle = NSLocalizedString("title_osakakan_detour", comment: "")
+                            let msg = String(format: NSLocalizedString("desc_specific_calc_option", comment: ""), subtitle)
+                            
+                            let ac = UIAlertController(title: subtitle, message: msg, preferredStyle: .alert)
+                            
+                            let agree = NSLocalizedString("agree", comment: "")
+                            let hide_later = NSLocalizedString("hide_specific_calc_option_info", comment: "")
+
+                            ac.addAction( UIAlertAction(title: hide_later, style: .default) {
+                                action in
+                                cRouteUtil.save(toKey: "setting_key_hide_osakakan_detour_info", value:"true", sync: true)
+                            })
+                            ac.addAction(UIAlertAction(title: agree, style: .default) {
+                                action in
+                            })
+                            self.present(ac, animated: true, completion: nil)
+                        }
+                    }
+                    rc = ds.setDetour(detour)
                     if (rc < 0) {
                         routeStat = ROUTE.DUPCHG_ERROR;
                     } else if (rc == 0) || (rc == 5) {
@@ -1015,14 +1045,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
             if (cur_db_idx != DB._MAX_ID.rawValue) {
                 // データベースは最新以外
-                let dbverInf : DbSys = cRouteUtil.databaseVersion()
+                guard let dbverInf : DbSys = cRouteUtil.databaseVersion() else { return }
                 var dbname : String
                 if cur_db_idx == DB._TAX5.rawValue /* dbverInf.tax == 5*/ {
-                    dbname = dbverInf.name! + "(5%tax)"
+                    dbname = dbverInf.name + "(5%tax)"
                 } else if cur_db_idx == DB._2018.rawValue {
-                    dbname = dbverInf.name! + "(8%tax)"
+                    dbname = dbverInf.name + "(8%tax)"
                 } else {
-                    dbname = dbverInf.name!
+                    dbname = dbverInf.name
                 }
                 self.navigationItem.title = "\(title) - \(dbname)"
             } else {

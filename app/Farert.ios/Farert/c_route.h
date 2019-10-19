@@ -112,6 +112,8 @@ typedef NS_ENUM(NSInteger, DB) {
 + (void)SaveToTerminalHistory:(NSString*)terminalName;
 + (void)SaveToTerminalHistoryWithArray:(NSArray*)historyAry;
 + (NSArray*)ReadFromTerminalHistory;
++ (NSString* )ReadFromKey:(NSString*)name;
++ (void)SaveToKey:(NSString*)key Value:(NSString*) value sync:(BOOL) sync;
 
 @end
 /* End of RouteUtil */

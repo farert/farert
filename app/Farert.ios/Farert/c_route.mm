@@ -99,7 +99,7 @@ int g_tax; /* main.m */
     [self SaveToDatabaseId:dbid sync:YES];
 }
 
-+ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
++ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync
 {
     /* Store */
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:dbid] forKey:@"JrDatabaseId"];
@@ -424,6 +424,27 @@ int g_tax; /* main.m */
     }
     return newArray;
 }
+
+// generic parameter
+
++ (void)SaveToKey:(NSString*)key Value:(NSString*) value sync:(BOOL) sync
+{
+    /* Store */
+    [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
+
+    if (sync) {
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+}
+
+// Retrieve database index
++ (NSString* )ReadFromKey:(NSString*)name
+{
+    return
+    [[NSUserDefaults standardUserDefaults] stringForKey:name];
+}
+
+
 
 @end
 /* cRouteUtil */

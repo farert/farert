@@ -72,7 +72,12 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         self.tableView.sectionHeaderHeight = 40.0;
         self.tableView.sectionFooterHeight = 0.01;
 
-    }
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
+}
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -254,6 +259,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             break;
         }
         //println("\(indexPath.section), \(indexPath.row), \(cell.contentView.frame.height), \(cell.frame.size.height), \(cell.bounds.size.height)");
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        };
         return cell
     }
 
@@ -418,6 +428,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if nil != title.range(of: "特例") {
             if nil != title.range(of: "しない") {
                 // @"特例を適用しない";
+                self.showInfo(key: "norule")
                 ds.setNoRule(true);
             } else {
                 // @"特例を適用する";
@@ -455,11 +466,15 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         } else if nil != title.range(of: "回り") {
             if let route : cRoute = cRoute() {
                 route.sync(ds)
-                let rc = route.setDetour((nil != title.range(of: "遠")) ? true : false)
+                let detour_sw = (nil != title.range(of: "遠")) ? true : false
+                let rc = route.setDetour(detour_sw)
                 if 0 <= rc {
                     ds.sync(route)
                     self.reCalcFareInfo()
                     self.tableView.reloadData()
+                    if (detour_sw) {
+                        self.showInfo(key: "osakakan")
+                    }
                 } else {
                     self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
                 }
@@ -1052,5 +1067,39 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
             alertView.show()
         }
+    }
+    func showInfo(key : String) {
+        let info:[String:[String]] =
+            [ "norule": ["",
+                        "title_norule",                   // sub title
+                        "setting_key_hide_no_rule_info"], // param key
+             "osakakan":["",
+                          "title_osakakan_detour",
+                          "setting_key_hide_osakakan_detour_info"]]
+        
+        let sw = cRouteUtil.read(fromKey: info[key]?[2] ?? "")
+        if sw == "true" {
+            // hide
+            return
+        }
+        
+        let subtitle = NSLocalizedString((info[key]?[1])!, comment: "")
+        let msg = String(format: NSLocalizedString("desc_specific_calc_option", comment: ""), subtitle)
+
+        let ac = UIAlertController(title: subtitle, message: msg, preferredStyle: .alert)
+        
+        let agree = NSLocalizedString("agree", comment: "")
+        let hide_later = NSLocalizedString("hide_specific_calc_option_info", comment: "")
+
+        ac.addAction( UIAlertAction(title: hide_later, style: .default) {
+            action in
+            guard let propKey = info[key]?[2] else { return }
+            cRouteUtil.save(toKey: propKey, value:"true", sync: true)
+        })
+        ac.addAction(UIAlertAction(title: agree, style: .default) {
+            action in
+        })
+        self.present(ac, animated: true, completion: nil)
+
     }
 }
