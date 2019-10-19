@@ -31,7 +31,13 @@ class SelectLineTableViewController: UITableViewController {
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-        
+
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
+
         let apd:AppDelegate = UIApplication.shared.delegate as! AppDelegate
         if ((apd.context == .AUTOROUTE_VIEW) || (apd.context == .TERMINAL_VIEW)) {
             self.navigationItem.setRightBarButtonItems(nil, animated: true)

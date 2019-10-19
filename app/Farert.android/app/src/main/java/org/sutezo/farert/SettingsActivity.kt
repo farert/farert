@@ -52,6 +52,23 @@ class SettingsActivity : AppCompatActivity() {
 
             }
         }
+
+        // 情報メッセージ抑制リセット
+        buttonInfoReset.setOnClickListener {
+            /* true true =  抑制されているのでリセット可
+               false true = ひとつでも抑制されているのでリセット可とする
+               true false = ひとつでも抑制されているのでリセット可とする
+               false false = 抑制していないのでするひつようなし
+             */
+            val s1 = readParam(this, "setting_key_hide_osakakan_detour_info")
+            val s2 = readParam(this, "setting_key_hide_no_rule_info")
+            if (s1 == "true" || s2 == "true") {
+                saveParam(this, "setting_key_hide_osakakan_detour_info", "")
+                saveParam(this, "setting_key_hide_no_rule_info", "")
+            }
+            it.isEnabled = false
+        }
+
     }
 
     override fun onStop() {
