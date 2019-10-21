@@ -70,6 +70,9 @@ BOOL Calps_mfcApp::InitInstance()
 		} else if (g_tax == 5) {
 			dbid = IDR_DB2014;
 		}
+		else if (g_tax == 10) {
+			dbid = IDR_DB2019;
+		}
 	} else {
 		g_tax = DEFAULT_TAX;	/* default */
 	}

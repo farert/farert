@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -4129,12 +4129,11 @@ bool RouteUtil::DbVer(DBsys* db_sys)
     memset(db_sys, 0, sizeof(DBsys));
 
     DBO ctx = DBS::getInstance()->compileSql(
-    "select name, tax, db_createdate from t_dbsystem limit(1)");
+    "select name, db_createdate from t_dbsystem limit(1)");
     if (ctx.isvalid()) {
         if (ctx.moveNext()) {
             _tcscpy_s(db_sys->name, NumOf(db_sys->name), ctx.getText(0).c_str());
-            db_sys->tax = ctx.getInt(1);
-            _tcscpy_s(db_sys->createdate, NumOf(db_sys->createdate), ctx.getText(2).c_str());
+            _tcscpy_s(db_sys->createdate, NumOf(db_sys->createdate), ctx.getText(1).c_str());
             return true;
         }
     }
