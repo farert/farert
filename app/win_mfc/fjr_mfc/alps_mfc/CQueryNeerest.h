@@ -8,7 +8,7 @@ class CQueryNeerest : public CDialogEx
 	DECLARE_DYNAMIC(CQueryNeerest)
 
 public:
-	CQueryNeerest(CWnd* pParent = nullptr);   // 標準コンストラクター
+	CQueryNeerest(int initialSel, CWnd* pParent = nullptr);   // 標準コンストラクター
 	virtual ~CQueryNeerest();
 
 // ダイアログ データ
@@ -26,4 +26,5 @@ public:
 	afx_msg void OnBnClickedMfcbuttonCompany();
 	afx_msg void OnBnClickedMfcbuttonBulletCompanu();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnBnClickedOk();
 };

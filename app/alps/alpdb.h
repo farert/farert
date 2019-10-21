@@ -1,4 +1,4 @@
-#if !defined _ALPDB_H__
+﻿#if !defined _ALPDB_H__
 
 #define _ALPDB_H__
 
@@ -369,22 +369,28 @@ public:
     // UI側からセットする制御フラグ
     bool isEnableLongRoute() const { return !no_rule && 0 != urban_neerest; }
     bool isLongRoute() const { return urban_neerest < 0; }
-    void setLongRoute(bool far) {
-        if (far) {
-            urban_neerest = -1;
-        } else {
-            urban_neerest = 1;
-        }
+    void setLongRoute(bool farflag) {
+		if (0 != urban_neerest) {
+			if (farflag) {
+				urban_neerest = -1;
+			}
+			else {
+				urban_neerest = 1;
+			}
+		}
     }
 
     bool isEnableRule115() const { return !no_rule && 0 != rule115; }
     bool isDisableSpecificTermRule115() const { return rule115 < 0; }
     void setSpecificTermRule115(bool ena) {
-        if (ena) {
-            rule115 = -1;
-        } else {
-            rule115 = 1;
-        }
+		if (0 != rule115) {
+			if (ena) {
+				rule115 = -1;
+			}
+			else {
+				rule115 = 1;
+			}
+		}
     }
     void setNoRule(bool flag) { no_rule = flag; }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
