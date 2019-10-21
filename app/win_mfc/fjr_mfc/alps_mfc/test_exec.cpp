@@ -2160,7 +2160,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				_ftprintf(os, _T("///最安経路\n%s\n"), s.c_str());
 			}
 			if (croute.getRouteFlag().isEnableRule115()) {
-				ASSERT(!croute.refRouteFlag().isDisableSpecificTermRule115())
+				ASSERT(!croute.refRouteFlag().isDisableSpecificTermRule115());
 				// デフォルトは最安かつ単駅になっているので、Optionで都区市内発着へ
 				croute.refRouteFlag().setSpecificTermRule115(true);
 				croute.calcFare(&fi);

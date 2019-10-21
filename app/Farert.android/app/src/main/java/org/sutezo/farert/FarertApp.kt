@@ -39,10 +39,12 @@ class FarertApp : Application() {
         } catch (e: Throwable) {
             dbidx = -1
         }
+        // 有効なDBIndexに変換
         dbidx = DatabaseOpenHelper.validDBidx(dbidx)
         DatabaseOpenHelper.mDatabaseIndex = dbidx // これがないと毎回DB展開する
         mDbHelper = DatabaseOpenHelper(this)
         mDbHelper.createEmptyDataBase(dbidx)
+        // 消費税は、DbId=DbIndexにより決まる
         RouteDB.createFactory(mDbHelper.openDataBase(), if (dbidx == 0) 5 else if (dbidx <= 4) 8 else 10)
     }
 

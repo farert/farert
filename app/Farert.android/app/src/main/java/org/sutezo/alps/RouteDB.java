@@ -63,12 +63,11 @@ public class RouteDB {
         createdate = "N/A";
         _db = db_;
         Cursor ctx = db_.rawQuery(
-                "select name, tax, db_createdate from t_dbsystem limit(1)", null);
+                "select name, db_createdate from t_dbsystem limit(1)", null);
         try {
             if (ctx.moveToNext()) {
                 name = ctx.getString(0);
-                tax = ctx.getInt(1);
-                createdate = ctx.getString(2);
+                createdate = ctx.getString(1);
             }
         } finally {
             ctx.close();
