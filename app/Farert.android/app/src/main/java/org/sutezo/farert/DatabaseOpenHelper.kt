@@ -161,20 +161,23 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
     @Throws(SQLException::class)
     fun openDataBase() : SQLiteDatabase {
 
-//        val dbPath = mDatabasePath.absolutePath
-//
-//        var checkDb :SQLiteDatabase? = null
-//        try {
-//            checkDb = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
-//        } catch (e: SQLiteException) {
-//            // データベースはまだ存在していない
-//        }
-//
-//        checkDb?.let {
-//            return it
-//        }
-//
-//
+/*
+val dbPath = mDatabasePath.absolutePath
+
+var checkDb :SQLiteDatabase? = null
+try {
+checkDb = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
+} catch (e: SQLiteException) {
+// データベースはまだ存在していない
+}
+
+checkDb?.let {
+return it
+}
+
+/*** original code is unnecessary ***/
+
+*/
         return getReadableDatabase();
 
     }

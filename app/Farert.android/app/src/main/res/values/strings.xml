@@ -48,7 +48,8 @@
 
     <string name="title_version_info">経路運賃営業キロ計算</string>
     <string name="version_number">Farert %1$s</string>
-    <string name="db_version_name">DB rev. %1$s版 %2$s</string>
+    <string name="db_version_name">DB rev. %1$s版 %2$s\n消費税 %3$d%%</string>
+
     <string name="support_site_url"><a href="http://farert.blogspot.com/p/main.html">サポートサイト</a></string>
     <string name="support_site_url_body">http://farert.blogspot.com/p/main.html</string>
     <string name="welcome">ダウンロードありがとうございます</string>

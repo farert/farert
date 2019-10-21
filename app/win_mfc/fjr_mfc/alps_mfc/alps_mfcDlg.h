@@ -90,5 +90,7 @@ public:
 	afx_msg void OnBnClickedButtonNeerest();
 	afx_msg void OnBnClickedMfcmenubuttonFareopt();
 	afx_msg void OnStnClickedStaticBar();
- };
+protected:
+	int m_selAutorouteOption;
+};
 
