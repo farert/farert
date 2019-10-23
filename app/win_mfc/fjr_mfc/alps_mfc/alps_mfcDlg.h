@@ -89,8 +89,9 @@ public:
 	afx_msg void OnBnClickedButtonRouteOpen();
 	afx_msg void OnBnClickedButtonNeerest();
 	afx_msg void OnBnClickedMfcmenubuttonFareopt();
-	afx_msg void OnStnClickedStaticBar();
 protected:
 	int m_selAutorouteOption;
+	enum ALERT_TYPE { STARTUP, OSAKAKAN, NORULE };
+	void alert_message(int type);
 };
 

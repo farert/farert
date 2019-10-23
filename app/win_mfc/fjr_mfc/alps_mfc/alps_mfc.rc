@@ -182,6 +182,16 @@ BEGIN
     CONTROL         "会社線を使う",IDC_CHK_COMPANY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,68,59,10
 END
 
+IDD_INFOMSG DIALOGEX 0, 0, 217, 73
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ご案内"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,159,52,50,14
+    CONTROL         "今後、このメッセージを表示しない",IDC_CHKNOMSG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,121,10
+    LTEXT           "特例非適用に設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです",IDC_STATIC_TITLE,7,7,203,29
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -272,6 +282,14 @@ BEGIN
     IDD_QUERYNEEREST, DIALOG
     BEGIN
     END
+
+    IDD_INFOMSG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 66
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -306,6 +324,11 @@ BEGIN
 END
 
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_INFOMSG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -375,13 +398,13 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "dummy"
     BEGIN
-        MENUITEM "JR東海株主優待券使用",                 IDR_MENU_JRTOKAI_STOCK
-        MENUITEM "発駅を単駅に",                      IDR_MENU_TERM_AGGR
-        MENUITEM "特定を適用",                       IDR_MENU_SPECIFIC_APPLY
-        MENUITEM "大阪環状線遠回り",                    IDR_MENU_ARROUND_OSAKAKAN
         MENUITEM "博多-小倉 新幹線在来線別線扱い",            IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME
+        MENUITEM "発駅を単駅に",                      IDR_MENU_TERM_AGGR
+        MENUITEM "大阪環状線遠回り",                    IDR_MENU_ARROUND_OSAKAKAN
         MENUITEM "旅客営業取扱基準規程115条(特定都区市内発着)",    IDR_MENU_RULE115
         MENUITEM "指定した経路で運賃計算",                 IDR_MENU_NEERORFAR
+        MENUITEM "JR東海株主優待券使用",                 IDR_MENU_JRTOKAI_STOCK
+        MENUITEM "特定を適用",                       IDR_MENU_SPECIFIC_APPLY
     END
 END
 
@@ -394,6 +417,9 @@ END
 STRINGTABLE
 BEGIN
     IDS_ABOUTBOX            "バージョン情報(&A)..."
+    IDS_STARTUP             "本アプリで表示される結果は必ずしも正確な情報ではないことがありえます。実際の旅行での費用とは異なることがあり得ることをご理解の上ご利用ください"
+    IDS_ALERTOSAKAKAN       "大阪環状線遠回りに設定は、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです"
+    IDS_ALERTNORULE         "特例非適用に設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです"
 END
 
 #endif    // 日本語 (日本) resources
