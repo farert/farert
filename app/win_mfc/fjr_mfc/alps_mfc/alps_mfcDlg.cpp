@@ -11,6 +11,8 @@
 #include "TermSel.h"
 #include "RouteInputDlg.h"
 #include "CQueryNeerest.h"
+#include "CInfoMessage.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -98,7 +100,6 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &Calps_mfcDlg::OnBnClickedButtonRouteOpen)
 	ON_BN_CLICKED(IDC_BUTTON_NEEREST, &Calps_mfcDlg::OnBnClickedButtonNeerest)
 	ON_BN_CLICKED(IDC_MFCMENUBUTTON_FAREOPT, &Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt)
-	ON_STN_CLICKED(IDC_STATIC_BAR, &Calps_mfcDlg::OnStnClickedStaticBar)
 END_MESSAGE_MAP()
 
 
@@ -158,6 +159,8 @@ BOOL Calps_mfcDlg::OnInitDialog()
 	pLSel->InsertColumn(1, _T("乗換駅"), LVCFMT_LEFT, rc.Width() / 5 * 2, 0);
 
 	ResetContent();	// 発駅、着駅、経路 => 全消去 IDC_BUTTON_ALL_CLEAR [X] Button pushed.
+
+	alert_message(STARTUP);
 
 //////////////////////////////////////#####################
 #ifdef _DEBUG
@@ -1224,7 +1227,7 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 	// JR東海株主優待券使用
 	if (m_route.getRouteFlag().jrtokaistock_enable) {
 		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
-		if (!m_route.getRouteFlag().jrtokaistock_applied) {
+		if (m_route.getRouteFlag().jrtokaistock_applied) {
 			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
 		}
 		else {
@@ -1241,44 +1244,34 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 	if (!m_route.getRouteFlag().is_osakakan_1pass()) {
 		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
 	}
-	else if (m_route.getRouteFlag().osakakan_detour) {
+	else {
 		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
 		m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, 
-			_T("大阪環状線遠回り"));
-	} else {
-		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, 
-			_T("大阪環状線近回り"));
+			m_route.getRouteFlag().osakakan_detour ? 
+			_T("大阪環状線近回り") : _T("大阪環状線遠回り"));
 	}
 
 	// 旅客営業取扱基準規程115条(特定都区市内発着)
 	if (!m_route.getRouteFlag().isEnableRule115()) {
 		m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_GRAYED);
 	}
-	else if (m_route.getRouteFlag().isDisableSpecificTermRule115()) {
-		m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115,
-			_T("旅客営業取扱基準規程115条(単駅最安)"));
-	}
 	else {
 		m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_ENABLED);
 		m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115,
-			_T("旅客営業取扱基準規程115条(特定都区市内発着)"));
+			m_route.getRouteFlag().isDisableSpecificTermRule115() ?
+				_T("旅客営業取扱基準規程115条(単駅最安)") : 
+				_T("旅客営業取扱基準規程115条(特定都区市内発着)"));
 	}
 
 	// 指定した経路で運賃計算
 	if (!m_route.getRouteFlag().isEnableLongRoute()) {
 		m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_GRAYED);
 	}
-	else if (m_route.getRouteFlag().isLongRoute()) {
-		m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR,
-			_T("指定した経路で運賃計算"));
-	}
 	else {
 		m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR, 
-			_T("最安経路で運賃計算"));
+		m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR,
+			m_route.getRouteFlag().isLongRoute() ?
+			_T("最安経路で運賃計算") : _T("指定した経路で運賃計算"));
 	}
 }
 
@@ -1440,9 +1433,18 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 			int rc;
 
 			if (m_route.getRouteFlag().is_osakakan_1pass()) {
+
+				if (0 <= menuTitle.Find(_T("遠"))) {
+					alert_message(OSAKAKAN);
+				}
+
+				ASSERT((m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("近"))))
+					|| (!m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("遠")))));
+
 				// 近回り時に押されたら遠回り(FAREOPT_OSAKAKAN_DETOUR)に :
 				// 遠回り時に押されたら近回り(0:FAREOPT_OSAKAKAN_SHORTCUT)に
-				rc = m_route.setDetour(m_route.getRouteFlag().osakakan_detour ? true : false);
+				rc = m_route.setDetour(m_route.getRouteFlag().osakakan_detour ? 
+					false : true);
 				if (1 == rc) {
 					showFare(false);
 					// optは逆転する
@@ -1455,13 +1457,17 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 					// rc == 0
 					int selId = m_route.routeList().back().stationId;
 
-					MessageBox(_T("経路が片道条件に達しました. "), _T("経路終端"), MB_ICONQUESTION);
+					MessageBox(_T("経路が片道条件に達しました. "), _T("経路終端"), 
+						MB_ICONQUESTION);
 
-					CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
+					CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(
+						GetDlgItem(IDC_LIST_ROUTE));
 					int numList = pLRoute->GetItemCount();
 
-					// 2回目は既に空欄となっているので。ASSERT(selId == IDENT2(pLRoute->GetItemData(numList - 1)));	// last station
-					ASSERT(m_route.routeList().back().lineId == IDENT1(pLRoute->GetItemData(numList - 1)));	// last line
+					// 2回目は既に空欄となっているので。
+					//ASSERT(selId == IDENT2(pLRoute->GetItemData(numList - 1)));	// last station
+					ASSERT(m_route.routeList().back().lineId 
+						== IDENT1(pLRoute->GetItemData(numList - 1)));	// last line
 
 					pLRoute->SetItemText(numList - 1, 1, _T(""));
 					pLRoute->SetItemData(numList - 1, MAKEPAIR(m_route.routeList().back().lineId, 0));
@@ -1481,6 +1487,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 		//	[特例適用]チェックボタン
 		state = m_menu.GetMenuState(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND);
 		if (MF_CHECKED & state) {
+			alert_message(NORULE);
 			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
 			m_route.refRouteFlag().setNoRule(true);
 		}
@@ -1509,6 +1516,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 	case IDR_MENU_JRTOKAI_STOCK:
 		//	[JR東海株主優待券使用]チェックボタン
 		state = m_menu.GetMenuState(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND);
+
 		if (MF_CHECKED & state) {
 			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
 			m_route.refRouteFlag().setJrTokaiStockApply(false);
@@ -1526,7 +1534,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 			m_route.refRouteFlag().setLongRoute(true);
 		} else {
 			// 単駅最安
-			m_route.refRouteFlag().setLongRoute(true);
+			m_route.refRouteFlag().setLongRoute(false);
 		}
 		showFare(false);
 		break;
@@ -1550,7 +1558,28 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 }
 
 
-void Calps_mfcDlg::OnStnClickedStaticBar()
+
+void Calps_mfcDlg::alert_message(int type)
 {
-	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	const TCHAR* keys[] =
+	{ _T("hide_startup"), _T("hide_osakakan"), _T("hide_norule") };
+
+	const UINT ids[] =
+	{ IDS_STARTUP, IDS_ALERTOSAKAKAN, IDS_ALERTNORULE
+	};
+
+	if (isKeyExist(keys[type])) {
+		return;
+	}
+	CInfoMessage mesg;
+	CString msgstr;
+
+	msgstr.LoadString(ids[type]);
+	mesg.SetTitleMessage(msgstr);
+	if (IDOK == mesg.DoModal()) {
+		putKey(keys[type]);
+	}
 }
+
+
+

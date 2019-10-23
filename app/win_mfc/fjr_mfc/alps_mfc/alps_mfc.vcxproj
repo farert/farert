@@ -117,6 +117,7 @@
   <ItemGroup>
     <ClInclude Include="alps_mfc.h" />
     <ClInclude Include="alps_mfcDlg.h" />
+    <ClInclude Include="CInfoMessage.h" />
     <ClInclude Include="CQueryNeerest.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RouteInputDlg.h" />
@@ -145,6 +146,7 @@
     </ClCompile>
     <ClCompile Include="alps_mfc.cpp" />
     <ClCompile Include="alps_mfcDlg.cpp" />
+    <ClCompile Include="CInfoMessage.cpp" />
     <ClCompile Include="CQueryNeerest.cpp" />
     <ClCompile Include="RouteInputDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
