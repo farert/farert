@@ -1,5 +1,15 @@
 
 
+darkMode 対応
+defaultBackgroundColor
+defaultButtonColor
+linkColor
+navigationBarTintColor
+primaryTextColor
+alertColor
+borderColor
+
+
 注意：
 Javaのオブジェクトは参照なので代入に注意
 
