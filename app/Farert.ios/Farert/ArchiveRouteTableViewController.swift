@@ -66,6 +66,11 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             self.navigationItem.rightBarButtonItem?.isEnabled = false
         }
         allClearButton.isEnabled = false
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -114,12 +119,16 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
             if (indexPath.row == 0) && (self.routeList[0] == currentRouteString) {
                 if (self.saved) {
-                    cell.routeString?.textColor = UIColor.darkGray
+                    cell.routeString?.textColor = UIColor.systemGray
                 } else {
-                    cell.routeString?.textColor = UIColor.red
+                    cell.routeString?.textColor = UIColor.systemRed
                 }
             } else {
-                cell.routeString?.textColor = UIColor.black
+                if #available(iOS 13.0, *) {
+                    cell.routeString?.textColor = UIColor.label
+                } else {
+                    cell.routeString?.textColor = UIColor.black
+                }
             }
             cell.routeString.text = self.routeList[indexPath.row]
         }
@@ -395,13 +404,17 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.saveButton.isEnabled = true
         self.allClearButton.isEnabled = false    // Disable [Edit] button
         self.navigationItem.leftBarButtonItem?.isEnabled = true
-        self.navigationItem.leftBarButtonItem?.tintColor = UIColor(red: 0.0, green: 122.0/255.0, blue: 1.0, alpha: 1.0)
+        if #available(iOS 13.0, *) {
+            self.navigationItem.leftBarButtonItem?.tintColor = UIColor.link
+        } else {
+            self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemTeal
+        }
     }
     
     func editBegin() {
         self.saveButton.isEnabled = false
         self.allClearButton.isEnabled = true // Enable [Edit] button
         self.navigationItem.leftBarButtonItem?.isEnabled = false
-        self.navigationItem.leftBarButtonItem?.tintColor = UIColor.white // hide
+        self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemGray
     }
 }

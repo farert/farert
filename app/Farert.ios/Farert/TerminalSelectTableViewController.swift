@@ -355,14 +355,19 @@ class TerminalSelectTableViewController: CSTableViewController {
         self.scopeBar.isHidden = false
         self.searchController.searchBar.isHidden = false
         self.navigationItem.leftBarButtonItem?.isEnabled = true
-        self.navigationItem.leftBarButtonItem?.tintColor = UIColor(red: 0.0, green: 122.0/255.0, blue: 1.0, alpha: 1.0)
+
+        if #available(iOS 13.0, *) {
+            self.navigationItem.leftBarButtonItem?.tintColor = UIColor.link
+        } else {
+            self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemTeal
+        }
     }
     
    func historyEditBegin() {
         self.clerBarButtonItem.isEnabled = true // Enable [Edit] button
         self.searchController.searchBar.isHidden = true
         self.navigationItem.leftBarButtonItem?.isEnabled = false
-        self.navigationItem.leftBarButtonItem?.tintColor = UIColor.white // hide
+        self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemGray // hide
         self.scopeBar.isHidden = true
     }
 }
