@@ -669,11 +669,15 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     func showIndicate() {
         self.frontView = UIView(frame: self.navigationController!.view.bounds)
+
         self.frontView.backgroundColor = UIColor.clear
+
         self.navigationController!.view!.addSubview(self.frontView)
     
         self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
-        self.indicator.color = UIColor.black
+
+        self.indicator.color = UIColor.lightGray
+
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
         self.frontView.bringSubviewToFront(self.indicator)
