@@ -29,6 +29,8 @@ class SettingsActivity : AppCompatActivity() {
 
         mKokuraSZopt = (application as? FarertApp)?.bKokuraHakataShinZaiFlag ?: false
 
+        swKokuraShinZai.isChecked = mKokuraSZopt
+
         val selDatabase = readParam(this, "datasource")
 
         val adapter = spinner.adapter

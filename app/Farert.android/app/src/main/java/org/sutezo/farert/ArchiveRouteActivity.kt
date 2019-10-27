@@ -53,7 +53,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
         } else {
             mCurRouteScript = ""
         }
-        if (mCurRouteScript != "" && !mContainCurRoute) {
+        if ((mCurRouteScript != "") && !mContainCurRoute) {
             // 現在経路がすでに保存されていなければ、現在経路を先頭にリストする
             val tmp = mutableListOf(mCurRouteScript)
             tmp.addAll(listItems)
@@ -63,10 +63,13 @@ class ArchiveRouteActivity : AppCompatActivity(),
             setContentView(R.layout.content_list_empty)
             list_empty.text = resources.getString(R.string.no_archive_route)
         } else {
-            archive_route_list.adapter = ArchiveRouteListRecyclerViewAdapter(listItems, mCurRouteScript, this)
+            archive_route_list.adapter = ArchiveRouteListRecyclerViewAdapter(listItems,
+                                                                             mCurRouteScript,
+                                                                     this)
             val swipeHandler = object : SwipeToDeleteCallback(this) {
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val adapter = archive_route_list.adapter as ArchiveRouteListRecyclerViewAdapter
+                    val adapter = archive_route_list.adapter
+                            as ArchiveRouteListRecyclerViewAdapter
                     adapter.removeAt(viewHolder.adapterPosition)
                 }
             }
@@ -104,7 +107,8 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 return true
             }
             R.id.menu_item_save -> {
-                val trv = archive_route_list.adapter as ArchiveRouteListRecyclerViewAdapter
+                val trv = archive_route_list.adapter
+                        as ArchiveRouteListRecyclerViewAdapter
                 trv.saveParams(this)
                 item.setEnabled(false)
             }
@@ -113,7 +117,8 @@ class ArchiveRouteActivity : AppCompatActivity(),
                     setTitle(R.string.main_alert_query_all_clear_title)
                     setMessage(R.string.main_alert_query_all_clear_mesg)
                     setPositiveButton("Yes") { _, _ ->
-                        val trv = archive_route_list.adapter as ArchiveRouteListRecyclerViewAdapter
+                        val trv = archive_route_list.adapter
+                                as ArchiveRouteListRecyclerViewAdapter
                         trv.clearContents()
                         item.setEnabled(false)
                     }
@@ -128,7 +133,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
     override fun onClickRow(context: Context, routeScript: String) {
 
-        if (mCurRouteScript != "" && routeScript != mCurRouteScript && !mContainCurRoute) {
+        if ((mCurRouteScript != "") && (routeScript != mCurRouteScript) && !mContainCurRoute) {
 
             AlertDialog.Builder(context).apply {
                 setTitle(R.string.main_alert_query_route_update_title)
@@ -204,6 +209,11 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
                 setTextColor(Color.parseColor("red"))
                 typeface = Typeface.DEFAULT_BOLD
             }
+        } else if (viewType == 2) {
+            with(view.id_route) {
+                setTextColor(Color.parseColor("gray"))
+                typeface = Typeface.DEFAULT_BOLD
+            }
         }
         this.context = parent.context
         return ViewHolder(view)
@@ -221,10 +231,14 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     override fun getItemCount() = values.size
 
     override fun getItemViewType(position: Int): Int {
-        return if (values[position] == curRouteScript && !saveFlag) {
-            1
+        if (values[position] == curRouteScript) {
+            if (!saveFlag) {
+                return 1
+            } else {
+                return 2
+            }
         } else {
-            0
+            return 0
         }
     }
 

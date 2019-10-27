@@ -74,7 +74,7 @@ int g_tax; /* main.m */
             g_tax = 8;
             dbname = @"jrdb2017";
             break;
-        case DB_2018:
+        case DB_2019_8:
             g_tax = 8;
             dbname = @"jrdb2019";
             break;
@@ -632,6 +632,11 @@ int g_tax; /* main.m */
     return obj_route->setDetour(enabled);
 }
 
+- (void)setNoRule:(BOOL)enabled
+{
+    obj_route->setNoRule(enabled);
+}
+
 // - 博多小倉間新幹線在来線別線
 - (void)setNotSameKokuraHakataShinZai:(BOOL)enabled
 {
@@ -1003,11 +1008,6 @@ int g_tax; /* main.m */
 - (void)setJrTokaiStockApply:(BOOL)enabled
 {
     return obj_calcroute->refRouteFlag().setJrTokaiStockApply(enabled);
-}
-
-- (void)setNoRule:(BOOL)enabled
-{
-    obj_calcroute->refRouteFlag().setNoRule(enabled);
 }
 
 - (void)setStartAsCity

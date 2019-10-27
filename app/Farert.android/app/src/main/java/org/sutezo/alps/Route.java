@@ -66,6 +66,7 @@ public class Route extends RouteList {
 
     }
     public Route(final RouteList other) {
+        routePassed = new JctMask();
         assign(other);
     }
     /* --------------------------------------- */
@@ -162,6 +163,7 @@ public class Route extends RouteList {
         int stationId1 = 0;
         int stationId2 = 0;
         int rc = 1;
+        boolean backup_notsamekokurahakatashinzai = route_flag.notsamekokurahakatashinzai;
 
         removeAll();
 
@@ -212,6 +214,7 @@ public class Route extends RouteList {
                 stationId1 = stationId2;
             }
         }
+        route_flag.notsamekokurahakatashinzai = backup_notsamekokurahakatashinzai;
         return rc;
     }
 
@@ -989,13 +992,30 @@ public class Route extends RouteList {
     }
 
     public int setDetour(boolean enabled) {
-        if (enabled) {
-            route_flag.osakakan_detour = true;
-        } else {
-            route_flag.osakakan_detour = false;
-        }
-        return reBuild();
+        int rc;
+
+        route_flag.osakakan_detour = enabled;
+        rc = reBuild();
+        route_flag.no_rule = enabled;
+
+        return rc;
     }
+
+    //  特例非適用
+    //
+    //	@return 0 success(is last)
+    //	@retval 1 success
+    //	@retval otherwise failued
+    //
+    public void setNoRule(boolean no_rule) {
+
+        if (!no_rule && route_flag.osakakan_detour) {
+            route_flag.osakakan_detour = false;
+            reBuild();
+        }
+        route_flag.no_rule = no_rule;
+    }
+
 
     //	小倉ー博多 新幹線・在来線別線扱い
     //	@param [in] enabled  : true = 有効／ false = 無効

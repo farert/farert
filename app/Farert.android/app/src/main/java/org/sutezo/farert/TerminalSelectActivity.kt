@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.RecyclerView
@@ -89,7 +90,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 if (position == TAB_PAGE.HISTORY.rowValue) {
                     //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
                     //mi.setEnabled(0 < trv.itemCount)
-                    val flgm = mSectionsPagerAdapter?.findFragmentByPosition(tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
+                    val flgm = mSectionsPagerAdapter?.findFragmentByPosition(
+                            tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
                     var b = 0 < flgm.numOfContent()
                     mi.setEnabled(b)
                 }
@@ -119,7 +121,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                     tabs.visibility = View.GONE
                     tabcontainer.visibility = View.GONE
                     container.visibility = View.VISIBLE
-                    val fragment = PlaceholderFragment.newInstance(PlaceholderFragment.LIST_TYPE.SEARCH.ordinal, text, mode!!)
+                    val fragment = PlaceholderFragment.newInstance(
+                            PlaceholderFragment.LIST_TYPE.SEARCH.ordinal, text, mode!!)
                     supportFragmentManager
                             .beginTransaction()
                             .replace(R.id.container, fragment)
@@ -189,7 +192,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                     setTitle(R.string.main_alert_query_all_clear_title)
                     setMessage(R.string.main_alert_query_all_clear_mesg)
                     setPositiveButton("Yes") { _, _ ->
-                        val frgm = mSectionsPagerAdapter?.findFragmentByPosition(tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
+                        val frgm = mSectionsPagerAdapter?.findFragmentByPosition(
+                                tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
                         frgm.clearContents()
                         saveHistory(context, listOf())
                     }
@@ -406,10 +410,26 @@ class TerminalSelectActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.terminal_first_list, parent, false)
+
+            context = parent.context
+
             if (viewType != 3) {
                 view.id_detail_text.visibility = View.GONE
             }
-            context = parent.context
+            if (viewType == 2 || viewType == 3) {
+                context?.let {
+                    val c = ContextCompat.getColor(it, R.color.colorTextLink)
+                    if (viewType == 2) {
+                        // history
+                        view?.id_text?.setTextColor(c)
+                    } else {
+                        // search view
+                        val c1 = ContextCompat.getColor(it, R.color.colorTextSub)
+                        view?.id_text?.setTextColor(c1)
+                        view?.id_detail_text?.setTextColor(c)
+                    }
+                }
+            }
             return ViewHolder(view)
         }
 

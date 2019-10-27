@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="上越スキー場前"
+        android:textColor="@color/colorTextMain"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
     />
@@ -21,6 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="東海道新幹線"
+        android:textColor="@color/colorTextSub"
         app:layout_constraintTop_toBottomOf="@id/junction_line"
         app:layout_constraintStart_toStartOf="parent"
         />

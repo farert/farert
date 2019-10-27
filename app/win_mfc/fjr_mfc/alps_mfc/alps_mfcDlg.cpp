@@ -826,19 +826,19 @@ void Calps_mfcDlg::ResetContent()
 
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
-	resetMenu();
-
 	GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ボタン */
 	GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(FALSE);/* Disable [AutoRoute]ボタン */
 	GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
 
 	//m_fareOptionMenuButton.DrawMenuBar();
+
+	resetMenu(true);
 }
 
 
 //	メニューリセット
 //
-void Calps_mfcDlg::resetMenu()
+void Calps_mfcDlg::resetMenu(bool en_route)
 {
 	/* [特例適用] */
 	m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
@@ -858,7 +858,8 @@ void Calps_mfcDlg::resetMenu()
 
 	/* [博多小倉新幹線を別線扱い] */
 	m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_UNCHECKED);
-	m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
+	// always enable
+	m_menu.EnableMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_BYCOMMAND | MF_ENABLED);
 
 	/* [旅客営業取扱基準規程115条(特定都区市内発着)] */
 	m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115, _T("旅客営業取扱基準規程115条(特定都区市内発着)"));
@@ -868,6 +869,111 @@ void Calps_mfcDlg::resetMenu()
 	m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR, _T("指定した経路で運賃計算"));
 	m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_GRAYED);
 
+	if (en_route) {
+		//	[博多-小倉 新幹線在来線別線扱い]チェックボタン
+		m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME,
+			m_route.isNotSameKokuraHakataShinZai() ? MF_CHECKED : MF_UNCHECKED);
+		// always enable
+			
+		// [反転]
+		if (!m_route.isAvailableReverse()) {
+			/* not enough route */
+			GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ボタン */
+			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED); /* [特例適用]Uncheck状態 */
+			GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
+		}
+		else {
+			GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(m_route.isRoundTrip()); /* Enable [Reverse]ボタン */
+			GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(TRUE);/* Disable [Neerest]ボタン */
+		}
+
+		// 特例適用
+		if (m_route.getRouteFlag().rule_en()) {
+			m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_ENABLED);
+			if (m_route.getRouteFlag().no_rule) {
+				// 特例非適用
+				m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
+				m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
+			}
+			else {
+				// 特例適用
+				m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
+
+
+				// 大高 大阪 杉本町 着駅・発駅を単駅に指定
+				if (!m_route.getRouteFlag().isMeihanCityEnable()) {
+					m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
+				}
+				else {	// 「発駅を単駅に指定」
+					if (m_route.getRouteFlag().isStartAsCity()) {
+						m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR,
+							_T("発駅を単駅に指定"));
+						m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
+					}
+					else {// 「着駅を単駅に指定」
+						m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR,
+							_T("着駅を単駅に指定"));
+						m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
+					}
+				}
+			}
+		}
+		else {
+			// 特例 無関係
+			m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
+			m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
+		}
+
+		// JR東海株主優待券使用
+		if (m_route.getRouteFlag().jrtokaistock_enable) {
+			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
+			if (m_route.getRouteFlag().jrtokaistock_applied) {
+				m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
+			}
+			else {
+				m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+			}
+		}
+		else {
+			// JR東海株主優待券使用 選択肢なし(無関係)
+			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+		}
+
+		// 大阪環状線 内回り／外回り
+		if (!m_route.getRouteFlag().is_osakakan_1pass()) {
+			m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
+		}
+		else {
+			m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
+			m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN,
+				m_route.getRouteFlag().osakakan_detour ?
+				_T("大阪環状線近回り") : _T("大阪環状線遠回り"));
+		}
+
+		// 旅客営業取扱基準規程115条(特定都区市内発着)
+		if (!m_route.getRouteFlag().isEnableRule115()) {
+			m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_GRAYED);
+		}
+		else {
+			m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_ENABLED);
+			m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115,
+				m_route.getRouteFlag().isDisableSpecificTermRule115() ?
+				_T("旅客営業取扱基準規程115条(単駅最安)") :
+				_T("旅客営業取扱基準規程115条(特定都区市内発着)"));
+		}
+
+		// 指定した経路で運賃計算
+		if (!m_route.getRouteFlag().isEnableLongRoute()) {
+			m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_GRAYED);
+		}
+		else {
+			m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_ENABLED);
+			m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR,
+				m_route.getRouteFlag().isLongRoute() ?
+				_T("最安経路で運賃計算") : _T("指定した経路で運賃計算"));
+		}
+	}
 }
 
 
@@ -1160,11 +1266,10 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 		//	[JR東海株主優待券使用]チェックボタン
 		//	[発駅を単駅に指定／着駅を単駅に指定]
 		// default settings
-		m_route.refRouteFlag().setNoRule(false);
+		m_route.setNoRule(false);
 		m_route.refRouteFlag().setJrTokaiStockApply(false);
 		m_route.refRouteFlag().setLongRoute(false);
 		m_route.refRouteFlag().setSpecificTermRule115(false);
-		resetMenu();
 	}
 	/*	運賃表示条件フラグ取得 */
 	CalcRoute croute(m_route);
@@ -1175,104 +1280,7 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 
 	SetDlgItemText(IDC_EDIT_RESULT, s);
 
-	// [反転]
-	if (!m_route.isAvailableReverse()) {
-		/* not enough route */
-		GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ボタン */
-		m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED); /* [特例適用]Uncheck状態 */
-		GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ボタン */
-	}
-	else {
-		GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(m_route.isRoundTrip()); /* Enable [Reverse]ボタン */
-		GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(TRUE);/* Disable [Neerest]ボタン */
-	}
-
-	// 特例適用
-	if (m_route.getRouteFlag().rule_en()) {
-		m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_ENABLED);
-		if (m_route.getRouteFlag().no_rule) {
-			// 特例非適用
-			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
-			m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
-		}
-		else {
-			// 特例適用
-			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
-
-
-			// 大高 大阪 杉本町 着駅・発駅を単駅に指定
-			if (!m_route.getRouteFlag().isMeihanCityEnable()) {
-				m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
-			}
-			else {	// 「発駅を単駅に指定」
-				if (m_route.getRouteFlag().isStartAsCity()) {
-					m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, 
-						_T("発駅を単駅に指定"));
-					m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
-				}
-				else {// 「着駅を単駅に指定」
-					m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, 
-						_T("着駅を単駅に指定"));
-					m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
-				}
-			}
-		}
-	}
-	else {
-		// 特例 無関係
-		m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
-		m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
-	}
-
-	// JR東海株主優待券使用
-	if (m_route.getRouteFlag().jrtokaistock_enable) {
-		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
-		if (m_route.getRouteFlag().jrtokaistock_applied) {
-			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_CHECKED);
-		}
-		else {
-			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
-		}
-	}
-	else {
-		// JR東海株主優待券使用 選択肢なし(無関係)
-		m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
-		m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
-	}
-
-	// 大阪環状線 内回り／外回り
-	if (!m_route.getRouteFlag().is_osakakan_1pass()) {
-		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
-	}
-	else {
-		m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, 
-			m_route.getRouteFlag().osakakan_detour ? 
-			_T("大阪環状線近回り") : _T("大阪環状線遠回り"));
-	}
-
-	// 旅客営業取扱基準規程115条(特定都区市内発着)
-	if (!m_route.getRouteFlag().isEnableRule115()) {
-		m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_GRAYED);
-	}
-	else {
-		m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115,
-			m_route.getRouteFlag().isDisableSpecificTermRule115() ?
-				_T("旅客営業取扱基準規程115条(単駅最安)") : 
-				_T("旅客営業取扱基準規程115条(特定都区市内発着)"));
-	}
-
-	// 指定した経路で運賃計算
-	if (!m_route.getRouteFlag().isEnableLongRoute()) {
-		m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_GRAYED);
-	}
-	else {
-		m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_ENABLED);
-		m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR,
-			m_route.getRouteFlag().isLongRoute() ?
-			_T("最安経路で運賃計算") : _T("指定した経路で運賃計算"));
-	}
+	resetMenu(true);
 }
 
 
@@ -1489,11 +1497,11 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 		if (MF_CHECKED & state) {
 			alert_message(NORULE);
 			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
-			m_route.refRouteFlag().setNoRule(true);
+			m_route.setNoRule(true);
 		}
 		else {
 			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
-			m_route.refRouteFlag().setNoRule(false);
+			m_route.setNoRule(false);
 		}
 		showFare(false);
 		break;
@@ -1501,12 +1509,12 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 	case IDR_MENU_TERM_AGGR:
 		m_menu.GetMenuStringW(IDR_MENU_TERM_AGGR, menuTitle, MF_BYCOMMAND);
 		//	[発駅を単駅に指定／着駅を単駅に指定]
-		if (0 <= menuTitle.Find(_T("着駅を単駅")))
+		if (0 <= menuTitle.Find(_T("発")))
 		{
-			ASSERT(m_route.getRouteFlag().isArriveAsCity());
+			ASSERT(!m_route.getRouteFlag().isArriveAsCity());
 			m_route.refRouteFlag().setArriveAsCity();
 		} else {
-			ASSERT(!m_route.getRouteFlag().isArriveAsCity());
+			ASSERT(m_route.getRouteFlag().isArriveAsCity());
 			m_route.refRouteFlag().setStartAsCity();
 		}
 		showFare(false);
@@ -1571,7 +1579,7 @@ void Calps_mfcDlg::alert_message(int type)
 	if (isKeyExist(keys[type])) {
 		return;
 	}
-	CInfoMessage mesg;
+	CInfoMessage mesg(this);
 	CString msgstr;
 
 	msgstr.LoadString(ids[type]);

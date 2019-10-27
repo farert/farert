@@ -50,7 +50,7 @@ import static org.sutezo.alps.farertAssert.ASSERT;
 
 public class RouteUtil {
 
-    final static String TITLE_NOTSAMEKOKURAHAKATASHINZAI = "小倉博多間新幹線在来線別線";
+    final static String TITLE_NOTSAMEKOKURAHAKATASHINZAI = "(小倉博多間新幹線在来線別線)";
 
     static int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
 
