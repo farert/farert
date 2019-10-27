@@ -426,17 +426,20 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     
     func actionSelectProc(_ title: String) {
         if nil != title.range(of: "特例") {
-            if nil != title.range(of: "しない") {
-                // @"特例を適用しない";
-                self.showInfo(key: "norule")
-                ds.setNoRule(true);
-            } else {
-                // @"特例を適用する";
-                ds.setNoRule(false);
+            if let route : cRoute = cRoute() {
+                route.sync(ds)
+                if nil != title.range(of: "しない") {
+                    // @"特例を適用しない";
+                    self.showInfo(key: "norule")
+                    route.setNoRule(true);
+                } else {
+                    // @"特例を適用する";
+                    route.setNoRule(false);
+                }
+                ds.sync(route)
+                self.reCalcFareInfo()
+                self.tableView.reloadData()
             }
-            self.reCalcFareInfo()
-            self.tableView.reloadData()
-
         } else if nil != title.range(of: "を単駅指定") {
             if nil != title.range(of: "発駅") {
                 // "発駅を単駅指定";
@@ -532,23 +535,24 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                         items.append("発駅を単駅指定")
                     }
                 }
-                if self.fareInfo.isEnableLongRoute {
-                    if self.fareInfo.isLongRoute {
-                        items.append("最安経路で運賃計算")
-                    } else {
-                        items.append("指定した経路で運賃計算")
-                    }
-                }
-                
-                if self.fareInfo.isEnableRule115 {
-                    if self.fareInfo.isDisableSpecificTermRule115 {
-                        items.append("旅客営業取扱基準規程115条(単駅最安)")
-                    } else {
-                        items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
-                    }
-                }
             } else {
                 items.append("特例を適用する")
+            }
+        }
+
+        if self.fareInfo.isEnableLongRoute {
+            if self.fareInfo.isLongRoute {
+                items.append("最安経路で運賃計算")
+            } else {
+                items.append("指定した経路で運賃計算")
+            }
+        }
+        
+        if self.fareInfo.isEnableRule115 {
+            if self.fareInfo.isDisableSpecificTermRule115 {
+                items.append("旅客営業取扱基準規程115条(単駅最安)")
+            } else {
+                items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
             }
         }
 

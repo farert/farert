@@ -2098,7 +2098,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			tstring s;
 
 			if (0 == (4 & round)) {
-				croute.refRouteFlag().setNoRule(true);
+				croute.refRouteFlag().no_rule = true;
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2106,7 +2106,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			}
 
 			if (0 == (2 & round)) {
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2339,13 +2339,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2368,13 +2368,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2397,13 +2397,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2426,13 +2426,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2616,7 +2616,7 @@ void test_temp()
 	}
 	FARE_INFO fi;
 	CalcRoute croute(route);
-	croute.refRouteFlag().setNoRule(false);
+	croute.refRouteFlag().no_rule = false;
 	croute.calcFare(&fi);
 	s = fi.showFare(croute.getRouteFlag());
 	s = cr_remove(s);

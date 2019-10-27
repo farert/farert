@@ -63,7 +63,7 @@ public class TestRoute {
         FARE_INFO fi = new FARE_INFO();
         CalcRoute croute = new CalcRoute(route);
 
-        croute.getRouteFlag().setNoRule(false);
+        croute.getRouteFlag().no_rule = false;
         //croute.getRouteFlag().setStartAsCity();
         //croute.getRouteFlag().setArriveAsCity();
         //croute.calcFare(fi);
@@ -2183,7 +2183,7 @@ public class TestRoute {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
                 if (0 == (4 & round)) {
-                    croute.getRouteFlag().setNoRule(true);
+                    croute.getRouteFlag().no_rule = true;
                     croute.calcFare(fi);
                     String s = fi.showFare(croute.getRouteFlag());
                     s = cr_remove(s);
@@ -2191,7 +2191,7 @@ public class TestRoute {
                 }
 
                 if (0 == (2 & round)) {
-                    croute.getRouteFlag().setNoRule(false);
+                    croute.getRouteFlag().no_rule = false;
                     croute.calcFare(fi);
                     String s = fi.showFare(croute.getRouteFlag());
                     s = cr_remove(s);
@@ -2388,13 +2388,13 @@ public class TestRoute {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
 
-                croute.getRouteFlag().setNoRule(true);
+                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
                 pw.printf("///非適用\n%s\n", s);
 
-                croute.getRouteFlag().setNoRule(false);
+                croute.getRouteFlag().no_rule = false;
                 croute.calcFare(fi);
                 s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
@@ -2415,13 +2415,13 @@ public class TestRoute {
 
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
-                croute.getRouteFlag().setNoRule(true);
+                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
                 pw.printf("///非適用\n%s\n", s);
 
-                croute.getRouteFlag().setNoRule(false);
+                croute.getRouteFlag().no_rule = false;
                 croute.calcFare(fi);
                 s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
@@ -2438,13 +2438,13 @@ public class TestRoute {
             } else {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
-                croute.getRouteFlag().setNoRule(true);
+                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
                 pw.printf("///非適用\n%s\n", s);
 
-                croute.getRouteFlag().setNoRule(false);
+                croute.getRouteFlag().no_rule = false;
                 croute.calcFare(fi);
                 s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
@@ -2464,13 +2464,13 @@ public class TestRoute {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
 
-                croute.getRouteFlag().setNoRule(true);
+                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
                 pw.printf("///非適用\n%s\n", s);
 
-                croute.getRouteFlag().setNoRule(false);
+                croute.getRouteFlag().no_rule = false;
                 croute.calcFare(fi);
                 s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);

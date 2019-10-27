@@ -392,7 +392,6 @@ public:
 			}
 		}
     }
-    void setNoRule(bool flag) { no_rule = flag; }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
     void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
     void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; }
@@ -1128,6 +1127,7 @@ private:
     int32_t         reBuild();
 public:
 	int32_t         setDetour(bool enabled = true);
+	void            setNoRule(bool no_rule);
     void            setNotSameKokuraHakataShinZai(bool enabled = true);
     bool            isNotSameKokuraHakataShinZai();
 

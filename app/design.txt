@@ -1,4 +1,61 @@
 
+ds.assign((application as FarertApp).ds, routeEndIndex)
+
+mIsRoundTrip = ds.isAvailableReverse
+setRouteOption(ds)  // setDetour()
+
+mCalcRoute = CalcRoute(ds)
+mCalcRoute?.let {
+    it.calcFareInfo()
+
+    val route = Route(it)
+    // 経路設定フラグを設定)opt_xxxによって計算オプションを設定
+    setRouteOption(route)   // もう一度やるのはcalcFareInfoのあとでないと
+                            // route_flag.setXxx()で、urban_neerestやrule115が0以外(有効)
+                            // にならず、セットが無視されてしまうから
+    it.sync(route, -1)
+
+    val fi = it.calcFareInfo()
+
+    setContentData(fi)  // 表示計算結果
+    // 設定可能フラグを設定(make opt_xxx)
+    setOptionFlag(fi)   // getFareOption() -> this member attributes(opt_xxx)
+}
+--->すごく馬鹿臭い、なんとかせにゃ
+
+
+* Android
+　member: CalcRoute
+  create:
+   変数ロード
+  onResume:
+   Routeを一次変数で、フラグセットして、CalcRouteへコピー
+   全変数をみて一括してフラグ設定 in setRouteOption()
+   計算後に、全変数を更新 in setOptionFlag()
+
+  onPrepareOptionsMenu() メニュー押されたときメニュー表示前に。
+   メニューの表示を変数をみて制御 in menuControl()
+
+  onOptionsItemSelected() メニュー選択されたとき
+   変数を更新 -> onCreate() -> onResume()の流れへ
+     => 変数を直接更新せずに、m_routeの変数を更新し、m_routeのフラグをもとに変数全部更新する。
+        (changeOption()として実装)
+
+* iOS
+  actionSelectProc()
+   個別にフラグをセットして計算して表示更新
+  chgOptionButtonAction()
+   計算結果からメニューを追加、表示を変える
+
+* Windows
+  resetMenu()
+    m_route のフラグを見てメニューを一括制御している。(名阪は特例の中に入れられている)
+
+  OnBnClickedMfcmenubuttonFareopt()
+    menuにそって、m_routeのフラグをセットして計算して更新している->resetMenu()へ
+
+
+
 
 darkMode 対応
 defaultBackgroundColor
