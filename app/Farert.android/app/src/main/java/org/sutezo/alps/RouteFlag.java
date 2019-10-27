@@ -9,7 +9,7 @@ public class RouteFlag {
     boolean no_rule = false;               //8 ON: 特例非適用(User->System)
 
     // bit 10 JR東海 東海道新幹線区間
-    boolean jrtokaistock_enable= false;	//10 提案可能フラグ
+    boolean jrtokaistock_enable = false;	//10 提案可能フラグ
     //   東海道新幹線で[区][山][浜][京][阪]が適用する場面でセットされる
     //   JR東海株主優待適用・非適用選択メニューが有効となる
     boolean jrtokaistock_applied= false; 		//11 提案適用フラグ
@@ -180,7 +180,9 @@ public class RouteFlag {
         notsamekokurahakatashinzai = o.notsamekokurahakatashinzai;
         end = o.end	;
     }
-    boolean rule_en() {
+
+    public boolean no_rule() { return no_rule; }
+    public boolean rule_en() {
         return isEnableRule86() ||
                 isEnableRule87() ||
                 rule88 ||
@@ -194,26 +196,31 @@ public class RouteFlag {
     public boolean isEnableLongRoute() { return !no_rule && 0 != urban_neerest; }
     public boolean isLongRoute() { return urban_neerest < 0; }
     public void setLongRoute(boolean far) {
-        if (far) {
-            urban_neerest = -1;
-        } else {
-            urban_neerest = 1;
+        if (urban_neerest != 0) {
+            if (far) {
+                urban_neerest = -1;
+            } else {
+                urban_neerest = 1;
+            }
         }
     }
 
     public boolean isEnableRule115()  { return !no_rule && 0 != rule115; }
     public boolean isDisableSpecificTermRule115()  { return rule115 < 0; }
     public void setSpecificTermRule115(boolean ena) {
-        if (ena) {
-            rule115 = -1;
-        } else {
-            rule115 = 1;
+        if (0 != rule115) {
+            if (ena) {
+                rule115 = -1;
+            } else {
+                rule115 = 1;
+            }
         }
     }
-    public void setNoRule(boolean flag) { no_rule = flag; }
     public void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
     public void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
     public void setJrTokaiStockApply(boolean flag) { jrtokaistock_applied = flag; }
+    public boolean jrTokaiStockApply() { return jrtokaistock_applied; }
+    public boolean jrtokaistock_enable() { return jrtokaistock_enable; }
     /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */
     /* coreAreaIDByCityId() が影響 */
     void setDisableRule86or87() { disable_rule86or87 = true; }
@@ -224,11 +231,11 @@ public class RouteFlag {
     boolean isAvailableRule87()  { return !disable_rule86or87 && isEnableRule87(); }
 
     //
-    boolean isMeihanCityEnable() {
+    public boolean isMeihanCityEnable() {
         return meihan_city_enable;
     }
-    boolean isArriveAsCity()  { return (meihan_city_enable == true) && (meihan_city_flag == false); }
-    boolean isStartAsCity()  { return (meihan_city_enable == true) && (meihan_city_flag == true); }
+    public boolean isArriveAsCity()  { return (meihan_city_enable == true) && (meihan_city_flag == false); }
+    public boolean isStartAsCity()  { return (meihan_city_enable == true) && (meihan_city_flag == true); }
 
 
     // for debug print

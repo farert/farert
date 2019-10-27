@@ -30,7 +30,7 @@ typedef NS_ENUM(NSInteger, DB) {
     DB_2014,
     DB_2015,
     DB_2017,
-    DB_2018,
+    DB_2019_8,
     DB_2019_10,
     DB_MAX_ID = DB_2019_10,
 };
@@ -170,6 +170,7 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSInteger)setupRoute:(NSString*)routeString;
 
 - (NSInteger)setDetour:(BOOL)enabled;
+- (void)setNoRule:(BOOL)enabled;
 
 //- 小倉博多間新幹線在来線別線扱い
 - (void)setNotSameKokuraHakataShinZai:(BOOL)enabled;
@@ -227,8 +228,6 @@ typedef NS_ENUM(NSInteger, DB) {
 
 - (void)setJrTokaiStockApply:(BOOL)enabled;
 
-
-- (void)setNoRule:(BOOL)enabled;
 
 - (void)setStartAsCity;
 - (void)setArriveAsCity;

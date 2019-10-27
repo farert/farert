@@ -2600,7 +2600,7 @@ int32_t Route::reBuild()
 	}
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
         route_flag.osakakan_detour = false;
-        TRACE("Can't reBuild() rc=%d¥n", rc);
+        TRACE(_T("Can't reBuild() rc=%d¥n"), rc);
 		return -1;	/* error */
 	}
 
@@ -3072,8 +3072,20 @@ int32_t FARE_INFO::CenterStationIdFromCityId(int32_t cityId)
 //
 int32_t Route::setDetour(bool enabled)
 {
+	int32_t rc;
     route_flag.osakakan_detour = enabled;
-    return reBuild();
+    rc = reBuild();
+	route_flag.no_rule = enabled;
+	return rc;
+}
+
+void Route::setNoRule(bool no_rule)
+{
+	if (!no_rule && route_flag.osakakan_detour) {
+		route_flag.osakakan_detour = false;
+		reBuild();
+	}
+	route_flag.no_rule = no_rule;
 }
 
 
@@ -3307,6 +3319,7 @@ int32_t Route::setup_route(LPCTSTR route_str)
 	int32_t rc = 1;
 	int32_t len;
 	TCHAR* ctx = NULL;
+	bool backup_notsamekokurahakatashinzai = route_flag.notsamekokurahakatashinzai;
 
 	removeAll();
 
@@ -3367,6 +3380,7 @@ ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
 	}
 	delete [] rstr;
 
+	route_flag.notsamekokurahakatashinzai = backup_notsamekokurahakatashinzai;
 	return rc;
 }
 

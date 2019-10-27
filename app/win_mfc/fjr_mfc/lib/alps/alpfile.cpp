@@ -131,6 +131,7 @@ bool isKeyExist(const CString& key)
 		e->GetErrorMessage(s.GetBuffer(260), 260);
 		s.ReleaseBuffer();
 		AfxMessageBox(s, MB_ICONSTOP);
+		e->Delete();
 	}
 	return false;
 }
@@ -160,6 +161,7 @@ void putKey(const CString& key)
 		e->GetErrorMessage(s.GetBuffer(260), 260);
 		s.ReleaseBuffer();
 		AfxMessageBox(s, MB_ICONSTOP);
+		e->Delete();
 	}
 }
 
@@ -198,6 +200,7 @@ void removeKey(const CString& key)
 		e->GetErrorMessage(s.GetBuffer(260), 260);
 		s.ReleaseBuffer();
 		AfxMessageBox(s, MB_ICONSTOP);
+		e->Delete();
 	}
 }
 
