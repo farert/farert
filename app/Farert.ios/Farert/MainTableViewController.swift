@@ -1053,7 +1053,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 var dbname : String
                 if cur_db_idx == DB._TAX5.rawValue /* dbverInf.tax == 5*/ {
                     dbname = dbverInf.name + "(5%tax)"
-                } else if cur_db_idx == DB._2018.rawValue {
+                } else if cur_db_idx == DB._2019_8.rawValue {
                     dbname = dbverInf.name + "(8%tax)"
                 } else {
                     dbname = dbverInf.name
