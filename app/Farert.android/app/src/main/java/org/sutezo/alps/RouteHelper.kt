@@ -402,19 +402,22 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isJRCentralStockEnable = this.route_flag.jrtokaistock_enable;
     result.isJRCentralStock = this.route_flag.jrtokaistock_applied;
 
-    result.isEnableLongRoute = this.route_flag.isEnableLongRoute();
-    result.isLongRoute = this.route_flag.isLongRoute();
-    result.isDisableSpecificTermRule115 = this.route_flag.isDisableSpecificTermRule115();
-    result.isEnableRule115 = this.route_flag.isEnableRule115();
+    result.isEnableLongRoute = this.route_flag.isEnableLongRoute
+    result.isLongRoute = this.route_flag.isLongRoute
+    result.isRule115specificTerm = this.route_flag.isRule115specificTerm
+    result.isEnableRule115 = this.route_flag.isEnableRule115
+
+    result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
+    result.isOsakakanDetour = this.route_flag.osakakan_detour
 
     // make message
     if (result.isRuleApplied &&
-            fi.isUrbanArea() && !this.route_flag.isUseBullet()) {
+            fi.isUrbanArea() && !this.route_flag.isUseBullet) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
             result.resultMessage = msgCantMetroTicket
-        } else if (!this.route_flag.isEnableRule115() ||
-            !this.route_flag.isDisableSpecificTermRule115()) {
-            if (this.route_flag.isLongRoute()) {
+        } else if (!this.route_flag.isEnableRule115 ||
+            !this.route_flag.isRule115specificTerm) {
+            if (this.route_flag.isLongRoute) {
                 result.resultMessage = msgPossibleLowcost
             } else {
                 result.resultMessage = msgAppliedLowcost
@@ -424,8 +427,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
         }
 
         // 大回り指定では115適用はみない
-        if (this.route_flag.isEnableRule115() && !this.route_flag.isEnableLongRoute()) {
-            if (this.route_flag.isDisableSpecificTermRule115()) {
+        if (this.route_flag.isEnableRule115 && !this.route_flag.isEnableLongRoute) {
+            if (this.route_flag.isRule115specificTerm) {
                 result.resultMessage += msgCanYouNeerestStation
             } else {
                 result.resultMessage += msgCanYouSpecificTerm

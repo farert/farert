@@ -141,7 +141,7 @@ public class RouteFlag {
     }
 
 
-    void setAnotherRouteFlag(final RouteFlag o) {
+    public void setAnotherRouteFlag(final RouteFlag o) {
         osakaKanPass = o.osakaKanPass;
         osakakan_1dir = o.osakakan_1dir;
         osakakan_2dir = o.osakakan_2dir;
@@ -196,28 +196,24 @@ public class RouteFlag {
     public boolean isEnableLongRoute() { return !no_rule && 0 != urban_neerest; }
     public boolean isLongRoute() { return urban_neerest < 0; }
     public void setLongRoute(boolean far) {
-        if (urban_neerest != 0) {
-            if (far) {
-                urban_neerest = -1;
-            } else {
-                urban_neerest = 1;
-            }
+        if (far) {
+            urban_neerest = -1;
+        } else {
+            urban_neerest = 1;
         }
     }
 
     public boolean isEnableRule115()  { return !no_rule && 0 != rule115; }
-    public boolean isDisableSpecificTermRule115()  { return rule115 < 0; }
+    public boolean isRule115specificTerm()  { return rule115 < 0; }
     public void setSpecificTermRule115(boolean ena) {
-        if (0 != rule115) {
-            if (ena) {
-                rule115 = -1;
-            } else {
-                rule115 = 1;
-            }
+        if (ena) {
+            rule115 = -1;
+        } else {
+            rule115 = 1;
         }
     }
-    public void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
-    public void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
+    public void setStartAsCity() { /*ASSERT(meihan_city_enable); */ meihan_city_flag = true;   /* 着駅=単駅、発駅市内駅 */ }
+    public void setArriveAsCity() { /*ASSERT(meihan_city_enable); */ meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
     public void setJrTokaiStockApply(boolean flag) { jrtokaistock_applied = flag; }
     public boolean jrTokaiStockApply() { return jrtokaistock_applied; }
     public boolean jrtokaistock_enable() { return jrtokaistock_enable; }
@@ -232,10 +228,10 @@ public class RouteFlag {
 
     //
     public boolean isMeihanCityEnable() {
-        return meihan_city_enable;
+        return !no_rule && meihan_city_enable;
     }
-    public boolean isArriveAsCity()  { return (meihan_city_enable == true) && (meihan_city_flag == false); }
-    public boolean isStartAsCity()  { return (meihan_city_enable == true) && (meihan_city_flag == true); }
+    public boolean isArriveAsCity()  { return /*(meihan_city_enable == true) && */ (meihan_city_flag == true); }
+    public boolean isStartAsCity()  { return /*(meihan_city_enable == true) && */ (meihan_city_flag == false); }
 
 
     // for debug print

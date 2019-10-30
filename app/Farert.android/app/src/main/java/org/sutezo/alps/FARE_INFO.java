@@ -905,7 +905,7 @@ public class FARE_INFO {
                 && this.isUrbanArea() && !getRouteFlag.isUseBullet()) {
             if (this.getBeginTerminalId() == this.getEndTerminalId()) {
                 buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
-            } else if (getRouteFlag.isEnableRule115() && getRouteFlag.isDisableSpecificTermRule115()) {
+            } else if (getRouteFlag.isEnableRule115() && getRouteFlag.isRule115specificTerm()) {
                 // 115の都区市内発着指定Optionは最安最短じゃあないので.
             } else if (getRouteFlag.isLongRoute()) {
                 buffer.append(msgPossibleLowcost);
@@ -914,7 +914,7 @@ public class FARE_INFO {
             }
             // 大回り指定では115適用はみない
             if (getRouteFlag.isEnableRule115() && !getRouteFlag.isEnableLongRoute()) {
-                if (getRouteFlag.isDisableSpecificTermRule115()) {
+                if (getRouteFlag.isRule115specificTerm()) {
                     buffer.append("「単駅最短適用」で単駅発着が選択可能です\r\n");
                 } else {
                     buffer.append("「都区内発着適用」で特定都区市内発着が選択可能です\r\n");
