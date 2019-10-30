@@ -2,12 +2,16 @@ b#バグタイトル
 ->
 //
 
-Android 用土-代々木でメニューNG
+isMeihanCityEnable で、!no_ruleもみるようにした。UIで階層化するの止める。
+
+v Android 用土-代々木でメニューNG
 
 v 小倉、博多が経路保存にのっかってしまう
 
 西船橋 総武線 千葉 外房線 蘇我 内房線 安房鴨川 外房線 大網 東金線 成東 総武線 東千葉
-- Androidはおしい。WinはOK、iOSは直したのにダメ
+- AndroidはOK。WinはOK、iOSは直したのにダメ
+
+- Android、名阪ダメ->ok。たぶんiOSも
 
 - Android新DBになっていない。また、iOSも新DBを選ぶように
 

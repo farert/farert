@@ -3,7 +3,9 @@ package org.sutezo.farert
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
 import org.json.JSONArray
 import org.sutezo.alps.*
 import java.io.OutputStream
@@ -24,6 +26,13 @@ class FarertApp : Application() {
         instance = this
         //System.setOut(PrintStream("C:\\debug.log") )
         System.setOut(NullPrintStream())
+
+        /* database index reset */
+        val num = getVersionCode()
+        if (num < 16) {  // 16=19.10
+            // set current default database index
+            saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
+        }
         setDatabase()
 
         TestRoute.exec(this)    // test function
@@ -54,5 +63,19 @@ class FarertApp : Application() {
         mDbHelper.closeDatabase()
         mDbHelper.createEmptyDataBase(idx)
         RouteDB.createFactory(mDbHelper.openDataBase(), if (idx == 0) 5 else if (idx <= 4) 8 else 10)
+    }
+
+    fun getVersionCode(): Long {
+        val pm = this.packageManager
+        var versionCode : Long = 0
+        try {
+            val packageInfo = pm.getPackageInfo(this.packageName, 0)
+            versionCode = if (Build.VERSION.SDK_INT >= 28) packageInfo.longVersionCode else packageInfo.versionCode.toLong()
+            // versionCode:通算バージョン(数値)
+            // versionName: "18.11" とか
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+        return versionCode
     }
 }

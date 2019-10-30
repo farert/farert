@@ -89,7 +89,7 @@ class FareInfo {
 
     var isEnableLongRoute : Boolean = false
     var isLongRoute : Boolean = false
-    var isDisableSpecificTermRule115 : Boolean = false
+    var isRule115specificTerm : Boolean = false
     var isEnableRule115 : Boolean = false
 
     var resultMessage : String = ""
@@ -101,6 +101,9 @@ class FareInfo {
     var isRuleAppliedEnable: Boolean = false
     var isRuleApplied: Boolean = false
     var isFareOptEnabled : Boolean = false
+
+    var isOsakakanDetour : Boolean = false
+    var isOsakakanDetourEnable : Boolean = false
 
 // bit 8-9
     //fun isJRCentralStockEnable(): Boolean = (calcResultFlag and 0x300) != 0x000

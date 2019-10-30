@@ -526,21 +526,23 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         if self.fareInfo.isRuleAppliedEnable {
             if self.fareInfo.isRuleApplied {
                 items.append("特例を適用しない")
-
-                if self.fareInfo.isMeihanCityStartTerminalEnable {
-                    if self.fareInfo.isMeihanCityTerminal {
-                        // 発駅=都区市内
-                        items.append("着駅を単駅指定")
-                    } else  {
-                        items.append("発駅を単駅指定")
-                    }
-                }
             } else {
                 items.append("特例を適用する")
             }
         }
 
+        if self.fareInfo.isMeihanCityStartTerminalEnable {
+            if self.fareInfo.isMeihanCityTerminal {
+                // nagative logic
+                // 発駅=都区市内
+                items.append("着駅を単駅指定")
+            } else  {
+                items.append("発駅を単駅指定")
+            }
+        }
+
         if self.fareInfo.isEnableLongRoute {
+            // nagative logic
             if self.fareInfo.isLongRoute {
                 items.append("最安経路で運賃計算")
             } else {
@@ -549,7 +551,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
         
         if self.fareInfo.isEnableRule115 {
-            if self.fareInfo.isDisableSpecificTermRule115 {
+            // nagative logic
+            if self.fareInfo.isRule115specificTerm {
                 items.append("旅客営業取扱基準規程115条(単駅最安)")
             } else {
                 items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
@@ -557,6 +560,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
 
         if self.fareInfo.isJRCentralStockEnable {
+            // nagative logic
             if self.fareInfo.isJRCentralStock {
                 items.append("JR東海株主優待券を適用しない")
             } else {
@@ -565,6 +569,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         }
 
         if self.ds.isOsakakanDetourEnable() {
+            // nagative logic
             if self.ds.isOsakakanDetour() {
                 items.append("大阪環状線 近回り")
             } else {
