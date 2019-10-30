@@ -958,7 +958,7 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 		else {
 			m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_ENABLED);
 			m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115,
-				m_route.getRouteFlag().isDisableSpecificTermRule115() ?
+				m_route.getRouteFlag().isRule115specificTerm() ?
 				_T("—·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(’P‰wÅˆÀ)") :
 				_T("—·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(“Á’è“s‹æs“à”­’…)"));
 		}
@@ -1268,8 +1268,6 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 		// default settings
 		m_route.setNoRule(false);
 		m_route.refRouteFlag().setJrTokaiStockApply(false);
-		m_route.refRouteFlag().setLongRoute(false);
-		m_route.refRouteFlag().setSpecificTermRule115(false);
 	}
 	/*	‰^’À•\¦ğŒƒtƒ‰ƒOæ“¾ */
 	CalcRoute croute(m_route);

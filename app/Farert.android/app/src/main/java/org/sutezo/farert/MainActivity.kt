@@ -150,31 +150,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         } catch (e: NumberFormatException) {
             num = -1
         }
-        if (-1 == num) {
+        if ((-1 == num) || (num < 16)) {
             welcome_show()
-            val cv = getVersionCode()
+            val cv = (application as? FarertApp)?.getVersionCode() ?: "0"
             saveParam(this, "hasLaunched", cv.toString())
         }
-
-        /* database index reset */
-        if (num < 5) {  // 5=19.04
-            // set current default database index
-            saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
-        }
-    }
-
-    private fun getVersionCode(): Long {
-        val pm = this.packageManager
-        var versionCode : Long = 0
-        try {
-            val packageInfo = pm.getPackageInfo(this.packageName, 0)
-            versionCode = if (Build.VERSION.SDK_INT >= 28) packageInfo.longVersionCode else packageInfo.versionCode.toLong()
-            // versionCode:通算バージョン(数値)
-            // versionName: "18.11" とか
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
-        }
-        return versionCode
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {

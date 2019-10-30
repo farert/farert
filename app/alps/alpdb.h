@@ -370,26 +370,22 @@ public:
     bool isEnableLongRoute() const { return !no_rule && 0 != urban_neerest; }
     bool isLongRoute() const { return urban_neerest < 0; }
     void setLongRoute(bool farflag) {
-		if (0 != urban_neerest) {
-			if (farflag) {
-				urban_neerest = -1;
-			}
-			else {
-				urban_neerest = 1;
-			}
+		if (farflag) {
+			urban_neerest = -1;
+		}
+		else {
+			urban_neerest = 1;
 		}
     }
 
     bool isEnableRule115() const { return !no_rule && 0 != rule115; }
-    bool isDisableSpecificTermRule115() const { return rule115 < 0; }
+    bool isRule115specificTerm() const { return rule115 < 0; }
     void setSpecificTermRule115(bool ena) {
-		if (0 != rule115) {
-			if (ena) {
-				rule115 = -1;
-			}
-			else {
-				rule115 = 1;
-			}
+		if (ena) {
+			rule115 = -1;
+		}
+		else {
+			rule115 = 1;
 		}
     }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
@@ -406,7 +402,7 @@ public:
 
     //
     bool isMeihanCityEnable() const {
-        return meihan_city_enable;
+        return !no_rule && meihan_city_enable;
     }
     bool isArriveAsCity() const { return (meihan_city_enable == true) && (meihan_city_flag == false); }
     bool isStartAsCity() const { return (meihan_city_enable == true) && (meihan_city_flag == true); }

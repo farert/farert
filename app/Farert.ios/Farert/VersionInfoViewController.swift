@@ -37,6 +37,10 @@ class VersionInfoViewController: UIViewController {
         if let lbl2 : UILabel = self.view.viewWithTag(190915) as! UILabel? {
             lbl2.text = "消費税: \(dbverInf.tax)%"
         }
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+        if let lbl3 : UILabel = self.view.viewWithTag(19103005) as! UILabel? {
+            lbl3.text = "Farert " + version
+        }
     }
     
     

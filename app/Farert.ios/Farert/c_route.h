@@ -223,7 +223,7 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSString*)showFare;
 
 - (BOOL)isEnableLongRoute;
-- (BOOL)isDisableSpecificTermRule115;
+- (BOOL)isRule115specificTerm;
 - (void)setSpecificTermRule115:(BOOL)enable;
 
 - (void)setJrTokaiStockApply:(BOOL)enabled;
