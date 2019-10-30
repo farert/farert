@@ -967,7 +967,7 @@ int g_tax; /* main.m */
                               self.isOsakakanDetourEnable  ||
                               result.isJRCentralStockEnable ||
                               result.isEnableRule115 ||
-                              result.isLongRoute ||
+                              result.isEnableLongRoute ||
                               result.isSpecificFare;
     return result;
 }
