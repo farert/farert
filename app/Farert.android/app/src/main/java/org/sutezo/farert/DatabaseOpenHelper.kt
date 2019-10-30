@@ -80,7 +80,7 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
                 val checkDb = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE)
 
                 checkDb.version = DATABASE_VERSION
-                DatabaseOpenHelper.mDatabaseIndex = dbidx
+                mDatabaseIndex = dbidx
                 checkDb.close()
 
             } catch (e: Exception) {
