@@ -2245,7 +2245,7 @@ public class TestRoute {
                     pw.printf("///最安経路\n%s\n", s);
                 }
                 if (croute.getRouteFlag().isEnableRule115()) {
-                    ASSERT(!croute.getRouteFlag().isDisableSpecificTermRule115());
+                    ASSERT(!croute.getRouteFlag().isRule115specificTerm());
                     // デフォルトは最安かつ単駅になっているので、Optionで都区市内発着へ
                     croute.getRouteFlag().setSpecificTermRule115(true);
                     croute.calcFare(fi);

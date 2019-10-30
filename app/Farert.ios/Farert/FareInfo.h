@@ -37,7 +37,7 @@
 
 @property (nonatomic) BOOL isEnableLongRoute;
 @property (nonatomic) BOOL isLongRoute;
-@property (nonatomic) BOOL isDisableSpecificTermRule115;
+@property (nonatomic) BOOL isRule115specificTerm;
 @property (nonatomic) BOOL isEnableRule115;
 
 

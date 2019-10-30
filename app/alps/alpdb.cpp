@@ -2656,7 +2656,7 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
         if (this->getBeginTerminalId() == this->getEndTerminalId()) {
             _sntprintf_s(cb, MAX_BUF,
                 _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
-        } else if (refRouteFlag.isEnableRule115() && refRouteFlag.isDisableSpecificTermRule115()) {
+        } else if (refRouteFlag.isEnableRule115() && refRouteFlag.isRule115specificTerm()) {
             // 115の都区市内発着指定Optionは最安最短じゃあないので.
             cb[0] = _T('\0');
         } else {
@@ -2669,7 +2669,7 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
         // 大回り指定では115適用はみない
         if (refRouteFlag.isEnableRule115() && !refRouteFlag.isEnableLongRoute()) {
             _sntprintf_s(cb, MAX_BUF,
-                refRouteFlag.isDisableSpecificTermRule115() ?
+                refRouteFlag.isRule115specificTerm() ?
                 _T("「単駅最短適用」で単駅発着が選択可能です\r\n") :
                 _T("「都区内発着適用」で特定都区市内発着が選択可能です\r\n"));
             sResult += cb;

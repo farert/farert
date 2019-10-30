@@ -148,10 +148,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // remove old(before ver 15.10)
             UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
             
-            let cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
+            var cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
+            if (0x10000 <= cnt) {
+                cnt /= 0x100    // cut minor version
+            }
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
             let verno = Int(version.replacingOccurrences(of: ".", with: ""), radix: 16)
-            if 0x1603 <= cnt {
+            if 0x1910 <= cnt {
                 if (0x1810 <= cnt) {                                        //!!!!1810
                     // ２回目以降の起動時
 
@@ -177,7 +180,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
                     av.show()
                 }
-                UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
+                UserDefaults.standard.set(verno, forKey: "hasLaunched")
                 cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                 UserDefaults.standard.synchronize();
             }

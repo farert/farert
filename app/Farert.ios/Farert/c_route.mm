@@ -865,7 +865,7 @@ int g_tax; /* main.m */
 
     result.isEnableLongRoute = obj_calcroute->getRouteFlag().isEnableLongRoute();
     result.isLongRoute = obj_calcroute->getRouteFlag().isLongRoute();
-    result.isDisableSpecificTermRule115 = obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
+    result.isRule115specificTerm = obj_calcroute->getRouteFlag().isRule115specificTerm();
     result.isEnableRule115 = obj_calcroute->getRouteFlag().isEnableRule115();
 
     // make message
@@ -874,7 +874,7 @@ int g_tax; /* main.m */
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
             result.resultMessage = [NSString stringWithUTF8String:msgCantMetroTicket];
         } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
-                   !obj_calcroute->refRouteFlag().isDisableSpecificTermRule115()) {
+                   !obj_calcroute->refRouteFlag().isRule115specificTerm()) {
             if (obj_calcroute->getRouteFlag().isLongRoute()) {
                 result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
             } else {
@@ -887,7 +887,7 @@ int g_tax; /* main.m */
         // 大回り指定では115適用はみない
         if (obj_calcroute->getRouteFlag().isEnableRule115() &&
             !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
-            if (obj_calcroute->getRouteFlag().isDisableSpecificTermRule115()) {
+            if (obj_calcroute->getRouteFlag().isRule115specificTerm()) {
                 result.resultMessage = [result.resultMessage stringByAppendingString:
                                         [NSString stringWithUTF8String:
                                         msgCanYouNeerestStation]];
@@ -995,9 +995,9 @@ int g_tax; /* main.m */
 }
 
 // 旅客営業取扱基準規程第115条 特定都区市内発着適用中ではなく単駅選択中か？
-- (BOOL)isDisableSpecificTermRule115
+- (BOOL)isRule115specificTerm
 {
-    return obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
+    return obj_calcroute->getRouteFlag().isRule115specificTerm();
 }
 
 - (void)setSpecificTermRule115:(BOOL)enabled
