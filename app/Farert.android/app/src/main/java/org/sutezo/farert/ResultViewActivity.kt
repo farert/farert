@@ -12,7 +12,9 @@ import org.sutezo.alps.*
 import android.support.v4.app.ShareCompat
 import android.widget.Toast
 
-
+/**
+ * 運賃詳細結果ビューActivivty
+ */
 class ResultViewActivity : AppCompatActivity() {
 
     var mCalcRoute : CalcRoute? = null
@@ -54,6 +56,9 @@ class ResultViewActivity : AppCompatActivity() {
             OptionItem.longroute to "longroute",
             OptionItem.rule115 to "rule115")
 
+    /**
+     * 起動直後のオプションパラメータを取得してメンバ変数をセットアップ
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_result_view)
@@ -82,6 +87,9 @@ class ResultViewActivity : AppCompatActivity() {
 //        }
     }
 
+    /**
+     * 経路を計算する
+     */
     override fun onResume() {
         super.onResume()
 
@@ -106,6 +114,9 @@ class ResultViewActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 計算に必要なオプションパラメータを破棄される前に保存
+     */
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
         super.onSaveInstanceState(outState, outPersistentState)
 
@@ -235,13 +246,21 @@ class ResultViewActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     * 外部エクスポート用Subjectを生成
+     */
     private fun resultSubject(fi : FareInfo) : String {
        // "運賃詳細(\(cRouteUtil.terminalName(self.fareInfo.beginStationId)!) - \(cRouteUtil.terminalName(self.fareInfo.endStationId)!))"
         return "${resources.getString(R.string.result_mailtitle_faredetail)}(${terminalName(fi.beginStationId)} - ${terminalName(fi.endStationId)})"
     }
 
-    // Result for Export text.
-    //
+    /**
+     * 外部エクスポート用結果テキストを生成
+     * @param subject 題名
+     * @param ds 経路オブジェクト
+     * @param fi 計算結果オブジェクト
+     * @return 結果表示テキスト
+     */
     private fun resultText(subject : String, ds : CalcRoute, fi: FareInfo) : String {
 
         var body = "$subject\n\n${ds.showFare()}\n"
@@ -264,11 +283,18 @@ class ResultViewActivity : AppCompatActivity() {
         return body
     }
 
+    /**
+     * menuをリソースマネージャから生成
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_result_view, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
+    /**
+     * menuを表示する直前に毎回呼ばれる
+     * 各メニューアイテムの有効／無効、表示文字列を変える
+     */
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
 
         val m = menu?: return super.onPrepareOptionsMenu(menu)
@@ -279,6 +305,10 @@ class ResultViewActivity : AppCompatActivity() {
         return super.onPrepareOptionsMenu(menu)
     }
 
+    /**
+     * 画面へ運賃詳細結果テキストを設定
+     * @param fi 運賃結果オブジェクト
+     */
     private fun setContentData(fi : FareInfo) {
         if (fi.result != 0) {
             /* wrong result */
@@ -396,11 +426,8 @@ class ResultViewActivity : AppCompatActivity() {
 
         //------------------------- 運賃 -----------------------------------
 
-        if (fi.isSpecificFare) {
-            text_title_fare.text = getText(R.string.result_specific_fare)
-        } else {
-            text_title_fare.text = getText(R.string.result_fare)
-        }
+        text_title_fare.text = getText(R.string.result_fare)
+
         /* 1行目 普通＋会社 or 普通 + IC */
         /* 2行目 (往復）同上 */
         var strFareOpt = resources.getString(if (fi.isRoundtripDiscount) R.string.result_value_discount else R.string.blank)
@@ -551,55 +578,38 @@ class ResultViewActivity : AppCompatActivity() {
             result_table.removeView(row)
         }
 
-        // 備考
-        var contentsForMessage : String = ""
-        if (fi.isResultCompanyBeginEnd) {
-            contentsForMessage += resources.getString(R.string.result_note_company)
-        }
-        if (fi.isResultCompanyMultipassed) {
-            /* 2017.3 以降 ここに来ることはない */
-            //contentsForMessage += "複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.\n"
-            contentsForMessage += resources.getString(R.string.result_note_multicompany)
-
-        }
-        if (fi.isEnableTokaiStockSelect) {
-            //contentsForMessage += "JR東海株主優待券使用オプション選択可\n"
-            contentsForMessage += resources.getString(R.string.result_note_jrtokaistock)
-        }
-        if (fi.isBRT_discount) {
-            contentsForMessage += resources.getString(R.string.result_brt_discount)
-        }
-        text_note.text = contentsForMessage
-
         // 有効日数
         /* avail days */
+        text_availdays.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
+
         if (!fi.isArbanArea) {
-            text_availdays.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
             if (1 < fi.ticketAvailDays) {
                 var str : String
                 if (fi.isBeginInCity && fi.isEndInCity) {
+                    //発着駅都区市内の駅を除き
                     str = resources.getString(R.string.result_availday_except_begin_end)
                 } else if (fi.isBeginInCity) {
+                    //発駅都区市内の駅を除き
                     str = resources.getString(R.string.result_availday_except_begin)
                 } else if (fi.isEndInCity) {
+                    //着駅都区市内の駅を除き
                     str = resources.getString(R.string.result_availday_except_end)
                 } else {
+                    //''
                     str = resources.getString(R.string.result_availday_empty)
                 }
+                // 途中下車可能
                 text_availdays2.text = resources.getString(R.string.result_availday_stopover, str)
             } else {
+                // 途中下車不可
                 text_availdays2.text = resources.getString(R.string.result_availday_dontstopover)
             }
         } else {
-            if (fi.beginStationId != fi.endStationId) {
-                text_availdays.text = resources.getString(
-                        if (fi.isRuleApplied) R.string.result_days_metro1
-                        else R.string.result_days_metro2)
-            } else {
-                text_availdays.text = resources.getString(R.string.result_days_metro_return)
-            }
-            text_availdays2.visibility = View.INVISIBLE
+            text_availdays2.text = resources.getString(R.string.result_availday_dontstopover)
         }
+
+        // 備考
+        text_note.text = fi.resultMessage
 
         /* ROUTE 経由 */
         var s = fi.routeList
@@ -611,8 +621,11 @@ class ResultViewActivity : AppCompatActivity() {
 
     }
 
-
-    // create last
+    /**
+     * 結果オプション を設定する
+     * onCreateの終わり、運賃計算前に処理する
+     * @param ds 経路オブジェクト
+     */
     private fun setRouteOption(ds : Route) {
 
         // 最短経路
@@ -709,6 +722,11 @@ class ResultViewActivity : AppCompatActivity() {
     }
 
     // from resume last
+    /**
+     * 運賃計算オプションをメンバ変数へ設定
+     * onCreateの最終工程、運賃計算後に呼ばれる
+     * @param fi 結果オブジェクト
+     */
     private fun setOptionFlag(fi: FareInfo) {
 
         mOpt_items[OptionItem.sperule.ordinal] =
@@ -805,7 +823,9 @@ class ResultViewActivity : AppCompatActivity() {
             }
     }
 
-
+    /**
+     * メニュー制御で、メニュー表示直前によばれる
+     */
     private fun menuControl(menu: Menu?) {
         // menu　prepare open menu onPrepareOptionsMenu()
         //
@@ -926,6 +946,10 @@ class ResultViewActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 運賃計算結果画面を最表示する
+     * 運賃計算オプションを保持しActivityを再起動する
+     */
     private fun refresh() {
         finish()
         mOptMap.forEach {
@@ -934,6 +958,11 @@ class ResultViewActivity : AppCompatActivity() {
         startActivity(this.intent)
     }
 
+    /**
+     *  外部エクスポート用結果テキストをエクスポートする
+     *  @param subject タイトル
+     *  @param text 運賃計算結果テキスト
+     */
     fun shareText(subject: String, text: String) {
         val mimeType = "text/plain"
 
@@ -948,8 +977,10 @@ class ResultViewActivity : AppCompatActivity() {
         }
     }
 
-    // 情報アラートを抑制するか(最初の一回)
-
+    /**
+     *  情報アラートを抑制するか(最初の一回)
+     *  @param key 大阪環状線か特例非適用か
+     */
     fun showInfoAlert(key : Int) {
 
         val info = mapOf(
@@ -982,9 +1013,11 @@ class ResultViewActivity : AppCompatActivity() {
         }
     }
 
-    // Menu actionのあとに呼ばれる
-    //  routeオプションは依存する部分があり、設定してみてさらに状態を読み込んで変数mOpt_itmes[]へ設定
-    //
+    /**
+     *  Menu actionの最後に呼ばれる
+     *  運賃計算オプションは依存する部分があり、設定してみてさらに状態を読み込んでメンバ変数へ保持
+     *  @param opt オプションの種類
+     */
     private fun changeOption(opt : OptionItem) {
         val route = Route(mCalcRoute)
 

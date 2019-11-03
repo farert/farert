@@ -9,8 +9,8 @@ const val MAX_HOLDER : Int = 60
 const val MAX_HISTORY = 20
 const val MAX_ARCHIVE_ROUTE = 100
 
-const val msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)"
-const val msgAppliedLowcost = "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)"
+const val msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です"
+const val msgAppliedLowcost = "近郊区間内ですので最安運賃の経路で計算"
 const val msgSpecificFareApply = "特定区間割引運賃適用"
 const val msgCantMetroTicket = "近郊区間内ですので同一駅発着のきっぷは購入できません."
 const val msgCanYouNeerestStation = "「単駅最安」で単駅発着が選択可能です"
@@ -295,6 +295,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     /* route */
     result.routeList = fi.getRoute_string()
+    result.routeListForTOICA = fi.calc_route_for_disp
 
     /* stock discount (114 no applied) */
     val stks = mutableListOf<Triple<String, Int, Int>>()
@@ -327,8 +328,25 @@ fun CalcRoute.calcFareInfo() : FareInfo
         result.fareForStockDiscounts = stks
     }
 
-    result.isArbanArea = fi.isUrbanArea();
+    result.isMeihanCityStartTerminalEnable = this.route_flag.isMeihanCityEnable
+    result.isMeihanCityStart = this.route_flag.isStartAsCity
+    result.isMeihanCityTerminal = this.route_flag.isArriveAsCity;
 
+    result.isRuleAppliedEnable = this.route_flag.rule_en()
+    result.isRuleApplied = !this.route_flag.no_rule;
+
+    result.isJRCentralStockEnable = this.route_flag.jrtokaistock_enable;
+    result.isJRCentralStock = this.route_flag.jrtokaistock_applied;
+
+    result.isEnableLongRoute = this.route_flag.isEnableLongRoute
+    result.isLongRoute = this.route_flag.isLongRoute
+    result.isRule115specificTerm = this.route_flag.isRule115specificTerm
+    result.isEnableRule115 = this.route_flag.isEnableRule115
+
+    result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
+    result.isOsakakanDetour = this.route_flag.osakakan_detour
+
+    result.isArbanArea = fi.isUrbanArea();
 
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();
@@ -343,12 +361,11 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.salesKmForShikoku = fi.getSalesKmForShikoku();
     result.calcKmForShikoku = fi.getCalcKmForShikoku();
 
-    // BRT営業キロ
-    result.brtSalesKm = fi.brtSalesKm
-
     result.salesKmForKyusyu = fi.getSalesKmForKyusyu();
     result.calcKmForKyusyu = fi.getCalcKmForKyusyu();
 
+    // BRT営業キロ
+    result.brtSalesKm = fi.brtSalesKm
 
     // 往復割引有無
     result.isRoundtripDiscount = fi.isRoundTripDiscount();
@@ -356,14 +373,13 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // 会社線部分の運賃
     result.fareForCompanyline = fi.getFareForCompanyline();
 
-    // BRT運賃
-    result.fareForBRT = fi.fareForBRT
-
-    result.isBRT_discount = fi.isBRT_discount
-
     // 普通運賃
     result.fare = fi.getFareForDisplay();
     result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
+
+    // BRT運賃
+    result.fareForBRT = fi.fareForBRT
+    result.isBRT_discount = fi.isBRT_discount
 
     // 往復
     val fareResult = fi.roundTripFareWithCompanyLine()
@@ -390,56 +406,53 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
 
-    result.routeListForTOICA = fi.calc_route_for_disp
-
-    result.isMeihanCityStartTerminalEnable = this.route_flag.isMeihanCityEnable
-    result.isMeihanCityStart = this.route_flag.isStartAsCity
-    result.isMeihanCityTerminal = this.route_flag.isArriveAsCity;
-
-    result.isRuleAppliedEnable = this.route_flag.rule_en()
-    result.isRuleApplied = !this.route_flag.no_rule;
-
-    result.isJRCentralStockEnable = this.route_flag.jrtokaistock_enable;
-    result.isJRCentralStock = this.route_flag.jrtokaistock_applied;
-
-    result.isEnableLongRoute = this.route_flag.isEnableLongRoute
-    result.isLongRoute = this.route_flag.isLongRoute
-    result.isRule115specificTerm = this.route_flag.isRule115specificTerm
-    result.isEnableRule115 = this.route_flag.isEnableRule115
-
-    result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
-    result.isOsakakanDetour = this.route_flag.osakakan_detour
 
     // make message
+    val messages : MutableList<String> = mutableListOf()
+
     if (result.isRuleApplied &&
             fi.isUrbanArea() && !this.route_flag.isUseBullet) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
-            result.resultMessage = msgCantMetroTicket
+            messages.add(msgCantMetroTicket)
         } else if (!this.route_flag.isEnableRule115 ||
             !this.route_flag.isRule115specificTerm) {
             if (this.route_flag.isLongRoute) {
-                result.resultMessage = msgPossibleLowcost
+                messages.add(msgPossibleLowcost)
             } else {
-                result.resultMessage = msgAppliedLowcost
+                messages.add(msgAppliedLowcost)
             }
-        } else {
-            result.resultMessage = "";
         }
 
         // 大回り指定では115適用はみない
         if (this.route_flag.isEnableRule115 && !this.route_flag.isEnableLongRoute) {
             if (this.route_flag.isRule115specificTerm) {
-                result.resultMessage += msgCanYouNeerestStation
+                messages.add(msgCanYouNeerestStation)
             } else {
-                result.resultMessage += msgCanYouSpecificTerm
+                messages.add(msgCanYouSpecificTerm)
             }
         }
     }
 
     result.isSpecificFare = this.route_flag.special_fare_enable // 私鉄競合特例運賃(大都市近郊区間)
     if (result.isSpecificFare) {
-        result.resultMessage += "\r\n" + msgSpecificFareApply  // "特定区間割引運賃適用"
+        messages.add(msgSpecificFareApply)  // "特定区間割引運賃適用"
     }
+
+    if (result.isResultCompanyBeginEnd) {
+        messages.add("会社線発着のため一枚の乗車券として発行されない場合があります.")
+    }
+    if (result.isResultCompanyMultipassed) {
+        /* 2017.3 以降 ここに来ることはない */
+        messages.add("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.")
+    }
+    if (result.isEnableTokaiStockSelect) {
+        messages.add("JR東海株主優待券使用オプション選択可")
+    }
+    if (result.isBRT_discount) {
+        messages.add("BRT乗り継ぎ割引適用")
+    }
+
+    result.resultMessage = messages.joinToString("\r\n")
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
