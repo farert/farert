@@ -137,7 +137,7 @@
     <string name="lf">\n</string>
 
     <string name="result_fare">運賃</string>
-    <string name="result_specific_fare">運賃(特定区間運賃)</string>
+    <string name="result_specific_fare">特定区間運賃</string>
     <string name="result_normalfare">普通</string>
     <string name="result_normal_with_brt">普通\nBRT</string>
     <string name="result_companyfare">うち会社線</string>
@@ -153,8 +153,8 @@
     <string name="result_availdays">有効日数</string>
     <string name="result_days">199日間</string>
     <string name="result_days_long">(発着駅都区市内の駅を除き途中下車可能)</string>
-    <string name="result_days_metro1">近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)</string>
-    <string name="result_days_metro2">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、当日限り有効)</string>
+    <string name="result_days_metro1">近郊区間内ですので最安運賃の経路にしました</string>
+    <string name="result_days_metro2">近郊区間内ですので最短経路の運賃で利用可能です</string>
     <string name="result_days_metro_return">近郊区間内ですので同一駅発着のきっぷは購入できません.</string>
     <string name="result_days_short">途中下車不可</string>
     <string name="result_via">経由</string>
