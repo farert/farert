@@ -11,10 +11,10 @@
 
 IMPLEMENT_DYNAMIC(CQueryNeerest, CDialogEx)
 
-CQueryNeerest::CQueryNeerest(CWnd* pParent /*=nullptr*/)
+CQueryNeerest::CQueryNeerest(int initialSel, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(CQueryNeerest::IDD, pParent)
 {
-
+	choice = initialSel;
 }
 
 CQueryNeerest::~CQueryNeerest()
@@ -28,44 +28,11 @@ void CQueryNeerest::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CQueryNeerest, CDialogEx)
-	ON_BN_CLICKED(IDC_MFCBUTTON_NORMAL, &CQueryNeerest::OnBnClickedMfcbuttonNormal)
-	ON_BN_CLICKED(IDC_MFCBUTTON_BULLET, &CQueryNeerest::OnBnClickedMfcbuttonBullet)
-	ON_BN_CLICKED(IDC_MFCBUTTON_COMPANY, &CQueryNeerest::OnBnClickedMfcbuttonCompany)
-	ON_BN_CLICKED(IDC_MFCBUTTON_BULLET_COMPANU, &CQueryNeerest::OnBnClickedMfcbuttonBulletCompanu)
+	ON_BN_CLICKED(IDOK, &CQueryNeerest::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 
 // CQueryNeerest メッセージ ハンドラー
-
-
-// 在来線のみ
-void CQueryNeerest::OnBnClickedMfcbuttonNormal()
-{
-	choice = 0;
-	CDialogEx::OnOK();
-}
-
-// 新幹線を使う
-void CQueryNeerest::OnBnClickedMfcbuttonBullet()
-{
-	choice = 1;
-	CDialogEx::OnOK();
-}
-
-// 会社線を使う
-void CQueryNeerest::OnBnClickedMfcbuttonCompany()
-{
-	choice = 2;
-	CDialogEx::OnOK();
-}
-
-// 新幹線と在来線を使う
-void CQueryNeerest::OnBnClickedMfcbuttonBulletCompanu()
-{
-	choice = 3;
-	CDialogEx::OnOK();
-}
-
 
 BOOL CQueryNeerest::OnInitDialog()
 {
@@ -73,6 +40,41 @@ BOOL CQueryNeerest::OnInitDialog()
 
 	GetDlgItem(IDC_STATIC_TITLE)->SetWindowTextW(target);
 
+	((CButton*)GetDlgItem(IDC_CHK_SHINKANSEN))->SetCheck(BST_UNCHECKED);
+	((CButton*)GetDlgItem(IDC_CHK_COMPANY))->SetCheck(BST_UNCHECKED);
+
+	if (choice == 1 || choice == 3) {
+		((CButton*)GetDlgItem(IDC_CHK_SHINKANSEN))->SetCheck(BST_CHECKED);
+	}
+	if (choice == 2 || choice == 3) {
+		((CButton*)GetDlgItem(IDC_CHK_COMPANY))->SetCheck(BST_CHECKED);
+	}
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 例外 : OCX プロパティ ページは必ず FALSE を返します。
+}
+
+
+void CQueryNeerest::OnBnClickedOk()
+{
+	// 新幹線を使う
+	if (((CButton*)GetDlgItem(IDC_CHK_SHINKANSEN))->GetCheck()
+		== BST_CHECKED) {
+		// 会社線
+		if (((CButton*)GetDlgItem(IDC_CHK_COMPANY))->GetCheck()
+			== BST_CHECKED) {
+			choice = 3;	// 新幹線も在来線も使う
+		}
+		else {
+			choice = 1;	// 新幹線をつかう
+		}
+	}
+	else if (((CButton*)GetDlgItem(IDC_CHK_COMPANY))->GetCheck()
+		== BST_CHECKED) {
+		choice = 2;	// 会社線をつかう
+	}
+	else {
+		choice = 0;	// 在来線のみ
+	}
+	CDialogEx::OnOK();
 }

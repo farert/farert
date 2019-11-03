@@ -28,10 +28,6 @@
 @property (nonatomic) BOOL isMeihanCityStart;
 @property (nonatomic) BOOL isMeihanCityTerminal;
 
-@property (nonatomic) BOOL isOsakakanDetourEnable;
-
-// TRUE: Detour / FALSE: Shortcut
-@property (nonatomic) BOOL isOsakakanDetourShortcut;
 
 @property (nonatomic) BOOL isRuleAppliedEnable;
 @property (nonatomic) BOOL isRuleApplied;
@@ -41,7 +37,7 @@
 
 @property (nonatomic) BOOL isEnableLongRoute;
 @property (nonatomic) BOOL isLongRoute;
-@property (nonatomic) BOOL isDisableSpecificTermRule115;
+@property (nonatomic) BOOL isRule115specificTerm;
 @property (nonatomic) BOOL isEnableRule115;
 
 

@@ -46,13 +46,13 @@ protected:
 	void setupForLinelistByStation(int stationId, int curLineId = 0);
 	void setupForStationlistByLine(int lineId, int curStationId, int startStationId);
 	int UpdateRouteList();
-	int ModifyRouteList();
+	//int ModifyRouteList();
 	UINT CancelRouteQuery();
 	void CantSameStartAndEnd();
 	void ResetContent();
 	void showFare(bool bResetOption = true);
 	int parseAndSetupRoute(LPCTSTR route_str);
-	void resetMenu();
+	void resetMenu(bool en_route = false);
 
 private:
 	Route	m_route;
@@ -89,6 +89,9 @@ public:
 	afx_msg void OnBnClickedButtonRouteOpen();
 	afx_msg void OnBnClickedButtonNeerest();
 	afx_msg void OnBnClickedMfcmenubuttonFareopt();
-	afx_msg void OnStnClickedStaticBar();
- };
+protected:
+	int m_selAutorouteOption;
+	enum ALERT_TYPE { STARTUP, OSAKAKAN, NORULE };
+	void alert_message(int type);
+};
 

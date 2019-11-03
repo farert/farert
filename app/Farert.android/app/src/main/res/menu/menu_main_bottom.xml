@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/navigation_back"
+
         android:icon="@drawable/ic_baseline_reply_24px"
-        android:title="@string/title_back" />
+        android:title="@string/title_back"
+        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/navigation_reverse"
         android:icon="@drawable/ic_baseline_import_export_24px"
-        android:title="@string/title_reverse" />
+        android:title="@string/title_reverse"
+        app:showAsAction="always|withText" />
 
     <item
-        android:id="@+id/navigation_detour"
-        android:icon="@drawable/ic_baseline_360_24px"
-        android:title="@string/title_oskkanrev" />
+        android:id="@+id/navigation_archive"
+        android:icon="@drawable/ic_baseline_folder_open_24px"
+        android:title="@string/title_main_menu_archive"
+        app:showAsAction="always|withText"/>
 
 </menu>

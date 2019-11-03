@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.RecyclerView
@@ -50,6 +51,7 @@ class TerminalSelectActivity : AppCompatActivity() {
         HISTORY(2),
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terminal_select)
@@ -88,7 +90,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 if (position == TAB_PAGE.HISTORY.rowValue) {
                     //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
                     //mi.setEnabled(0 < trv.itemCount)
-                    val flgm = mSectionsPagerAdapter?.findFragmentByPosition(tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
+                    val flgm = mSectionsPagerAdapter?.findFragmentByPosition(
+                            tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
                     var b = 0 < flgm.numOfContent()
                     mi.setEnabled(b)
                 }
@@ -118,7 +121,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                     tabs.visibility = View.GONE
                     tabcontainer.visibility = View.GONE
                     container.visibility = View.VISIBLE
-                    val fragment = PlaceholderFragment.newInstance(PlaceholderFragment.LIST_TYPE.SEARCH.ordinal, text, mode!!)
+                    val fragment = PlaceholderFragment.newInstance(
+                            PlaceholderFragment.LIST_TYPE.SEARCH.ordinal, text, mode!!)
                     supportFragmentManager
                             .beginTransaction()
                             .replace(R.id.container, fragment)
@@ -131,6 +135,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                 return false
             }
         })
+
 
 
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
@@ -187,7 +192,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                     setTitle(R.string.main_alert_query_all_clear_title)
                     setMessage(R.string.main_alert_query_all_clear_mesg)
                     setPositiveButton("Yes") { _, _ ->
-                        val frgm = mSectionsPagerAdapter?.findFragmentByPosition(tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
+                        val frgm = mSectionsPagerAdapter?.findFragmentByPosition(
+                                tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
                         frgm.clearContents()
                         saveHistory(context, listOf())
                     }
@@ -203,6 +209,8 @@ class TerminalSelectActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    //PlaceholderFragment で履歴削除後に呼ばれるように仕向けた
+    //
     fun onChangeList(numItem: Int) {
         val m = toolbar.menu
         val mi = m.findItem(R.id.menu_item_all_delete)
@@ -252,7 +260,7 @@ class TerminalSelectActivity : AppCompatActivity() {
         }
         private var mIdType : LIST_TYPE = LIST_TYPE.COMPANY
         private var mode : String = ""
-        private var mNumOflist : Int = 0
+        private var mNumHistory : Int = 0
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
@@ -278,8 +286,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 }
             }
             val lists = listItems()
-            mNumOflist = lists.count()
-            if (mIdType == LIST_TYPE.HISTORY && mNumOflist <= 0) {
+            mNumHistory = lists.count()
+            if (mIdType == LIST_TYPE.HISTORY && mNumHistory <= 0) {
                 val rootView = inflater.inflate(R.layout.content_list_empty, container, false)
                 rootView.list_empty.text = resources.getString(R.string.no_history)
                 return rootView
@@ -325,10 +333,10 @@ class TerminalSelectActivity : AppCompatActivity() {
             // 検索ビューのとき、リストの上に件数(5件を越えたら)を表示する
             // それ以外ビューでは、非表示にする。
             // 履歴で件数0の場合はレイアウト自体が別物なのでなにもしない
-            if (mIdType == LIST_TYPE.SEARCH && 5 < mNumOflist) {
+            if (mIdType == LIST_TYPE.SEARCH && 5 < mNumHistory) {
                 textViewHeader.visibility =  View.VISIBLE
-                textViewHeader.text = resources.getString(R.string.match_disp, mNumOflist)
-            } else if (mIdType != LIST_TYPE.HISTORY || 0 < mNumOflist) {
+                textViewHeader.text = resources.getString(R.string.match_disp, mNumHistory)
+            } else if (mIdType != LIST_TYPE.HISTORY || 0 < mNumHistory) {
                 textViewHeader.visibility =  View.GONE
             }
         }
@@ -368,15 +376,14 @@ class TerminalSelectActivity : AppCompatActivity() {
         }
         fun numOfContent() : Int {
             view?.let {
-                return mNumOflist
-                // val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
-                // return trv.itemCount
+                return mNumHistory
             }
             return 0
         }
 
         // Item削除した直後にボタン無効にする
         override fun onChangeItem(numItem: Int) {
+            mNumHistory = numItem
             (activity as TerminalSelectActivity).onChangeList(numItem)
         }
     }
@@ -403,10 +410,26 @@ class TerminalSelectActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.terminal_first_list, parent, false)
+
+            context = parent.context
+
             if (viewType != 3) {
                 view.id_detail_text.visibility = View.GONE
             }
-            context = parent.context
+            if (viewType == 2 || viewType == 3) {
+                context?.let {
+                    val c = ContextCompat.getColor(it, R.color.colorTextLink)
+                    if (viewType == 2) {
+                        // history
+                        view?.id_text?.setTextColor(c)
+                    } else {
+                        // search view
+                        val c1 = ContextCompat.getColor(it, R.color.colorTextSub)
+                        view?.id_text?.setTextColor(c1)
+                        view?.id_detail_text?.setTextColor(c)
+                    }
+                }
+            }
             return ViewHolder(view)
         }
 

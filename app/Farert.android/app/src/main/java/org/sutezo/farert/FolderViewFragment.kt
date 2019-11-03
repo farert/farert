@@ -232,8 +232,8 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val current = routefolder.routeItem(position)
-            val begin = current.startStationId()
-            val term = current.endStationId()
+            val begin = current.departureStationId()
+            val term = current.arriveStationId()
             val label  =  "${terminalName(begin)} - ${terminalName(term)}"
             holder.title.text = label
             holder.fareType.tag = position

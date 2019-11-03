@@ -17,7 +17,7 @@
  *	../../jr_db_reg.py
  */
 
-#define DEFAULT_TAX		8
+#define DEFAULT_TAX		10
 
 extern int g_tax;	// global
 

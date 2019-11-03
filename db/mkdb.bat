@@ -14,8 +14,8 @@ goto next
 echo ex.) mkdb jrdb2015 2015
 goto fin
 :next
-@echo python scripts\jr_db_reg.py %1.txt %2 8
-python scripts\jr_db_reg.py %1.txt %2 8
+@echo python scripts\jr_db_reg.py %1.txt %2
+python scripts\jr_db_reg.py %1.txt %2
 if errorlevel 1 goto err
 @echo python scripts\node_list.py %1.db > scripts\node_list.txt
 python scripts\node_list.py %1.db > scripts\node_list.txt

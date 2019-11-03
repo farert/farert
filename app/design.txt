@@ -1,4 +1,183 @@
 
+ds.assign((application as FarertApp).ds, routeEndIndex)
+
+mIsRoundTrip = ds.isAvailableReverse
+setRouteOption(ds)  // setDetour()
+
+mCalcRoute = CalcRoute(ds)
+mCalcRoute?.let {
+    it.calcFareInfo()
+
+    val route = Route(it)
+    // 経路設定フラグを設定)opt_xxxによって計算オプションを設定
+    setRouteOption(route)   // もう一度やるのはcalcFareInfoのあとでないと
+                            // route_flag.setXxx()で、urban_neerestやrule115が0以外(有効)
+                            // にならず、セットが無視されてしまうから
+    it.sync(route, -1)
+
+    val fi = it.calcFareInfo()
+
+    setContentData(fi)  // 表示計算結果
+    // 設定可能フラグを設定(make opt_xxx)
+    setOptionFlag(fi)   // getFareOption() -> this member attributes(opt_xxx)
+}
+--->すごく馬鹿臭い、なんとかせにゃ
+
+
+* Android
+　member: CalcRoute
+  create:
+   変数ロード
+  onResume:
+   Routeを一次変数で、フラグセットして、CalcRouteへコピー
+   全変数をみて一括してフラグ設定 in setRouteOption()
+   計算後に、全変数を更新 in setOptionFlag()
+
+  onPrepareOptionsMenu() メニュー押されたときメニュー表示前に。
+   メニューの表示を変数をみて制御 in menuControl()
+
+  onOptionsItemSelected() メニュー選択されたとき
+   変数を更新 -> onCreate() -> onResume()の流れへ
+     => 変数を直接更新せずに、m_routeの変数を更新し、m_routeのフラグをもとに変数全部更新する。
+        (changeOption()として実装)
+
+* iOS
+  actionSelectProc()
+   個別にフラグをセットして計算して表示更新
+  chgOptionButtonAction()
+   計算結果からメニューを追加、表示を変える
+
+* Windows
+  resetMenu()
+    m_route のフラグを見てメニューを一括制御している。(名阪は特例の中に入れられている)
+
+  OnBnClickedMfcmenubuttonFareopt()
+    menuにそって、m_routeのフラグをセットして計算して更新している->resetMenu()へ
+
+
+
+
+darkMode 対応
+defaultBackgroundColor
+defaultButtonColor
+linkColor
+navigationBarTintColor
+primaryTextColor
+alertColor
+borderColor
+
+
+注意：
+Javaのオブジェクトは参照なので代入に注意
+
+オブジェクトを引数に持ち、
+関数内部でメンバを書き換えれば、メンバは呼び出し側からみても書き換わっている。
+ただし、
+
+void func(Obj obj) {
+   obj.member += 100;   // 呼び出し側にも反映される
+}
+
+void func(Obj obj) {
+   Obj inobj = new Obj();
+   inobj = 100;
+   obj = inobj;     // 呼び出し側へは反映されない。
+}
+以上の例では,memberは上からみてコメントの通り。
+obj = inobj; を消して(消さないとだめ)
+obj.member = inobj.member;  //  // 呼び出し側にも反映される
+とする。
+Javaは参照渡しです。あくまでもポインタのコピーを渡す訳で、
+ポインタのコピーの示す先を書き換えは上も下も影響を及ぼすが、
+ポインタのコピーを書き換えたところで、戻ったら破棄されるもので（オーナーは関数内ローカル）ある。
+//
+
+2019.10.01
+- alpdb.cpp, alpdb.h
+Javaだとvirtual つけなくても、ポリモーフィズムが効くが、C++は効かない。
+なので、
+RouteList startStationId / endStationId()
+CalcRoute beginStationId / endStationId()
+となっているのを、
+RouteList departureStationId / arriveStationId()
+にする。
+
+
+
+$/Applications/Android\ Studio.app/Contents/jre/jdk/Contents/Home/bin/keytool -genkey -v -keystore ~/key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key
+/Applications/Android\ Studio.app/Contents/jre/jdk/Contents/Home/bin
+
+pass: sute7840
+
+---C++
+FARE_INFO fi;
+CalcRoute croute(route);
+tstring s;
+
+croute.refRouteFlag().setNoRule(true);
+croute.calcFare(&fi);
+s = fi.showFare(croute.getRouteFlag());
+s = cr_remove(s);
+_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+------
+c_route.m
+--
+// fare calc
+- (FareInfo*)calcFare
+{
+    FARE_INFO fi;
+    int fare_result;
+
+    obj_calcroute->calcFare(&fi);
+    switch (fi.resultCode()) {
+        case 0:     // success, company begin/first or too many company
+            fare_result = 0;
+            break;  // OK
+        case -1:    /* In completed (吉塚、西小倉における不完全ルート) */
+            fare_result = 1;     //"この経路の片道乗車券は購入できません.続けて経路を指定してください."
+            break;
+        default:
+            return nil; /* -2:empty or -3:fail */
+            break;
+    }
+
+    FareInfo* result = nil;
+    string str1;
+    :
+    全必要情報がFareInfoに格納される
+
+
+ ---
+ self.fareInfo = self.ds.calcFare()
+if self.fareInfo == nil {
+    self.navigationItem.title = "エラー"
+    self.navigationItem.prompt = ""
+    return
+}
+----------- android(既存)
+
+val ds = Route()
+ds.assign((application as FarertApp).ds, routeEndIndex)
+setRouteChange(ds)
+mIsRoundTrip = ds.isRoundTrip
+mCalcRoute = CalcRoute(ds).also {
+    it.calcFareInfo()   // apply lastFlag.rule_en
+    setRouteOption(it)  // setFareOption()
+}
+
+.... onResume()
+mCalcRoute?.let {
+    val fi = it.calcFareInfo()
+    setContentData(fi)
+    setOptionFlag(fi)   // getFareOption() -> this member attributes(opt_xxx)
+}
+
+mCalcRoute どうせこわれるならメンバにおいても。。。グローバル変数として有用
+
+
+-----
+
+
 b#19082201
 getDistanceEx() のあと
 TRACE("\n\n\n\n@@@@@@@@@ %d, %d, %d, %d\n", company_id1, sub_company_id1, company_id2, sub_company_id2);

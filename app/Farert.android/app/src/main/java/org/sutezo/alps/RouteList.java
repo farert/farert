@@ -67,26 +67,27 @@ public class RouteList {
     final static int JCTSP_B_YOSHIZUKA = 4;
     final static int JCTSP_B_NAGAOKA = 5;
 
-    // last_flag
+    // route_flag
 
     List<RouteItem> route_list_raw = new ArrayList<RouteItem>(0);
 
-    LastFlag last_flag = new LastFlag();	// add() - removeTail() work
+    RouteFlag route_flag = new RouteFlag();	// add() - removeTail() work
 
     public RouteList() {}
     public RouteList(RouteList route_list) {
 
     }
+
     public void assign(RouteList source_route) {
         this.assign(source_route, -1);
     }
 
     public void assign(RouteList source_route, int count) {
         route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        last_flag = source_route.last_flag.clone();
+        route_flag = new RouteFlag(source_route.route_flag);
         if ((0 < count) && source_route.route_list_raw.size() != count) {
-            last_flag.end = false;
-            last_flag.compnda = false;
+            route_flag.end = false;
+            route_flag.compnda = false;
         }
     }
 
@@ -123,11 +124,11 @@ public class RouteList {
     }
 
     //public:
-    public int startStationId() {
+    public int departureStationId() {
         return (route_list_raw.size() <= 0) ? 0 : route_list_raw.get(0).stationId;
     }
 
-    public int endStationId() {
+    public int arriveStationId() {
         return (route_list_raw.size() <= 0) ? 0 : route_list_raw.get(route_list_raw.size() - 1).stationId;
     }
 
@@ -135,16 +136,12 @@ public class RouteList {
     public int getCount() { return route_list_raw.size();   }
     public RouteItem item(int index) { return routeList().get(index); }
 
-    public LastFlag getLastFlag() { return last_flag; }
-    public LastFlag sync_flag(RouteList source_route) {
-        last_flag = source_route.getLastFlag().clone();
-        return last_flag;
-    }
+    public RouteFlag getRouteFlag() { return route_flag; }
 
     boolean isModified() {
-        return last_flag.jctsp_route_change;
+        return route_flag.jctsp_route_change;
     }
-    boolean is_end() { return last_flag.end; }
+    boolean is_end() { return route_flag.end; }
 
     /*	ルート表示
 	 *	@return ルート文字列
@@ -160,7 +157,7 @@ public class RouteList {
             return "";
         }
 
-        if (last_flag.notsamekokurahakatashinzai) {
+        if (route_flag.notsamekokurahakatashinzai) {
     		result_str.append(RouteUtil.TITLE_NOTSAMEKOKURAHAKATASHINZAI);
     	}
         result_str.append(RouteUtil.StationNameEx(route_list_raw.get(0).stationId));
@@ -172,7 +169,7 @@ public class RouteList {
             if (1 < i) {
                 result_str.append(",");
                 if (!oskk_flag && (ri.lineId == DbIdOf.INSTANCE.line("大阪環状線"))) {
-                    if (last_flag.osakakan_detour) {
+                    if (route_flag.osakakan_detour) {
                         result_str.append("r");
                     }
                     oskk_flag = true;
@@ -202,140 +199,23 @@ public class RouteList {
                 }
             } else {
                 ASSERT (route_item == route_list_raw.get(0));
-                ASSERT (startStationId() == route_item.stationId);
+                ASSERT (departureStationId() == route_item.stationId);
             }
             stationIdFrom = route_item.stationId;
         }
         return false;
     }
 
-    //public:
-    //	運賃計算オプションを設定
-    //	@param [in]  cooked : bit15=0/1  = 規則適用/非適用
-    //						: bit 0
-    //							= 1: 発・着が特定都区市内で発-着が100/200km以下のとき、着のみ都区市内有効
-    //							= 0: 発・着が特定都区市内で発-着が100/200km以下のとき、発のみ都区市内有効
-    //						x : bit 1
-    //						x	= 1: 大阪環状線遠回り
-    //						x	= 0: 大阪環状線近回り(規定)
-    //                      x- shoud use setDetour()
-    //
-    //  @param [in] availbit : 有効フラグ
-    //			    RouteUtil.FAREOPT_AVAIL_OSAKAKAN_DETOUR, RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL, RouteUtil.FAREOPT_AVAIL_RULE_APPLIED
-    //
-    public void setFareOption(int cooked, int availbit) {
-        int opt = getFareOption();
+    public boolean isAvailableReverse() {
+        int c = route_list_raw.size();
 
-		/* 規則適用 */
-        if (0 != (RouteUtil.FAREOPT_AVAIL_RULE_APPLIED & availbit)) {
-            if (RouteUtil.FAREOPT_RULE_NO_APPLIED == (RouteUtil.FAREOPT_RULE_NO_APPLIED & cooked)) {
-                last_flag.no_rule = true;    /* 非適用 */
-            } else {
-                last_flag.no_rule = false;   /* 適用 */
-            }
-        }
-
-		/* 名古屋市内[名] - 大阪市内[阪] 発駅を単駅とするか着駅を単駅とするか */
-        if (0 != (RouteUtil.FAREOPT_AVAIL_APPLIED_START_TERMINAL & availbit)) {
-            if (((opt & 3) == 1) || ((opt & 3) == 2)) {
-                if (RouteUtil.IS_MAIHAN_CITY_START(cooked)) {
-                    last_flag.meihancityflag = true;  /* 着駅=単駅、発駅市内駅 */
-                } else {
-                    last_flag.meihancityflag = false;	/* 発駅=単駅、着駅市内駅 */
-                }
-            } else {
-                // ASSERT (false);
-                return;
-            }
-        }
-        /* JR東海株主適用有無 */
-	    if ((0 != (RouteUtil.FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK & availbit))) {
-		    if (RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED == (RouteUtil.FAREOPT_JRTOKAI_STOCK_APPLIED & cooked)) {
-			    last_flag.jrtokaistock_applied = true;    /* 適用 */
-		    } else {
-		  	    last_flag.jrtokaistock_applied = false;   /* 非適用 */
-		    }
-        }
-	}
-
-
-    //public:
-    //	運賃計算オプションを得る
-    //	@return
-    //     & 0xc0 = 0    : usualy
-    //     & 0xc0 = 0x80 : empty or non calc.
-    //	   & 0xc0 = 0x40 : Start Station only
-    //	   & 0xc0 = 0xc0 : Calc error.
-    //
-    //     & 0x03 = 0 : 無し(通常)(発・着が特定都区市内駅で特定都区市内間が100/200km以下ではない)
-    //			 (以下、発・着が特定都区市内駅で特定都区市内間が100/200kmを越える)
-    //	   & 0x03 = 0x01 : 結果表示状態は{特定都区市内 -> 単駅} (「発駅を単駅に指定」と表示)
-    //	   & 0x03 =	0x02 : 結果表示状態は{単駅 -> 特定都区市内} (「着駅を単駅に指定」と表示)
-    //     & 0x0c = 0x04 : 大阪環状線1回通過(近回り)(規定)
-    //     & 0x0c = 0x08 : 大阪環状線1回通過(遠回り)
-    //     & 0x30 = 0x10 : 特例あり;特例適用
-    //     & 0x30 = 0x20 : 特例なし:特例非適用
-    //	   & 0x300= 0x200: JR東海株主優待券使用
-    //	   & 0x300= 0x100: JR東海株主優待券使用しない
-    //     & 0x400= 0x400: Reverse不可(6の字)
-    //     & 0x400= 0x000: 通常(会社線絡みはReverseできなくてもこっち)
-    //virtual
-    public int getFareOption()
-    {
-    	int rc;
-    	int c = route_list_raw.size();
-
-    	if (c == 1) {
-    		rc = (1 << 6);    // 0x40; 	/* start only*/
-    	}
-    	else if (c <= 0) {
-    		rc = (1 << 7);    // 0x80;	/* empty */
-    	}
-    	else {
-    		rc = 0;
-    	}
-
-        // Reverse
-        if ((c < 1) ||
-                (!isRoundTrip() && // finished or company stop
-                        //startStationId() == endStationId()
-                        (route_list_raw.get(0).stationId != route_list_raw.get(route_list_raw.size() - 1).stationId))) {
-            // Qの字の大阪環状線ではダメやねん
-            rc |= 0x400;	// Disable reverse
-        }
-
-        // 大阪環状線 1回通過で近回り時 bit 2-3
-    	if (last_flag.is_osakakan_1pass()) {
-    		if (last_flag.osakakan_detour) {
-    			rc |= (1 << 3);  // 0x08;
-    		}
-    		else {
-    			rc |= (1 << 2);  // 0x04;
-    		}
-    	}
-    	// 特例有無 bit 4-5
-    	if (last_flag.rule_en) {
-    		if (last_flag.no_rule) {
-    			rc |= (1 << 5);     //
-    		}
-    		else {
-    			rc |= (1 << 4);     // default: Applied
-    		}
-    	}
-        // JR東海株主 有無 bit 4-5
-    	if (last_flag.jrtokaistock_enable) {
-    		if ((rc & 0x30) != 0x20) {	// Disable Tokai stock if applied the No Rule
-			    if (last_flag.jrtokaistock_applied) {
-				    rc |= (1 << 9);     // 0x200 : Enable
-			    }
-                else {
-				    rc |= (1 << 8);		// default: Disable 0x100
-			    }
-            }
-		}
-    	return rc;
+        // Available reverse
+        return (1 <= c) && (route_flag.isRoundTrip() ||
+                (route_list_raw.get(0).stationId == route_list_raw.get(c - 1).stationId));
+        // Qの字の大阪環状線ではダメやねん
     }
-    public boolean			isRoundTrip()  {
-        return !last_flag.end || last_flag.compnda;
-    }
+    boolean isRoundTrip()  { return route_flag.isRoundTrip(); }
+
+    // virual
+    int  coreAreaIDByCityId(int startEndFlg) { return 0;}
 }
