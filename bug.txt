@@ -2,9 +2,9 @@ b#バグタイトル
 ->
 //
 
-android 保存おかしい
-android 特例運賃の表示をiOSとおなじように。また、非適用でもでてしまう。
-android 近郊区間内での結果表示がiOS/Windowsと異なる。
+v android 保存おかしい
+v android 特例運賃の表示をiOSとおなじように。また、非適用でもでてしまう。
+v android 近郊区間内での結果表示がiOS/Windowsと異なる。
 　　　　　また「有効日数」欄にはかかないで独立した場所にすべき
 
 isMeihanCityEnable で、!no_ruleもみるようにした。UIで階層化するの止める。
