@@ -18,6 +18,9 @@ import kotlinx.android.synthetic.main.content_archive_route_list.view.*
 import kotlinx.android.synthetic.main.content_list_empty.*
 import org.sutezo.alps.*
 
+/**
+ * 経路保存画面
+ */
 class ArchiveRouteActivity : AppCompatActivity(),
         ArchiveRouteListRecyclerViewAdapter.ClickListener {
 
@@ -27,6 +30,9 @@ class ArchiveRouteActivity : AppCompatActivity(),
     private var mNumOfArchive : Int = -1
     private var mContainCurRoute : Boolean = false
 
+    /**
+     *
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_archive_route)
@@ -41,14 +47,15 @@ class ArchiveRouteActivity : AppCompatActivity(),
             ds.assign(it)
         }
 
+        // 保存経路リスト
         var listItems = readParams(this, KEY_ARCHIVE)
 
         mNumOfArchive = listItems.count()
         mContainCurRoute = false
         if (0 < ds.count) {
-            mCurRouteScript = ds.route_script()
+            mCurRouteScript = ds.route_script() // 現在表示中の経路
             if (listItems.contains(mCurRouteScript)) {
-                mContainCurRoute = true
+                mContainCurRoute = true // カレント表示経路はすでに保存されている
             }
         } else {
             mCurRouteScript = ""
@@ -65,7 +72,8 @@ class ArchiveRouteActivity : AppCompatActivity(),
         } else {
             archive_route_list.adapter = ArchiveRouteListRecyclerViewAdapter(listItems,
                                                                              mCurRouteScript,
-                                                                     this)
+                                                                             mContainCurRoute,
+                                                                             this)
             val swipeHandler = object : SwipeToDeleteCallback(this) {
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val adapter = archive_route_list.adapter
@@ -78,12 +86,17 @@ class ArchiveRouteActivity : AppCompatActivity(),
         }
     }
 
-
+    /**
+     *
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_archive_route, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
+    /**
+     *  menuの有効化/無効化を制御する(保存)
+     */
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
 
         val m = menu?: return super.onPrepareOptionsMenu(menu)
@@ -99,20 +112,26 @@ class ArchiveRouteActivity : AppCompatActivity(),
         return super.onPrepareOptionsMenu(menu)
     }
 
+    /**
+     *  Menu選択処理(保存/削除)
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         when (id) {
             android.R.id.home -> {
+                // return to back view
                 finish()
                 return true
             }
             R.id.menu_item_save -> {
+                //保存はRecyclerAdapterクラスに移譲する
                 val trv = archive_route_list.adapter
                         as ArchiveRouteListRecyclerViewAdapter
                 trv.saveParams(this)
                 item.setEnabled(false)
             }
             R.id.menu_item_all_delete -> {
+                // 全削除は訊いてからやる
                 AlertDialog.Builder(this).apply {
                     setTitle(R.string.main_alert_query_all_clear_title)
                     setMessage(R.string.main_alert_query_all_clear_mesg)
@@ -131,10 +150,17 @@ class ArchiveRouteActivity : AppCompatActivity(),
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     *  行を選択した場合、選択経路を表示する。既に別の経路が表示されていてその経路が保存されて
+     *  いなければ警告し確認させる
+     *
+     *  @param context コンテキスト
+     *  @param routeScript 選択した経路
+     */
     override fun onClickRow(context: Context, routeScript: String) {
 
         if ((mCurRouteScript != "") && (routeScript != mCurRouteScript) && !mContainCurRoute) {
-
+            // 経路が破棄されて更新されるが良いの？と。
             AlertDialog.Builder(context).apply {
                 setTitle(R.string.main_alert_query_route_update_title)
                 setMessage(R.string.main_alert_query_route_update_mesg)
@@ -149,11 +175,29 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 show()
             }
         } else {
+            // メイン表示経路はなし or 保存済み
             doChangeRoute(routeScript)
         }
     }
 
+    /**
+     *  メイン画面表示経路を選択した経路に置き換え
+     *  @param routeScript 経路
+     */
     private fun doChangeRoute(routeScript: String) {
+        // 選択した経路が保存済みで先頭にない場合は先頭に移動して保存し直す
+        var listItems = readParams(this, KEY_ARCHIVE)
+        if (listItems.contains(routeScript)) {
+            val s = listItems[0]
+            if (routeScript != s) {
+                var wl = listItems.toMutableList()
+                wl.remove(routeScript)
+                wl.add(0, routeScript)
+                saveParam(this, ArchiveRouteActivity.KEY_ARCHIVE, wl.toList())
+            }
+        }
+
+        // メイン画面へ遷移する（選択下経路を表示する）
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("mode", "archive")
             putExtra("script", routeScript)
@@ -163,7 +207,10 @@ class ArchiveRouteActivity : AppCompatActivity(),
         startActivity(intent)
     }
 
-
+    /**
+     * アイテム(保存経路)が削除されたり、保存された場合に呼ばれる
+     * @param numItem 行Index
+     */
     override fun onChangeItem(numItem: Int) {
 
         this.menu?.apply {
@@ -177,7 +224,10 @@ class ArchiveRouteActivity : AppCompatActivity(),
         }
     }
 
-
+    /**
+     * static object
+     * 保存パラメータキー定義
+     */
     companion object {
         val KEY_ARCHIVE = "archive_route"
     }
@@ -186,21 +236,34 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
 ////////////////////////////////////////////////////////////////
 
+/**
+ *  経路保存リストビュー管理クラス
+ *  @param values  保存経路リスト
+ *  @param curRouteScript 現在表示している経路
+ *  @paramm isSaved curRouteScriptは保存済みか
+ *  @param listener 親クラス(経路保存画面Activity)
+ */
 private class ArchiveRouteListRecyclerViewAdapter(private var values: List<String>,
                                                   private val curRouteScript : String,
+                                                  private var saveFlag : Boolean,
                                                   private val listener : ArchiveRouteListRecyclerViewAdapter.ClickListener) :
         RecyclerView.Adapter<ArchiveRouteListRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
     private var context : Context? = null
-    private var saveFlag : Boolean = false
 
+    /**
+     *  初期化では行選択したイベントメソッドを親クラス側に移譲する準備
+     */
     init {
         onClickListener = View.OnClickListener { v ->
             listener.onClickRow(context!!, v.id_route.text.toString())
         }
     }
 
+    /**
+     *  ビューをセットアップ
+     */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.content_archive_route_list, parent, false)
@@ -219,6 +282,9 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         return ViewHolder(view)
     }
 
+    /**
+     *  ビューに値（経路）を設定
+     */
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
 
@@ -228,8 +294,14 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         }
     }
 
+    /**
+     *  リスト数
+     */
     override fun getItemCount() = values.size
 
+    /**
+     *  経路が現在の経路で保存済みなら2、保存されていなければ1、それ以外は0
+     */
     override fun getItemViewType(position: Int): Int {
         if (values[position] == curRouteScript) {
             if (!saveFlag) {
@@ -242,6 +314,9 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         }
     }
 
+    /**
+     *  経路を削除
+     */
     fun removeAt(position: Int) {
         val removedVal = values.filterIndexed { index, _ ->  index != position }
         values = removedVal
@@ -255,6 +330,9 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         listener.onChangeItem(if (curRouteScript != "") itemCount - 1 else itemCount)
     }
 
+    /**
+     *  経路を全削除
+     */
     fun clearContents() {
         values = listOf()
         context?.let {
@@ -265,16 +343,25 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         notifyDataSetChanged()
     }
 
+    /**
+     *  経路を保存
+     */
     fun saveParams(context : Context) {
         saveParam(context, ArchiveRouteActivity.KEY_ARCHIVE, values)
         saveFlag = true
         notifyDataSetChanged()
     }
 
+    /**
+     *  View
+     */
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val idView: TextView = view.id_route
     }
 
+    /**
+     *  I/F定義
+     */
     interface ClickListener {
         fun onClickRow(context: Context, routeScript: String)
         fun onChangeItem(numItem: Int)

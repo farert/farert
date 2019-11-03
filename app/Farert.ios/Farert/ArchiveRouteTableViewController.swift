@@ -12,12 +12,12 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     let TAG_UIACTIONSHEET_QUERYCLEARALL : Int = 3940
     let TAG_UIACTIONSHEET_SELECTFUNC : Int = 1203
-    
+
     // MARK: - public property
-    
+
     var currentRouteString : String = ""    // in
     var selectRouteString : String = ""     // out
-    
+
     // MARK: - private property
     var routeList : [String] = []
     var saved : Bool = false
@@ -25,10 +25,10 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     // MARK: - UI variables
     @IBOutlet weak var allClearButton: UIBarButtonItem!
     @IBOutlet weak var saveButton: UIBarButtonItem!
-    
+
 
     // MARK: - view
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -36,16 +36,16 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
         // Uncomment the following line to preserve selection between presentations.
         self.clearsSelectionOnViewWillAppear = false;
-        
+
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         self.navigationItem.rightBarButtonItem = self.editButtonItem
-        
+
         self.tableView.estimatedRowHeight = 44.0
         self.tableView.rowHeight = UITableView.automaticDimension // for iOS8
 
         // Straged route read from filesystem
         self.routeList = cRouteUtil.loadStrageRoute() as! [String]
-        
+
         if !self.currentRouteString.isEmpty {
             if let idx = self.routeList.firstIndex(of: self.currentRouteString) {      // is exist ?
                 self.routeList.remove(at: idx)
@@ -85,13 +85,13 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             self.tableView.deselectRow(at: idx, animated:false)
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.tableView.reloadData()
     }
 
-    
+
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -109,7 +109,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         }
     }
 
-    
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         let cell : RouteListTableViewCell = tableView.dequeueReusableCell(withIdentifier: "routeListCell", for: indexPath) as! RouteListTableViewCell
@@ -134,7 +134,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         }
         return cell
     }
-    
+
 
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -143,10 +143,10 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         return 0 < self.routeList.count
     }
 
-    
+
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-    
+
         if editingStyle == UITableViewCell.EditingStyle.delete {
             tableView.beginUpdates()
             let c : Int = self.routeList.count
@@ -165,7 +165,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 self.tableView.reloadData()
             }
             cRouteUtil.save(toRouteArray: self.routeList)
-            
+
         } else if (editingStyle == UITableViewCell.EditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }
@@ -194,7 +194,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         let cell : RouteListTableViewCell = tableView.dequeueReusableCell(withIdentifier: "routeListCell") as! RouteListTableViewCell
         return cell.heightForTitle(self.routeList[indexPath.row])
     }
-    
+
     //  Header
     //
     //
@@ -209,7 +209,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             return nil
         }
     }
-    
+
     //  Height Header for Empty
     //
     //
@@ -223,7 +223,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         }
         return UITableView.automaticDimension
     }
-    
+
 
     // MARK: - Navigation
 
@@ -273,11 +273,11 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                     ac.popoverPresentationController?.sourceView = self.view
                     // end of for iPad
                     self.present(ac, animated: true, completion: nil)
-                    
+
                 } else {
                     // iOS7
                     let actsheet : UIActionSheet = UIActionSheet()
-                    
+
                     actsheet.delegate = self
                     actsheet.title = "経路は保存されていません."
 
@@ -286,7 +286,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                     actsheet.addButton(withTitle: "キャンセル")
                     actsheet.cancelButtonIndex = actsheet.numberOfButtons - 1
                     actsheet.tag = TAG_UIACTIONSHEET_SELECTFUNC
-                    
+
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         self.clearsSelectionOnViewWillAppear = false
                         self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
@@ -294,7 +294,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                     } else {
                         let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
                         let win : UIWindow = apd.window!
-                        
+
                         if (win.subviews ).contains(self.tableView as UIView) {
                             actsheet.show(in: self.view)
                         } else {
@@ -310,13 +310,15 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         }
         return true
     }
-    
+
     //  On select Action sheet.
     //
     func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
         actionSelectProc(buttonIndex, Tag: actionSheet.tag)
     }
 
+    // Query input
+    // 
     func actionSelectProc(_ selectIndex : Int, Tag tag : Int) {
         if tag == TAG_UIACTIONSHEET_SELECTFUNC {
             //    NSLog(@"Archive Action Select:%d", buttonIndex);
@@ -334,13 +336,13 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             if selectIndex == 0 {
                 cRouteUtil.save(toRouteArray: [])
                 self.routeList.removeAll(keepingCapacity: false)
-                
+
                 //self.tableView.endUpdates()
-                
+
                 //self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.Fade)
-                
+
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
-                
+
                 self.editEnd()
                 self.tableView.reloadData()
                 self.tableView.reloadSectionIndexTitles()
@@ -348,10 +350,10 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         }
     }
     // MARK: - UI Action
-    
+
     // [Clear] button
     @IBAction func allClearButtonTapped(_ sender: AnyObject) {
-        
+
         if #available(iOS 8, OSX 10.10, *) {
             // iOS8
             let ac : UIAlertController = UIAlertController(title: "全経路を破棄してよろしいですか？", message: nil, preferredStyle: .actionSheet)
@@ -363,19 +365,19 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             ac.popoverPresentationController?.sourceView = self.view
             // end of for iPad
             self.present(ac, animated: true, completion: nil)
-            
+
         } else {
             // iOS7
             let actsheet : UIActionSheet = UIActionSheet()
-            
+
             actsheet.delegate = self
             actsheet.title = "全経路を破棄してよろしいですか？"
-            
+
             actsheet.addButton(withTitle: "はい")
             actsheet.addButton(withTitle: "いいえ")
             //actsheet.cancelButtonIndex = actsheet.numberOfButtons - 1
             actsheet.tag = TAG_UIACTIONSHEET_QUERYCLEARALL;
-            
+
             if UIDevice.current.userInterfaceIdiom == .pad {
                 self.clearsSelectionOnViewWillAppear = false
                 self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
@@ -383,7 +385,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             } else {
                 let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
                 let win : UIWindow = apd.window!
-                
+
                 if (win.subviews ).contains(self.tableView as UIView) {
                     actsheet.show(in: self.view)
                 } else {
@@ -392,7 +394,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             }
         }
     }
-    
+
     // [Save] button
     @IBAction func saveButtonTapped(_ sender: AnyObject) {
         cRouteUtil.save(toRouteArray: self.routeList)
@@ -410,7 +412,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemTeal
         }
     }
-    
+
     func editBegin() {
         self.saveButton.isEnabled = false
         self.allClearButton.isEnabled = true // Enable [Edit] button

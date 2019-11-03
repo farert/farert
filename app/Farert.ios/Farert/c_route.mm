@@ -795,13 +795,14 @@ int g_tax; /* main.m */
     FARE_INFO::Fare rule114Fare;
     FARE_INFO::FareResult fareResult;
     const static char msgPossibleLowcost[] =
-                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
+                    "近郊区間内ですので最短経路の運賃で利用可能です";
     const static char msgAppliedLowcost[] =
-                    "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)";
+                    "近郊区間内ですので最安運賃の経路で計算";
     const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
     const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
     const static char msgCanYouNeerestStation[] = "「単駅最安」で単駅発着が選択可能です";
     const static char msgCanYouSpecificTerm[] = "「特定都区市内発着」で特定都区市内発着が選択可能です";
+    NSMutableArray* resultMessage = [NSMutableArray array];
 
     result = [[FareInfo alloc] init];
 
@@ -868,44 +869,6 @@ int g_tax; /* main.m */
     result.isRule115specificTerm = obj_calcroute->getRouteFlag().isRule115specificTerm();
     result.isEnableRule115 = obj_calcroute->getRouteFlag().isEnableRule115();
 
-    // make message
-    if (result.isRuleApplied &&
-        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
-        if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
-            result.resultMessage = [NSString stringWithUTF8String:msgCantMetroTicket];
-        } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
-                   !obj_calcroute->refRouteFlag().isRule115specificTerm()) {
-            if (obj_calcroute->getRouteFlag().isLongRoute()) {
-                result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
-            } else {
-                result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
-            }
-        } else {
-            result.resultMessage = @"";
-        }
-
-        // 大回り指定では115適用はみない
-        if (obj_calcroute->getRouteFlag().isEnableRule115() &&
-            !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
-            if (obj_calcroute->getRouteFlag().isRule115specificTerm()) {
-                result.resultMessage = [result.resultMessage stringByAppendingString:
-                                        [NSString stringWithUTF8String:
-                                        msgCanYouNeerestStation]];
-            } else {
-                result.resultMessage = [result.resultMessage stringByAppendingString:
-                                        [NSString stringWithUTF8String:
-                                         msgCanYouSpecificTerm]];
-            }
-        }
-    }
-
-    result.isSpecificFare = obj_calcroute->refRouteFlag().special_fare_enable; // 私鉄競合特例運賃(大都市近郊区間)
-    if (result.isSpecificFare) {
-        result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
-                                result.resultMessage,
-                                [NSString stringWithUTF8String:msgSpecificFareApply]];  // "特定区間割引運賃適用"
-    }
-
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();
     result.jrSalesKm = fi.getJRSalesKm();
@@ -961,6 +924,54 @@ int g_tax; /* main.m */
     }
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
+
+    // make message
+    if (result.isRuleApplied &&
+        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
+        if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
+            [resultMessage addObject:[NSString stringWithUTF8String:msgCantMetroTicket]];
+        } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
+                   !obj_calcroute->refRouteFlag().isRule115specificTerm()) {
+            if (obj_calcroute->getRouteFlag().isLongRoute()) {
+                [resultMessage addObject:[NSString stringWithUTF8String:msgPossibleLowcost]];
+            } else {
+                [resultMessage addObject:[NSString stringWithUTF8String:msgAppliedLowcost]];
+            }
+        }
+
+        // 大回り指定では115適用はみない
+        if (obj_calcroute->getRouteFlag().isEnableRule115() &&
+            !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
+            if (obj_calcroute->getRouteFlag().isRule115specificTerm()) {
+                [resultMessage addObject:[NSString stringWithUTF8String:
+                                        msgCanYouNeerestStation]];
+            } else {
+                [resultMessage addObject:[NSString stringWithUTF8String:
+                                         msgCanYouSpecificTerm]];
+            }
+        }
+    }
+
+    result.isSpecificFare = obj_calcroute->refRouteFlag().special_fare_enable; // 私鉄競合特例運賃(大都市近郊区間)
+    if (result.isSpecificFare) {
+        // "特定区間割引運賃適用"
+        [resultMessage addObject:[NSString stringWithUTF8String:msgSpecificFareApply]];
+    }
+    if result.isResultCompanyBeginEnd {
+        [resultMessage addObject:[NSString stringWithUTF8String:"会社線発着のため一枚の乗車券として発行されない場合があります."]];
+    }
+    if result.isResultCompanyMultipassed {
+        /* 2017.3 以降 ここに来ることはない */
+        [resultMessage addObject:[NSString stringWithUTF8String:"複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります."]];
+    }
+    if result.isEnableTokaiStockSelect {
+        [resultMessage addObject:[NSString stringWithUTF8String:"JR東海株主優待券使用オプション選択可"]];
+    }
+    if result.isBRTdiscount {
+        [resultMessage addObject:[NSString stringWithUTF8String:"BRT乗り継ぎ割引適用"]];
+    }
+
+    result.resultMessage = [resultMessage componentsJoinedByString:@"\r\n"];
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
