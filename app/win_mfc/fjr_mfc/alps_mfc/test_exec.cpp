@@ -2015,6 +2015,7 @@ _T("c--近郊区間(115絡み)--"),
 		_T("新山口 山陽線 門司"),
 		_T("新山口 山陽線 門司"),
 
+		_T("赤間 鹿児島線 東郷"),
 
 			// append new test pattern is here TODO
 		_T(""),
@@ -2097,7 +2098,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			tstring s;
 
 			if (0 == (4 & round)) {
-				croute.refRouteFlag().setNoRule(true);
+				croute.refRouteFlag().no_rule = true;
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2105,7 +2106,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			}
 
 			if (0 == (2 & round)) {
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2159,7 +2160,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				_ftprintf(os, _T("///最安経路\n%s\n"), s.c_str());
 			}
 			if (croute.getRouteFlag().isEnableRule115()) {
-				ASSERT(!croute.refRouteFlag().isDisableSpecificTermRule115())
+				ASSERT(!croute.refRouteFlag().isRule115specificTerm());
 				// デフォルトは最安かつ単駅になっているので、Optionで都区市内発着へ
 				croute.refRouteFlag().setSpecificTermRule115(true);
 				croute.calcFare(&fi);
@@ -2338,13 +2339,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2367,13 +2368,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2396,13 +2397,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2425,13 +2426,13 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				FARE_INFO fi;
 				CalcRoute croute(route);
 				if (!resopt) {
-					croute.refRouteFlag().setNoRule(true);
+					croute.refRouteFlag().no_rule = true;
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().setNoRule(false);
+				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
@@ -2615,7 +2616,7 @@ void test_temp()
 	}
 	FARE_INFO fi;
 	CalcRoute croute(route);
-	croute.refRouteFlag().setNoRule(false);
+	croute.refRouteFlag().no_rule = false;
 	croute.calcFare(&fi);
 	s = fi.showFare(croute.getRouteFlag());
 	s = cr_remove(s);

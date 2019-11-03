@@ -30,7 +30,7 @@ typedef NS_ENUM(NSInteger, DB) {
     DB_2014,
     DB_2015,
     DB_2017,
-    DB_2018,
+    DB_2019_8,
     DB_2019_10,
     DB_MAX_ID = DB_2019_10,
 };
@@ -112,6 +112,8 @@ typedef NS_ENUM(NSInteger, DB) {
 + (void)SaveToTerminalHistory:(NSString*)terminalName;
 + (void)SaveToTerminalHistoryWithArray:(NSArray*)historyAry;
 + (NSArray*)ReadFromTerminalHistory;
++ (NSString* )ReadFromKey:(NSString*)name;
++ (void)SaveToKey:(NSString*)key Value:(NSString*) value sync:(BOOL) sync;
 
 @end
 /* End of RouteUtil */
@@ -132,7 +134,7 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSString*)routeScript;
 
 @end
-/* End of Route */
+/* End of RouteList */
 
 @class cCalcRoute;
 //////////////////////////////////////////////////////////////
@@ -168,6 +170,7 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSInteger)setupRoute:(NSString*)routeString;
 
 - (NSInteger)setDetour:(BOOL)enabled;
+- (void)setNoRule:(BOOL)enabled;
 
 //- 小倉博多間新幹線在来線別線扱い
 - (void)setNotSameKokuraHakataShinZai:(BOOL)enabled;
@@ -191,6 +194,9 @@ typedef NS_ENUM(NSInteger, DB) {
 - (BOOL)isReverseAllow;
 
 - (BOOL)isEnd;
+
+- (BOOL)isOsakakanDetourEnable;
+- (BOOL)isOsakakanDetourShortcut;
 
 @end
 /* End of cRoute */
@@ -216,17 +222,12 @@ typedef NS_ENUM(NSInteger, DB) {
 // result (for sendmail)
 - (NSString*)showFare;
 
-- (BOOL)isOsakakanDetourShortcut;
-- (BOOL)isOsakakanDetourEnable;
-
 - (BOOL)isEnableLongRoute;
-- (BOOL)isDisableSpecificTermRule115;
+- (BOOL)isRule115specificTerm;
 - (void)setSpecificTermRule115:(BOOL)enable;
 
 - (void)setJrTokaiStockApply:(BOOL)enabled;
 
-
-- (void)setNoRule:(BOOL)enabled;
 
 - (void)setStartAsCity;
 - (void)setArriveAsCity;
@@ -243,7 +244,9 @@ typedef NS_ENUM(NSInteger, DB) {
 - (NSInteger)lastStationId;
 // route string
 - (NSString*)routeScript;
-//-- cRouteList --
+
+- (BOOL)isOsakakanDetourEnable;
+- (BOOL)isOsakakanDetour;
 
 @end
 /* End of cCalcRoute */

@@ -11,11 +11,13 @@
         android:id="@+id/id_text_station"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/colorTextMain"
         android:textAppearance="?android:attr/textAppearanceListItem" />
 
     <TextView
         android:id="@+id/id_text_lines_of_station"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/colorTextSub"
         android:textAppearance="?android:attr/textAppearanceListItem" />
 </LinearLayout>

@@ -74,7 +74,7 @@ int g_tax; /* main.m */
             g_tax = 8;
             dbname = @"jrdb2017";
             break;
-        case DB_2018:
+        case DB_2019_8:
             g_tax = 8;
             dbname = @"jrdb2019";
             break;
@@ -99,7 +99,7 @@ int g_tax; /* main.m */
     [self SaveToDatabaseId:dbid sync:YES];
 }
 
-+ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
++ (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync
 {
     /* Store */
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:dbid] forKey:@"JrDatabaseId"];
@@ -425,6 +425,27 @@ int g_tax; /* main.m */
     return newArray;
 }
 
+// generic parameter
+
++ (void)SaveToKey:(NSString*)key Value:(NSString*) value sync:(BOOL) sync
+{
+    /* Store */
+    [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
+
+    if (sync) {
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+}
+
+// Retrieve database index
++ (NSString* )ReadFromKey:(NSString*)name
+{
+    return
+    [[NSUserDefaults standardUserDefaults] stringForKey:name];
+}
+
+
+
 @end
 /* cRouteUtil */
 
@@ -466,7 +487,7 @@ int g_tax; /* main.m */
 // 開始駅id
 - (NSInteger)startStationId
 {
-    return obj_route_list->startStationId();
+    return obj_route_list->departureStationId();
 }
 
 - (NSInteger)lastStationId
@@ -611,6 +632,11 @@ int g_tax; /* main.m */
     return obj_route->setDetour(enabled);
 }
 
+- (void)setNoRule:(BOOL)enabled
+{
+    obj_route->setNoRule(enabled);
+}
+
 // - 博多小倉間新幹線在来線別線
 - (void)setNotSameKokuraHakataShinZai:(BOOL)enabled
 {
@@ -641,7 +667,7 @@ int g_tax; /* main.m */
 // 開始駅id
 - (NSInteger)startStationId
 {
-    return obj_route->startStationId();
+    return obj_route->departureStationId();
 }
 
 // route string
@@ -671,6 +697,19 @@ int g_tax; /* main.m */
 {
     return obj_route->isEnd();
 }
+
+// 大阪環状線 遠回り設定か？
+- (BOOL)isOsakakanDetourEnable
+{
+    return obj_route->getRouteFlag().is_osakakan_1pass();
+}
+
+// 大阪環状線 遠回りか近回りか？
+- (BOOL)isOsakakanDetourShortcut
+{
+    return obj_route->getRouteFlag().osakakan_detour;
+}
+
 
 @end
 /* End of cRoute */
@@ -756,14 +795,15 @@ int g_tax; /* main.m */
     FARE_INFO::Fare rule114Fare;
     FARE_INFO::FareResult fareResult;
     const static char msgPossibleLowcost[] =
-                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
+                    "近郊区間内ですので最短経路の運賃で利用可能です";
     const static char msgAppliedLowcost[] =
-                    "近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)";
+                    "近郊区間内ですので最安運賃の経路で計算";
     const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
     const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
     const static char msgCanYouNeerestStation[] = "「単駅最安」で単駅発着が選択可能です";
     const static char msgCanYouSpecificTerm[] = "「特定都区市内発着」で特定都区市内発着が選択可能です";
-    
+    NSMutableArray* resultMessage = [NSMutableArray array];
+
     result = [[FareInfo alloc] init];
 
     result.result = fare_result;        /* calculate result */
@@ -772,7 +812,7 @@ int g_tax; /* main.m */
 
     result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
 
-    
+
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId();
     result.endStationId = fi.getEndTerminalId();
@@ -811,64 +851,23 @@ int g_tax; /* main.m */
         [result setFareForStockDiscountsForR114:w2 + fi.getFareForCompanyline()
                                       Discount2:w3 + fi.getFareForCompanyline()];
     }
-    
+
     result.isMeihanCityStartTerminalEnable = obj_calcroute->refRouteFlag().isMeihanCityEnable();
     result.isMeihanCityStart = obj_calcroute->refRouteFlag().isStartAsCity();
     result.isMeihanCityTerminal = obj_calcroute->refRouteFlag().isArriveAsCity();
-    
-    result.isOsakakanDetourEnable = obj_calcroute->getRouteFlag().is_osakakan_1pass();
-    
-    // TRUE: Detour / FALSE: Shortcut
-    result.isOsakakanDetourShortcut = obj_calcroute->getRouteFlag().osakakan_detour;
-    
+
+    result.isRoundtrip = obj_calcroute->refRouteFlag().isRoundTrip();
+
     result.isRuleAppliedEnable = obj_calcroute->getRouteFlag().rule_en();
     result.isRuleApplied = !obj_calcroute->getRouteFlag().no_rule;
-    
+
     result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
     result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
-    
+
     result.isEnableLongRoute = obj_calcroute->getRouteFlag().isEnableLongRoute();
     result.isLongRoute = obj_calcroute->getRouteFlag().isLongRoute();
-    result.isDisableSpecificTermRule115 = obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
+    result.isRule115specificTerm = obj_calcroute->getRouteFlag().isRule115specificTerm();
     result.isEnableRule115 = obj_calcroute->getRouteFlag().isEnableRule115();
-
-    // make message
-    if (result.isRuleApplied &&
-        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
-        if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
-            result.resultMessage = [NSString stringWithUTF8String:msgCantMetroTicket];
-        } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
-                   !obj_calcroute->refRouteFlag().isDisableSpecificTermRule115()) {
-            if (obj_calcroute->getRouteFlag().isLongRoute()) {
-                result.resultMessage = [NSString stringWithUTF8String:msgPossibleLowcost];
-            } else {
-                result.resultMessage = [NSString stringWithUTF8String:msgAppliedLowcost];
-            }
-        } else {
-            result.resultMessage = @"";
-        }
-    
-        // 大回り指定では115適用はみない
-        if (obj_calcroute->getRouteFlag().isEnableRule115() &&
-            !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
-            if (obj_calcroute->getRouteFlag().isDisableSpecificTermRule115()) {
-                result.resultMessage = [result.resultMessage stringByAppendingString:
-                                        [NSString stringWithUTF8String:
-                                        msgCanYouNeerestStation]];
-            } else {
-                result.resultMessage = [result.resultMessage stringByAppendingString:
-                                        [NSString stringWithUTF8String:
-                                         msgCanYouSpecificTerm]];
-            }
-        }
-    }
-
-    result.isSpecificFare = obj_calcroute->refRouteFlag().special_fare_enable; // 私鉄競合特例運賃(大都市近郊区間)
-    if (result.isSpecificFare) {
-        result.resultMessage = [NSString stringWithFormat:@"%@\r\n%@",
-                                result.resultMessage,
-                                [NSString stringWithUTF8String:msgSpecificFareApply]];  // "特定区間割引運賃適用"
-    }
 
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();
@@ -925,13 +924,61 @@ int g_tax; /* main.m */
     }
     // 有効日数
     result.ticketAvailDays = fi.getTicketAvailDays();
-    
+
+    // make message
+    if (result.isRuleApplied &&
+        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
+        if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
+            [resultMessage addObject:[NSString stringWithUTF8String:msgCantMetroTicket]];
+        } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
+                   !obj_calcroute->refRouteFlag().isRule115specificTerm()) {
+            if (obj_calcroute->getRouteFlag().isLongRoute()) {
+                [resultMessage addObject:[NSString stringWithUTF8String:msgPossibleLowcost]];
+            } else {
+                [resultMessage addObject:[NSString stringWithUTF8String:msgAppliedLowcost]];
+            }
+        }
+
+        // 大回り指定では115適用はみない
+        if (obj_calcroute->getRouteFlag().isEnableRule115() &&
+            !obj_calcroute->getRouteFlag().isEnableLongRoute()) {
+            if (obj_calcroute->getRouteFlag().isRule115specificTerm()) {
+                [resultMessage addObject:[NSString stringWithUTF8String:
+                                        msgCanYouNeerestStation]];
+            } else {
+                [resultMessage addObject:[NSString stringWithUTF8String:
+                                         msgCanYouSpecificTerm]];
+            }
+        }
+    }
+
+    result.isSpecificFare = obj_calcroute->refRouteFlag().special_fare_enable; // 私鉄競合特例運賃(大都市近郊区間)
+    if (result.isSpecificFare) {
+        // "特定区間割引運賃適用"
+        [resultMessage addObject:[NSString stringWithUTF8String:msgSpecificFareApply]];
+    }
+    if result.isResultCompanyBeginEnd {
+        [resultMessage addObject:[NSString stringWithUTF8String:"会社線発着のため一枚の乗車券として発行されない場合があります."]];
+    }
+    if result.isResultCompanyMultipassed {
+        /* 2017.3 以降 ここに来ることはない */
+        [resultMessage addObject:[NSString stringWithUTF8String:"複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります."]];
+    }
+    if result.isEnableTokaiStockSelect {
+        [resultMessage addObject:[NSString stringWithUTF8String:"JR東海株主優待券使用オプション選択可"]];
+    }
+    if result.isBRTdiscount {
+        [resultMessage addObject:[NSString stringWithUTF8String:"BRT乗り継ぎ割引適用"]];
+    }
+
+    result.resultMessage = [resultMessage componentsJoinedByString:@"\r\n"];
+
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
-                              result.isOsakakanDetourEnable ||
+                              self.isOsakakanDetourEnable  ||
                               result.isJRCentralStockEnable ||
                               result.isEnableRule115 ||
-                              result.isLongRoute ||
+                              result.isEnableLongRoute ||
                               result.isSpecificFare;
     return result;
 }
@@ -945,23 +992,12 @@ int g_tax; /* main.m */
     return [NSString stringWithUTF8String:fi.showFare(obj_calcroute->getRouteFlag()).c_str()];
 }
 
-// 大阪環状線 遠回りか近回りか？
-- (BOOL)isOsakakanDetourShortcut
-{
-    return obj_calcroute->getRouteFlag().osakakan_detour;
-}
-
-// 大阪環状線 遠回り設定か？
-- (BOOL)isOsakakanDetourEnable
-{
-    return obj_calcroute->getRouteFlag().is_osakakan_1pass();
-}
-
 // 近郊区間指定経路か
 - (BOOL)isEnableLongRoute
 {
     return obj_calcroute->getRouteFlag().isEnableLongRoute();
 }
+
 
 // 旅客営業取扱基準規程第115条
 - (BOOL)isEnableRule115
@@ -970,9 +1006,9 @@ int g_tax; /* main.m */
 }
 
 // 旅客営業取扱基準規程第115条 特定都区市内発着適用中ではなく単駅選択中か？
-- (BOOL)isDisableSpecificTermRule115
+- (BOOL)isRule115specificTerm
 {
-    return obj_calcroute->getRouteFlag().isDisableSpecificTermRule115();
+    return obj_calcroute->getRouteFlag().isRule115specificTerm();
 }
 
 - (void)setSpecificTermRule115:(BOOL)enabled
@@ -983,11 +1019,6 @@ int g_tax; /* main.m */
 - (void)setJrTokaiStockApply:(BOOL)enabled
 {
     return obj_calcroute->refRouteFlag().setJrTokaiStockApply(enabled);
-}
-
-- (void)setNoRule:(BOOL)enabled
-{
-    obj_calcroute->refRouteFlag().setNoRule(enabled);
 }
 
 - (void)setStartAsCity
@@ -1016,7 +1047,7 @@ int g_tax; /* main.m */
 // 開始駅id
 - (NSInteger)startStationId
 {
-    return obj_calcroute->startStationId();
+    return obj_calcroute->departureStationId();
 }
 
 // route string
@@ -1031,7 +1062,15 @@ int g_tax; /* main.m */
     return obj_calcroute->routeList().back().stationId;
 }
 
-//-- cRouteList --
+- (BOOL)isOsakakanDetourEnable
+{
+    return obj_calcroute->refRouteFlag().is_osakakan_1pass();
+}
+
+- (BOOL)isOsakakanDetour
+{
+    return obj_calcroute->refRouteFlag().osakakan_detour;
+}
 
 @end
 /* End of CalcRoute */

@@ -87,9 +87,8 @@ def same_staion(station_name):
 if 4 == len(sys.argv):
   fn = sys.argv[1]
   db_name = sys.argv[2]
-  tax = sys.argv[3]
 else:
-  print("Usage:" + sys.argv[0] + " dbname.txt name tax")
+  print("Usage:" + sys.argv[0] + " dbname.txt name")
   exit(-1)
 
 class Dbreg:
@@ -132,12 +131,11 @@ class Dbreg:
 		sql = """
 		create table t_dbsystem(
 			name text,
-			tax integer not null,
 			db_createdate text not null
 		);
 		"""
 		self.con.execute(sql)
-		self.con.executemany("insert into t_dbsystem values(?, ?, datetime('now'))", [[db_name, tax]])
+		self.con.executemany("insert into t_dbsystem values(?, datetime('now'))", [[db_name]])
 		###########################################
 		sql = """
 		create table t_company (
