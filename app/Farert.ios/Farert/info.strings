@@ -1,0 +1,9 @@
+/* 
+  info.strings
+  Farert
+
+  Created by TAKEDA, Noriyuki on 2019/10/14.
+  Copyright © 2019 TAKEDA, Noriyuki. All rights reserved.
+*/
+"desc_specific_calc_option" = "%sに設定すると、運賃計算規則を適用せず実際に発券・購入することができません。\
+本機能は指定経路の営業キロを確認するためのものです";

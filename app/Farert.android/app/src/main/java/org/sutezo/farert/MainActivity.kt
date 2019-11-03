@@ -70,13 +70,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
 
             }
-            // 大阪環状線 大回り/近回り
-            R.id.navigation_detour -> {
-                if (mOsakakan_detour != OSAKA_KAN.DISABLE) {
-                    mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) OSAKA_KAN.NEAR else OSAKA_KAN.FAR
-                    mRoute.setDetour(mOsakakan_detour == OSAKA_KAN.FAR)
-                    update_fare(1)
-                }
+            // 経路保存
+            R.id.navigation_archive -> {
+                val intent = Intent(this, ArchiveRouteActivity::class.java)
+                val param = if (mRoute.count <= 1) "" else mRoute.route_script()
+                intent.putExtra("route_script", param)
+                startActivity(intent)
             }
         }
         false
@@ -111,7 +110,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             }
         }
 
-        mRoute = (application as FarertApp).ds
+        if (application is FarertApp) {
+            (application as FarertApp).apply {
+                mRoute = this.ds
+                mRoute.setNotSameKokuraHakataShinZai(
+                                this.bKokuraHakataShinZaiFlag)
+            }
+        } else {
+            mRoute = Route()
+        }
 
         recycler_view_route.adapter = RouteRecyclerAdapter(this, mRoute)
 
@@ -119,12 +126,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         bottombar.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         val menuView = bottombar.getChildAt(0) as BottomNavigationMenuView
+        // [back]
         (menuView.getChildAt(0) as BottomNavigationItemView).apply {
             setEnabled(false)
         }
+        // [reverse]
         (menuView.getChildAt(1) as BottomNavigationItemView).apply {
             isEnabled = false
         }
+        // [大阪環状線]
         (menuView.getChildAt(2) as BottomNavigationItemView).apply {
             isEnabled = false
         }
@@ -140,31 +150,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         } catch (e: NumberFormatException) {
             num = -1
         }
-        if (-1 == num) {
+        if ((-1 == num) || (num < 16)) {
             welcome_show()
-            val cv = getVersionCode()
+            val cv = (application as? FarertApp)?.getVersionCode() ?: "0"
             saveParam(this, "hasLaunched", cv.toString())
         }
-
-        /* database index reset */
-        if (num < 5) {  // 5=19.04
-            // set current default database index
-            saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
-        }
-    }
-
-    private fun getVersionCode(): Long {
-        val pm = this.packageManager
-        var versionCode : Long = 0
-        try {
-            val packageInfo = pm.getPackageInfo(this.packageName, 0)
-            versionCode = if (Build.VERSION.SDK_INT >= 28) packageInfo.longVersionCode else packageInfo.versionCode.toLong()
-            // versionCode:通算バージョン(数値)
-            // versionName: "18.11" とか
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
-        }
-        return versionCode
     }
 
     override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
@@ -203,13 +193,12 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 // 履歴へ追加
                 appendHistory(this, RouteUtil.StationNameEx(stationId))
 
-                val titles = arrayOf("在来線のみ", "新幹線を使う", "会社線を使う", "新幹線も会社線も使う")
                 val subtitle = RouteUtil.StationNameEx(stationId)
                 val dlg_title = resources.getString(R.string.title_autoroute_selection, subtitle)
 
                 AlertDialog.Builder(this).apply {
                     setTitle(dlg_title)
-                    setItems(titles) { _, which ->
+                    setItems(R.array.select_autoroute_option) { _, which ->
                         val rc = mRoute.changeNeerest(which, stationId)
                         update_fare(if (rc == 4) 40 else rc)
                         recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
@@ -294,7 +283,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             resources.getString(R.string.main_rc_company_end)
                         }
                         5 -> {
-                            resources.getString(R.string.main_rc_neerested)
+                            resources.getString(R.string.main_rc_finished)
                         }
                         40 -> {
                             resources.getString(R.string.main_rc_auto_not_enough)
@@ -341,14 +330,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             availday_value.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
             (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
             // 大阪環状線
-            if (fi.isOsakakanDetourEnable()) {
-                if (fi.isOsakakanDetourShortcut()) {
-                    mOsakakan_detour = OSAKA_KAN.NEAR
-                } else {
+            if (mRoute.isOsakakanDetourEnable) {
+                if (mRoute.isOsakakanDetour) {
                     mOsakakan_detour = OSAKA_KAN.FAR
+                } else {
+                    mOsakakan_detour = OSAKA_KAN.NEAR
                 }
             }
-            revButton = ((cr.fareOption and 0x400) == 0)
+            revButton = cr.isAvailableReverse()
+
             footer_group.visibility = View.VISIBLE
             buttonFareDetail.isEnabled = true
 
@@ -379,16 +369,19 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         // リバースボタンの有効化／無効化
         (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
             (getChildAt(1) as BottomNavigationItemView).apply {
-                setEnabled(1 < mRoute.count && revButton)
-            }
-        }
-        //大阪環状線遠回り／近回りボタン
-        (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
-            (getChildAt(2) as BottomNavigationItemView).apply {
-                setEnabled(1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
+                this.isEnabled = (1 < mRoute.count && revButton)
             }
         }
 
+        // 経路保存
+        (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
+            (getChildAt(2) as BottomNavigationItemView).apply {
+                this.isEnabled = true   // always enable
+            }
+        }
+        val m = toolbar.menu
+        val mi = m.findItem(R.id.action_osakakanrev) ?: return
+        mi.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
     }
 
     // 発駅設定
@@ -405,6 +398,28 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
+
+    // menu didApear
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+
+        // 大阪環状線
+        val menu_osakakan = menu?.findItem(R.id.action_osakakanrev) ?: return true
+
+        if (1 < mRoute.count && mRoute.isOsakakanDetourEnable) {
+            if (mRoute.isOsakakanDetour) {
+                // 「遠回り」になっているので「近回り」と表示する
+                menu_osakakan.title = resources.getString(R.string.result_menu_osakakan_near)
+            } else {
+                // 「近回り」になっているので「遠回り」と表示する
+                menu_osakakan.title = resources.getString(R.string.result_menu_osakakan_far)
+            }
+            menu_osakakan.isEnabled = true
+        } else {
+            menu_osakakan.isEnabled = false
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
 
     // menu selected
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -425,17 +440,49 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 startActivity(intent)
                 true
             }
-            // 経路保存
-            R.id.archive_route -> {
-                val intent = Intent(this, ArchiveRouteActivity::class.java)
-                val param = if (mRoute.count <= 1) "" else mRoute.route_script()
-                intent.putExtra("route_script", param)
-                startActivity(intent)
+            // 大阪環状線 大回り/近回り
+            R.id.action_osakakanrev -> {
+                if (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE) {
+                    if (mOsakakan_detour == OSAKA_KAN.FAR) {
+                        mOsakakan_detour = OSAKA_KAN.NEAR
+                    } else {
+                        mOsakakan_detour = OSAKA_KAN.FAR
+                    }
+                    val far = (mOsakakan_detour == OSAKA_KAN.FAR)
+                    if (far) {
+                        showInfoAsOsakaKanjyouDetour()
+                    }
+                    val rc = mRoute.setDetour(far)   // True=Far, False=Neerest
+
+                    update_fare(rc)
+
+                    item.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    fun showInfoAsOsakaKanjyouDetour() {
+        val key = "setting_key_hide_osakakan_detour_info"
+        val r = readParam(this, key)
+        if (r != "true") {
+            val title = resources.getString(R.string.title_specific_calc_option_osakakan)
+            val msg = resources.getString(R.string.desc_specific_calc_option, title)
+            val build = AlertDialog.Builder(this).apply {
+                setTitle(title)
+                setMessage(msg)
+                setNegativeButton(R.string.hide_specific_calc_option_info) { _, _ ->
+                    saveParam(context, key, "true")
+                }
+                setPositiveButton(R.string.agree, null)
+            }
+            val dlg = build.create()
+            dlg.show()
+        }
+    }
+
 
     // <- bottun
     override fun onBackPressed() {

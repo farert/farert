@@ -10,9 +10,11 @@
         android:id="@+id/id_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/colorTextMain"
         android:textAppearance="?android:attr/textAppearanceListItem" />
     <TextView
         android:id="@+id/id_detail_text"
+        android:textColor="@color/colorTextSub"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

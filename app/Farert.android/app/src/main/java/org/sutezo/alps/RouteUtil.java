@@ -50,36 +50,11 @@ import static org.sutezo.alps.farertAssert.ASSERT;
 
 public class RouteUtil {
 
-    final static String TITLE_NOTSAMEKOKURAHAKATASHINZAI = "小倉博多間新幹線在来線別線";
+    final static String TITLE_NOTSAMEKOKURAHAKATASHINZAI = "(小倉博多間新幹線在来線別線)";
 
     static int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
 
     // (System->User)
-
-    static boolean IS_MAIHAN_CITY_START_TERMINAL_EN(int flg) { return (((flg) & 0x03) != 0x00); }
-    static boolean IS_MAIHAN_CITY_START(int flg)             { return (((flg) & 0x03) == 0x01); }
-    static boolean IS_MAIHAN_CITY_TERMINAL(int flg)          { return (((flg) & 0x03) == 0x02); }
-
-    // bit 2-3
-    public static boolean IS_OSAKAKAN_DETOUR_EN(int flg)            { return (((flg) & 0x0c) != 0); }
-
-    // TRUE: Detour / false: Shortcut
-    static boolean IS_OSAKAKAN_DETOUR_SHORTCUT(int flg)      { return (((flg) & 0x0c) == 0x08); }
-
-    // bit 4-5
-    static boolean IS_RULE_APPLIED_EN(int flg)               { return (((flg) & 0x30) != 0); }
-    static boolean IS_RULE_APPLIED(int flg)                  { return (((flg) & 0x30) == 0x10); }
-
-
-    static boolean IS_FAREOPT_ENABLED(int flg)               { return (((flg) & 0x3f) != 0); }
-
-    // bit 6-7
-    // empty or start only
-
-    // bit 8-9(User->System)
-    public final static int FAREOPT_AVAIL_APPLIED_JRTOKAI_STOCK 	= (1<<6);   // 有効ビットマスク
-    public final static int FAREOPT_JRTOKAI_STOCK_APPLIED			= (1<<6);	// JR東海株主に適用
-    public final static int FAREOPT_JRTOKAI_STOCK_NO_APPLIED		= 0;   	// JR東海株主に非適用
 
     final static int ADDRC_LAST = 0;   // add() return code
     final static int ADDRC_OK = 1;
@@ -87,29 +62,10 @@ public class RouteUtil {
     final static int ADDRC_CEND	= 4;
     // ADDRC_NG -1 to -N
 
-    /* cooked flag for shoFare(), show_route() */
-    // bit 15  (User->System)
-    public final static int FAREOPT_AVAIL_RULE_APPLIED = 0x8000;	// 有効ビットマスク
-    public final static int FAREOPT_RULE_NO_APPLIED = 0x8000;	// 特別規則適用なし
-    public final static int FAREOPT_RULE_APPLIED = 0;		// 通常
-
-    // bit 0-1 (User->System)
-    public final static int FAREOPT_AVAIL_APPLIED_START_TERMINAL = 1;   // 有効ビットマスク
-    public final static int FAREOPT_APPLIED_START = 1;	// 名阪間 発駅を市内駅に適用
-    public final static int FAREOPT_APPLIED_TERMINAL = 2;	// 名阪間 着駅を市内駅に適用
-
     // length define(UTF-8)
-    final static int MAX_STATION_CHR = 64;		// 38
-    final static int MAX_LINE_CHR = 128;
-    final static int MAX_COMPANY_CHR = 64;		//
-    final static int MAX_PREFECT_CHR = 16;
-    final static int MAX_COREAREA_CHR = 26;
+    final static int MAX_STATION_CHR = 64;             // 38
 
-    final static int MAX_NUM_JCT_STATION = 103;
-    final static int MAX_JCT_NUM = 6;		// 東京駅乗り入れ路線数が最大で6
     final static int MAX_JCT = 330;		// 319
-
-    final String CLEAR_HISTORY = "(clear)";
 
     final static int MAX_COMPNPASSSET = 3;       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 
@@ -129,18 +85,6 @@ public class RouteUtil {
     static final boolean IS_JR_MAJOR_COMPANY(int c)	{
         return ((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c));
     }
-
-
-    static final int LINE_TOHOKU_SINKANSEN	= 1;	// 東北新幹線
-    static final int LINE_JYOETSU_SINKANSEN = 2;	// 上越新幹線
-    static final int LINE_HOKURIKU_SINKANSEN = 3;	// 北陸長野新幹線
-    static final int LINE_TOKAIDO_SINKANSEN = 4;	// 東海道新幹線
-    static final int LINE_SANYO_SINKANSEN	= 5;	// 山陽新幹線
-    static final int LINE_KYUSYU_SINKANSEN	= 6;	// 九州新幹線
-    static final int LINE_HOKKAIDO_SINKANSEN = 7;	// 北海道新幹線
-    static final int LINE_YAMAGATA_SINKANSEN = 8;	// 山形新幹線
-    static final int LINE_NAGASAKI_SINKANSEN = 9;	// 長崎新幹線
-
 
     static final int CITYNO_TOKYO = 1;			// 東京都区内[区]
     static final int CITYNO_YOKOHAMA = 2;		// 横浜市内[浜]
@@ -164,12 +108,11 @@ public class RouteUtil {
     static final int URB_FUKUOKA = 4;
     static final int URB_SENDAI = 5;
 
-    static final int FLAG_FARECALC_INITIAL	=	(1<<15);
+    static final int FLAG_FARECALC_INITIAL	= (1<<15);
     public static int MASK_CITYNO(int flg) {
         return ((flg) & 0x0f);
     }
     /* 近郊区間 */
-    final static int BCSUBURB = 7;
     final static int MASK_URBAN = 0x380;
     static int URBAN_ID(int flg) {
         return (((int)(flg)>>>7)&7);
@@ -184,7 +127,9 @@ public class RouteUtil {
         return (((flg)&(1 << 5))!=0);	/* 山点線内／大阪環状線内 ?*/
     }
 
-    final static int BCBULURB = 13;	// FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
+    static final int MASK_FARECALC_INITIAL = 0;
+
+    final static int BCBULURB = 13;     // FARE_INFO.flag: ONの場合大都市近郊区間特例無効(新幹線乗車している)
 
 /*
   RouteItem[] 先頭のlineId
@@ -846,10 +791,10 @@ public class RouteUtil {
      //	@param [in] last_flag    route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
      //	@retval 文字列
      //
-     public static String Show_route(final RouteItem[] routeList, final LastFlag last_flag_) {
+     public static String Show_route(final RouteItem[] routeList, final RouteFlag routeFlag) {
          String lineName;
          String stationName;
-         LastFlag last_flag = last_flag_.clone();
+         RouteFlag _route_flag = routeFlag;
          //TCHAR buf[MAX_BUF];
          String result_str;
          int station_id1;
@@ -860,7 +805,7 @@ public class RouteUtil {
 
          result_str = "";
          station_id1 = routeList[0].stationId;
-         last_flag.setOsakaKanFlag(LastFlag.OSAKAKAN_PASS.OSAKAKAN_NOPASS);	// BIT_OFF(last_flag, osakakan_1pass)
+         _route_flag.setOsakaKanFlag(RouteFlag.OSAKAKAN_PASS.OSAKAKAN_NOPASS);	// BIT_OFF(last_flag, osakakan_1pass)
 
          for (int pos = 1; pos < routeList.length ; pos++) {
 
@@ -873,8 +818,8 @@ public class RouteUtil {
                          result_str += "[";
                          result_str += lineName;
                          if (DbIdOf.INSTANCE.line("大阪環状線") == routeList[pos].lineId) {
-                             result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, last_flag);
-                             last_flag.setOsakaKanPass(true);
+                             result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, _route_flag);
+                             _route_flag.setOsakaKanPass(true);
                          }
                          result_str += "]";
                      } else {
@@ -892,8 +837,8 @@ public class RouteUtil {
                      result_str += "[";
                      result_str += lineName;
                      if (DbIdOf.INSTANCE.line("大阪環状線") == routeList[pos].lineId) {
-                         result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, last_flag);
-                         last_flag.setOsakaKanPass(true);
+                         result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, _route_flag);
+                         _route_flag.setOsakaKanPass(true);
                      }
                      result_str += "]";
                  }
@@ -910,10 +855,10 @@ public class RouteUtil {
      //
      //	@param [in] station_id1  発駅
      //	@param [in] station_id2  着駅
-     //	@param [in] last_flag    route flag.
+     //	@param [in] routeFlag    route flag.
      //	@retval 文字列
      //
-     private static String  RouteOsakaKanDir(int station_id1, int station_id2, final LastFlag last_flag) {
+     private static String  RouteOsakaKanDir(int station_id1, int station_id2, final RouteFlag routeFlag) {
          String result_str;
          final String result[] = {
                  "",
@@ -975,12 +920,12 @@ public class RouteUtil {
          int  c;
 
          c = DirOsakaKanLine(station_id1, station_id2) == 0 ? 1 : 0;
-         c |= last_flag.osakakan_detour ? 0x02 : 0;
-         if (last_flag.getOsakaKanPass()) {
-             c |= last_flag.osakakan_2dir ? 0x04 : 0;
+         c |= routeFlag.osakakan_detour ? 0x02 : 0;
+         if (routeFlag.getOsakaKanPass()) {
+             c |= routeFlag.osakakan_2dir ? 0x04 : 0;
              pass = 2;
          } else {
-             c |= last_flag.osakakan_1dir ? 0x04 : 0;
+             c |= routeFlag.osakakan_1dir ? 0x04 : 0;
              pass = 1;
          }
          c |= LINE_DIR.LDIR_ASC == DirLine(DbIdOf.INSTANCE.line("大阪環状線"), station_id1, station_id2) ? 0x08 : 0;
@@ -1021,6 +966,7 @@ public class RouteUtil {
      //	(境界駅はあいまい)
      //
      //	@param [in] station_id   駅id
+     // @return int[0]: 会社1 / int[1]: 会社2
      //
      static int[]  CompanyIdFromStation(int station_id) {
          int results[] = {0, 0};
@@ -1100,7 +1046,7 @@ public class RouteUtil {
      //	@retuen [0]:営業キロ, [1]:計算キロ
      //	@note used aggregate_fare_info()* -> GetDistanceEx(), Get_route_distance()
      //
-     static List<Integer> GetDistance(final LastFlag oskkflg, int line_id, int station_id1, int station_id2) {
+     static List<Integer> GetDistance(final RouteFlag oskkflg, int line_id, int station_id1, int station_id2) {
          List<Integer> d = new ArrayList<Integer>(2);
          int sales_km;
 

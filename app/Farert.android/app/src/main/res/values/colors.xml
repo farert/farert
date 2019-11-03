@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#9C27B0</color>
-    <color name="colorPrimaryDark">#7B1FA2</color>
+    <color name="colorPrimary">#9b59b6</color>
+    <color name="colorPrimaryDark">#8e44ad</color>
     <color name="colorAccent">#673AB7</color>
     <color name="colorBackOriginTerm">#c4c4c4</color>
     <color name="colorWarning">#ff0000</color>
     <color name="colorChkBoxFolder">#ffffff</color>
     <color name="colorSubtitleBar">#E1BEE7</color>
 
+    <color name="colorTextMain">#222222</color>
+    <color name="colorTextSub">#666666</color>
+    <color name="colorTextLink">#8e44ad</color>
     <color name="colorLeftHeadStart">#616161</color>
     <color name="colorLeftHeadCentor">#828282</color>
     <color name="colorLeftHeadEnd">#424242</color>

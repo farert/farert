@@ -61,34 +61,47 @@ BOOL Calps_mfcApp::InitInstance()
 
 	CWinApp::InitInstance();
 
-	int dbid = IDR_DB2019;
-	LPTSTR opt = _tcsstr(m_lpCmdLine, _T("-tax"));
-	if (NULL != opt) {
-		g_tax = _ttoi(opt + 4);
-		if (g_tax <= 0) {
-			g_tax = DEFAULT_TAX;
-		} else if (g_tax == 5) {
-			dbid = IDR_DB2014;
-		}
-	} else {
-		g_tax = DEFAULT_TAX;	/* default */
-	}
+	int dbid;
+	LPTSTR opt;
+	
+	g_tax = DEFAULT_TAX;
 
+	opt = _tcsstr(m_lpCmdLine, _T("tax5"));
+	if (NULL != opt) {
+		g_tax = 5;
+	} else {
+		opt = _tcsstr(m_lpCmdLine, _T("tax8"));
+		if (NULL != opt) {
+			g_tax = 8;
+		} else {
+			opt = _tcsstr(m_lpCmdLine, _T("tax10"));
+			if (NULL != opt) {
+				g_tax = 10;
+			}
+		}
+	}
+	
 	opt = _tcsstr(m_lpCmdLine, _T("2014"));
 	if (NULL != opt) {
 		dbid = IDR_DB2014;
+		if ((g_tax == DEFAULT_TAX) || (g_tax != 5)) {
+			g_tax = 8;
+		}
 	} else {
-		opt = _tcsstr(m_lpCmdLine, _T("tax5"));
+		opt = _tcsstr(m_lpCmdLine, _T("2015"));
 		if (NULL != opt) {
-			dbid = IDR_DB2014;
+			dbid = IDR_DB2015;
+			g_tax = 8;
 		} else {
-			opt = _tcsstr(m_lpCmdLine, _T("2015"));
+			opt = _tcsstr(m_lpCmdLine, _T("2017"));
 			if (NULL != opt) {
-				dbid = IDR_DB2015;
+				dbid = IDR_DB2017;
+				g_tax = 8;
 			} else {
-				opt = _tcsstr(m_lpCmdLine, _T("2017"));
-				if (NULL != opt) {
-					dbid = IDR_DB2017;
+				// default
+				dbid = IDR_DB2019;
+				if (g_tax != 5) {
+					g_tax = DEFAULT_TAX;
 				}
 			}
 		}

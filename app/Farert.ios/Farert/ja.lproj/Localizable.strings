@@ -1,0 +1,15 @@
+/* 
+  Localizable.strings
+  Farert
+
+  Created by TAKEDA, Noriyuki on 2019/10/14.
+  Copyright © 2019 TAKEDA, Noriyuki. All rights reserved.
+*/
+
+
+"desc_specific_calc_option" = "%@に設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです";
+
+"title_osakakan_detour" = "大阪環状線遠回り";
+"title_norule" = "特例非適用";
+"agree" = "了解";
+"hide_specific_calc_option_info" = "今後、この画面は表示しない";

@@ -92,11 +92,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         self.actionBarButton.isEnabled = false;
         ds = cRoute()
         
+        let strKokuraHakataShinzai  = cRouteUtil.read(fromKey: "kokura_hakata_shinzai")
+        ds.setNotSameKokuraHakataShinZai((strKokuraHakataShinzai == "true"))
+        
         let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
         lvd.delegate = self as MainTableViewControllerDelegate
         //  self.navigationController.toolbarHidden = NO;
 
         self.setViewTitle()
+
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -139,10 +148,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // remove old(before ver 15.10)
             UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
             
-            let cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
+            var cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
+            if (0x10000 <= cnt) {
+                cnt /= 0x100    // cut minor version
+            }
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
             let verno = Int(version.replacingOccurrences(of: ".", with: ""), radix: 16)
-            if 0x1603 <= cnt {
+            if 0x1910 <= cnt {
                 if (0x1810 <= cnt) {                                        //!!!!1810
                     // ２回目以降の起動時
 
@@ -168,13 +180,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     let av = UIAlertView(title: WELCOME_TITLE, message: WELCOME_MESSAGE, delegate: nil, cancelButtonTitle: "了解")
                     av.show()
                 }
-                UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
+                UserDefaults.standard.set(verno, forKey: "hasLaunched")
                 cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                 UserDefaults.standard.synchronize();
             }
         }
-        
-        
+
         // ここから
         switch viewContextMode {
         case .AUTOROUTE_ACTION:
@@ -661,11 +672,15 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     func showIndicate() {
         self.frontView = UIView(frame: self.navigationController!.view.bounds)
+
         self.frontView.backgroundColor = UIColor.clear
+
         self.navigationController!.view!.addSubview(self.frontView)
     
         self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
-        self.indicator.color = UIColor.black
+
+        self.indicator.color = UIColor.lightGray
+
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
         self.frontView.bringSubviewToFront(self.indicator)
@@ -728,13 +743,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     // action menu
     @IBAction func checkAction(_ sender: UIBarButtonItem) {
  
-        if let cds = cCalcRoute(route: ds) {
-            if cds.isOsakakanDetourEnable() {
-                self.actionSheetController(cds.isOsakakanDetourShortcut() ?
-                    ["大阪環状線 近回り"] : ["大阪環状線 遠回り"],
-                                           title: "大阪環状線経由指定", message: "",
-                                           from: TAG_UIACTIONSHEET_OSAKAKANDETOUR)
-            }
+        if ds.isOsakakanDetourEnable() {
+            self.actionSheetController(ds.isOsakakanDetourShortcut() ?
+                ["大阪環状線 近回り"] : ["大阪環状線 遠回り"],
+                                       title: "大阪環状線経由指定", message: "",
+                                       from: TAG_UIACTIONSHEET_OSAKAKANDETOUR)
         }
     }
     
@@ -908,7 +921,29 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             */
             if nil == title.range(of: "キャンセル") {
                 if (nil != title.range(of: "大阪環状線")) {
-                    rc = ds.setDetour(nil != title.range(of: "遠") ? true : false)
+                    let detour = nil != title.range(of: "遠")
+                    if (detour) {
+                        let sw = cRouteUtil.read(fromKey: "osakakan")
+                        if sw != "true" {
+                            let subtitle = NSLocalizedString("title_osakakan_detour", comment: "")
+                            let msg = String(format: NSLocalizedString("desc_specific_calc_option", comment: ""), subtitle)
+                            
+                            let ac = UIAlertController(title: subtitle, message: msg, preferredStyle: .alert)
+                            
+                            let agree = NSLocalizedString("agree", comment: "")
+                            let hide_later = NSLocalizedString("hide_specific_calc_option_info", comment: "")
+
+                            ac.addAction( UIAlertAction(title: hide_later, style: .default) {
+                                action in
+                                cRouteUtil.save(toKey: "setting_key_hide_osakakan_detour_info", value:"true", sync: true)
+                            })
+                            ac.addAction(UIAlertAction(title: agree, style: .default) {
+                                action in
+                            })
+                            self.present(ac, animated: true, completion: nil)
+                        }
+                    }
+                    rc = ds.setDetour(detour)
                     if (rc < 0) {
                         routeStat = ROUTE.DUPCHG_ERROR;
                     } else if (rc == 0) || (rc == 5) {
@@ -952,12 +987,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
         }
         
-        if let cds = cCalcRoute(route: ds) {
-            if cds.isOsakakanDetourEnable() {
-                self.actionBarButton.isEnabled = true
-            } else {
-                self.actionBarButton.isEnabled = false
-            }
+        if ds.isOsakakanDetourEnable() {
+            self.actionBarButton.isEnabled = true
         } else {
             self.actionBarButton.isEnabled = false
         }
@@ -1021,14 +1052,14 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
             if (cur_db_idx != DB._MAX_ID.rawValue) {
                 // データベースは最新以外
-                let dbverInf : DbSys = cRouteUtil.databaseVersion()
+                guard let dbverInf : DbSys = cRouteUtil.databaseVersion() else { return }
                 var dbname : String
                 if cur_db_idx == DB._TAX5.rawValue /* dbverInf.tax == 5*/ {
-                    dbname = dbverInf.name! + "(5%tax)"
-                } else if cur_db_idx == DB._2018.rawValue {
-                    dbname = dbverInf.name! + "(8%tax)"
+                    dbname = dbverInf.name + "(5%tax)"
+                } else if cur_db_idx == DB._2019_8.rawValue {
+                    dbname = dbverInf.name + "(8%tax)"
                 } else {
-                    dbname = dbverInf.name!
+                    dbname = dbverInf.name
                 }
                 self.navigationItem.title = "\(title) - \(dbname)"
             } else {
