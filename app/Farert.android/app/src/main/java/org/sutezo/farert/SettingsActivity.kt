@@ -27,7 +27,10 @@ class SettingsActivity : AppCompatActivity() {
         // back arrow button(戻るボタン有効)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        mKokuraSZopt = (readParam(this, "kokura_hakata_shinzai") == "true")
+        mKokuraSZopt = (application as? FarertApp)?.bKokuraHakataShinZaiFlag ?: false
+
+        swKokuraShinZai.isChecked = mKokuraSZopt
+
         val selDatabase = readParam(this, "datasource")
 
         val adapter = spinner.adapter
@@ -51,6 +54,23 @@ class SettingsActivity : AppCompatActivity() {
 
             }
         }
+
+        // 情報メッセージ抑制リセット
+        buttonInfoReset.setOnClickListener {
+            /* true true =  抑制されているのでリセット可
+               false true = ひとつでも抑制されているのでリセット可とする
+               true false = ひとつでも抑制されているのでリセット可とする
+               false false = 抑制していないのでするひつようなし
+             */
+            val s1 = readParam(this, "setting_key_hide_osakakan_detour_info")
+            val s2 = readParam(this, "setting_key_hide_no_rule_info")
+            if (s1 == "true" || s2 == "true") {
+                saveParam(this, "setting_key_hide_osakakan_detour_info", "")
+                saveParam(this, "setting_key_hide_no_rule_info", "")
+            }
+            it.isEnabled = false
+        }
+
     }
 
     override fun onStop() {
@@ -69,7 +89,7 @@ class SettingsActivity : AppCompatActivity() {
                 if (mSelIndex != cSelIdx) {
                     saveParam(this, "datasource", cSelIdx.toString())
                     mSelIndex = cSelIdx
-                    (application as FarertApp).changeDatabase(cSelIdx)
+                    (application as? FarertApp)?.changeDatabase(cSelIdx)
 
                     rc = Activity.RESULT_OK
                 }
@@ -80,6 +100,8 @@ class SettingsActivity : AppCompatActivity() {
                     val svalue = if (value) "true" else "false"
                     saveParam(this, "kokura_hakata_shinzai", svalue)
                     mKokuraSZopt = value
+
+                    (application as? FarertApp)?.bKokuraHakataShinZaiFlag = mKokuraSZopt
 
                     rc = Activity.RESULT_OK
                 }

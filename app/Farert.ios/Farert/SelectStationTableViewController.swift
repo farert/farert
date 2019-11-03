@@ -22,7 +22,13 @@ class SelectStationTableViewController: CSTableViewController {
         super.viewDidLoad()
         
         //NSLog(@"didload begin: transit %d", self.transit_state);
-        
+
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = UIColor.systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
+
         // Uncomment the following line to preserve selection between presentations.
         self.clearsSelectionOnViewWillAppear = false
         

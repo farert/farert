@@ -134,6 +134,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:background="@color/colorPrimary"
+        app:itemTextColor="@drawable/bottom_nav_bar"
+        app:itemIconTint="@drawable/bottom_nav_bar"
         app:menu="@menu/menu_main_bottom">
 
     </android.support.design.widget.BottomNavigationView>

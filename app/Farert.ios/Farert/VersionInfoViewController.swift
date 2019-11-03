@@ -29,13 +29,17 @@ class VersionInfoViewController: UIViewController {
 
         super.viewWillAppear(true)
     
-        let dbverInf : DbSys = cRouteUtil.databaseVersion()
+        guard let dbverInf : DbSys = cRouteUtil.databaseVersion() else {return}
 
         if let lbl : UILabel = self.view.viewWithTag(1023432) as! UILabel? {
             lbl.text = "DB Rev. [\(dbverInf.name!)](\(dbverInf.create_date!))"
         }
         if let lbl2 : UILabel = self.view.viewWithTag(190915) as! UILabel? {
             lbl2.text = "消費税: \(dbverInf.tax)%"
+        }
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+        if let lbl3 : UILabel = self.view.viewWithTag(19103005) as! UILabel? {
+            lbl3.text = "Farert " + version
         }
     }
     

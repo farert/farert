@@ -20,7 +20,10 @@ class VersionActivity : AppCompatActivity() {
         // back arrow button(戻るボタン有効)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        textDbVer.text = resources.getString(R.string.db_version_name, RouteDB.getInstance().name(), RouteDB.getInstance().dbDate())
+        textDbVer.text = resources.getString(R.string.db_version_name,
+                                            RouteDB.getInstance().name(),
+                                            RouteDB.getInstance().dbDate(),
+                                            RouteDB.getInstance().tax())
         val pkgman = this.packageManager
         val packageInfo = pkgman.getPackageInfo(this.packageName, 0)
         val ver = packageInfo.versionName

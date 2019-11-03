@@ -21,6 +21,10 @@ public:
 	LPCTSTR next();
 };
 
+bool isKeyExist(const CString& key);
+void putKey(const CString& key);
+void removeKey(const CString& key);
+
 
 #endif	/* _ALPFILE_H__ */
 

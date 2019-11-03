@@ -48,7 +48,8 @@
 
     <string name="title_version_info">経路運賃営業キロ計算</string>
     <string name="version_number">Farert %1$s</string>
-    <string name="db_version_name">DB rev. %1$s版 %2$s</string>
+    <string name="db_version_name">DB rev. %1$s版 %2$s\n消費税 %3$d%%</string>
+
     <string name="support_site_url"><a href="http://farert.blogspot.com/p/main.html">サポートサイト</a></string>
     <string name="support_site_url_body">http://farert.blogspot.com/p/main.html</string>
     <string name="welcome">ダウンロードありがとうございます</string>
@@ -136,7 +137,7 @@
     <string name="lf">\n</string>
 
     <string name="result_fare">運賃</string>
-    <string name="result_specific_fare">運賃(特定区間運賃)</string>
+    <string name="result_specific_fare">特定区間運賃</string>
     <string name="result_normalfare">普通</string>
     <string name="result_normal_with_brt">普通\nBRT</string>
     <string name="result_companyfare">うち会社線</string>
@@ -152,8 +153,8 @@
     <string name="result_availdays">有効日数</string>
     <string name="result_days">199日間</string>
     <string name="result_days_long">(発着駅都区市内の駅を除き途中下車可能)</string>
-    <string name="result_days_metro1">近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)</string>
-    <string name="result_days_metro2">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、当日限り有効)</string>
+    <string name="result_days_metro1">近郊区間内ですので最安運賃の経路にしました</string>
+    <string name="result_days_metro2">近郊区間内ですので最短経路の運賃で利用可能です</string>
     <string name="result_days_metro_return">近郊区間内ですので同一駅発着のきっぷは購入できません.</string>
     <string name="result_days_short">途中下車不可</string>
     <string name="result_via">経由</string>
@@ -187,6 +188,11 @@
     <string name="result_menu_stocktokai">JR東海株主優待券を適用</string>
     <string name="action">する</string>
     <string name="nothing">しない</string>
+
+    <string name="result_menu_longroute_long">指定した経路で運賃計算</string>
+    <string name="result_menu_longroute_lowcost">最安経路で運賃計算</string>
+    <string name="result_menu_rule115_city">旅客営業取扱基準規程115条(特定都区市内発着)</string>
+    <string name="result_menu_rule115_station">旅客営業取扱基準規程115条(単駅最安)</string>
 
     <string name="result_value_section">%1$s → %2$s</string>
     <string name="result_km">%1$skm</string>
@@ -233,6 +239,13 @@
         <item>-1</item>
     </string-array>
 
+    <string-array name="select_autoroute_option">
+        <item>在来線のみ</item>
+        <item>新幹線を使う</item>
+        <item>会社線を使う</item>
+        <item>新幹線も会社線も使う"</item>
+    </string-array>
+
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
 
@@ -265,6 +278,12 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+
+    <string name="desc_specific_calc_option">%1$sに設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。
+        \n本機能は指定経路の営業キロを知るためだけのものです"</string>
+    <string name="title_specific_calc_option_osakakan">大阪環状線遠回り</string>
+    <string name="title_specific_calc_option_norule">特例非特例</string>
+    <string name="hide_specific_calc_option_info">今後、この画面は表示しない</string>
 
     <string-array name="list_ticket_type">
         <item>普通運賃</item>
@@ -304,6 +323,7 @@
         <item>"2014版"</item>
         <item>"2015版"</item>
         <item>"2017版"</item>
+        <item>"2019版(消費税8%)"</item>
         <item>"最新版"</item>
     </string-array>
 
@@ -313,7 +333,18 @@
     <string name="setting_title_option">オプション</string>
     <string name="setting_title_kokura_shinkansen">小倉-博多間新幹線在来線別線扱い</string>
     <string name="setting_descr_kokura_shinkansen">経路は全て選択しなおしてください</string>
-    
-    
+    <string name="setting_title_other">その他</string>
+    <string name="setting_title_reset_info_button">情報メッセージ抑制をリセット</string>
+
     <string name="sample_section">上越国際スキー場前 - 岩原スキー場前</string>
+
+
+    <string name="msgPossibleLowcost">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)</string>
+    <string name="msgAppliedLowcost">近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)</string>
+    <string name="msgSpecificFareApply">特定区間割引運賃適用"</string>
+    <string name="msgCantMetroTicket">近郊区間内ですので同一駅発着のきっぷは購入できません."</string>
+    <string name="msgCanYouNeerestStation">「単駅最安」で単駅発着が選択可能です"</string>
+
+    <string name="msgCanYouSpecificTerm">「特定都区市内発着」で特定都区市内発着が選択可能です"</string>
+
 </resources>

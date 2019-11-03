@@ -108,3 +108,99 @@ LPCTSTR HistoryFile::next()
 		return 0;
 	}
 }
+
+//
+const TCHAR* INI_FILE = _T("farert.ini");
+
+bool isKeyExist(const CString& key)
+{
+	try {
+		CString s;
+		CStdioFile file;
+		CString fname(INI_FILE);
+		if (file.Open(fname, CFile::modeRead)) {
+			while (file.ReadString(s)) {
+				if (0 <= s.Find(key)) {
+					return true;
+				}
+			}
+		}
+	}
+	catch (CFileException* e) {
+		CString s;
+		e->GetErrorMessage(s.GetBuffer(260), 260);
+		s.ReleaseBuffer();
+		AfxMessageBox(s, MB_ICONSTOP);
+		e->Delete();
+	}
+	return false;
+}
+
+void putKey(const CString& key)
+{
+	if (isKeyExist(key)) {
+		return;
+	}
+	try {
+		CString s;
+		CStdioFile file;
+		CString fname(INI_FILE);
+		if (file.Open(fname, CFile::modeReadWrite| CFile::modeCreate | CFile::modeNoTruncate)) {
+			file.SeekToEnd();
+			if (key.Right(1) != '\n') {
+				s = key + _T("\n");
+			}
+			else {
+				s = key;
+			}
+			file.WriteString(s);
+		}
+	}
+	catch (CFileException* e) {
+		CString s;
+		e->GetErrorMessage(s.GetBuffer(260), 260);
+		s.ReleaseBuffer();
+		AfxMessageBox(s, MB_ICONSTOP);
+		e->Delete();
+	}
+}
+
+void removeKey(const CString& key)
+{
+	try {
+		CString s;
+		CStdioFile file_old;
+		CStdioFile file_new;
+		CString fname(INI_FILE);
+		CString ftemp;
+
+		GetTempFileName(_T("./"), _T("~~"), 20191022,
+			ftemp.GetBuffer(MAX_PATH));
+		ftemp.ReleaseBuffer();
+
+		if (file_new.Open(ftemp, CFile::modeWrite | CFile::modeCreate)) {
+			if (file_old.Open(INI_FILE, CFile::modeRead)) {
+				while (file_old.ReadString(s)) {
+					if (s.Find(key) < 0) {
+						file_new.WriteString(key);
+					}
+				}
+				file_old.Close();
+				DeleteFile(INI_FILE);
+				file_new.Close();
+				MoveFile(ftemp, INI_FILE);
+			}
+		}
+		else {
+			AfxMessageBox(_T("Failed remove key"), MB_ICONERROR);
+		}
+	}
+	catch (CFileException* e) {
+		CString s;
+		e->GetErrorMessage(s.GetBuffer(260), 260);
+		s.ReleaseBuffer();
+		AfxMessageBox(s, MB_ICONSTOP);
+		e->Delete();
+	}
+}
+
