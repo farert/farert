@@ -64,8 +64,8 @@ class TerminalSelectActivity : AppCompatActivity() {
         }
         setSupportActionBar(toolbar)
         // back arrow button(戻るボタン有効)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        supportActionBar!!.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -91,9 +91,11 @@ class TerminalSelectActivity : AppCompatActivity() {
                     //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
                     //mi.setEnabled(0 < trv.itemCount)
                     val flgm = mSectionsPagerAdapter?.findFragmentByPosition(
-                            tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
-                    var b = 0 < flgm.numOfContent()
-                    mi.setEnabled(b)
+                            tabcontainer, TAB_PAGE.HISTORY.rowValue) as? PlaceholderFragment
+                    flgm?.let {
+                        var b = 0 < it.numOfContent()
+                        mi.setEnabled(b)
+                    }
                 }
             }
         })
@@ -105,9 +107,9 @@ class TerminalSelectActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_terminal_select, menu)
         val searchItem = menu.findItem(R.id.menu_search)
-        val searchView = searchItem.actionView as SearchView
-        searchView.queryHint = resources.getString(R.string.label_search_title) // "駅名（よみ）入力"
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        val searchView = searchItem.actionView as? SearchView
+        searchView?.queryHint = resources.getString(R.string.label_search_title) // "駅名（よみ）入力"
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(text: String?): Boolean {
                 // 検索キーが押下された
                 //searchview.clearFocus()
@@ -152,11 +154,11 @@ class TerminalSelectActivity : AppCompatActivity() {
             }
         })
 
-        searchView.setOnSearchClickListener {
+        searchView?.setOnSearchClickListener {
             Log.d("TAG","on search click")
             //searchView.onActionViewExpanded()
         }
-        searchView.setOnCloseListener(object : SearchView.OnCloseListener {
+        searchView?.setOnCloseListener(object : SearchView.OnCloseListener {
             override fun onClose(): Boolean {
                 Log.d("TAG","on close")
                 searchView.onActionViewCollapsed()
@@ -166,7 +168,7 @@ class TerminalSelectActivity : AppCompatActivity() {
             }
         })
 
-        searchView.setOnClickListener {
+        searchView?.setOnClickListener {
             Log.d("TAG", "setOnClickListener")
         }
 
@@ -193,8 +195,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                     setMessage(R.string.main_alert_query_all_clear_mesg)
                     setPositiveButton("Yes") { _, _ ->
                         val frgm = mSectionsPagerAdapter?.findFragmentByPosition(
-                                tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
-                        frgm.clearContents()
+                                tabcontainer, TAB_PAGE.HISTORY.rowValue) as? PlaceholderFragment
+                        frgm?.clearContents()
                         saveHistory(context, listOf())
                     }
                     setNegativeButton("No", null)
@@ -265,9 +267,9 @@ class TerminalSelectActivity : AppCompatActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
 
-            val i = arguments!!.get("page_type") as Int
+            val i = arguments?.get("page_type") as? Int ?: 0
             mIdType = LIST_TYPE.values()[i % LIST_TYPE.values().size]
-            mode = arguments!!.get("mode") as String
+            mode = arguments?.get("mode") as? String ?: ""
 
             val listItems : () -> List<Int> =  {
                 when (mIdType) {
@@ -281,7 +283,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         readParams(activity!!, "history").map{ RouteUtil.GetStationId(it) }
                     }
                     LIST_TYPE.SEARCH -> { //search text
-                        keyMatchStations(arguments!!.getString("search_text", "x"))
+                        keyMatchStations(arguments?.getString("search_text", "x") ?: "null")
                     }
                 }
             }
@@ -301,8 +303,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 // 履歴ビューではスワイプによる個別行削除ができるように
                 val swipeHandler = object : SwipeToDeleteCallback(activity as Context) {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                        val adapter = rootView.list_terminal.adapter as TerminalRecyclerViewAdapter
-                        adapter.removeAt(viewHolder.adapterPosition)
+                        val adapter = rootView.list_terminal.adapter as? TerminalRecyclerViewAdapter
+                        adapter?.removeAt(viewHolder.adapterPosition)
                     }
                 }
                 val itemTouchHelper = ItemTouchHelper(swipeHandler)
@@ -370,8 +372,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 return  // 'History' tab only
             }
             view?.let {
-                val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
-                trv.clearContents()
+                val trv = list_terminal.adapter as? TerminalRecyclerViewAdapter
+                trv?.clearContents()
             }
         }
         fun numOfContent() : Int {
