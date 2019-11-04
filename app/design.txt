@@ -1,4 +1,12 @@
+android 起動順序
 
+
+FaretApp:onCreate()
+          -> DatabaseOpenHelper
+                 RouteDB
+      MainActivity-onCreate()
+
+--
 ds.assign((application as FarertApp).ds, routeEndIndex)
 
 mIsRoundTrip = ds.isAvailableReverse
