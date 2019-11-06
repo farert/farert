@@ -169,7 +169,7 @@ class SettingsTableViewController: UITableViewController {
             }
             if (before_dbid_idx != dbid) {
                 cRouteUtil.save(toDatabaseId: dbid)
-                cRouteUtil.close()
+                cRouteUtil.closeDatabase()
                 cRouteUtil.openDatabase(DB(rawValue: dbid)!)
                 self.selectDbId = dbid
             } else {
