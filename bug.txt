@@ -14,13 +14,13 @@ v Android 用土-代々木でメニューNG
 v 小倉、博多が経路保存にのっかってしまう
 
 西船橋 総武線 千葉 外房線 蘇我 内房線 安房鴨川 外房線 大網 東金線 成東 総武線 東千葉
-- AndroidはOK。WinはOK、iOSは直した->ok
+v AndroidはOK。WinはOK、iOSは直した->ok
 
-- Android、名阪ダメ->ok。たぶんiOSも
+v Android、名阪ダメ->ok。たぶんiOSも
 
-- Android新DBになっていない。また、iOSも新DBを選ぶように
+v Android新DBになっていない。また、iOSも新DBを選ぶように
 
-- 601km at urban
+v 601km at urban
 
 v Windows全メニューためす。
 v 大阪環状線遠回り時は非特例と同一なので、名阪も落とす(有効にならないように)
