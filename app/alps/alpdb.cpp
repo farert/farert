@@ -8296,16 +8296,10 @@ int32_t FARE_INFO::Retrieve70Distance(int32_t station_id1, int32_t station_id2)
 //	@param [in] station_id1		駅1
 //	@param [in] station_id2		駅2
 //
-//	@return true if 近郊区間でない条件
-//                flag    N  N-flag return
-//  姫路-新大阪    3      4   1      t
-//  姫路 新神戸    2      3   1      t
-//  姫路 相生      2      2   0
-//  米原 新大阪    3      3   0
-//  新富士 静岡    0      2   2      t
-//  静岡 米原      1      8   7      t
-//  静岡 名古屋    0      6   6      t
-//  品川 東京      0      2   2      t
+//	@return true 新幹線
+//
+// 大都市近郊区間に含まれる新幹線は米原駅 - 新大阪駅間と西明石駅 - 相生駅間のみ
+//
 bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	static const char tsql[] =
@@ -8317,11 +8311,12 @@ bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t st
 "	and sales_km<=(select max(sales_km) from t_lines"
 "			where line_id=?1 and (station_id=?2 or station_id=?3))";
 // 13:近郊区間、17:新幹線仮想分岐駅
+// 新幹線乗車でも13がONなら近郊区間内とみなせる(新幹線乗車ではない)
 
 	int32_t rsd = -1;
 
 	if (!IS_SHINKANSEN_LINE(line_id)) {
-		return false;
+		return false;     /* 非新幹線はFalse */
 	}
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
@@ -8334,8 +8329,8 @@ bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t st
 			rsd = dbo.getInt(0);
 		}
 	}
-    TRACE("IsBulletInUrban=%d\n", 0 < rsd);
-	return 0 < rsd;
+    TRACE("IsBulletInUrban=%d\n", rsd); // rsd=0なら新幹線乗車とはみなされない
+	return 0 < rsd;    // 新幹線乗車とみなすならTrue
 }
 
 
