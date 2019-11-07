@@ -75,6 +75,9 @@ b#19100301
 CheckIsBulletInUrbanOnSpecificTerm()
 なんかおかしい。修正のこと。
 でなければ、コメントをまともにすること.
+NG:
+"大都市近郊区間に含まれる新幹線は米原駅 - 新大阪駅間と西明石駅 - 相生駅間のみ"(WikiPedia)
+なのにどれも訊いていない。IsBulletInUrban()関数はIS_SHINKANSEN_LINE()以上の仕事はなにもできていない。
 ->
 
 
