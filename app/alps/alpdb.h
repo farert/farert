@@ -892,7 +892,7 @@ private:
 	static int32_t		SpecificFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
 	       vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
 	static vector<int32_t> GetDistanceEx(const RouteFlag& osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2);
-	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2);
+	static bool 		IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2, bool isRule88);
 
 	static bool     IsIC_area(int32_t urban_id);
 
@@ -1268,6 +1268,8 @@ private:
     	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
 };
 
+#define STATION_ID(station_name) DbidOf::getInstance().id_of_station(station_name)
+#define LINE_ID(line_name) DbidOf::getInstance().id_of_line(line_name)
 
 #endif /* _cplusplus */
 

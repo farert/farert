@@ -382,7 +382,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 this.isEnabled = true   // always enable
             }
         }
-        val m = toolbar.menu
+        val m = toolbar.menu ?: return
         val mi = m.findItem(R.id.action_osakakanrev) ?: return
         mi.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
     }
