@@ -396,58 +396,6 @@ public class FARE_INFO {
         this.jr_fare = _total_jr_fare + this.brt_fare - this.brt_discount_fare;
     }
 
-    /* 近郊区間ではない条件となる新幹線乗車があるか */
-    //  経路はJR東海管内のみか？
-    //  b_jrtokaiOnly true: JR東海管内のみ / false=以外
-    //  @note 新幹線 東京ー熱海間はJR東日本エリアだけどJR東海エリアなのでその判定をやる
-    /*
-        b:発駅が境界駅ならtrue
-        f:着駅が境界駅ならtrue
-        -:true
-        n:新幹線ならtrue
-        x:false
-    */
-    /* JR東海以外 and 東海道新幹線でない場合false */
-    private Boolean aggregate_fare_is_jrtokai(final List<RouteItem> routeList_raw) {
-        int [] cid1 = {0, 0};
-        int cid_s1;
-        int cid_e1;
-        int cid_s2;
-        int cid_e2;
-        int id_line_tokaido_shinkansen = DbIdOf.INSTANCE.line("東海道新幹線");
-
-        boolean b_jrtokaiOnly = true;
-
-        int station_id1 = 0;
-
-        for (RouteItem ri : routeList_raw) {
-            int [] cid = RouteUtil.CompanyIdFromStation(ri.stationId);
-            if (station_id1 != 0) {
-                if (ri.lineId != id_line_tokaido_shinkansen) {
-                    cid_e1 = cid[0];
-                    cid_s1 = cid1[0];
-                    cid_e2 = cid[1];
-                    cid_s2 = cid1[1];
-                    if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
-                            ((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
-                            ((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
-                        b_jrtokaiOnly = false;
-                        //break;
-                    }
-                }
-                if (IsBulletInUrban(ri.lineId, station_id1, ri.stationId)) {
-                    this.flag |= (1 << RouteUtil.BCBULURB); // ONの場合大都市近郊区間特例無効(新幹線乗車している)
-                    //break;
-                }
-            }
-            station_id1 = ri.stationId;
-            System.arraycopy(cid, 0, cid1, 0, cid.length);
-        }
-        if (b_jrtokaiOnly) {
-            System.out.print("isJrTokai true\n");
-        }
-        return b_jrtokaiOnly;
-    }
 
     private short aggregate_fare_company(boolean firstCompany,
                                        final RouteFlag routeFlag_,
@@ -836,10 +784,19 @@ public class FARE_INFO {
         return 0;
     }
 
-    // 近郊区間内で新幹線乗車があるか？
-    // 新幹線乗車は86or87経路か？(大都市近郊区間かはまだわからんのであとで判定)
-    // 86,87中の新幹線乗車は新幹線乗車とみなさない
-    //
+    /**
+     // 近郊区間内で新幹線乗車があるか？
+     // 新幹線乗車は86or87経路か？(大都市近郊区間かはまだわからんのであとで判定)
+     // 86,87中の新幹線乗車は新幹線乗車とみなさない(品川〜東京〜宇都宮として品川から新幹線乗っても運賃計算は東京[山]
+     // からなので新幹線乗車はできても近郊区間特例は解かれない)
+     // 70条が適用されている場合、その計算経路に新幹線が含まれていれば、大都市近郊区間ルールから外せるが、
+     // 70条の最短経路以外の新幹線乗車は無効である(経路指定ができない)
+     // 八王子から都内を通って宇都宮へいく場合、代々木〜品川(新幹線)東京〜宇都宮 としても新幹線を指定することは
+     // できないので(70条の計算経路ではない)新幹線乗車は無効である(大都市近郊区間特例は解かれない)
+     // 70条は、 reRouteRule70j()で仮設定している
+     //
+     // 70は、ID_L_RULE70 路線がある前提(cooked経路であること)
+     */
     static void CheckIsBulletInUrbanOnSpecificTerm(final List<RouteItem> routeList, RouteFlag route_flag) {
         int station_id1 = 0;		/* station_id1, (station_id2=ite->stationId) */
         int cityId = 0;    // [区], [横]
@@ -849,9 +806,9 @@ public class FARE_INFO {
         for (RouteItem ite : routeList) {
             if (station_id1 != 0) {
                 cityId_c = MASK_CITYNO(ite.flag);
-                if (((!route_flag.rule70 && !route_flag.isAvailableRule86or87()) ||
-                        !((cityId != 0) && (cityId_c != 0))) &&
-                        IsBulletInUrban(ite.lineId, station_id1, ite.stationId)) {
+                if (!(route_flag.isAvailableRule86or87()
+                        && (cityId != 0) && (cityId_c != 0) && (cityId == cityId_c)) &&
+                        IsBulletInUrban(ite.lineId, station_id1, ite.stationId, route_flag.rule88)) {
                     System.out.print("Use bullet line.\n");
                     enabled = true; // ONの場合大都市近郊区間特例無効(新幹線乗車している)
                     break;
@@ -3221,18 +3178,11 @@ public class FARE_INFO {
     //	@param [in] line_id
     //	@param [in] station_id1		駅1
     //	@param [in] station_id2		駅2
+    //  @param isRule88 88 条適用か
+    //	@return true 新幹線
+    // 大都市近郊区間に含まれる新幹線は米原駅 - 新大阪駅間と西明石駅 - 相生駅間のみ
     //
-    //	@return true if 近郊区間でない条件
-    //                flag    N  N-flag return
-    //  姫路-新大阪    3      4   1      t
-    //  姫路 新神戸    2      3   1      t
-    //  姫路 相生      2      2   0
-    //  米原 新大阪    3      3   0
-    //  新富士 静岡    0      2   2      t
-    //  静岡 米原      1      8   7      t
-    //  静岡 名古屋    0      6   6      t
-    //  品川 東京      0      2   2      t
-    private static boolean IsBulletInUrban(int line_id, int station_id1, int station_id2) {
+    private static boolean IsBulletInUrban(int line_id, int station_id1, int station_id2, boolean isRule88) {
         final String tsql =
                 " select count(*) - sum(sflg>>13&1) from t_station t join t_lines l on l.station_id=t.rowid" +
                         "	where line_id=?1" +
@@ -3242,11 +3192,21 @@ public class FARE_INFO {
                         "	and sales_km<=(select max(sales_km) from t_lines" +
                         "			where line_id=?1 and (station_id=?2 or station_id=?3))";
         // 13:近郊区間、17:新幹線仮想分岐駅
+    // 新幹線乗車でも13がONなら近郊区間内とみなせる(新幹線乗車ではない)
 
         int rsd = -1;
 
         if (!RouteUtil.IS_SHINKANSEN_LINE(line_id)) {
-            return false;
+            return false;     /* 非新幹線はFalse */
+        }
+
+        /* 88条 によって大阪に書き換えられていたら、新大阪-山陽新幹線 乗車なので
+         * 新幹線乗車とする
+         */
+        // ref. CheckOfRule88j()
+        if (isRule88) {
+            System.out.println("IsBulletInUrban is true(rule88 applied)");
+            return true;
         }
 
         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(line_id),
