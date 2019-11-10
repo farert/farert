@@ -23,8 +23,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_result_view.*
 
 import kotlinx.android.synthetic.main.activity_terminal_select.*
+import kotlinx.android.synthetic.main.activity_terminal_select.container
 import kotlinx.android.synthetic.main.content_list_empty.view.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.view.*
@@ -84,8 +86,9 @@ class TerminalSelectActivity : AppCompatActivity() {
 
             }
             override fun onPageSelected(position: Int) {
-                val m = toolbar.menu
-                val mi = m.findItem(R.id.menu_item_all_delete)
+                val m = toolbar.menu ?: return
+                val mi = m.findItem(R.id.menu_item_all_delete) ?: return
+
                 mi.isVisible = (position == TAB_PAGE.HISTORY.rowValue) // show 'History' tab only
                 if (position == TAB_PAGE.HISTORY.rowValue) {
                     //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
@@ -106,10 +109,10 @@ class TerminalSelectActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_terminal_select, menu)
-        val searchItem = menu.findItem(R.id.menu_search)
-        val searchView = searchItem.actionView as? SearchView
-        searchView?.queryHint = resources.getString(R.string.label_search_title) // "駅名（よみ）入力"
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        val searchItem = menu.findItem(R.id.menu_search) ?: return false
+        val searchView = searchItem.actionView as? SearchView ?: return false
+        searchView.queryHint = resources.getString(R.string.label_search_title) // "駅名（よみ）入力"
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(text: String?): Boolean {
                 // 検索キーが押下された
                 //searchview.clearFocus()
@@ -154,11 +157,11 @@ class TerminalSelectActivity : AppCompatActivity() {
             }
         })
 
-        searchView?.setOnSearchClickListener {
+        searchView.setOnSearchClickListener {
             Log.d("TAG","on search click")
             //searchView.onActionViewExpanded()
         }
-        searchView?.setOnCloseListener(object : SearchView.OnCloseListener {
+        searchView.setOnCloseListener(object : SearchView.OnCloseListener {
             override fun onClose(): Boolean {
                 Log.d("TAG","on close")
                 searchView.onActionViewCollapsed()
@@ -214,8 +217,8 @@ class TerminalSelectActivity : AppCompatActivity() {
     //PlaceholderFragment で履歴削除後に呼ばれるように仕向けた
     //
     fun onChangeList(numItem: Int) {
-        val m = toolbar.menu
-        val mi = m.findItem(R.id.menu_item_all_delete)
+        val m = toolbar.menu ?: return
+        val mi = m.findItem(R.id.menu_item_all_delete) ?: return
         // show 'History' tab only
         if (mi.isVisible) {
               //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter

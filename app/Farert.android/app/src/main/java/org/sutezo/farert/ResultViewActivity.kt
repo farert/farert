@@ -830,19 +830,13 @@ class ResultViewActivity : AppCompatActivity() {
         // menu　prepare open menu onPrepareOptionsMenu()
         //
         menu?.apply {
-            val mi_specialrule = findItem(R.id.menu_specialrule)
-            val mi_osakakan = findItem(R.id.menu_osakakan)
-            val mi_meihancity = findItem(R.id.menu_meihancity)
-            val mi_stocktokai = findItem(R.id.menu_stocktokai)
-            val mi_neerest = findItem(R.id.menu_neerest)
-            val mi_longroute = findItem(R.id.menu_longroute)
-            val mi_rule115 = findItem(R.id.menu_rule115)
-
-            if ((mi_specialrule == null) || (mi_osakakan == null) || (mi_meihancity == null)
-                    || (mi_stocktokai == null) || (mi_neerest == null)
-                    || (mi_longroute == null) || (mi_rule115 == null)) {
-                return
-            }
+            val mi_specialrule = findItem(R.id.menu_specialrule) ?: return
+            val mi_osakakan = findItem(R.id.menu_osakakan) ?: return
+            val mi_meihancity = findItem(R.id.menu_meihancity) ?: return
+            val mi_stocktokai = findItem(R.id.menu_stocktokai) ?: return
+            val mi_neerest = findItem(R.id.menu_neerest) ?: return
+            val mi_longroute = findItem(R.id.menu_longroute) ?: return
+            val mi_rule115 = findItem(R.id.menu_rule115) ?: return
 
             when (mOpt_items[OptionItem.sperule.ordinal]) {
                 Option.TRUE -> {
