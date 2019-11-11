@@ -1,3 +1,11 @@
+
+
+Windows10 Updateしたら、pythonが突然コマンドラインで使えなくなって困った。
+急遽、PathにC:\Users\default.DESKTOP-5557AKR\AppData\Local\Programs\Python\Python36-32
+を先頭に加えて対処.
+
+
+
 CheckOfRule88j()
 
 
