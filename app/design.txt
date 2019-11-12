@@ -1,4 +1,64 @@
 
+
+Windows10 Updateしたら、pythonが突然コマンドラインで使えなくなって困った。
+急遽、PathにC:\Users\default.DESKTOP-5557AKR\AppData\Local\Programs\Python\Python36-32
+を先頭に加えて対処.
+
+
+
+CheckOfRule88j()
+
+
+　　　　新大阪 →大阪
+東海道線 神戸
+山陽線 姫路
+
+      xxx
+山陽線 姫路
+東海道線 新大阪->大阪
+
+　　　大阪  　　　  　　　    大阪
+(東海道線) 新大阪　(東海道線)　新大阪 → 東海道線 神戸 FLG_HIDE_LINE,FLG_HIDE_STATION
+　　　　　　　 　　 山陽線 　　西明石 FLG_HIDE_LINE、FLG_HIDE_STATION (insert)
+山陽新幹線 XXXX　　山陽新幹線 XXXX　　　　->>> 近郊区間除外＊
+
+          xxx               xxx
+山陽新幹線 新大阪  山陽新幹線  m西明石 FLG_HIDE_STATION＊
+                  山陽線    神戸　FLG_HIDE_LINE|FLG_HIDE_STATION　(add)
+(東海道線)  大阪   (東海道線)　大阪  FLAG_HIDE_LINE　　　->>> 近郊区間除外
+
+
+      新大阪               m大阪
+                  東海道線 神戸 (add) FLG_HIDE_LINE,FLG_HIDE_STATION
+                  山陽線 西明石 (add) FLG_HIDE_LINE,FLG_HIDE_STATION
+山陽新幹線 xxx     山陽新幹線 xxx　　　　->>> 近郊区間除外＊
+
+
+       xxx         　　　　　　xxx
+山陽新幹線 新大阪    山陽新幹線 西明石 FLG_HIDE_STATION  ->>> 近郊区間除外＊
+                  *山陽線    神戸  -> (add)FLG_HIDE_LINE,FLG_HIDE_STATION
+                  *東海道線 大阪   -> FLG_HIDE_STAION(add)
+
+
+
+-- 2ch
+拝島 → 大船　経由: 青梅,南武,東海道３,[鶴見],東海道
+JR線(鉄道)営業キロ: 67.5km
+普通片道運賃　　　　　：大人 1100円
+
+拝島 → 大船　経由: 八高,横浜,相模,東海道
+JR線(鉄道)営業キロ: 64.1km 運賃計算キロ: 65.1km
+普通片道運賃　　　　　：大人 1170円
+
+
+android 起動順序
+
+FaretApp:onCreate()
+          -> DatabaseOpenHelper
+                 RouteDB
+      MainActivity-onCreate()
+
+--
 ds.assign((application as FarertApp).ds, routeEndIndex)
 
 mIsRoundTrip = ds.isAvailableReverse

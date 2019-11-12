@@ -84,7 +84,7 @@ def same_staion(station_name):
 		same = ''
 	return (name, same)
 
-if 4 == len(sys.argv):
+if 3 == len(sys.argv):
   fn = sys.argv[1]
   db_name = sys.argv[2]
 else:

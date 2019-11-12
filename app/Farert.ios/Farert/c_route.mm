@@ -88,7 +88,7 @@ int g_tax; /* main.m */
     return DBS::getInstance()->open([dbpath UTF8String]); // C++
 }
 
-+ (void)Close
++ (void)CloseDatabase
 {
     return DBS::getInstance()->close();
 }
@@ -957,17 +957,17 @@ int g_tax; /* main.m */
         // "特定区間割引運賃適用"
         [resultMessage addObject:[NSString stringWithUTF8String:msgSpecificFareApply]];
     }
-    if result.isResultCompanyBeginEnd {
+    if (result.isResultCompanyBeginEnd) {
         [resultMessage addObject:[NSString stringWithUTF8String:"会社線発着のため一枚の乗車券として発行されない場合があります."]];
     }
-    if result.isResultCompanyMultipassed {
+    if (result.isResultCompanyMultipassed) {
         /* 2017.3 以降 ここに来ることはない */
         [resultMessage addObject:[NSString stringWithUTF8String:"複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります."]];
     }
-    if result.isEnableTokaiStockSelect {
+    if (result.isEnableTokaiStockSelect) {
         [resultMessage addObject:[NSString stringWithUTF8String:"JR東海株主優待券使用オプション選択可"]];
     }
-    if result.isBRTdiscount {
+    if (result.isBRTdiscount) {
         [resultMessage addObject:[NSString stringWithUTF8String:"BRT乗り継ぎ割引適用"]];
     }
 
