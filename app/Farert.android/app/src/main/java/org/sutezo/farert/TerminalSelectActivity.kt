@@ -171,7 +171,7 @@ class TerminalSelectActivity : AppCompatActivity() {
             }
         })
 
-        searchView?.setOnClickListener {
+        searchView.setOnClickListener {
             Log.d("TAG", "setOnClickListener")
         }
 
