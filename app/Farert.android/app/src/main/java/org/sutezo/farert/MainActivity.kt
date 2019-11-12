@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
 
         if (application is FarertApp) {
-            (application as FarertApp).apply {
+            (application as? FarertApp)?.apply {
                 mRoute = this.ds
                 mRoute.setNotSameKokuraHakataShinZai(
                                 this.bKokuraHakataShinZaiFlag)
@@ -127,15 +127,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
 
         val menuView = bottombar.getChildAt(0) as BottomNavigationMenuView
         // [back]
-        (menuView.getChildAt(0) as BottomNavigationItemView).apply {
+        (menuView.getChildAt(0) as? BottomNavigationItemView)?.apply {
             setEnabled(false)
         }
         // [reverse]
-        (menuView.getChildAt(1) as BottomNavigationItemView).apply {
+        (menuView.getChildAt(1) as? BottomNavigationItemView)?.apply {
             isEnabled = false
         }
         // [大阪環状線]
-        (menuView.getChildAt(2) as BottomNavigationItemView).apply {
+        (menuView.getChildAt(2) as? BottomNavigationItemView)?.apply {
             isEnabled = false
         }
         update_fare(1)
@@ -229,6 +229,9 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 }
             }
             "route" -> {
+                if (lineId <= 0 || stationId <= 0) {
+                    return  // safety code
+                }
                 val rc = mRoute.add(lineId, stationId)
                 update_fare(rc)
                 // scroll to last
@@ -328,7 +331,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             saleskm_value.text = resources.getString(R.string.result_km, kmNumStr(fi.totalSalesKm))
             // 有効日数
             availday_value.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
-            (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
+            (recycler_view_route.adapter as? RouteRecyclerAdapter)?.status_message(msg)
             // 大阪環状線
             if (mRoute.isOsakakanDetourEnable) {
                 if (mRoute.isOsakakanDetour) {
@@ -347,7 +350,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             fare_value.visibility = View.INVISIBLE
             saleskm_value.visibility = View.INVISIBLE
             availday_value.visibility = View.INVISIBLE
-            (recycler_view_route.adapter as RouteRecyclerAdapter).status_message(msg)
+            (recycler_view_route.adapter as? RouteRecyclerAdapter)?.status_message(msg)
             footer_group.visibility = View.INVISIBLE
 
             buttonFareDetail.isEnabled = false
@@ -361,25 +364,25 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         recycler_view_route.adapter.notifyDataSetChanged()
 
         // 経路戻り（Last経路削除）の有効化／無効化
-        (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
-            (getChildAt(0) as BottomNavigationItemView).apply {
+        (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
+            (getChildAt(0) as? BottomNavigationItemView)?.apply {
                 setEnabled(0 < mRoute.count)
             }
         }
         // リバースボタンの有効化／無効化
-        (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
-            (getChildAt(1) as BottomNavigationItemView).apply {
+        (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
+            (getChildAt(1) as? BottomNavigationItemView)?.apply {
                 this.isEnabled = (1 < mRoute.count && revButton)
             }
         }
 
         // 経路保存
-        (bottombar.getChildAt(0) as BottomNavigationMenuView).apply {
-            (getChildAt(2) as BottomNavigationItemView).apply {
+        (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
+            (getChildAt(2) as? BottomNavigationItemView)?.apply {
                 this.isEnabled = true   // always enable
             }
         }
-        val m = toolbar.menu
+        val m = toolbar.menu ?: return
         val mi = m.findItem(R.id.action_osakakanrev) ?: return
         mi.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
     }

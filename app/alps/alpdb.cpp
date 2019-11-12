@@ -954,12 +954,12 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, 
 	if (station_id1 == station_id2) {
 		_num = 0;
 	} else {
-        if (line_id == DbidOf::getInstance().id_of_line(_T("大阪環状線"))) {
+        if (line_id == LINE_ID(_T("大阪環状線"))) {
 			_num = enum_junctions_of_line_for_osakakan();
-        } else if ((line_id == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
+        } else if ((line_id == LINE_ID(_T("山陽新幹線"))) &&
 					rRoute_flag.notsamekokurahakatashinzai) {
-			if (station_id1 == DbidOf::getInstance().id_of_station(_T("博多"))) {
-				if (station_id2 == DbidOf::getInstance().id_of_station(_T("小倉"))) {
+			if (station_id1 == STATION_ID(_T("博多"))) {
+				if (station_id2 == STATION_ID(_T("小倉"))) {
 					/* 山陽新幹線 博多 -> 小倉 */
 					/* 博多の西はもうなかと、小倉の東は本州で閉塞区間ばい */
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
@@ -969,20 +969,20 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, 
 				else {
 					/* 博多 -> 小倉、広島方面の場合 */
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id1)); // 博多
-					_station_id1 = DbidOf::getInstance().id_of_station(_T("小倉"));
+					_station_id1 = STATION_ID(_T("小倉"));
 					_num = 1 + enum_junctions_of_line(); // 小倉->小倉～新大阪間のどれか
 					_station_id1 = station_id1; // restore(博多)
 				}
 			}
-			else if (station_id2 == DbidOf::getInstance().id_of_station(_T("博多"))) {
+			else if (station_id2 == STATION_ID(_T("博多"))) {
 				/* 山陽新幹線 -> 博多 */
-				if (station_id1 == DbidOf::getInstance().id_of_station(_T("小倉"))) {
+				if (station_id1 == STATION_ID(_T("小倉"))) {
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
 					_num = 2;
 				}
 				else {
-					_station_id2 = DbidOf::getInstance().id_of_station(_T("小倉"));
+					_station_id2 = STATION_ID(_T("小倉"));
 					_num = enum_junctions_of_line(); //新大阪-小倉間のどれかの駅～小倉
 					_station_id2 = station_id2;	// restore(博多)
 					JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
@@ -1067,7 +1067,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_oskk_rev()
 "select station_id from t_lines where line_id=?1 and (lflg&((1<<31)|(1<<15)))=(1<<15) and sales_km>=(select max(sales_km) from t_lines where "
 "line_id=?1 and (station_id=?2 or station_id=?3)))";
 
-	ASSERT(_line_id == DbidOf::getInstance().id_of_line(_T("大阪環状線")));
+	ASSERT(_line_id == LINE_ID(_T("大阪環状線")));
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	c = 0;
@@ -1100,7 +1100,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 	uint8_t  check_result = 0;
 	RoutePass farRoutePass(*this);
 
-	ASSERT(_line_id == DbidOf::getInstance().id_of_line(_T("大阪環状線")));
+	ASSERT(_line_id == LINE_ID(_T("大阪環状線")));
 
 	if (_source_jct_mask == NULL) {
 		/* removeTail() */
@@ -1248,20 +1248,20 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 			}
 			if (((0x01 & check()) == 0) &&
 				 (STATION_IS_JUNCTION(_start_station_id) || (_start_station_id == _station_id2) ||
-					(Route::InStationOnLine(DbidOf::getInstance().id_of_line(_T("大阪環状線")), _start_station_id) <= 0) ||
+					(Route::InStationOnLine(LINE_ID(_T("大阪環状線")), _start_station_id) <= 0) ||
 					(Route::RoutePass::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2) <= 0))) {
 			// 開始駅が大阪環状線なら、開始駅が通過範囲内にあるか ?
 			// 野田 大阪環状線 大阪 東海道線 尼崎 JR東西線 京橋 大阪環状線 福島(環)
 			// の2回目の大阪環状線は近回りの内回りは大阪でひっかかるが、外回りは分岐駅のみで判断
 			// すると通ってしまうので */
-	        	TRACE(_T("Osaka-kan: 9(%d, %d, %d)\n"), STATION_IS_JUNCTION(_start_station_id), Route::InStationOnLine(DbidOf::getInstance().id_of_line(_T("大阪環状線")), _start_station_id), Route::RoutePass::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
+	        	TRACE(_T("Osaka-kan: 9(%d, %d, %d)\n"), STATION_IS_JUNCTION(_start_station_id), Route::InStationOnLine(LINE_ID(_T("大阪環状線")), _start_station_id), Route::RoutePass::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
 	        	TRACE("Osaka-kan: 9ok\n");
 				break; /* OK */
 			} else {
 				_err = true;	/* for jct_mask all zero and 0 < InStationOnOsakaKanjyou() */
 			}
 //TRACE(_T("%d %d"), STATION_IS_JUNCTION(_start_station_id), _start_station_id);
-//TRACE(_T("Osaka-kan: @(%d, %d, %d)\n"), check(), Route::InStationOnLine(DbidOf::getInstance().id_of_line(_T("大阪環状線")), _start_station_id), Route::RoutePass::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
+//TRACE(_T("Osaka-kan: @(%d, %d, %d)\n"), check(), Route::InStationOnLine(LINE_ID(_T("大阪環状線")), _start_station_id), Route::RoutePass::InStationOnOsakaKanjyou(dir, _start_station_id, _station_id1, _station_id2));
         	TRACE("Osaka-kan: 9x\n");
 		    dir ^= 0x1;	/* 方向を逆にしてみる */
 		} /* NG */
@@ -1410,8 +1410,8 @@ int32_t Route::RoutePass::check() const
 //
 int32_t RouteUtil::DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b)
 {
-	if (RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("大阪環状線")), station_id_a, station_id_b)[0] <=
-	    RouteUtil::GetDistanceOfOsakaKanjyouRvrs(DbidOf::getInstance().id_of_line(_T("大阪環状線")), station_id_a, station_id_b)) {
+	if (RouteUtil::GetDistance(LINE_ID(_T("大阪環状線")), station_id_a, station_id_b)[0] <=
+	    RouteUtil::GetDistanceOfOsakaKanjyouRvrs(LINE_ID(_T("大阪環状線")), station_id_a, station_id_b)) {
 	    return 0;
 	} else {
 		return 1;
@@ -1433,7 +1433,7 @@ int32_t Route::RoutePass::InStationOnOsakaKanjyou(int32_t dir, int32_t start_sta
 	int32_t n = 0;
 
 	if ((dir & 0x01) == 0) {
-		n = RouteUtil::InStation(start_station_id, DbidOf::getInstance().id_of_line(_T("大阪環状線")), station_id_a, station_id_b);
+		n = RouteUtil::InStation(start_station_id, LINE_ID(_T("大阪環状線")), station_id_a, station_id_b);
 	} else {
 		static const char tsql[] =
 "select count(*) from ("
@@ -1445,7 +1445,7 @@ int32_t Route::RoutePass::InStationOnOsakaKanjyou(int32_t dir, int32_t start_sta
 
 		DBO dbo = DBS::getInstance()->compileSql(tsql);
 		if (dbo.isvalid()) {
-			dbo.setParam(1, DbidOf::getInstance().id_of_line(_T("大阪環状線")));
+			dbo.setParam(1, LINE_ID(_T("大阪環状線")));
 			dbo.setParam(2, station_id_a);
 			dbo.setParam(3, station_id_b);
 			dbo.setParam(4, start_station_id);
@@ -1506,23 +1506,23 @@ bool Route::chk_jctsb_b(int32_t kind, int32_t num)
 	case JCTSP_B_NISHIKOKURA:
 		/* 博多-新幹線-小倉*/
 		return (2 <= num) &&
-			(DbidOf::getInstance().id_of_line(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
-			(DbidOf::getInstance().id_of_station(_T("小倉")) == route_list_raw.at(num - 1).stationId) &&
-			(DbidOf::getInstance().id_of_station(_T("博多")) == route_list_raw.at(num - 2).stationId);
+			(LINE_ID(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
+			(STATION_ID(_T("小倉")) == route_list_raw.at(num - 1).stationId) &&
+			(STATION_ID(_T("博多")) == route_list_raw.at(num - 2).stationId);
 		break;
 	case JCTSP_B_YOSHIZUKA:
 		/* 小倉-新幹線-博多 */
         return (2 <= num) &&
-             (DbidOf::getInstance().id_of_line(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
-             (DbidOf::getInstance().id_of_station(_T("博多")) == route_list_raw.at(num - 1).stationId); //&&
-             //(0 < RouteList::InStation(DbidOf::getInstance().id_of_station(_T("小倉"),
-             //                      DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
+             (LINE_ID(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
+             (STATION_ID(_T("博多")) == route_list_raw.at(num - 1).stationId); //&&
+             //(0 < RouteList::InStation(STATION_ID(_T("小倉"),
+             //                      LINE_ID(_T("山陽新幹線")),
              //                      route_list_raw.at(num - 1).stationId,
              //                      route_list_raw.at(num - 2).stationId));
             //return (2 <= num) &&
-            //	(DbidOf::getInstance().id_of_line(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
-            //	(DbidOf::getInstance().id_of_station(_T("博多") == route_list_raw.at(num - 1).stationId) &&
-            //	(DbidOf::getInstance().id_of_station(_T("小倉") == route_list_raw.at(num - 2).stationId);
+            //	(LINE_ID(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
+            //	(STATION_ID(_T("博多") == route_list_raw.at(num - 1).stationId) &&
+            //	(STATION_ID(_T("小倉") == route_list_raw.at(num - 2).stationId);
 		break;
 	default:
 		break;
@@ -1778,7 +1778,7 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 
 int32_t Route::brtPassCheck(int32_t stationId2)
 {
-    if (stationId2 == DbidOf::getInstance().id_of_station(_T("柳津"))) {
+    if (stationId2 == STATION_ID(_T("柳津"))) {
         return -1;
     }
     return 0;
@@ -1962,12 +1962,12 @@ first_station_id1 = stationId1;
 				// line_id : 信越線
 				// stationId2 : 宮内～長岡
 			}
-		} else if ((2 <= num) && (DbidOf::getInstance().id_of_line(_T("山陽新幹線")) == line_id)) { /* b#14021205 add */
+		} else if ((2 <= num) && (LINE_ID(_T("山陽新幹線")) == line_id)) { /* b#14021205 add */
 			JctMaskOff(jct_mask, Route::Id2jctId(route_list_raw.at(num - 2).stationId));
 			TRACE("b#14021205-1\n");
 		}
 	} else if ((2 <= num) && BIT_CHK(lflg2, BSRJCTSP_B) &&	/* b#14021205 add */
-               (DbidOf::getInstance().id_of_line(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
+               (LINE_ID(_T("山陽新幹線")) == route_list_raw.at(num - 1).lineId) &&
                (RouteUtil::DirLine(route_list_raw.at(num - 1).lineId,
                                route_list_raw.at(num - 2).stationId,
                                route_list_raw.at(num - 1).stationId)
@@ -1980,7 +1980,7 @@ first_station_id1 = stationId1;
 	// 水平型検知
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTHORD)) {
 		TRACE("JCT: h_detect 2 (J, B, D)\n");
-		if ((DbidOf::getInstance().id_of_station(_T("博多")) != stationId1) &&
+		if ((STATION_ID(_T("博多")) != stationId1) &&
 		Route::IsAbreastShinkansen(route_list_raw.at(num - 1).lineId, line_id, stationId1, stationId2)) {
 			// 	line_idは新幹線
 			//	route_list_raw.at(num - 1).lineIdは並行在来線
@@ -2107,8 +2107,8 @@ ASSERT(first_station_id1 == stationId1);
 											route_list_raw.at(num - 1).lineId,
 											stationId1,
 											route_list_raw.at(num - 2).stationId)
-				|| (jctspdt.jctSpStationId == DbidOf::getInstance().id_of_station(_T("西小倉"))) // KC-2
-				|| (jctspdt.jctSpStationId == DbidOf::getInstance().id_of_station(_T("吉塚"))) // KC-2
+				|| (jctspdt.jctSpStationId == STATION_ID(_T("西小倉"))) // KC-2
+				|| (jctspdt.jctSpStationId == STATION_ID(_T("吉塚"))) // KC-2
 				|| (RouteUtil::InStation(jctspdt.jctSpStationId,
 									 route_list_raw.at(num - 1).lineId,
 									 route_list_raw.at(num - 2).stationId,
@@ -2116,8 +2116,8 @@ ASSERT(first_station_id1 == stationId1);
 					// A-0, I, A-2
 					TRACE("JCT: A-0, I, A-2\n");	//***************
 
-					if ((jctspdt.jctSpStationId == DbidOf::getInstance().id_of_station(_T("西小倉"))) // KC-2
-					   || (jctspdt.jctSpStationId == DbidOf::getInstance().id_of_station(_T("吉塚")))) { // KC-2
+					if ((jctspdt.jctSpStationId == STATION_ID(_T("西小倉"))) // KC-2
+					   || (jctspdt.jctSpStationId == STATION_ID(_T("吉塚")))) { // KC-2
 						routePassOff(jctspdt.jctSpMainLineId,
 									 stationId1, jctspdt.jctSpStationId);
 						TRACE("JCT: KC-2\n");
@@ -2289,7 +2289,7 @@ ASSERT(original_line_id == line_id);
 						TRACE(_T("add_abort\n"));
 						return rc;			// >>>>>>>>>>>>>>>>>>>>>
 					}
-					if (stationId2 != DbidOf::getInstance().id_of_station(_T("小倉"))) {
+					if (stationId2 != STATION_ID(_T("小倉"))) {
 						// b#15032701
 						BIT_ON(jct_flg_on, BSRJCTHORD);	//b#14021202
 					}
@@ -2351,7 +2351,7 @@ ASSERT(original_line_id == line_id);
 	// Route passed check
 	rc = route_pass.check();
 
-	if (line_id == DbidOf::getInstance().id_of_line(_T("大阪環状線"))) {
+	if (line_id == LINE_ID(_T("大阪環状線"))) {
 		if ((rc & 0x01) != 0) {
 			rc = -1;
 		} else if ((rc & 0x02) != 0) {
@@ -3057,7 +3057,7 @@ int32_t FARE_INFO::CenterStationIdFromCityId(int32_t cityId)
 
     for (n = 0; n < NumOf(cityIds); n++) {
         if (cityIds[n] == cityId) {
-            return DbidOf::getInstance().id_of_station(centerName[n]);
+            return STATION_ID(centerName[n]);
         }
     }
     return 0;   /* notfound */
@@ -3422,7 +3422,7 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, const RouteFla
 				if (ID_L_RULE70 != pos->lineId) {
 					result_str += _T("[");
 					result_str += lineName;
-					if (DbidOf::getInstance().id_of_line(_T("大阪環状線")) == pos->lineId) {
+					if (LINE_ID(_T("大阪環状線")) == pos->lineId) {
 						result_str += RouteOsakaKanDir(station_id1, pos->stationId, routeFlag_);
                         routeFlag_.setOsakaKanPass(true);
 					}
@@ -3441,7 +3441,7 @@ tstring RouteUtil::Show_route(const vector<RouteItem>& routeList, const RouteFla
 			if (!IS_FLG_HIDE_LINE(pos->flag)) {
 				result_str += _T("[");
 				result_str += lineName;
-				if (DbidOf::getInstance().id_of_line(_T("大阪環状線")) == pos->lineId) {
+				if (LINE_ID(_T("大阪環状線")) == pos->lineId) {
 					result_str += RouteOsakaKanDir(station_id1, pos->stationId, routeFlag_);
 					routeFlag_.setOsakaKanPass(true);
 				}
@@ -3535,7 +3535,7 @@ F/R      O   o O I I I i I   I I O O O   0/1 neer/far
         pass = 1;
     }
 
-	c |= LDIR_ASC == RouteUtil::DirLine(DbidOf::getInstance().id_of_line(_T("大阪環状線")), station_id1, station_id2) ? 0x08 : 0;
+	c |= LDIR_ASC == RouteUtil::DirLine(LINE_ID(_T("大阪環状線")), station_id1, station_id2) ? 0x08 : 0;
 TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"),
       pass,
       RouteUtil::StationName(station_id1).c_str(),
@@ -3577,7 +3577,7 @@ tstring RouteList::route_script()
 	oskk_flag = false;
 	for (pos++; pos != routeList->cend() ; pos++) {
 		result_str += _T(",");
-		if (!oskk_flag && (pos->lineId == DbidOf::getInstance().id_of_line(_T("大阪環状線")))) {
+		if (!oskk_flag && (pos->lineId == LINE_ID(_T("大阪環状線")))) {
 			if (route_flag.osakakan_detour) {
 				result_str += _T("r");
 			}
@@ -4290,7 +4290,7 @@ vector<int32_t> RouteUtil::GetDistance(const RouteFlag& oskkflg, int32_t line_id
 	vector<int32_t> d;
 	int32_t sales_km;
 
-	if (line_id != DbidOf::getInstance().id_of_line(_T("大阪環状線")))  {
+	if (line_id != LINE_ID(_T("大阪環状線")))  {
 		ASSERT(FALSE);
 		return RouteUtil::GetDistance(line_id, station_id1, station_id2);
 	}
@@ -5099,7 +5099,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
 	city_no_s = MASK_CITYNO(fite->flag);
 
 	// 発駅が尼崎の場合大阪市内発ではない　基153-2
-	if ((city_no_s == CITYNO_OOSAKA) && (DbidOf::getInstance().id_of_station(_T("尼崎")) == fite->stationId)) {
+	if ((city_no_s == CITYNO_OOSAKA) && (STATION_ID(_T("尼崎")) == fite->stationId)) {
 		city_no_s = 0;
 	}
 	else if (city_no_s != 0) {
@@ -5117,7 +5117,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
 	}
 	city_no_e = MASK_CITYNO(rite->flag);
 	// 着駅が尼崎の場合大阪市内着ではない　基153-2
-	if ((city_no_e == CITYNO_OOSAKA) && (DbidOf::getInstance().id_of_station(_T("尼崎")) == rite->stationId)) {
+	if ((city_no_e == CITYNO_OOSAKA) && (STATION_ID(_T("尼崎")) == rite->stationId)) {
 		city_no_e = 0;
 	}
 	else if (city_no_e != 0) {
@@ -5427,7 +5427,7 @@ vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, cons
 	while (it != route.cend()) {
 		if (stationId != 0) {
 			vector<int32_t> vkms;
-			if (it->lineId == DbidOf::getInstance().id_of_line(_T("大阪環状線"))) {
+			if (it->lineId == LINE_ID(_T("大阪環状線"))) {
 				vkms = RouteUtil::GetDistance(oskk_flag, it->lineId, stationId, it->stationId);
                 oskk_flag.setOsakaKanPass(true);
 			} else if (it->lineId == ID_L_RULE70) {
@@ -5614,7 +5614,7 @@ void CalcRoute::checkIsJRTokaiOnly()
 	int32_t cid_e1;
 	int32_t cid_s2;
 	int32_t cid_e2;
-	int32_t id_line_tokaido_shinkansen = DbidOf::getInstance().id_of_line(_T("東海道新幹線"));
+	int32_t id_line_tokaido_shinkansen = LINE_ID(_T("東海道新幹線"));
     bool bJrTokaiOnly = true;
 
 	for (ite = route_list_raw.cbegin(); ite != route_list_raw.cend(); ite++) {
@@ -6077,17 +6077,17 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 	while (ite != route.cend()) {
 		switch (stage) {
 		case 0:
-			if ((0 < ite->lineId) && (ite->stationId == DbidOf::getInstance().id_of_station(_T("西小倉")))) {
+			if ((0 < ite->lineId) && (ite->stationId == STATION_ID(_T("西小倉")))) {
 				c = 1;
 				stage = 1;
-			} else if (ite->stationId == DbidOf::getInstance().id_of_station(_T("博多"))) {
-				if (ite->lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) {
+			} else if (ite->stationId == STATION_ID(_T("博多"))) {
+				if (ite->lineId == LINE_ID(_T("山陽新幹線"))) {
 					c = 4;			// 山陽新幹線
 				} else {
 					c = 2;
 				}
 				stage = 1;
-			} else if ((0 < ite->lineId) && (ite->stationId == DbidOf::getInstance().id_of_station(_T("吉塚")))) {
+			} else if ((0 < ite->lineId) && (ite->stationId == STATION_ID(_T("吉塚")))) {
 				c = 3;				// 吉塚
 				stage = 1;
 				break;
@@ -6096,31 +6096,31 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 		case 1:
 			switch (c) {
 			case 1:
-				if ((ite->stationId == DbidOf::getInstance().id_of_station(_T("小倉"))) &&
+				if ((ite->stationId == STATION_ID(_T("小倉"))) &&
 				((ite + 1) != route.cend()) &&
-				((ite + 1)->lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
-				((ite + 1)->stationId == DbidOf::getInstance().id_of_station(_T("博多")))) {
+				((ite + 1)->lineId == LINE_ID(_T("山陽新幹線"))) &&
+				((ite + 1)->stationId == STATION_ID(_T("博多")))) {
 					rl |= 1;	// 小倉 山陽新幹線 博多
 				}
 				break;
 			case 2:
-				if ((ite->stationId == DbidOf::getInstance().id_of_station(_T("小倉"))) &&
-				(ite->lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
+				if ((ite->stationId == STATION_ID(_T("小倉"))) &&
+				(ite->lineId == LINE_ID(_T("山陽新幹線"))) &&
 				((ite + 1) != route.cend()) &&
 				((ite + 2) != route.cend()) &&	// 西小倉止まりまでなら非適用
-				((ite + 1)->stationId == DbidOf::getInstance().id_of_station(_T("西小倉")))) {
+				((ite + 1)->stationId == STATION_ID(_T("西小倉")))) {
 					rl |= 1;
 				}
 				break;
 			case 3:
-				if ((ite->stationId == DbidOf::getInstance().id_of_station(_T("博多"))) &&
+				if ((ite->stationId == STATION_ID(_T("博多"))) &&
 				((ite + 1) != route.cend()) &&
-				((ite + 1)->lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線")))) {
+				((ite + 1)->lineId == LINE_ID(_T("山陽新幹線")))) {
 					rl |= 2;
 				}
 				break;
 			case 4:
-				if ((ite->stationId == DbidOf::getInstance().id_of_station(_T("吉塚"))) &&
+				if ((ite->stationId == STATION_ID(_T("吉塚"))) &&
 				((ite + 1) != route.cend())) {	// 吉塚止まりまでなら非適用
 					rl |= 2;
 				}
@@ -6139,13 +6139,13 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 	}
 	if (rl != 0) {
 		km = 0;
-		kagoshima_line_id = DbidOf::getInstance().id_of_line(_T("鹿児島線"));
+		kagoshima_line_id = LINE_ID(_T("鹿児島線"));
 		if ((rl & 1) != 0) {
-			km = RouteUtil::GetDistance(kagoshima_line_id, DbidOf::getInstance().id_of_station(_T("小倉")), DbidOf::getInstance().id_of_station(_T("西小倉")))[0];
+			km = RouteUtil::GetDistance(kagoshima_line_id, STATION_ID(_T("小倉")), STATION_ID(_T("西小倉")))[0];
 			TRACE(_T("applied 43-2(西小倉)\n"));
 		}
 		if ((rl & 2) != 0) {
-			km += RouteUtil::GetDistance(kagoshima_line_id, DbidOf::getInstance().id_of_station(_T("博多")), DbidOf::getInstance().id_of_station(_T("吉塚")))[0];
+			km += RouteUtil::GetDistance(kagoshima_line_id, STATION_ID(_T("博多")), STATION_ID(_T("吉塚")))[0];
 			TRACE(_T("applied 43-2(吉塚)\n"));
 		}
 		return km;
@@ -6176,86 +6176,86 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 	lastIndex = (int32_t)route->size() - 1;
 
 	if (!chk_distance1) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
-		chk_distance1 = RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                               DbidOf::getInstance().id_of_station(_T("神戸")),
-                                               DbidOf::getInstance().id_of_station(_T("姫路")))[0];
-		chk_distance2 = RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                               DbidOf::getInstance().id_of_station(_T("新大阪")),
-                                               DbidOf::getInstance().id_of_station(_T("姫路")))[0];
+		chk_distance1 = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+                                               STATION_ID(_T("神戸")),
+                                               STATION_ID(_T("姫路")))[0];
+		chk_distance2 = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                               STATION_ID(_T("新大阪")),
+                                               STATION_ID(_T("姫路")))[0];
 	}
 
 	if (2 <= lastIndex) {
 		    // 新大阪 発 東海道線 - 山陽線
-		if ((route->front().stationId == DbidOf::getInstance().id_of_station(_T("新大阪"))) &&
-			(route->at(1).lineId == DbidOf::getInstance().id_of_line(_T("東海道線"))) &&
-		    (route->at(2).lineId == DbidOf::getInstance().id_of_line(_T("山陽線"))) &&
-		    (chk_distance1 <= RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                                     DbidOf::getInstance().id_of_station(_T("神戸")),
+		if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
+			(route->at(1).lineId == LINE_ID(_T("東海道線"))) &&
+		    (route->at(2).lineId == LINE_ID(_T("山陽線"))) &&
+		    (chk_distance1 <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+                                                     STATION_ID(_T("神戸")),
                                                      route->at(2).stationId)[0])) {
 
-			ASSERT(route->at(1).stationId == DbidOf::getInstance().id_of_station(_T("神戸")));
+			ASSERT(route->at(1).stationId == STATION_ID(_T("神戸")));
 			/*	新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
-			route->front() = RouteItem(0, DbidOf::getInstance().id_of_station(_T("大阪")));	// 新大阪->大阪
+			route->front() = RouteItem(0, STATION_ID(_T("大阪")));	// 新大阪->大阪
 
 			return 1;
 		}	// 新大阪 着 山陽線 - 東海道線
-		else if ((route->back().stationId == DbidOf::getInstance().id_of_station(_T("新大阪"))) &&
-				 (route->back().lineId == DbidOf::getInstance().id_of_line(_T("東海道線"))) &&
-				 (route->at(lastIndex - 1).lineId == DbidOf::getInstance().id_of_line(_T("山陽線"))) &&
-		    	 (chk_distance1 <= RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                                          DbidOf::getInstance().id_of_station(_T("神戸")),
+		else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
+				 (route->back().lineId == LINE_ID(_T("東海道線"))) &&
+				 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽線"))) &&
+		    	 (chk_distance1 <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+                                                          STATION_ID(_T("神戸")),
                                                           route->at(lastIndex - 2).stationId)[0])) {
 
-			ASSERT(route->at(lastIndex - 1).stationId == DbidOf::getInstance().id_of_station(_T("神戸")));
+			ASSERT(route->at(lastIndex - 1).stationId == STATION_ID(_T("神戸")));
 			/*	新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
-			route->back() = RouteItem(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                      DbidOf::getInstance().id_of_station(_T("大阪")));	// 新大阪->大阪
+			route->back() = RouteItem(LINE_ID(_T("東海道線")),
+                                      STATION_ID(_T("大阪")));	// 新大阪->大阪
 
 			return 2;
 		}
 		    // 大阪 発 新大阪 経由 山陽新幹線
-		if ((route->front().stationId == DbidOf::getInstance().id_of_station(_T("大阪"))) &&
-			(route->at(2).lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
-			(route->at(1).stationId == DbidOf::getInstance().id_of_station(_T("新大阪"))) &&
-			(chk_distance2 <= RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                                     DbidOf::getInstance().id_of_station(_T("新大阪")),
+		if ((route->front().stationId == STATION_ID(_T("大阪"))) &&
+			(route->at(2).lineId == LINE_ID(_T("山陽新幹線"))) &&
+			(route->at(1).stationId == STATION_ID(_T("新大阪"))) &&
+			(chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                                     STATION_ID(_T("新大阪")),
                                                      route->at(2).stationId)[0])) {
 
-			ASSERT(route->at(1).lineId == DbidOf::getInstance().id_of_line(_T("東海道線")));
+			ASSERT(route->at(1).lineId == LINE_ID(_T("東海道線")));
 
 			/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
-			route->at(1) = RouteItem(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                     DbidOf::getInstance().id_of_station(_T("神戸")));
+			route->at(1) = RouteItem(LINE_ID(_T("東海道線")),
+                                     STATION_ID(_T("神戸")));
 			route->at(1).flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			vector<RouteItem>::iterator ite = route->begin();
 			ite += 2;	// at(2)						// 山陽線-西明石
-			ite = route->insert(ite, RouteItem(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                               DbidOf::getInstance().id_of_station(_T("西明石"))));
+			ite = route->insert(ite, RouteItem(LINE_ID(_T("山陽線")),
+                                               STATION_ID(_T("西明石"))));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			return 1;
 		}	// 山陽新幹線 新大阪 経由 大阪 着
-		else if ((route->back().stationId == DbidOf::getInstance().id_of_station(_T("大阪"))) &&
-				 (route->at(lastIndex - 1).stationId == DbidOf::getInstance().id_of_station(_T("新大阪"))) &&
-				 (route->at(lastIndex - 1).lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
-				 (chk_distance2 <= RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                                          DbidOf::getInstance().id_of_station(_T("新大阪")),
+		else if ((route->back().stationId == STATION_ID(_T("大阪"))) &&
+				 (route->at(lastIndex - 1).stationId == STATION_ID(_T("新大阪"))) &&
+				 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽新幹線"))) &&
+				 (chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                                          STATION_ID(_T("新大阪")),
                                                           route->at(lastIndex - 2).stationId)[0])) {
 
-			ASSERT(route->back().lineId == DbidOf::getInstance().id_of_line(_T("東海道線")));
+			ASSERT(route->back().lineId == LINE_ID(_T("東海道線")));
 
 			/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
-			route->at(lastIndex - 1) = RouteItem(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                                 DbidOf::getInstance().id_of_station(_T("西明石")));	// 新大阪->西明石
+			route->at(lastIndex - 1) = RouteItem(LINE_ID(_T("山陽新幹線")),
+                                                 STATION_ID(_T("西明石")));	// 新大阪->西明石
 			route->at(lastIndex - 1).flag |= FLG_HIDE_STATION;
 			route->at(lastIndex).flag |= FLG_HIDE_LINE;	// 東海道線 非表示
 			vector<RouteItem>::iterator ite = route->end();
 			ite--;
-			ite = route->insert(ite, RouteItem(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                               DbidOf::getInstance().id_of_station(_T("神戸"))));
+			ite = route->insert(ite, RouteItem(LINE_ID(_T("山陽線")),
+                                               STATION_ID(_T("神戸"))));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			return 2;
@@ -6263,46 +6263,46 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 	}
 	if (1 <= lastIndex) {
 		    // 新大阪 発 山陽新幹線
-		if ((route->front().stationId == DbidOf::getInstance().id_of_station(_T("新大阪"))) &&
-			(route->at(1).lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
-			(chk_distance2 <= RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                                     DbidOf::getInstance().id_of_station(_T("新大阪")),
+		if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
+			(route->at(1).lineId == LINE_ID(_T("山陽新幹線"))) &&
+			(chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                                     STATION_ID(_T("新大阪")),
                                                      route->at(1).stationId)[0])) {
 
 			/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
 			vector<RouteItem>::iterator ite = route->begin();
-			*ite = RouteItem(0, DbidOf::getInstance().id_of_station(_T("大阪")));
+			*ite = RouteItem(0, STATION_ID(_T("大阪")));
 			ite++;
-			ite = route->insert(ite, RouteItem(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                               DbidOf::getInstance().id_of_station(_T("西明石"))));
+			ite = route->insert(ite, RouteItem(LINE_ID(_T("山陽線")),
+                                               STATION_ID(_T("西明石"))));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
-			ite = route->insert(ite, RouteItem(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                               DbidOf::getInstance().id_of_station(_T("神戸"))));
+			ite = route->insert(ite, RouteItem(LINE_ID(_T("東海道線")),
+                                               STATION_ID(_T("神戸"))));
 			ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
 			return 1;
 
 		}	// 山陽新幹線 大阪 着
-		else if ((route->back().stationId == DbidOf::getInstance().id_of_station(_T("新大阪"))) &&
-				 (route->back().lineId == DbidOf::getInstance().id_of_line(_T("山陽新幹線"))) &&
-				 (chk_distance2 <= RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                                          DbidOf::getInstance().id_of_station(_T("新大阪")),
+		else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
+				 (route->back().lineId == LINE_ID(_T("山陽新幹線"))) &&
+				 (chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                                          STATION_ID(_T("新大阪")),
                                                           route->at(lastIndex - 1).stationId)[0])) {
 
 			/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
-			route->back() = RouteItem(DbidOf::getInstance().id_of_line(_T("山陽新幹線")),
-                                      DbidOf::getInstance().id_of_station(_T("西明石")));	// 新大阪->西明石
+			route->back() = RouteItem(LINE_ID(_T("山陽新幹線")),
+                                      STATION_ID(_T("西明石")));	// 新大阪->西明石
 			route->back().flag |= FLG_HIDE_STATION;
 
-			route->push_back(RouteItem(DbidOf::getInstance().id_of_line(_T("山陽線")),
-                                       DbidOf::getInstance().id_of_station(_T("神戸"))));	// add 山陽線-神戸
+			route->push_back(RouteItem(LINE_ID(_T("山陽線")),
+                                       STATION_ID(_T("神戸"))));	// add 山陽線-神戸
 			route->back().flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
 
-			route->push_back(RouteItem(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                       DbidOf::getInstance().id_of_station(_T("大阪"))));	// add 東海道線-大阪
+			route->push_back(RouteItem(LINE_ID(_T("東海道線")),
+                                       STATION_ID(_T("大阪"))));	// add 東海道線-大阪
 			route->back().flag |= FLG_HIDE_LINE;
 
 			return 2;
@@ -6335,39 +6335,39 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
 	}
 
 				// 北新地発やで
-	if (((route.front().stationId == DbidOf::getInstance().id_of_station(_T("北新地"))) &&
-		(route.at(1).stationId == DbidOf::getInstance().id_of_station(_T("尼崎")))) &&
-		((lastIndex <= 1) || (route.at(2).lineId != DbidOf::getInstance().id_of_line(_T("東海道線"))) ||
-			(RouteUtil::LDIR_ASC == RouteUtil::DirLine(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                                       DbidOf::getInstance().id_of_station(_T("尼崎")),
+	if (((route.front().stationId == STATION_ID(_T("北新地"))) &&
+		(route.at(1).stationId == STATION_ID(_T("尼崎")))) &&
+		((lastIndex <= 1) || (route.at(2).lineId != LINE_ID(_T("東海道線"))) ||
+			(RouteUtil::LDIR_ASC == RouteUtil::DirLine(LINE_ID(_T("東海道線")),
+                                                       STATION_ID(_T("尼崎")),
                                                        route.at(2).stationId)))) {
 		/* 北新地-(JR東西線)-尼崎 の場合、発駅（北新地）は大阪や */
-		// route.front().stationId = DbidOf::getInstance().id_of_station(_T("大阪");
+		// route.front().stationId = STATION_ID(_T("大阪");
 		if (distance == 0) {
-			distance = RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                              DbidOf::getInstance().id_of_station(_T("大阪")),
-                                              DbidOf::getInstance().id_of_station(_T("尼崎")))[0] -
+			distance = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
+                                              STATION_ID(_T("大阪")),
+                                              STATION_ID(_T("尼崎")))[0] -
 					   RouteUtil::GetDistance(route.at(1).lineId,
-                                              DbidOf::getInstance().id_of_station(_T("尼崎")),
-                                              DbidOf::getInstance().id_of_station(_T("北新地")))[0];
+                                              STATION_ID(_T("尼崎")),
+                                              STATION_ID(_T("北新地")))[0];
 		}
 		ASSERT(distance < 0);
 		return distance;
 	}			// 北新地終着やねん
-	else if (((route.back().stationId == DbidOf::getInstance().id_of_station(_T("北新地"))) &&
-			 (route.at(lastIndex - 1).stationId == DbidOf::getInstance().id_of_station(_T("尼崎")))) &&
-			 ((lastIndex <= 1) || (route.at(lastIndex - 1).lineId != DbidOf::getInstance().id_of_line(_T("東海道線"))) ||
-		(RouteUtil::LDIR_DESC == RouteUtil::DirLine(DbidOf::getInstance().id_of_line(_T("東海道線")),
+	else if (((route.back().stationId == STATION_ID(_T("北新地"))) &&
+			 (route.at(lastIndex - 1).stationId == STATION_ID(_T("尼崎")))) &&
+			 ((lastIndex <= 1) || (route.at(lastIndex - 1).lineId != LINE_ID(_T("東海道線"))) ||
+		(RouteUtil::LDIR_DESC == RouteUtil::DirLine(LINE_ID(_T("東海道線")),
                                                     route.at(lastIndex - 2).stationId,
-                                                    DbidOf::getInstance().id_of_station(_T("尼崎")))))) {
-		//route.back().stationId = DbidOf::getInstance().id_of_station(_T("大阪");
+                                                    STATION_ID(_T("尼崎")))))) {
+		//route.back().stationId = STATION_ID(_T("大阪");
 		if (distance == 0) {
-			distance = RouteUtil::GetDistance(DbidOf::getInstance().id_of_line(_T("東海道線")),
-                                              DbidOf::getInstance().id_of_station(_T("大阪")),
-                                              DbidOf::getInstance().id_of_station(_T("尼崎")))[0] -
+			distance = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
+                                              STATION_ID(_T("大阪")),
+                                              STATION_ID(_T("尼崎")))[0] -
 					   RouteUtil::GetDistance(route.back().lineId,
-                                              DbidOf::getInstance().id_of_station(_T("尼崎")),
-                                              DbidOf::getInstance().id_of_station(_T("北新地")))[0];
+                                              STATION_ID(_T("尼崎")),
+                                              STATION_ID(_T("北新地")))[0];
 		}
 		ASSERT(distance < 0);
 		return distance;
@@ -8153,14 +8153,14 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
 			result.push_back(0);				// IDENT1(駅ID1の会社ID) + IDENT2(駅ID2の会社ID)
 			result.push_back(ctx.getInt(8));	// bit31:1=JR以外の会社線／0=JRグループ社線 / IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
 
-			if ((line_id == DbidOf::getInstance().id_of_line(_T("博多南線"))) ||
-				(line_id == DbidOf::getInstance().id_of_line(_T("山陽新幹線")))) { //山陽新幹線、博多南線はJ九州内でもJR西日本
+			if ((line_id == LINE_ID(_T("博多南線"))) ||
+				(line_id == LINE_ID(_T("山陽新幹線")))) { //山陽新幹線、博多南線はJ九州内でもJR西日本
 				result[4] = MAKEPAIR(JR_WEST, JR_WEST);
 			}
-			else if (line_id == DbidOf::getInstance().id_of_line(_T("北海道新幹線"))) {
+			else if (line_id == LINE_ID(_T("北海道新幹線"))) {
 				result[4] = MAKEPAIR(JR_HOKKAIDO, JR_HOKKAIDO);
 			}
-			else if ((line_id == DbidOf::getInstance().id_of_line(_T("東海道新幹線"))) &&
+			else if ((line_id == LINE_ID(_T("東海道新幹線"))) &&
 				     ((company_id1 == company_id2) && (company_id1 != JR_CENTRAL))) {
 				/*
 					東 西 -> あとで救われる
@@ -8296,17 +8296,11 @@ int32_t FARE_INFO::Retrieve70Distance(int32_t station_id1, int32_t station_id2)
 //	@param [in] station_id1		駅1
 //	@param [in] station_id2		駅2
 //
-//	@return true if 近郊区間でない条件
-//                flag    N  N-flag return
-//  姫路-新大阪    3      4   1      t
-//  姫路 新神戸    2      3   1      t
-//  姫路 相生      2      2   0
-//  米原 新大阪    3      3   0
-//  新富士 静岡    0      2   2      t
-//  静岡 米原      1      8   7      t
-//  静岡 名古屋    0      6   6      t
-//  品川 東京      0      2   2      t
-bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2)
+//	@return true 新幹線
+//
+// 大都市近郊区間に含まれる新幹線は米原駅 - 新大阪駅間と西明石駅 - 相生駅間のみ
+//
+bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t station_id2, bool isRule88)
 {
 	static const char tsql[] =
 " select count(*) - sum(sflg>>13&1) from t_station t join t_lines l on l.station_id=t.rowid"
@@ -8317,12 +8311,22 @@ bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t st
 "	and sales_km<=(select max(sales_km) from t_lines"
 "			where line_id=?1 and (station_id=?2 or station_id=?3))";
 // 13:近郊区間、17:新幹線仮想分岐駅
+// 新幹線乗車でも13がONなら近郊区間内とみなせる(新幹線乗車ではない)
 
 	int32_t rsd = -1;
 
 	if (!IS_SHINKANSEN_LINE(line_id)) {
-		return false;
+		return false;     /* 非新幹線はFalse */
 	}
+
+    /* 88条 によって大阪に書き換えられていたら、新大阪-山陽新幹線 乗車なので
+     * 新幹線乗車とする
+     */
+    // ref. CheckOfRule88j()
+    if (isRule88) {
+        TRACE("IsBulletInUrban is true(rule88 applied)\n");
+        return true;
+    }
 
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
@@ -8334,8 +8338,8 @@ bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t st
 			rsd = dbo.getInt(0);
 		}
 	}
-    TRACE("IsBulletInUrban=%d\n", 0 < rsd);
-	return 0 < rsd;
+    TRACE("IsBulletInUrban=%d\n", rsd); // rsd=0なら新幹線乗車とはみなされない
+	return 0 < rsd;    // 新幹線乗車とみなすならTrue
 }
 
 
@@ -8358,8 +8362,15 @@ bool FARE_INFO::IsIC_area(int32_t urban_id)
 
 // 近郊区間内で新幹線乗車があるか？
 // 新幹線乗車は86or87経路か？(大都市近郊区間かはまだわからんのであとで判定)
-// 86,87中の新幹線乗車は新幹線乗車とみなさない
+// 86,87中の新幹線乗車は新幹線乗車とみなさない(品川〜東京〜宇都宮として品川から新幹線乗っても運賃計算は東京[山]
+// からなので新幹線乗車はできても近郊区間特例は解かれない)
+// 70条が適用されている場合、その計算経路に新幹線が含まれていれば、大都市近郊区間ルールから外せるが、
+// 70条の最短経路以外の新幹線乗車は無効である(経路指定ができない)
+// 八王子から都内を通って宇都宮へいく場合、代々木〜品川(新幹線)東京〜宇都宮 としても新幹線を指定することは
+// できないので(70条の計算経路ではない)新幹線乗車は無効である(大都市近郊区間特例は解かれない)
+// 70条は、 reRouteRule70j()で仮設定している
 //
+// 70は、ID_L_RULE70 路線がある前提(cooked経路であること)
 void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag)
 {
     IDENT station_id1 = 0;		/* station_id1, (station_id2=ite->stationId) */
@@ -8371,9 +8382,14 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
 	for (ite = routeList.cbegin(); ite != routeList.cend(); ite++) {
 		if (station_id1 != 0) {
             cityId_c = (uint16_t)MASK_CITYNO(ite->flag);
-            if (((!pRoute_flag->rule70 && !pRoute_flag->isAvailableRule86or87()) ||
-                 !((cityId != 0) && (cityId_c != 0))) &&
-                IsBulletInUrban(ite->lineId, station_id1, ite->stationId)) {
+
+//            printf("@@@>>>>%s, lid=%d, 70=%d, 8687=%d, city=%d - %d, IsBulletInUrban=%d\n", ite->lineId == ID_L_RULE70 ? "true":"false", ite->lineId, pRoute_flag->rule70, pRoute_flag->isAvailableRule86or87(), cityId, cityId_c,
+//                IsBulletInUrban(ite->lineId, station_id1, ite->stationId, pRoute_flag->rule88));
+
+            if (!(pRoute_flag->isAvailableRule86or87()
+                  && (cityId != 0) && (cityId_c != 0)
+                  && (cityId == cityId_c)) &&
+                IsBulletInUrban(ite->lineId, station_id1, ite->stationId, pRoute_flag->rule88)) {
                 TRACE("Use bullet line.\n");
                 enabled = true; // ONの場合大都市近郊区間特例無効(新幹線乗車している)
                 break;
@@ -8384,6 +8400,9 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
     }
     pRoute_flag->bullet_line = enabled;
 }
+
+
+
 
 int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社線 */
                                       const RouteFlag& rRoute_flag,
@@ -8476,7 +8495,7 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
 	vector<RouteItem>::const_iterator ite;
 	RouteFlag   osakakan_aggregate;	// 大阪環状線通過フラグ bit0: 通過フラグ
 
-    CheckIsBulletInUrbanOnSpecificTerm(routeList, pRoute_flag);
+    CheckIsBulletInUrbanOnSpecificTerm(routeList, pRoute_flag); // routeListはcooked経路であること
 	                                //
 	int32_t fare_add = 0;						// 運賃特別区間加算値
 
@@ -8512,7 +8531,7 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
 				int32_t flag;
 				vector<int32_t> d;
 
-				if (ite->lineId != DbidOf::getInstance().id_of_line(_T("大阪環状線"))) {
+				if (ite->lineId != LINE_ID(_T("大阪環状線"))) {
 					d = this->getDistanceEx(ite->lineId, station_id1, ite->stationId);
 				} else {
 					d = FARE_INFO::GetDistanceEx(osakakan_aggregate, ite->lineId, station_id1, ite->stationId);
@@ -9059,12 +9078,12 @@ std::vector<RouteItem> FARE_INFO::IsHachikoLineHaijima(const std::vector<RouteIt
     int32_t sid1;
     bool b;
     bool bb;
-    int32_t id_hachiko_line = DbidOf::getInstance().id_of_line(_T("八高線"));
-    int32_t id_cyuou_line = DbidOf::getInstance().id_of_line(_T("中央東線"));
-    int32_t id_oume_line = DbidOf::getInstance().id_of_line(_T("青梅線"));
-    int32_t id_haijima = DbidOf::getInstance().id_of_station(_T("拝島"));
-    int32_t id_hachiouji = DbidOf::getInstance().id_of_station(_T("八王子"));
-    int32_t id_tachikawa = DbidOf::getInstance().id_of_station(_T("立川"));
+    int32_t id_hachiko_line = LINE_ID(_T("八高線"));
+    int32_t id_cyuou_line = LINE_ID(_T("中央東線"));
+    int32_t id_oume_line = LINE_ID(_T("青梅線"));
+    int32_t id_haijima = STATION_ID(_T("拝島"));
+    int32_t id_hachiouji = STATION_ID(_T("八王子"));
+    int32_t id_tachikawa = STATION_ID(_T("立川"));
     int32_t cid = 0;
 
     bb = b = false;
@@ -9372,10 +9391,10 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
 
     for (++pos; pos != route_list.cend(); pos++) {
         id = pos->stationId;
-        if ((id == DbidOf::getInstance().id_of_station(_T("金山(中)")))
-        || (id == DbidOf::getInstance().id_of_station(_T("岐阜")))
-        || (id == DbidOf::getInstance().id_of_station(_T("美濃太田")))
-        || (id == DbidOf::getInstance().id_of_station(_T("多治見")))) {
+        if ((id == STATION_ID(_T("金山(中)")))
+        || (id == STATION_ID(_T("岐阜")))
+        || (id == STATION_ID(_T("美濃太田")))
+        || (id == STATION_ID(_T("多治見")))) {
             bNeer = true;
         } else {
             if (bNeer == true) {

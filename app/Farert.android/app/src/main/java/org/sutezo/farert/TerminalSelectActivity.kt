@@ -23,8 +23,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_result_view.*
 
 import kotlinx.android.synthetic.main.activity_terminal_select.*
+import kotlinx.android.synthetic.main.activity_terminal_select.container
 import kotlinx.android.synthetic.main.content_list_empty.view.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.view.*
@@ -64,8 +66,8 @@ class TerminalSelectActivity : AppCompatActivity() {
         }
         setSupportActionBar(toolbar)
         // back arrow button(戻るボタン有効)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        supportActionBar!!.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -84,16 +86,19 @@ class TerminalSelectActivity : AppCompatActivity() {
 
             }
             override fun onPageSelected(position: Int) {
-                val m = toolbar.menu
-                val mi = m.findItem(R.id.menu_item_all_delete)
+                val m = toolbar.menu ?: return
+                val mi = m.findItem(R.id.menu_item_all_delete) ?: return
+
                 mi.isVisible = (position == TAB_PAGE.HISTORY.rowValue) // show 'History' tab only
                 if (position == TAB_PAGE.HISTORY.rowValue) {
                     //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
                     //mi.setEnabled(0 < trv.itemCount)
                     val flgm = mSectionsPagerAdapter?.findFragmentByPosition(
-                            tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
-                    var b = 0 < flgm.numOfContent()
-                    mi.setEnabled(b)
+                            tabcontainer, TAB_PAGE.HISTORY.rowValue) as? PlaceholderFragment
+                    flgm?.let {
+                        var b = 0 < it.numOfContent()
+                        mi.setEnabled(b)
+                    }
                 }
             }
         })
@@ -104,8 +109,8 @@ class TerminalSelectActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_terminal_select, menu)
-        val searchItem = menu.findItem(R.id.menu_search)
-        val searchView = searchItem.actionView as SearchView
+        val searchItem = menu.findItem(R.id.menu_search) ?: return false
+        val searchView = searchItem.actionView as? SearchView ?: return false
         searchView.queryHint = resources.getString(R.string.label_search_title) // "駅名（よみ）入力"
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(text: String?): Boolean {
@@ -193,8 +198,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                     setMessage(R.string.main_alert_query_all_clear_mesg)
                     setPositiveButton("Yes") { _, _ ->
                         val frgm = mSectionsPagerAdapter?.findFragmentByPosition(
-                                tabcontainer, TAB_PAGE.HISTORY.rowValue) as PlaceholderFragment
-                        frgm.clearContents()
+                                tabcontainer, TAB_PAGE.HISTORY.rowValue) as? PlaceholderFragment
+                        frgm?.clearContents()
                         saveHistory(context, listOf())
                     }
                     setNegativeButton("No", null)
@@ -212,8 +217,8 @@ class TerminalSelectActivity : AppCompatActivity() {
     //PlaceholderFragment で履歴削除後に呼ばれるように仕向けた
     //
     fun onChangeList(numItem: Int) {
-        val m = toolbar.menu
-        val mi = m.findItem(R.id.menu_item_all_delete)
+        val m = toolbar.menu ?: return
+        val mi = m.findItem(R.id.menu_item_all_delete) ?: return
         // show 'History' tab only
         if (mi.isVisible) {
               //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
@@ -265,9 +270,9 @@ class TerminalSelectActivity : AppCompatActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
 
-            val i = arguments!!.get("page_type") as Int
+            val i = arguments?.get("page_type") as? Int ?: 0
             mIdType = LIST_TYPE.values()[i % LIST_TYPE.values().size]
-            mode = arguments!!.get("mode") as String
+            mode = arguments?.get("mode") as? String ?: ""
 
             val listItems : () -> List<Int> =  {
                 when (mIdType) {
@@ -281,7 +286,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         readParams(activity!!, "history").map{ RouteUtil.GetStationId(it) }
                     }
                     LIST_TYPE.SEARCH -> { //search text
-                        keyMatchStations(arguments!!.getString("search_text", "x"))
+                        keyMatchStations(arguments?.getString("search_text", "x") ?: "null")
                     }
                 }
             }
@@ -301,8 +306,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 // 履歴ビューではスワイプによる個別行削除ができるように
                 val swipeHandler = object : SwipeToDeleteCallback(activity as Context) {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                        val adapter = rootView.list_terminal.adapter as TerminalRecyclerViewAdapter
-                        adapter.removeAt(viewHolder.adapterPosition)
+                        val adapter = rootView.list_terminal.adapter as? TerminalRecyclerViewAdapter
+                        adapter?.removeAt(viewHolder.adapterPosition)
                     }
                 }
                 val itemTouchHelper = ItemTouchHelper(swipeHandler)
@@ -370,8 +375,8 @@ class TerminalSelectActivity : AppCompatActivity() {
                 return  // 'History' tab only
             }
             view?.let {
-                val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
-                trv.clearContents()
+                val trv = list_terminal.adapter as? TerminalRecyclerViewAdapter
+                trv?.clearContents()
             }
         }
         fun numOfContent() : Int {
