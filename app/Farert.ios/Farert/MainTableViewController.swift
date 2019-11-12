@@ -148,20 +148,22 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             // remove old(before ver 15.10)
             UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
             
-            var cnt = UserDefaults.standard.integer(forKey: "hasLaunched")
-            if (0x10000 <= cnt) {
-                cnt /= 0x100    // cut minor version
+            var curver = UserDefaults.standard.integer(forKey: "hasLaunched")
+            if (0x10000 <= curver) {
+                curver /= 0x100    // cut minor version
             }
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
             let verno = Int(version.replacingOccurrences(of: ".", with: ""), radix: 16)
-            if 0x1910 <= cnt {
-                if (0x1810 <= cnt) {                                        //!!!!1810
+            if 0x1910 <= curver {
+                if (0x1810 <= curver) {                                        //!!!!1810
                     // ２回目以降の起動時
 
                 } else {
                     UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
                     cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                     UserDefaults.standard.synchronize();
+                    cRouteUtil.closeDatabase()
+                    cRouteUtil.openDatabase(DB(rawValue: DB._MAX_ID.rawValue)!)
                 }
             } else {
                 // 初回起動時
@@ -183,6 +185,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 UserDefaults.standard.set(verno, forKey: "hasLaunched")
                 cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                 UserDefaults.standard.synchronize();
+                cRouteUtil.closeDatabase()
+                cRouteUtil.openDatabase(DB(rawValue: DB._MAX_ID.rawValue)!)
             }
         }
 

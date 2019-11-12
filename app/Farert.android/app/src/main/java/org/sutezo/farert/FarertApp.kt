@@ -1,15 +1,10 @@
 package org.sutezo.farert
 
 import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.database.sqlite.SQLiteDatabase
 import android.os.Build
-import org.json.JSONArray
 import org.sutezo.alps.*
-import java.io.OutputStream
-import java.io.PrintStream
+
 
 class FarertApp : Application() {
     val ds = Route()
@@ -28,12 +23,19 @@ class FarertApp : Application() {
         System.setOut(NullPrintStream())
 
         /* database index reset */
-        val num = getVersionCode()
-        if (num < 16) {  // 16=19.10
-            // set current default database index
+        try {
+            val num = readParam(this, "hasLaunched").toInt()
+            // 消費税10%になった最初のバージョン(17)より前から使ってた人は
+            // バージョンアップで、消費税10%版DBに強制的に設定
+            if (num < 17) {  // 16=19.10 17=19.10.01
+                // set current default database index
+                saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
+            }
+        } catch (e : NumberFormatException) {
             saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
+        } finally {
+            setDatabase()
         }
-        setDatabase()
 
         TestRoute.exec(this)    // test function
 
