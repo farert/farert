@@ -78,6 +78,9 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
+    /**
+     *
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         when (id) {
@@ -85,7 +88,7 @@ class SettingsActivity : AppCompatActivity() {
                 var rc : Int = Activity.RESULT_CANCELED
 
                 // DB ver
-                val cSelIdx = spinner.selectedItemPosition
+                val cSelIdx = DatabaseOpenHelper.validDBidx(spinner.selectedItemPosition)
                 if (mSelIndex != cSelIdx) {
                     saveParam(this, "datasource", cSelIdx.toString())
                     mSelIndex = cSelIdx

@@ -57,7 +57,7 @@ typedef NS_ENUM(NSInteger, DB) {
 + (DbSys*)DatabaseVersion;
 + (BOOL)OpenDatabase;
 + (BOOL)OpenDatabase:(enum DB)ident;
-+ (void)Close;
++ (void)CloseDatabase;
 
 + (NSString*)fareNumStr:(NSInteger)num;
 + (NSString*)kmNumStr:(NSInteger)num;
