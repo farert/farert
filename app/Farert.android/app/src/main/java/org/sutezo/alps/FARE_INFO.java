@@ -1444,6 +1444,9 @@ public class FARE_INFO {
     boolean isJrTokaiOnly() {
         return enableTokaiStockSelect == 2; // JR東海TOICA有効
     }
+    // 地方交通線を含んでいるか？
+    boolean didHaveLocalLine() { return !local_only && total_jr_calc_km != total_jr_sales_km; }
+    boolean isLocalOnly() { return local_only; }
 
     /**	往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
      *
@@ -3468,7 +3471,7 @@ public class FARE_INFO {
     boolean reCalcFareForOptiomizeRoute(final RouteList route_original) {
 
         FARE_INFO fare_info_shorts = new FARE_INFO();       // 最短経路
-        FARE_INFO fare_info_via_tachikawa = new FARE_INFO(); // 八高線避けた 立川経由
+        FARE_INFO fare_info_nolocal_short = new FARE_INFO(); // 地方交通線を避けた経路
         FARE_INFO fare_info_specific_short = new FARE_INFO(); // 都区市内発着最短
         boolean b_change_route = false;
         int decision = 0;   // this or via_tachikawa or short
@@ -3550,13 +3553,14 @@ public class FARE_INFO {
         // 最短経路算出
         List<RouteItem> shortRoute_List = null;
         RouteFlag short_route_flag = new RouteFlag();
-        List<RouteItem> route_via_tachikawa = null;
+        List<RouteItem> route_nolocal_short = null;
 
         if (decision != 20) {
+            ASSERT(decision == 0 || decision == 15);
             short_route_flag.setDisableRule86or87();
             shortRoute_List = fare_info_shorts.reCalcFareForOptiomizeRoute(route_original.departureStationId(),
-                                                              route_original.arriveStationId(),
-                                                              short_route_flag);
+                                                                           route_original.arriveStationId(),
+                                                                           short_route_flag);
             if (null == shortRoute_List) {
                 ASSERT(false);
                 return false;
@@ -3573,7 +3577,7 @@ public class FARE_INFO {
                 route_original.getRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
                 route_original.getRouteFlag().meihan_city_enable = false;   // 名阪のあれも。
             } else {
-                route_original.getRouteFlag().urban_neerest = 0;
+                route_original.getRouteFlag().urban_neerest = 0;    // すでに最安になってます(ので指定経路へ云々の選択肢なし)
             }
 
             short_route_flag.disable_rule86or87 = false;
@@ -3583,22 +3587,25 @@ public class FARE_INFO {
             // 書き換えたlast_flagはJR東海株主使用可否Optionだけなので無視してよし
             // 学割、小児、株主運賃は既存どおりなので、fare_infoのic運賃のみfare_info_shortsのic運賃へ書き換える
             // と拝島問題
-
-            // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
-            route_via_tachikawa = IsHachikoLineHaijima(shortRoute_List);
-            if (decision == 0) { /* 86or87 適用はやらん */
-                if (route_via_tachikawa != null && route_via_tachikawa.size() != 0) {
-                    fare_info_via_tachikawa.setTerminal(route_original.departureStationId(),
-                            route_original.arriveStationId());
-                    if (fare_info_via_tachikawa.calc_fare(short_route_flag, route_via_tachikawa)) {
-                        if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
-                            /* 立川経由の方が安い */
-                            System.out.print("Found lowcost route DENSHA special.\n");
-                            decision = 2;
-                        }
-                    } else{
-                        ASSERT(false);
+            if (fare_info_shorts.didHaveLocalLine()
+                && (decision == 0) /* 86or87 適用絡みはやらん (decision == 15 or 20) */
+                && (null != (route_nolocal_short =
+                    fare_info_nolocal_short.reCalcFareForOptiomizeRoute(route_original.departureStationId(),
+                                                                       route_original.arriveStationId(),
+                                                                       short_route_flag,
+                                                                       true)))) {
+                // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
+                // 地方交通線を避けた方が最安
+                fare_info_nolocal_short.setTerminal(route_original.departureStationId(),
+                                                    route_original.arriveStationId());
+                if (fare_info_nolocal_short.calc_fare(short_route_flag,route_nolocal_short)){
+                    if (fare_info_nolocal_short.getFareForJR() < fare_info_shorts.getFareForJR()) {
+                        /* 地方交通線を避けた方が最安 */
+                        System.out.print("Found lowcost route DENSHA special.\n");
+                        decision = 2;
                     }
+                } else{
+                    ASSERT(false);
                 }
             }
             ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
@@ -3634,20 +3641,21 @@ public class FARE_INFO {
                 jr_fare = fare_info_shorts.jr_fare;
             }
             b_change_route = true;
-        } else if (decision == 2/*立川経由が最安*/) {
-            // 立川経由が最安
+        } else if (decision == 2) {
+            // 地方交通線を避けた方が最安
             if (getStockDiscountCompany() != JR_CENTRAL) {
-                this.apply(fare_info_via_tachikawa);
-                if (route_via_tachikawa != null) {
-                    setRoute(route_via_tachikawa, short_route_flag);
+                this.apply(fare_info_nolocal_short);
+                if (route_nolocal_short != null) {
+                    setRoute(route_nolocal_short, short_route_flag);
                 }
             } else {
-                jr_fare = fare_info_via_tachikawa.jr_fare;
+                jr_fare = fare_info_nolocal_short.jr_fare;
             }
 
             b_change_route = true;  // 特例非適用オプション選択可
 
         } else if (decision == 20) {
+            // 86 or 87 applied
             System.out.printf("optimized 86or87: applied type A. %s->%s(%dyen), %s->%s(%dyen)\n",
                     CalcRoute.BeginOrEndStationName(this.getBeginTerminalId()),
                     CalcRoute.BeginOrEndStationName(this.getEndTerminalId()),
@@ -3667,18 +3675,26 @@ public class FARE_INFO {
     }
 
 
-    //
+    // 最短経路を算出して運賃計算する
     List<RouteItem> reCalcFareForOptiomizeRoute(int start_station_id,
                                                 int end_station_id,
-                                                RouteFlag short_route_flag_)
+                                                RouteFlag short_route_flag_) {
+        return reCalcFareForOptiomizeRoute(start_station_id, end_station_id, short_route_flag_, false);
+    }
+
+    List<RouteItem> reCalcFareForOptiomizeRoute(int start_station_id,
+                                                int end_station_id,
+                                                RouteFlag short_route_flag_,
+                                                boolean except_local)
     {
         Route shortRoute = new Route();
         int rc;
 
-        shortRoute.add(start_station_id);
-        rc = shortRoute.changeNeerest(0, end_station_id);
+        rc = shortRoute.add(start_station_id);
+        ASSERT(rc == 1);
+        rc = shortRoute.changeNeerest(except_local ? 100 : 0, end_station_id);
         if (rc < 0) {
-            ASSERT(false);
+            ASSERT(except_local);
             return null;
         }
 

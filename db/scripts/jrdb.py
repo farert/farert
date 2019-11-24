@@ -347,6 +347,30 @@ def jct_list():
   return list(map(lambda x:x[0], cur))
 
 
+# 地方交通線？
+#
+def is_local_line(station_id1, station_id2):
+  sql = """
+  select a.line_id from t_lines a join t_lines b on a.line_id=b.line_id
+  	where a.station_id=? and b.station_id=?
+  """
+  cur = con.cursor()
+  cur.execute(sql, [station_id1, station_id2])
+  line_id = cur.fetchone()[0]
+  distance = distance_station_between(line_id, station_id1, station_id2)
+  return 0 < distance[1]
+
+# 東京or大阪 特定電車区間?
+
+def is_densya_specific_line(station_id1, station_id2):
+  sql = """
+  select sum(sflg>>10 & 3) from t_station where rowid=? or rowid=?
+  """
+  cur = con.cursor()
+  cur.execute(sql, [station_id1, station_id2])
+  c = cur.fetchone()[0]
+  return 2 == c or 4 == c
+
 
 if __name__ == "__main__":   # not module
 	pass

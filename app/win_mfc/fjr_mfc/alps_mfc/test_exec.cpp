@@ -2019,7 +2019,8 @@ _T("c--近郊区間(115絡み)--"),
 		_T("赤間 鹿児島線 東郷"),
 		_T("東京 東海道線 神戸 山陽線 門司 鹿児島線 折尾 筑豊線 原田 鹿児島線 鳥栖 長崎線 久保田 唐津線 唐津 筑肥線 姪浜 地下鉄空港線 博多 鹿児島線 吉塚 篠栗線 長者原"),
 
-			// append new test pattern is here TODO
+		_T("大船 東海道線 東神奈川 横浜線 八王子 八高線 拝島"),
+			// append new test pattern is here TODO @@@
 		_T(""),
 };
 /////////////////////////////////////////////////////////////////////////////////////
@@ -2029,7 +2030,7 @@ _T("c--近郊区間(115絡み)--"),
 void test_route(const TCHAR *route_def[], int32_t round = 0)
 {
 	TCHAR buffer[1024];
-	LPCTSTR psz_title = _T("");
+	LPCTSTR psz_title = _T("結果");
 	int i;
 	int t;
 	int rc;
@@ -2065,6 +2066,8 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 		}
 		if (STRCMP(buffer, _T("若松")) == 0)
 			rc = 2;
+
+
 		_ftprintf(os, _T("!****<%02d>: ******************* %s **********************\n<%s>\n"), i - t + 1, psz_title, buffer);
 
 		TRACE(_T("test_exec(route): %d*************************************************\n%s\n"), i - t + 1, buffer);
@@ -2100,6 +2103,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			tstring s;
 
 			if (0 == (4 & round)) {
+				/* no rule */
 				croute.refRouteFlag().no_rule = true;
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
@@ -2108,6 +2112,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 			}
 
 			if (0 == (2 & round)) {
+				/* rule applied */
 				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
