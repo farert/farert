@@ -1939,6 +1939,7 @@ public class Route extends RouteList {
     //                             1 新幹線を利用
     //                             2 会社線を利用
     //                             3 新幹線も会社線も利用
+    //                          100  地方交通線を除く(在来線のみ)
     //	@retval true success
     //	@retval 1 : success
     //	@retval 0 : loop end.
@@ -2005,6 +2006,15 @@ public class Route extends RouteList {
         short stationId;
         short nLastNode;
         short[][] neer_node;
+
+        boolean except_local;
+
+        if (useBulletTrain == 100) {
+            useBulletTrain = 0;
+            except_local = true;
+        } else {
+            except_local = false;
+        }
 
 		/* 途中追加か、最初からか */
         if (1 < route_list_raw.size()) {
@@ -2179,7 +2189,7 @@ public class Route extends RouteList {
                 }
             }
 
-            List<Integer[]> nodes = Node_next(doneNode + 1);
+            List<Integer[]> nodes = Node_next(doneNode + 1, except_local);
 
             for (Integer[] node : nodes) {
 
@@ -2676,11 +2686,12 @@ public class Route extends RouteList {
     // [jct_id, calc_km, line_id][N] = f(jct_id)
     //
     //	@param [in] jctId   分岐駅
+    //  @param except_local True: 地方交通線を除外
     //	@return 分岐駅[0]、計算キロ[1]、路線[2]
     //
-    private static List<Integer[]> Node_next(int jctId) {
+    private static List<Integer[]> Node_next(int jctId, boolean except_local) {
         final String tsql =
-                "select case jct_id when ?1 then neer_id else jct_id end as node, cost, line_id" +
+                "select case jct_id when ?1 then neer_id else jct_id end as node, cost, line_id, attr" +
                         " from t_node" +
                         " where jct_id=?1 or neer_id=?1 order by node";
 
@@ -2689,11 +2700,13 @@ public class Route extends RouteList {
         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(jctId)});
         try {
             while (dbo.moveToNext()) {
-                Integer[] r1 = new Integer [3];
-                r1[0] = dbo.getInt(0);	// jct_id
-                r1[1] = dbo.getInt(1);	// cost(calc_km)
-                r1[2] = dbo.getInt(2);	// line_id
-                result.add(r1);
+                if (!except_local || (dbo.getInt(3) != 2)) {
+                    Integer[] r1 = new Integer[3];
+                    r1[0] = dbo.getInt(0);    // jct_id
+                    r1[1] = dbo.getInt(1);    // cost(calc_km)
+                    r1[2] = dbo.getInt(2);    // line_id
+                    result.add(r1);
+                }
             }
         } finally {
             dbo.close();

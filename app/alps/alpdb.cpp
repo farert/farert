@@ -763,10 +763,10 @@ int32_t RouteUtil::NumOfNeerNode(int32_t stationId)
 //	@param [in] jctId   分岐駅
 //	@return 分岐駅[0]、計算キロ[1]、路線[2]
 //
-vector<vector<int32_t>> Route::Node_next(int32_t jctId)
+vector<vector<int32_t>> Route::Node_next(int32_t jctId, bool except_local)
 {
 	const static char tsql[] =
-	"select case jct_id when ?1 then neer_id else jct_id end as node, cost, line_id"
+	"select case jct_id when ?1 then neer_id else jct_id end as node, cost, line_id, attr"
 	" from t_node"
 	" where jct_id=?1 or neer_id=?1 order by node";
 
@@ -778,10 +778,13 @@ vector<vector<int32_t>> Route::Node_next(int32_t jctId)
 
 		while (dbo.moveNext()) {
 			vector<int32_t> r1;
-			r1.push_back(dbo.getInt(0));	// jct_id
-			r1.push_back(dbo.getInt(1));	// cost(calc_km)
-			r1.push_back(dbo.getInt(2));	// line_id
-			result.push_back(r1);
+
+            if (!except_local || (dbo.getInt(3) != 2)) {
+                r1.push_back(dbo.getInt(0));	// jct_id
+    			r1.push_back(dbo.getInt(1));	// cost(calc_km)
+    			r1.push_back(dbo.getInt(2));	// line_id
+    			result.push_back(r1);
+            }
 		}
 	}
 	return result;
@@ -7190,6 +7193,7 @@ int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t statio
 //                             1 新幹線を利用
 //                             2 会社線を利用
 //                             3 新幹線も会社線も利用
+//                           100 地方交通線を覗く（在来線のみ)
 //
 //
 //	@retval true success
@@ -7260,7 +7264,14 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 	int32_t stationId;
 	int32_t nLastNode;
 	vector<PAIRIDENT> neer_node;
+    bool except_local;
 
+    if (useBulletTrain == 100) {
+        useBulletTrain = 0;
+        except_local = true;
+    } else {
+        except_local = false;
+    }
 	/* 途中追加か、最初からか */
 	if (1 < route_list_raw.size()) {
 		do {
@@ -7427,7 +7438,7 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 			}
 		}
 
-		vector<vector<int32_t>> nodes = Route::Node_next(doneNode + 1);
+		vector<vector<int32_t>> nodes = Route::Node_next(doneNode + 1, except_local);
 		vector<vector<int32_t>>::const_iterator ite;
 
 		for (ite = nodes.cbegin(); ite != nodes.cend(); ite++) {
@@ -9161,7 +9172,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRouteForToiCa(const RouteList& route_origi
 bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 {
     FARE_INFO fare_info_shorts;         // 最短経路
-    FARE_INFO fare_info_via_tachikawa;  // 八高線避けた 立川経由
+    FARE_INFO fare_info_nolocal_short;  // 地方交通線を避けた経路
     FARE_INFO fare_info_specific_short; // 都区市内発着最短
     bool b_change_route = false;
     int8_t decision = 0;   // this or via_tachikawa or short
@@ -9236,9 +9247,10 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     // 最短経路算出
     std::vector<RouteItem> shortRoute_List;
     RouteFlag short_route_flag;
-    std::vector<RouteItem> route_via_tachikawa;
+    std::vector<RouteItem> route_nolocal_short;
 
     if (decision != 20) {
+        ASSERT(decision == 0 || decision == 15);
         short_route_flag.setDisableRule86or87();
         if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute_List,
                                                            route_original.departureStationId(),
@@ -9259,7 +9271,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
         } else {
-            route_original.refRouteFlag().urban_neerest = 0;
+            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
         }
 
         short_route_flag.rule86or87 = 0;
@@ -9269,22 +9281,25 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 //                          書き換えたroute_flagはJR東海株主使用可否Optionだけなので無視してよし
 //                          学割、小児、株主運賃は既存どおりなので、fare_infoのic運賃のみfare_info_shortsのic運賃へ書き換える
 //                            と拝島問題
-
-        // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
-        route_via_tachikawa = IsHachikoLineHaijima(shortRoute_List);
-        if (decision == 0) { /* 86or87 適用はやらん */
-            if (route_via_tachikawa.size() != 0) {
-                fare_info_via_tachikawa.setTerminal(route_original.departureStationId(),
-                                                    route_original.arriveStationId());
-                if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa)) {
-                    if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
-                        /* 立川経由の方が安い */
-                        TRACE("Found lowcost route DENSHA special.\n");
-                        decision = 2;
-                    }
-                } else {
-                    ASSERT(FALSE);
+        if (fare_info_shorts.didHaveLocalLine()
+            && (decision == 0) /* 86or87 適用絡みはやらん (decision == 15 or 20) */
+            && fare_info_nolocal_short.reCalcFareForOptiomizeRoute(&route_nolocal_short,
+                                                               route_original.departureStationId(),
+                                                               route_original.arriveStationId(),
+                                                               &short_route_flag,
+                                                               true)) {
+            // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
+            // 地方交通線を避けた方が最安
+            fare_info_nolocal_short.setTerminal(route_original.departureStationId(),
+                                                route_original.arriveStationId());
+            if (fare_info_nolocal_short.calc_fare(&short_route_flag, route_nolocal_short)) {
+                if (fare_info_nolocal_short.getFareForJR() < fare_info_shorts.getFareForJR()) {
+                    /* 地方交通線を避けた方が最安 */
+                    TRACE("Found lowcost route DENSHA special.\n");
+                    decision = 2;
                 }
+            } else {
+                ASSERT(FALSE);
             }
         }
         ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
@@ -9313,16 +9328,17 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
             jr_fare = fare_info_shorts.jr_fare;
         }
         b_change_route = true;
-    } else if (decision == 2/*立川経由が最安*/) {
-        // 立川経由が最安
+    } else if (decision == 2) {
+        // 地方交通線を避けた方が最安
         if (getStockDiscountCompany() != JR_CENTRAL) {
-            *this = fare_info_via_tachikawa;
-            setRoute(route_via_tachikawa, short_route_flag);
+            *this = fare_info_nolocal_short;
+            setRoute(route_nolocal_short, short_route_flag);
         } else {
-            jr_fare = fare_info_via_tachikawa.jr_fare;
+            jr_fare = fare_info_nolocal_short.jr_fare;
         }
         b_change_route = true;  // 特例非適用オプション選択可
     } else if (decision == 20) {
+        // 86 or 87 applied
         TRACE("optimized 86or87: applied type A. %s->%s(%dyen), %s->%s(%dyen)\n", CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_specific_short.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_specific_short.getEndTerminalId()).c_str(), fare_info_specific_short.jr_fare);
         *this = fare_info_specific_short;
         setRoute(specificRoute_List, specificRouteFlag);
@@ -9333,17 +9349,20 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
     return b_change_route;
 }
 
+//  最短経路を算出して運賃計算する
 //
 bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_list,
                                             int32_t start_station_id,
                                             int32_t end_station_id,
-                                            RouteFlag* pShort_route_flag)
+                                            RouteFlag* pShort_route_flag,
+                                            bool except_local /* =false */ )
 {
     Route shortRoute;
     int32_t rc = shortRoute.add(start_station_id);
-    rc = shortRoute.changeNeerest(0, end_station_id);
+    ASSERT(rc == 1);
+    rc = shortRoute.changeNeerest(except_local ? 100 : 0, end_station_id);
     if (rc < 0) {
-        ASSERT(FALSE);
+        ASSERT(except_local);
         return false;
     }
 
