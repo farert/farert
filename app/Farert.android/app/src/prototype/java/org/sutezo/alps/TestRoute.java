@@ -2066,6 +2066,7 @@ public class TestRoute {
             "赤間 鹿児島線 東郷",
             "東京 東海道線 神戸 山陽線 門司 鹿児島線 折尾 筑豊線 原田 鹿児島線 鳥栖 長崎線 久保田 唐津線 唐津 筑肥線 姪浜 地下鉄空港線 博多 鹿児島線 吉塚 篠栗線 長者原",
 
+            "大船 東海道線 東神奈川 横浜線 八王子 八高線 拝島",
             // append new test pattern is here TODO
     };
 
@@ -2126,7 +2127,7 @@ public class TestRoute {
         int i;
         int rc;
         int opt;
-        String psz_title = "";
+        String psz_title = "結果";
         i = 0;
         int rev;
 
