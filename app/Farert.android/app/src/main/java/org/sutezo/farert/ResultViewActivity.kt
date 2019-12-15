@@ -582,29 +582,25 @@ class ResultViewActivity : AppCompatActivity() {
         /* avail days */
         text_availdays.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
 
-        if (!fi.isArbanArea) {
-            if (1 < fi.ticketAvailDays) {
-                var str : String
-                if (fi.isBeginInCity && fi.isEndInCity) {
-                    //発着駅都区市内の駅を除き
-                    str = resources.getString(R.string.result_availday_except_begin_end)
-                } else if (fi.isBeginInCity) {
-                    //発駅都区市内の駅を除き
-                    str = resources.getString(R.string.result_availday_except_begin)
-                } else if (fi.isEndInCity) {
-                    //着駅都区市内の駅を除き
-                    str = resources.getString(R.string.result_availday_except_end)
-                } else {
-                    //''
-                    str = resources.getString(R.string.result_availday_empty)
-                }
-                // 途中下車可能
-                text_availdays2.text = resources.getString(R.string.result_availday_stopover, str)
+        if (1 < fi.ticketAvailDays) {
+            var str : String
+            if (fi.isBeginInCity && fi.isEndInCity) {
+                //発着駅都区市内の駅を除き
+                str = resources.getString(R.string.result_availday_except_begin_end)
+            } else if (fi.isBeginInCity) {
+                //発駅都区市内の駅を除き
+                str = resources.getString(R.string.result_availday_except_begin)
+            } else if (fi.isEndInCity) {
+                //着駅都区市内の駅を除き
+                str = resources.getString(R.string.result_availday_except_end)
             } else {
-                // 途中下車不可
-                text_availdays2.text = resources.getString(R.string.result_availday_dontstopover)
+                //''
+                str = resources.getString(R.string.result_availday_empty)
             }
+            // 途中下車可能
+            text_availdays2.text = resources.getString(R.string.result_availday_stopover, str)
         } else {
+            // 途中下車不可
             text_availdays2.text = resources.getString(R.string.result_availday_dontstopover)
         }
 
