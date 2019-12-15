@@ -20,7 +20,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     // MARK: - private property
     var routeList : [String] = []
-    var saved : Bool = false
+    var existIndex : Int = -1
 
     // MARK: - UI variables
     @IBOutlet weak var allClearButton: UIBarButtonItem!
@@ -47,20 +47,24 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.routeList = cRouteUtil.loadStrageRoute() as! [String]
 
         if !self.currentRouteString.isEmpty {
-            if let idx = self.routeList.firstIndex(of: self.currentRouteString) {      // is exist ?
-                self.routeList.remove(at: idx)
-                self.routeList.insert(self.currentRouteString, at: 0)  // 入れ替え
-                cRouteUtil.save(toRouteArray: self.routeList)   // して保存
-                self.saveButton.isEnabled = false
-                self.saved = true
-            } else {                                            // non exist
+            if let idx = self.routeList.firstIndex(of: self.currentRouteString) {
+                // is exist ?(保存済み) a, b
+                self.existIndex = idx
+                if (0 < idx) {
+                     // b. 居たら先頭へ持ってくる
+                    self.routeList.remove(at: idx)
+                    self.routeList.insert(self.currentRouteString, at: 0)
+                } // else a. 居て既に先頭にある
+                saveButton.isEnabled = false
+            } else { // c. non exist(未保存)
                 routeList.insert(self.currentRouteString, at: 0)
-                saveButton.isEnabled = true
-                self.saved = false
+                saveButton.isEnabled = true // Enable 'save' button
+                existIndex = -1
             }
         } else {
+            // d. 現在表示・選択の経路はなし
             saveButton.isEnabled = false
-            self.saved = true
+            existIndex = -2         // empty
         }
         if self.routeList.count <= 0 {
             self.navigationItem.rightBarButtonItem?.isEnabled = false
@@ -118,7 +122,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             //cell.routeString?.font = UIFont.preferredFontForTextStyle(FA_STYLE_ROUTE_FONT)
 
             if (indexPath.row == 0) && (self.routeList[0] == currentRouteString) {
-                if (self.saved) {
+                if (existIndex != -1) {
                     cell.routeString?.textColor = UIColor.systemGray
                 } else {
                     cell.routeString?.textColor = UIColor.systemRed
@@ -151,9 +155,36 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             tableView.beginUpdates()
             let c : Int = self.routeList.count
             if (0 < c) {
+                let rmIdx = indexPath.row
+                
                 // Delete the row from the data source
-                self.routeList.remove(at: indexPath.row)       // model
+                self.routeList.remove(at: rmIdx)       // model
                 tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
+
+                if (existIndex == 0 || existIndex == -2) {
+                    if (rmIdx == 0) {
+                        existIndex = -2 // same as 'd'
+                    }
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                } else if (0 < existIndex) {
+                    // b
+                    if (rmIdx == 0) {
+                        existIndex = -2
+                    } else {
+                        existIndex = 0
+                    }
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                } else if (existIndex == -1) {
+                    // c
+                    if (rmIdx == 0) {
+                        existIndex = -2
+                        // no save
+                    } else {
+                        // c. 未保存の場合は先頭に保存候補の経路が入っているので破棄
+                        let route_list = self.routeList.dropFirst()
+                        cRouteUtil.save(toRouteArray: Array(route_list))
+                    }
+                }
             }
             tableView.endUpdates()
             if (c == 1) {   // last deleted
@@ -164,7 +195,6 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 editEnd()
                 self.tableView.reloadData()
             }
-            cRouteUtil.save(toRouteArray: self.routeList)
 
         } else if (editingStyle == UITableViewCell.EditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
@@ -235,9 +265,40 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         // Pass the selected object to the new view controller.
         if segue.identifier == "unwindArchiveRouteSelectSegue" {
             // セル選択
-            if let selidx = self.tableView.indexPathForSelectedRow?.row {
-                let str : String = self.routeList[selidx]
-                self.selectRouteString = str.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if var selidx = self.tableView.indexPathForSelectedRow?.row {
+                let selstr : String = self.routeList[selidx]
+                // selectRouteString is interface the parent view
+                self.selectRouteString = selstr.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+                if (0 < selidx) {
+                    if (0 < existIndex) {
+                        // b. メイン画面表示経路あり+経路保存済み
+                        let oldselroute = self.currentRouteString
+                        self.routeList.remove(at: selidx)
+                        self.routeList.remove(at: 0)
+                        self.routeList.insert(oldselroute, at: (self.existIndex < selidx) ? existIndex : existIndex - 1)
+                        self.routeList.insert(selstr, at: 0)
+                        // 選んだ経路は先頭に移動して保存
+                        cRouteUtil.save(toRouteArray: self.routeList)
+
+                    } else {
+                        if (existIndex == -1) {
+                            selidx -= 1     // c 経路未保存(先頭にメイン画面の経路)
+                        }
+                        
+                        // a 先頭にメイン画面の経路 or cで保存されてた場合
+                        // d メイン画面の経路はなし
+
+                        if (0 < selidx) {
+                            self.routeList.remove(at: selidx)
+                            self.routeList.insert(selstr, at: 0)
+                            cRouteUtil.save(toRouteArray: self.routeList)
+                        }
+                    }
+                } else if ((selidx == 0) && (0 < existIndex)) {
+                    // b.
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                }
             } else {
                 self.selectRouteString = ""
             }
@@ -257,7 +318,8 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 // 編集中は選択は無視する（何もしない）
                 return false
             }
-            if self.saved || (self.tableView.indexPathForSelectedRow?.row == 0) {
+            if ((existIndex != -1)
+            || (self.tableView.indexPathForSelectedRow?.row == 0)) {
                 return true
             } else {
 
@@ -342,6 +404,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 //self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.Fade)
 
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
+                existIndex = -2
 
                 self.editEnd()
                 self.tableView.reloadData()
@@ -397,13 +460,16 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     // [Save] button
     @IBAction func saveButtonTapped(_ sender: AnyObject) {
-        cRouteUtil.save(toRouteArray: self.routeList)
-        self.saved = true
+        if (existIndex == -1) {
+            cRouteUtil.save(toRouteArray: self.routeList)
+            existIndex = 0      // same as 'a'
+        }
         self.saveButton.isEnabled = false
         self.tableView.reloadData()
     }
     func editEnd() {
-        self.saveButton.isEnabled = true
+        self.saveButton.isEnabled = (existIndex == -1)
+
         self.allClearButton.isEnabled = false    // Disable [Edit] button
         self.navigationItem.leftBarButtonItem?.isEnabled = true
         if #available(iOS 13.0, *) {
@@ -414,7 +480,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     }
 
     func editBegin() {
-        self.saveButton.isEnabled = false
+        self.saveButton.isEnabled = (existIndex == -1)
         self.allClearButton.isEnabled = true // Enable [Edit] button
         self.navigationItem.leftBarButtonItem?.isEnabled = false
         self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemGray

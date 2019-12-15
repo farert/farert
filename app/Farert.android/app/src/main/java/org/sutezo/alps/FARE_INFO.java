@@ -1079,8 +1079,10 @@ public class FARE_INFO {
             }
         }
         buffer.append(String.format(Locale.JAPANESE,
-                "\r\n有効日数：%4d日\r\n",
-                this.getTicketAvailDays()));
+                "\r\n有効日数：%4d日\r\n%s\r\n",
+                this.getTicketAvailDays(),
+                (1 < this.getTicketAvailDays()) ?
+                "途中下車できます" : "途中下車前途無効"));
 
         if (this.isMultiCompanyLine()) {
             buffer.append("\r\n複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.");

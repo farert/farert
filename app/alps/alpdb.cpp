@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -2900,10 +2900,13 @@ JR東日本 株主優待4： \123,456
 		sWork += cb;
 	}
 	_sntprintf_s(cb, MAX_BUF,
-				_T("\r\n有効日数：%4u日\r\n"),
-				this->getTicketAvailDays());
+				_T("\r\n有効日数：%4u日\r\n%s\r\n"),
+				this->getTicketAvailDays(),
+                1 < this->getTicketAvailDays() ?
+                _T("途中下車できます") : _T("途中下車前途無効"));
 	sResult += sWork + cb;
-	if (this->isMultiCompanyLine()) {
+
+    if (this->isMultiCompanyLine()) {
 		sResult += _T("\r\n複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.");
 	} else if (this->isBeginEndCompanyLine()) {
 		sResult += _T("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
