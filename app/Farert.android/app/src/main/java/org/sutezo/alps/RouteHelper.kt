@@ -346,8 +346,6 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
     result.isOsakakanDetour = this.route_flag.osakakan_detour
 
-    result.isArbanArea = fi.isUrbanArea();
-
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();
     result.jrSalesKm = fi.getJRSalesKm();

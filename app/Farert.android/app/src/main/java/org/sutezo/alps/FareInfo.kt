@@ -29,7 +29,6 @@ class FareInfo {
     var isRule114Applied : Boolean = false
 
     var isSpecificFare : Boolean = false
-    var isArbanArea : Boolean = false
 
     var totalSalesKm : Int = 0
     var jrCalcKm : Int = 0
