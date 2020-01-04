@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.ShareCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.LinearLayoutManager
@@ -83,9 +84,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 return true
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
-
-                viewHolder?: return
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
                 val idx = viewHolder.adapterPosition
 
@@ -129,8 +128,28 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             updateFareInfo()
         }
         // Checkbox
-        checkBox.setOnClickListener { _ ->
+        checkBox.setOnClickListener {
             (rv_drawer_list.adapter as FolderRecyclerAdapter).checkAll(checkBox.isChecked)
+        }
+
+        // export
+        btnExport.setOnClickListener {
+            activity.let {
+                val text = ticketFolder.makeExportText()
+
+                val mimeType = "text/plain"
+                val subject = "チケットフォルダ"
+
+                val shareIntent = ShareCompat.IntentBuilder.from(it)
+                        .setChooserTitle(resources.getString(R.string.title_share_text))
+                        .setType(mimeType)
+                        .setText(text)
+                        .setSubject(subject)
+                        .intent
+                if (shareIntent.resolveActivity(it!!.packageManager) != null) {
+                    startActivity(shareIntent)
+                }
+            }
         }
 
         // Fare Information(集計値初期化)
@@ -140,7 +159,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
     fun reload() {
         mContext?:return
         ticketFolder.load(mContext!!)
-        rv_drawer_list.adapter.notifyDataSetChanged()
+        rv_drawer_list.adapter?.notifyDataSetChanged()
         updateFareInfo()
     }
 
@@ -148,16 +167,30 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         mContainerView = activity!!.findViewById(fragmentId)
         mDrawerLayout = drawerLayout
         val drawerToggle = object : ActionBarDrawerToggle(activity, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+            // Leftview open
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
                 activity!!.invalidateOptionsMenu()
+                if (ticketFolder.count() <= 0) {
+                    btnDelete.visibility = View.INVISIBLE
+                    btnExport.visibility = View.INVISIBLE
+                } else {
+                    btnDelete.visibility = View.VISIBLE
+                    btnExport.visibility = View.VISIBLE
+                }
+                if (route != null) {
+                    btnAppend.visibility = View.VISIBLE
+                } else {
+                    btnAppend.visibility = View.INVISIBLE
+                }
             }
-
+            // Leftview close
             override fun onDrawerClosed(drawerView: View) {
                 super.onDrawerClosed(drawerView)
                 activity!!.invalidateOptionsMenu()
             }
 
+            // Leftview open/close行数分呼ばれる
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
                 super.onDrawerSlide(drawerView, slideOffset)
                 toolbar.alpha = 1 - slideOffset / 2
