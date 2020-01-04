@@ -30,6 +30,8 @@ class Routefolder {
         NULLFARE,   // 無効
     }
 
+    val aggregate_label = arrayListOf<String>("普通運賃","小児運賃","往復運賃","株割運賃","株割x2運賃","学割運賃","学割往復","無効")
+
     private var _routeList : MutableList<Folder> = arrayListOf()
     private var _totalFare : Int = 0
     private var _totalSalesKm : Int = 0
@@ -253,6 +255,35 @@ class Routefolder {
             return Pair(fare, fareInfo.totalSalesKm)
         }
         return Pair(0, 0)
+    }
+
+    fun makeExportText() : String {
+        var result = mutableListOf<String>()
+
+        var ta : Int = 0
+        var td : Int = 0
+        for (one in this._routeList) {
+            var cols = mutableListOf<String>()
+            val fare = this.calcFare(one)
+            ta += fare.first
+            td += fare.second
+
+            cols.add(aggregate_label[one.aggregateType.ordinal]) // 運賃
+            cols.add("¥${fareNumStr(fare.first)}")
+            cols.add("営業キロ")
+            cols.add("${kmNumStr(fare.second)}km")
+
+            val s = one.routeList.route_script().replace(",", " ")
+            cols.add(s)
+            result.add(cols.joinToString(","))
+        }
+        var cols = mutableListOf<String>()
+        cols.add("総額")
+        cols.add("¥${fareNumStr(ta)}")
+        cols.add("総営業キロ")
+        cols.add("${kmNumStr(td)}km")
+        result.add(cols.joinToString(","))
+        return result.joinToString("\n")
     }
 }
     
