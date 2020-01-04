@@ -97,7 +97,10 @@ typedef NS_ENUM(NSInteger, DB) {
 + (NSString*)PrectNameByStation:(NSInteger)stationId;
 + (NSString*)GetKanaFromStationId:(NSInteger)ident;
 
-+ (void)saveToRouteArray:(NSArray*)routeList;
++ (NSInteger)saveToRouteArray:(NSArray*)routeList;
++ (NSString*)scriptFromRouteArray:(NSArray*)routeList;
++ (NSString*)scriptFromRouteArray;
++ (NSInteger*)parseScript:(NSString*)route_script;
 
 // Save databse index
 + (void)SaveToDatabaseId:(NSInteger)dbid;

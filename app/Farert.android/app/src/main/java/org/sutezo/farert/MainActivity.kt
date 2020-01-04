@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             R.id.navigation_reverse -> {
                 val rc = mRoute.reverse()
                 update_fare(rc)
-                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
+                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
 
             }
             // 経路保存
@@ -201,7 +201,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                     setItems(R.array.select_autoroute_option) { _, which ->
                         val rc = mRoute.changeNeerest(which, stationId)
                         update_fare(if (rc == 4) 40 else rc)
-                        recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
+                        recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
                     }
                     create()
                     show()
@@ -235,13 +235,13 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 val rc = mRoute.add(lineId, stationId)
                 update_fare(rc)
                 // scroll to last
-                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
+                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
             }
             "archive" -> {
                 val rc = mRoute.setup_route(newScr)
                 update_fare(rc)
                 // scroll to last
-                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter.itemCount - 1)
+                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
             }
             else -> {
                 // illegal(nothing)
@@ -361,7 +361,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         buttonTerminal.text = if (0 < mRoute.count) terminal_text() else resources.getString(R.string.should_select_terminal)
 
         // 経路リスト更新
-        recycler_view_route.adapter.notifyDataSetChanged()
+        recycler_view_route.adapter?.notifyDataSetChanged()
 
         // 経路戻り（Last経路削除）の有効化／無効化
         (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
