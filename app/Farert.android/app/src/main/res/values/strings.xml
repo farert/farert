@@ -205,11 +205,14 @@
 
     <!-- Archive Route -->
     <string name="menu_item_save">保存</string>
+    <string name="menu_item_import">インポート</string>
+    <string name="menu_item_export">エクスポート</string>
 
     <string name="main_alert_query_route_update_title">経路更新</string>
     <string name="main_alert_query_route_update_mesg">経路を選択された経路で更新します.現在の経路は破棄されます.よろしいでしょうか?</string>
 
     <string name="no_archive_route">保存された経路はありません</string>
+    <string name="arch_title_over">保存された経路が多すぎますので、これ以上保存できません.\n新しい経路を保存するには、不要な経路を削除してください</string>
 
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
@@ -220,6 +223,9 @@
     </string>
 
     <!-- Archive / Terminal -->
+    <string name="arch_hide_specific_import">今後、この画面は表示せず、インポート機能を実行する</string>
+    <string name="arch_title_import">インポートする経路をテキストで「メモ」等の外部エディタで作成してください\n(スペースまたはカンマ\',\'区切りで1行1経路)で指定します）\nその後、クリップボードへコピーして本機能を実行します.\nわからないという人は使用しないでください</string>
+
     <string name="main_alert_query_all_clear_title">確認</string>
     <string name="main_alert_query_all_clear_mesg">すべて削除してよいでしょうか？</string>
 

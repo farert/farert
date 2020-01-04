@@ -1523,10 +1523,13 @@
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Auc-lL-9Gc">
-                                <rect key="frame" x="44" y="866" width="46" height="30"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
-                                <state key="normal" title="クリア"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Auc-lL-9Gc">
+                                <rect key="frame" x="44" y="862" width="43" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <state key="normal" title="全消去">
+                                    <color key="titleColor" systemColor="linkColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleShadowColor" systemColor="linkColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
                                 <connections>
                                     <action selector="actionClearButton:" destination="HfG-SU-JeR" eventType="touchUpInside" id="8Ue-jP-zcS"/>
                                 </connections>
@@ -1540,7 +1543,7 @@
                             <constraint firstItem="z6U-ay-GXo" firstAttribute="leading" secondItem="T4C-ow-zkR" secondAttribute="leading" id="PJ3-X8-DeN"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Auc-lL-9Gc" secondAttribute="trailingMargin" id="W7c-cz-uOC"/>
                             <constraint firstItem="6LI-ze-2pN" firstAttribute="top" secondItem="z6U-ay-GXo" secondAttribute="bottom" constant="-19" id="Z3a-CP-Ie1"/>
-                            <constraint firstItem="Auc-lL-9Gc" firstAttribute="bottom" secondItem="T4C-ow-zkR" secondAttribute="bottom" id="bAF-kA-Z2i"/>
+                            <constraint firstItem="Auc-lL-9Gc" firstAttribute="bottom" secondItem="T4C-ow-zkR" secondAttribute="bottom" constant="-5" id="bAF-kA-Z2i"/>
                             <constraint firstAttribute="bottom" secondItem="6LI-ze-2pN" secondAttribute="bottom" constant="30" id="iye-NZ-mss"/>
                             <constraint firstItem="Auc-lL-9Gc" firstAttribute="leading" secondItem="T4C-ow-zkR" secondAttribute="leadingMargin" constant="24" id="w1Y-ma-Uc6"/>
                             <constraint firstAttribute="trailing" secondItem="6LI-ze-2pN" secondAttribute="trailing" id="ysq-7S-cx8"/>
@@ -1548,7 +1551,7 @@
                     </view>
                     <connections>
                         <outlet property="appendButton" destination="G0O-Dh-Rzc" id="oCL-bo-Aze"/>
-                        <outlet property="clearButton" destination="Auc-lL-9Gc" id="4Ws-e5-o9Q"/>
+                        <outlet property="clearOrExportButton" destination="Auc-lL-9Gc" id="4Ws-e5-o9Q"/>
                         <outlet property="editButton" destination="LXV-zR-yrW" id="rly-20-dXA"/>
                         <outlet property="tableView" destination="6LI-ze-2pN" id="3is-Jq-xpt"/>
                         <outlet property="totalFare" destination="fNo-Nz-ThK" id="KWZ-NY-Mkp"/>
@@ -1782,13 +1785,25 @@
                     </tableView>
                     <toolbarItems>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="nY2-DZ-xEG"/>
-                        <barButtonItem title="クリア" id="rh5-w5-G3o">
+                        <barButtonItem title="import" image="import" id="7ZL-qc-9PD" userLabel="Import Button">
+                            <connections>
+                                <action selector="onImportButton:" destination="RVb-HU-myb" id="S0p-g4-eL5"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="4Vz-hQ-HA2"/>
+                        <barButtonItem systemItem="action" id="Kqa-zT-R2F">
+                            <connections>
+                                <action selector="onExportButton:" destination="RVb-HU-myb" id="cIJ-15-dvL"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="Krt-td-dxW"/>
+                        <barButtonItem title="クリア" image="clearbutton" id="rh5-w5-G3o">
                             <connections>
                                 <action selector="allClearButtonTapped:" destination="RVb-HU-myb" id="2Ss-G0-5TV"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem width="42" style="plain" systemItem="fixedSpace" id="yeF-H8-uG3"/>
-                        <barButtonItem systemItem="save" id="qCk-2y-If2">
+                        <barButtonItem image="savebutton" id="qCk-2y-If2">
                             <connections>
                                 <action selector="saveButtonTapped:" destination="RVb-HU-myb" id="1e0-GR-sVe"/>
                             </connections>
@@ -1805,6 +1820,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="allClearButton" destination="rh5-w5-G3o" id="EYr-bv-13x"/>
+                        <outlet property="exportButton" destination="Kqa-zT-R2F" id="AUC-KH-asQ"/>
                         <outlet property="saveButton" destination="qCk-2y-If2" id="0pC-mT-wmY"/>
                     </connections>
                 </tableViewController>
@@ -1893,12 +1909,15 @@
     </scenes>
     <resources>
         <image name="chknote" width="22" height="22"/>
+        <image name="clearbutton" width="22" height="22"/>
         <image name="holder" width="83" height="60"/>
+        <image name="import" width="22" height="22"/>
         <image name="revbuttun" width="22" height="22"/>
+        <image name="savebutton" width="22" height="22"/>
         <image name="settingsbutton" width="22" height="22"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="BNa-fu-i7a"/>
+        <segue reference="t4d-a5-LDz"/>
         <segue reference="2qt-Na-sRD"/>
     </inferredMetricsTieBreakers>
 </document>

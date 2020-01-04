@@ -1036,6 +1036,9 @@ class ResultViewActivity : AppCompatActivity() {
             OptionItem.rule115 -> {  // TRUEは115条 都区市内発着指定
                 route.routeFlag.setSpecificTermRule115(mOpt_items[opt.ordinal] == Option.TRUE)
             }
+            else -> {
+                // DO NOTHING
+            }
         }
 
         // 大阪環状線 遠回り TRUE=遠回り

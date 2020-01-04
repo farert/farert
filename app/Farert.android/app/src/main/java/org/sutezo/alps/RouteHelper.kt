@@ -7,7 +7,7 @@ import org.sutezo.farert.ArchiveRouteActivity
 
 const val MAX_HOLDER : Int = 60
 const val MAX_HISTORY = 20
-const val MAX_ARCHIVE_ROUTE = 100
+const val MAX_ARCHIVE_ROUTE = 100 * 20
 
 const val msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です"
 const val msgAppliedLowcost = "近郊区間内ですので最安運賃の経路で計算"
