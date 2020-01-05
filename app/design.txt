@@ -10,6 +10,13 @@ val build = AlertDialog.Builder(this).apply {
 }
 val dlg = build.create()
 dlg.show()
+///
+let actview = UIAlertController(title: "インポート", message: msg, preferredStyle: .alert)
+actview.addAction(UIAlertAction(title: agree, style: .default) {
+    action in
+    /////
+})
+self.present(actview, animated: true, completion: nil)
 
 
 val trv = archive_route_list.adapter
