@@ -558,7 +558,7 @@ class ResultViewActivity : AppCompatActivity() {
         // Child fare ガキ
         text_children_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.childFare))
         if (mIsRoundTrip) {
-            text_children_fare_round.text = resources.getString(R.string.result_yen, fareNumStr(fi.childFare * 2))
+            text_children_fare_round.text = resources.getString(R.string.result_yen, fareNumStr(fi.roundtripChildFare))
         } else {
             text_title_children_fare_round.visibility = View.INVISIBLE
             text_children_fare_round.visibility = View.INVISIBLE

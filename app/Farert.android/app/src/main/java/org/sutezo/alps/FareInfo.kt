@@ -73,6 +73,7 @@ class FareInfo {
 
     // 子供運賃
     var childFare: Int = 0
+    var roundtripChildFare : Int = 0
 
 // 学割運賃
     var isAcademicFare: Boolean = false
