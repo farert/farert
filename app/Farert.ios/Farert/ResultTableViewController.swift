@@ -932,7 +932,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                                  "title" : "小児運賃",
                                  "value1" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare)!)",
                                  "subtitle" : "往復",
-                                 "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.childFare * 2)!)"]]
+                                 "value2" : "¥\(cRouteUtil.fareNumStr(self.fareInfo.roundtripChildFare)!)"]]
         } else {
             contentsForFare += [["cell" : "rsPersonDiscountFareCell",
                                  "title" : "小児運賃",
@@ -1058,6 +1058,8 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             alertView.show()
         }
     }
+    
+    
     func showInfo(key : String) {
         let info:[String:[String]] =
             [ "norule": ["",
@@ -1090,6 +1092,5 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             action in
         })
         self.present(ac, animated: true, completion: nil)
-
     }
 }
