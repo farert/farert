@@ -392,6 +392,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // 小児運賃
     result.childFare = fi.getChildFareForDisplay();
 
+    result.roundtripChildFare = fi.roundTripChildFareWithCompanyLine()
+
     // 学割運賃
     result.academicFare = fi.getAcademicDiscountFare()
     if (0 < result.academicFare) {
