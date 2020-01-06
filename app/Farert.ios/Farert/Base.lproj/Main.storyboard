@@ -1291,8 +1291,8 @@
                                     <segue destination="uFg-Jm-poi" kind="unwind" identifier="versionInfoExitSegue" unwindAction="closeModal:" id="ASW-rH-acd"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright(c) Sutezo 2014-2019" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zOt-sa-bMK">
-                                <rect key="frame" x="92" y="778" width="230" height="20"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright(c) Sutezo 2014-2020" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zOt-sa-bMK">
+                                <rect key="frame" x="91" y="778" width="232" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -1913,7 +1913,7 @@
         <image name="holder" width="83" height="60"/>
         <image name="import" width="22" height="22"/>
         <image name="revbuttun" width="22" height="22"/>
-        <image name="savebutton" width="22" height="22"/>
+        <image name="savebutton" width="21" height="22"/>
         <image name="settingsbutton" width="22" height="22"/>
     </resources>
     <inferredMetricsTieBreakers>
