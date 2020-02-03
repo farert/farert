@@ -305,6 +305,7 @@
     <string name="folder_content_description_left">移動</string>
     <string name="folder_content_description_right">選択</string>
     <string-array name="multi_select_list_preference_default_value" />
+    <string name="folder_content_query_clear_mesg">削除してよいでしょうか？</string>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
