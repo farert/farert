@@ -1536,6 +1536,10 @@ bool Route::chk_jctsb_b(int32_t kind, int32_t num)
 /*  通過連絡運輸チェック
  *  param [in] line_id  路線id
  *
+ *  @param [in] line_id  路線
+ *  @param [in] 駅1
+ *  @param [in] 駅2
+ *  @param [in] num route_list.size()=経路数
  *  @retval 0 = continue
  *	@retval -4 = 会社線 通過連絡運輸なし
  */
@@ -1693,6 +1697,7 @@ int32_t Route::companyConnectCheck(int32_t station_id)
  *	@param [in] line_id      add(),追加予定路線
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
+ *  @param [in] num          route_list.size()=経路数
  *	@retval 0 : エラーなし(継続)
  *	@retval -4 : 通過連絡運輸禁止
  */
@@ -1707,10 +1712,12 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	if (num <= 1) {
 		/* 会社線で始まる */
 		route_flag.compnbegin = true;
+        TRACE("preCompanyPassCheck begin company line\n");
 		return 0;
 	}
 	rc = cs.open(station_id1, station_id2);
 	if (rc <= 0) {
+        TRACE("preCompanyPassCheck db open error(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
 	for (i = 1; i < num; i++) {
@@ -1722,8 +1729,10 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 		}
 	}
 	if (i < num) {
+        TRACE("preCompanyPassCheck always pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	} else {
+        TRACE("preCompanyPassCheck will fail\n");
 		route_flag.compnda = true; /* 通過連絡運輸不正 */
 		return 0;	/* -4 受け入れて（追加して）から弾く */
 	}
@@ -1761,6 +1770,7 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	if (i <= 0) {
 		route_flag.compnda = true; /* 通過連絡運輸不正 */
 		if (route_flag.compnbegin) {
+            TRACE("postCompanyPassCheck begin company line\n");
 			return 0;	/* 会社線始発なら終了 */
 		}
 		else {
@@ -1770,12 +1780,14 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	}
 	rc = cs.open(key1, key2);
 	if (rc <= 0) {
+        TRACE("postCompanyPassCheck db open error(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
 	rc = cs.check(line_id, station_id1, station_id2);
 	if (rc < 0) {
 		// route_flag.compnda = true; /* 通過連絡運輸不正 */
 	}
+    TRACE("postCompanyPassCheck(%d)\n", rc);
 	return rc;	/* 0 / -4 */
 }
 
@@ -6176,16 +6188,16 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 {
 	int32_t lastIndex;
-	static int32_t chk_distance1 = 0;
-	static int32_t chk_distance2 = 0;
+	static int32_t distance_koube_himeji = 0;  // 神戸-姫路
+	static int32_t distance_shinoosaka_himeji = 0; // 新大阪-姫路
 
 	lastIndex = (int32_t)route->size() - 1;
 
-	if (!chk_distance1) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
-		chk_distance1 = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+	if (!distance_koube_himeji) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
+		distance_koube_himeji = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                STATION_ID(_T("神戸")),
                                                STATION_ID(_T("姫路")))[0];
-		chk_distance2 = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+		distance_shinoosaka_himeji = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                STATION_ID(_T("新大阪")),
                                                STATION_ID(_T("姫路")))[0];
 	}
@@ -6195,7 +6207,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
 			(route->at(1).lineId == LINE_ID(_T("東海道線"))) &&
 		    (route->at(2).lineId == LINE_ID(_T("山陽線"))) &&
-		    (chk_distance1 <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+		    (distance_koube_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                      STATION_ID(_T("神戸")),
                                                      route->at(2).stationId)[0])) {
 
@@ -6208,7 +6220,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
 				 (route->back().lineId == LINE_ID(_T("東海道線"))) &&
 				 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽線"))) &&
-		    	 (chk_distance1 <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+		    	 (distance_koube_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                           STATION_ID(_T("神戸")),
                                                           route->at(lastIndex - 2).stationId)[0])) {
 
@@ -6223,7 +6235,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		if ((route->front().stationId == STATION_ID(_T("大阪"))) &&
 			(route->at(2).lineId == LINE_ID(_T("山陽新幹線"))) &&
 			(route->at(1).stationId == STATION_ID(_T("新大阪"))) &&
-			(chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+			(distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                      STATION_ID(_T("新大阪")),
                                                      route->at(2).stationId)[0])) {
 
@@ -6246,7 +6258,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		else if ((route->back().stationId == STATION_ID(_T("大阪"))) &&
 				 (route->at(lastIndex - 1).stationId == STATION_ID(_T("新大阪"))) &&
 				 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-				 (chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+				 (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                           STATION_ID(_T("新大阪")),
                                                           route->at(lastIndex - 2).stationId)[0])) {
 
@@ -6271,7 +6283,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		    // 新大阪 発 山陽新幹線
 		if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
 			(route->at(1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-			(chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+			(distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                      STATION_ID(_T("新大阪")),
                                                      route->at(1).stationId)[0])) {
 
@@ -6293,7 +6305,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		}	// 山陽新幹線 大阪 着
 		else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
 				 (route->back().lineId == LINE_ID(_T("山陽新幹線"))) &&
-				 (chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+				 (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                           STATION_ID(_T("新大阪")),
                                                           route->at(lastIndex - 1).stationId)[0])) {
 

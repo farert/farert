@@ -1,5 +1,6 @@
 package org.sutezo.farert
 
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -16,6 +17,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_archive_route.*
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
 import org.sutezo.alps.*
@@ -325,18 +327,28 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
         // 削除ボタン
         fun deleteChecked() {
-            for (i in (routefolder.count() - 1) downTo  0) {
-                if (mCheck[i]) {
-                    mContext?.let {
-                        routefolder.remove(it, i)
-                        notifyItemRemoved(i)
-                        //notifyItemRangeChanged(i, routefolder.count())
-                    }
-                }
-            }
-            mCheck = MutableList(routefolder.count()) {false}
 
-            notifyDataSetChanged()
+            AlertDialog.Builder(mContext).apply {
+                setTitle(R.string.query)
+                setMessage(R.string.folder_content_query_clear_mesg)
+                setPositiveButton("Yes") { _, _ ->
+                    for (i in (routefolder.count() - 1) downTo  0) {
+                        if (mCheck[i]) {
+                            mContext?.let {
+                                routefolder.remove(it, i)
+                                notifyItemRemoved(i)
+                                //notifyItemRangeChanged(i, routefolder.count())
+                            }
+                        }
+                    }
+                    mCheck = MutableList(routefolder.count()) {false}
+
+                    notifyDataSetChanged()
+                }
+                setNegativeButton("No", null)
+                create()
+                show()
+            }
         }
 
         // 削除用チェックボタンを全切り替え
