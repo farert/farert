@@ -38,7 +38,7 @@
 		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
 		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
 		2A969B322354B2F400B8689F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A969B342354B2F400B8689F /* Localizable.strings */; };
-		2A9AF26C2369B86B00262E98 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7BB5F51EFF5E0A00A47293 /* Launch Screen.storyboard */; };
+		2A9AF26C2369B86B00262E98 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */; };
 		2ABD92E71E19EEA9002488E0 /* c_route.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2ABD92E61E19EEA9002488E0 /* c_route.mm */; };
 		2AC0FDD222E17F570007B031 /* jrdb2019.db in Resources */ = {isa = PBXBuildFile; fileRef = 2AC0FDD122E17F570007B031 /* jrdb2019.db */; };
 		2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC7488A1B402A7600D9BD11 /* RouteListTableViewCell.swift */; };
@@ -85,7 +85,7 @@
 		2A69CCDE1E736EF1007F478A /* jrdb2017.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2017.db; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2A69CD0C1E75153D007F478A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2A7BB5F51EFF5E0A00A47293 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2A8A972B2371A70700706B93 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
 		2A969B332354B2F400B8689F /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -145,7 +145,7 @@
 				2A969B342354B2F400B8689F /* Localizable.strings */,
 				2A2BB0821AD6966500F7DED2 /* Supporting Files */,
 				2A2BB0BA1AD6974400F7DED2 /* Farert-Bridging-Header.h */,
-				2A7BB5F51EFF5E0A00A47293 /* Launch Screen.storyboard */,
+				2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */,
 			);
 			path = Farert;
 			sourceTree = "<group>";
@@ -291,7 +291,7 @@
 			files = (
 				2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */,
 				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
-				2A9AF26C2369B86B00262E98 /* Launch Screen.storyboard in Resources */,
+				2A9AF26C2369B86B00262E98 /* LaunchScreen.storyboard in Resources */,
 				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,
 				2AC0FDD222E17F570007B031 /* jrdb2019.db in Resources */,
 				2A969B322354B2F400B8689F /* Localizable.strings in Resources */,
@@ -481,14 +481,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 60;
+				CURRENT_PROJECT_VERSION = 61;
 				DEVELOPMENT_TEAM = W6SVZ3YCU5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 20.01.1;
+				MARKETING_VERSION = 20.02;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -508,14 +508,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 60;
+				CURRENT_PROJECT_VERSION = 61;
 				DEVELOPMENT_TEAM = W6SVZ3YCU5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 20.01.1;
+				MARKETING_VERSION = 20.02;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
