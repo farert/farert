@@ -1502,6 +1502,7 @@ int32_t CalcRoute::RetrieveOut70Station(int32_t line_id)
 	return 0;
 }
 
+// 分岐特例のひとつ
 
 bool Route::chk_jctsb_b(int32_t kind, int32_t num)
 {
@@ -1585,7 +1586,12 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 		}
 
 		/* 会社線乗継可否チェック(市振、目時、妙高高原、倶利伽羅) */
-		rc = companyConnectCheck(stationId1);
+		rc = CompanyConnectCheck(stationId1);
+        if (rc == 0) {
+            // route_list_raw.at(num - 2).stationId is 会社線
+            // term1 jr_line1 term2 company_line2 term3 company_line3 term4 だから num - 2.stationIdはterm2
+            return preCompanyPassCheck(line_id, route_list_raw.at(num - 2).stationId, stationId2, num);
+        }
 		return rc;
 	} else {
         /* g h */
@@ -1645,13 +1651,15 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
 	for (i = 0; i < num_of_record; i++) {
 		if ((results[i].line_id & 0x80000000) != 0) {
 			/* company */
-			int32_t cid = RouteUtil::CompanyIdFromStation(station_id2);
-			if (BIT_CHK(results[i].line_id, IDENT1(cid))) {
-				return 0;	/* OK possible pass */
-			}
+			int32_t cid1 = RouteUtil::CompanyIdFromStation(station_id1);
+			int32_t cid2 = RouteUtil::CompanyIdFromStation(station_id2);
+            int32_t cid11 = IDENT1(cid1) & 0x7f;
+            int32_t cid12 = IDENT2(cid1) & 0x7f;
+            int32_t cid21 = IDENT1(cid2) & 0x7f;
+            int32_t cid22 = IDENT2(cid2) & 0x7f;
 
-			if (BIT_CHK(results[i].line_id, IDENT2(cid)) &&
-			    BIT_CHK(results[i].line_id, IDENT1(RouteUtil::CompanyIdFromStation(station_id1)))) {
+			if ((0 != (results[i].line_id & (1 << cid11 | 1 << cid12)))
+             && (0 != (results[i].line_id & (1 << cid21 | 1 << cid22)))) {
 				return 0;	/* OK possible pass */
 			}
 
@@ -1670,12 +1678,13 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
 
 
 /*!
+ * static
  *	前段チェック 通過連絡運輸
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
  *	@retval -4 : 通過連絡運輸禁止
  */
-int32_t Route::companyConnectCheck(int32_t station_id)
+int32_t Route::CompanyConnectCheck(int32_t station_id)
 {
 	static const char tsql[] =
 	"select pass from t_compnconc where station_id=?";
@@ -1688,6 +1697,7 @@ int32_t Route::companyConnectCheck(int32_t station_id)
 			r = dbo.getInt(0);
 		}
 	}
+    TRACE(_T("CompanyConnectCheck: %s(%d)\n"), RouteUtil::StationName(station_id).c_str(), r);
 	return r == 0 ? -4 : 0;
 }
 
@@ -1708,6 +1718,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	int rc;
 
 	TRACE(_T("Enter preCompanyPassCheck(%s, %s %s %d)\n"), RouteUtil::LineName(line_id).c_str(), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str(), num);
+    TRACE(_T("  key1=%s, key2=%s\n"), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str());
 
 	if (num <= 1) {
 		/* 会社線で始まる */
@@ -1720,15 +1731,20 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
         TRACE("preCompanyPassCheck db open error(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
+    rc = 0;
 	for (i = 1; i < num; i++) {
+        if (IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
+            continue;
+        }
 		rc = cs.check(route_list_raw.at(i).lineId,
 					  route_list_raw.at(i - 1).stationId,
 					  route_list_raw.at(i).stationId);
-		if (0 <= rc) {
+        TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, RouteUtil::LineName(route_list_raw.at(i).lineId).c_str(), RouteUtil::StationName(route_list_raw.at(i - 1).stationId).c_str(), RouteUtil::StationName(route_list_raw.at(i).stationId).c_str());
+		if (rc < 0) {
 			break;	/* OK */
 		}
 	}
-	if (i < num) {
+	if (0 <= rc) {
         TRACE("preCompanyPassCheck always pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	} else {
@@ -1852,8 +1868,13 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 #endif
 
 	if (route_flag.end) {
-		TRACE(_T("route.add(): already terminated.\n"));
-		return	ADDRC_END;		/* already terminated. */
+        if (route_flag.compnda) {
+            TRACE(_T("route.add(): Can't add for disallow company line.\n"));
+            return -4;          // not allow company connect.
+        } else {
+		    TRACE(_T("route.add(): already terminated.\n"));
+		    return	ADDRC_END;		/* already terminated. */
+        }
 	}
 
     route_flag.trackmarkctl = false;
@@ -2509,7 +2530,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 			return ADDRC_OK;	/* OK - Can you continue */
 		}
 	}
-}
+} // end of add()
 
 
 //	経路の末尾を除去
