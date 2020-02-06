@@ -1096,8 +1096,14 @@ public class Route extends RouteList {
         //RouteFlag.   System.out.printf("route_flag=%x\n", route_flag);
 
         if (route_flag.end) {
-            System.out.printf("route.add(): already terminated.\n");
-            return	RouteUtil.ADDRC_END;		/* already terminated. */
+            if (route_flag.compnda) {
+                System.out.printf("route.add(): Can't add for disallow company line.\n");
+                return -4;          // not allow company connect.
+            } else {
+                System.out.printf("route.add(): already terminated.\n");
+                return	RouteUtil.ADDRC_END;		/* already terminated. */
+
+            }
         }
 
         route_flag.trackmarkctl = false;
@@ -2456,7 +2462,12 @@ public class Route extends RouteList {
     		}
 
     		/* 会社線乗継可否チェック(市振、目時、妙高高原、倶利伽羅) */
-    		rc = companyConnectCheck(stationId1);
+    		rc = CompanyConnectCheck(stationId1);
+            if (rc == 0) {
+                // route_list_raw.at(num - 2).stationId is 会社線
+                // term1 jr_line1 term2 company_line2 term3 company_line3 term4 だから num - 2.stationIdはterm2
+                return preCompanyPassCheck(line_id, route_list_raw.get(num - 2).stationId, stationId2, num);
+            }
     		return rc;
     	} else {
             /* g h */
@@ -2472,7 +2483,7 @@ public class Route extends RouteList {
      *	@retval 0 : エラーなし(継続)
      *	@retval -4 : 通過連絡運輸禁止
      */
-    int companyConnectCheck(int station_id) {
+    static int CompanyConnectCheck(int station_id) {
     	final String tsql =
     	"select pass from t_compnconc where station_id=?";
     	Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(station_id)});
@@ -2484,6 +2495,7 @@ public class Route extends RouteList {
         } finally {
             dbo.close();
         }
+        System.out.printf("CompanyConnectCheck: %s(%d)\n", RouteUtil.StationName(station_id), r);
     	return r == 0 ? -4 : 0;
     }
 
@@ -2501,7 +2513,7 @@ public class Route extends RouteList {
     	int rc;
 
     	System.out.printf("Enter preCompanyPassCheck(%s, %s %s %d)\n", RouteUtil.LineName(line_id), RouteUtil.StationName(station_id1), RouteUtil.StationName(station_id2), num);
-
+        System.out.printf("  key1=%s, key2=%s\n", RouteUtil.StationName(station_id1), RouteUtil.StationName(station_id2));
     	if (num <= 1) {
     		/* 会社線で始まる */
     		route_flag.compnbegin  = true;
@@ -2511,17 +2523,24 @@ public class Route extends RouteList {
     	if (rc <= 0) {
     		return 0;		/* Error or Non-record(always pass) as continue */
     	}
+    	rc = 0;
     	for (i = 1; i < num; i++) {
-    		rc = cs.check(route_list_raw.get(i).lineId,
+            if (RouteUtil.IS_COMPANY_LINE(route_list_raw.get(i).lineId)) {
+                continue;
+            }
+            rc = cs.check(route_list_raw.get(i).lineId,
     					  route_list_raw.get(i - 1).stationId,
     					  route_list_raw.get(i).stationId);
-    		if (0 <= rc) {
+            System.out.printf("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n", i, num, rc, RouteUtil.LineName(route_list_raw.get(i).lineId), RouteUtil.StationName(route_list_raw.get(i - 1).stationId), RouteUtil.StationName(route_list_raw.get(i).stationId));
+            if (rc < 0) {
     			break;	/* OK */
     		}
     	}
-    	if (i < num) {
-    		return 0;		/* Error or Non-record(always pass) as continue */
-    	} else {
+        if (0 <= rc) {
+            System.out.printf("preCompanyPassCheck always pass)\n");
+            return 0;		/* Error or Non-record(always pass) as continue */
+        } else {
+            System.out.printf("preCompanyPassCheck will fail\n");
     		route_flag.compnda  = true; /* 通過連絡運輸不正 */
     		return 0;	/* -4 受け入れて（追加して）から弾く */
     	}
@@ -2644,13 +2663,11 @@ public class Route extends RouteList {
         	for (i = 0; i < num_of_record; i++) {
         		if ((results[i].line_id & 0x80000000) != 0) {
         			/* company */
-                    int cid[] = RouteUtil.CompanyIdFromStation(station_id2);
-        			if (RouteUtil.BIT_CHK(results[i].line_id, cid[0])) {
-        				return 0;	/* OK possible pass */
-        			}
+                    int cid1[] = RouteUtil.CompanyIdFromStation(station_id1);
+                    int cid2[] = RouteUtil.CompanyIdFromStation(station_id2);
 
-        			if (RouteUtil.BIT_CHK(results[i].line_id, cid[1]) &&
-        			    RouteUtil.BIT_CHK(results[i].line_id, RouteUtil.CompanyIdFromStation(station_id1)[0])) {
+        			if ((0 != (results[i].line_id & (1 << cid1[0] | 1 << cid1[1])))
+                            && (0 != (results[i].line_id & (1 << cid2[0] | 1 << cid2[1])))) {
         				return 0;	/* OK possible pass */
         			}
 

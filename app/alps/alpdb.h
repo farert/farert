@@ -1145,7 +1145,7 @@ public:
 
 protected:
 	int32_t			companyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
-	int32_t 		companyConnectCheck(int32_t station_id);
+	static int32_t 	CompanyConnectCheck(int32_t station_id);
 	int32_t			preCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
 	int32_t			postCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
     int32_t         brtPassCheck(int32_t stationId2);
