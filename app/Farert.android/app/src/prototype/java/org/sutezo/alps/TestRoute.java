@@ -1051,6 +1051,10 @@ public class TestRoute {
             {"大前", "松本"},
             {"外城田", "清水原"},
             {"新青森", "宮古"},
+            {"博多", "串木野"},
+            {"熊本", "湯之元"},
+            {"塩狩", "b湯之元"},
+            {"上毛高原", "上越国際スキー場前"},
     };
 
     static final String [] test_route_tbl = {
@@ -2406,6 +2410,9 @@ public class TestRoute {
                 fail = -1;
             } else if (line[1].charAt(0) == '!') {
                 fail = 1;
+            } else if ((line[1].charAt(0) == 'b') || (line[1].charAt(0) == 'c')) {
+                // // 中途半端 会社線、新幹線でNG時はASSERTいい加減なので注意
+                fail = line[1].charAt(0);
             } else {
                 fail = 0;
             }
@@ -2541,7 +2548,7 @@ public class TestRoute {
             croute.calcFare(fi);
             String s = fi.showFare(croute.getRouteFlag());
             s = cr_remove(s);
-            
+
             pw.print(String.format(Locale.JAPANESE, "%s\n", s));
 
             if (0 < route.routeList().size()) {

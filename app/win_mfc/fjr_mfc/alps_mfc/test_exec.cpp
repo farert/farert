@@ -994,6 +994,10 @@ const static TCHAR *auto_route_def[] = {
 			_T("大前"), _T("松本"),
 			_T("外城田"), _T("清水原"),
 			_T("新青森"), _T("宮古"),
+			_T("博多"), _T("串木野"),
+			_T("熊本"), _T("湯之元"),
+			_T("塩狩"), _T("b湯之元"),
+			_T("上毛高原"), _T("上越国際スキー場前"),
 	//			_T(""), _T(""),
 //			_T(""), _T(""),
 /* 39 */    _T(""),
@@ -2354,6 +2358,10 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		case '!':
 			fail = 1;
 			break;
+		case 'b':
+		case 'c':
+			fail = route_def[i + 1][0];	// 中途半端 会社線、新幹線でNG時はASSERTいい加減なので注意
+			break;
 		default:
 			fail = 0;
 			break;
@@ -2401,6 +2409,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 			ASSERT(0 <= rc);
 			_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
 			rc = route.changeNeerest(1, RouteUtil::GetStationId(p));
+			_ftprintf(os, _T("auto route(ret=%d)\n"), rc);
 			if ((rc < 0) || (rc == 5)) {
 				_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
 				if (!resopt) { ASSERT(fail != 0); }
