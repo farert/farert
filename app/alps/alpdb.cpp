@@ -7637,12 +7637,17 @@ TRACE(_T("last: %s\n"), RouteUtil::LineName(dijkstra.lineId(route.back())).c_str
 		// 最終分岐駅～着駅までの営業キロ、運賃計算キロを取得
 		//km = Route::Get_node_distance(lid, end_station_id, Route::Jct2id(a));
 		//km += minCost[route.back()];	// 最後の分岐駅までの累積計算キロを更新
-		if ((lid == dijkstra.lineId(route.back())) ||
-		    IsAbreastShinkansen(lid, dijkstra.lineId(route.back()),
-		                        Jct2id(route.back() + 1),
-		                        end_station_id)) {
+
+        bool isAbreastShinkansen = IsAbreastShinkansen(lid, dijkstra.lineId(route.back()),
+                                                       Jct2id(route.back() + 1),
+                                                       end_station_id);
+        if ((lid == dijkstra.lineId(route.back())) ||
+        ((0 < Route::InStationOnLine(dijkstra.lineId(route.back()), end_station_id)) &&
+		  isAbreastShinkansen ) ||
+          (isAbreastShinkansen &&  (0 < RouteUtil::InStation(end_station_id, lid, Jct2id(route.back() + 1), Jct2id(id))))) {
 			route.pop_back();	// if   着駅の最寄分岐駅の路線=最後の分岐駅?
 								//      (渋谷-新宿-西国分寺-国立)
+                                //     渋谷 山手線 品川 → 有楽町
 								// or   平行在来線の新幹線 #141002001
             // else 渋谷-新宿-三鷹
 		}
