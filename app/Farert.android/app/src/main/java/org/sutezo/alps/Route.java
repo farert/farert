@@ -2355,10 +2355,13 @@ public class Route extends RouteList {
             // RouteUtil.最終分岐駅～着駅までの営業キロ、運賃計算キロを取得
             //km = Get_node_distance(lid, end_station_id, Jct2id(a));
             //km += minCost[route.get(route.size() - 1)];	// 最後の分岐駅までの累積計算キロを更新
+            boolean isAbreastShinkansen = IsAbreastShinkansen(lid, dijkstra.lineId(route.get(route.size() - 1)),
+                                                              Jct2id(route.get(route.size() - 1) + 1),
+                                                              end_station_id);
             if ((lid == dijkstra.lineId(route.get(route.size() - 1))) ||
-                    IsAbreastShinkansen(lid, dijkstra.lineId(route.get(route.size() - 1)),
-                            Jct2id(route.get(route.size() - 1) + 1),
-                            end_station_id)) {
+                ((0 < InStationOnLine(dijkstra.lineId(route.get(route.size() - 1)), end_station_id)) &&
+    		     isAbreastShinkansen) ||
+                (isAbreastShinkansen &&  (0 < RouteUtil.InStation(end_station_id, lid, Jct2id(route.get(route.size() - 1) + 1), Jct2id(id))))) {
                 route.remove(route.size() -1 );
                 // if   着駅の最寄分岐駅の路線=最後の分岐駅?
                 //      (渋谷-新宿-西国分寺-RouteUtil.国立)
