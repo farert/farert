@@ -2102,8 +2102,12 @@ public class TestRoute {
             "塩尻 篠ノ井線 篠ノ井 信越線(篠ノ井-長野) 長野 しなの鉄道(北) 妙高高原 妙高はねうま 直江津 信越線(直江津-新潟) x新潟",
             "新潟 信越線(直江津-新潟) 直江津 妙高はねうま 妙高高原 しなの鉄道(北) 長野 信越線(篠ノ井-長野) 篠ノ井 篠ノ井線 x塩尻",
 
+            "新大阪 山陽新幹線 新神戸",
+    		"新神戸 山陽新幹線 西明石",
+    		"新大阪 山陽新幹線 西明石",
+
             "c--other--",
-            // append new test pattern is here TODO
+            // append new test pattern is here TODO @@@@
     };
 
 
