@@ -18,8 +18,8 @@ android {
         applicationId "org.sutezo.farert"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 21
-        versionName '20.02'
+        versionCode 22
+        versionName '20.03'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
