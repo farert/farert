@@ -149,8 +149,8 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             UserDefaults.standard.removeObject(forKey: "HasLaunchedOnce")
             
             var curver = UserDefaults.standard.integer(forKey: "hasLaunched")
-            if (0x10000 <= curver) {
-                curver /= 0x100    // cut minor version
+            while (0x10000 <= curver) {
+                curver /= 0x10    // cut minor version
             }
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
             let verno = Int(version.replacingOccurrences(of: ".", with: ""), radix: 16)
@@ -1119,5 +1119,5 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             self.hideIndicate()          /* hide Activity and enable UI */
         }
     }
-    
+
 }
