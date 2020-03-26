@@ -664,7 +664,8 @@ private:
     bool reCalcFareForOptiomizeRoute(vector<RouteItem>* pShortRouteList,
                                      int32_t start_station_id,
                                      int32_t end_station_id,
-                                     RouteFlag* pShort_route_flag);
+                                     RouteFlag* pShort_route_flag,
+                                     bool except_local = false);
 
 public:
     void setTerminal(int32_t begin_station_id, int32_t end_station_id) {
@@ -786,6 +787,10 @@ public:
     bool isJrTokaiOnly() const {
         return enableTokaiStockSelect == 2; // JR東海TOICA有効
     }
+    // 地方交通線を含んでいるか？
+    bool didHaveLocalLine() const { return !local_only && total_jr_calc_km != total_jr_sales_km; }
+    bool isLocalOnly() const { return local_only; }
+
 	FareResult 	roundTripFareWithCompanyLine() const;
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
     int32_t 	roundTripChildFareWithCompanyLine() const;
@@ -1140,7 +1145,7 @@ public:
 
 protected:
 	int32_t			companyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
-	int32_t 		companyConnectCheck(int32_t station_id);
+	static int32_t 	CompanyConnectCheck(int32_t station_id);
 	int32_t			preCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
 	int32_t			postCompanyPassCheck(int32_t line_id, int32_t stationId1, int32_t stationId2, int32_t num);
     int32_t         brtPassCheck(int32_t stationId2);
@@ -1183,7 +1188,7 @@ protected:
 	};
 
 private:
-	static vector<vector<int32_t>> Node_next(int32_t jctId);
+	static vector<vector<int32_t>> Node_next(int32_t jctId, bool except_local);
 
 private:
     static int32_t 	Id2jctId(int32_t stationId);

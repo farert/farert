@@ -19,7 +19,9 @@ public enum Aggregate: Int {
     case NULLFARE   // 無効
 }
 
-
+public let aggregate_label = [
+"普通運賃", "小児運賃", "往復運賃", "株割運賃", "株割x2運賃",
+                    "学割運賃", "学割往復" , "無効"]
 
 struct folder {
     var routeList : cRouteList
@@ -166,7 +168,7 @@ public class Routefolder {
     }
 
     func save() {
-        print(filePath)
+        //print(filePath)
         if let os = OutputStream(toFileAtPath: filePath, append: false) {
             os.open()
             for one in routeList {
@@ -270,24 +272,42 @@ public class Routefolder {
         }
         return (0, 0)
     }
+    
+    func conmaNumStr(_ num : Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = NumberFormatter.Style.decimal
+        formatter.groupingSeparator = ","
+        formatter.groupingSize = 3
+        return "¥\(formatter.string(from: NSNumber(value: num)) ?? "")"
+    }
+    
+    func makeExportText() -> String {
+        var result : String = ""
+        
+        var ta : Int = 0
+        var td : Int = 0
+        for one in self.routeList {
+            var cols = Array<String>()
+            let fare = self.calcFare(item: one)
+            ta += fare.fare
+            td += fare.sales_km
+
+            cols.append(aggregate_label[one.indexOfAggregate]) // 運賃
+            cols.append(conmaNumStr(fare.fare))
+            cols.append("営業キロ")
+            cols.append("\(String(describing: cRouteUtil.kmNumStr(fare.sales_km)!)) km")
+
+            let s = one.routeList.routeScript()?.replacingOccurrences(of: ",", with: " ", options: .literal, range: nil) ?? ""
+            cols.append(s)
+            result += (cols.joined(separator: ",") + "\n")
+        }
+        var cols = Array<String>()
+        cols.append("総額")
+        cols.append(conmaNumStr(ta))
+        cols.append("総営業キロ")
+        cols.append("\(String(describing: cRouteUtil.kmNumStr(td)!)) km")
+        result += (cols.joined(separator: ",") + "\n")
+        return result
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

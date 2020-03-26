@@ -7,7 +7,7 @@ import org.sutezo.farert.ArchiveRouteActivity
 
 const val MAX_HOLDER : Int = 60
 const val MAX_HISTORY = 20
-const val MAX_ARCHIVE_ROUTE = 100
+const val MAX_ARCHIVE_ROUTE = 100 * 20
 
 const val msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です"
 const val msgAppliedLowcost = "近郊区間内ですので最安運賃の経路で計算"
@@ -346,8 +346,6 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
     result.isOsakakanDetour = this.route_flag.osakakan_detour
 
-    result.isArbanArea = fi.isUrbanArea();
-
     result.totalSalesKm = fi.getTotalSalesKm();
     result.jrCalcKm = fi.getJRCalcKm();
     result.jrSalesKm = fi.getJRSalesKm();
@@ -393,6 +391,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     // 小児運賃
     result.childFare = fi.getChildFareForDisplay();
+
+    result.roundtripChildFare = fi.roundTripChildFareWithCompanyLine()
 
     // 学割運賃
     result.academicFare = fi.getAcademicDiscountFare()

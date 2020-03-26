@@ -10,7 +10,7 @@ import Foundation
 
 struct FGD {
     static let  MAX_HISTORY                    = 20
-    static let  MAX_ARCHIVE_ROUTE             = 100
+    static let  MAX_ARCHIVE_ROUTE             = 100 * 20
     
     enum CONTEXT {
         case  FIRST

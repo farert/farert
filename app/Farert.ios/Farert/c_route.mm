@@ -378,7 +378,7 @@ int g_tax; /* main.m */
 
 //  経路情報文字列を不揮発メモリへ書き込む（最大MAX_ARCHIVE_ROUTE未満を切り詰め）
 //
-+ (void)saveToRouteArray:(NSArray*)routeList
++ (NSInteger)saveToRouteArray:(NSArray*)routeList
 {
     if (MAX_ARCHIVE_ROUTE < [routeList count]) {
         NSMutableArray* writeRouteList = [NSMutableArray arrayWithArray:routeList];
@@ -389,6 +389,36 @@ int g_tax; /* main.m */
     } else {
         [self saveToPlistWithArray:routeList filename:@"route.plist"];
     }
+    return [routeList count];
+}
+
+//  経路を文字列で返す（１経路１行✖️n行='\n')
+//
++ (NSString*)scriptFromRouteArray:(NSArray*)routeList
+{
+    return [routeList componentsJoinedByString:@"\n"];
+}
+
+// 保存経路を文字列で返す（１経路１行✖️n行='\n')
++ (NSString* )scriptFromRouteArray
+{
+    NSArray *routeList = [self loadStrageRoute];
+    return [self scriptFromRouteArray:routeList];
+}
+
+// 経路文字列を保存する(経路が有効かはチェックする)
+// 戻り値に失敗した行数を返す(0を返すと成功)
+//
++ (NSInteger)importRouteScripts:(NSString*)routeList
+{
+    NSArray *stringArray = [routeList componentsSeparatedByString: @","];
+    
+    return [self saveToRouteArray:stringArray];
+}
+
++ (NSInteger*)parseScript:(NSString*)route_script
+{
+    return 0;
 }
 
 //  設定ファイルへ保存
@@ -913,6 +943,7 @@ int g_tax; /* main.m */
 
     // 小児運賃
     result.childFare = fi.getChildFareForDisplay();
+    result.roundtripChildFare = fi.roundTripChildFareWithCompanyLine();
 
     // 学割運賃
     if (0 < (result.academicFare = fi.getAcademicDiscountFare())) {

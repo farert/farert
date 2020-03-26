@@ -1,5 +1,298 @@
 
 
+----
+旅客営業規則157条の検討
+関連：b#20012001
+
+長崎 長崎線 浦上 長崎線(喜々津-浦上) 喜々津				25.1 ¥570
+長崎 長崎線 喜々津								       18.4 ¥380
+
+沼津 東海道線 小田原 東海道線 横浜							97.4 ¥1,690
+沼津 東海道線 小田原 東海道新幹線 新横浜 					  97.4 ¥1,690
+沼津 東海道線 小田原 東海道新幹線 新横浜 横浜線 菊名		   98.7 ¥1,690
+沼津 東海道線 小田原 東海道新幹線 新横浜 横浜線 大口		   101.3 ¥1,980
+沼津 東海道線 小田原 東海道新幹線 新横浜 横浜線 東神奈川       103.5 ¥1,980
+沼津 東海道線 小田原 東海道新幹線 新横浜 横浜線 横浜 		   105.3  ¥1,980
+
+沼津 東海道線 横浜 　　　　　　　　　　　　　　　　　　　　　　　97.4 ¥1,690
+沼津 東海道線 東神奈川 									99.2 ¥1,690
+沼津 東海道線 東神奈川 横浜線 菊名							 104.0 ¥1,980
+沼津 東海道線 東神奈川 横浜線 大口							101.4  ¥1,980
+沼津 東海道線 東神奈川 横浜線 新横浜 						105.3 ¥1,980　＞Yahooでは、¥1,690 となる
+
+小田原 東海道線 東神奈川									56.9  ¥990
+小田原 東海道新幹線 新横浜 横浜線 東神奈川						61.2 ¥1,170
+
+
+
+高松\(讃\) 予讃線 宇多津 本四備讃線 茶屋町 宇野線 岡山 山陽線 神戸 東海道線 山科 湖西線 近江塩津 北陸線 金沢 IRいしかわ 津幡 七尾線 高松\(七\)
+
+
+
+
+
+
+////
+
+val build = AlertDialog.Builder(this).apply {
+    setTitle(R.string.menu_item_import)
+    setMessage(R.string.arch_title_import)
+    setPositiveButton(R.string.agree) { _, _ ->
+        saveParam(context, KEY_INPORT_AVAILABLE, "true")
+    }
+    setNegativeButton(R.string.arch_hide_specific_import, null)
+}
+val dlg = build.create()
+dlg.show()
+///
+let actview = UIAlertController(title: "インポート", message: msg, preferredStyle: .alert)
+actview.addAction(UIAlertAction(title: agree, style: .default) {
+    action in
+    /////
+})
+self.present(actview, animated: true, completion: nil)
+
+
+val trv = archive_route_list.adapter
+        as ArchiveRouteListRecyclerViewAdapter
+trv.saveParams(this)
+
+
+
+
+「経路保存画面」にて経路をクリップボードへエクスポートする機能と、クリップボードからインポートする機能を追加しました。
+Android版は右上端のメニュー、iOSの下端バーのボタンをタップすると機能します。経路は行単位の文字列で１行1経路で複数行で複数経路を扱えます
+
+エクスポート：全リスト
+インポート：複数行
+
+エクスポート（結果のやつと同じ実装）
+インポート：複数行入力ダイアログを表示する方法
+
+
+
+Archive
+iOS archive view 無駄な保存を排除する
+
+メイン経路は保存経路内の    existIndex 入れ換え SaveButton
+a.  先頭にあり                 0       -        d
+b.  先頭でないとこにあり        N       する      d
+c.  なし                     -1      -         e    SaveButton押したら、saved; existIndex=0 aとおなじ
+d.メイン経路自体なし           -2      -         d
+
+existIndex == -1 -> button enabled.
+existIndexは、a~dを識別する（重要）、操作により変更もされる
+
+最初の状態
+a)existIndex=0
+0*
+1
+2
+3
+　　　　　　　　　　　　　　　　　　　　　　　 +-> select closeの例
+b)existIndex=N                         v
+0   2                     2            0   0    1
+1   0                     0            3   2<   0
+2*  1                     3  (index=2)     3    2
+3   3   unsaved                  ^              3
+                                 +-> swipe 削除の例 ふ
+c)existIndex=-1
+0   *
+1   0
+2   1
+3   2
+    3   unsaved
+d)existIndex=-2
+0
+1
+2
+3
+
+は
+0    2                          0
+1    0       swipe削除 idx=0 ->  1
+2*   1                          3 saved
+3    3 unsaved
+
+
+* メイン経路
+
+
+- 保存ボタン処理
+c.未格納     index=0   existIndex<-
+c.未格納     index=N
+(ほかc以外は保存ボタンは押せない)
+
+- Swipeによる削除時(index=0,N)
+a.先頭にあり index=0 : 削除して保存、d(existIndex=-2)にする
+a.先頭にあり index=N : 削除して保存
+b.中間にあり index=0 : 削除して保存、d(existIndex=-2)にする(先頭に移動したものを削除したので保存して表裏一体となる)
+b.中間にあり index=existIndex+N : 削除して保存、a(existIndex=0)にする。先頭がカレントとして保存されたので
+b.中間にあり index=existIndex-N : 同上
+b.中間にあり index=existIndex=N : 同上(NはすでにN-1にいる)
+c.未格納     index=0 : 削除して(保存しないで)、d(existIndex=-2)にする。保存ボタン無効
+c.未格納     index=N : 削除して, 先頭以外をSliceして保存
+d.メイン経路なし index=0 : 削除して保存
+d.メイン経路なし index=N : 削除して保存
+
+a. d. そのまま、remove.index, saved index==0? existIndex=-2(same as 'd')
+b.    index==0 ? remove.index; saved; existIndex=-2  (same as 'd') カレントが削除されたので -> は
+      index>=1 ? remove.index; saved; existIndex=0 (same as 'a') 先頭がカレントで保存されたので　->ふ
+c. index==0 ? remove.0; existIndex=-2 (same as 'd') 保存しない、ボタンDisable化
+   index!=0 ? remove.N; index1~N(先頭Item以外)をsaved;
+
+
+- 選択して閉じる
+     a.先頭にありexistIndex==0 index=0 : なにもしないで閉じる
+     a.先頭にありexistIndex==0 index=N : (入れ換え)
+     b.中間にありexistIndex==N index=0 : なにもしないで閉じる
+     b.中間にありexistIndex==N index=existIndex+N : （まとめ）
+     b.中間にありexistIndex==N index=existIndex-N :　（まとめ）
+     b.中間にありexistIndex==N index=existIndex=N :　（まとめ）
+     c.未格納 existIndex==-1    index=0 : なにもしないで閉じる
+     c.未格納 existIndex==-1    index=N : remove.0, index -= 1, (入れ換え) 保存されていないので1行目は削除しインデックスも−1して繰り上げた上で0ならなにもしないし、1以上なら入れ換え処理する
+     d.メイン経路なしexistIndex==-2 index=0 : なにもしないで閉じる
+     d.メイン経路なしexistIndex==-2 index=N : (入れ換え)
+
+select & closed:（まとめ）
+index==0 ? そのままClose(b.save())
+index!=0 ? a. existIndex==0 ?  (入れ換え)
+           c. existIndex==-1 ? index--
+                            index == 0 ? そのままclose
+                                   else  (入れ換え)
+           b. existIndex>0   ? get.index -> index_str
+                            remove.index; // 入れ替えるので削除
+                            remove.0;     // 保存状態とおなじにする
+                            insert.(existIndex < index ? existIndex : existIndex-1), currentRouteString
+                            insert.0.index_str
+                            save()
+           d. existIndex==-2 ? (入れ換え)
+
+　(入れ換え)
+   if 0 < index
+    remove.index
+    insert.0, selstr
+    save()
+読み直すんだったら、
+ existIndex == -1 で、
+
+>>>コードにすると、
+if index != 0
+  if existIndex == -1
+    index -= 1
+  else if 0 < existIndex
+
+まとめb
+existIndex=2
+0 aa       cc    cc       aa    aa     dd
+1 bb       aa    aa       bb    bb     aa
+2 cc*      bb    bb       ee    cc     bb
+3 dd       dd    ee             ee     cc
+4 ee       ee                          ee
+ccが経路に入っていた
+　　　　　　　     remove.index  insert.2
+           ddを選ぶ      remove.0      insert.0.index_str
+          (index=3)
+
+existIndex=2
+0 aa       cc    cc       aa    aa     bb
+1 bb       aa    aa       dd    cc     aa
+2 cc*      bb    dd       ee    dd     cc
+3 dd       dd    ee             ee     dd
+4 ee       ee                          ee
+ccが経路に入っていた
+bbをえらぶ        remove.index
+(index=2)                remove.0      insert.0.index_str
+                                insert.(2-1)
+
+
+
+
+//以下参考
+
+
+:初期化
+if exist cur_route
+ if exist cur_route in strage
+   if 0 < exist_index
+     remove.exist_index
+     insert.0.cur_route # cur_route = exist_index
+   saved = True
+   button = false
+ else
+   insert.0.cur_route
+   saved = false
+   button = enabled
+else
+ save = True
+ button = disable
+〜初期化では保存しない
+
+bの他(N=4とする)(existIndex=3)
+         1)   2)  3) 4)
+0: old3 old3  0   0  4
+1: 0     0    1   1  0
+2: 1     1    2   2  1
+3: 2     2        3  2
+4: 4                 3
+
+bの他(N=2とする)(existIndex=3)
+        1)   2)  3) 4)
+0: old3 old3 0   0  1
+1: 0     0   2   2  0
+2: 1     2   4   3  2
+3: 2     4       4  3
+4: 4                4
+
+bの他(N=existIndex=3とする)
+        1)   2)  3) 4)
+0: old3 old3 0   0  2
+1: 0     0   1   1  0
+2: 1     1   4   3  1
+3: 2     4       4  3
+4: 4                4
+
+
+-- test
+メイン経路　保存経路
+なし　　　　　なし
+あり　　　　　なし
+あり　　　　　あり
+なし　　　　　あり
+
+あり0　　　　3
+あり1　　　　3
+あり2　　　　3
+なし　　　　 3
+
+あり0　　　　3  0-1-2と削除
+あり1　　　　3
+あり2　　　　3
+なし　　　　 3
+
+あり0　　　　3  1-2-0と削除
+あり1　　　　3
+あり2　　　　3
+なし　　　　 3
+
+あり0　　　　3  1-2-0と削除
+あり1　　　　3
+あり2　　　　3
+なし　　　　 3
+
+
+- インポートする
+  インポートは後ろへ追加。既存のがあれば追加しないし、移動もしない。
+  b.の場合はSwipe削除と同じく、強制的に並べ替えた状態(メイン経路が先頭に移動した状態)で保存
+     a.先頭にありexistIndex==0 : 後ろへ追加して保存
+     b.中間にありexistIndex==N : 後ろへ追加して保存 a(existIndex=2)にする
+     c.未格納 existIndex==-1 : 後ろへ追加。先頭経路がImport側にあったなら, a(existIndex=0)にして(先頭経路も含め)保存する,
+                                                          なければ、先頭経路のみ保存しない。
+     d.メイン経路なしexistIndex==-2 : 後ろへ追加して保存
+
+
+// fin
+
 Windows10 Updateしたら、pythonが突然コマンドラインで使えなくなって困った。
 急遽、PathにC:\Users\default.DESKTOP-5557AKR\AppData\Local\Programs\Python\Python36-32
 を先頭に加えて対処.
@@ -338,7 +631,7 @@ v ->わざわざ京葉線にされちゃっている。
 v 新横浜 横浜線 東神奈川 東海道線 川崎 南武線 府中本町 武蔵野線 西国分寺 中央東線 立川 青梅線 福生
 v 920円なのに970円
 
-蒲田 東海道線 川崎 南武線 立川 中央東線 八王子 八高線 倉賀野 高崎線 高崎 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 我孫子 成田線(成田-我孫子) 成田 成田線 佐倉 総武線 西船橋 武蔵野線 南浦和 東北線 日暮里>
+蒲田 東海道線 川崎 南武線 立川 中央東線 八王子 八高線 倉賀野 高崎線 高崎 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 我孫子 成田線\(成田-我孫子\) 成田 成田線 佐倉 総武線 西船橋 武蔵野線 南浦和 東北線 日暮里>
 大回りなのに。まぁいいけど。なんでだっけ？
 
 
@@ -1379,9 +1672,64 @@ viewDidAppear
 
 
 
+
+b#18122802
+八高線 拝島-八王子間をとおる経路は、中央線 立川経由の経路(電車特定区間)の方が安価ならそちらが採用されるべき
+成瀬-福生 は八高線経由の方が安い
+新横浜-福生 は立川経由の方が安い
+成瀬-福生 669(670) 35/36 550
+1.換算キロ36kmで幹線適用で¥669(670)
+2.立川経由で42km電車特定区間で712(720)
+安い方を選択する
+
+新横-福生 918(920) 50/51 ¥799(800)
+1.換算キロ51kmで幹線適用で¥972(970)
+2.立川経由で56km 電車特定区間適用で918(920)
+安い方を選択する
+
+方針
+1. 最短経路にする
+2. 運賃算出
+3. 経路内に八王子と拝島があったら(分岐駅のみ見るで良い)立川経由のルートも作っておき運賃算出(固定キロ足すだけ)
+4. 1と3の安い方を選択する
+
+
+XXXX          XXXX
+xxxx  xxxx    xxxx  xxxx
+xxxx  拝島     xxxx  八王子
+八高線 八王子   八高線 拝島
+xxxx xxxx    　XXXX XXXX
+
+　　XXXX          XXXX
+xxxx  　xxxx    xxxx  xxxx
+xxxx 　 拝島     xxxx  八王子
+青梅線   立川   　中央東線 立川
+中央東線 八王子 　青梅線 拝島
+xxxx xxxx 　   　XXXX XXXX
+
+
+
 成瀬-福生は670(669)
 新横浜ー福生は920(918)
 新横浜ー拝島840(842)
+
+。。。。では、たりなかった。
+大船-拝島がダメ
+相模線が電車特定ではないため、割高になってしまう。さらに地方交通線。
+
+そうすっと、電車特定区間のnode_listの営業キロを10%減にしたとしてもダメそう。
+
+近郊区間内で、もし、運賃が電車特定でない場合（IS_TKMSP）、電車特定以外のノードを排除して最短経路で検索しなおし、
+そちらと比較する。
+電車特定以外のノードの抽出には、t_node を拡張する。flagフィールドを追加し、電車区間に1を設定する。
+vector<vector<int32_t>> Route::Node_next(int32_t jctId)の関数も修正。
+jrdb.xlsに、node シート追加。node_list.txt をもとに作成。node_list.py も修正
+
+
+
+
+
+
 
 TODO:
 Android / iOs 結果表示

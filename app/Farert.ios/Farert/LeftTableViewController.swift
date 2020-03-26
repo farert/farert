@@ -23,18 +23,14 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var totalFare: UILabel!
     @IBOutlet weak var totalSalesKm: UILabel!
-    @IBOutlet weak var clearButton: UIButton!
+    @IBOutlet weak var clearOrExportButton: UIButton!
     @IBOutlet weak var editButton: UIButton!
     @IBOutlet weak var appendButton: UIButton!
-
     
     var routeFolder : Routefolder! = Routefolder()
     var mainViewController: UIViewController!
  
     var delegate: MainTableViewControllerDelegate?
-    
-    let aggregate_label = [ "普通運賃", "小児運賃", "往復運賃", "株割運賃", "株割x2運賃",
-                            "学割運賃", "学割往復" , "無効"]
     
     // MARK: Method
   
@@ -57,7 +53,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         self.tableView.delegate = self
         
         self.editButton.isHidden = true
-        self.clearButton.isHidden = true
+        self.clearOrExportButton.isHidden = true
         
         self.reload()
     }
@@ -87,7 +83,14 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         } else {
             appendButton.isHidden = true
         }
-        self.editButton.isHidden = self.routeFolder.count() <= 0
+        changeToExportButton(true)
+        if (self.routeFolder.count() <= 0) {
+            self.editButton.isHidden = true
+            self.clearOrExportButton.isHidden = true
+        } else {
+            self.editButton.isHidden = false
+            self.clearOrExportButton.isHidden = false
+        }
         if let indexPathForSelectedRow = tableView.indexPathForSelectedRow {
             tableView.deselectRow(at: indexPathForSelectedRow, animated: true)
         }
@@ -119,7 +122,14 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
                 return
             }
             self.editButton.isHidden = false
-            self.clearButton.isHidden = !self.tableView.isEditing
+            self.clearOrExportButton.isHidden = false
+            if (self.tableView.isEditing) {
+                self.changeToExportButton(false) // all clear
+                self.editButton.setTitle("完了", for: .normal)
+            } else {
+                self.changeToExportButton(true) // export
+                self.editButton.setTitle("編集", for: .normal)
+            }
             updateAggregate()
             self.tableView.reloadData()
         }
@@ -128,16 +138,25 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     // [clear] button in edit mode
     @IBAction func actionClearButton(_ sender: Any) {
         if !self.tableView.isEditing {
+            // export
+            if (self.routeFolder.count() <= 0) {
+                return
+            }
+            
+            self.ShowAirDrop(sender as AnyObject, text: self.routeFolder.makeExportText())
+            
             return
         }
-
+        
+        // remove all
+    
         // iOS8
         let ac : UIAlertController = UIAlertController(title: "全消去します", message: "元に戻せませんがよろしいですか？", preferredStyle: .actionSheet)
         ac.addAction(UIAlertAction(title: "はい", style: .default, handler: { (action: UIAlertAction!) in
             self.routeFolder.removeAll()
             self.updateAggregate()
             self.editButton.isHidden = true
-            self.clearButton.isHidden = true
+            self.clearOrExportButton.isHidden = true
             self.tableView.setEditing(false, animated: true)
             self.editButton.setTitle("編集", for: .normal)
             self.tableView.reloadData()
@@ -147,7 +166,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         // for iPad
         ac.modalPresentationStyle = UIModalPresentationStyle.popover
         //ac.popoverPresentationController?.barButtonItem = clearButton as? UIBarButtonItem
-        ac.popoverPresentationController?.sourceView = self.clearButton
+        ac.popoverPresentationController?.sourceView = self.clearOrExportButton
         // end of for iPad
         
         self.present(ac, animated: true, completion: nil)
@@ -158,14 +177,14 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         if let editBtn = sender as? UIButton {
             // in Edit mode
             if editBtn.titleLabel?.text == "編集" {
-                self.clearButton.isHidden = false
                 self.tableView.setEditing(true, animated: true)
                 editBtn.setTitle("完了", for: .normal)
+                changeToExportButton(false)
             } else {
             // in Non-Edit mode
-                self.clearButton.isHidden = true
                 self.tableView.setEditing(false, animated: true)
                 editBtn.setTitle("編集", for: .normal)
+                changeToExportButton(true)
             }
         } else {
             assert(false)
@@ -189,7 +208,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             
             mcPicker.show() { selections in
                 if let sel : String = selections[0] {
-                    if let bidx : Int = self.aggregate_label.firstIndex(of: sel) {
+                    if let bidx : Int = aggregate_label.firstIndex(of: sel) {
                         self.routeFolder.setAggregateType(index: row, aggr: bidx)
                         //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
                         btn.setTitle(sel, for: .normal) // self.tableView.reloadData()
@@ -204,7 +223,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             let ac : UIAlertController = UIAlertController(title: "運賃種別", message: nil, preferredStyle: .actionSheet)
             for item in aggregate_label {
                 ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction!) -> Void in
-                    if let bidx : Int = self.aggregate_label.firstIndex(of: item) {
+                    if let bidx : Int = aggregate_label.firstIndex(of: item) {
                         self.routeFolder.setAggregateType(index: row, aggr: bidx)
                         //*cell.aggregateType.setTitle(sel, for: .normal) // self.tableView.reloadData()
                         btn.setTitle(item, for: .normal) // self.tableView.reloadData()
@@ -226,6 +245,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
         // don't come here....
     }
 
+    
     // MARK: - tabe view
     
     ///func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -311,7 +331,7 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             
             if self.routeFolder.count() <= 0 {
                 self.editButton.isHidden = true
-                self.clearButton.isHidden = true
+                self.clearOrExportButton.isHidden = true
                 self.tableView.setEditing(false, animated: true)
                 self.editButton.setTitle("編集", for: .normal)
             }
@@ -369,5 +389,48 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     func updateAggregate() {
         self.totalFare.text = self.routeFolder.totalFare
         self.totalSalesKm.text = self.routeFolder.totalSalesKm
+    }
+    //  全消去ボタンをExportボタン兼用なので外観を切り替える
+    //
+    //  isExport = true   : Exportボタン
+    //           = false  : 全消去ボタン
+    //
+    func changeToExportButton(_ isExport: Bool) {
+        if (isExport) {
+            let origImage = UIImage(named: "exportButton")
+            let tintedImage = origImage?.withRenderingMode(.alwaysTemplate)
+            self.clearOrExportButton.setImage(tintedImage, for: .normal)
+            if #available(iOS 13.0, *) {
+                self.clearOrExportButton.tintColor = UIColor.link
+            } else {
+                self.clearOrExportButton.tintColor = UIColor.systemTeal
+            }
+            self.clearOrExportButton.setTitle("", for: .normal)
+        } else {
+            self.clearOrExportButton.setImage(nil, for: UIControl.State.normal)
+            self.clearOrExportButton.setTitle("全消去", for: .normal)
+        }
+    }
+    
+    
+    func ShowAirDrop(_ from : AnyObject, text : String) {
+        let subject : String = "きっぷホルダ"
+        let shareText : String = text
+        let activityItems : [AnyObject] = [shareText as AnyObject]
+        let excludeActivities : [UIActivity.ActivityType] = [UIActivity.ActivityType.postToWeibo]
+
+        let activityController : UIActivityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+
+        // 除外サービスを指定
+        activityController.excludedActivityTypes = excludeActivities
+
+        activityController.setValue(subject, forKey: "subject")
+
+        if #available(iOS 8, OSX 10.10, *) {            // for iPad(8.3)
+            activityController.popoverPresentationController?.sourceView = self.view
+
+        }
+        // modalで表示
+        self.present(activityController, animated: true, completion: nil)
     }
 }

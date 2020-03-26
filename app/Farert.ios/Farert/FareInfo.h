@@ -115,6 +115,7 @@
 @property (nonatomic) BOOL isAcademicFare;
 @property (nonatomic) NSInteger academicFare;
 @property (nonatomic) NSInteger roundtripAcademicFare;
+@property (nonatomic) NSInteger roundtripChildFare;
 
 // 有効日数
 @property (nonatomic) NSInteger ticketAvailDays;
