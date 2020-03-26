@@ -763,10 +763,10 @@ int32_t RouteUtil::NumOfNeerNode(int32_t stationId)
 //	@param [in] jctId   分岐駅
 //	@return 分岐駅[0]、計算キロ[1]、路線[2]
 //
-vector<vector<int32_t>> Route::Node_next(int32_t jctId)
+vector<vector<int32_t>> Route::Node_next(int32_t jctId, bool except_local)
 {
 	const static char tsql[] =
-	"select case jct_id when ?1 then neer_id else jct_id end as node, cost, line_id"
+	"select case jct_id when ?1 then neer_id else jct_id end as node, cost, line_id, attr"
 	" from t_node"
 	" where jct_id=?1 or neer_id=?1 order by node";
 
@@ -778,10 +778,13 @@ vector<vector<int32_t>> Route::Node_next(int32_t jctId)
 
 		while (dbo.moveNext()) {
 			vector<int32_t> r1;
-			r1.push_back(dbo.getInt(0));	// jct_id
-			r1.push_back(dbo.getInt(1));	// cost(calc_km)
-			r1.push_back(dbo.getInt(2));	// line_id
-			result.push_back(r1);
+
+            if (!except_local || (dbo.getInt(3) != 2)) {
+                r1.push_back(dbo.getInt(0));	// jct_id
+    			r1.push_back(dbo.getInt(1));	// cost(calc_km)
+    			r1.push_back(dbo.getInt(2));	// line_id
+    			result.push_back(r1);
+            }
 		}
 	}
 	return result;
@@ -1499,6 +1502,7 @@ int32_t CalcRoute::RetrieveOut70Station(int32_t line_id)
 	return 0;
 }
 
+// 分岐特例のひとつ
 
 bool Route::chk_jctsb_b(int32_t kind, int32_t num)
 {
@@ -1533,6 +1537,10 @@ bool Route::chk_jctsb_b(int32_t kind, int32_t num)
 /*  通過連絡運輸チェック
  *  param [in] line_id  路線id
  *
+ *  @param [in] line_id  路線
+ *  @param [in] 駅1
+ *  @param [in] 駅2
+ *  @param [in] num route_list.size()=経路数
  *  @retval 0 = continue
  *	@retval -4 = 会社線 通過連絡運輸なし
  */
@@ -1578,7 +1586,12 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 		}
 
 		/* 会社線乗継可否チェック(市振、目時、妙高高原、倶利伽羅) */
-		rc = companyConnectCheck(stationId1);
+		rc = CompanyConnectCheck(stationId1);
+        if (rc == 0) {
+            // route_list_raw.at(num - 2).stationId is 会社線
+            // term1 jr_line1 term2 company_line2 term3 company_line3 term4 だから num - 2.stationIdはterm2
+            return preCompanyPassCheck(line_id, route_list_raw.at(num - 2).stationId, stationId2, num);
+        }
 		return rc;
 	} else {
         /* g h */
@@ -1638,13 +1651,15 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
 	for (i = 0; i < num_of_record; i++) {
 		if ((results[i].line_id & 0x80000000) != 0) {
 			/* company */
-			int32_t cid = RouteUtil::CompanyIdFromStation(station_id2);
-			if (BIT_CHK(results[i].line_id, IDENT1(cid))) {
-				return 0;	/* OK possible pass */
-			}
+			int32_t cid1 = RouteUtil::CompanyIdFromStation(station_id1);
+			int32_t cid2 = RouteUtil::CompanyIdFromStation(station_id2);
+            int32_t cid11 = IDENT1(cid1) & 0x7f;
+            int32_t cid12 = IDENT2(cid1) & 0x7f;
+            int32_t cid21 = IDENT1(cid2) & 0x7f;
+            int32_t cid22 = IDENT2(cid2) & 0x7f;
 
-			if (BIT_CHK(results[i].line_id, IDENT2(cid)) &&
-			    BIT_CHK(results[i].line_id, IDENT1(RouteUtil::CompanyIdFromStation(station_id1)))) {
+			if ((0 != (results[i].line_id & (1 << cid11 | 1 << cid12)))
+             && (0 != (results[i].line_id & (1 << cid21 | 1 << cid22)))) {
 				return 0;	/* OK possible pass */
 			}
 
@@ -1663,12 +1678,13 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
 
 
 /*!
+ * static
  *	前段チェック 通過連絡運輸
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
  *	@retval -4 : 通過連絡運輸禁止
  */
-int32_t Route::companyConnectCheck(int32_t station_id)
+int32_t Route::CompanyConnectCheck(int32_t station_id)
 {
 	static const char tsql[] =
 	"select pass from t_compnconc where station_id=?";
@@ -1681,6 +1697,7 @@ int32_t Route::companyConnectCheck(int32_t station_id)
 			r = dbo.getInt(0);
 		}
 	}
+    TRACE(_T("CompanyConnectCheck: %s(%d)\n"), RouteUtil::StationName(station_id).c_str(), r);
 	return r == 0 ? -4 : 0;
 }
 
@@ -1690,6 +1707,7 @@ int32_t Route::companyConnectCheck(int32_t station_id)
  *	@param [in] line_id      add(),追加予定路線
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
+ *  @param [in] num          route_list.size()=経路数
  *	@retval 0 : エラーなし(継続)
  *	@retval -4 : 通過連絡運輸禁止
  */
@@ -1700,27 +1718,37 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	int rc;
 
 	TRACE(_T("Enter preCompanyPassCheck(%s, %s %s %d)\n"), RouteUtil::LineName(line_id).c_str(), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str(), num);
+    TRACE(_T("  key1=%s, key2=%s\n"), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str());
 
 	if (num <= 1) {
 		/* 会社線で始まる */
 		route_flag.compnbegin = true;
+        TRACE("preCompanyPassCheck begin company line\n");
 		return 0;
 	}
 	rc = cs.open(station_id1, station_id2);
 	if (rc <= 0) {
+        TRACE("preCompanyPassCheck db open error(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
+    rc = 0;
 	for (i = 1; i < num; i++) {
+        if (IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
+            continue;
+        }
 		rc = cs.check(route_list_raw.at(i).lineId,
 					  route_list_raw.at(i - 1).stationId,
 					  route_list_raw.at(i).stationId);
-		if (0 <= rc) {
+        TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, RouteUtil::LineName(route_list_raw.at(i).lineId).c_str(), RouteUtil::StationName(route_list_raw.at(i - 1).stationId).c_str(), RouteUtil::StationName(route_list_raw.at(i).stationId).c_str());
+		if (rc < 0) {
 			break;	/* OK */
 		}
 	}
-	if (i < num) {
+	if (0 <= rc) {
+        TRACE("preCompanyPassCheck always pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	} else {
+        TRACE("preCompanyPassCheck will fail\n");
 		route_flag.compnda = true; /* 通過連絡運輸不正 */
 		return 0;	/* -4 受け入れて（追加して）から弾く */
 	}
@@ -1758,6 +1786,7 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	if (i <= 0) {
 		route_flag.compnda = true; /* 通過連絡運輸不正 */
 		if (route_flag.compnbegin) {
+            TRACE("postCompanyPassCheck begin company line\n");
 			return 0;	/* 会社線始発なら終了 */
 		}
 		else {
@@ -1767,12 +1796,14 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	}
 	rc = cs.open(key1, key2);
 	if (rc <= 0) {
+        TRACE("postCompanyPassCheck db open error(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
 	rc = cs.check(line_id, station_id1, station_id2);
 	if (rc < 0) {
 		// route_flag.compnda = true; /* 通過連絡運輸不正 */
 	}
+    TRACE("postCompanyPassCheck(%d)\n", rc);
 	return rc;	/* 0 / -4 */
 }
 
@@ -1837,8 +1868,13 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 #endif
 
 	if (route_flag.end) {
-		TRACE(_T("route.add(): already terminated.\n"));
-		return	ADDRC_END;		/* already terminated. */
+        if (route_flag.compnda) {
+            TRACE(_T("route.add(): Can't add for disallow company line.\n"));
+            return -4;          // not allow company connect.
+        } else {
+		    TRACE(_T("route.add(): already terminated.\n"));
+		    return	ADDRC_END;		/* already terminated. */
+        }
 	}
 
     route_flag.trackmarkctl = false;
@@ -2494,7 +2530,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 			return ADDRC_OK;	/* OK - Can you continue */
 		}
 	}
-}
+} // end of add()
 
 
 //	経路の末尾を除去
@@ -2897,10 +2933,13 @@ JR東日本 株主優待4： \123,456
 		sWork += cb;
 	}
 	_sntprintf_s(cb, MAX_BUF,
-				_T("\r\n有効日数：%4u日\r\n"),
-				this->getTicketAvailDays());
+				_T("\r\n有効日数：%4u日\r\n%s\r\n"),
+				this->getTicketAvailDays(),
+                1 < this->getTicketAvailDays() ?
+                _T("途中下車できます") : _T("途中下車前途無効"));
 	sResult += sWork + cb;
-	if (this->isMultiCompanyLine()) {
+
+    if (this->isMultiCompanyLine()) {
 		sResult += _T("\r\n複数の会社線を跨っているため、乗車券は通し発券できません. 運賃額も異なります.");
 	} else if (this->isBeginEndCompanyLine()) {
 		sResult += _T("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
@@ -6170,16 +6209,16 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 {
 	int32_t lastIndex;
-	static int32_t chk_distance1 = 0;
-	static int32_t chk_distance2 = 0;
+	static int32_t distance_koube_himeji = 0;  // 神戸-姫路
+	static int32_t distance_shinoosaka_himeji = 0; // 新大阪-姫路
 
 	lastIndex = (int32_t)route->size() - 1;
 
-	if (!chk_distance1) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
-		chk_distance1 = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+	if (!distance_koube_himeji) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
+		distance_koube_himeji = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                STATION_ID(_T("神戸")),
                                                STATION_ID(_T("姫路")))[0];
-		chk_distance2 = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+		distance_shinoosaka_himeji = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                STATION_ID(_T("新大阪")),
                                                STATION_ID(_T("姫路")))[0];
 	}
@@ -6189,7 +6228,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
 			(route->at(1).lineId == LINE_ID(_T("東海道線"))) &&
 		    (route->at(2).lineId == LINE_ID(_T("山陽線"))) &&
-		    (chk_distance1 <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+		    (distance_koube_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                      STATION_ID(_T("神戸")),
                                                      route->at(2).stationId)[0])) {
 
@@ -6202,7 +6241,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
 				 (route->back().lineId == LINE_ID(_T("東海道線"))) &&
 				 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽線"))) &&
-		    	 (chk_distance1 <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+		    	 (distance_koube_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                           STATION_ID(_T("神戸")),
                                                           route->at(lastIndex - 2).stationId)[0])) {
 
@@ -6217,7 +6256,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		if ((route->front().stationId == STATION_ID(_T("大阪"))) &&
 			(route->at(2).lineId == LINE_ID(_T("山陽新幹線"))) &&
 			(route->at(1).stationId == STATION_ID(_T("新大阪"))) &&
-			(chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+			(distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                      STATION_ID(_T("新大阪")),
                                                      route->at(2).stationId)[0])) {
 
@@ -6240,7 +6279,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		else if ((route->back().stationId == STATION_ID(_T("大阪"))) &&
 				 (route->at(lastIndex - 1).stationId == STATION_ID(_T("新大阪"))) &&
 				 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-				 (chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+				 (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                           STATION_ID(_T("新大阪")),
                                                           route->at(lastIndex - 2).stationId)[0])) {
 
@@ -6265,7 +6304,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		    // 新大阪 発 山陽新幹線
 		if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
 			(route->at(1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-			(chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+			(distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                      STATION_ID(_T("新大阪")),
                                                      route->at(1).stationId)[0])) {
 
@@ -6287,7 +6326,7 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 		}	// 山陽新幹線 大阪 着
 		else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
 				 (route->back().lineId == LINE_ID(_T("山陽新幹線"))) &&
-				 (chk_distance2 <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+				 (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                           STATION_ID(_T("新大阪")),
                                                           route->at(lastIndex - 1).stationId)[0])) {
 
@@ -7190,6 +7229,7 @@ int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t statio
 //                             1 新幹線を利用
 //                             2 会社線を利用
 //                             3 新幹線も会社線も利用
+//                           100 地方交通線を覗く（在来線のみ)
 //
 //
 //	@retval true success
@@ -7260,7 +7300,14 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 	int32_t stationId;
 	int32_t nLastNode;
 	vector<PAIRIDENT> neer_node;
+    bool except_local;
 
+    if (useBulletTrain == 100) {
+        useBulletTrain = 0;
+        except_local = true;
+    } else {
+        except_local = false;
+    }
 	/* 途中追加か、最初からか */
 	if (1 < route_list_raw.size()) {
 		do {
@@ -7427,7 +7474,7 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 			}
 		}
 
-		vector<vector<int32_t>> nodes = Route::Node_next(doneNode + 1);
+		vector<vector<int32_t>> nodes = Route::Node_next(doneNode + 1, except_local);
 		vector<vector<int32_t>>::const_iterator ite;
 
 		for (ite = nodes.cbegin(); ite != nodes.cend(); ite++) {
@@ -7590,12 +7637,17 @@ TRACE(_T("last: %s\n"), RouteUtil::LineName(dijkstra.lineId(route.back())).c_str
 		// 最終分岐駅～着駅までの営業キロ、運賃計算キロを取得
 		//km = Route::Get_node_distance(lid, end_station_id, Route::Jct2id(a));
 		//km += minCost[route.back()];	// 最後の分岐駅までの累積計算キロを更新
-		if ((lid == dijkstra.lineId(route.back())) ||
-		    IsAbreastShinkansen(lid, dijkstra.lineId(route.back()),
-		                        Jct2id(route.back() + 1),
-		                        end_station_id)) {
+
+        bool isAbreastShinkansen = IsAbreastShinkansen(lid, dijkstra.lineId(route.back()),
+                                                       Jct2id(route.back() + 1),
+                                                       end_station_id);
+        if ((lid == dijkstra.lineId(route.back())) ||
+        ((0 < Route::InStationOnLine(dijkstra.lineId(route.back()), end_station_id)) &&
+		  isAbreastShinkansen ) ||
+          (isAbreastShinkansen &&  (0 < RouteUtil::InStation(end_station_id, lid, Jct2id(route.back() + 1), Jct2id(id))))) {
 			route.pop_back();	// if   着駅の最寄分岐駅の路線=最後の分岐駅?
 								//      (渋谷-新宿-西国分寺-国立)
+                                //     渋谷 山手線 品川 → 有楽町
 								// or   平行在来線の新幹線 #141002001
             // else 渋谷-新宿-三鷹
 		}
@@ -9161,7 +9213,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRouteForToiCa(const RouteList& route_origi
 bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 {
     FARE_INFO fare_info_shorts;         // 最短経路
-    FARE_INFO fare_info_via_tachikawa;  // 八高線避けた 立川経由
+    FARE_INFO fare_info_nolocal_short;  // 地方交通線を避けた経路
     FARE_INFO fare_info_specific_short; // 都区市内発着最短
     bool b_change_route = false;
     int8_t decision = 0;   // this or via_tachikawa or short
@@ -9236,9 +9288,10 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     // 最短経路算出
     std::vector<RouteItem> shortRoute_List;
     RouteFlag short_route_flag;
-    std::vector<RouteItem> route_via_tachikawa;
+    std::vector<RouteItem> route_nolocal_short;
 
     if (decision != 20) {
+        ASSERT(decision == 0 || decision == 15);
         short_route_flag.setDisableRule86or87();
         if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute_List,
                                                            route_original.departureStationId(),
@@ -9259,7 +9312,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
         } else {
-            route_original.refRouteFlag().urban_neerest = 0;
+            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
         }
 
         short_route_flag.rule86or87 = 0;
@@ -9269,22 +9322,25 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 //                          書き換えたroute_flagはJR東海株主使用可否Optionだけなので無視してよし
 //                          学割、小児、株主運賃は既存どおりなので、fare_infoのic運賃のみfare_info_shortsのic運賃へ書き換える
 //                            と拝島問題
-
-        // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
-        route_via_tachikawa = IsHachikoLineHaijima(shortRoute_List);
-        if (decision == 0) { /* 86or87 適用はやらん */
-            if (route_via_tachikawa.size() != 0) {
-                fare_info_via_tachikawa.setTerminal(route_original.departureStationId(),
-                                                    route_original.arriveStationId());
-                if (fare_info_via_tachikawa.calc_fare(&short_route_flag, route_via_tachikawa)) {
-                    if (fare_info_via_tachikawa.getFareForJR() < fare_info_shorts.getFareForJR()) {
-                        /* 立川経由の方が安い */
-                        TRACE("Found lowcost route DENSHA special.\n");
-                        decision = 2;
-                    }
-                } else {
-                    ASSERT(FALSE);
+        if (fare_info_shorts.didHaveLocalLine()
+            && (decision == 0) /* 86or87 適用絡みはやらん (decision == 15 or 20) */
+            && fare_info_nolocal_short.reCalcFareForOptiomizeRoute(&route_nolocal_short,
+                                                               route_original.departureStationId(),
+                                                               route_original.arriveStationId(),
+                                                               &short_route_flag,
+                                                               true)) {
+            // 八高線 拝島ー八王子を通過している場合、立川経由の方が電特により安い場合がある(b#18122802)
+            // 地方交通線を避けた方が最安
+            fare_info_nolocal_short.setTerminal(route_original.departureStationId(),
+                                                route_original.arriveStationId());
+            if (fare_info_nolocal_short.calc_fare(&short_route_flag, route_nolocal_short)) {
+                if (fare_info_nolocal_short.getFareForJR() < fare_info_shorts.getFareForJR()) {
+                    /* 地方交通線を避けた方が最安 */
+                    TRACE("Found lowcost route DENSHA special.\n");
+                    decision = 2;
                 }
+            } else {
+                ASSERT(FALSE);
             }
         }
         ASSERT(fare_info_shorts.total_jr_calc_km != 0 && 0 != total_jr_calc_km);
@@ -9313,16 +9369,17 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
             jr_fare = fare_info_shorts.jr_fare;
         }
         b_change_route = true;
-    } else if (decision == 2/*立川経由が最安*/) {
-        // 立川経由が最安
+    } else if (decision == 2) {
+        // 地方交通線を避けた方が最安
         if (getStockDiscountCompany() != JR_CENTRAL) {
-            *this = fare_info_via_tachikawa;
-            setRoute(route_via_tachikawa, short_route_flag);
+            *this = fare_info_nolocal_short;
+            setRoute(route_nolocal_short, short_route_flag);
         } else {
-            jr_fare = fare_info_via_tachikawa.jr_fare;
+            jr_fare = fare_info_nolocal_short.jr_fare;
         }
         b_change_route = true;  // 特例非適用オプション選択可
     } else if (decision == 20) {
+        // 86 or 87 applied
         TRACE("optimized 86or87: applied type A. %s->%s(%dyen), %s->%s(%dyen)\n", CalcRoute::BeginOrEndStationName(this->getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(this->getEndTerminalId()).c_str(), jr_fare, CalcRoute::BeginOrEndStationName(fare_info_specific_short.getBeginTerminalId()).c_str(), CalcRoute::BeginOrEndStationName(fare_info_specific_short.getEndTerminalId()).c_str(), fare_info_specific_short.jr_fare);
         *this = fare_info_specific_short;
         setRoute(specificRoute_List, specificRouteFlag);
@@ -9333,17 +9390,20 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
     return b_change_route;
 }
 
+//  最短経路を算出して運賃計算する
 //
 bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_list,
                                             int32_t start_station_id,
                                             int32_t end_station_id,
-                                            RouteFlag* pShort_route_flag)
+                                            RouteFlag* pShort_route_flag,
+                                            bool except_local /* =false */ )
 {
     Route shortRoute;
     int32_t rc = shortRoute.add(start_station_id);
-    rc = shortRoute.changeNeerest(0, end_station_id);
+    ASSERT(rc == 1);
+    rc = shortRoute.changeNeerest(except_local ? 100 : 0, end_station_id);
     if (rc < 0) {
-        ASSERT(FALSE);
+        ASSERT(except_local);
         return false;
     }
 

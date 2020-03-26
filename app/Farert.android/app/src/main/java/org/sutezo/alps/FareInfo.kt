@@ -29,7 +29,6 @@ class FareInfo {
     var isRule114Applied : Boolean = false
 
     var isSpecificFare : Boolean = false
-    var isArbanArea : Boolean = false
 
     var totalSalesKm : Int = 0
     var jrCalcKm : Int = 0
@@ -74,6 +73,7 @@ class FareInfo {
 
     // 子供運賃
     var childFare: Int = 0
+    var roundtripChildFare : Int = 0
 
 // 学割運賃
     var isAcademicFare: Boolean = false

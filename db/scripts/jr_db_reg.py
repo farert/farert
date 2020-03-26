@@ -1004,6 +1004,9 @@ insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
 		if int(db_name) <= 2017 and (station1 == "摩耶" or station2 == "摩耶"):
 			return
 		
+		if int(db_name) != 2019 and (station1 == "あしかがフラワーパーク" or station2 == "あしかがフラワーパーク"):
+			return
+
 		kind = int(linitems[4].replace(',', ''))
 
 		if db_name != "2014" or kind != 2:

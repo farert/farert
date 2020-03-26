@@ -193,4 +193,3 @@
 
 # Referenced at /Users/ntake/exports/devel/farert.repos/app/Farert.android/app/src/main/res/xml/pref_headers.xml:10
 -keep class org.sutezo.farert.SettingsActivity$NotificationPreferenceFragment { <init>(); }
-

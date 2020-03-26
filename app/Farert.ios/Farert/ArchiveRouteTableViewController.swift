@@ -20,13 +20,13 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     // MARK: - private property
     var routeList : [String] = []
-    var saved : Bool = false
+    var existIndex : Int = -1
 
     // MARK: - UI variables
     @IBOutlet weak var allClearButton: UIBarButtonItem!
     @IBOutlet weak var saveButton: UIBarButtonItem!
-
-
+    @IBOutlet weak var exportButton: UIBarButtonItem!
+    
     // MARK: - view
 
     override func viewDidLoad() {
@@ -47,20 +47,24 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         self.routeList = cRouteUtil.loadStrageRoute() as! [String]
 
         if !self.currentRouteString.isEmpty {
-            if let idx = self.routeList.firstIndex(of: self.currentRouteString) {      // is exist ?
-                self.routeList.remove(at: idx)
-                self.routeList.insert(self.currentRouteString, at: 0)  // 入れ替え
-                cRouteUtil.save(toRouteArray: self.routeList)   // して保存
-                self.saveButton.isEnabled = false
-                self.saved = true
-            } else {                                            // non exist
+            if let idx = self.routeList.firstIndex(of: self.currentRouteString) {
+                // is exist ?(保存済み) a, b
+                self.existIndex = idx
+                if (0 < idx) {
+                     // b. 居たら先頭へ持ってくる
+                    self.routeList.remove(at: idx)
+                    self.routeList.insert(self.currentRouteString, at: 0)
+                } // else a. 居て既に先頭にある
+                saveButton.isEnabled = false
+            } else { // c. non exist(未保存)
                 routeList.insert(self.currentRouteString, at: 0)
-                saveButton.isEnabled = true
-                self.saved = false
+                saveButton.isEnabled = true // Enable 'save' button
+                existIndex = -1
             }
         } else {
+            // d. 現在表示・選択の経路はなし
             saveButton.isEnabled = false
-            self.saved = true
+            existIndex = -2         // empty
         }
         if self.routeList.count <= 0 {
             self.navigationItem.rightBarButtonItem?.isEnabled = false
@@ -118,7 +122,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             //cell.routeString?.font = UIFont.preferredFontForTextStyle(FA_STYLE_ROUTE_FONT)
 
             if (indexPath.row == 0) && (self.routeList[0] == currentRouteString) {
-                if (self.saved) {
+                if (existIndex != -1) {
                     cell.routeString?.textColor = UIColor.systemGray
                 } else {
                     cell.routeString?.textColor = UIColor.systemRed
@@ -151,9 +155,37 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             tableView.beginUpdates()
             let c : Int = self.routeList.count
             if (0 < c) {
+                let rmIdx = indexPath.row
+                
                 // Delete the row from the data source
-                self.routeList.remove(at: indexPath.row)       // model
+                self.routeList.remove(at: rmIdx)       // model
                 tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
+
+                if (existIndex == 0 || existIndex == -2) {
+                    // a or d
+                    if (rmIdx == 0) {
+                        existIndex = -2 // same as 'd'
+                    }
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                } else if (0 < existIndex) {
+                    // b
+                    if (rmIdx == 0) {
+                        existIndex = -2
+                    } else {
+                        existIndex = 0
+                    }
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                } else if (existIndex == -1) {
+                    // c
+                    if (rmIdx == 0) {
+                        existIndex = -2
+                        // no save
+                    } else {
+                        // c. 未保存の場合は先頭に保存候補の経路が入っているので破棄
+                        let route_list = self.routeList.dropFirst()
+                        cRouteUtil.save(toRouteArray: Array(route_list))
+                    }
+                }
             }
             tableView.endUpdates()
             if (c == 1) {   // last deleted
@@ -164,7 +196,6 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 editEnd()
                 self.tableView.reloadData()
             }
-            cRouteUtil.save(toRouteArray: self.routeList)
 
         } else if (editingStyle == UITableViewCell.EditingStyle.insert) {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
@@ -235,9 +266,41 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
         // Pass the selected object to the new view controller.
         if segue.identifier == "unwindArchiveRouteSelectSegue" {
             // セル選択
-            if let selidx = self.tableView.indexPathForSelectedRow?.row {
-                let str : String = self.routeList[selidx]
-                self.selectRouteString = str.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if var selidx = self.tableView.indexPathForSelectedRow?.row {
+                let selstr : String = self.routeList[selidx]
+                // selectRouteString is interface the parent view
+                self.selectRouteString = selstr.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+                if (0 < selidx) {
+                    if (0 < existIndex) {
+                        // b. メイン画面表示経路あり+経路保存済み
+                        let oldselroute = self.currentRouteString
+                        self.routeList.remove(at: selidx)
+                        self.routeList.remove(at: 0)
+                        self.routeList.insert(oldselroute, at: (self.existIndex < selidx) ? existIndex : existIndex - 1)
+                        self.routeList.insert(selstr, at: 0)
+                        // 選んだ経路は先頭に移動して保存
+                        cRouteUtil.save(toRouteArray: self.routeList)
+
+                    } else {
+                        if (existIndex == -1) {
+                            self.routeList.remove(at: 0) // 保存されていないのでNonVolatileメモリ内と同じ状態に
+                            selidx -= 1     // c 経路未保存(先頭にメイン画面の経路)
+                        }
+                        
+                        // a 先頭にメイン画面の経路 or cで保存されてた場合
+                        // d メイン画面の経路はなし
+
+                        if (0 < selidx) {
+                            self.routeList.remove(at: selidx)
+                            self.routeList.insert(selstr, at: 0)
+                            cRouteUtil.save(toRouteArray: self.routeList)
+                        }
+                    }
+                } else if ((selidx == 0) && (0 < existIndex)) {
+                    // b.
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                }
             } else {
                 self.selectRouteString = ""
             }
@@ -257,7 +320,8 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 // 編集中は選択は無視する（何もしない）
                 return false
             }
-            if self.saved || (self.tableView.indexPathForSelectedRow?.row == 0) {
+            if ((existIndex != -1)
+            || (self.tableView.indexPathForSelectedRow?.row == 0)) {
                 return true
             } else {
 
@@ -342,6 +406,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 //self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.Fade)
 
                 self.navigationItem.rightBarButtonItem?.isEnabled = false
+                existIndex = -2
 
                 self.editEnd()
                 self.tableView.reloadData()
@@ -397,13 +462,30 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     // [Save] button
     @IBAction func saveButtonTapped(_ sender: AnyObject) {
-        cRouteUtil.save(toRouteArray: self.routeList)
-        self.saved = true
+        if (existIndex == -1) {
+            // カレント経路数
+            let free_archive_route = FGD.MAX_ARCHIVE_ROUTE - self.countof(Route: self.routeList)
+            
+            if (free_archive_route <= 0) {
+                let msg = "これ以上経路は追加できません. 既存の経路をいくつか削除してください"
+                let actview = UIAlertController(title: "経路保存", message: msg, preferredStyle: .alert)
+                actview.addAction(UIAlertAction(title: "了解",
+                                                style: .default) {
+                    action in
+                      self.saveButton.isEnabled = false
+                })
+                self.present(actview, animated: true, completion: nil)
+            } else {
+                cRouteUtil.save(toRouteArray: self.routeList)
+                existIndex = 0      // same as 'a'
+            }
+        }
         self.saveButton.isEnabled = false
         self.tableView.reloadData()
     }
     func editEnd() {
-        self.saveButton.isEnabled = true
+        self.saveButton.isEnabled = (existIndex == -1)
+
         self.allClearButton.isEnabled = false    // Disable [Edit] button
         self.navigationItem.leftBarButtonItem?.isEnabled = true
         if #available(iOS 13.0, *) {
@@ -414,9 +496,201 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
     }
 
     func editBegin() {
-        self.saveButton.isEnabled = false
+        self.saveButton.isEnabled = (existIndex == -1)
         self.allClearButton.isEnabled = true // Enable [Edit] button
         self.navigationItem.leftBarButtonItem?.isEnabled = false
         self.navigationItem.leftBarButtonItem?.tintColor = UIColor.systemGray
+    }
+    
+    // Export button
+    @IBAction func onExportButton(_ sender: Any) {
+        // 文字列配列にはいった経路を、改行区切りの文字列として返す
+        let route_script_all : String = cRouteUtil.script(fromRouteArray: self.routeList)
+        self.ShowAirDrop(sender as AnyObject, text: route_script_all)
+    }
+    
+    // import button
+    @IBAction func onImportButton(_ sender: Any) {
+        // 経路文字列を複数行得る
+        // Wait ProgressDialog
+        let key_prop = "import_guide"
+        let sw = cRouteUtil.read(fromKey: key_prop)
+        if sw == "true" {
+            // hide
+            doImport()
+            return          // 2回以降
+        }
+
+        // インポートする経路をテキストで「メモ」等の外部エディタで作成してください
+        // (スペースまたはカンマ','区切りで1行1経路)で指定します）
+        // その後、クリップボードにコピーしてで本機能を実行します.
+        // わからないという人は使用しないでください
+        //
+        let msg = NSLocalizedString("title_import", comment: "")
+        let agree = NSLocalizedString("agree", comment: "")
+        let hide_later = NSLocalizedString("hide_specific_import", comment: "")
+        let ac = UIAlertController(title: "インポート", message: msg, preferredStyle: .alert)
+
+        // 今後、この画面は表示せず、インポート機能を実行する
+        ac.addAction( UIAlertAction(title: hide_later, style: .default) {
+            action in
+              cRouteUtil.save(toKey: key_prop, value:"true", sync: true)
+                // 1回目はやらない
+        })
+        // 了解
+        ac.addAction(UIAlertAction(title: agree, style: .default) {
+            action in
+        })
+        self.present(ac, animated: true, completion: nil)
+    }
+    
+    func ShowAirDrop(_ from : AnyObject, text : String) {
+        let subject : String = "保存経路"
+        let shareText : String = text
+        let activityItems : [AnyObject] = [shareText as AnyObject]
+        let excludeActivities : [UIActivity.ActivityType] = [UIActivity.ActivityType.postToWeibo]
+
+        let activityController : UIActivityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+
+        // 除外サービスを指定
+        activityController.excludedActivityTypes = excludeActivities
+
+        activityController.setValue(subject, forKey: "subject")
+
+        if #available(iOS 8, OSX 10.10, *) {            // for iPad(8.3)
+            activityController.popoverPresentationController?.sourceView = self.view
+            activityController.popoverPresentationController?.barButtonItem = (from as! UIBarButtonItem)
+        }
+        // modalで表示
+        self.present(activityController, animated: true, completion: nil)
+    }
+    
+    
+    // import
+    func doImport() -> Void {
+        // 文字列をパースして配列を作成する(エラーがあったらエラーカウントする)(経路にXX箇所不正な路線・駅を検出しました）
+        // 配列へマージする(既に入っているものは削除して後ろへ追加する）
+        // 配列数が上限に達したら切り捨てられる(後半XX経路が切り捨てられました）
+        // 文字数単位で、60✖️100=6000までで、Overしたら経路単位で切り捨てる
+
+        var exist_count = 0
+        var new_count = 0           // new add
+        var error_count = 0
+        var noadd_count = 0
+        var is_top_import = false
+        var msg : String = ""
+
+        // カレント経路数
+        var free_archive_route = FGD.MAX_ARCHIVE_ROUTE - self.countof(Route: self.routeList)
+        
+        if (free_archive_route <= 0) {
+            msg = "これ以上経路は追加できません. 既存の経路をいくつか削除してください"
+        } else {
+            // クリップボードから経由を得る
+            let past = UIPasteboard.general.string
+            if let scr_route = past {
+                let cs = CharacterSet(charactersIn: " ,.[]")
+                let route_script_list = scr_route.components(separatedBy: "\n")
+                for scriptRoute : String in route_script_list {
+                    let scr_route = scriptRoute.components(separatedBy: cs).filter()
+                    { $0 != ""}.joined(separator: ",")
+                    if (free_archive_route <= 0) {
+                        noadd_count += 1
+                    } else {
+                        let rt : cRoute = cRoute()
+                        let rc = rt.setupRoute(scr_route)
+                        if (rc < 0) {
+                            // error
+                            error_count += 1
+                        } else {
+                            // OK
+                            if let inIndex = self.routeList.firstIndex(of: scr_route) {
+                                // already exist
+                                if (inIndex == 0) {
+                                    is_top_import = true
+                                }
+                                exist_count += 1
+                            } else {
+                                new_count += 1 // 追加数
+                                               // 経路数
+                                free_archive_route -= self.countof(Route: scr_route)
+                                self.routeList.append(scr_route)
+                            }
+                        }
+                    }
+                }
+            }
+            var msg_trail : String?
+            if (0 < noadd_count) {
+                msg_trail = String(format:
+                "\n上限を越えたため追加できなかった経路が%d経路あります", noadd_count)
+            }
+            var msg_fail : String?
+            if ((0 < new_count) && (0 < error_count)) {
+                msg_fail = String(format:"\n%d経路が不正書式でした.", error_count)
+            }
+
+            if (new_count <= 0) {
+                if (0 < error_count) {
+                    msg = "追加経路はありません(すべて不正書式でした）"
+                } else if (exist_count <= 0) {
+                    msg = "追加経路はありません."
+                } else {
+                    msg = "追加経路はありません(既に全経路あります)."
+                }
+            } else if (0 < exist_count) {
+                msg = String(format:
+                    "%d経路を追加しました(%d経路は既にあります.)",
+                             new_count, exist_count)
+            } else {
+                msg = String(format:
+                    "%d経路を追加しました",
+                             new_count)
+            }
+            msg += msg_fail ?? ""
+            msg += msg_trail ?? ""
+        }
+        let actview = UIAlertController(title: "インポート", message: msg, preferredStyle: .alert)
+
+        // 了解
+        let agree = NSLocalizedString("agree", comment: "")
+        actview.addAction(UIAlertAction(title: agree, style: .default) {
+            action in
+            if (0 < new_count) {
+                if ((self.existIndex == -1) && (!is_top_import)) {
+                    // c. 未保存の場合は先頭に保存候補の経路が入っているので破棄
+                    let route_list = self.routeList.dropFirst()
+                    cRouteUtil.save(toRouteArray: Array(route_list))
+                } else {
+                    cRouteUtil.save(toRouteArray: self.routeList)
+                }
+                
+                if (0 < self.existIndex) {
+                    // b
+                    self.existIndex = -2
+                } else if ((self.existIndex == -1) && is_top_import) {
+                    // c
+                    self.existIndex = 0  // same as 'a'
+                }
+                self.tableView.reloadData()
+            }
+        })
+        self.present(actview, animated: true, completion: nil)
+    }
+    
+    // 経路の経路数をカウントする。
+    // 東京 東海道線 大阪 なら、3を返す
+    //
+    func countof(Route rt : [String]) -> Int {
+        var c = 0
+        for r : String in rt {
+            let cs = CharacterSet(charactersIn: " ,.[]<>/{}")
+            let a = r.components(separatedBy: cs).filter() { $0 != "" }
+            c += a.count
+        }
+        return c
+    }
+    func countof(Route rt : String) -> Int {
+        return countof(Route: rt.components(separatedBy: "\n"))
     }
 }
