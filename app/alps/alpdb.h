@@ -114,6 +114,7 @@ typedef uint32_t SPECIFICFLAG;
 #define IS_COMPANY_LINE(id)	    ((LID_COMPANY<(id)) && ((id) < (LID_COMPANY+0x100)))	     /* 会社線id */
 #define IS_BRT_LINE(id)	        ((LID_BRT<(id)) && ((id) < (LID_BRT+0x100)))            	 /* BRT id */
 #define MAX_JCT 330
+#define MAX_COMPNPASSSET   25       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
@@ -138,8 +139,6 @@ typedef uint32_t SPECIFICFLAG;
 
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
-
-#define MAX_COMPNPASSSET    3       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 
 /* 消費税(四捨五入)加算 */
 #define taxadd(fare, tax)    (fare + ((fare * 1000 * tax / 100000) + 5) / 10 * 10)
