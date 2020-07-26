@@ -114,12 +114,13 @@ class Dbreg:
 			max_station integer not null,
 			max_line integer not null,
 			max_jct integer not null,
-			max_station_chr inteter not null,
-			max_line_chr inteter not null
+			max_station_chr integer not null,
+			max_line_chr integer not null,
+			max_compnpass integer not null
 		);
 		"""
 		self.con.execute(sql)
-		self.con.execute("insert into t_global values(0, 0, 0, 0, 0);")
+		self.con.execute("insert into t_global values(0, 0, 0, 0, 0, 0);")
 		###########################################
 		sql = """
 		create table t_coreareac (
@@ -198,7 +199,7 @@ class Dbreg:
 		sql = """
 		create table t_clinfar (
 			station_id1 integer not null,
-			station_id2 intege not null,
+			station_id2 integer not null,
 			fare integer not null,
 			academic integer not null default(0),
 			flg integer not null default(0),
@@ -353,9 +354,7 @@ class Dbreg:
 			station_id2 integer not null default(0),
 			en_line_id integer not null default(0),
 			en_station_id1 integer not null default(0),
-			en_station_id2 integer not null default(0),
-
-			primary key (station_id1, station_id2, en_line_id)
+			en_station_id2 integer not null default(0)
 		);
 		""")
 		###########################################
@@ -522,7 +521,11 @@ class Dbreg:
 				continue		# コメントスキップ
 
 			if lin.strip() == '':
-				continue		# コメントスキップ
+				continue		# 空行＝コメントスキップ
+
+			if lin.startswith("//end"):
+				proc_stage = ''
+				continue		# //end は、ブロック終了
 
 			linitems = lin.split('\t')
 
@@ -705,8 +708,8 @@ class Dbreg:
 			(select case when (select rowid from t_station where name=?6 and samename=?7) is null then 0
 			else              (select rowid from t_station where name=?6 and samename=?7) end))
 			""",
-			[tmps[0], tmps[1], same_staion(tmps[2])[0], same_staion(tmps[2])[1],
-			 tmps[3], same_staion(tmps[4])[0], same_staion(tmps[4])[1]])
+			[tmps[0], tmps[1], *same_staion(tmps[2]),
+			 tmps[3], *same_staion(tmps[4])])
 
 			self.cur.execute('select seq from sqlite_sequence where name=\'t_jctspcl\'')
 			lflg &= 0xffffff00
@@ -758,20 +761,8 @@ class Dbreg:
 			self.tax2 = int(linitems[2])
 			return
 
-		if 0 <= tmp.find('('):
-			station1 = tmp[:tmp.find('(')]
-			station1_s = tmp[tmp.find('('):]
-		else:
-			station1 = tmp
-			station1_s = ''
-
-		tmp = linitems[1].strip()
-		if 0 <= tmp.find('('):
-			station2 = tmp[:tmp.find('(')]
-			station2_s = tmp[tmp.find('('):]
-		else:
-			station2 = tmp
-			station2_s = ''
+		station1 = same_staion(tmp)
+		station2 = same_staion(linitems[1].strip())
 
 		sql = "insert into " + label + """
  values((select rowid from t_station where name=? and samename=?),
@@ -785,29 +776,13 @@ class Dbreg:
 		if 0 < int(linitems[7]):  # 併算割引
 			tmp |= 0x02
 
-		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[2]), int(linitems[4]), tmp, self.tax1])
-		self.con.execute(sql, [station1, station1_s, station2, station2_s, int(linitems[3]), int(linitems[5]), tmp, self.tax2])
+		self.con.execute(sql, [*station1, *station2, int(linitems[2]), int(linitems[4]), tmp, self.tax1])
+		self.con.execute(sql, [*station1, *station2, int(linitems[3]), int(linitems[5]), tmp, self.tax2])
 		#                                                                     fare            academic         flg
 #------------------------------------------------------------------------------
 	def reg_t_rule69(self, label, linitems, lin):
 		# t_rule69
 		ident = int(linitems[0])
-
-		tmp = linitems[1].strip()
-		if 0 <= tmp.find('('):
-			station1 = tmp[:tmp.find('(')]
-			station1_s = tmp[tmp.find('('):]
-		else:
-			station1 = tmp
-			station1_s = ''
-
-		tmp = linitems[2].strip()
-		if 0 <= tmp.find('('):
-			station2 = tmp[:tmp.find('(')]
-			station2_s = tmp[tmp.find('('):]
-		else:
-			station2 = tmp
-			station2_s = ''
 
 		self.con.execute("""
 insert into t_rule69(id, station_id1, station_id2, line_id, ord) values(
@@ -815,70 +790,23 @@ insert into t_rule69(id, station_id1, station_id2, line_id, ord) values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_line where name=?), ?)""",
-			 [ident, station1, station1_s, station2, station2_s, linitems[3], int(linitems[4])])
+		 [ident, *same_staion(linitems[1].strip()), *same_staion(linitems[2].strip()), 
+			  linitems[3], int(linitems[4])])
 
 #------------------------------------------------------------------------------
 	def reg_rule70(self, label, linitems, lin):
 	# rule70
-
-		tmp = linitems[0].strip()		# station_id1
-		if 0 <= tmp.find('('):
-			station1 = tmp[:tmp.find('(')]
-			station1_s = tmp[tmp.find('('):]
-		else:
-			station1 = tmp
-			station1_s = ''
-
-		tmp = linitems[1].strip()		# station_id2
-		if 0 <= tmp.find('('):
-			station2 = tmp[:tmp.find('(')]
-			station2_s = tmp[tmp.find('('):]
-		else:
-			station2 = tmp
-			station2_s = ''
 
 		self.con.execute("""
 insert into t_rule70 values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
  ?);""",
-		[station1, station1_s, station2, station2_s, int(linitems[2])])
+		[*same_staion(linitems[0].strip()), *same_staion(linitems[1].strip()), int(linitems[2])])
 
 #------------------------------------------------------------------------------
 	def reg_r70bullet(self, label, linitems, lin):
 	# rule70
-
-		tmp = linitems[0].strip()		# station_id1
-		if 0 <= tmp.find('('):
-			station1 = tmp[:tmp.find('(')]
-			station1_s = tmp[tmp.find('('):]
-		else:
-			station1 = tmp
-			station1_s = ''
-
-		tmp = linitems[1].strip()		# station_id2
-		if 0 <= tmp.find('('):
-			station2 = tmp[:tmp.find('(')]
-			station2_s = tmp[tmp.find('('):]
-		else:
-			station2 = tmp
-			station2_s = ''
-
-		tmp = linitems[2].strip()		# station_id3
-		if 0 <= tmp.find('('):
-			station3 = tmp[:tmp.find('(')]
-			station3_s = tmp[tmp.find('('):]
-		else:
-			station3 = tmp
-			station3_s = ''
-
-		tmp = linitems[3].strip()		# station_id4
-		if 0 <= tmp.find('('):
-			station4 = tmp[:tmp.find('(')]
-			station4_s = tmp[tmp.find('('):]
-		else:
-			station4 = tmp
-			station4_s = ''
 
 		self.con.execute("""
 insert into t_r70bullet values(
@@ -886,27 +814,20 @@ insert into t_r70bullet values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?));""",
-		[station1, station1_s, station2, station2_s, station3, station3_s, station4, station4_s])
+		[*same_staion(linitems[0].strip()), *same_staion(linitems[1].strip()), 
+		 *same_staion(linitems[2].strip()), *same_staion(linitems[3].strip())])
 
 #------------------------------------------------------------------------------
 
 	def reg_rule86(self, label, linitems, lin):
 	# rule86
-		tmp = linitems[1].strip()
-		if 0 <= tmp.find('('):
-			station = tmp[:tmp.find('(')]
-			station_s = tmp[tmp.find('('):]
-		else:
-			station = tmp
-			station_s = ''
-
 		#print(lin, end='')
 		self.con.execute("""
 insert into t_rule86 values(
  (select rowid from t_line where name=?),
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_line where name=?), ?);""",
-		[linitems[0].strip(), station, station_s, linitems[2].strip(), int(linitems[3])])
+		[linitems[0].strip(), *same_staion(linitems[1].strip()), linitems[2].strip(), int(linitems[3])])
 
 #------------------------------------------------------------------------------
 	def reg_t_farebspekm(self, label, linitems, lin):
@@ -985,26 +906,14 @@ insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
 	def reg_t_farespp(self, label, linitems, lin):
 		# t_farespp: 特定区間通過加算
 
-		tmp = linitems[0].strip()
-		if 0 <= tmp.find('('):
-			station1 = tmp[:tmp.find('(')]
-			station1_s = tmp[tmp.find('('):]
-		else:
-			station1 = tmp
-			station1_s = ''
+		station1 = same_staion(linitems[0].strip())
+		station2 = same_staion(linitems[1].strip())
 
-		tmp = linitems[1].strip()
-		if 0 <= tmp.find('('):
-			station2 = tmp[:tmp.find('(')]
-			station2_s = tmp[tmp.find('('):]
-		else:
-			station2 = tmp
-			station2_s = ''
-
-		if int(db_name) <= 2017 and (station1 == "摩耶" or station2 == "摩耶"):
+		if int(db_name) <= 2017 and (station1[0] == "摩耶" or station2[0] == "摩耶"):
 			return
 		
-		if int(db_name) != 2019 and (station1 == "あしかがフラワーパーク" or station2 == "あしかがフラワーパーク"):
+		if int(db_name) != 2019 and (station1[0] == "あしかがフラワーパーク" or 
+									 station2[0] == "あしかがフラワーパーク"):
 			return
 
 		kind = int(linitems[4].replace(',', ''))
@@ -1016,7 +925,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),
  ?, ?, ?, ?)""",
-				[station1, station1_s, station2, station2_s,
+				[*station1, *station2,
 				 int(linitems[5].replace(',', '')), int(linitems[2].replace(',', '')), int(linitems[3].replace(',', '')),
 				 kind])
 		# station_id1, station_id2, fare10p, fare8p, fare5p, kind
@@ -1036,26 +945,12 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 
 		assert(label == "t_compnpass")
 
-		tmp = linitems[0].strip()     # 駅1
-		if 0 <= tmp.find('('):
-			station_id1 = tmp[:tmp.find('(')]
-			station_id1_s = tmp[tmp.find('('):]
-		else:
-			station_id1 = tmp
-			station_id1_s = ''
-
-		tmp = linitems[1].strip()     # 駅2
-		if 0 <= tmp.find('('):
-			station_id2 = tmp[:tmp.find('(')]
-			station_id2_s = tmp[tmp.find('('):]
-		else:
-			station_id2 = tmp
-			station_id2_s = ''
-
 		# 路線 or 会社
 		linename = linitems[2]
 		en_line_id = 0
-		if 'c' != linename[0]:
+		if len(linename) <= 0:
+			en_line_id = 0
+		elif 'c' != linename[0]:
 			# 路線
 			try:
 				self.cur.execute('select rowid from t_line where name=?', [linename])	# retrive 会社id
@@ -1078,24 +973,22 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 
 				en_line_id |= 0x80000000
 
-		try:
-		   self.cur.execute('select rowid from t_station where name=?', [linitems[3]])	# retrive 会社id
-		   en_station_id1 = self.cur.fetchone()[0]
-		except:
-			en_station_id1 = 0
-
-		try:
-			self.cur.execute('select rowid from t_station where name=?', [linitems[4]])	# retrive 会社id
-			en_station_id2 = self.cur.fetchone()[0]
-		except:
-			en_station_id2 = 0
-
-		# station_id1,station_id2,en_line_id,en_station_id1,en_station_id2
+		##print(*same_staion(linitems[0].strip()), *same_staion(linitems[1].strip()), en_line_id, 
+		##	 *same_staion(linitems[3].strip()), *same_staion(linitems[4].strip()))
+		#              station_id1, station_id2, en_line_id, en_station_id1, en_station_id2
+		# primary key (station_id1, station_id2, en_line_id)
 		self.cur.execute("""
 			insert into t_compnpass values(
-							(select rowid from t_station where name=? and samename=?),
-							(select rowid from t_station where name=? and samename=?), ?, ?, ?)""",
-			[station_id1, station_id1_s, station_id2, station_id2_s, en_line_id, en_station_id1, en_station_id2])
+							(select rowid from t_station where name=?1 and samename=?2),
+							(select rowid from t_station where name=?3 and samename=?4), 
+							?5,
+							(select case when (select rowid from t_station where name=?6 and samename=?7) is null then 0
+										 else (select rowid from t_station where name=?6 and samename=?7) end),
+							(select case when (select rowid from t_station where name=?8 and samename=?9) is null then 0
+										 else (select rowid from t_station where name=?8 and samename=?9) end)
+							)""",
+			[*same_staion(linitems[0].strip()), *same_staion(linitems[1].strip()), en_line_id, 
+			 *same_staion(linitems[3].strip()), *same_staion(linitems[4].strip())])
 
 #------------------------------------------------------------------------------
 	def reg_t_compnconc(self, label, linitems, lin):
@@ -1104,18 +997,11 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 
 		assert(label == "t_compnconc")
 
-		tmp = linitems[0].strip()     # 駅1
-		if 0 <= tmp.find('('):
-			station_id = tmp[:tmp.find('(')]
-			station_id_s = tmp[tmp.find('('):]
-		else:
-			station_id = tmp
-			station_id_s = ''
-
 		allow = int(linitems[1])
 		self.cur.execute("""
 			insert into t_compnconc values(
-				(select rowid from t_station where name=? and samename=?), ?)""", [station_id, station_id_s, allow])
+				(select rowid from t_station where name=? and samename=?), ?)""", 
+		[*same_staion(linitems[0].strip()), allow])
 
 #------------------------------------------------------------------------------
 	def reg_t_brtsp(self, label, linitems, lin):
@@ -1123,17 +1009,6 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 		# BRT乗継チェック
 
 		assert(label == "t_brtsp")
-
-		station_id = [0, 0]
-		station_id_s = [0, 0]
-		for i in range(2):
-			tmp = linitems[i + 2].strip()	  # 駅1,2
-			if 0 <= tmp.find('('):
-				station_id[i] = tmp[:tmp.find('(')]
-				station_id_s[i] = tmp[tmp.find('('):]
-			else:
-				station_id[i] = tmp
-				station_id_s[i] = ''
 
 		type = int(linitems[0]) # type
 		line = linitems[1].strip() # 路線
@@ -1153,8 +1028,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 						(select rowid from t_station where name=?3 and samename=?4)))),
 				?5, (select rowid from t_line where name=?6)
 			)""",
-			[station_id[0], station_id_s[0],
-			 station_id[1], station_id_s[1], type, line])
+			[*same_staion(linitems[2].strip()), *same_staion(linitems[3].strip()), type, line])
 
 #------------------------------------------------------------------------------
 	def reg_last_line(self):
@@ -1164,22 +1038,9 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 			#					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg])
 			# 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg
 
-			if 0 <= bitem[2].find('('):
-				bstation = bitem[2][:bitem[2].find('(')]
-				bstation_same = bitem[2][bitem[2].find('('):]
-			else:
-				bstation = bitem[2]
-				bstation_same = ''
-
 			if bitem[6]:
 				bline2 = bitem[6][:bitem[6].find('/')]					### 分岐駅まで2路線以上(日田彦山線‐小倉の例)
 				bstation2t = bitem[6][bitem[6].find('/') + 1:]
-				if 0 <= bstation2t.find('('):
-					bstation2 = bstation2t[:bstation2t.find('(')]		# 同名駅がある駅の場合
-					bstation2_same = bstation2t[bstation2t.find('('):]
-				else:
-					bstation2 = bstation2t								# 同名駅でない場合
-					bstation2_same = ''
 
 				self.con.execute("""
 				insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
@@ -1189,7 +1050,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 				(select rowid from t_line where name=?),
 				(select rowid from t_station where name=? and samename=?))
 				""",
-				[bitem[4], bstation, bstation_same, bline2, bstation2, bstation2_same])
+				[bitem[4], *same_staion(bitem[2]), bline2, *same_staion(bstation2t)])
 			else:
 				self.con.execute("""
 				insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1) values(
@@ -1197,7 +1058,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 				(select rowid from t_line where name=?),
 				(select rowid from t_station where name=? and samename=?))
 				""",
-				[bitem[4], bstation, bstation_same])
+				[bitem[4], *same_staion(bitem[2])])
 
 			self.con.execute("""insert into t_lines values(
 			(select rowid from t_line where name=?),
@@ -1290,6 +1151,12 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 		print("#define MAX_LINE_CHR	{0}".format((n+1)*2))
 		self.cur.execute("update t_global set max_line_chr={0}".format(n))
 
+		self.cur.execute("select max(y.num) from (select count(*) as num from t_compnpass group by station_id1, station_id2) y")
+		n = self.cur.fetchone()[0]
+		if not n:
+			n = 0
+		print("#define MAX_COMPNPASSSET	{0}".format(n))
+		self.cur.execute("update t_global set max_compnpass={0}".format(n))
 
 		"""
 		select t.name from t_station where company_id in (select rowid from t_company name not like 'JR%')
