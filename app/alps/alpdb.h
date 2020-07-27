@@ -479,6 +479,9 @@ public:
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
     //
 	bool isUseBullet() const { return bullet_line || rule70bullet; }
+
+    // 会社線含んでいる場合Trueを返す
+    bool isIncludeCompanyLine() const { return compncheck; }
 };
 
 class RouteItem
