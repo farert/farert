@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -2688,7 +2688,8 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
     const static TCHAR msgAppliedLowcost[] = _T("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n");
 
     if (!refRouteFlag.no_rule && !refRouteFlag.osakakan_detour &&
-        this->isUrbanArea() && !refRouteFlag.isUseBullet()) {
+        this->isUrbanArea() && !refRouteFlag.isUseBullet() 
+		&& !refRouteFlag.isIncludeCompanyLine()) {
         if (this->getBeginTerminalId() == this->getEndTerminalId()) {
             _sntprintf_s(cb, MAX_BUF,
                 _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
@@ -8135,7 +8136,11 @@ int32_t		FARE_INFO::getFareForIC() const
 {
 	//ASSERT(((fare_ic != 0) && ((companymask == (1 << (JR_CENTRAL - 1))) || (companymask == (1 << (JR_EAST - 1))))) || (fare_ic == 0));
 	ASSERT(((fare_ic != 0) && (0 == (companymask & ~((1 << (JR_CENTRAL - 1)) | ((1 << (JR_EAST - 1))))))) || (fare_ic == 0));
-	return fare_ic;
+	if (0 < company_fare) {
+		return 0;
+	} else {
+		return fare_ic;
+	}
 }
 
 /* static */
@@ -9220,6 +9225,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 
     // 大都市近郊区間内ではない、or 新幹線乗車している or 同一駅(単駅ベースで)発着 なら対象外
     if ( !isUrbanArea() || route_original.getRouteFlag().isUseBullet()
+	     || route_original.getRouteFlag().isIncludeCompanyLine()
          || (route_original.departureStationId() == route_original.arriveStationId())) {
         // usualy or loop route */
         TRACE("No reCalcFareForOptiomizeRoute.\n");
