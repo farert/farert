@@ -821,13 +821,16 @@ insert into t_r70bullet values(
 
 	def reg_rule86(self, label, linitems, lin):
 	# rule86
+		if linitems[0].strip() != "":
+			if not db_name in linitems[0]:
+				return
 		#print(lin, end='')
 		self.con.execute("""
 insert into t_rule86 values(
  (select rowid from t_line where name=?),
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_line where name=?), ?);""",
-		[linitems[0].strip(), *same_staion(linitems[1].strip()), linitems[2].strip(), int(linitems[3])])
+		[linitems[1].strip(), *same_staion(linitems[2].strip()), linitems[3].strip(), int(linitems[4])])
 
 #------------------------------------------------------------------------------
 	def reg_t_farebspekm(self, label, linitems, lin):
