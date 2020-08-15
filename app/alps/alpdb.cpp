@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -1636,21 +1636,25 @@ int Route::CompnpassSet::open(int key1, int key2)
 /*!
  *	@brief 通過連絡運輸チェック
  *
+ *  @param [in] is_postcheck true is preCompnayPasscheck
  *	@param [in] line_id      add(),追加予定路線
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
  *	@retval -4 : 通過連絡運輸禁止
  */
-int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t station_id2)
+int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	int i;
+	int rc = -4;
+
 	if (num_of_record <= 0) {
 		return 0;
 	}
 	for (i = 0; i < num_of_record; i++) {
 		if ((results[i].line_id & 0x80000000) != 0) {
 			/* company */
+			int32_t company_mask = results[i].line_id;
 			int32_t cid1 = RouteUtil::CompanyIdFromStation(station_id1);
 			int32_t cid2 = RouteUtil::CompanyIdFromStation(station_id2);
             int32_t cid11 = IDENT1(cid1) & 0x7f;
@@ -1658,22 +1662,40 @@ int Route::CompnpassSet::check(int32_t line_id, int32_t station_id1, int32_t sta
             int32_t cid21 = IDENT1(cid2) & 0x7f;
             int32_t cid22 = IDENT2(cid2) & 0x7f;
 
-			if ((0 != (results[i].line_id & (1 << cid11 | 1 << cid12)))
-             && (0 != (results[i].line_id & (1 << cid21 | 1 << cid22)))) {
+			if ((0 != (company_mask & (1 << cid11 | 1 << cid12)))
+             && (0 != (company_mask & (1 << cid21 | 1 << cid22)))) {
 				return 0;	/* OK possible pass */
+			}
+			/* JR東海なら新幹線を許す */
+			if (((company_mask & ((1 << JR_CENTRAL) | (1 << JR_EAST))) == (1 << JR_CENTRAL))
+			&& (line_id == LINE_ID(_T("東海道新幹線")))) {
+				// 都区市内適用しないように (CheckOfRule86())
+				// tokai_shinkansen = true;
+				TRACE("JR-tolai Company line\n");
+				return 1;	/* OK possible pass */
 			}
 
 		} else if (results[i].line_id == line_id) {
 			if ((results[i].stationId1 == 0) || (
 				(0 < RouteUtil::InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
 			    (0 < RouteUtil::InStation(station_id2, line_id, results[i].stationId1, results[i].stationId2)))) {
+				TRACE("Company check OK\n");
 				return 0;	/* OK possible to pass */
+			}
+			int stid;
+			if (is_postcheck) {
+				stid = station_id2;
+			} else {
+				stid = station_id1;
+			}
+		    if (0 < RouteUtil::InStation(stid, line_id, results[i].stationId1, results[i].stationId2)) {
+				rc = 2;
 			}
 		} else if (results[i].line_id == 0) {
 			break;	/* can't possoble */
 		}
 	}
-	return -4;
+	return rc;
 }
 
 
@@ -1736,16 +1758,24 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
         if (IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
             continue;
         }
-		rc = cs.check(route_list_raw.at(i).lineId,
+		rc = cs.check(false, route_list_raw.at(i).lineId,
 					  route_list_raw.at(i - 1).stationId,
 					  route_list_raw.at(i).stationId);
         TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, RouteUtil::LineName(route_list_raw.at(i).lineId).c_str(), RouteUtil::StationName(route_list_raw.at(i - 1).stationId).c_str(), RouteUtil::StationName(route_list_raw.at(i).stationId).c_str());
 		if (rc < 0) {
-			break;	/* OK */
+			break;	/* disallow */
+		}
+		if (rc == 1) {
+			route_flag.tokai_shinkansen = true;
+			rc = 0;
+		} else if (rc == 2) {
+			rc = 0;
+		} else {
+			ASSERT(rc == 0);
 		}
 	}
 	if (0 <= rc) {
-        TRACE("preCompanyPassCheck always pass)\n");
+        TRACE("preCompanyPassCheck always pass(%d)\n", rc);
 		return 0;		/* Error or Non-record(always pass) as continue */
 	} else {
         TRACE("preCompanyPassCheck will fail\n");
@@ -1759,6 +1789,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
+ *	@retval 1 : エラーなし(継続)(JR東海新幹線)
  *	@retval -4 : 通過連絡運輸禁止
  */
 int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t num)
@@ -1799,9 +1830,18 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
         TRACE("postCompanyPassCheck db open error(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
-	rc = cs.check(line_id, station_id1, station_id2);
+	rc = cs.check(true, line_id, station_id1, station_id2);
 	if (rc < 0) {
 		// route_flag.compnda = true; /* 通過連絡運輸不正 */
+	} else {
+		if (rc == 2) {
+			rc = 0;
+		} else {
+			if (rc == 1) {
+				route_flag.tokai_shinkansen = true;
+				rc = 0;
+			}
+		}
 	}
     TRACE("postCompanyPassCheck(%d)\n", rc);
 	return rc;	/* 0 / -4 */
@@ -4490,6 +4530,10 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
 			}
 		} else if (stage == 1) {
 			if ((route_item->flag & (1 << BCRULE70)) != 0) {
+				if (IS_COMPANY_LINE(route_item->lineId)) {
+					stage = 999;
+					break;
+				}
 				stage = 2;					/* 2: on */ /* 外から進入した */
 								/* 路線より最外側の大環状線内(70条適用)駅を得る */
 				stationId_o70 = CalcRoute::RetrieveOut70Station(route_item->lineId);
@@ -4502,6 +4546,10 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
 			}
 		} else if (stage == 2) {
 			if ((route_item->flag & (1 << BCRULE70)) == 0) {
+				if (IS_COMPANY_LINE(route_item->lineId)) {
+					stage = 999;
+					break;
+				}
 				stage = 3;					/* 3: off: !70 -> 70 -> !70 (applied) */
 								/* 進入して脱出した */
 								/* 路線より最外側の大環状線内(70条適用)駅を得る */
@@ -5148,6 +5196,10 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
 		if ((rRoute_flag.jrtokaistock_applied) && (city_no_s != CITYNO_NAGOYA)) { /* by user */
 			city_no_s = 0;
 		}
+		/* 会社線 JR東海許可で 東海道新幹線駅 発 */
+		if (rRoute_flag.tokai_shinkansen) {
+			city_no_s = 0;
+		}
 	}
 
 	rite = in_route_list.crbegin();
@@ -5164,6 +5216,10 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
 		/* "JR東海株主優待券使用"指定のときは適用条件可否適用 */
 		r |= 0x80000000; // BIT_ON(route_flag, BLF_JRTOKAISTOCK_ENABLE); // for UI
 		if ((rRoute_flag.jrtokaistock_applied) && (city_no_e != CITYNO_NAGOYA)) {
+			city_no_e = 0;
+		}
+		/* 会社線 JR東海許可で 東海道新幹線駅 着 */
+		if (rRoute_flag.tokai_shinkansen) {
 			city_no_e = 0;
 		}
 	}
@@ -5728,9 +5784,9 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	// 70を適用したものをroute_list_tmp2へ
 	n = CalcRoute::reRouteRule70j(route_list_tmp, &route_list_tmp2);
 	TRACE(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
-    if (0 == n) {
-        route_flag.rule70 = true;      // applied rule
-    }
+	if (0 == n) {
+		route_flag.rule70 = true;      // applied rule
+	}
 
 	// 88を適用したものをroute_list_tmpへ
 	aply88 = CalcRoute::CheckOfRule88j(&route_list_tmp2);
@@ -8905,7 +8961,8 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 		            this->jr_fare = special_fare - this->company_fare;	/* IRいしかわ 乗継割引 */
 				}
 		} else if ( !pRoute_flag->isUseBullet()            /* b#18111401: 新幹線乗車なく、 */
-		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))) {
+		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
+					&& !pRoute_flag->isIncludeCompanyLine()) {
 			special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
 			if (0 < special_fare) {
 	        	TRACE("specific fare section replace for Metro or Shikoku-Big-bridge\n");

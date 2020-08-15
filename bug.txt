@@ -139,6 +139,9 @@ b#20072603
 福岡市営地下鉄の姪浜までは追加出来るのですが、筑肥線を追加出来ない
 JR西日本からはOK
 ->
+修正した
+route_flag.tokai_shinkansen
+の追加と、CompnpassSet::check() に、東海道新幹線の判定の箇所を追加
 //
 
 
