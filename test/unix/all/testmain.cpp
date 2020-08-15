@@ -7,6 +7,7 @@ static void from_stream(char* file, int option_num);
 static const char* subword(const char* src_str, int num);
 static int num_of_word(const char* buf);
 static void rtrim(char* str);
+static void remove_comment(char* str);
 
 //int g_tax = 8;
 int g_tax = 10;
@@ -142,6 +143,7 @@ static void from_stream(char* file, int option_num)
 		return;
 	}
 	while (fgets(tbuf, sizeof(tbuf), fp)) {
+		remove_comment(tbuf);
 		rtrim(tbuf);
 		if (('\0' == tbuf[0]) || ('#' == tbuf[0])) {
 			continue;
@@ -170,6 +172,17 @@ static void rtrim(char* str)
 			str[len] = '\0';
 		} else {
 			break;
+		}
+	}
+}
+
+static void remove_comment(char* str)
+{
+	int len = strlen(str);
+
+	for (len--; 0 <= len; --len) {
+		if ('#' == str[len]) {
+			str[len] = '\0';
 		}
 	}
 }
