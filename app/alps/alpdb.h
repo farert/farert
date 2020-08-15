@@ -295,6 +295,9 @@ public:
     bool compnda		;      //25 通過連絡運輸不正フラグ
     bool compnbegin		;      //26	会社線で開始
     bool compnend		;      //27 会社線で終了
+    bool compnmetro     ;       // 東京メトロ線
+
+    bool tokai_shinkansen;
 
     int8_t urban_neerest;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user/system both.
                             // 0: N/A
@@ -326,10 +329,13 @@ public:
         ter_fin_oosaka		= false;      //22
         compncheck		    = false;      //23 会社線通過チェック有効
         compnpass			= false;      //24 通過連絡運輸
-        compnda			= false;      //25 通過連絡運輸不正フラグ
+        compnda		    	= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
+        compnmetro          = false;
 
+        tokai_shinkansen = false;
+        
         urban_neerest = 0;
         notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
@@ -1174,7 +1180,7 @@ protected:
 
 		// 結果数を返す（0~N, -1 Error：レコード数がオーバー(あり得ないバグ)）
 		int open(int32_t key1, int32_t key2);
-		int check(int32_t line_id, int32_t station_id1, int32_t station_id2);
+		int check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 	protected:
 		int en_line_id(int index) {
