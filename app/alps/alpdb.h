@@ -109,11 +109,12 @@ typedef uint32_t SPECIFICFLAG;
 
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 #define MAX_STATION     4590
-//#define MAX_LINE        223
+//#define MAX_LINE        240
 #define IS_SHINKANSEN_LINE(id)  ((LID_SHINKANZEN<(id)) && ((id) < (LID_SHINKANZEN+0x100)))	 /* 新幹線は将来的にも10または15以内 !! */
 #define IS_COMPANY_LINE(id)	    ((LID_COMPANY<(id)) && ((id) < (LID_COMPANY+0x100)))	     /* 会社線id */
 #define IS_BRT_LINE(id)	        ((LID_BRT<(id)) && ((id) < (LID_BRT+0x100)))            	 /* BRT id */
-#define MAX_JCT 330
+#define MAX_JCT 340
+#define MAX_COMPNPASSSET   25       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
@@ -138,8 +139,6 @@ typedef uint32_t SPECIFICFLAG;
 
 
 const LPCTSTR CLEAR_HISTORY = _T("(clear)");
-
-#define MAX_COMPNPASSSET    3       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 
 /* 消費税(四捨五入)加算 */
 #define taxadd(fare, tax)    (fare + ((fare * 1000 * tax / 100000) + 5) / 10 * 10)
@@ -297,6 +296,8 @@ public:
     bool compnbegin		;      //26	会社線で開始
     bool compnend		;      //27 会社線で終了
 
+    bool tokai_shinkansen;
+
     int8_t urban_neerest;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user/system both.
                             // 0: N/A
                             // 1: Neer , -1: Far
@@ -327,10 +328,12 @@ public:
         ter_fin_oosaka		= false;      //22
         compncheck		    = false;      //23 会社線通過チェック有効
         compnpass			= false;      //24 通過連絡運輸
-        compnda			= false;      //25 通過連絡運輸不正フラグ
+        compnda		    	= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
 
+        tokai_shinkansen = false;
+        
         urban_neerest = 0;
         notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
@@ -480,6 +483,9 @@ public:
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
     //
 	bool isUseBullet() const { return bullet_line || rule70bullet; }
+
+    // 会社線含んでいる場合Trueを返す
+    bool isIncludeCompanyLine() const { return compncheck; }
 };
 
 class RouteItem
@@ -1172,7 +1178,7 @@ protected:
 
 		// 結果数を返す（0~N, -1 Error：レコード数がオーバー(あり得ないバグ)）
 		int open(int32_t key1, int32_t key2);
-		int check(int32_t line_id, int32_t station_id1, int32_t station_id2);
+		int check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2);
 
 	protected:
 		int en_line_id(int index) {
