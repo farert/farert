@@ -2901,7 +2901,7 @@ JR東日本 株主優待4： \123,456
 		}
 	} else {
         //ASSERT(!fareW.isDiscount);
-//#20200726		ASSERT(company_fare == 0);
+		ASSERT(company_fare == 0);
 		//ASSERT(normal_fare  *  2 == this->roundTripFareWithCompanyLine().fare);
 		if (!refRouteFlag.isRoundTrip()) {
 			_sntprintf_s(cb, MAX_BUF, _T("運賃(IC)： ¥%s(¥%s)%s\r\n"),
@@ -9605,7 +9605,7 @@ void FARE_INFO::retr_fare(bool useBullet)
 //#20200726			ASSERT(this->company_fare == 0);	// 会社線は通っていない
 			ASSERT(this->base_sales_km == _total_jr_sales_km);
 //#20200726			ASSERT(this->base_sales_km == this->sales_km);
-            ASSERT(this->base_calc_km == _total_jr_calc_km);
+			ASSERT(this->base_calc_km == _total_jr_calc_km);
 
 			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(yamate)\n");
