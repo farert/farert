@@ -69,9 +69,11 @@ public class RouteFlag {
     // 会社線
     boolean compncheck	    	= false;      //23 会社線通過チェック有効
     boolean compnpass			= false;      //24 通過連絡運輸
-    boolean compnda			= false;      //25 通過連絡運輸不正フラグ
+    boolean compnda			    = false;      //25 通過連絡運輸不正フラグ
     boolean compnbegin			= false;      //26	会社線で開始
     boolean compnend			= false;      //27 会社線で終了
+
+    boolean tokai_shinkansen    = false;
 
     int urban_neerest;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user/system both.
                             // 0: N/A
@@ -116,6 +118,8 @@ public class RouteFlag {
         compnda			= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
+
+        tokai_shinkansen    = false;
 
         notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
@@ -176,6 +180,7 @@ public class RouteFlag {
         compnda = o.compnda;
         compnbegin = o.compnbegin;
         compnend = o.compnend;
+        tokai_shinkansen = o.tokai_shinkansen;
         urban_neerest = o.urban_neerest;
         notsamekokurahakatashinzai = o.notsamekokurahakatashinzai;
         end = o.end	;
@@ -230,8 +235,8 @@ public class RouteFlag {
     public boolean isMeihanCityEnable() {
         return !no_rule && meihan_city_enable;
     }
-    public boolean isArriveAsCity()  { return /*(meihan_city_enable == true) && */ (meihan_city_flag == true); }
-    public boolean isStartAsCity()  { return /*(meihan_city_enable == true) && */ (meihan_city_flag == false); }
+    public boolean isArriveAsCity()  { return (meihan_city_enable == true) &&  (meihan_city_flag == false); }
+    public boolean isStartAsCity()  { return (meihan_city_enable == true) &&  (meihan_city_flag == true); }
 
 
     // for debug print
@@ -299,5 +304,6 @@ public class RouteFlag {
     //
     boolean isUseBullet()  { return bullet_line || rule70bullet; }
 
-
+    // 会社線含んでいる場合Trueを返す
+    public boolean isIncludeCompanyLine() { return compncheck; }
 }
