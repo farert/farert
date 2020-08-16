@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import static org.sutezo.alps.RouteUtil.CEND;
 import static org.sutezo.alps.RouteUtil.CITYNO_NAGOYA;
 import static org.sutezo.alps.RouteUtil.CSTART;
+import static org.sutezo.alps.RouteUtil.IS_COMPANY_LINE;
 import static org.sutezo.alps.RouteUtil.JR_CENTRAL;
 import static org.sutezo.alps.farertAssert.*;
 
@@ -972,7 +973,7 @@ public class CalcRoute extends RouteList {
                 ASSERT (vkms.size() == 2);
                 total_sales_km += vkms.get(0);
                 total_calc_km  += vkms.get(1);
-                if (RouteUtil.IS_COMPANY_LINE(it.lineId)) {
+                if (IS_COMPANY_LINE(it.lineId)) {
                     total_company_km += vkms.get(0);
                 }
             }
@@ -1224,6 +1225,10 @@ public class CalcRoute extends RouteList {
                 }
             } else if (stage == 1) {
                 if ((route_item.flag & (1 << RouteUtil.BCRULE70)) != 0) {
+                    if (IS_COMPANY_LINE(route_item.lineId)) {
+                        stage = 999;
+                        break;
+                    }
                     stage = 2;					/* 2: on */ /* 外から進入した */
 									/* 路線より最外側の大環状線内(70条適用)駅を得る */
                     stationId_o70 = RetrieveOut70Station(route_item.lineId);
@@ -1236,6 +1241,10 @@ public class CalcRoute extends RouteList {
                 }
             } else if (stage == 2) {
                 if ((route_item.flag & (1 << RouteUtil.BCRULE70)) == 0) {
+                    if (IS_COMPANY_LINE(route_item.lineId)) {
+                        stage = 999;
+                        break;
+                    }
                     stage = 3;					/* 3: off: !70 -> 70 -> !70 (applied) */
 									/* 進入して脱出した */
 									/* 路線より最外側の大環状線内(70条適用)駅を得る */
@@ -1608,7 +1617,11 @@ public class CalcRoute extends RouteList {
     		if (routeFlag_.jrtokaistock_applied && (city_no_s != CITYNO_NAGOYA)) { /* by user */
     			city_no_s = 0;
     		}
-    	}
+            /* 会社線 JR東海許可で 東海道新幹線駅 発 */
+            if (routeFlag_.tokai_shinkansen) {
+                city_no_s = 0;
+            }
+        }
 
         city_no_e = RouteUtil.MASK_CITYNO(in_route_list[in_route_list.length - 1].flag);
         // 着駅が尼崎の場合大阪市内着ではない　基153-2
@@ -1622,7 +1635,11 @@ public class CalcRoute extends RouteList {
     		if (routeFlag_.jrtokaistock_applied && (city_no_e != RouteUtil.CITYNO_NAGOYA)) {
     			city_no_e = 0;
     		}
-    	}
+            /* 会社線 JR東海許可で 東海道新幹線駅 発 */
+            if (routeFlag_.tokai_shinkansen) {
+                city_no_e = 0;
+            }
+        }
 
         cityId_pair[0] = city_no_s;
         cityId_pair[1] = city_no_e;

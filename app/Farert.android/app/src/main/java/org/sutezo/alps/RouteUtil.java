@@ -65,9 +65,9 @@ public class RouteUtil {
     // length define(UTF-8)
     final static int MAX_STATION_CHR = 64;             // 38
 
-    final static int MAX_JCT = 330;		// 319
+    final static int MAX_JCT = 340;		// 319
 
-    final static int MAX_COMPNPASSSET = 3;       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
+    final static int MAX_COMPNPASSSET = 25;       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 */
 
     final static int CSTART = 1;
     final static int CEND = 2;

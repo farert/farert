@@ -237,9 +237,9 @@ public class FARE_INFO {
                         (IS_TKMSP(flag) && (RouteUtil.IS_YAMATE(this.flag) || (((1 << (JR_CENTRAL - 1)) & companymask) == 0)))) {
                 /* 東京電車特定区間のみ */                    /* b#18083101, b#19051701 */
                 ASSERT (_total_jr_fare == 0); /* 特別加算区間を通っていないはずなので */
-                ASSERT (this.company_fare == 0);	// 会社線は通っていない
+//#20200726                ASSERT (this.company_fare == 0);	// 会社線は通っていない
                 ASSERT (this.base_sales_km == _total_jr_sales_km);
-                ASSERT (this.base_sales_km == this.sales_km);
+//#20200726                ASSERT (this.base_sales_km == this.sales_km);
                 ASSERT(this.base_calc_km == _total_jr_calc_km);
 
                 if (RouteUtil.IS_YAMATE(this.flag)) {
@@ -859,7 +859,8 @@ public class FARE_INFO {
         final String msgAppliedLowcost = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n";
 
         if (!getRouteFlag.no_rule && !getRouteFlag.osakakan_detour
-                && this.isUrbanArea() && !getRouteFlag.isUseBullet()) {
+                && this.isUrbanArea() && !getRouteFlag.isUseBullet()
+                && !getRouteFlag.isIncludeCompanyLine()) {
             if (this.getBeginTerminalId() == this.getEndTerminalId()) {
                 buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
             } else if (getRouteFlag.isEnableRule115() && getRouteFlag.isRule115specificTerm()) {
@@ -1176,7 +1177,8 @@ public class FARE_INFO {
     		            this.jr_fare = special_fare - this.company_fare;	/* IRいしかわ 乗継割引 */
     				}
     		} else if (!route_flag_.isUseBullet()        /* b#18111401: 新幹線乗車なく、 */
-                && (((RouteUtil.MASK_URBAN & this.flag) != 0) || (this.sales_km < 500))) {
+                && (((RouteUtil.MASK_URBAN & this.flag) != 0) || (this.sales_km < 500))
+                && !route_flag_.isIncludeCompanyLine()) {
     			special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 1);
     			if (0 < special_fare) {
                     System.out.print("specific fare section replace for Metro or Shikoku-Big-bridge\n");
@@ -1861,7 +1863,11 @@ public class FARE_INFO {
     {
       //  ASSERT(((fare_ic != 0) && ((companymask == (1 << (RouteUtil.JR_CENTRAL - 1))) || (companymask == (1 << (RouteUtil.JR_EAST - 1))))) || (fare_ic == 0));
         ASSERT(((fare_ic != 0) && (0 == (companymask & ~((1 << (RouteUtil.JR_CENTRAL - 1)) | ((1 << (RouteUtil.JR_EAST - 1))))))) || (fare_ic == 0));
-        return fare_ic;
+        if (0 < company_fare) {
+            return 0;
+        } else {
+            return fare_ic;
+        }
     }
 
     static class Fare {
@@ -3480,6 +3486,7 @@ public class FARE_INFO {
 
         // 大都市近郊区間内ではない、or 新幹線乗車している or 同一駅(単駅ベースで)発着 なら対象外
         if (!isUrbanArea() || route_original.getRouteFlag().isUseBullet()      // 大都市近郊区間内
+                || route_original.getRouteFlag().isIncludeCompanyLine()
                 || (route_original.departureStationId() == route_original.arriveStationId())) {
             // usualy or loop route */
             System.out.print("No reCalcFareForOptiomizeRoute.\n");

@@ -295,7 +295,6 @@ public:
     bool compnda		;      //25 通過連絡運輸不正フラグ
     bool compnbegin		;      //26	会社線で開始
     bool compnend		;      //27 会社線で終了
-    bool compnmetro     ;       // 東京メトロ線
 
     bool tokai_shinkansen;
 
@@ -332,7 +331,6 @@ public:
         compnda		    	= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
-        compnmetro          = false;
 
         tokai_shinkansen = false;
         
