@@ -1,3 +1,6 @@
+git config --global --add merge.ff false
+git config --global --add pull.ff only
+
 
 岩屋 唐津線 唐津 筑肥線 姪浜 地下鉄空港線 博多 山陽新幹線 新大阪 東海道 新幹線 品川
 品川までだと、14,850- 東京までは15,180-
