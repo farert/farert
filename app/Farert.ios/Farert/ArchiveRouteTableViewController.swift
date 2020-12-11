@@ -377,9 +377,9 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
     //  On select Action sheet.
     //
-    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
-        actionSelectProc(buttonIndex, Tag: actionSheet.tag)
-    }
+//    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
+//        actionSelectProc(buttonIndex, Tag: actionSheet.tag)
+//    }
 
     // Query input
     // 

@@ -629,16 +629,16 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
     //  Action Sheet
     //
-    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
+//    func actionSheet(_ actionSheet : UIActionSheet, clickedButtonAt buttonIndex : Int) {
         //NSLog(@"action select:%d", buttonIndex);
 
-        if (actionSheet.numberOfButtons - 1) == buttonIndex {
-            return; // Canceled
-        }
-
-        let title : String = actionSheet.buttonTitle(at: buttonIndex)!
-        actionSelectProc(title)
-    }
+//        if (actionSheet.numberOfButtons - 1) == buttonIndex {
+//            return; // Canceled
+//        }
+//
+//        let title : String = actionSheet.buttonTitle(at: buttonIndex)!
+//        actionSelectProc(title)
+//    }
 
     //  長い処理
     //
