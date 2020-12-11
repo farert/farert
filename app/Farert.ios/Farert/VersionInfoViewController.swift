@@ -49,22 +49,13 @@ class VersionInfoViewController: UIViewController {
         let url : URL = URL(string: "http://farert.blogspot.jp/")!
     
         if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.openURL(url)
+            UIApplication.shared.open(url)
         } else {
             // エラー処理
         }
+    }
+    
 
-        // Share Extensionでの真のOpen URL
-        //let webView : UIWebView  = UIWebView()
-        //self.view.addSubview(webView)           // ロード完了まで保持しておきたいので適当に貼り付けておく
-        //let urq : NSURLRequest = NSURLRequest(URL: url)
-        //webView.loadRequest(urq)
-    }
-    
-    func webView(_ webView: UIWebView!, shouldStartLoadWithRequest request: URLRequest!, navigationType: UIWebView.NavigationType) -> Bool {
-        return true
-    }
-    
     // MARK: - Navigation
     /*
     // In a storyboard-based application, you will often want to do a little preparation before navigation

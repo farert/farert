@@ -35,7 +35,7 @@ class TerminalSelectTableViewController: CSTableViewController {
         searchController.searchResultsUpdater = self
         searchController.searchBar.delegate = self
         definesPresentationContext = true
-        searchController.dimsBackgroundDuringPresentation = false
+        searchController.obscuresBackgroundDuringPresentation = false
         
         searchController.hidesNavigationBarDuringPresentation = true
         
