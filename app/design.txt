@@ -7,9 +7,6 @@ git config --global --add pull.ff only
 岩屋 唐津線 久保田 長崎線 鳥栖 鹿児島線 博多 山陽新幹線 新大阪 東海道新幹線 品川
 
 
-d7k-LRa-k8b-Gz8
-
-
 2020.7
 MAX_COMPNPASSSET は、3 では少なすぎるので増やすように。
 
