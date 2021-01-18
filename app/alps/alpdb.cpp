@@ -51,6 +51,10 @@ using namespace std;
 
 #define TITLE_NOTSAMEKOKURAHAKATASHINZAI _T("(小倉博多間新幹線在来線別線)")
 
+/////////////
+// DEBUG
+#define SNAME(c) RouteUtil::StationName(c).c_str()
+#define LNAME(l) RouteUtil::LineName(l).c_str()
 
 ////////////////////////////////////////////
 //	static member
@@ -1612,6 +1616,9 @@ int Route::CompnpassSet::open(int key1, int key2)
 " from t_compnpass"
 " where station_id1=? and station_id2=?";
 	int i;
+	int station_id1;
+	int station_id2;
+
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, key1);
@@ -1623,8 +1630,10 @@ int Route::CompnpassSet::open(int key1, int key2)
 				return -1;		/* too many record */
 			}
 			results[i].line_id = dbo.getInt(0);
-			results[i].stationId1 = dbo.getInt(1);
-			results[i].stationId2 = dbo.getInt(2);
+			station_id1 = dbo.getInt(1);
+			station_id2 = dbo.getInt(2);
+			results[i].stationId1 = station_id1;
+			results[i].stationId2 = station_id2;
 		}
 		num_of_record = i;
 		return i;	/* num of receord */
@@ -1636,7 +1645,7 @@ int Route::CompnpassSet::open(int key1, int key2)
 /*!
  *	@brief 通過連絡運輸チェック
  *
- *  @param [in] is_postcheck true is preCompnayPasscheck
+ *  @param [in] is_postcheck true is preCompnayPasscheck otherwise postCompanyPasscheck
  *	@param [in] line_id      add(),追加予定路線
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
@@ -1674,12 +1683,11 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 				TRACE("JR-tolai Company line\n");
 				return 1;	/* OK possible pass */
 			}
-
 		} else if (results[i].line_id == line_id) {
 			if ((results[i].stationId1 == 0) || (
 				(0 < RouteUtil::InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
 			    (0 < RouteUtil::InStation(station_id2, line_id, results[i].stationId1, results[i].stationId2)))) {
-				TRACE("Company check OK\n");
+				TRACE(_T("Company check OK(%s,%s in %s:%s-%s)\n"), SNAME(station_id1), SNAME(station_id2), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 				return 0;	/* OK possible to pass */
 			}
 			int stid;
@@ -1689,8 +1697,9 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 				stid = station_id1;
 			}
 		    if (0 < RouteUtil::InStation(stid, line_id, results[i].stationId1, results[i].stationId2)) {
-				rc = 2;
+				rc = 2;		// OK possible to pass
 			}
+			TRACE(_T("Companny line allow range instation %d %s: %s, %s-%s%d\n"), is_postcheck, SNAME(stid), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2), rc);
 		} else if (results[i].line_id == 0) {
 			break;	/* can't possoble */
 		}
@@ -1719,7 +1728,7 @@ int32_t Route::CompanyConnectCheck(int32_t station_id)
 			r = dbo.getInt(0);
 		}
 	}
-    TRACE(_T("CompanyConnectCheck: %s(%d)\n"), RouteUtil::StationName(station_id).c_str(), r);
+    TRACE(_T("CompanyConnectCheck: %s(%d)\n"), SNAME(station_id), r);
 	return r == 0 ? -4 : 0;
 }
 
@@ -1739,8 +1748,8 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	int i;
 	int rc;
 
-	TRACE(_T("Enter preCompanyPassCheck(%s, %s %s %d)\n"), RouteUtil::LineName(line_id).c_str(), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str(), num);
-    TRACE(_T("  key1=%s, key2=%s\n"), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str());
+	TRACE(_T("Enter preCompanyPassCheck(%s, %s %s %d)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), num);
+    TRACE(_T("  key1=%s, key2=%s\n"), SNAME(station_id1), SNAME(station_id2));
 
 	if (num <= 1) {
 		/* 会社線で始まる */
@@ -1761,7 +1770,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 		rc = cs.check(false, route_list_raw.at(i).lineId,
 					  route_list_raw.at(i - 1).stationId,
 					  route_list_raw.at(i).stationId);
-        TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, RouteUtil::LineName(route_list_raw.at(i).lineId).c_str(), RouteUtil::StationName(route_list_raw.at(i - 1).stationId).c_str(), RouteUtil::StationName(route_list_raw.at(i).stationId).c_str());
+        TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, LNAME(route_list_raw.at(i).lineId), SNAME(route_list_raw.at(i - 1).stationId), SNAME(route_list_raw.at(i).stationId));
 		if (rc < 0) {
 			break;	/* disallow */
 		}
@@ -1800,50 +1809,55 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 	int32_t key1 = 0;
 	int32_t key2 = 0;
 
-	TRACE(_T("Enter postCompanyPassCheck(%s, %s %s %d)\n"), RouteUtil::LineName(line_id).c_str(), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str(), num);
+	TRACE(_T("Enter postCompanyPassCheck(%s, %s %s %d)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), num);
 
+	do {
 // 1st後段チェック	ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
-	ASSERT(!IS_COMPANY_LINE(line_id));
+		ASSERT(!IS_COMPANY_LINE(line_id));
 
-	for (i = num - 1; 0 < i; i--) {
-		if ((key1 == 0) && IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
-			key1 = route_list_raw.at(i).stationId;
-		} else if ((key1 != 0) && !IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
-			key2 = route_list_raw.at(i).stationId;
-			break;
-		}
-	}
-	TRACE(_T("  key1=%s, key2=%s\n"), RouteUtil::StationName(key1).c_str(), RouteUtil::StationName(key2).c_str());
-	if (i <= 0) {
-		route_flag.compnda = true; /* 通過連絡運輸不正 */
-		if (route_flag.compnbegin) {
-            TRACE("postCompanyPassCheck begin company line\n");
-			return 0;	/* 会社線始発なら終了 */
-		}
-		else {
-			ASSERT(FALSE);
-			return -4;
-		}
-	}
-	rc = cs.open(key1, key2);
-	if (rc <= 0) {
-        TRACE("postCompanyPassCheck db open error(pass)\n");
-		return 0;		/* Error or Non-record(always pass) as continue */
-	}
-	rc = cs.check(true, line_id, station_id1, station_id2);
-	if (rc < 0) {
-		// route_flag.compnda = true; /* 通過連絡運輸不正 */
-	} else {
-		if (rc == 2) {
-			rc = 0;
-		} else {
-			if (rc == 1) {
-				route_flag.tokai_shinkansen = true;
-				rc = 0;
+		for (i = num - 1; 0 < i; i--) {
+			if ((key1 == 0) && IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
+				key1 = route_list_raw.at(i).stationId;
+			} else if ((key1 != 0) && !IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
+				key2 = route_list_raw.at(i).stationId;
+				break;
 			}
 		}
-	}
-    TRACE("postCompanyPassCheck(%d)\n", rc);
+		TRACE(_T("  key1=%s, key2=%s\n"), SNAME(key1), SNAME(key2));
+		if (i <= 0) {
+			route_flag.compnda = true; /* 通過連絡運輸不正 */
+			if (route_flag.compnbegin) {
+				TRACE("postCompanyPassCheck begin company line\n");
+				rc = 0;	/* 会社線始発なら終了 */
+				break; // return 0
+			}
+			else {
+				ASSERT(FALSE);
+				rc = -4;
+				break;	// return -4
+			}
+		}
+		rc = cs.open(key1, key2);
+		if (rc <= 0) {
+			TRACE("postCompanyPassCheck db open error(pass)\n");
+			rc = 0;		/* Error or Non-record(always pass) as continue */
+			break;		// return 0
+		}
+		rc = cs.check(true, line_id, station_id1, station_id2);
+		if (rc < 0) {
+			// route_flag.compnda = true; /* 通過連絡運輸不正 */
+		} else {
+			if (rc == 2) {
+				rc = 0;
+			} else {
+				if (rc == 1) {
+					route_flag.tokai_shinkansen = true;
+					rc = 0;
+				}
+			}
+		}
+	} while (false);
+    TRACE("Leave postCompanyPassCheck(%d)\n", rc);
 	return rc;	/* 0 / -4 */
 }
 
@@ -1884,7 +1898,7 @@ int32_t Route::add(int32_t stationId)
 {
 	removeAll(true);
 	route_list_raw.push_back(RouteItem(0, stationId));
-	TRACE(_T("add-begin %s(%d)\n"), RouteUtil::StationName(stationId).c_str(), stationId);
+	TRACE(_T("add-begin %s(%d)\n"), SNAME(stationId), stationId);
 	return 1;
 }
 
@@ -1933,6 +1947,7 @@ first_station_id1 = stationId1;
 	/* 発駅 */
 	lflg1 = RouteUtil::AttrOfStationOnLineLine(line_id, stationId1);
 	if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
+		ASSERT(FALSE);	// normally don't come here.
 		return -2;		/* 不正経路(line_idにstationId1は存在しない) */
 	}
 
@@ -2001,7 +2016,7 @@ first_station_id1 = stationId1;
 			return -1;		// F-3b
 		}
 	}
-	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), RouteUtil::LineName(line_id).c_str(), line_id, RouteUtil::StationName(stationId1).c_str(), stationId1, RouteUtil::StationName(stationId2).c_str(), stationId2);
+	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), LNAME(line_id), line_id, SNAME(stationId1), stationId1, SNAME(stationId2), stationId2);
 
 	if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B)) {
 		 /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので
@@ -3618,9 +3633,9 @@ F/R      O   o O I I I i I   I I O O O   0/1 neer/far
 	c |= LDIR_ASC == RouteUtil::DirLine(LINE_ID(_T("大阪環状線")), station_id1, station_id2) ? 0x08 : 0;
 TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"),
       pass,
-      RouteUtil::StationName(station_id1).c_str(),
+      SNAME(station_id1),
       (0 != (c & 0x02) && (pass != 2)) ? _T(">>") : _T(">"),
-      RouteUtil::StationName(station_id2).c_str(), 0x1 & c, 0x1 & (c >> 1), 0x01 & (c >> 2), 0x01 & (c >> 3));
+      SNAME(station_id2), 0x1 & c, 0x1 & (c >> 1), 0x01 & (c >> 2), 0x01 & (c >> 3));
 
 	if (NumOf(inner_outer) <= c) {
 		c = NumOf(inner_outer) - 1;
@@ -4014,6 +4029,7 @@ SPECIFICFLAG RouteUtil::AttrOfStationId(int32_t id)
 
 //static
 //	路線駅の属性を得る
+//	BIT_CHECK(BSRNOTYET_NA) is ON = 路線内にその駅はない
 //
 SPECIFICFLAG RouteUtil::AttrOfStationOnLineLine(int32_t line_id, int32_t station_id)
 {
@@ -4032,7 +4048,7 @@ SPECIFICFLAG RouteUtil::AttrOfStationOnLineLine(int32_t line_id, int32_t station
 			return s | l;
 		}
 	}
-	return (1<<30);
+	return (1<<BSRNOTYET_NA);	// 路線内にその駅はない
 }
 
 //static
@@ -4531,7 +4547,7 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
 		} else if (stage == 1) {
 			if ((route_item->flag & (1 << BCRULE70)) != 0) {
 				if (IS_COMPANY_LINE(route_item->lineId)) {
-					stage = 999;
+					stage = 999;	// 千代田線通った規70条は適用しない
 					break;
 				}
 				stage = 2;					/* 2: on */ /* 外から進入した */
@@ -4546,8 +4562,8 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
 			}
 		} else if (stage == 2) {
 			if ((route_item->flag & (1 << BCRULE70)) == 0) {
-				if (IS_COMPANY_LINE(route_item->lineId)) {
-					stage = 999;
+				if (IS_COMPANY_LINE(route_item->lineId)) {	//
+					stage = 999;	// 千代田線通った規70条は適用しない
 					break;
 				}
 				stage = 3;					/* 3: off: !70 -> 70 -> !70 (applied) */
@@ -4753,7 +4769,7 @@ bool CalcRoute::Query_a69list(int32_t line_id, int32_t station_id1, int32_t stat
 				results->push_back(MAKEPAIR(IDENT1(cur_stid), (cur_flag & 0x0f)));
 				prev_flag = 0;
 
-				TRACE(_T("c69             station_id1=%s(%d), station_id2=%s(%d)\n"), RouteUtil::StationName(prev_stid).c_str(), prev_stid, RouteUtil::StationName(cur_stid).c_str(), cur_stid);
+				TRACE(_T("c69             station_id1=%s(%d), station_id2=%s(%d)\n"), SNAME(prev_stid), prev_stid, SNAME(cur_stid), cur_stid);
 
 				if (((cur_flag & (1 << 15)) != 0) &&
 				   // ((it + 1) == pre_list.cend()) &&
@@ -6514,11 +6530,11 @@ bool CalcRoute::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 					station_id2 = (zline[i] >> 16);
 #if 0
 if (i == 0) {
-TRACE(_T("++%15s(%d)\t%s(%d)\n"), RouteUtil::LineName(zline_id).c_str(), zline_id, RouteUtil::StationName(station_id2).c_str(), station_id2);
+TRACE(_T("++%15s(%d)\t%s(%d)\n"), LNAME(zline_id), zline_id, SNAME(station_id2), station_id2);
 } else if (i == (zline.size() - 1)) {
-TRACE(_T("--%15s(%d)\t%s(%d)\n"), RouteUtil::LineName(zline_id).c_str(), zline_id, RouteUtil::StationName(station_id2).c_str(), station_id2);
+TRACE(_T("--%15s(%d)\t%s(%d)\n"), LNAME(zline_id), zline_id, SNAME(station_id2), station_id2);
 } else {
-TRACE(_T("::%15s(%d)\t%s(%d)\n"), RouteUtil::LineName(zline_id).c_str(), zline_id, RouteUtil::StationName(station_id2).c_str(), station_id2);
+TRACE(_T("::%15s(%d)\t%s(%d)\n"), LNAME(zline_id), zline_id, SNAME(station_id2), station_id2);
 }
 #endif
 					if ((0 < zline_id) && (cline_id != zline_id)) {
@@ -6692,16 +6708,16 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), RouteUtil::LineName(zline_id).c_str(), zline_i
 #endif
 				}
 #if 0
-TRACE(_T("\n;;%15s(%d)\t%s(%d)\n"), RouteUtil::LineName(route->back().lineId).c_str(),
+TRACE(_T("\n;;%15s(%d)\t%s(%d)\n"), LNAME(route->back().lineId),
                                     route->back().lineId,
-                                    RouteUtil::StationName(route->back().stationId).c_str(),
+                                    SNAME(route->back().stationId),
                                     route->back().stationId);
  TRACE(_T("@"));
  for (i = 0; i < zroute.size(); i++) {
- TRACE(_T("%s, "), ((i % 2) == 0) ? RouteUtil::LineName(zroute[i]).c_str() : RouteUtil::StationName(zroute[i]).c_str());
+ TRACE(_T("%s, "), ((i % 2) == 0) ? LNAME(zroute[i]) : SNAME(zroute[i]));
  }
  TRACE(_T("\n"));
- if (j_station_id != 0) { TRACE(_T("/%s/\n"), RouteUtil::StationName(j_station_id).c_str()); }
+ if (j_station_id != 0) { TRACE(_T("/%s/\n"), SNAME(j_station_id)); }
 #endif
 			} else {
 				// 整備新幹線
@@ -7452,7 +7468,7 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 			lastNode2_distance = (IDENT)0xffff;
 			nLastNode = 1;
 		}
-		TRACE(_T("Last target=%s, %s\n"), RouteUtil::StationName(Jct2id(lastNode1)).c_str(), RouteUtil::StationName(Jct2id(lastNode2)).c_str());
+		TRACE(_T("Last target=%s, %s\n"), SNAME(Jct2id(lastNode1)), SNAME(Jct2id(lastNode2)));
 	} else {
 		nLastNode = 0;
 		lastNode1 = lastNode2 = 0;
@@ -7468,7 +7484,7 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
 			if (neer_node.size() == 2) {
 				excNode1 = Route::Id2jctId(IDENT1(neer_node.at(0)));		/* 渋谷 品川 代々木 */
 				excNode2 = Route::Id2jctId(IDENT1(neer_node.at(1)));		/* 渋谷 品川 新宿 */
-TRACE(_T("******** loopRouteX **%s, %s******\n"), RouteUtil::StationName(Jct2id(excNode1)).c_str(), RouteUtil::StationName(Jct2id(excNode2)).c_str());
+TRACE(_T("******** loopRouteX **%s, %s******\n"), SNAME(Jct2id(excNode1)), SNAME(Jct2id(excNode2)));
 				loopRoute = true;
 			} else {
 				/* 逗子 大船 磯子 */
@@ -7490,7 +7506,7 @@ TRACE(_T("******** loopRouteX **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 			} else {
 				loopRoute = true;
 			}
-TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(excNode1)).c_str(), RouteUtil::StationName(Jct2id(excNode2)).c_str());
+TRACE(_T("******** loopRouteY **%s, %s******\n"), SNAME(Jct2id(excNode1)), SNAME(Jct2id(excNode2)));
 		}
 	}
 
@@ -7515,7 +7531,7 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 		}
 		dijkstra.setDoneFlag(doneNode, true);	// Enter start node
 
-		TRACE(_T("[%s]"), RouteUtil::StationName(Jct2id(doneNode + 1)).c_str());
+		TRACE(_T("[%s]"), SNAME(Jct2id(doneNode + 1)));
 		if (nLastNode == 0) {
 			if ((doneNode + 1) == lastNode) {
 				break;	/* 着ノードが完了しても終了可 */
@@ -7560,12 +7576,12 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), RouteUtil::StationName(Jct2id(
 					dijkstra.setMinCost(a, cost);
 					dijkstra.setFromNode(a, doneNode + 1);
 					dijkstra.setLineId(a, ite->at(2));
-					TRACE( _T("+<%s(%s)>"), RouteUtil::StationName(Jct2id(a + 1)).c_str(), RouteUtil::LineName(dijkstra.lineId(a)).c_str());
+					TRACE( _T("+<%s(%s)>"), SNAME(Jct2id(a + 1)), LNAME(dijkstra.lineId(a)));
 				} else {
-					TRACE(_T("-<%s>"), RouteUtil::StationName(Jct2id(a + 1)).c_str());
+					TRACE(_T("-<%s>"), SNAME(Jct2id(a + 1)));
 				}
 			} else {
-TRACE(_T("x(%s)"), RouteUtil::StationName(Jct2id(a + 1)).c_str());
+TRACE(_T("x(%s)"), SNAME(Jct2id(a + 1)));
 			}
 		}
 		TRACE("\n");
@@ -7591,7 +7607,7 @@ TRACE(_T("x(%s)"), RouteUtil::StationName(Jct2id(a + 1)).c_str());
 		id = lastNode;
 	}
 
-TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(Jct2id(id)).c_str(), RouteUtil::StationName(Jct2id(dijkstra.fromNode(id - 1))).c_str(), dijkstra.fromNode(id - 1), (int)lastNode, (int)lastNode1, (int)lastNode2);
+TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), SNAME(Jct2id(id)), SNAME(Jct2id(dijkstra.fromNode(id - 1))), dijkstra.fromNode(id - 1), (int)lastNode, (int)lastNode1, (int)lastNode2);
 
 	//fromNodeが全0で下のwhileループで永久ループに陥る
 	if (dijkstra.fromNode(id - 1) == 0) {
@@ -7617,14 +7633,14 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 	// 発駅(=分岐駅)でなく最初の分岐駅(-1+1=0)でない間
 	// 最後の分岐駅からfromをトレース >> route[]
 	while ((id != startNode) && (0 < id)) {
-		TRACE( _T("  %s, %s, %s."), RouteUtil::LineName(lineid).c_str(), RouteUtil::LineName(dijkstra.lineId(id - 1)).c_str(), RouteUtil::StationName(Jct2id(id)).c_str());
+		TRACE( _T("  %s, %s, %s."), LNAME(lineid), LNAME(dijkstra.lineId(id - 1)), SNAME(Jct2id(id)));
 		if (lineid != dijkstra.lineId(id - 1)) {
 			if (IS_SHINKANSEN_LINE(lineid)) {
                 /* 新幹線→並行在来線 */
 				int32_t zline = RouteUtil::GetHZLine(lineid, Route::Jct2id(id));
 				for (idb = id; (idb != startNode) && (dijkstra.lineId(idb - 1) == zline);
 				     idb = dijkstra.fromNode(idb - 1)) {
-					TRACE( _T("    ? %s %s/"),  RouteUtil::LineName(dijkstra.lineId(idb - 1)).c_str(), RouteUtil::StationName(Jct2id(idb)).c_str());
+					TRACE( _T("    ? %s %s/"),  LNAME(dijkstra.lineId(idb - 1)), SNAME(Jct2id(idb)));
 					;
 				}
 				if (dijkstra.lineId(idb - 1) == lineid) { /* もとの新幹線に戻った ? */
@@ -7639,13 +7655,13 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 					/* thru */
 					//TRACE("*-*-*-");
 				} else if (idb != id) { /* 他路線の乗り換えた ? */
-					TRACE( _T("%sはそうだが、%sにも新幹線停車するか?"), RouteUtil::StationName(Jct2id(id)).c_str(), RouteUtil::StationName(Jct2id(idb)).c_str());
+					TRACE( _T("%sはそうだが、%sにも新幹線停車するか?"), SNAME(Jct2id(id)), SNAME(Jct2id(idb)));
 					if (zline == RouteUtil::GetHZLine(lineid, Route::Jct2id(idb))) {
 						id = idb;
 						continue;
 					}
 					/* thru */
-					TRACE( _T("+-+-+-: %s(%s) : "), RouteUtil::LineName(dijkstra.lineId(idb - 1)).c_str(), RouteUtil::LineName(lineid).c_str());
+					TRACE( _T("+-+-+-: %s(%s) : "), LNAME(dijkstra.lineId(idb - 1)), LNAME(lineid));
 				} else {
 					//TRACE("&");
 				}
@@ -7667,13 +7683,13 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 
 	//// 発駅=分岐駅
 
-	TRACE( _T("----------[(%d)%s]------\n"), id, RouteUtil::StationName(Jct2id(id)).c_str());
+	TRACE( _T("----------[(%d)%s]------\n"), id, SNAME(Jct2id(id)));
 
 	vector<IDENT> route_rev;
 	vector<IDENT>::const_reverse_iterator ritr = route.crbegin();
 	int32_t bid = -1;
 	while (ritr != route.crend()) {
-		TRACE(_T("> %s %s\n"), RouteUtil::LineName(dijkstra.lineId(*ritr)).c_str(), RouteUtil::StationName(Jct2id(*ritr + 1)).c_str());
+		TRACE(_T("> %s %s\n"), LNAME(dijkstra.lineId(*ritr)), SNAME(Jct2id(*ritr + 1)));
 		if (0 < bid && IS_SHINKANSEN_LINE(dijkstra.lineId(bid))) {
 			if (RouteUtil::GetHZLine(dijkstra.lineId(bid), Route::Jct2id(*ritr + 1)) == dijkstra.lineId(*ritr)) {
 				dijkstra.setLineId(*ritr, dijkstra.lineId(bid));	/* local line -> bullet train */
@@ -7689,7 +7705,7 @@ TRACE(_T("Last target=%s, <-- %s(%d), (%d, %d, %d)\n"), RouteUtil::StationName(J
 	route_rev.clear();	/* release */
 
 	if (lastNode == 0) {	// 着駅は非分岐駅?
-TRACE(_T("last: %s\n"), RouteUtil::LineName(dijkstra.lineId(route.back())).c_str());
+TRACE(_T("last: %s\n"), LNAME(dijkstra.lineId(route.back())));
 		lid = Route::LineIdFromStationId(end_station_id); // 着駅所属路線ID
 		// 最終分岐駅～着駅までの営業キロ、運賃計算キロを取得
 		//km = Route::Get_node_distance(lid, end_station_id, Route::Jct2id(a));
@@ -7713,7 +7729,7 @@ TRACE(_T("last: %s\n"), RouteUtil::LineName(dijkstra.lineId(route.back())).c_str
 	}
 
 	if ((1 < route_list_raw.size()) && (1 < route.size()) && (route_list_raw.back().lineId == dijkstra.lineId(route[0]))) {
-TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), RouteUtil::LineName(route_list_raw.back().lineId).c_str(), RouteUtil::StationName(route_list_raw.back().stationId).c_str());
+TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), LNAME(route_list_raw.back().lineId), SNAME(route_list_raw.back().stationId));
 		removeTail();
 		ASSERT(0 < route_list_raw.size()); /* route_list_raw.size() は0か2以上 */
 		//stationId = route_list_raw.back().stationId;
@@ -7721,7 +7737,7 @@ TRACE(_T("###return return!!!!!!!! back!!!!!! %s:%s#####\n"), RouteUtil::LineNam
 
 	a = 1;
 	for (i = 0; i < (int32_t)route.size(); i++) {
-TRACE(_T("route[] add: %s\n"), RouteUtil::StationName(Route::Jct2id(route[i] + 1)).c_str());
+TRACE(_T("route[] add: %s\n"), SNAME(Route::Jct2id(route[i] + 1)));
 		a = add(dijkstra.lineId(route[i]), /*stationId,*/ Route::Jct2id(route[i] + 1));
 		route_flag.jctsp_route_change = true;/* route modified */
 		if ((a <= 0) || (a == 5)) {
@@ -7740,7 +7756,7 @@ TRACE(_T("####%d##%d, %lu##\n"), a, i, route.size());
 //	route_list_cooked.clear();
 
 	if (lastNode == 0) {
-TRACE(_T("fin last:%s\n"), RouteUtil::LineName(lid).c_str());
+TRACE(_T("fin last:%s\n"), LNAME(lid));
 		ASSERT(0 < lid);
 		if (a == 0) {
 			// 立川 八王子 拝島 西国立
@@ -8663,9 +8679,9 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
 				      d.at(3),
 				      company_id1,
 				      company_id2,
-				      RouteUtil::LineName(ite->lineId).c_str(),
-				      RouteUtil::StationName(station_id1).c_str(),
-				      RouteUtil::StationName(ite->stationId).c_str());
+				      LNAME(ite->lineId),
+				      SNAME(station_id1),
+				      SNAME(ite->stationId));
 
 				this->companymask |= ((1 << (company_id1 - 1)) | ((1 << (company_id2 - 1))));
 
@@ -8962,7 +8978,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 				}
 		} else if ( !pRoute_flag->isUseBullet()            /* b#18111401: 新幹線乗車なく、 */
 		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
-					&& !pRoute_flag->isIncludeCompanyLine()) {
+					&& !pRoute_flag->isIncludeCompanyLine()) { // 東京メトロは適用外
 			special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
 			if (0 < special_fare) {
 	        	TRACE("specific fare section replace for Metro or Shikoku-Big-bridge\n");
@@ -9970,7 +9986,7 @@ int32_t FARE_INFO::CheckSpecificFarePass(int32_t line_id, int32_t station_id1, i
 	sqlite3_free(sql);
 	if (dbo.moveNext()) {
 		int32_t fare = dbo.getInt(2);
-		TRACE(_T("CheckSpecificFarePass found: %s, %s, +%d\n"), RouteUtil::StationName(dbo.getInt(0)).c_str(), RouteUtil::StationName(dbo.getInt(1)).c_str(), fare);
+		TRACE(_T("CheckSpecificFarePass found: %s, %s, +%d\n"), SNAME(dbo.getInt(0)), SNAME(dbo.getInt(1)), fare);
 		/* found, return values is add fare */
 		return fare;
 	}
@@ -10003,7 +10019,7 @@ int32_t FARE_INFO::SpecificFareLine(int32_t station_id1, int32_t station_id2, in
 	dbo.setParam(3, kind);
 	if (dbo.moveNext()) {
 		int32_t fare = dbo.getInt(0);
-		TRACE(_T("SpecificFareLine found: %s - %s, +%d\n"), RouteUtil::StationName(station_id1).c_str(), RouteUtil::StationName(station_id2).c_str(), fare);
+		TRACE(_T("SpecificFareLine found: %s - %s, +%d\n"), SNAME(station_id1), SNAME(station_id2), fare);
 		return fare;	/* fare */
 	}
 	return 0;	/* not found */
