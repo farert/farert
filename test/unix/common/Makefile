@@ -1,4 +1,4 @@
-CFLAGS = -Wall -D_DEBUG -g
+CFLAGS = -Wall -D_DEBUG -D_CONSOLE_TEST -g
 # test_exec.cpp
 vpath %cpp ../../../app/win_mfc/fjr_mfc/alps_mfc
 
