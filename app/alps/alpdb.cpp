@@ -1569,9 +1569,25 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 
         /* after block check e f */
 		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
-		if (rc == 0) {
+		if (0 <= rc) {
+			route_flag.compnterm = false;	// initialize
+
 			route_flag.compnpass = true;
 			route_flag.compnend = false;	// if company_line
+			if (rc == 1) {
+				route_flag.tokai_shinkansen = true;
+			} else if (rc == 3) {
+				//
+			} else if (rc == 4) {
+				if (STATION_IS_JUNCTION(stationId2)) {
+					route_flag.compnterm = true;
+				} else {
+					return -4;	/* 分岐駅ではない場合、”~続けて経路を指定してください"ができない*/
+				}
+			} else if (rc == 2) {
+				// 
+			}
+			rc = 0;
 		}
 		return rc;
 
@@ -1619,6 +1635,7 @@ int Route::CompnpassSet::open(int key1, int key2)
 	int station_id1;
 	int station_id2;
 
+	terminal = false;
 	DBO dbo = DBS::getInstance()->compileSql(tsql);
 	if (dbo.isvalid()) {
 		dbo.setParam(1, key1);
@@ -1634,6 +1651,9 @@ int Route::CompnpassSet::open(int key1, int key2)
 			station_id2 = dbo.getInt(2);
 			results[i].stationId1 = station_id1;
 			results[i].stationId2 = station_id2;
+			if (station_id1 != 0 && station_id1 == station_id2) {
+				terminal = true;
+			}
 		}
 		num_of_record = i;
 		return i;	/* num of receord */
@@ -1656,9 +1676,15 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 {
 	int i;
 	int rc = -4;
+	int terminal_id;
 
 	if (num_of_record <= 0) {
 		return 0;
+	}
+	if (is_postcheck) {
+		terminal_id = station_id2;
+	} else {
+		terminal_id = station_id1;
 	}
 	for (i = 0; i < num_of_record; i++) {
 		if ((results[i].line_id & 0x80000000) != 0) {
@@ -1683,6 +1709,16 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 				TRACE("JR-tolai Company line\n");
 				return 1;	/* OK possible pass */
 			}
+		} else if (terminal
+					&& (results[i].stationId1 != 0)
+				    && ((terminal_id == results[i].stationId1)
+					 && (terminal_id == results[i].stationId2))) {
+			ASSERT(results[i].stationId1 == results[i].stationId2);
+			TRACE("Company check OK(terminal) %s %s\n", is_postcheck ? "arrive":"leave", SNAME(terminal_id));
+			TRACE(_T("    (%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
+													 LNAME(line_id), SNAME(station_id1), SNAME(station_id2), 
+			                                         LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
+			rc = 3; 	// OK possible to pass
 		} else if (results[i].line_id == line_id) {
 			if ((results[i].stationId1 == 0) || (
 				(0 < RouteUtil::InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
@@ -1690,17 +1726,12 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 				TRACE(_T("Company check OK(%s,%s in %s:%s-%s)\n"), SNAME(station_id1), SNAME(station_id2), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 				return 0;	/* OK possible to pass */
 			}
-			int stid;
-			if (is_postcheck) {
-				stid = station_id2;
-			} else {
-				stid = station_id1;
-			}
-		    if (0 < RouteUtil::InStation(stid, line_id, results[i].stationId1, results[i].stationId2)) {
+		    if (0 < RouteUtil::InStation(terminal_id, line_id, results[i].stationId1, results[i].stationId2)) {
 				rc = 2;		// OK possible to pass
 			}
-			TRACE(_T("Companny line allow range instation %d %s: %s, %s-%s%d\n"), is_postcheck, SNAME(stid), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2), rc);
+			TRACE(_T("Companny line allow range instation %d %s: %s, %s-%s%d\n"), is_postcheck, SNAME(terminal_id), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2), rc);
 		} else if (results[i].line_id == 0) {
+			TRACE(_T("Company check NG(%s,%s-%s = %s:%s-%s)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 			break;	/* can't possoble */
 		}
 	}
@@ -1748,6 +1779,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	int i;
 	int rc;
 
+	ASSERT(IS_COMPANY_LINE(line_id));
 	TRACE(_T("Enter preCompanyPassCheck(%s, %s %s %d)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), num);
     TRACE(_T("  key1=%s, key2=%s\n"), SNAME(station_id1), SNAME(station_id2));
 
@@ -1770,7 +1802,8 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 		rc = cs.check(false, route_list_raw.at(i).lineId,
 					  route_list_raw.at(i - 1).stationId,
 					  route_list_raw.at(i).stationId);
-        TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, LNAME(route_list_raw.at(i).lineId), SNAME(route_list_raw.at(i - 1).stationId), SNAME(route_list_raw.at(i).stationId));
+        TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, 
+		        LNAME(route_list_raw.at(i).lineId), SNAME(route_list_raw.at(i - 1).stationId), SNAME(route_list_raw.at(i).stationId));
 		if (rc < 0) {
 			break;	/* disallow */
 		}
@@ -1779,6 +1812,9 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 			rc = 0;
 		} else if (rc == 2) {
 			rc = 0;
+		} else if (rc == 3) {
+			rc = 0;		// terminal arrive/leave
+			break;
 		} else {
 			ASSERT(rc == 0);
 		}
@@ -1799,6 +1835,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
  *	@retval 1 : エラーなし(継続)(JR東海新幹線)
+ *	@retval 3 : エラー保留（発着駅指定）
  *	@retval -4 : 通過連絡運輸禁止
  */
 int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t num)
@@ -1846,14 +1883,8 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 		rc = cs.check(true, line_id, station_id1, station_id2);
 		if (rc < 0) {
 			// route_flag.compnda = true; /* 通過連絡運輸不正 */
-		} else {
-			if (rc == 2) {
-				rc = 0;
-			} else {
-				if (rc == 1) {
-					route_flag.tokai_shinkansen = true;
-					rc = 0;
-				}
+			if (cs.is_terminal()) {
+				rc = 4;
 			}
 		}
 	} while (false);
@@ -2540,6 +2571,11 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 
 	lflg2 |= (lflg1 & 0xff000000);
 	lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));	// 水平型検知(D-2);
+	if (route_flag.compnterm) {
+		lflg2 |= (1 << BSRNOTYET_NA);
+	} else {
+		lflg2 &= ~(1 << BSRNOTYET_NA);
+	}
 	lflg2 |= jct_flg_on;	// BSRNOTYET_NA:BSRJCTHORD
 	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 	++num;

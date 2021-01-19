@@ -88,10 +88,13 @@ typedef uint32_t SPECIFICFLAG;
 #define	BSRJCTHORD		31		// [w]水平型検知フラグ
 
 #define BSRNOTYET_NA	30		// [w]不完全ルート
+                                // AttrOfStationOnLineLine()の戻り値(add()時の駅正当チェックに局所的に使用)
+                                // 規43−2や、分岐特例途中の中途半端な経路の時ON
+                                // 会社線通過連絡運輸で発着駅のみのチェックである場合もON（と同時に、COMPNTERMINALもON）
 #define BSRJCTSP_B		29		// [w]分岐特例B
 #define BSRSHINZAIREV   28     // [w]新幹線、在在来線折り返し
 
-#define BSR69TERM		24		// [r]
+#define BSR69TERM		24		// [r]  // not used
 #define BSR69CONT		23		// [r]
 #define BSRJCT			15		// [r]
 #define BSRBORDER       16		// [r]
@@ -295,6 +298,7 @@ public:
     bool compnda		;      //25 通過連絡運輸不正フラグ
     bool compnbegin		;      //26	会社線で開始
     bool compnend		;      //27 会社線で終了
+    bool compnterm      ;      // 会社線通過連絡運輸発着駅チェック
 
     bool tokai_shinkansen;
 
@@ -331,6 +335,8 @@ public:
         compnda		    	= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
+        compnterm           = false;      // 通過連絡運輸有効無効発着駅のみチェック
+    
 
         tokai_shinkansen = false;
         
@@ -1167,10 +1173,12 @@ protected:
 		} *results;
 		const int max_record;
 		int num_of_record;
+        bool terminal;
 	public:
 		CompnpassSet() : max_record(MAX_COMPNPASSSET) {
 			results = new recordset[max_record];
 			num_of_record = 0;
+            terminal = false;
 		}
 		~CompnpassSet() {
 			delete[] results;
@@ -1179,7 +1187,7 @@ protected:
 		// 結果数を返す（0~N, -1 Error：レコード数がオーバー(あり得ないバグ)）
 		int open(int32_t key1, int32_t key2);
 		int check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2);
-
+        bool is_terminal() const { return terminal; }
 	protected:
 		int en_line_id(int index) {
 			return results[Limit(index, 0, MAX_COMPNPASSSET - 1)].line_id;
