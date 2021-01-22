@@ -72,7 +72,7 @@ public class RouteFlag {
     boolean compnda			    = false;      //25 通過連絡運輸不正フラグ
     boolean compnbegin			= false;      //26	会社線で開始
     boolean compnend			= false;      //27 会社線で終了
-
+    boolean compnterm           = false;      // 会社線通過連絡運輸発着駅チェック
     boolean tokai_shinkansen    = false;
 
     int urban_neerest;   // 近郊区間内で最安経路算出可能(適用で計算して保持) owner is user/system both.
@@ -118,6 +118,7 @@ public class RouteFlag {
         compnda			= false;      //25 通過連絡運輸不正フラグ
         compnbegin			= false;      //26	会社線で開始
         compnend			= false;      //27 会社線で終了
+        compnterm           = false;      // 会社線通過連絡運輸発着駅チェック
 
         tokai_shinkansen    = false;
 
@@ -180,6 +181,7 @@ public class RouteFlag {
         compnda = o.compnda;
         compnbegin = o.compnbegin;
         compnend = o.compnend;
+        compnterm = o.compnterm;
         tokai_shinkansen = o.tokai_shinkansen;
         urban_neerest = o.urban_neerest;
         notsamekokurahakatashinzai = o.notsamekokurahakatashinzai;
