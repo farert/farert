@@ -52,11 +52,14 @@ public class RouteList {
     final static int BSRJCTSP	 = 31;		// [w]分岐特例
     final static int BSRJCTHORD = 31;		// [w]水平型検知フラグ
 
-    final static int BSRNOTYET_NA	= 30;		// [w]不完全ルート
+    final static int BSRNOTYET_NA	= 30;	// [w]不完全ルート
+                                            // AttrOfStationOnLineLine()の戻り値(add()時の駅正当チェックに局所的に使用)
+                                            // 規43−2や、分岐特例途中の中途半端な経路の時ON
+                                            // 会社線通過連絡運輸で発着駅のみのチェックである場合もON（と同時に、COMPNTERMINALもON）
     final static int BSRJCTSP_B	= 29;		// [w]分岐特例B
     final static int BSRSHINZAIREV	= 28;		// [w]新幹線-在来線折り返し
 
-    final static int BSR69TERM	= 24;    // [r]
+    final static int BSR69TERM	= 24;    // [r] not used
     final static int BSR69CONT	= 23;    // [r]
     final static int BSRJCT	= 15;       // [r]
     final static int BSRBORDER	= 16;    // [r]

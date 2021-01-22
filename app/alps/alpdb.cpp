@@ -1651,7 +1651,7 @@ int Route::CompnpassSet::open(int key1, int key2)
 			station_id2 = dbo.getInt(2);
 			results[i].stationId1 = station_id1;
 			results[i].stationId2 = station_id2;
-			if (station_id1 != 0 && station_id1 == station_id2) {
+			if (station_id1 != 0 && (station_id1 == station_id2)) {
 				terminal = true;
 			}
 		}
