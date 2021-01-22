@@ -1705,6 +1705,11 @@ public class Route extends RouteList {
 
         lflg2 |= (lflg1 & 0xff000000);
         lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));	// 水平型検知(D-2);
+        if (route_flag.compnterm) {
+            lflg2 |= (1 << BSRNOTYET_NA);
+        } else {
+            lflg2 &= ~(1 << BSRNOTYET_NA);
+        }
         lflg2 |= jct_flg_on;	// BSRNOTYET_NA:BSRJCTHORD
         route_list_raw.add(new RouteItem((short)line_id, (short)stationId2, lflg2));
         ++num;
@@ -2441,8 +2446,24 @@ public class Route extends RouteList {
             /* after block check e f */
     		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
     		if (rc == 0) {
-    			route_flag.compnpass  = true;
-    			route_flag.compnend = false;	// if company_line
+                route_flag.compnterm = false;	// initialize
+
+                route_flag.compnpass = true;
+                route_flag.compnend = false;	// if company_line
+                if (rc == 1) {
+                    route_flag.tokai_shinkansen = true;
+                } else if (rc == 3) {
+                    //
+                } else if (rc == 4) {
+                    if (STATION_IS_JUNCTION(stationId2)) {
+                        route_flag.compnterm = true;
+                    } else {
+                        return -4;	/* 分岐駅ではない場合、”~続けて経路を指定してください"ができない*/
+                    }
+                } else if (rc == 2) {
+                    // 
+                }
+                rc = 0;
     		}
     		return rc;
 
@@ -2511,6 +2532,7 @@ public class Route extends RouteList {
     	int i;
     	int rc;
 
+        ASSERT(IS_COMPANY_LINE(line_id));
     	System.out.printf("Enter preCompanyPassCheck(%s, %s %s %d)\n", LineName(line_id), StationName(station_id1), StationName(station_id2), num);
         System.out.printf("  key1=%s, key2=%s\n", StationName(station_id1), StationName(station_id2));
     	if (num <= 1) {
@@ -2531,8 +2553,9 @@ public class Route extends RouteList {
                           route_list_raw.get(i).lineId,
     					  route_list_raw.get(i - 1).stationId,
     					  route_list_raw.get(i).stationId);
-            System.out.printf("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n", i, num, rc, LineName(route_list_raw.get(i).lineId), StationName(route_list_raw.get(i - 1).stationId), StationName(route_list_raw.get(i).stationId));
-            if (rc < 0) {
+            System.out.printf("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n", i, num, rc, 
+                LineName(route_list_raw.get(i).lineId), StationName(route_list_raw.get(i - 1).stationId), StationName(route_list_raw.get(i).stationId));
+        if (rc < 0) {
     			break;	/* disallow */
             }
             if (rc == 1) {
@@ -2540,6 +2563,9 @@ public class Route extends RouteList {
                 rc = 0;
             } else if (rc == 2) {
                 rc = 0;
+            } else if (rc == 3) {
+                rc = 0;		// terminal arrive/leave
+                break;
             } else {
                 ASSERT(rc == 0);
             }
@@ -2560,6 +2586,7 @@ public class Route extends RouteList {
      *	@param [in] station_id2  add(),追加予定駅
      *	@retval 0 : エラーなし(継続)
      *  @retval 1 : エラーなし(継続)(JR東海新幹線)
+     *	@retval 3 : エラー保留（発着駅指定）
      *	@retval -4 : 通過連絡運輸禁止
      */
     int postCompanyPassCheck(int line_id, int station_id1, int station_id2, int num) {
@@ -2571,45 +2598,41 @@ public class Route extends RouteList {
 
     	System.out.printf("Enter postCompanyPassCheck(%s, %s %s %d)\n", LineName(line_id), StationName(station_id1), StationName(station_id2), num);
 
+        do {
     // 1st後段チェック	ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
-    	ASSERT(!IS_COMPANY_LINE(line_id));
+            ASSERT(!IS_COMPANY_LINE(line_id));
 
-    	for (i = num - 1; 0 < i; i--) {
-    		if ((key1 == 0) && IS_COMPANY_LINE(route_list_raw.get(i).lineId)) {
-    			key1 = route_list_raw.get(i).stationId;
-    		} else if ((key1 != 0) && !IS_COMPANY_LINE(route_list_raw.get(i).lineId)) {
-    			key2 = route_list_raw.get(i).stationId;
-    			break;
-    		}
-    	}
-    	System.out.printf("  key1=%s, key2=%s\n", StationName(key1), StationName(key2));
-    	if (i <= 0) {
-    		route_flag.compnda  = true; /* 通過連絡運輸不正 */
-    		if (route_flag.compnbegin) {
-    			return 0;	/* 会社線始発なら終了 */
-    		}
-    		else {
-    			ASSERT(false);
-    			return -4;
-    		}
-    	}
-    	rc = cs.open(key1, key2);
-    	if (rc <= 0) {
-    		return 0;		/* Error or Non-record(always pass) as continue */
-    	}
-    	rc = cs.check(true, line_id, station_id1, station_id2);
-    	if (rc < 0) {
-    		// BIT_ON(route_flag, compnda); /* 通過連絡運輸不正 */
-        } else {
-            if (rc == 2) {
-                rc = 0;
-            } else {
-                if (rc == 1) {
-                    route_flag.tokai_shinkansen = true;
-                    rc = 0;
+            for (i = num - 1; 0 < i; i--) {
+                if ((key1 == 0) && IS_COMPANY_LINE(route_list_raw.get(i).lineId)) {
+                    key1 = route_list_raw.get(i).stationId;
+                } else if ((key1 != 0) && !IS_COMPANY_LINE(route_list_raw.get(i).lineId)) {
+                    key2 = route_list_raw.get(i).stationId;
+                    break;
                 }
             }
-        }
+            System.out.printf("  key1=%s, key2=%s\n", StationName(key1), StationName(key2));
+            if (i <= 0) {
+                route_flag.compnda  = true; /* 通過連絡運輸不正 */
+                if (route_flag.compnbegin) {
+                    rc = 0;	/* 会社線始発なら終了 */
+                    break;  // return 0
+                }
+                else {
+                    ASSERT(false);
+                    rc = -4;
+                    break;  // return -4;
+                }
+            }
+            rc = cs.open(key1, key2);
+            if (rc <= 0) {
+                rc = 0;
+                break;  // return 0;		/* Error or Non-record(always pass) as continue */
+            }
+            rc = cs.check(true, line_id, station_id1, station_id2);
+            if (cs.is_terminal()) {
+                rc = 4;
+            }
+        } while (false);
         return rc;	/* 0 / -4 */
     }
 
@@ -2622,7 +2645,8 @@ public class Route extends RouteList {
 		}
         recordset[] results;
 		int max_record;
-		int num_of_record;
+        int num_of_record;
+        boolean terminal;
 
 		CompnpassSet() {
             max_record = MAX_COMPNPASSSET;
@@ -2655,8 +2679,11 @@ public class Route extends RouteList {
         			results[i].line_id = dbo.getInt(0);
         			results[i].stationId1 = dbo.getInt(1);
         			results[i].stationId2 = dbo.getInt(2);
-        		}
-        		num_of_record = i;
+                    if (results[i].stationId1 != 0 && (results[i].stationId1 == results[i].stationId2)) {
+                        terminal = true;
+                    }
+                }
+                num_of_record = i;
         		rc = i;	/* num of receord */
             } finally {
                 dbo.close();
@@ -2677,11 +2704,17 @@ public class Route extends RouteList {
 		int check(boolean is_postcheck, int line_id, int station_id1, int station_id2) {
             int i;
             int rc = -4;
+            int terminal_id;
 
         	if (num_of_record <= 0) {
         		return 0;
         	}
-        	for (i = 0; i < num_of_record; i++) {
+            if (is_postcheck) {
+                terminal_id = station_id2;
+            } else {
+                terminal_id = station_id1;
+            }
+            for (i = 0; i < num_of_record; i++) {
         		if ((results[i].line_id & 0x80000000) != 0) {
         			/* company */
                     int company_mask = results[i].line_id;
@@ -2700,7 +2733,16 @@ public class Route extends RouteList {
                         System.out.println("JR-tolai Company line");
                         return 1;       /* OK possible pass */
                     }
-
+                } else if (terminal
+                            && (results[i].stationId1 != 0)
+                            && ((terminal_id == results[i].stationId1)
+                            && (terminal_id == results[i].stationId2))) {
+                    ASSERT(results[i].stationId1 == results[i].stationId2);
+                    System.out.printf("Company check OK(terminal) %s %s\n", is_postcheck ? "arrive":"leave", StationName(terminal_id));
+                    System.out.printf("    (%d/%d %s,%s-%s def= %s:%s-%s)\n", i, num_of_record,
+                                                 LineName(line_id), StationName(station_id1), StationName(station_id2), 
+                                                 LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
+                    rc = 3; 	// OK possible to pass
         		} else if (results[i].line_id == line_id) {
         			if ((results[i].stationId1 == 0) || (
         				(0 < InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
@@ -2708,21 +2750,18 @@ public class Route extends RouteList {
         				System.out.println("Company check OK");
         			    return 0;	/* OK possible to pass */
         			}
-                    int stid;
-                    if (is_postcheck) {
-                        stid = station_id2;
-                    } else {
-                        stid = station_id1;
-                    }
-                    if (0 < InStation(stid, line_id, results[i].stationId1, results[i].stationId2)) {
+                    if (0 < InStation(terminal_id, line_id, results[i].stationId1, results[i].stationId2)) {
                         rc = 2;
                     }
+                    System.out.printf("Companny line allow range instation %d %s: %s, %s-%s%d\n", is_postcheck, StationName(terminal_id), LineName(line_id), StationName(results[i].stationId1), StationName(results[i].stationId2), rc);
         		} else if (results[i].line_id == 0) {
+                    System.out.printf("Company check NG(%s,%s-%s = %s:%s-%s)\n", LineName(line_id), StationName(station_id1), StationName(station_id2), LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
         			break;	/* can't possoble */
         		}
         	}
         	return rc;
         }
+        boolean is_terminal() { return terminal; }
 
 		private int en_line_id(int index) {
 			return results[Limit(index, 0, MAX_COMPNPASSSET - 1)].line_id;
