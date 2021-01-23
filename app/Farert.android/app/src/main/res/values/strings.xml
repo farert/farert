@@ -155,7 +155,6 @@
     <string name="result_days_long">(発着駅都区市内の駅を除き途中下車可能)</string>
     <string name="result_days_metro1">近郊区間内ですので最安運賃の経路にしました</string>
     <string name="result_days_metro2">近郊区間内ですので最短経路の運賃で利用可能です</string>
-    <string name="result_days_metro_return">近郊区間内ですので同一駅発着のきっぷは購入できません.</string>
     <string name="result_days_short">途中下車不可</string>
     <string name="result_via">経由</string>
     <string name="result_value_discount"> (割引)</string>
@@ -349,7 +348,6 @@
     <string name="msgPossibleLowcost">近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)</string>
     <string name="msgAppliedLowcost">近郊区間内ですので最安運賃の経路で計算(途中下車不可、有効日数当日限り)</string>
     <string name="msgSpecificFareApply">特定区間割引運賃適用"</string>
-    <string name="msgCantMetroTicket">近郊区間内ですので同一駅発着のきっぷは購入できません."</string>
     <string name="msgCanYouNeerestStation">「単駅最安」で単駅発着が選択可能です"</string>
 
     <string name="msgCanYouSpecificTerm">「特定都区市内発着」で特定都区市内発着が選択可能です"</string>
