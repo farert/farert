@@ -413,7 +413,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
     if (result.isRuleApplied &&
             fi.isUrbanArea() && !this.route_flag.isUseBullet) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
-            messages.add(msgCantMetroTicket)
+            // messages.add(msgCantMetroTicket)
         } else if (!this.route_flag.isEnableRule115 ||
             !this.route_flag.isRule115specificTerm) {
             if (this.route_flag.isLongRoute) {

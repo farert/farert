@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -2782,8 +2782,8 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
         this->isUrbanArea() && !refRouteFlag.isUseBullet() 
 		&& !refRouteFlag.isIncludeCompanyLine()) {
         if (this->getBeginTerminalId() == this->getEndTerminalId()) {
-            _sntprintf_s(cb, MAX_BUF,
-                _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
+            //_sntprintf_s(cb, MAX_BUF,
+            //    _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
         } else if (refRouteFlag.isEnableRule115() && refRouteFlag.isRule115specificTerm()) {
             // 115の都区市内発着指定Optionは最安最短じゃあないので.
             cb[0] = _T('\0');

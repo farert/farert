@@ -862,7 +862,7 @@ public class FARE_INFO {
                 && this.isUrbanArea() && !getRouteFlag.isUseBullet()
                 && !getRouteFlag.isIncludeCompanyLine()) {
             if (this.getBeginTerminalId() == this.getEndTerminalId()) {
-                buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
+                // buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
             } else if (getRouteFlag.isEnableRule115() && getRouteFlag.isRule115specificTerm()) {
                 // 115の都区市内発着指定Optionは最安最短じゃあないので.
             } else if (getRouteFlag.isLongRoute()) {
