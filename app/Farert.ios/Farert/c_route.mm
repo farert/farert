@@ -829,7 +829,7 @@ int g_tax; /* main.m */
     const static char msgAppliedLowcost[] =
                     "近郊区間内ですので最安運賃の経路で計算";
     const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
-    const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
+    //const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
     const static char msgCanYouNeerestStation[] = "「単駅最安」で単駅発着が選択可能です";
     const static char msgCanYouSpecificTerm[] = "「特定都区市内発着」で特定都区市内発着が選択可能です";
     NSMutableArray* resultMessage = [NSMutableArray array];
@@ -960,7 +960,7 @@ int g_tax; /* main.m */
     if (result.isRuleApplied &&
         fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
-            [resultMessage addObject:[NSString stringWithUTF8String:msgCantMetroTicket]];
+            //[resultMessage addObject:[NSString stringWithUTF8String:msgCantMetroTicket]];
         } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
                    !obj_calcroute->refRouteFlag().isRule115specificTerm()) {
             if (obj_calcroute->getRouteFlag().isLongRoute()) {
