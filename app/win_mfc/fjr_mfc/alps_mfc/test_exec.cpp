@@ -2357,13 +2357,14 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 			}
+#if 0
 			// JR東海株主優待券使用
 			if (croute.refRouteFlag().jrtokaistock_enable) {
 				croute.refRouteFlag().setJrTokaiStockApply(true);
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
-				_ftprintf(os, _T("///JR東海株主優待券使用\n%s\n"), s.c_str());
+				_ftprintf(os, _T("///JR東海株主優待券使用\n%s\n"), s.c_str());	
 
 				croute.refRouteFlag().setJrTokaiStockApply(false);
 				croute.calcFare(&fi);
@@ -2371,6 +2372,7 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券未使用\n%s\n"), s.c_str());
 			}
+#endif
 			if (croute.getRouteFlag().isEnableLongRoute()) {
 				// デフォルトは最安になっているので、Optionで経路指定通りへ
 				croute.refRouteFlag().setLongRoute(true);

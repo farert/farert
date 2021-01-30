@@ -1,6 +1,185 @@
 git config --global --add pull.ff only
 git config --global --add merge.ff false
 
+b#20090901
+CalcRoute::sync() 0
+c69 line_id=4293, station_id1=816, station_id2=4446
+noapplid rule69(0)
+Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4293, station_id1=388, station_id2=4446
+noapplid rule69(0)
+Rule 69(2) applied 0times.
+applied for rule86(1)
+IsBulletInUrban=14
+Use bullet line.
+company_id1=2, sub_company_id1=0, company_id2=3, sub_company_id2=0
+s1km=3963, c1km=0, s2km=1046, c2km=0
+multicompany line none detect X: 1046, 0, comp1,2=2, 3, 東海道新幹線:東京-岐阜羽島
+Enable use the JR Tokai stock option.
+fare(basic)
+No reCalcFareForOptiomizeRoute.
+///適用
+東京都区内[区] -> 岐阜羽島
+経由：[東海道新幹線]
+営業キロ： 396.3 km
+運賃： ¥6,600       往復： ¥13,200
+
+小児運賃： ¥3,300   往復： ¥6,600
+学割運賃： ¥5,280   往復： ¥10,560
+
+有効日数：   3日
+途中下車できます
+
+JR東海株主優待券使用オプション選択可
+
+c69 line_id=4293, station_id1=816, station_id2=4446
+noapplid rule69(0)
+Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000000, 0 -> 0
+no applied for rule86/87
+IsBulletInUrban=13
+Use bullet line.
+company_id1=2, sub_company_id1=0, company_id2=3, sub_company_id2=0
+s1km=3895, c1km=0, s2km=978, c2km=0
+multicompany line none detect X: 978, 0, comp1,2=2, 3, 東海道新幹線:品川-岐阜羽島
+fare(basic)
+No reCalcFareForOptiomizeRoute.
+///JR東海株主優待券使用
+品川 -> 岐阜羽島
+経由：[東海道新幹線]
+営業キロ： 389.5 km
+運賃： ¥6,600       往復： ¥13,200
+JR東海   株主優待1割： ¥5,940
+JR東海   株主優待2割： ¥5,280
+小児運賃： ¥3,300   往復： ¥6,600
+学割運賃： ¥5,280   往復： ¥10,560
+
+有効日数：   3日
+途中下車できます
+
+
+c69 line_id=4293, station_id1=816, station_id2=4446
+noapplid rule69(0)
+Rule 69 applied 0times.
+Rule70 not applied.
+RuleSpecific:chk 0x80000001, 1 -> 0
+start station is re-route rule86/87
+c69 line_id=4293, station_id1=388, station_id2=4446
+noapplid rule69(0)
+Rule 69(2) applied 0times.
+applied for rule86(1)
+IsBulletInUrban=14
+Use bullet line.
+company_id1=2, sub_company_id1=0, company_id2=3, sub_company_id2=0
+s1km=3963, c1km=0, s2km=1046, c2km=0
+multicompany line none detect X: 1046, 0, comp1,2=2, 3, 東海道新幹線:東京-岐阜羽島
+Enable use the JR Tokai stock option.
+fare(basic)
+No reCalcFareForOptiomizeRoute.
+///JR東海株主優待券未使用
+東京都区内[区] -> 岐阜羽島
+経由：[東海道新幹線]
+営業キロ： 396.3 km
+運賃： ¥6,600       往復： ¥13,200
+
+小児運賃： ¥3,300   往復： ¥6,600
+学割運賃： ¥5,280   往復： ¥10,560
+
+有効日数：   3日
+途中下車できます
+
+JR東海株主優待券使用オプション選択可
+＞＞＞＞＞＞＞＞＞＞＞＞＞＞＞
+///適用
+東京都区内[区] -> 岐阜羽島
+経由：[東海道新幹線]
+営業キロ： 396.3 km
+運賃： ¥6,600       往復： ¥13,200
+JR東海   株主優待1割： ¥5,940　　　　　　　　＜＜＜ 追加
+JR東海   株主優待2割： ¥5,280              ＜＜＜
+小児運賃： ¥3,300   往復： ¥6,600
+学割運賃： ¥5,280   往復： ¥10,560
+
+有効日数：   3日
+途中下車できます
+
+JR東海株主優待券使用オプション選択可     ＞＞＞削除
+----------------------------
+croute.refRouteFlag().jrtokaistock_enable は、Trueにしない。フラグ自体削除
+croute.refRouteFlag().setJrTokaiStockApply(true) も、削除
+
+    bool jrtokaistock_applied;  // owner is user
+    bool jrtokaistock_enable;   // owner system
+残す。
+
+calcFare()のあと、 jrtokaistock_enable がOnだと、JR東海株主優待可能なので、
+setJrTokaiStockApply()=jrtokaistock_applie を呼び出してONにできる。
+
+修正方針
+croute.refRouteFlag().jrtokaistock_enable
+は、内部でのみ使い、外で見れないように。
+
+croute.refRouteFlag().setJrTokaiStockApply()
+は、残すが外から呼べないように。
+jrtokaistock_appliedがONになることはない。
+
+”JR東海株主優待券使用オプション選択可” は出さないようにする。
+
+isEnableTokaiStockSelect()は、削除（コメント化）
+
+結果で、100km/200km越える場合、87/86条は無条件に適用し、品川からの運賃計算ではなく、東京からの計算にする。
+JR東日本エリア（熱海まで）なら、JR東日本とJR東海の両方の株主優待券を適用して表示
+JR東と海のまたがりは、JR東海の株主優待券が適用
+
+> 従来通り、JR東海株主優待のみを適用させる。JR西日本や、JR東日本を使いたければ、新幹線なんて指定せずに、素直に東海道線を使えと。
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+もう一つ、
+会社線連絡運輸で、
+岩屋 唐津線 唐津 筑肥線 姪浜 地下鉄空港線 博多 山陽新幹線 新大阪 東海道新幹線 品川
+のような経路で、JR東海までは許可されているが、JR東日本は許可されていない会社線で、新幹線はJR東海なので、熱海〜東京の新幹線各駅までは許可される。
+が、品川や、新横浜で、86条が適用されると、新幹線以外のJR東日本駅に行けてしまうので、86条は無効にしていたが、これは無効にしてはいけないらしい。
+折角かなり苦労した個所なのに、無駄になる。rRoute_flag.tokai_shinkansen のフラグとか不要になる。ロジックはそのまま残し、末端部分のみコメント化にする。
+		if (rRoute_flag.tokai_shinkansen) {
+		//	city_no_e = 0;
+		}
+以上、2021/1/31
+
+
+
+b#20112801 ##################################################
+///適用
+福岡市内[福] -> 大阪市内[阪]
+経由：[山陽新幹線]
+営業キロ： 618.5 km     計算キロ： 622.9 km
+運賃： ¥9,790       往復： ¥17,620(割)
+(往復片方の小倉-博多を在来線) ￥17,934(割)         ##＜＜＜＜ 追加
+JR西日本 株主優待5割： ¥4,890
+小児運賃： ¥4,890   往復： ¥8,800
+学割運賃： ¥7,830   往復： ¥14,080
+
+有効日数：   5日
+途中下車できます
+
+<大阪 東海道線 神戸 山陽線 門司 鹿児島線 博多 >
+///適用
+大阪市内[阪] -> 福岡市内[福]
+経由：[東海道線]神戸[山陽線]岩国[岩徳線]櫛ケ浜[山陽線]門司[鹿児島線]
+営業キロ： 618.5 km     計算キロ： 622.9 km
+JR九州営業キロ： 79.0   km 
+運賃： ¥9,950       往復： ¥17,900(割)
+(往復片方の小倉-博多を新幹線) ￥17,934(割)         ##＜＜＜＜ 追加
+小児運賃： ¥4,970   往復： ¥8,940
+学割運賃： ¥7,960   往復： ¥14,320
+
+有効日数：   5日
+途中下車できます
+
+
 
 b#20090902
 例えば、近鉄 松坂-鶴橋を乗り継ぎ、
