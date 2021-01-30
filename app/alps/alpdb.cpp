@@ -2784,9 +2784,10 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
         if (this->getBeginTerminalId() == this->getEndTerminalId()) {
             //_sntprintf_s(cb, MAX_BUF,
             //    _T("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n"));
+			memset(cb, 0, sizeof(cb));
         } else if (refRouteFlag.isEnableRule115() && refRouteFlag.isRule115specificTerm()) {
             // 115の都区市内発着指定Optionは最安最短じゃあないので.
-            cb[0] = _T('\0');
+			memset(cb, 0, sizeof(cb));
         } else {
             _sntprintf_s(cb, MAX_BUF,
                 refRouteFlag.isLongRoute() ?
@@ -3036,9 +3037,9 @@ JR東日本 株主優待4： \123,456
 	} else if (this->isBeginEndCompanyLine()) {
 		sResult += _T("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
 	}
-	if (this->isEnableTokaiStockSelect()) {
-		sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
-	}
+//	if (this->isEnableTokaiStockSelect()) {
+//		sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
+//	}
     if (this->getIsBRT_discount()) {
         sResult += _T("\r\nBRT乗継ぎ割引適用");
     }
@@ -5250,7 +5251,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
 		}
 		/* 会社線 JR東海許可で 東海道新幹線駅 発 */
 		if (rRoute_flag.tokai_shinkansen) {
-			city_no_s = 0;
+		//	city_no_s = 0;
 		}
 	}
 
@@ -5272,7 +5273,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
 		}
 		/* 会社線 JR東海許可で 東海道新幹線駅 着 */
 		if (rRoute_flag.tokai_shinkansen) {
-			city_no_e = 0;
+		//	city_no_e = 0;
 		}
 	}
 
@@ -8059,7 +8060,7 @@ int32_t FARE_INFO::countOfFareStockDiscount() const
         return 1;
         break;
     default:
-        break;
+       break;
     }
 	return 0;
 }
@@ -8098,16 +8099,13 @@ const
 
     switch (getStockDiscountCompany()) {
     case JR_EAST:
-        if (index == 0) {
-    		title = titles[0];
-    		return fare_discount(cfare, 2);
-    	} else if (index == 1) {
-    		/* JR東4割(2枚使用) */
-    		title = titles[1];
-    		return fare_discount(cfare, 4);
-    	} else {
-    		return 0;    // wrong index
-    	}
+		if (index == 0) {
+			title = titles[0];
+			return fare_discount(cfare, 2);
+		} else if (index == 1) {
+			title = titles[1];	// JR東日本　株主優待4割
+			return fare_discount(cfare, 4);
+		}
         break;
     case JR_WEST:
         if (index == 0) {
@@ -8130,9 +8128,6 @@ const
 			title = titles[4];
 			return fare_discount(cfare, 2);
 		}
-		else {
-			return 0;    // wrong index
-		}
 		break;
 	default:
         break;
@@ -8152,6 +8147,12 @@ const
 //
 int32_t FARE_INFO::getStockDiscountCompany() const
 {
+	if ((enableTokaiStockSelect == 1) || (enableTokaiStockSelect == 3)) {
+		// 1: 品川 東海道新幹線 名古屋
+		// 1: 品川 東海道新幹線 三島 東海道線 富士 身延線 甲府
+		// 3: 品川 東海道新幹線 新横浜
+		return JR_CENTRAL;
+	}
 	if ((JR_GROUP_MASK & companymask) == (1 << (JR_EAST - 1))) {
 		return JR_EAST;
 	}
@@ -8786,10 +8787,15 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                 enableTokaiStockSelect = 2; // JR東海TOICA有効
                 TRACE("Enable use the JR Tokai TOICA.\n");
             }
-			this->companymask = (1 << (JR_CENTRAL - 1));
-			if (pRoute_flag->jrtokaistock_applied) {
-				pRoute_flag->jrtokaistock_enable = true;
-			}
+            else {
+				TRACE("could you used stock JR East and Tokai.\n");
+				enableTokaiStockSelect = 3;	// JR東海株主優待券使用可
+          	}
+//			TRACE("Set only the JR Tokai.\n");
+//			this->companymask = (1 << (JR_CENTRAL - 1));
+//			if (pRoute_flag->jrtokaistock_applied) {
+//				pRoute_flag->jrtokaistock_enable = true;
+//			}
 		}
 	}
 	return fare_add;

@@ -1619,7 +1619,7 @@ public class CalcRoute extends RouteList {
     		}
             /* 会社線 JR東海許可で 東海道新幹線駅 発 */
             if (routeFlag_.tokai_shinkansen) {
-                city_no_s = 0;
+                //city_no_s = 0;
             }
         }
 
@@ -1637,7 +1637,7 @@ public class CalcRoute extends RouteList {
     		}
             /* 会社線 JR東海許可で 東海道新幹線駅 発 */
             if (routeFlag_.tokai_shinkansen) {
-                city_no_e = 0;
+                //city_no_e = 0;
             }
         }
 
