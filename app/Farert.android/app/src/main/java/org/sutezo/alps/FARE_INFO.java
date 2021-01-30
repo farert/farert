@@ -628,10 +628,15 @@ public class FARE_INFO {
                     enableTokaiStockSelect = 2; // JR東海TOICA有効
                     System.out.print("Enable use the JR Tokai TOICA.\n");
                 }
-                this.companymask = (1 << (JR_CENTRAL - 1));
-                if (routeFlag_.jrtokaistock_applied) {
-                    routeFlag_.jrtokaistock_enable = true;
+                else {
+                    System.out.print("could you used stock JR East and Tokai.\n");
+                    enableTokaiStockSelect = 3;	// JR東海株主優待券使用可
                 }
+    //			System.out.print("Set only the JR Tokai.\n");
+    //          this.companymask = (1 << (JR_CENTRAL - 1));
+    //          if (routeFlag_.jrtokaistock_applied) {
+    //              routeFlag_.jrtokaistock_enable = true;
+    //          }
             }
         }
         return fare_add;
@@ -1090,9 +1095,9 @@ public class FARE_INFO {
         } else if (this.isBeginEndCompanyLine()) {
             buffer.append("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
         }
-        if (this.isEnableTokaiStockSelect()) {
-            buffer.append("\r\nJR東海株主優待券使用オプション選択可");
-        }
+//        if (this.isEnableTokaiStockSelect()) {
+//            buffer.append("\r\nJR東海株主優待券使用オプション選択可");
+//        }
         if (this.isBRT_discount()) {
             buffer.append("\r\nBRT乗継ぎ割引適用");
         }
@@ -1441,9 +1446,9 @@ public class FARE_INFO {
               (RouteUtil.CITYNO_NAGOYA == (endTerminalId - RouteUtil.STATION_ID_AS_CITYNO)));
  	}
 
-    boolean isEnableTokaiStockSelect() {
-        return 1 == enableTokaiStockSelect;  // JR東海株主有効(品川から新幹線とか)
-    }
+//    boolean isEnableTokaiStockSelect() {
+//        return 1 == enableTokaiStockSelect;  // JR東海株主有効(品川から新幹線とか)
+//    }
 
     boolean isJrTokaiOnly() {
         return enableTokaiStockSelect == 2; // JR東海TOICA有効
@@ -1770,6 +1775,12 @@ public class FARE_INFO {
     //	会社線も含んでも良い(計算時は除外されるため)
     //
     int getStockDiscountCompany() {
+        if ((enableTokaiStockSelect == 1) || (enableTokaiStockSelect == 3)) {
+            // 1: 品川 東海道新幹線 名古屋
+            // 1: 品川 東海道新幹線 三島 東海道線 富士 身延線 甲府
+            // 3: 品川 東海道新幹線 新横浜
+            return RouteUtil.JR_CENTRAL;
+        }
         if ((RouteUtil.JR_GROUP_MASK & companymask) == (1 << (RouteUtil.JR_EAST - 1))) {
             return RouteUtil.JR_EAST;
         }
