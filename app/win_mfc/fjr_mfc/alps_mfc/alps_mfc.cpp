@@ -109,6 +109,9 @@ BOOL Calps_mfcApp::InitInstance()
 
 	AfxEnableControlContainer();
 
+	// MFC コントロールでテーマを有効にするために、"Windows ネイティブ" のビジュアル マネージャーをアクティブ化
+	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+
 	// ダイアログにシェル ツリー ビューまたはシェル リスト ビュー コントロールが
 	// 含まれている場合にシェル マネージャーを作成します。
 	//CShellManager *pShellManager = new CShellManager;
@@ -122,7 +125,7 @@ BOOL Calps_mfcApp::InitInstance()
 	// この文字列を変更してください。
 	// SetRegistryKey(_T("アプリケーション ウィザードで生成されたローカル アプリケーション"));
 
-	setlocale(LC_ALL, "");
+	//setlocale(LC_ALL, "");
 	
 	do {
 		HRSRC hRc = FindResource(m_hInstance, MAKEINTRESOURCE(dbid), _T("DB"));
@@ -181,6 +184,9 @@ BOOL Calps_mfcApp::InitInstance()
 	//	delete pShellManager;
 	//}
 
+#if !defined(_AFXDLL) && !defined(_AFX_NO_MFC_CONTROLS_IN_DIALOGS)
+	ControlBarCleanUp();
+#endif
 	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
 	//  アプリケーションを終了するために FALSE を返してください。
 	return FALSE;
