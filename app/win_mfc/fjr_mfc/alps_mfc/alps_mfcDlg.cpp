@@ -845,8 +845,8 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 	m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
 
 	/* [株主優待券使用] */
-	m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
-	m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
+	//m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
+	//m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
 
 	/* [名阪Option] */
 	m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, _T("着駅を単駅に指定"));
@@ -925,6 +925,7 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 		}
 
 		// JR東海株主優待券使用
+#if 0	// b#20090901
 		if (m_route.getRouteFlag().jrtokaistock_enable) {
 			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
 			if (m_route.getRouteFlag().jrtokaistock_applied) {
@@ -939,7 +940,7 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
 			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
 		}
-
+#endif
 		// 大阪環状線 内回り／外回り
 		if (!m_route.getRouteFlag().is_osakakan_1pass()) {
 			m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
@@ -1267,7 +1268,7 @@ void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 		//	[発駅を単駅に指定／着駅を単駅に指定]
 		// default settings
 		m_route.setNoRule(false);
-		m_route.refRouteFlag().setJrTokaiStockApply(false);
+//b#20090901		m_route.refRouteFlag().setJrTokaiStockApply(false);
 	}
 	/*	運賃表示条件フラグ取得 */
 	CalcRoute croute(m_route);
@@ -1518,7 +1519,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 		showFare(false);
 
 		break;
-
+#if 0 // b#20090901
 	case IDR_MENU_JRTOKAI_STOCK:
 		//	[JR東海株主優待券使用]チェックボタン
 		state = m_menu.GetMenuState(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND);
@@ -1533,7 +1534,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 		}
 		showFare(false);
 		break;
-
+#endif
 	case IDR_MENU_NEERORFAR:
 		m_menu.GetMenuStringW(IDR_MENU_NEERORFAR, menuTitle, MF_BYCOMMAND);
 		if (0 <= menuTitle.Find(_T("指定した経路"))) {
