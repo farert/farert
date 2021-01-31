@@ -191,7 +191,7 @@ class ResultViewActivity : AppCompatActivity() {
                     }
                 }
             }
-            R.id.menu_stocktokai -> {
+  /*          R.id.menu_stocktokai -> {
                 if (Option.N_A != mOpt_items[OptionItem.stocktokai.ordinal]) {
                     mOpt_items[OptionItem.stocktokai.ordinal] =
                             if (item.title.contains(resources.getString(R.string.action))) Option.TRUE else Option.FALSE
@@ -201,6 +201,7 @@ class ResultViewActivity : AppCompatActivity() {
                     refresh()
                 }
             }
+   */
             R.id.menu_longroute -> {
                 if (Option.N_A != mOpt_items[OptionItem.longroute.ordinal]) {
                     mOpt_items[OptionItem.longroute.ordinal] =
@@ -690,13 +691,13 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // JR東海株主
-        if (Option.FALSE == mOpt_items[OptionItem.stocktokai.ordinal]) {
-            // @"JR東海株主優待券を適用しない"(default);
-            ds.routeFlag.setJrTokaiStockApply(false)
-        } else if (Option.TRUE == mOpt_items[OptionItem.stocktokai.ordinal]) {
-            // @"JR東海株主優待券を使用する";
-            ds.routeFlag.setJrTokaiStockApply(true)
-        }
+        //if (Option.FALSE == mOpt_items[OptionItem.stocktokai.ordinal]) {
+        //    // @"JR東海株主優待券を適用しない"(default);
+        //    ds.routeFlag.setJrTokaiStockApply(false)
+        //} else if (Option.TRUE == mOpt_items[OptionItem.stocktokai.ordinal]) {
+        //    // @"JR東海株主優待券を使用する";
+        //    ds.routeFlag.setJrTokaiStockApply(true)
+        //}
 
         // 指定した経路で運賃計算 / 最安経路で運賃計算(Default)
         if (Option.FALSE == mOpt_items[OptionItem.longroute.ordinal]) {
@@ -802,7 +803,7 @@ class ResultViewActivity : AppCompatActivity() {
             opt_neerest = if (fi.isArbanArea) Option.FALSE else Option.N_A    // 最初は無効(メニューのチェック状態を頼る)
         }
 */
-
+/*
         // JR東海株主
         mOpt_items[OptionItem.stocktokai.ordinal] =
             if (fi.isJRCentralStockEnable) {
@@ -817,6 +818,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 Option.N_A
             }
+  */
     }
 
     /**
@@ -829,7 +831,7 @@ class ResultViewActivity : AppCompatActivity() {
             val mi_specialrule = findItem(R.id.menu_specialrule) ?: return
             val mi_osakakan = findItem(R.id.menu_osakakan) ?: return
             val mi_meihancity = findItem(R.id.menu_meihancity) ?: return
-            val mi_stocktokai = findItem(R.id.menu_stocktokai) ?: return
+            //val mi_stocktokai = findItem(R.id.menu_stocktokai) ?: return
             val mi_neerest = findItem(R.id.menu_neerest) ?: return
             val mi_longroute = findItem(R.id.menu_longroute) ?: return
             val mi_rule115 = findItem(R.id.menu_rule115) ?: return
@@ -904,6 +906,7 @@ class ResultViewActivity : AppCompatActivity() {
             // && !mi_neerest.isChecked)
 
             // stock
+            /*
             if (mOpt_items[OptionItem.stocktokai.ordinal] != Option.N_A) {
                 // fi.isJRCentralStockEnable()) {
                 val tok = resources.getString(R.string.result_menu_stocktokai)
@@ -920,7 +923,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 mi_stocktokai.setVisible(false) // 非表示
             }
-
+            */
             if (mOpt_items[OptionItem.osakakan.ordinal] != Option.N_A) { // fi.isOsakakanDetourEnable) {
                 if (mOpt_items[OptionItem.osakakan.ordinal] == Option.TRUE) { // fi.isOsakakanDetour) {
                     // "大阪環状線 遠回りだと近回り選択メニューが表示される"(Optional -> default)
@@ -1012,9 +1015,9 @@ class ResultViewActivity : AppCompatActivity() {
         val route = Route(mCalcRoute)
 
         when (opt) {
-            OptionItem.stocktokai -> {     // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
-                route.routeFlag.setJrTokaiStockApply(mOpt_items[opt.ordinal] == Option.TRUE)
-            }
+            //OptionItem.stocktokai -> {     // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
+            //    route.routeFlag.setJrTokaiStockApply(mOpt_items[opt.ordinal] == Option.TRUE)
+            //}
             OptionItem.osakakan -> {      // TRUEは遠回り、FALSEは近回り
                 route.setDetour(mOpt_items[opt.ordinal] == Option.TRUE)
             }
@@ -1075,13 +1078,14 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // JR東海株主 使用 有(TRUE)無(FALSE)
+        /*
         if (route.routeFlag.jrtokaistock_enable()) {
             mOpt_items[OptionItem.stocktokai.ordinal] = if (route.routeFlag.jrTokaiStockApply())
                 Option.TRUE else Option.FALSE
         } else {
             mOpt_items[OptionItem.stocktokai.ordinal] = Option.N_A
         }
-
+         */
         // 名阪 着駅を単駅に
         // ／発駅を単駅に TRUEは着駅を単駅指定、FALSEは発駅を単駅指定
         if (route.routeFlag.isMeihanCityEnable) {

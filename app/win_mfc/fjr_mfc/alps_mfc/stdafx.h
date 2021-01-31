@@ -51,6 +51,7 @@ typedef std::basic_string<TCHAR> tstring;
 #include "../lib/alps/alpfile.h"
 #include <afxcontrolbars.h>
 #include <afxcontrolbars.h>
+#include <afxcontrolbars.h>
 
 
 

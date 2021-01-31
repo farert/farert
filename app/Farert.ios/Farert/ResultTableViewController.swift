@@ -482,7 +482,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
                 }
             }
-        } else if nil != title.range(of: "株主優待") {
+        /*} else if nil != title.range(of: "株主優待") {
             if nil != title.range(of: "しない") {
                 // @"JR東海株主優待券を適用しない";
                 ds.setJrTokaiStockApply(false);
@@ -492,6 +492,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
+        */
         } else if nil != title.range(of: "指定した経路") {
             ds.setLong(true);
             self.reCalcFareInfo()
