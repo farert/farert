@@ -229,7 +229,7 @@ typedef NS_ENUM(NSInteger, DB) {
 - (BOOL)isRule115specificTerm;
 - (void)setSpecificTermRule115:(BOOL)enable;
 
-- (void)setJrTokaiStockApply:(BOOL)enabled;
+//- (void)setJrTokaiStockApply:(BOOL)enabled;
 
 
 - (void)setStartAsCity;

@@ -2441,6 +2441,7 @@ public class TestRoute {
                     pw.printf("///発駅=単駅\n%s\n", s);
                 }
                 // JR東海株主優待券使用
+                /*
                 if (croute.getRouteFlag().jrtokaistock_enable) {
                     croute.getRouteFlag().setJrTokaiStockApply(true);
                     croute.calcFare(fi);
@@ -2454,6 +2455,7 @@ public class TestRoute {
                     s = cr_remove(s);
                     pw.printf("///JR東海株主優待券未使用\n%s\n", s);
                 }
+                */
                 if (croute.getRouteFlag().isEnableLongRoute()) {
                     // デフォルトは最安になっているので、Optionで経路指定通りへ
                     croute.getRouteFlag().setLongRoute(true);
