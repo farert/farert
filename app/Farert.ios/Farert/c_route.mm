@@ -1001,7 +1001,40 @@ int g_tax; /* main.m */
     if (result.isBRTdiscount) {
         [resultMessage addObject:[NSString stringWithUTF8String:"BRT乗り継ぎ割引適用"]];
     }
-
+    if (!result.isRuleApplied && result.isSpecificFare) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "特定区間割引運賃を適用していません"]];
+    }
+    if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule86()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業規則第86条を適用していません"]];
+    }
+    if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule87()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業規則第87条を適用していません"]];
+    }
+    if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule88()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業規則第88条を適用していません"]];
+    }
+    if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule69()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業規則第69条を適用していません"]];
+    }
+    if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule70()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業規則第70条を適用していません"]];
+    }
+    if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule115()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業基準規程第115条を適用していません"]];
+    }
     result.resultMessage = [resultMessage componentsJoinedByString:@"\r\n"];
 
     // UI結果オプションメニュー

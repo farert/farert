@@ -63,7 +63,7 @@ public class TestRoute {
         FARE_INFO fi = new FARE_INFO();
         CalcRoute croute = new CalcRoute(route);
 
-        croute.getRouteFlag().no_rule = false;
+        croute.getRouteFlag().setNoRule(false);
         //croute.getRouteFlag().setStartAsCity();
         //croute.getRouteFlag().setArriveAsCity();
         //croute.calcFare(fi);
@@ -1869,7 +1869,12 @@ public class TestRoute {
             "上野原 中央東線 立川 青梅線 拝島 五日市線 秋川",
             "高尾 中央東線 八王子 八高線 拝島 五日市線 秋川",
             "高尾 中央東線 立川 青梅線 拝島 五日市線 秋川",
-            "c-----大都市近郊区間最安運賃(新潟)---------",
+            "c-----大都市近郊区間最大回り---------",
+            "渋谷 山手線 田端 東北線 東京 東海道線 品川 山手線 恵比寿",
+            "渋谷 山手線 恵比寿",
+            "辻堂 東海道線 東京 東北線 田端 山手線 新宿 中央東線 八王子 横浜線 橋本(横) 相模線 茅ケ崎",
+            "辻堂 東海道線 大船 根岸線 横浜 東海道線 川崎 南武線 立川 中央東線 八王子 横浜線 橋本(横) 相模線 茅ケ崎",
+                "c-----大都市近郊区間最安運賃(新潟)---------",
             "直江津 信越線(直江津-新潟) 柏崎 越後線 新潟 白新線 新発田 羽越線 新津 信越線(直江津-新潟) 宮内",
             "直江津 信越線(直江津-新潟) 宮内",
             "米原 東海道線 金山(中) 中央西線 塩尻",
@@ -2407,21 +2412,27 @@ public class TestRoute {
 
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
-                if (0 == (4 & round)) {
-                    croute.getRouteFlag().no_rule = true;
+                if (0 == (2 & round)) {
+                    /* default */
+                    croute.calcFare(fi);
+                    String s = fi.showFare(croute.getRouteFlag());
+                    s = cr_remove(s);
+                    pw.printf("///既定\n%s\n", s);
+                }
+    
+                if (0 == (4 & round) && croute.getRouteFlag().rule_en()) {
+                    /* rule dis-applied */
+                    croute.getRouteFlag().setNoRule(true);
                     croute.calcFare(fi);
                     String s = fi.showFare(croute.getRouteFlag());
                     s = cr_remove(s);
                     pw.printf("///非適用\n%s\n", s);
                 }
-
-                if (0 == (2 & round)) {
-                    croute.getRouteFlag().no_rule = false;
-                    croute.calcFare(fi);
-                    String s = fi.showFare(croute.getRouteFlag());
-                    s = cr_remove(s);
-                    pw.printf("///適用\n%s\n", s);
-                }
+                // reset
+                fi.reset();
+                croute.getRouteFlag().setNoRule(false);
+                croute.calcFare(fi);
+                //(void)fi.showFare(croute.getRouteFlag());
 
                 if (croute.getRouteFlag().isMeihanCityEnable()) {
                     ASSERT(croute.getRouteFlag().isStartAsCity() == false);
@@ -2618,17 +2629,17 @@ public class TestRoute {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
 
-                croute.getRouteFlag().no_rule = true;
-                croute.calcFare(fi);
-                String s = fi.showFare(croute.getRouteFlag());
-                s = cr_remove(s);
-                pw.printf("///非適用\n%s\n", s);
-
-                croute.getRouteFlag().no_rule = false;
-                croute.calcFare(fi);
-                s = fi.showFare(croute.getRouteFlag());
-                s = cr_remove(s);
-                pw.printf("///適用\n%s\n", s);
+				croute.calcFare(fi);
+				String s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				pw.printf("///既定\n%s\n", s);
+				if (croute.getRouteFlag().rule_en()) {
+					croute.getRouteFlag().setNoRule(true);
+					croute.calcFare(fi);
+					s = fi.showFare(croute.getRouteFlag());
+					s = cr_remove(s);
+					pw.printf("///非適用\n%s\n", s);
+                }
             }
             route.removeAll();
 
@@ -2646,17 +2657,18 @@ public class TestRoute {
 
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
-                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
-                pw.printf("///非適用\n%s\n", s);
+                pw.printf("///既定\n%s\n", s);
 
-                croute.getRouteFlag().no_rule = false;
-                croute.calcFare(fi);
-                s = fi.showFare(croute.getRouteFlag());
-                s = cr_remove(s);
-                pw.printf("///適用\n%s\n", s);
+                if (croute.getRouteFlag().rule_en()) {
+                    croute.getRouteFlag().setNoRule(true);
+                    croute.calcFare(fi);
+                    s = fi.showFare(croute.getRouteFlag());
+                    s = cr_remove(s);
+                    pw.printf("///非適用\n%s\n", s);
+                }
             }
             route.removeAll();
             rc = route.setup_route(line[0]);
@@ -2669,17 +2681,18 @@ public class TestRoute {
             } else {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
-                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
-                pw.printf("///非適用\n%s\n", s);
+                pw.printf("///既定\n%s\n", s);
 
-                croute.getRouteFlag().no_rule = false;
-                croute.calcFare(fi);
-                s = fi.showFare(croute.getRouteFlag());
-                s = cr_remove(s);
-                pw.printf("///適用\n%s\n", s);
+                if (croute.getRouteFlag().rule_en()) {
+                    croute.getRouteFlag().setNoRule(true);
+                    croute.calcFare(fi);
+                    s = fi.showFare(croute.getRouteFlag());
+                    s = cr_remove(s);
+                    pw.printf("///非適用\n%s\n", s);
+                }
             }
         //
             route.removeAll();
@@ -2695,17 +2708,18 @@ public class TestRoute {
                 FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
 
-                croute.getRouteFlag().no_rule = true;
                 croute.calcFare(fi);
                 String s = fi.showFare(croute.getRouteFlag());
                 s = cr_remove(s);
-                pw.printf("///非適用\n%s\n", s);
+                pw.printf("///既定\n%s\n", s);
 
-                croute.getRouteFlag().no_rule = false;
-                croute.calcFare(fi);
-                s = fi.showFare(croute.getRouteFlag());
-                s = cr_remove(s);
-                pw.printf("///適用\n%s\n", s);
+                if (croute.getRouteFlag().rule_en()) {
+                    croute.getRouteFlag().setNoRule(true);
+                    croute.calcFare(fi);
+                    s = fi.showFare(croute.getRouteFlag());
+                    s = cr_remove(s);
+                    pw.printf("///非適用\n%s\n", s);
+                }
             }
 
 
