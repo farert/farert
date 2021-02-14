@@ -198,6 +198,7 @@ public class RouteFlag {
                 special_fare_enable ||
                 meihan_city_enable;
     }
+    public void setNoRule(boolean b_rule) { no_rule = b_rule; }
 
     // UI側からセットする制御フラグ
     public boolean isEnableLongRoute() { return !no_rule && 0 != urban_neerest; }
@@ -232,6 +233,10 @@ public class RouteFlag {
     boolean isAvailableRule86or87()  { return !disable_rule86or87 && (isEnableRule86() || isEnableRule87()); }
     boolean isAvailableRule86()  { return !disable_rule86or87 && isEnableRule86(); }
     boolean isAvailableRule87()  { return !disable_rule86or87 && isEnableRule87(); }
+    boolean isAvailableRule88() { return rule88; }
+    boolean isAvailableRule70() { return rule70; }
+    boolean isAvailableRule69() { return rule69; }
+    boolean isAvailableRule115() { return 0 < rule115; }
 
     //
     public boolean isMeihanCityEnable() {

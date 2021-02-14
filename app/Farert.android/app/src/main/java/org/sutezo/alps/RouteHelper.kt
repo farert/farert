@@ -452,6 +452,28 @@ fun CalcRoute.calcFareInfo() : FareInfo
         messages.add("BRT乗り継ぎ割引適用")
     }
 
+    if (!result.isRuleApplied && result.isSpecificFare) {
+        messages.add("特定区間割引運賃を適用していません");
+    }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule86()) {
+        messages.add("旅客営業規則第86条を適用していません");
+    }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule87()) {
+        messages.add("旅客営業規則第87条を適用していません");
+    }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule88()) {
+        messages.add("旅客営業規則第88条を適用していません");
+    }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule69()) {
+        messages.add("旅客営業規則第69条を適用していません");
+    }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule70()) {
+        messages.add("旅客営業規則第70条を適用していません");
+    }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule115()) {
+        messages.add("旅客営業基準規程第115条を適用していません");
+    }
+
     result.resultMessage = messages.joinToString("\r\n")
 
     // UI結果オプションメニュー

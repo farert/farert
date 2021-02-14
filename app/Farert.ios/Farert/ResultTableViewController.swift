@@ -382,7 +382,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
         case 3:
             // "rsMetroAvailDaysCell"
-            value = 44
+            value = 20
         case 4:
             /* avail days */
             value = 44
@@ -962,7 +962,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 
         contentsForMessage.removeAll();
         // Remarks
-        contentsForMessage.append(self.fareInfo.resultMessage)
+        contentsForMessage += self.fareInfo.resultMessage.components(separatedBy:"\r\n")
     }
 
 
