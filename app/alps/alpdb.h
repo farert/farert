@@ -341,6 +341,7 @@ public:
         tokai_shinkansen = false;
         
         urban_neerest = 0;
+
         notsamekokurahakatashinzai = false;    //30 Route only : 小倉-博多間 新在別線扱い
         end			    = false;      //31 arrive to end.
 
@@ -375,6 +376,8 @@ public:
                special_fare_enable ||
                meihan_city_enable;
     }
+    void       setNoRule(bool b_rule) { no_rule = b_rule; }
+    
     // UI側からセットする制御フラグ
     bool isEnableLongRoute() const { return !no_rule && 0 != urban_neerest; }
     bool isLongRoute() const { return urban_neerest < 0; }
@@ -408,6 +411,10 @@ public:
     bool isAvailableRule86or87() const { return ((rule86or87 & 0x0f) != 0) && ((rule86or87 & 0x40) == 0); }
     bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
     bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
+    bool isAvailableRule88() const { return rule88; }
+    bool isAvailableRule70() const { return rule70; }
+    bool isAvailableRule69() const { return rule69; }
+    bool isAvailableRule115() const { return 0 < rule115; }
 
     //
     bool isMeihanCityEnable() const {
@@ -492,6 +499,8 @@ public:
 
     // 会社線含んでいる場合Trueを返す
     bool isIncludeCompanyLine() const { return compncheck; }
+
+    tstring showAppliedRule() const;
 };
 
 class RouteItem

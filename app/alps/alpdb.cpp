@@ -90,6 +90,22 @@ int32_t DbidOf::id_of_line(tstring name) {
     return id;
 }
 
+////////////////////////////////////////////
+//	RouteFlag
+//
+tstring RouteFlag::showAppliedRule() const
+{
+	TCHAR cb[128];
+
+	_sntprintf_s(cb, NumOf(cb), _T("rule8687=0x%02x, rule88=%d, rule69=%d, rule70=%d, specific_fare=%d, meihan=%d\n"),
+					(0x3f & rule86or87),
+							rule88,
+							rule69,
+							rule70,
+							special_fare_enable,
+							meihan_city_enable);
+	return cb;
+}
 
 ////////////////////////////////////////////
 //	RouteItem
@@ -3047,6 +3063,28 @@ JR東日本 株主優待4： \123,456
         refRouteFlag.special_fare_enable) {
         sResult += _T("\r\n特定区間割引運賃適用");
     }
+	if (refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
+        sResult += _T("\r\n特定区間割引運賃を適用していません");
+	}
+	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule86()) {
+        sResult += _T("\r\n旅客営業規則第86条を適用していません");
+	}
+	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule87()) {
+        sResult += _T("\r\n旅客営業規則第87条を適用していません");
+	}
+	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule88()) {
+        sResult += _T("\r\n旅客営業規則第88条を適用していません");
+	}
+	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
+        sResult += _T("\r\n旅客営業規則第69条を適用していません");
+	}
+	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule70()) {
+        sResult += _T("\r\n旅客営業規則第70条を適用していません");
+	}
+	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule115()) {
+        sResult += _T("\r\n旅客営業基準規程第115条を適用していません");
+	}
+
     sWork = this->getTOICACalcRoute_string();
     if (sWork != _T("")) {
         sResult += _T("\r\nIC運賃計算経路: ");
@@ -9423,15 +9461,19 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         }
 
         // 最短経路との差が、50km 越えならそのまま指定経路で一旦提示
-        if (500 < (getTotalSalesKm() - fare_info_shorts.getTotalSalesKm())) {
-            TRACE("The appoint route and neerest route was over the 50.0km(cancel lowcost route)\n");
-            route_original.refRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
+		int difference = (getTotalSalesKm() - fare_info_shorts.getTotalSalesKm());
+        if (0 < difference) {
+            TRACE("The appoint route and neerest route was different.\n");
+			if (500 < difference) {
+	            TRACE("          over the 50.0km(cancel lowcost route)\n");
+    	        route_original.refRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
+			}
             if (route_original.getRouteFlag().urban_neerest < 0) {
-                TRACE(": don't applied.\n");
+                TRACE("Foreced choice appint route.\n");
                 return false;
             }
-            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
+            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
         } else {
             route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
         }
