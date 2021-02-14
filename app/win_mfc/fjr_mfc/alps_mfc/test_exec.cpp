@@ -1822,6 +1822,11 @@ const static TCHAR *test_route3_tbl[] = {
 		_T("上野原 中央東線 立川 青梅線 拝島 五日市線 秋川"),
 		_T("高尾 中央東線 八王子 八高線 拝島 五日市線 秋川"),
 		_T("高尾 中央東線 立川 青梅線 拝島 五日市線 秋川"),
+		_T("c-----大都市近郊区間最大回り---------"),
+		_T("渋谷 山手線 田端 東北線 東京 東海道線 品川 山手線 恵比寿"),
+		_T("渋谷 山手線 恵比寿"),
+		_T("辻堂 東海道線 東京 東北線 田端 山手線 新宿 中央東線 八王子 横浜線 橋本(横) 相模線 茅ケ崎"),
+		_T("辻堂 東海道線 大船 根岸線 横浜 東海道線 川崎 南武線 立川 中央東線 八王子 横浜線 橋本(横) 相模線 茅ケ崎"),
 		_T("c-----大都市近郊区間最安運賃(新潟)---------"),
 		_T("直江津 信越線(直江津-新潟) 柏崎 越後線 新潟 白新線 新発田 羽越線 新津 信越線(直江津-新潟) 宮内"),
 		_T("直江津 信越線(直江津-新潟) 宮内"),
@@ -2318,28 +2323,32 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				_ftprintf(os, _T("\n"));
 			}
 
+			TRACE(_T("%s"), route.getRouteFlag().showAppliedRule().c_str());
 			FARE_INFO fi;
 			CalcRoute croute(route);
 			tstring s;
 
-			if (0 == (4 & round)) {
-				/* no rule */
-				croute.refRouteFlag().no_rule = true;
+			if (0 == (2 & round)) {
+				/* default */
+				croute.calcFare(&fi);
+				s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///既定\n%s\n"), s.c_str());
+			}
+
+			if (0 == (4 & round) && croute.getRouteFlag().rule_en()) {
+				/* rule dis-applied */
+				croute.refRouteFlag().setNoRule(true);
 				croute.calcFare(&fi);
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 			}
-
-			if (0 == (2 & round)) {
-				/* rule applied */
-				croute.refRouteFlag().no_rule = false;
-				croute.calcFare(&fi);
-				s = fi.showFare(croute.getRouteFlag());
-				s = cr_remove(s);
-				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
-			}
-
+			// reset
+			fi.reset();
+			croute.refRouteFlag().setNoRule(false);
+			croute.calcFare(&fi); 
+			//(void)fi.showFare(croute.getRouteFlag());
 			if (croute.refRouteFlag().isMeihanCityEnable()) {
 				ASSERT(croute.refRouteFlag().isStartAsCity() == false);
 				ASSERT(croute.refRouteFlag().isArriveAsCity() == true);
@@ -2569,20 +2578,20 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) {
 					ASSERT(fail == 0);
 				}
+				TRACE(_T("%s"), route.getRouteFlag().showAppliedRule().c_str());
 				FARE_INFO fi;
 				CalcRoute croute(route);
-				if (!resopt) {
-					croute.refRouteFlag().no_rule = true;
+				croute.calcFare(&fi);
+				tstring s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///既定\n%s\n"), s.c_str());
+				if (!resopt && croute.refRouteFlag().rule_en()) {
+					croute.refRouteFlag().setNoRule(true);
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().no_rule = false;
-				croute.calcFare(&fi);
-				tstring s = fi.showFare(croute.getRouteFlag());
-				s = cr_remove(s);
-				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
 		}
 
@@ -2599,20 +2608,21 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				if (!resopt) { ASSERT(fail != 0); }
 			} else {
 				if (!resopt) { ASSERT(0 <= fail); }
+				TRACE(_T("%s"), route.getRouteFlag().showAppliedRule().c_str());
 				FARE_INFO fi;
 				CalcRoute croute(route);
-				if (!resopt) {
-					croute.refRouteFlag().no_rule = true;
+				croute.refRouteFlag().setNoRule(false);
+				croute.calcFare(&fi);
+				tstring s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///既定\n%s\n"), s.c_str());
+				if (!resopt && croute.refRouteFlag().rule_en()) {
+					croute.refRouteFlag().setNoRule(true);
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().no_rule = false;
-				croute.calcFare(&fi);
-				tstring s = fi.showFare(croute.getRouteFlag());
-				s = cr_remove(s);
-				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
 		}
 		//
@@ -2628,20 +2638,21 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				//ASSERT(fail != 0);
 			} else {
 				if (!resopt) { ASSERT(0 <= fail); }
+				TRACE(_T("%s"), route.getRouteFlag().showAppliedRule().c_str());
 				FARE_INFO fi;
 				CalcRoute croute(route);
-				if (!resopt) {
-					croute.refRouteFlag().no_rule = true;
+				croute.refRouteFlag().setNoRule(false);
+				croute.calcFare(&fi);
+				tstring s = fi.showFare(croute.getRouteFlag());
+				s = cr_remove(s);
+				_ftprintf(os, _T("///既定\n%s\n"), s.c_str());
+				if (!resopt && croute.refRouteFlag().rule_en()) {
+					croute.refRouteFlag().setNoRule(true);
 					croute.calcFare(&fi);
 					tstring s = fi.showFare(croute.getRouteFlag());
 					s = cr_remove(s);
 					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
 				}
-				croute.refRouteFlag().no_rule = false;
-				croute.calcFare(&fi);
-				tstring s = fi.showFare(croute.getRouteFlag());
-				s = cr_remove(s);
-				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
 			}
 		}
 		//
@@ -2657,20 +2668,20 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 				//ASSERT(fail != 0);
 			} else {
 				if (!resopt) { ASSERT(0 <= fail); }
+				TRACE(_T("%s"), route.getRouteFlag().showAppliedRule().c_str());
 				FARE_INFO fi;
 				CalcRoute croute(route);
-				if (!resopt) {
-					croute.refRouteFlag().no_rule = true;
-					croute.calcFare(&fi);
-					tstring s = fi.showFare(croute.getRouteFlag());
-					s = cr_remove(s);
-					_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
-				}
-				croute.refRouteFlag().no_rule = false;
 				croute.calcFare(&fi);
 				tstring s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
-				_ftprintf(os, _T("///適用\n%s\n"), s.c_str());
+				_ftprintf(os, _T("///既定\n%s\n"), s.c_str());
+				if (croute.refRouteFlag().rule_en()) {
+					croute.refRouteFlag().setNoRule(true);
+					croute.calcFare(&fi);
+					tstring s = fi.showFare(croute.getRouteFlag());
+					s = cr_remove(s);
+					_ftprintf(os, _T("///特例非適用\n%s\n"), s.c_str());
+				}
 			}
 		}
 		//
@@ -2850,7 +2861,7 @@ void test_temp()
 	}
 	FARE_INFO fi;
 	CalcRoute croute(route);
-	croute.refRouteFlag().no_rule = false;
+	croute.refRouteFlag().setNoRule(false);
 	croute.calcFare(&fi);
 	s = fi.showFare(croute.getRouteFlag());
 	s = cr_remove(s);

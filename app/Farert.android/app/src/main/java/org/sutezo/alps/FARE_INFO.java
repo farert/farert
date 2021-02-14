@@ -3587,11 +3587,15 @@ public class FARE_INFO {
             }
 
             // 最短経路との差が、50km 越えならそのまま指定経路で一旦提示
-            if (500 < (getTotalSalesKm() - fare_info_shorts.getTotalSalesKm())) {
+            int difference = getTotalSalesKm() - fare_info_shorts.getTotalSalesKm();
+            if (0 < difference) {
                 System.out.print("The appoint route and neerest route was over the 50.0km(cancel lowcost route)\n");
-                route_original.getRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
+                if (500 < difference) {
+                    System.out.println("          over the 50.0km(cancel lowcost route)");
+                    route_original.getRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
+                }
                 if (route_original.getRouteFlag().urban_neerest < 0) {
-                    System.out.print(": don't applied.\n");
+                    System.out.println("Foreced choice appint route.");
                     return false;
                 }
                 route_original.getRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
