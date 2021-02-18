@@ -21,11 +21,12 @@
 + [build] or [archive]
 
 ### POSIX(CLI)
-+ cd test/unix/all
-+ make
-+ source start.sh
-+ ./farert <駅1> <路線1> <駅2> ...
-
+{code}
+$ cd test/unix/all
+$ make
+$ source start.sh
+$ ./farert <駅1> <路線1> <駅2> ...
+{/code}
 ### How to edit and make database
 - See db/ directory.
 
