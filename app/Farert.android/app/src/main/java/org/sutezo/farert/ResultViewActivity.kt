@@ -94,6 +94,7 @@ class ResultViewActivity : AppCompatActivity() {
         super.onResume()
 
         val routeEndIndex = intent.getIntExtra("arrive", -1)
+        val alertId = intent.getIntExtra("alert_title", -1)
         val ds = Route()
 
         (application as? FarertApp)?.ds ?: return
@@ -111,6 +112,9 @@ class ResultViewActivity : AppCompatActivity() {
             setContentData(fi)  // 表示計算結果
             // 設定可能フラグを設定(make opt_xxx)
             setOptionFlag(fi)   // getFareOption() -> this member attributes(opt_xxx)
+        }
+        if (0 < alertId) {
+            showInfoAlert(alertId)
         }
     }
 
@@ -143,8 +147,7 @@ class ResultViewActivity : AppCompatActivity() {
                     changeOption(OptionItem.sperule)
 
                     if (mOpt_items[OptionItem.sperule.ordinal] == Option.TRUE) {
-                        showInfoAlert(R.string.title_specific_calc_option_norule)
-                        refresh()
+                        refresh(R.string.title_specific_calc_option_norule)
                     } else {
                         refresh()
                     }
@@ -184,8 +187,7 @@ class ResultViewActivity : AppCompatActivity() {
                     changeOption(OptionItem.osakakan)
 
                     if (mOpt_items[OptionItem.osakakan.ordinal] == Option.TRUE) {
-                        showInfoAlert(R.string.title_specific_calc_option_osakakan)
-                        refresh()
+                        refresh(R.string.title_specific_calc_option_osakakan)
                     } else {
                         refresh()
                     }
@@ -258,7 +260,8 @@ class ResultViewActivity : AppCompatActivity() {
     /**
      * 外部エクスポート用結果テキストを生成
      * @param subject 題名
-     * @param ds 経路オブジェクト
+     * @param ds 経路オ
+     * ブジェクト
      * @param fi 計算結果オブジェクト
      * @return 結果表示テキスト
      */
@@ -943,10 +946,15 @@ class ResultViewActivity : AppCompatActivity() {
      * 運賃計算結果画面を最表示する
      * 運賃計算オプションを保持しActivityを再起動する
      */
-    private fun refresh() {
+    private fun refresh(id: Int? = null) {
         finish()
         mOptMap.forEach {
             this.intent.putExtra(it.value, mOpt_items[it.key.ordinal].ordinal)
+        }
+        if (id != null) {
+            this.intent.putExtra("alert_title", id) // showInfoAlert(id)
+        } else {
+            this.intent.putExtra("alert_title", -1)
         }
         startActivity(this.intent)
     }
