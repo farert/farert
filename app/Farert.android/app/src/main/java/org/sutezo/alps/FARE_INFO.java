@@ -333,8 +333,9 @@ public class FARE_INFO {
             ASSERT (_total_jr_calc_km == this.hokkaido_calc_km);
             ASSERT (_total_jr_fare == 0);
 
-            if (this.local_only_as_hokkaido || _total_jr_sales_km <= 100) {
-                /* JR北海道 地方交通線のみ */
+            if (this.local_only_as_hokkaido
+                || (!this.major_only && (_total_jr_sales_km <= 100))) {
+                    /* JR北海道 地方交通線のみ */
                 // (j)<s>
                 System.out.print("fare(hokkaido_sub)\n");
                 _total_jr_fare = Fare_hokkaido_sub(_total_jr_sales_km);
