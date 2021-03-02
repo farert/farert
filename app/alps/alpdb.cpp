@@ -2573,6 +2573,20 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 		route_pass.update_flag(&route_flag); /* update route_flag LF_OSAKAKAN_MASK */
 	}
 
+	if ((stationId1 == STATION_ID(_T("吉塚"))) && (stationId2 == STATION_ID(_T("博多"))) && (rc == 1)) {
+		// 上りで、博多南 博多南線 博多 鹿児島線 原田 筑豊線 桂川\(九\) 篠栗線 吉塚 鹿児島線 博多 山陽新幹線 広島
+		TRACE(_T("43-2 博多pre-Off\n"));
+		JctMaskOff(jct_mask, Route::Id2jctId(stationId2));
+		rc = 0;
+	}
+
+	if (type == JCTSP_B_YOSHIZUKA) {
+		// 広島 山陽新幹線 博多 鹿児島線 吉塚 篠栗線 桂川\(九\) 筑豊線  原田 鹿児島線 博多 博多南線 博多南
+		TRACE(_T("43-2 博多Off\n"));
+		ASSERT(route_list_raw.at(num - 1).stationId == stationId1);
+		JctMaskOff(jct_mask, Route::Id2jctId(route_list_raw.at(num - 1).stationId));
+	}
+
 	/* 追加か置換か */
 	if (replace_flg) {
 		ASSERT(0 < type);	// enable jctspdt
