@@ -1691,6 +1691,21 @@ public class Route extends RouteList {
             route_pass.update_flag(route_flag); /* update route_flag LF_OSAKAKAN_MASK */
         }
 
+        if ((stationId1 == DbIdOf.INSTANCE.station("吉塚"))
+         && (stationId2 == DbIdOf.INSTANCE.station("博多")) && (rc == 1)) {
+            // 上りで、博多南 博多南線 博多 鹿児島線 原田 筑豊線 桂川\(九\) 篠栗線 吉塚 鹿児島線 博多 山陽新幹線 広島
+            System.out.println("43-2 博多pre-Off");
+            routePassed.off(Id2jctId(stationId2));
+            rc = 0;
+        }
+
+        if (type == JCTSP_B_YOSHIZUKA) {
+            // 広島 山陽新幹線 博多 鹿児島線 吉塚 篠栗線 桂川\(九\) 筑豊線  原田 鹿児島線 博多 博多南線 博多南
+            System.out.println("43-2 博多Off");
+            ASSERT (route_list_raw.get(num - 1).stationId == stationId1);
+            routePassed.off(Id2jctId(route_list_raw.get(num - 1).stationId));
+        }
+
 		/* 追加か置換か */
         if (replace_flg) {
             ASSERT (0 < type);	// enable jctspdt
