@@ -1,9 +1,9 @@
 
 
 経路運賃営業キロ計算アプリ
-JR運賃、営業キロ表示、経路編集ソフト Farert 20.08
-                                                　　 2020-8-16
-                                              Copyright(C) 2014-2020 Sutezo
+JR運賃、営業キロ表示、経路編集ソフト Farert 21.03
+                                                　　 2021-3-3
+                                              Copyright(C) 2014-2021 Sutezo
 
  Contents
 
