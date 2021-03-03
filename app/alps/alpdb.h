@@ -269,7 +269,7 @@ public:
     bool no_rule;
     // メンバの数はenableMapValueに依存するので制限32個まで
     bool jrtokaistock_applied;  // owner is user
-    bool jrtokaistock_enable;   // owner system
+    bool jrtokaistock_enable;   // owner system b#20090901で未使用
     bool meihan_city_flag;      // True: 発のみ都区市内
     BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
                             //         bit2: term, bit3: end([山])
@@ -361,7 +361,7 @@ public:
         meihan_city_flag = false;	        //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
         no_rule = false;                //8 ON: 特例非適用(User->System)
 
-        jrtokaistock_enable= false;	    //10 提案可能フラグ
+        jrtokaistock_enable= false;	    //10 提案可能フラグ b#20090901で未使用
         jrtokaistock_applied= false; 	//11 提案適用フラグ
     }
 public:

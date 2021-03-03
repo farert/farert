@@ -1721,7 +1721,7 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 			if (((company_mask & ((1 << JR_CENTRAL) | (1 << JR_EAST))) == (1 << JR_CENTRAL))
 			&& (line_id == LINE_ID(_T("東海道新幹線")))) {
 				// 都区市内適用しないように (CheckOfRule86())
-				// tokai_shinkansen = true;
+				// b#20090901 tokai_shinkansen = true;
 				TRACE("JR-tolai Company line\n");
 				return 1;	/* OK possible pass */
 			}
@@ -5604,7 +5604,7 @@ int32_t CalcRoute::Retrieve_SpecificCoreStation(int32_t cityId)
 //	@param [in]  route_flag 大阪環状線通過方向(BLF_OSAKAKAN_1DIR, BLF_OSAKAKAN_2DIR, BLF_OSAKAKAN_1PASS)
 //                         * BLF_OSAKAKAN_1PASS はwork用に使用可
 //	@param [in]  route     計算ルート
-//	@retuen 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]
+//	@retuen 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]　／ BRTキロ[3]
 //
 vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route)
 {
@@ -5612,6 +5612,7 @@ vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, cons
 	int32_t total_sales_km;
 	int32_t total_calc_km;
 	int32_t total_company_km;
+	int32_t total_brt_km;
 	int32_t stationId;
 	RouteFlag oskk_flag;
 
@@ -5620,6 +5621,7 @@ vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, cons
 	total_calc_km = 0;
 	stationId = 0;
 	total_company_km = 0;
+	total_brt_km = 0;
 	/* 大阪環状線flag */
 
 	oskk_flag = rRoute_flag;
@@ -5642,6 +5644,8 @@ vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, cons
 			total_calc_km  += vkms.at(1);
 			if (IS_COMPANY_LINE(it->lineId)) {
 				total_company_km += vkms.at(0);
+			} else if (IS_BRT_LINE(it->lineId)) {
+				total_brt_km += vkms.at(0);
 			}
 		}
 		stationId = it->stationId;
@@ -5651,6 +5655,7 @@ vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, cons
 	v.push_back(total_sales_km);
 	v.push_back(total_calc_km);
 	v.push_back(total_company_km);
+	v.push_back(total_brt_km);
 	return v;
 }
 
@@ -5963,7 +5968,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	 */
 	/* compute of sales_km by route_list_cooked */
 	km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
-	jsales_km = km_raw[0] - km_raw[2];
+	jsales_km = km_raw[0] - km_raw[2] - km_raw[3]; // except BRT and company line
 	//115-2の誤った解釈
     //km_raw = CalcRoute::Get_route_distance(route_flag, route_list_raw);
 	//skm = km_raw[0] - km_raw[2];
@@ -6078,7 +6083,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
 			/* 発駅のみ都区市内にしても201/101km以上か？ */
 			km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
-			skm = km_raw[0] - km_raw[2];
+			skm = km_raw[0] - km_raw[2] - km_raw[3]; // except BRT and company line
 			if (sk2 < skm) {
 				// 発 都区市内有効
 				flg = 0x01;
@@ -6095,7 +6100,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
 			/* 着駅のみ都区市内にしても201/101km以上か？ */
 			km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
-			skm = km_raw[0] - km_raw[2];
+			skm = km_raw[0] - km_raw[2] - km_raw[3]; // except BRT and company line
 			if (sk2 < skm) {
 				// 着 都区市内有効
 				flg |= 0x02;
@@ -6861,12 +6866,12 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 
 #ifdef _DEBUG
 	km_raw = CalcRoute::Get_route_distance(rRoute_flag, route); 			/* 経路距離 */
-	ASSERT(km_raw.size() == 3);			// [0]:営業キロ、[1]計算キロ
+	ASSERT(km_raw.size() == 4);			// [0]:営業キロ、[1]計算キロ
 #endif
 	km_spe = CalcRoute::Get_route_distance(rRoute_flag, routeSpecial); 	/* 経路距離(86,87適用後) */
-	ASSERT(km_spe.size() == 3);
+	ASSERT(km_spe.size() == 4);
 
-	aSales_km = km_spe.at(0) - km_spe.at(2);			// 営業キロ
+	aSales_km = km_spe.at(0) - km_spe.at(2) - km_spe.at(3); // sales_km as except BRT and company line;
 
 	/* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
 	if ((0x8000 & kind) == 0) {
@@ -8724,7 +8729,7 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
 
     enableTokaiStockSelect = 0;
 
-	pRoute_flag->jrtokaistock_enable = false ;
+	pRoute_flag->jrtokaistock_enable = false ;	// b#20090901 未使用になった
 
 	station_id_0 = station_id1 = 0;
 

@@ -612,7 +612,7 @@ public class FARE_INFO {
             routeFlag_.no_rule?1:0, routeFlag_.rule_en()?1:0);
 
         enableTokaiStockSelect = 0;
-        routeFlag_.jrtokaistock_enable = false;
+        routeFlag_.jrtokaistock_enable = false; // b#20090901 未使用になった
 
         if (routeFlag_.bJrTokaiOnly) {
             // JR東海のみ
@@ -3761,7 +3761,7 @@ public class FARE_INFO {
                 k = dbo.getInt(0); // sakes_km
                 l = dbo.getInt(1); // calc_km
                 c = dbo.getInt(2); // type
-                results.add(new KM(k, l, c));
+                results.add(new KM(k, l, c, 0));
             }
         } finally {
             dbo.close();

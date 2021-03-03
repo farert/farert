@@ -8,11 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static org.sutezo.alps.RouteUtil.CEND;
-import static org.sutezo.alps.RouteUtil.CITYNO_NAGOYA;
-import static org.sutezo.alps.RouteUtil.CSTART;
-import static org.sutezo.alps.RouteUtil.IS_COMPANY_LINE;
-import static org.sutezo.alps.RouteUtil.JR_CENTRAL;
+import static org.sutezo.alps.RouteUtil.*;
 import static org.sutezo.alps.farertAssert.*;
 
 /*!	@file Route core logic implement.
@@ -245,7 +241,7 @@ public class CalcRoute extends RouteList {
 		 */
 		/* compute of sales_km by route_list_cooked */
         KM km = Get_route_distance(route_flag, route_list_tmp3);
-        jsales_km = km.sales_km - km.company_km;
+        jsales_km = km.sales_km - km.company_km - km.brt_km;
         //115-2の誤った解釈
         //km = Get_route_distance(route_flag, route_list_raw);
         //skm = km.sales_km - km.company_km;
@@ -361,7 +357,7 @@ public class CalcRoute extends RouteList {
 
 				/* 発駅のみ都区市内にしても201/101km以上か？ */
                 km = Get_route_distance(route_flag, route_list_tmp3);
-                skm = km.sales_km - km.company_km;
+                skm = km.sales_km - km.company_km - km.brt_km;
                 if (sk2 < skm) {
                     // 発 都区市内有効
                     flg = 0x01;
@@ -378,7 +374,7 @@ public class CalcRoute extends RouteList {
 
 				/* 着駅のみ都区市内にしても201/101km以上か？ */
                 km = Get_route_distance(route_flag, route_list_tmp3);
-                skm = km.sales_km - km.company_km;
+                skm = km.sales_km - km.company_km - km.brt_km;
                 if (sk2 < skm) {
                     // 着 都区市内有効
                     flg |= 0x02;
@@ -839,7 +835,7 @@ public class CalcRoute extends RouteList {
         }
         km_spe = Get_route_distance(route_flag_, routeSpecial); 	/* 経路距離(86,87適用後) */
 
-        aSales_km = km_spe.sales_km - km_spe.company_km;			// 営業キロ
+        aSales_km = km_spe.sales_km - km_spe.company_km - km_spe.brt_km;			// 営業キロ
 
 		/* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
         if ((0x8000 & kind) == 0) {
@@ -940,12 +936,13 @@ public class CalcRoute extends RouteList {
     //	@param [in]  route_flag_ 大阪環状線通過方向(osakakan_1dir, osakakan_2dir, osakakan_1pass)
     //                         * osakakan_1pass はwork用に使用可
     //	@param [in]  route     計算ルート
-    //	@retuen 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]
+    //	@retuen 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2] ／ BRTキロ[3]
     //
     private static KM Get_route_distance(final RouteFlag rRoute_flag, final List<RouteItem> route) {
         int total_sales_km;
         int total_calc_km;
         int total_company_km;
+        int total_brt_km;
         int stationId;
         RouteFlag oskk_flag = new RouteFlag(rRoute_flag);
 
@@ -953,6 +950,7 @@ public class CalcRoute extends RouteList {
         total_calc_km = 0;
         stationId = 0;
         total_company_km = 0;
+        total_brt_km = 0;
 		/* 大阪環状線flag */
 
         oskk_flag.setOsakaKanPass(false);
@@ -975,11 +973,13 @@ public class CalcRoute extends RouteList {
                 total_calc_km  += vkms.get(1);
                 if (IS_COMPANY_LINE(it.lineId)) {
                     total_company_km += vkms.get(0);
+                } else if (IS_BRT_LINE(it.lineId)) {
+                    total_brt_km += vkms.get(0);
                 }
             }
             stationId = it.stationId;
         }
-        return new KM(total_sales_km, total_calc_km, total_company_km);
+        return new KM(total_sales_km, total_calc_km, total_company_km, total_brt_km);
     }
 
 
