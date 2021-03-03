@@ -83,8 +83,8 @@ CAPTION "バージョン情報 JR運賃計算キ"
 FONT 9, "MS UI Gothic", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
-    LTEXT           "JR運賃計算キ, 20.08",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2014-2020 Sutezo.",IDC_STATIC,42,26,114,8
+    LTEXT           "JR運賃計算キ, 21.03",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2014-2021 Sutezo.",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,172,58,50,14,WS_GROUP
     CONTROL         "<a href=""http://farert.blogspot.jp\n"">ホームページ</a>",IDC_SYSLINK1,
                     "SysLink",WS_TABSTOP,42,37,60,14
@@ -199,8 +199,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,4
- PRODUCTVERSION 20,8,0,0
+ FILEVERSION 2,1,0,5
+ PRODUCTVERSION 21,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -217,12 +217,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sutezo"
             VALUE "FileDescription", "farert"
-            VALUE "FileVersion", "2.1.0.4"
+            VALUE "FileVersion", "2.1.0.5"
             VALUE "InternalName", "alps_mfc.exe"
             VALUE "LegalCopyright", "2014-2020 (C)Sutezo.  All rights reserved."
             VALUE "OriginalFilename", "farert"
             VALUE "ProductName", "JR運賃計算"
-            VALUE "ProductVersion", "20.8.0.0"
+            VALUE "ProductVersion", "21.3.0.0"
         END
     END
     BLOCK "VarFileInfo"
