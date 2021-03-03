@@ -49,11 +49,19 @@ import android.database.sqlite.SQLiteOpenHelper;
      int sales_km;
      int calc_km;
      int company_km;
-     KM() {sales_km = 0; calc_km = 0; company_km = 0; }
-     KM(int skm, int ckm, int cpkm) {
+     int brt_km;
+     KM() {sales_km = 0; calc_km = 0; company_km = 0; brt_km = 0; }
+     KM(int skm, int ckm, int cpkm, int brtkm) {
          sales_km = skm;
          calc_km = ckm;
          company_km = cpkm;
+         brt_km = brtkm;
+     }
+     KM(int skm, int ckm) {
+         sales_km = skm;
+         calc_km = ckm;
+         company_km = 0;
+         brt_km = 0;
      }
      static int KM(int kmx10) {
          return ((kmx10 + 9) / 10);	/* km単位で端数は切り上げ */

@@ -2744,7 +2744,7 @@ public class Route extends RouteList {
                     if (((company_mask & ((1 << JR_CENTRAL) | (1 << JR_EAST))) == (1 << JR_CENTRAL))
                       && (line_id == DbIdOf.INSTANCE.line("東海道新幹線"))) {
                         // 都区市内適用しないように (CheckOfRule86())
-                        // tokai_shinkansen = true;
+                        // b#20090901 tokai_shinkansen = true;
                         System.out.println("JR-tolai Company line");
                         return 1;       /* OK possible pass */
                     }

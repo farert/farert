@@ -1520,7 +1520,7 @@ public class RouteUtil {
         } finally {
             dbo.close();
         }
-        return new KM(sales_km, calc_km, 0);
+        return new KM(sales_km, calc_km);
     }
 
     //static
