@@ -8097,7 +8097,7 @@ int32_t		FARE_INFO::jrFare() const
 
 /**	株主優待割引有効数を返す
  *
- *	@param index      [in]  0から1 JR東日本のみ 0は2割引、1は4割引を返す
+ *	@param index      [in]  0から1 JR東海のみ
  *	@param idCompany [out]  0:JR東海1割/1:JR西日本5割/2:JR東日本2割/3:JR東日本4割
  *	@retval	[円](無割引、無効は0)
  */
@@ -8106,12 +8106,10 @@ int32_t FARE_INFO::countOfFareStockDiscount() const
 	// 通過連絡運輸も株優は有効らしい
 
     switch (getStockDiscountCompany()) {
-    case JR_EAST:
-        return 2;
-        break;
     case JR_CENTRAL:
 		return 2;
 		break;
+    case JR_EAST:
     case JR_WEST:
     case JR_KYUSYU:
         return 1;
@@ -8133,7 +8131,7 @@ int32_t FARE_INFO::getFareStockDiscount(int32_t index, tstring& title, bool appl
 const
 {
 	const TCHAR* const titles[] = {
-		_T("JR東日本 株主優待2割"), // 0
+		_T("JR東日本 株主優待2割"), // 0 (2020.6より無効)
 		_T("JR東日本 株主優待4割"), // 1
 		_T("JR西日本 株主優待5割"), // 2
 		_T("JR東海   株主優待1割"), // 3
@@ -8142,26 +8140,26 @@ const
 	};
 
 	int32_t cfare;
+	int32_t brtfare;
+
+	brtfare = brt_fare - brt_discount_fare;
 
 	if (applied_r114) {
 		if (isRule114()) {
-			cfare = rule114_fare;
+			cfare = rule114_fare - brtfare;
 		} else {
 			ASSERT(FALSE);
 			return 0;		// >>>>>>>>>
 		}
 	} else {
-		cfare = jr_fare;
+		cfare = jr_fare - brtfare;
 	}
 
     switch (getStockDiscountCompany()) {
     case JR_EAST:
 		if (index == 0) {
-			title = titles[0];
-			return fare_discount(cfare, 2);
-		} else if (index == 1) {
 			title = titles[1];	// JR東日本　株主優待4割
-			return fare_discount(cfare, 4);
+			return fare_discount(cfare, 4) + fare_discount(brtfare, 4);
 		}
         break;
     case JR_WEST:
@@ -8234,10 +8232,12 @@ int32_t FARE_INFO::getStockDiscountCompany() const
 int32_t		FARE_INFO::getAcademicDiscountFare() const
 {
 	int32_t result_fare;
+	int32_t fareBrt = brt_fare - brt_discount_fare;
 
 	if ((1000 < total_jr_sales_km) || (0 < company_fare_ac_discount)) {
 		if (1000 < total_jr_sales_km) {
-			result_fare = fare_discount(jrFare(), 2);
+			result_fare = (fare_discount(jrFare() - fareBrt, 2)
+						   + fare_discount(fareBrt, 2));
 		} else {
 			result_fare = jrFare();
 		}
@@ -8254,26 +8254,32 @@ int32_t		FARE_INFO::getAcademicDiscountFare() const
  */
 int32_t 	FARE_INFO::roundTripAcademicFareWithCompanyLine() const
 {
-	int32_t fareW;
+	int32_t fareS;
+	int32_t fareBrt = brt_fare - brt_discount_fare;
 
 	// JR
 
 	if (6000 < total_jr_sales_km) {	/* 往復割引かつ学割 */
-		fareW = fare_discount(fare_discount(jr_fare, 1), 2);
+	// 最初に往復割引で１割引いた後に、学割分の２割をJR線 BRT線 どちらもそれぞれ引く x 2
+		fareS = fare_discount(fare_discount(jrFare() - fareBrt, 1), 2)
+              + fare_discount(fare_discount(fareBrt, 1), 2);
 		ASSERT(this->roundTripDiscount == true);
 	} else {
-		fareW = jrFare();
+	// 学割分の２割をJR線 BRT線 どちらもそれぞれ引く x2
 		if (1000 < total_jr_sales_km) {
 			// Academic discount
 			ASSERT(this->roundTripDiscount == false);
-			fareW = fare_discount(fareW, 2);
+			fareS = fare_discount((jrFare() - fareBrt), 2)
+				  + fare_discount(fareBrt, 2);
+		} else {
+			fareS = jrFare();
 		}
 	}
 
 	// company
 
-	fareW += (company_fare - company_fare_ac_discount);
-	return fareW * 2;
+	fareS += (company_fare - company_fare_ac_discount);
+	return fareS * 2;
 }
 
 /**	小児往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
