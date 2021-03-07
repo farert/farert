@@ -1661,9 +1661,9 @@ public class FARE_INFO {
         // 通過連絡運輸も株優は有効らしい
 
         switch (getStockDiscountCompany()) {
-            case RouteUtil.JR_EAST:
-            case JR_CENTRAL:
+            case RouteUtil.JR_CENTRAL:
                 return 2;
+            case RouteUtil.JR_EAST:
             case RouteUtil.JR_WEST:
             case RouteUtil.JR_KYUSYU:
                 return 1;
@@ -1695,7 +1695,7 @@ public class FARE_INFO {
     StockFare getFareStockDiscount(int index, boolean applied_r114) {
         StockFare ret = new StockFare();
         final String[] titles = {
-                "JR東日本 株主優待2割", // 0
+                "JR東日本 株主優待2割", // 0 2020.6より廃止
                 "JR東日本 株主優待4割", // 1
                 "JR西日本 株主優待5割", // 2
                 "JR東海   株主優待1割", // 3
@@ -1705,28 +1705,28 @@ public class FARE_INFO {
         int cfare;
         int result = 0;
         int sindex = -1;
+        int brtfare;
+
+        brtfare = brt_fare - brt_discount_fare;
 
         if (applied_r114) {
             if (isRule114()) {
-                cfare = rule114_fare;
+                cfare = rule114_fare - brtfare;
             } else {
                 ASSERT (false);
                 return ret;		// >>>>>>>>>
             }
         } else {
-            cfare = jr_fare;
+            cfare = jr_fare - brtfare;
         }
 
         int companyno = getStockDiscountCompany();
         switch (companyno) {
             case RouteUtil.JR_EAST:
                 if (index == 0) {
-                    sindex = 0;
-                    result = fare_discount(cfare, 2);
-                } else if (index == 1) {
-                /* JR東4割(2枚使用) */
+                /* JR東=4割 */
                     sindex = 1;
-                    result = fare_discount(cfare, 4);
+                    result = fare_discount(cfare, 4) + fare_discount(brtfare, 4);
                 } else {
                     result = 0;    // wrong index
                 }
@@ -1805,10 +1805,12 @@ public class FARE_INFO {
      */
     int		getAcademicDiscountFare() {
         int result_fare;
+        int brtfare = brt_fare - brt_discount_fare;
 
         if ((1000 < total_jr_sales_km) || (0 < company_fare_ac_discount)) {
             if (1000 < total_jr_sales_km) {
-                result_fare = fare_discount(jrFare(), 2);
+                result_fare = fare_discount(jrFare() - brtfare, 2)
+                            + fare_discount(brtfare, 2);
             } else {
                 result_fare = jrFare();
             }
@@ -1824,26 +1826,32 @@ public class FARE_INFO {
      *	@retval [円]
      */
     int 	roundTripAcademicFareWithCompanyLine() {
-        int fareW;
+        int fareS;
+        int brtfare = brt_fare - brt_discount_fare;
 
         // JR
 
         if (6000 < total_jr_sales_km) {	/* 往復割引かつ学割 */
-            fareW = fare_discount(fare_discount(jr_fare, 1), 2);
+            // 最初に往復割引で１割引いた後に、学割分の２割をJR線 BRT線 どちらもそれぞれ引く x 2
+            fareS = fare_discount(fare_discount((jrFare() - brtfare), 1), 2)
+                    + fare_discount(fare_discount(brtfare, 1), 2);
             ASSERT (this.roundTripDiscount == true);
         } else {
-            fareW = jrFare();
+            // 学割分の２割をJR線 BRT線 どちらもそれぞれ引く x2
             if (1000 < total_jr_sales_km) {
                 // Academic discount
                 ASSERT (this.roundTripDiscount == false);
-                fareW = fare_discount(fareW, 2);
+                fareS = fare_discount((jrFare() - brtfare), 2)
+                        + fare_discount(brtfare, 2);
+            } else {
+                fareS = jrFare();
             }
         }
 
         // company
 
-        fareW += (company_fare - company_fare_ac_discount);
-        return fareW * 2;
+        fareS += (company_fare - company_fare_ac_discount);
+        return fareS * 2;
     }
 
     /**	JR線＋会社線の運賃額を返す
