@@ -157,11 +157,6 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
-        super.onSaveInstanceState(outState, outPersistentState)
-
-    }
-
     override fun onStart() {
         super.onStart()
         /*

@@ -1,16 +1,15 @@
 package org.sutezo.farert
 
+import android.R.color
 import android.app.AlertDialog
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.Typeface
-import android.support.v7.app.AppCompatActivity
+import android.graphics.*
 import android.os.Bundle
 import android.support.v4.app.ShareCompat
 import android.support.v4.content.res.ResourcesCompat
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.*
@@ -21,6 +20,7 @@ import kotlinx.android.synthetic.main.content_line_list.*
 import kotlinx.android.synthetic.main.content_list_empty.*
 import kotlinx.android.synthetic.main.route_list.*
 import org.sutezo.alps.*
+
 
 /**
  * 経路保存画面
@@ -82,7 +82,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
         }
     }
 
-    fun setupRecyclerView(listItems : List<String>) {
+    fun setupRecyclerView(listItems: List<String>) {
         archive_route_list.adapter =
                 ArchiveRouteListRecyclerViewAdapter(listItems,
                         mCurRouteScript,
@@ -122,21 +122,21 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
         val mnuClear = m.findItem(R.id.menu_item_all_delete)
         if (!mbAvailClear) {
-            btnIconClear?.mutate()?.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+            btnIconClear?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_ATOP))
             mnuClear.setIcon(btnIconClear)
         }
         mnuClear.setEnabled(mbAvailClear)
 
         val mnuSave = m.findItem(R.id.menu_item_save)
         if (!mbAvailSave) {
-            btnIconSave?.mutate()?.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+            btnIconSave?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
             mnuSave.setIcon(btnIconSave)
         }
         mnuSave.setEnabled(mbAvailSave)
 
         val mnuExport = m.findItem(R.id.menu_item_export)
         if (!mbAvailClear) { // same as clear button and export button
-            btnIconExport?.mutate()?.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+            btnIconExport?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
             mnuExport.setIcon(btnIconExport)
         }
         mnuExport.setEnabled(mbAvailClear)
@@ -241,7 +241,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 setPositiveButton("Yes") { _, _ ->
                     doChangeRoute(routeScript)
                 }
-                setNegativeButton("No") {_, _ ->
+                setNegativeButton("No") { _, _ ->
 
                 }
                 setCancelable(false)
@@ -286,7 +286,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
      *
      * @param numItem 行Index
      */
-    override fun onChangeItem(enClear : Boolean, enSave : Boolean) {
+    override fun onChangeItem(enClear: Boolean, enSave: Boolean) {
         mbAvailSave = enSave
         mbAvailClear = enClear
         invalidateOptionsMenu()
@@ -348,7 +348,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
         // 経路の経路数をカウントする。
         // 東京 東海道線 大阪 なら、3を返す
         //
-        fun countOfRoute(rt : List<String>) : Int {
+        fun countOfRoute(rt: List<String>) : Int {
             var c = 0
             for (r in rt) {
                 val a = r.split(*delim).filter { it != "" }
@@ -357,7 +357,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
             return c
         }
 
-        fun countOfRoute(rt : String) : Int {
+        fun countOfRoute(rt: String) : Int {
             return countOfRoute(rt.split("\n"))
         }
 
@@ -375,8 +375,8 @@ class ArchiveRouteActivity : AppCompatActivity(),
  *  @param listener 親クラス(経路保存画面Activity)
  */
 private class ArchiveRouteListRecyclerViewAdapter(private var values: List<String>,
-                                                  private val curRouteScript : String,
-                                                  private val listener : ClickListener) :
+                                                  private val curRouteScript: String,
+                                                  private val listener: ClickListener) :
         RecyclerView.Adapter<ArchiveRouteListRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
@@ -530,7 +530,7 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     /**
      *  経路を保存
      */
-    fun saveParams(context : Context) {
+    fun saveParams(context: Context) {
         // 上限チェック
         if ((MAX_ARCHIVE_ROUTE - ArchiveRouteActivity.countOfRoute(values)) <= 0) {
             return
@@ -556,7 +556,7 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     /**
      * インポート
      */
-    fun importRoute(context: Context, text : String) {
+    fun importRoute(context: Context, text: String) {
         // 文字列をパースして配列を作成する(エラーがあったらエラーカウントする)(経路にXX箇所不正な路線・駅を検出しました）
         // 配列へマージする(既に入っているものは削除して後ろへ追加する）
         // 配列数が上限に達したら切り捨てられる(後半XX経路が切り捨てられました）
@@ -680,7 +680,7 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
      *  I/F定義
      */
     interface ClickListener {
-        fun onSaveRoute(routes : List<String>)
+        fun onSaveRoute(routes: List<String>)
         fun onClickRow(routeScript: String)
         fun onChangeItem(enClear: Boolean, enSave: Boolean)
     }
