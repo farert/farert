@@ -50,7 +50,7 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
         super.onCreate(savedInstanceState)
 
         intent.apply {
-            mMode = getStringExtra("mode")
+            mMode = getStringExtra("mode") ?: ""
             if (mMode == "route") {
                 mSrcStationId = getIntExtra("src_station_id", 0)
                 mStartStationId = getIntExtra("start_station_id", 0)
