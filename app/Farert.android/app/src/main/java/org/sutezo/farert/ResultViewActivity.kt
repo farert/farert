@@ -118,13 +118,10 @@ class ResultViewActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 計算に必要なオプションパラメータを破棄される前に保存
-     */
-    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
 
-        mOptMap.forEach { outState?.putInt(it.value, it.key.ordinal) }
+        mOptMap.forEach { outState.putInt(it.value, it.key.ordinal) }
     }
 
     //  Action menu
