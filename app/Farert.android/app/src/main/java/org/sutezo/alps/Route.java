@@ -2768,7 +2768,7 @@ public class Route extends RouteList {
                     if (0 < InStation(terminal_id, line_id, results[i].stationId1, results[i].stationId2)) {
                         rc = 2;
                     }
-                    System.out.printf("Companny line allow range instation %d %s: %s, %s-%s%d\n", is_postcheck, StationName(terminal_id), LineName(line_id), StationName(results[i].stationId1), StationName(results[i].stationId2), rc);
+                    System.out.printf("Companny line allow range instation %s %s: %s, %s-%s%d\n", is_postcheck ? "true" : "false", StationName(terminal_id), LineName(line_id), StationName(results[i].stationId1), StationName(results[i].stationId2), rc);
         		} else if (results[i].line_id == 0) {
                     System.out.printf("Company check NG(%s,%s-%s = %s:%s-%s)\n", LineName(line_id), StationName(station_id1), StationName(station_id2), LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
         			break;	/* can't possoble */
