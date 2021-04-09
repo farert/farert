@@ -74,9 +74,13 @@ class FarertApp : Application() {
         var versionCode : Long = 0
         try {
             val packageInfo = pm.getPackageInfo(this.packageName, 0)
-            versionCode = packageInfo.longVersionCode
             // versionCode:通算バージョン(数値)
             // versionName: "18.11" とか
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                versionCode = packageInfo.longVersionCode
+            } else {
+                versionCode = packageInfo.versionCode.toLong()
+            }
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }

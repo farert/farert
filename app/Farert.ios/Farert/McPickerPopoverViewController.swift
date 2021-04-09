@@ -1,6 +1,6 @@
 /*
- Copyright (c) 2017 Kevin McGill <kevin@mcgilldevtech.com>
- 
+ Copyright (c) 2017-2020 Kevin McGill <kevin@mcgilldevtech.com>
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
@@ -25,7 +25,12 @@ import UIKit
 internal class McPickerPopoverViewController: UIViewController {
 
     weak var mcPicker: McPicker?
-
+    internal var safeArea: UIEdgeInsets {
+        if #available(iOS 11.0, *) {
+            return self.view.safeAreaInsets
+        }
+        return UIEdgeInsets.init(top: 0, left: 0, bottom: 0, right: 0)
+    }
     internal convenience init(mcPicker: McPicker) {
         self.init(nibName: nil, bundle: nil)
         self.mcPicker = mcPicker
@@ -41,10 +46,16 @@ internal class McPickerPopoverViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         mcPicker!.sizeViews()
         mcPicker!.addAllSubviews()
         self.view.addSubview(mcPicker!)
         self.preferredContentSize = mcPicker!.popOverContentSize
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        let toolbarHeight = mcPicker?.toolbar.frame.height ?? 0
+        let safeAreaToolbarHeight = toolbarHeight + safeArea.top
+        mcPicker?.toolbar.frame = CGRect(x: 0, y: 0, width: mcPicker?.toolbar.frame.width ?? 0, height: safeAreaToolbarHeight)
+        self.preferredContentSize = CGSize(width: self.preferredContentSize.width, height: self.preferredContentSize.height - safeArea.top)
     }
 }
