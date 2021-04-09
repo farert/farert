@@ -971,7 +971,11 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
         self.frontView.backgroundColor = UIColor.clear
         self.navigationController!.view!.addSubview(self.frontView)
 
-        self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
+        if #available(iOS 13.0, *) {
+            self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+        } else {
+            // Fallback on earlier versions
+        }
         self.indicator.color = UIColor.systemGray
         self.indicator.center = self.frontView.center
         self.frontView.addSubview(self.indicator)
