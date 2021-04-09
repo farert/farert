@@ -122,21 +122,24 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
         val mnuClear = m.findItem(R.id.menu_item_all_delete)
         if (!mbAvailClear) {
-            btnIconClear?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_ATOP))
+            btnIconClear?.mutate()?.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP)
+            //btnIconClear?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_ATOP))
             mnuClear.setIcon(btnIconClear)
         }
         mnuClear.setEnabled(mbAvailClear)
 
         val mnuSave = m.findItem(R.id.menu_item_save)
         if (!mbAvailSave) {
-            btnIconSave?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
+            btnIconSave?.mutate()?.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+            //btnIconSave?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
             mnuSave.setIcon(btnIconSave)
         }
         mnuSave.setEnabled(mbAvailSave)
 
         val mnuExport = m.findItem(R.id.menu_item_export)
         if (!mbAvailClear) { // same as clear button and export button
-            btnIconExport?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
+            btnIconExport?.mutate()?.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+            //btnIconExport?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
             mnuExport.setIcon(btnIconExport)
         }
         mnuExport.setEnabled(mbAvailClear)

@@ -1,5 +1,6 @@
 package org.sutezo.farert
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
@@ -9,6 +10,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.support.annotation.RequiresApi
 import android.support.design.internal.BottomNavigationItemView
 import android.support.design.internal.BottomNavigationMenuView
 import android.support.design.widget.BottomNavigationView
@@ -82,6 +84,8 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.P)
+    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -113,8 +117,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         if (application is FarertApp) {
             (application as? FarertApp)?.apply {
                 mRoute = this.ds
-                mRoute.setNotSameKokuraHakataShinZai(
-                                this.bKokuraHakataShinZaiFlag)
+                mRoute.isNotSameKokuraHakataShinZai = this.bKokuraHakataShinZaiFlag
             }
         } else {
             mRoute = Route()
@@ -128,7 +131,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         val menuView = bottombar.getChildAt(0) as BottomNavigationMenuView
         // [back]
         (menuView.getChildAt(0) as? BottomNavigationItemView)?.apply {
-            setEnabled(false)
+            isEnabled = false
         }
         // [reverse]
         (menuView.getChildAt(1) as? BottomNavigationItemView)?.apply {
@@ -155,18 +158,6 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             val cv = (application as? FarertApp)?.getVersionCode() ?: "0"
             saveParam(this, "hasLaunched", cv.toString())
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        /*
-        val menuView = menu_main_bottom.menu as BottomNavigationView
-        for (i in 0..2) {
-            val smallLabel = menuView.getChildAt(i).findViewById(android.support.design.R.id.smallLabel) as View
-            val baselineLayout = smallLabel.getParent() as BaselineLayout
-            baselineLayout.visibility = View.GONE
-        }
-        */
     }
 
     override fun onResume() {
@@ -263,6 +254,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
 
     // 計算結果表示
+    @SuppressLint("RestrictedApi")
     private fun update_fare(rc : Int)
     {
         // 下部計算結果
@@ -335,7 +327,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                     mOsakakan_detour = OSAKA_KAN.NEAR
                 }
             }
-            revButton = cr.isAvailableReverse()
+            revButton = cr.isAvailableReverse
 
             footer_group.visibility = View.VISIBLE
             buttonFareDetail.isEnabled = true
@@ -361,7 +353,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         // 経路戻り（Last経路削除）の有効化／無効化
         (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
             (getChildAt(0) as? BottomNavigationItemView)?.apply {
-                setEnabled(0 < mRoute.count)
+                isEnabled = 0 < mRoute.count
             }
         }
         // リバースボタンの有効化／無効化
@@ -528,7 +520,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         val curScr = mRoute.route_script()
         val newScr = leftRouteList.route_script()
         if (curScr != newScr) {
-            if ((mRoute.getCount() <= 1) || isStrageInRoute(this, curScr)) {
+            if ((mRoute.count <= 1) || isStrageInRoute(this, curScr)) {
                 // すぐやる
                 val rc = mRoute.setup_route(newScr)
                 update_fare(rc)

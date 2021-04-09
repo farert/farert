@@ -915,7 +915,7 @@ insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
 		if int(db_name) <= 2017 and (station1[0] == "摩耶" or station2[0] == "摩耶"):
 			return
 		
-		if int(db_name) != 2019 and (station1[0] == "あしかがフラワーパーク" or 
+		if int(db_name) < 2019 and (station1[0] == "あしかがフラワーパーク" or 
 									 station2[0] == "あしかがフラワーパーク"):
 			return
 

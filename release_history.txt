@@ -1,3 +1,9 @@
+21.04
+- おおさか東線 城北公園通り→城北公園通
+- (Android) API level24で保存画面を開くと落ちる不具合
+- (Android) API level28で初回起動時に落ちる不具合
+- (Android) 会社線通過連絡指定時に落ちる不具合
+
 21.03
 - AndroidはAPI Level 21から30 以上に(version 24)
 - iOS(64)
