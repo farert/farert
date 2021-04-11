@@ -681,7 +681,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
         self.navigationController!.view!.addSubview(self.frontView)
     
+        #if !targetEnvironment(macCatalyst)
         self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
+        #else
+        self.indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+        #endif
 
         self.indicator.color = UIColor.lightGray
 
