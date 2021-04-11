@@ -9,8 +9,8 @@ android {
         config {
             keyAlias 'farert.sutezo.org'
             storeFile file('/Users/ntake/exports/devel/farert-app-key/android/farert-upload-keystore.jks')
-            storePassword 'if97dBq2z5p6wqm'
-            keyPassword 'hBhx6FCqVxpoIjm'
+            keyPassword '(todo)'
+            storePassword '(todo)'
         }
     }
     compileSdkVersion 30
@@ -18,8 +18,8 @@ android {
         applicationId "org.sutezo.farert"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 25
-        versionName '21.04'
+        versionCode 26
+        versionName '21.04.1'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -31,6 +31,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
+            signingConfig signingConfigs.config
         }
     }
     flavorDimensions "default"
