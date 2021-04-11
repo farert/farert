@@ -92,10 +92,11 @@ open class McPicker: UIView {
             }
         }
     }
+    #if !targetEnvironment(macCatalyst)
     public var showsSelectionIndicator: Bool? {
         didSet { picker.showsSelectionIndicator = showsSelectionIndicator ?? false }
     }
-
+    #endif
     public typealias DoneHandler = (_ selections: [Int:String]) -> Void
     public typealias CancelHandler = (() -> Void)
     public typealias SelectionChangedHandler = ((_ selections: [Int:String], _ componentThatChanged: Int) -> Void)
@@ -132,11 +133,12 @@ open class McPicker: UIView {
     fileprivate var selectionChangedHandler: SelectionChangedHandler?
 
     private var appWindow: UIWindow {
-        guard let window = UIApplication.shared.keyWindow else {
-            debugPrint("KeyWindow not set. Returning a default window for unit testing.")
-            return UIWindow()
+        let window = UIApplication.shared.windows.first { $0.isKeyWindow }
+        if (window != nil) {
+            return window!
         }
-        return window
+        debugPrint("KeyWindow not set. Returning a default window for unit testing.")
+        return UIWindow()
     }
 
     convenience public init(data: [[String]]) {
