@@ -108,11 +108,10 @@
     <None Include="res\jr.db.enc">
       <FileType>BMP</FileType>
     </None>
-    <None Include="res\jrdb2014.db.enc" />
-    <None Include="res\jrdb2015.db.enc" />
-    <None Include="res\jrdb2017.db.enc" />
-    <None Include="res\jrdb2018.db.enc" />
-    <None Include="res\jrdb2019.db.enc" />
+    <None Include="res\jrdb2014.db" />
+    <None Include="res\jrdb2015.db" />
+    <None Include="res\jrdb2017.db" />
+    <None Include="res\jrdb2021.db" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alps_mfc.h" />

@@ -3,13 +3,17 @@
 
 import sqlite3
 import os
+import sys
 
 # database
 #con = sqlite3.connect('jr.db')  # , isolation_level=None)
-try:
-	dbpath = os.environ['farertDB']
-except:
-	dbpath = ''
+if 1 != len(sys.argv):
+  dbpath = sys.argv[1]
+else:
+  try:
+	  dbpath = os.environ['farertDB']
+  except:
+	  dbpath = ''
 
 con = sqlite3.connect(dbpath)  # , isolation_level=None)
 
