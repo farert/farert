@@ -1,6 +1,58 @@
 ﻿*** This document is UTF-8 Japanese only.
 
-データベースの作成方法      2017.2.24
+データベースの作成方法
+ 2021.5 より、データベースマスターをExcelからGoogle Spreadsheet へ移行しました。
+ そのまま手を加えずに、ExcelをGoogleスプレッドシートへインポートしました。
+ （マクロなど特殊なコードやシート関数など使っていませんので、特に警告も失われたものもないようです）
+ また、今まで Windows 環境でDBのメンテナンスを行っていましたが、2021.5 より全てMac PC上でおこないます。
+ (MacOSのターミナル環境のみ=zshですので、Linux, Windows WSL でもどの環境でも問題ないはずです)
+ make を実行するだけで、Googleスプレッドシートからデータをダウンロードし、
+ sqlite DBを作成し、WindowsDB、AndroidDB、iOS DBへもコピーされます
+ 
+ ◆ 作成方法
+
+     1) スプレッドシート jrdb2021 を編集
+     2) Access Tokenを取得（取得方法は、 down_spr_as_text.sh のヘッダコメントを参照)
+     3) Shellにて（Mac zsh, bash, linux bash, Windows wsl bash等）、db フォルダで、
+        make ACCESS_TOKEN=xxxxx
+        を実行（ユーザ権限で可）
+
+        linux/mac環境には、curl, python3 が必要です
+        python3 には、sqlite3 モジュールが必要です
+
+     4) 全DBが作成され, Windows, iOS, Android 開発環境へもセットアップされる
+        （ただしDB名の変更はそれぞれ行う必要があります）
+
+ ◆ 少し内部解説
+   - make の処理は、以下順です
+     *.tmp => down_spr_as_text.sh  => *.tmp, *.txt ： Googleスプレッドシートの各シートをダウンロードします
+     *.tmp をマージして、*.txt を作成するため、*.tmp は不要です
+     *.txt から *.db （SQLITE用DB）を作成
+     *.db を各OS開発環境ディレクトリへコピー
+   - Googleスプレッドのダウンロードを実施したい場合は、*.tmp を削除します（*.txtも更新されます)
+   - DBを作成し直す場合、*.db を削除します。Makeでは、node 作成に失敗しても、*.dbは残るため、
+     削除してからmakeの再実行が必要となります。
+
+     ※ スプレッドシートのURLとシートIDは、ファイル SPREADSHEET に記載されています。
+ 
+ ◆ DB名の変更
+
+
+ spr2tsv.gs - Googleスプレッドシートアドイン用、Google Application Script（未使用）
+
+
+
+
+
+
+
+
+
+
+
+---- 以下は、2021.4 まで使用していた、Windows環境の旧方式
+
+      2017.2.24
  ◆ 作者環境はMAC OS-X上で開発していますが、DBメンテナンスのすべては、Windows上で動作することを前提としています。
  (MAC OS-X上にVirtualBoxでWindowsをいれて動作。Windows上にPython3、Excelが必要)
 

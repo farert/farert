@@ -42,6 +42,13 @@ import sys
 import re
 from collections import defaultdict
 
+import platform
+
+if platform.system() == 'Windows':
+	ENCODE = 'shift_jisx0213'
+else:
+	ENCODE = 'utf-8'
+
 COL_COMMENT = 0
 COL_PREFECT = 0
 COL_COMPANY = 1
@@ -417,7 +424,7 @@ class Dbreg:
 		n_segment = 0
 
 		self.num_of_line = 0
-		for lin in open(fn, 'r', encoding='shift-jis'):
+		for lin in open(fn, 'r', encoding=ENCODE):
 			self.num_of_line += 1
 			if lin[COL_COMMENT] == '#':
 				continue		# コメントスキップ
@@ -515,7 +522,7 @@ class Dbreg:
 
 		self.num_of_line = 0
 		proc_stage = ''
-		for lin in open(fn, 'r', encoding='shift_jisx0213'):
+		for lin in open(fn, 'r', encoding=ENCODE):
 			self.num_of_line += 1
 			if lin[0] == '#':
 				continue		# コメントスキップ

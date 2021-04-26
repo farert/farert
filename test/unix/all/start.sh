@@ -1,1 +1,1 @@
-export farertDB=../../../db/jrdb2019.db
+export farertDB=../../../db/jrdb2021.db
