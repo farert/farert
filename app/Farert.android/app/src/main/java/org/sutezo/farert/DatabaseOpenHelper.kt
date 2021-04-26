@@ -34,8 +34,8 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
                 0, 1 -> { "2014" } // 消費税5%, 2014
                 2 -> { "2015" }
                 3 -> { "2017" }
-                4 -> { "2019" }     // 2019版(消費税8%)
-                else -> { "2019" }  // 2019版(消費税10%)
+                4 -> { "2021" }     // 2019版(消費税8%)
+                else -> { "2021" }  // 2019版(消費税10%)
             }
         }
         fun dbIdx2NameWithTax(dbidx : Int) : String {

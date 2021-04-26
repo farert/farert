@@ -17,15 +17,9 @@ import re
 import time
 from collections import defaultdict
 
-if 1 != len(sys.argv):
-  dbfn = sys.argv[1]
-else:
+if 2 != len(sys.argv):
   print("Usage:" + sys.argv[0] + " dbname.db")
   exit(-1)
-
-# database(引数指定したDBファイルがjrdbで読む環境変数より優先)
-jrdb.con = sqlite3.connect(dbfn)  # , isolation_level=None)
-
 
 def attributes(jctid1, jctid2):
     attr = 0

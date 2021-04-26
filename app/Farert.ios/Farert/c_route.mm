@@ -76,12 +76,12 @@ int g_tax; /* main.m */
             break;
         case DB_2019_8:
             g_tax = 8;
-            dbname = @"jrdb2019";
+            dbname = @"jrdb2021";
             break;
         case DB_2019_10:
         default:
             g_tax = 10;
-            dbname = @"jrdb2019";
+            dbname = @"jrdb2021";
             break;
     }
     dbpath = [[NSBundle mainBundle] pathForResource:dbname ofType:@"db"];

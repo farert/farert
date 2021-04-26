@@ -299,13 +299,13 @@ END
 // DB
 //
 
-IDR_DB2014              DB                      "res\\jrdb2014.db.enc"
+IDR_DB2014              DB                      "res\\jrdb2014.db"
 
-IDR_DB2015              DB                      "res\\jrdb2015.db.enc"
+IDR_DB2015              DB                      "res\\jrdb2015.db"
 
-IDR_DB2017              DB                      "res\\jrdb2017.db.enc"
+IDR_DB2017              DB                      "res\\jrdb2017.db"
 
-IDR_DB2019              DB                      "res\\jrdb2019.db.enc"
+IDR_DB2019              DB                      "res\\jrdb2021.db"
 
 
 /////////////////////////////////////////////////////////////////////////////
