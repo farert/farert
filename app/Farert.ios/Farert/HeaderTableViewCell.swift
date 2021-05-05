@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol TableHeaderViewDelegate: class {
+protocol TableHeaderViewDelegate: AnyObject {
     func tableHeaderViewTouched(_ cell: HeaderTableViewCell)
 }
 
