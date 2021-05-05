@@ -9,7 +9,7 @@
 import UIKit
 
 
-protocol LeftMenuProtocol : class {
+protocol LeftMenuProtocol : AnyObject {
     func changeViewController()
 }
 
