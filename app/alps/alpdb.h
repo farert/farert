@@ -1267,11 +1267,9 @@ public:
 private:
     void   checkIsJRTokaiOnly(void);
 	static int32_t	CheckOfRule88j(vector<RouteItem> *route);
-	static FARE_INFO::Fare	CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
 public:
 	static vector<int32_t>	Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route);
 private:
-	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
 	static int32_t	ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
 	       int32_t	reRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
            bool     isBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70);
@@ -1293,7 +1291,19 @@ private:
             ConvertShinkansen2ZairaiFor114Judge(&route_list_raw);
         }
 #endif
-    	static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+    static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+    class CRule114 {
+    public:
+        CRule114();
+        FARE_INFO::Fare check(const RouteFlag& route_flag, uint32_t chk, uint32_t sk, 
+                            const vector<RouteItem>& rRoute_list_no_applied_86or87, 
+                            const vector<RouteItem>& rRoute_list_applied_86or87, 
+                            const PAIRIDENT cityId, const Station& enter, const Station& exit);
+    	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
+        static uint32_t get86or87firstPoint(uint32_t km, uint32_t aSales_km, uint32_t line_id, uint32_t station_id1);
+    	static FARE_INFO::Fare	CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
+        bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+    };
 };
 
 #define STATION_ID(station_name) DbidOf::getInstance().id_of_station(station_name)
