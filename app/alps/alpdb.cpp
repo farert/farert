@@ -5858,12 +5858,13 @@ void CalcRoute::checkIsJRTokaiOnly()
 //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
 //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
 //
+#define RULE114_SALES_KM_86	1700
+#define RULE114_SALES_KM_87	800
 FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 {
-    FARE_INFO::Fare rule114;
+    FARE_INFO::Fare fare_rule114;
 	PAIRIDENT cityId;
 	int32_t jsales_km;
-	int32_t skm;
 	vector<RouteItem> route_list_tmp;
 	vector<RouteItem> route_list_tmp2;
 	vector<RouteItem> route_list_tmp3;
@@ -5926,7 +5927,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 		/* 未変換 */
 		TRACE("no applied for rule86/87\n");
 		route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-		return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 
 	/* (発駅=都区市内 or 着駅=都区市内)
@@ -5968,6 +5969,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	 */
 	/* compute of sales_km by route_list_cooked */
 	km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
+			//	営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]　／ BRTキロ[3]
 	jsales_km = km_raw[0] - km_raw[2] - km_raw[3]; // except BRT and company line
 	//115-2の誤った解釈
     //km_raw = CalcRoute::Get_route_distance(route_flag, route_list_raw);
@@ -5997,7 +5999,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 		// route_list_cooked = route_list_tmp3
 		route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
-		return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 
 	/* 101km - 200km : 山手線発着 or 200km以下の都区市内間(名古屋-大阪など)チェック */
@@ -6055,12 +6057,12 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
             ///// route_flag.rule86or87 |= ((rtky | chk) & 0x03);    // applied rule
 
-            return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 		}
-		sk = 900;	/* 90km */
+		sk = RULE114_SALES_KM_87;	/* 80km for rule114 check */
 	} else {
 		/* can't apply to 87 */
-		sk = 1900;	/* 190km */
+		sk = RULE114_SALES_KM_86;	/* 170km for rule114 check */
 	}
 
 	// route_list_tmp4 = route_list_tmp3
@@ -6069,7 +6071,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	/* 発着とも都区市内? */
 	if ((0x03 & (rtky | chk)) == 3) { /* 名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
 							/*  [区]-[区], [名]-[名], [山]-[区], ... */
-        for (sk2 = 2000; true; sk2 = 1000) {
+        for (sk2 = 2000; 0 < sk2 && sk == RULE114_SALES_KM_87; sk2 -= 1000) {
 			flg = 0;
 
 			/* route_list_tmp = route_list_tmp2 */
@@ -6083,8 +6085,8 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
 			/* 発駅のみ都区市内にしても201/101km以上か？ */
 			km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
-			skm = km_raw[0] - km_raw[2] - km_raw[3]; // except BRT and company line
-			if (sk2 < skm) {
+			// except BRT and company line
+			if (sk2 < (km_raw[0] - km_raw[2] - km_raw[3])) {
 				// 発 都区市内有効
 				flg = 0x01;
 			}
@@ -6100,8 +6102,8 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
 			/* 着駅のみ都区市内にしても201/101km以上か？ */
 			km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
-			skm = km_raw[0] - km_raw[2] - km_raw[3]; // except BRT and company line
-			if (sk2 < skm) {
+			// except BRT and company line
+			if (sk2 < (km_raw[0] - km_raw[2] - km_raw[3])) {
 				// 着 都区市内有効
 				flg |= 0x02;
 			}
@@ -6121,7 +6123,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
                         route_flag.rule69 = true;
                     }
 					/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
-					if (sk == 900) {
+					if (sk == RULE114_SALES_KM_87) {
 						TRACE("applied for rule87(start)\n");
                         route_flag.terCityReset();
                         route_flag.rule86or87 |= 0x04;
@@ -6132,11 +6134,11 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-                    return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				} else {
 					/* 着のみ都区市内適用 */
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
-					if (sk == 900) {
+					if (sk == RULE114_SALES_KM_87) {
 						TRACE("applied for rule87(end)\n");
                         route_flag.terCityReset();
                         route_flag.rule86or87 |= 0x08;
@@ -6147,7 +6149,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 					}
 					// route_list_cooked = route_list_tmp3
 					route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-					return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+					return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 				}
 			} else if (flg == 0x01) {
 				/* route_list_tmp = route_list_tmp2 */
@@ -6163,7 +6165,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
                 }
 
 				/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
-				if (sk == 900) {
+				if (sk == RULE114_SALES_KM_87) {
 					TRACE("applied for rule87(start)\n");
                     route_flag.terCityReset();
                     route_flag.rule86or87 |= 0x04;
@@ -6174,10 +6176,11 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-				return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+				return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			} else if (flg == 0x02) {
+				// TODO 上のflg == 0x01の実装と違うのは何故？同じにすべきでは？？？ 名阪絡みで不要か？
 				/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
-				if (sk == 900) {
+				if (sk == RULE114_SALES_KM_87) {
 					TRACE("applied for rule87(end)\n");
                     route_flag.terCityReset();
                     route_flag.rule86or87 |= 0x08;
@@ -6188,14 +6191,10 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 				}
 				// route_list_cooked = route_list_tmp3
 				route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
-                route_flag.rule86or87 |= 0x02;    // applied rule
-				return rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                route_flag.rule86or87 |= 0x02;    // applied rule   TODOこれもおかしくね？
+				return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			/* flg == 0 */
-			if ((sk != 900) || (sk2 == 1000)) {
-				/* 87無効 or 営業キロ200km越え判定は済 */
-				break;
-			}
 		} /* sk2= 2000, 1000 */
 		/* passthru */
 	} /* ((0x03 & (rtky | chk)) == 3)  名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
@@ -6212,53 +6211,16 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 
 	if (sk <= jsales_km) {
 			/* 114条適用かチェック */
+		CalcRoute::CRule114 rule114;
+		fare_rule114 = rule114.check(route_flag, chk, sk, route_list_tmp2, route_list_tmp4, cityId, enter, exit);
 
-		if ((0x03 & chk) == 3) {
-
-			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-			/* 発駅のみ特定都区市内着経路に変換 */
-			CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
-
-			// 69を適用したものをroute_list_tmp3へ
-			CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
-			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
-
-			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
-			rule114 =					/* 86,87適用前,   86,87適用後 */
-			         CalcRoute::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
-									        0x01 | ((sk2 == 2000) ? 0 : 0x8000));
-            if (rule114.fare == 0) {
-				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-				/* 着駅のみ特定都区市内着経路に変換 */
-				CalcRoute::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp);
-
-				// 69を適用したものをroute_list_tmp3へ
-				CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
-				CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
-
-				route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-				CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
-			    rule114 = CalcRoute::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
-									           0x02 | ((sk2 == 2000) ? 0 : 0x8000));
-            }
-		} else {
-			route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-			route_list_tmp3.assign(route_list_tmp4.cbegin(), route_list_tmp4.cend());
-			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
-			CalcRoute::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp3);
-			ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
-			rule114 =
-			CalcRoute::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
-								   (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000));
-		}
 	} else {
 		;
 	}
 	/* 86-87非適用 */
 	// route_list_cooked = route_list_tmp2
 	route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-	return rule114;
+	return fare_rule114;
 }
 
 //static:
@@ -6582,6 +6544,61 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
 	}
 }
 
+CalcRoute::CRule114::CRule114()
+{
+
+}
+
+FARE_INFO::Fare CalcRoute::CRule114::check(const RouteFlag& route_flag, uint32_t chk, uint32_t sk, 
+	                      const vector<RouteItem>& rRoute_list_no_applied_86or87, 
+	                      const vector<RouteItem>& rRoute_list_applied_86or87, 
+						  const PAIRIDENT cityId, const Station& enter, const Station& exit)
+{
+	vector<RouteItem> route_list_tmp;
+	vector<RouteItem> route_list_tmp2;
+	FARE_INFO::Fare rule114_fare;
+
+	if ((0x03 & chk) == 3) {
+
+		route_list_tmp.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
+		/* 発駅のみ特定都区市内着経路に変換 */
+		CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
+
+		// 69を適用したものをroute_list_tmp3へ
+		CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp2);	/* 69条適用(route_list_tmp->route_list_tmp2) */
+		CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp2);
+
+		route_list_tmp.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
+		CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
+		rule114_fare =					/* 86,87適用前,   86,87適用後 */
+					CalcRoute::CRule114::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp2,
+										0x01 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
+		if (rule114_fare.fare == 0) {
+			route_list_tmp.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
+			/* 着駅のみ特定都区市内着経路に変換 */
+			CalcRoute::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp);
+
+			// 69を適用したものをroute_list_tmp3へ
+			CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp2);	/* 69条適用(route_list_tmp->route_list_tmp2) */
+			CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp2);
+
+			route_list_tmp.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
+			CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
+			rule114_fare = CalcRoute::CRule114::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp2,
+											0x02 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
+		}
+	} else {
+		route_list_tmp.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
+		route_list_tmp2.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
+		CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp);
+		CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_tmp2);
+		ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
+		rule114_fare =
+		CalcRoute::CRule114::CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp2,
+								(chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
+	}
+	return rule114_fare;
+}
 
 //static
 //	並行在来線へ変換
@@ -6592,7 +6609,7 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
 //
 //	@return true if changed.
 //
-bool CalcRoute::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
+bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 {
 	vector<RouteItem>::iterator ite = route->begin();
 	int32_t station_id1 = 0;
@@ -6830,6 +6847,7 @@ n1:
 //public
 //	114条のチェック
 //
+//	@param [in] rRoute_flag   経路フラグ
 //	@param [in] route         経路(86, 87変換前)
 //	@param [in] routeSpecial  経路(86, 87変換後)
 //	@param [in] kind       種別
@@ -6841,7 +6859,7 @@ n1:
 //
 //	@note 86/87適用後の営業キロが200km/100km以下であること.
 //
-FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind)
+FARE_INFO::Fare CalcRoute::CRule114::CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind)
 {
     FARE_INFO::Fare result;
 	int32_t dkm;
@@ -6866,7 +6884,7 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 
 #ifdef _DEBUG
 	km_raw = CalcRoute::Get_route_distance(rRoute_flag, route); 			/* 経路距離 */
-	ASSERT(km_raw.size() == 4);			// [0]:営業キロ、[1]計算キロ
+	ASSERT(km_raw.size() == 4);		// 営業キロ[0] ／ 計算キロ[1] ／ 会社線キロ[2]　／ BRTキロ[3]
 #endif
 	km_spe = CalcRoute::Get_route_distance(rRoute_flag, routeSpecial); 	/* 経路距離(86,87適用後) */
 	ASSERT(km_spe.size() == 4);
@@ -6881,10 +6899,13 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 		// 100km
 		km = 1000;
 	}
+printf("===@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%d, %d, %d\n", aSales_km, km, km * 8/10);
 	/* 距離があと86、87条適用距離-10kmの範囲内ではない */
-	if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
-		return result;
-	}
+//	if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
+//	if ((aSales_km < (km * 8 / 10)) || (km < aSales_km)) {
+//		return result;
+//	}
+// 見直し
 
 	if ((kind & 1) != 0) {		/* 発駅が特定都区市内 */
 		line_id = route.at(route.size() - 1).lineId;				// 着 路線 発-着
@@ -6912,10 +6933,11 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 		/* 上り */
 		km = -km;
 	}
+printf("@@@@@ aSakes_km=%d, dkm=%d, km=%d, %s, %s, %s\n", aSales_km, dkm, km, LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
 	/* 中心駅から目的地方向に最初に200(100)kmに到達する駅を得る */
 	/* 富士から身延線で甲府方向に */
-	station_id3 = CalcRoute::Retreive_SpecificCoreAvailablePoint(km, aSales_km, line_id, station_id1);
-
+	station_id3 = CalcRoute::CRule114::get86or87firstPoint(km, aSales_km, line_id, station_id1);
+printf(_T("@@@%s@@@\n"), SNAME(station_id3));
 	//#2013.6.28:modified>> ASSERT(0 < station_id3);
 	if (station_id3 <= 0) {
 		return result;
@@ -6944,10 +6966,6 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 	}
 	fare_normal = fi.getFareForJR();			/* 200(100)km以下により, 86 or 87 非適用の通常計算運賃(長津田-横浜-国母) */
 
-#ifdef _DEBUG
-	ASSERT(km_raw[0] == fi.getJRSalesKm());
-	ASSERT(km_raw[1] == fi.getJRCalcKm());
-#endif
 	/* 86,87適用した最短駅の運賃を得る(上例では甲斐住吉-横浜間) */
 	if (!fi.calc_fare(&rRoute_flag_ref, route_work)) {
 		ASSERT(FALSE);
@@ -6967,6 +6985,11 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 	return result;
 }
 
+uint32_t CalcRoute::CRule114::get86or87firstPoint(uint32_t km, uint32_t aSales_km, uint32_t line_id, uint32_t station_id1)
+{
+	
+	return CalcRoute::CRule114::Retreive_SpecificCoreAvailablePoint(km, aSales_km, line_id, station_id1);
+}
 
 //static
 //	指定路線・駅からの100/200km到達地点の駅を得る
@@ -6977,7 +7000,7 @@ FARE_INFO::Fare CalcRoute::CheckOfRule114j(const RouteFlag& rRoute_flag, const v
 //	@param [in] station_id   起点駅
 //	@retval 到達駅id. 0はなし
 //
-int32_t CalcRoute::Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id)
+int32_t CalcRoute::CRule114::Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id)
 {
 	// 上り方向で200km到達地点
 	static const char tsql_desc[] =
