@@ -1288,10 +1288,9 @@ private:
 #if defined TEST || defined _DEBUG
     public:
         void convertShinkansen2ZairaiFor114Judge() {
-            ConvertShinkansen2ZairaiFor114Judge(&route_list_raw);
+            CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_raw);
         }
 #endif
-    static bool     ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
     class CRule114 {
     public:
         CRule114();
@@ -1302,7 +1301,7 @@ private:
     	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
         static uint32_t get86or87firstPoint(uint32_t km, uint32_t aSales_km, uint32_t line_id, uint32_t station_id1);
     	static FARE_INFO::Fare	CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
-        bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+        static bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
     };
 };
 
