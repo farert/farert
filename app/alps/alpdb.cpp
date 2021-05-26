@@ -6071,7 +6071,7 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 	/* 発着とも都区市内? */
 	if ((0x03 & (rtky | chk)) == 3) { /* 名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
 							/*  [区]-[区], [名]-[名], [山]-[区], ... */
-        for (sk2 = 2000; 0 < sk2 && sk == RULE114_SALES_KM_87; sk2 -= 1000) {
+        for (sk2 = 2000; true ; sk2 = 1000) {
 			flg = 0;
 
 			/* route_list_tmp = route_list_tmp2 */
@@ -6195,6 +6195,9 @@ FARE_INFO::Fare CalcRoute::checkOfRuleSpecificCoreLine()
 				return fare_rule114;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 			}
 			/* flg == 0 */
+			if ((sk != RULE114_SALES_KM_87) || (sk2 == 1000)) {
+				break;
+			}
 		} /* sk2= 2000, 1000 */
 		/* passthru */
 	} /* ((0x03 & (rtky | chk)) == 3)  名古屋市内-大阪市内など([名]-[阪]、[九]-[福]、[区]-[浜]) */
@@ -6901,11 +6904,10 @@ FARE_INFO::Fare CalcRoute::CRule114::CheckOfRule114j(const RouteFlag& rRoute_fla
 	}
 printf("===@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%d, %d, %d\n", aSales_km, km, km * 8/10);
 	/* 距離があと86、87条適用距離-10kmの範囲内ではない */
-//	if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
-//	if ((aSales_km < (km * 8 / 10)) || (km < aSales_km)) {
-//		return result;
-//	}
-// 見直し
+	if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
+		return result;
+	}
+// kっかがへんなんおでコメント外してみ見直し
 
 	if ((kind & 1) != 0) {		/* 発駅が特定都区市内 */
 		line_id = route.at(route.size() - 1).lineId;				// 着 路線 発-着
