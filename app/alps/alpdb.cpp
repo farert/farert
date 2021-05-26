@@ -6904,10 +6904,17 @@ FARE_INFO::Fare CalcRoute::CRule114::CheckOfRule114j(const RouteFlag& rRoute_fla
 	}
 printf("===@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%d, %d, %d\n", aSales_km, km, km * 8/10);
 	/* 距離があと86、87条適用距離-10kmの範囲内ではない */
+<<<<<<< HEAD
 //	if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
 //		return result;
 //	}
+// あってはだめ。若松-西大分がダメとなる。多分、奥新川、判定数値見直すべき。
+=======
+	if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
+		return result;
+	}
 // kっかがへんなんおでコメント外してみ見直し
+>>>>>>> 0602fa4 (Fix degre)
 
 	if ((kind & 1) != 0) {		/* 発駅が特定都区市内 */
 		line_id = route.at(route.size() - 1).lineId;				// 着 路線 発-着
