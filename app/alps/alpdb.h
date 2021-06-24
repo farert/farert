@@ -267,7 +267,7 @@ class RouteFlag {
 
 public:
     bool no_rule;
-    // メンバの数はenableMapValueに依存するので制限32個まで
+
     bool jrtokaistock_applied;  // owner is user
     bool jrtokaistock_enable;   // owner system b#20090901で未使用
     bool meihan_city_flag;      // True: 発のみ都区市内
@@ -592,6 +592,13 @@ public:
     virtual int32_t  coreAreaIDByCityId(int32_t startEndFlg) const { return 0;}
 };
 
+class IntPair
+{
+public:
+    int one;
+    int two;
+};
+
 class Route;
 
 class FARE_INFO {
@@ -858,6 +865,11 @@ public:
             sales_km = sk;
             calc_km = ck;
         }
+        void set(const Fare& other) {
+            fare = other.fare;
+            sales_km = other.sales_km;
+            calc_km = other.calc_km;
+        }
     };
     Fare     getRule114() const {
         Fare f(rule114_fare, rule114_sales_km, rule114_calc_km);
@@ -1014,6 +1026,13 @@ typedef struct
 	int32_t		jctSpStationId2;		// 分岐特例:分岐駅(c)
 } JCTSP_DATA;
 
+// 経路マスクビットパターンマスク
+#define JctMaskOn(bit, jctid)  	bit[(jctid) / 8] |= (1 << ((jctid) % 8))
+#define JctMaskOff(bit, jctid) 	bit[(jctid) / 8] &= ~(1 << ((jctid) % 8))
+#define JctMaskClear(bit)   	memset(bit, 0, JCTMASKSIZE)
+#define IsJctMask(bit, jctid)	((bit[(jctid) / 8] & (1 << ((jctid) % 8))) != 0)
+
+#define TITLE_NOTSAMEKOKURAHAKATASHINZAI _T("(小倉博多間新幹線在来線別線)")
 
 /*   route
  *
@@ -1052,6 +1071,7 @@ public:
     static tstring 	GetPrefectByStationId(int32_t stationId);
 
     static tstring  Show_route(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
+    static tstring  Show_route_full(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
 private:
     static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, const RouteFlag& rRoute_flag);
 protected:
@@ -1257,7 +1277,7 @@ public:
     const vector<RouteItem>& routeList() const { return route_list_cooked; }
     int32_t         beginStationId();
     int32_t         endStationId();
-    FARE_INFO::Fare checkOfRuleSpecificCoreLine();
+    void            checkOfRuleSpecificCoreLine(FARE_INFO::Fare* rule114 = NULL);
     int32_t            calcFare(FARE_INFO* pFi);
     int32_t            calcFare(FARE_INFO* pFi, int32_t count);
 public:
@@ -1292,16 +1312,32 @@ private:
         }
 #endif
     class CRule114 {
+        vector<RouteItem> route_list;
+        vector<RouteItem> route_list_special;
+        vector<RouteItem> route_list_replace;
+        map<uint32_t, uint32_t> collectCheckedJunction;
+        RouteFlag route_flag;
+        bool is_start_city;  /* true : start is city otherwise arrive is city */
+        bool is100km;        /* true : rule87 otherwise rule86 */
+        int32_t deep_count;
+        int32_t locost_fare;
+        static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
+    public:
+        FARE_INFO::Fare fare;
+        int32_t  normal_fare;
     public:
         CRule114();
-        FARE_INFO::Fare check(const RouteFlag& route_flag, uint32_t chk, uint32_t sk, 
+        bool check(const RouteFlag& rRouteFlag, uint32_t chk, uint32_t sk, 
                             const vector<RouteItem>& rRoute_list_no_applied_86or87, 
                             const vector<RouteItem>& rRoute_list_applied_86or87, 
                             const PAIRIDENT cityId, const Station& enter, const Station& exit);
-    	static int32_t	Retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
-        static uint32_t get86or87firstPoint(uint32_t km, uint32_t aSales_km, uint32_t line_id, uint32_t station_id1);
-    	static FARE_INFO::Fare	CheckOfRule114j(const RouteFlag& rRoute_flag, const vector<RouteItem>& route, const vector<RouteItem>& routeSpecial, int32_t kind);
-        static bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+            int32_t	retreive_SpecificCoreAvailablePoint(int32_t km, int32_t km_offset, int32_t line_id, int32_t station_id);
+            vector<IntPair>  enumJunctionRange(int32_t cond_km, int32_t base_sales_km, int32_t base_line_id, int32_t base_station_id);
+            void judgementOfFare(int32_t station_id, int32_t base_line_id, int32_t base_station_id);
+            void get86or87firstPoint(int32_t km, uint32_t aSales_km, uint32_t line_id, uint32_t station_id1);
+            bool checkOfRule114j(int32_t kind);
+            static bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
+        bool isEnable() { return fare.fare != 0; }
     };
 };
 
