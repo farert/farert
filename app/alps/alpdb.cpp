@@ -6877,12 +6877,12 @@ n1:
 //
 bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
 {
-	int32_t dkm;
 	int32_t km;				// 100km or 200km
 	int32_t aSales_km;		// 86/87 applied
 	int32_t line_id;
 	int32_t station_id1;
 	int32_t station_id2;
+	int32_t last_arrive_sales_km;
 
 	vector<int32_t> km_raw;		// 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
 	vector<int32_t> km_spe;		// 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
@@ -6898,12 +6898,12 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
 	km_spe = CalcRoute::Get_route_distance(route_flag, route_list_special); 	/* 経路距離(86,87適用後) */
 	ASSERT(km_spe.size() == 4);
 
-	aSales_km = km_spe.at(0) - km_spe.at(2) - km_spe.at(3); // sales_km as except BRT and company line;
+	sales_km_special = km_spe.at(0) - km_spe.at(2) - km_spe.at(3); // sales_km as except BRT and company line;
 
 	printf("checkOfRule114j: raw = %d, cook = %d (%d)\n", (km_raw.at(0) - km_raw.at(2) - km_raw.at(3)),
                                                           (km_spe.at(0) - km_spe.at(2) - km_spe.at(3)),
 		((km_raw.at(0) - km_raw.at(2) - km_raw.at(3)) - ((km_spe.at(0) - km_spe.at(2) - km_spe.at(3)))));
-	if (((km_raw.at(0) - km_raw.at(2) - km_raw.at(3)) - aSales_km) < 100) {
+	if (((km_raw.at(0) - km_raw.at(2) - km_raw.at(3)) - sales_km_special) < 100) {
 		return false;
 	}
 	/* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
@@ -6934,20 +6934,25 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
 	}
 
 	// ex. 国母-横浜-長津田の場合、身延線.富士-国母 間の距離を引く
-	dkm = RouteUtil::GetDistance(line_id, station_id1, station_id2).at(0);
-	aSales_km -= dkm;	/* 発駅から初回乗換駅までの営業キロを除いた営業キロ */
+	//                            | 富士         国母
+	// City ------------||--------+------------/ Arrive
+	//  +--------------------------------------/ sales_km_special
+	//  |                         +------------/ last_arrive_sales_km
+	//  +-------------------------| aSalesKm               
+	last_arrive_sales_km = RouteUtil::GetDistance(line_id, station_id1, station_id2).at(0);
+	aSales_km = sales_km_special - last_arrive_sales_km;	/* 発駅から初回乗換駅までの営業キロを除いた営業キロ */
 
 	if (aSales_km < 0) {
 		return false;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	}
 	ASSERT(0 <= aSales_km);
-	ASSERT(0 < dkm);
+	ASSERT(0 < last_arrive_sales_km);
 
 	if (RouteUtil::LDIR_ASC != RouteUtil::DirLine(line_id, station_id1, station_id2)) {
 		/* 上り */
 		km = -km;
 	}
-printf("@@@@@ aSakes_km=%d, dkm=%d, km=%d, %s, %s, %s\n", aSales_km, dkm, km, LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
+printf("@@@@@ aSakes_km=%d, last_arrive_sales_km=%d, km=%d, %s, %s, %s\n", aSales_km, last_arrive_sales_km, km, LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
 	/* 中心駅から目的地方向に最初に200(100)kmに到達する駅を得る */
 	/* 富士から身延線で甲府方向に */
 	route_list_replace.clear();
@@ -7093,16 +7098,17 @@ vector<int32_t> CalcRoute::CRule114::ArrayOfLinesOfStationId(int32_t junction_st
 //	checkOfRule114j() =>
 //
 //	@param [in] cond_km  下り: 100=1000, 200=2000(上り: -1000 / -2000)
-//	@param [in] base_sales_km
-//	@param [in] base_line_id
-//	@param [in] base_station_id
-//	@param [in] line_id   路線
-//	@param [in] station_id   起点駅
+//	@param [in] base_sales_km     都区市内駅からみて最後の路線の起点駅までの営業キロ
+//                                都区市内着の場合、最初の路線の降車駅から都区市内駅までの営業キロ
+//	@param [in] base_line_id      都区市内駅からみて最後の路線
+//	@param [in] base_station_id   都区市内駅から最後の路線の起点駅
 //	member: is100km, is_start_city
 //	@retval なし
 //
 void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sales_km, uint32_t base_line_id, uint32_t base_station_id)
 {
+	vector<IntPair> junctions;
+
 	deep_count++;
 	TRACE(_T("[get86or87firstPoint]: dept%d: cond_km=%d, base km=%d, %s %s @@@\n"), deep_count, cond_km, base_sales_km, LNAME(base_line_id), SNAME(base_station_id));
 	
@@ -7113,29 +7119,56 @@ void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sal
 		TRACE(_T("judgementOfFare(%s, %s, %s)\n"), SNAME(arrive8687_station_id), LNAME(base_line_id), SNAME(base_station_id));
 		judgementOfFare(arrive8687_station_id, base_line_id, base_station_id);
   	}
-	if (false && (deep_count == 1) && (0 == arrive8687_station_id)) {
-		; // do nothing ()
+	// 100/200km までの分岐駅一覧
+#if !defined C114NOFASTJUNCCHEK
+	if (deep_count == 1) {
+		// 井原市 芸備線 広島 山陽線 幡生
+		// enumJunctionRange start:山陽線-櫛ケ浜 cond_km=2000, base_salles_km=851(広島〜櫛ケ浜)
+		// 幡生から先200
+		// base_station_id ではなく、幡生から先の200未満までの分岐駅
+
+		// 広島-幡生 1982=sales_km_special base_sales 1131 	
+		int arrive_station_id;
+		if (is_start_city) {
+			arrive_station_id = route_list_special.back().stationId;   // 幡生
+		} else {
+			arrive_station_id = route_list_special.front().stationId;  // 
+		}
+		if (STATION_IS_JUNCTION(arrive_station_id)) {
+			TRACE(_T("  terminal was junction. sales_km_special:%d\n"), sales_km_special);
+
+			IntPair v(sales_km_special, arrive_station_id);
+			junctions.push_back(v);
+			base_sales_km = 0;
+		} else {
+			TRACE(_T("  terminal was non-junction. sales_km_special:%d\n"), sales_km_special);
+			junctions = enumJunctionRange(cond_km, sales_km_special, base_line_id, arrive_station_id);
+			base_sales_km = sales_km_special;
+		}
+	  //       幡生から(2000-1982=18)kmまでの分岐駅
 	} else {
-		// 100/200km までの分岐駅一覧
-		vector<IntPair> junctions = enumJunctionRange(cond_km, base_sales_km, base_line_id, base_station_id);
-		for (vector<IntPair>::const_iterator jct_ite = junctions.cbegin(); jct_ite != junctions.cend(); jct_ite++) {
-			int32_t offset_sales_km = jct_ite->one + base_sales_km;
-			int32_t last_station_id = jct_ite->two;
-			TRACE(_T("Enum_line_of_stationId start %s from %s-%s:\n"), SNAME(last_station_id), LNAME(base_line_id), SNAME(base_station_id));
-			if (collectCheckedJunction.find(last_station_id) == collectCheckedJunction.end()) {
-				collectCheckedJunction[last_station_id] = last_station_id;
-				// 分岐駅から分かれる路線一覧
-				// DBO lines = RouteUtil::Enum_line_of_stationId(last_station_id);
-				vector<int32_t> lines = ArrayOfLinesOfStationId(last_station_id);
-				for (vector<int32_t>::const_iterator ite = lines.cbegin(); ite != lines.cend(); ite++ ) {
-					int32_t jct_line_id = *ite;
-					TRACE(_T("found junction:%s(%s)\n"), LNAME(jct_line_id), SNAME(last_station_id));
-					if (base_line_id != jct_line_id) {
-						route_list_replace.push_back(RouteItem(base_line_id, base_station_id));
-						get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
-						get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
-						route_list_replace.pop_back();
-					}
+#endif
+		junctions = enumJunctionRange(cond_km, base_sales_km, base_line_id, base_station_id);
+#if !defined C114NOFASTJUNCCHEK
+	}
+#endif
+	for (vector<IntPair>::const_iterator jct_ite = junctions.cbegin(); jct_ite != junctions.cend(); jct_ite++) {
+		int32_t offset_sales_km = jct_ite->one + base_sales_km;
+		int32_t last_station_id = jct_ite->two;
+		TRACE(_T("Enum_line_of_stationId start %s from %s-%s:\n"), SNAME(last_station_id), LNAME(base_line_id), SNAME(base_station_id));
+		if (collectCheckedJunction.find(last_station_id) == collectCheckedJunction.end()) {
+			collectCheckedJunction[last_station_id] = last_station_id;
+			// 分岐駅から分かれる路線一覧
+			// DBO lines = RouteUtil::Enum_line_of_stationId(last_station_id);
+			vector<int32_t> lines = ArrayOfLinesOfStationId(last_station_id);
+			for (vector<int32_t>::const_iterator ite = lines.cbegin(); ite != lines.cend(); ite++ ) {
+				int32_t jct_line_id = *ite;
+				TRACE(_T("found junction:%s(%s)\n"), LNAME(jct_line_id), SNAME(last_station_id));
+				if (base_line_id != jct_line_id) {
+					route_list_replace.push_back(RouteItem(base_line_id, base_station_id)); // 1st station will not used.
+					get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
+					get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
+					route_list_replace.pop_back();
 				}
 			}
 		}
@@ -7145,7 +7178,7 @@ void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sal
 
 //	指定路線・駅から、指定方面へ100/200kmまでの分岐駅を得る
 //	@param [in]	cond_km		上り ／ 下り, 86(200km) or 87(100km)
-//	@param [in] base_sales_km 86,87条中心駅駅からの指定駅までの営業キロ
+//	@param [in] base_sales_km 86,87条中心駅からの指定駅までの営業キロ
 //	@param [in] base_line_id 指定路線
 //	@param [in] base_station_id 指定駅
 //	@retval DBO(0:int(指定駅からの営業キロ), 1:int(分岐駅))
@@ -7157,7 +7190,7 @@ vector<IntPair> CalcRoute::CRule114::enumJunctionRange(int32_t cond_km, int32_t 
 "select l1.sales_km-l2.sales_km, l2.station_id from t_lines l1 left join t_lines l2 on l1.line_id=l2.line_id"
 " left join t_station t on t.rowid=l2.station_id "
 "where l1.line_id=?1 and l1.station_id=?2 and l1.sales_km>l2.sales_km and (l1.sales_km-%u)<=l2.sales_km"
-" and (l1.lflg&(1<<17))=0 and (l1.lflg&(1<<31))=0 and (l1.lflg&(1<<15))!=0 and (sflg&(1<<12))!=0"
+" and (l2.lflg&(1<<17))=0 and (l2.lflg&(1<<31))=0 and (l2.lflg&(1<<15))!=0 and (sflg&(1<<12))!=0"
 " order by l2.sales_km desc";
 
 	// 下り方向
@@ -7165,7 +7198,7 @@ vector<IntPair> CalcRoute::CRule114::enumJunctionRange(int32_t cond_km, int32_t 
 "select l2.sales_km-l1.sales_km, l2.station_id from t_lines l1 left join t_lines l2 on l1.line_id=l2.line_id"
 " left join t_station t on t.rowid=l2.station_id "
 "where l1.line_id=?1 and l1.station_id=?2 and l1.sales_km<l2.sales_km and (l1.sales_km+%u)>=l2.sales_km"
-" and (l1.lflg&(1<<17))=0 and (l1.lflg&(1<<31))=0 and (l1.lflg&(1<<15))!=0 and (sflg&(1<<12))!=0"
+" and (l2.lflg&(1<<17))=0 and (l2.lflg&(1<<31))=0 and (l2.lflg&(1<<15))!=0 and (sflg&(1<<12))!=0"
 " order by l2.sales_km";
 
 	char sql_buf[512];
@@ -7177,7 +7210,7 @@ vector<IntPair> CalcRoute::CRule114::enumJunctionRange(int32_t cond_km, int32_t 
 	} else {		/* 下り */
 		sqlite3_snprintf(sizeof(sql_buf), sql_buf, tsql_asc, cond_km - base_sales_km);
 	}
-	TRACE(_T("enumJunctionRange start:%s-%s cond_km=%d, base_salles_km=%d\n)"), LNAME(base_line_id), SNAME(base_station_id), cond_km, base_sales_km);
+	TRACE(_T("enumJunctionRange start:%s-%s cond_km=%d, base_salles_km=%d\n"), LNAME(base_line_id), SNAME(base_station_id), cond_km, base_sales_km);
 
 	DBO dbo = DBS::getInstance()->compileSql(sql_buf);
 	dbo.setParam(1, base_line_id);
