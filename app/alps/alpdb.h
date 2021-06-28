@@ -595,6 +595,8 @@ public:
 class IntPair
 {
 public:
+    IntPair() { one = 0; two = 0; }
+    IntPair(int one_, int two_) { one = one_; two = two_; }
     int one;
     int two;
 };
@@ -1322,6 +1324,7 @@ private:
         int32_t deep_count;
         int32_t locost_fare;
         static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
+        int32_t sales_km_special;
     public:
         FARE_INFO::Fare fare;
         int32_t  normal_fare;
