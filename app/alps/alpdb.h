@@ -601,6 +601,58 @@ public:
     int two;
 };
 
+class Fare {
+public:
+    int fare;
+    int sales_km;
+    int calc_km;
+    Fare() { fare = sales_km = calc_km = 0; }
+    Fare(int f, int sk, int ck) {
+        set(f, sk, ck);
+    }
+    void set(int f, int sk, int ck) {
+        fare = f;
+        sales_km = sk;
+        calc_km = ck;
+    }
+    void set(const Fare& other) {
+        fare = other.fare;
+        sales_km = other.sales_km;
+        calc_km = other.calc_km;
+    }
+    void clear() { fare = sales_km = calc_km = 0; }
+};
+
+class Rule114Info {
+    Fare fare_114;
+    int32_t apply_terminal_station;
+public:
+    Rule114Info() {}
+    Rule114Info(const Rule114Info& other) {
+        set(other);
+    }
+    Rule114Info(const Fare& fare_, int32_t station_id_) {
+        fare_114.set(fare_);
+        apply_terminal_station = station_id_;
+    }
+    Rule114Info& operator=(const Rule114Info& right) {
+        set(right);
+        return *this;
+    }
+    void set(const Rule114Info& other) {
+        fare_114.set(other.fare_114);
+        apply_terminal_station = other.apply_terminal_station;
+    }
+    void clear() {
+        fare_114.clear();
+        apply_terminal_station = 0;
+    }
+    int32_t stationId() const { return apply_terminal_station; }
+    int32_t sales_km() const { return fare_114.sales_km; }
+    int32_t calc_km() const { return fare_114.calc_km; }
+    int32_t fare() const { return fare_114.fare; }
+};
+
 class Route;
 
 class FARE_INFO {
@@ -649,9 +701,7 @@ private:
 	int32_t companymask;
 
     /* 114 */
-    int32_t rule114_fare;
-    int32_t rule114_sales_km;
-    int32_t rule114_calc_km;
+    Rule114Info rule114Info;
 
     bool roundTripDiscount;
 
@@ -746,9 +796,7 @@ public:
 		fare_ic = 0;
 		avail_days = 0;
 
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
+        rule114Info.clear();
 
         roundTripDiscount = false;
 
@@ -825,8 +873,8 @@ public:
     int32_t 	roundTripFareWithCompanyLinePriorRule114() const;
     int32_t 	roundTripChildFareWithCompanyLine() const;
 	int32_t 	getTotalSalesKm() const;
-	int32_t		getRule114SalesKm() const { return rule114_sales_km; }
-	int32_t		getRule114CalcKm() const  { return rule114_calc_km;  }
+	int32_t		getRule114SalesKm() const { return rule114Info.sales_km(); }
+	int32_t		getRule114CalcKm() const  { return rule114Info.calc_km();  }
 	int32_t		getJRSalesKm() const;
 	int32_t		getJRCalcKm() const;
 	int32_t		getCompanySalesKm() const;
@@ -853,39 +901,11 @@ public:
     bool        getIsBRT_discount() const { return brt_discount_fare != 0; }
     bool isUrbanArea() const;
 
-    class Fare {
-    public:
-        int fare;
-        int sales_km;
-        int calc_km;
-        Fare() { fare = sales_km = calc_km = 0; }
-        Fare(int f, int sk, int ck) {
-            set(f, sk, ck);
-        }
-        void set(int f, int sk, int ck) {
-            fare = f;
-            sales_km = sk;
-            calc_km = ck;
-        }
-        void set(const Fare& other) {
-            fare = other.fare;
-            sales_km = other.sales_km;
-            calc_km = other.calc_km;
-        }
-    };
-    Fare     getRule114() const {
-        Fare f(rule114_fare, rule114_sales_km, rule114_calc_km);
-        return f;
-    }
-    void     setRule114(const Fare fare) {
-        rule114_fare = fare.fare;
-        rule114_sales_km = fare.sales_km;
-        rule114_calc_km = fare.calc_km;
+    void     setRule114(const Rule114Info& r114) {
+        rule114Info.set(r114);
     }
     void     clrRule114() {
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
+        rule114Info.clear();
     }
     class CompanyFare {
     public:
@@ -898,7 +918,7 @@ public:
         bool is_connect_non_discount_fare() const { return (passflg & 0x02) != 0; }
         CompanyFare() { fare = 0; fareChild = 0; fareAcademic = 0; passflg = 0; }
     };
-    bool	isRule114() const { return 0 != rule114_fare; }
+    bool	isRule114() const { return 0 != rule114Info.fare(); }
     bool	isRoundTripDiscount() const { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
     int32_t getBeginTerminalId() const { return beginTerminalId;}
     int32_t getEndTerminalId() const { return endTerminalId; }
@@ -1261,10 +1281,11 @@ public:
 public:
 };
 
+
 class CalcRoute : public RouteList
 {
     vector<RouteItem> route_list_cooked;
-
+    Rule114Info rule114Info;
     CalcRoute() {
     }
 
@@ -1279,7 +1300,7 @@ public:
     const vector<RouteItem>& routeList() const { return route_list_cooked; }
     int32_t         beginStationId();
     int32_t         endStationId();
-    void            checkOfRuleSpecificCoreLine(FARE_INFO::Fare* rule114 = NULL);
+    void            checkOfRuleSpecificCoreLine(bool isCheckRule114 = false);
     int32_t            calcFare(FARE_INFO* pFi);
     int32_t            calcFare(FARE_INFO* pFi, int32_t count);
 public:
@@ -1326,7 +1347,7 @@ private:
         static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
         int32_t sales_km_special;
     public:
-        FARE_INFO::Fare fare;
+        Fare fare;
         int32_t  apply_terminal_station;
         int32_t  normal_fare;
     public:
