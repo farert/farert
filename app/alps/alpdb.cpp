@@ -3110,8 +3110,6 @@ JR東日本 株主優待4： \123,456
  */
 int32_t CalcRoute::calcFare(FARE_INFO* pFi)
 {
-	FARE_INFO::Fare rule114;	// [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
-
 	if (route_list_raw.size() <= 1) {
 		pFi->setEmpty();
 
@@ -3140,7 +3138,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
     /* 86, 87, 69, 70条 114条適用かチェック */
     if (!route_flag.no_rule && !route_flag.osakakan_detour) {
         // これをここに置かないと86.87＋近郊でNG
-        checkOfRuleSpecificCoreLine(&rule114);	// route_list_raw -> route_list_cooked
+        checkOfRuleSpecificCoreLine(true);	// route_list_raw -> route_list_cooked
     		/* 規則適用 */
         pFi->setTerminal(this->beginStationId(),
                               this->endStationId());    // set is begin/end terminal Id.
@@ -3158,7 +3156,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
                 ; // DO NOTHING
             } else {
                 // rule 114 applied
-                pFi->setRule114(rule114);
+                pFi->setRule114(rule114Info);
             }
         } else {
     		pFi->reset();
@@ -5870,7 +5868,7 @@ void CalcRoute::checkIsJRTokaiOnly()
 //
 #define RULE114_SALES_KM_86	1700
 #define RULE114_SALES_KM_87	800
-void CalcRoute::checkOfRuleSpecificCoreLine(FARE_INFO::Fare* fare_rule114 /* =NULL */)
+void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
 {
 	PAIRIDENT cityId;
 	int32_t jsales_km;
@@ -6221,11 +6219,11 @@ void CalcRoute::checkOfRuleSpecificCoreLine(FARE_INFO::Fare* fare_rule114 /* =NU
 	/* 未変換 */
 	TRACE("no applied for rule86/87(jsales_km=%d)\n", jsales_km);
 
-	if ((fare_rule114 != NULL) && (sk <= jsales_km)) {
+	if (isCheckRule114 && (sk <= jsales_km)) {
 			/* 114条適用かチェック */
 		CalcRoute::CRule114 rule114;
 		if (rule114.check(route_flag, chk, sk, route_list_tmp2, route_list_tmp4, cityId, enter, exit)) {
-			fare_rule114->set(rule114.fare);
+			rule114Info.set(Rule114Info(rule114.fare, rule114.apply_terminal_station));
 		}
 	} else {
 		;
@@ -8338,7 +8336,7 @@ int32_t		FARE_INFO::getFareForDisplayPriorRule114() const
 int32_t		FARE_INFO::jrFare() const
 {
     if (isRule114()) {
-        return rule114_fare;
+        return rule114Info.fare();
     } else {
 		return jr_fare;
     }
@@ -8395,7 +8393,7 @@ const
 
 	if (applied_r114) {
 		if (isRule114()) {
-			cfare = rule114_fare - brtfare;
+			cfare = rule114Info.fare() - brtfare;
 		} else {
 			ASSERT(FALSE);
 			return 0;		// >>>>>>>>>
@@ -9846,7 +9844,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_
 
     CalcRoute shortCalcRoute(shortRoute);
     shortCalcRoute.refRouteFlag().setAnotherRouteFlag(*pShort_route_flag);
-    shortCalcRoute.checkOfRuleSpecificCoreLine(NULL);
+    shortCalcRoute.checkOfRuleSpecificCoreLine();
 
     setTerminal(shortCalcRoute.beginStationId(), shortCalcRoute.endStationId());
     *pShort_route_flag = shortCalcRoute.getRouteFlag();
