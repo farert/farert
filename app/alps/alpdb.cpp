@@ -7060,12 +7060,15 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
 		TRACE("    *** update lowcost %d-> %d ***\n", locost_fare, fare_applied);
 		if (locost_fare != normal_fare && locost_fare != fare_applied) {
 			// ここに来ることはないので（若松-佐伯除く）、114運賃は通常一つ検出できれば以降検索しなくても良い。
-//			ASSERT(FALSE);
+			ASSERT(FALSE);
 		}
-		locost_fare = fare_applied;
-		fare.fare = fare_applied;		/* 先の駅の86,87適用運賃 */
-		fare.sales_km = fi.getJRSalesKm();
-		fare.calc_km = fi.getJRCalcKm();
+		if ((0 == fare.sales_km) || (fi.getJRSalesKm() < fare.sales_km)) {
+			locost_fare = fare_applied;
+			fare.fare = fare_applied;		/* 先の駅の86,87適用運賃 */
+			fare.sales_km = fi.getJRSalesKm();
+			fare.calc_km = fi.getJRCalcKm();
+			apply_terminal_station = arrive_station_id;
+		}
 	}
 }
 
@@ -7082,7 +7085,8 @@ vector<int32_t> CalcRoute::CRule114::ArrayOfLinesOfStationId(int32_t junction_st
 			int lflg = lines.getInt(2);
 			if (((1<<31) & lflg) == 0) {
 				int line_id = lines.getInt(1);
-				if (!IS_SHINKANSEN_LINE(line_id) && !IS_COMPANY_LINE(line_id)) {
+				if (!IS_SHINKANSEN_LINE(line_id) && !IS_COMPANY_LINE(line_id)
+				   && !IS_BRT_LINE(line_id)) {
 					results.push_back(line_id);
 				}
 			}
@@ -9842,7 +9846,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_
 
     CalcRoute shortCalcRoute(shortRoute);
     shortCalcRoute.refRouteFlag().setAnotherRouteFlag(*pShort_route_flag);
-    shortCalcRoute.checkOfRuleSpecificCoreLine();
+    shortCalcRoute.checkOfRuleSpecificCoreLine(NULL);
 
     setTerminal(shortCalcRoute.beginStationId(), shortCalcRoute.endStationId());
     *pShort_route_flag = shortCalcRoute.getRouteFlag();
