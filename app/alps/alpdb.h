@@ -1327,6 +1327,7 @@ private:
         int32_t sales_km_special;
     public:
         FARE_INFO::Fare fare;
+        int32_t  apply_terminal_station;
         int32_t  normal_fare;
     public:
         CRule114();

@@ -2394,11 +2394,12 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				s = fi.showFare(croute.getRouteFlag());
 				s = cr_remove(s);
 				_ftprintf(os, _T("///非適用\n%s\n"), s.c_str());
+
+				// reset
+				fi.reset();
+				croute.refRouteFlag().setNoRule(false);
+				croute.calcFare(&fi); 
 			}
-			// reset
-			fi.reset();
-			croute.refRouteFlag().setNoRule(false);
-			croute.calcFare(&fi); 
 			//(void)fi.showFare(croute.getRouteFlag());
 			if (croute.refRouteFlag().isMeihanCityEnable()) {
 				ASSERT(croute.refRouteFlag().isStartAsCity() == false);
