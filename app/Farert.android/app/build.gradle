@@ -9,8 +9,8 @@ android {
         config {
             keyAlias 'farert.sutezo.org'
             storeFile file('/Users/ntake/exports/devel/farert-app-key/android/farert-upload-keystore.jks')
-            keyPassword '(todo)'
-            storePassword '(todo)'
+            keyPassword RELEASE_STORE_PASSWORD
+            storePassword RELEASE_KEY_PASSWORD
         }
     }
     compileSdkVersion 30
