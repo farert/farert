@@ -875,6 +875,7 @@ public:
 	int32_t 	getTotalSalesKm() const;
 	int32_t		getRule114SalesKm() const { return rule114Info.sales_km(); }
 	int32_t		getRule114CalcKm() const  { return rule114Info.calc_km();  }
+    tstring     getRule114apply_terminal_station() const;
 	int32_t		getJRSalesKm() const;
 	int32_t		getJRCalcKm() const;
 	int32_t		getCompanySalesKm() const;
