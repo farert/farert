@@ -3089,9 +3089,12 @@ JR東日本 株主優待4： \123,456
         sResult += _T("\r\n旅客営業規則第70条を適用していません");
 	}
 	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule115()) {
-        sResult += _T("\r\n旅客営業基準規程第115条を適用していません");
+        sResult += _T("\r\n旅客営業取扱基準規程第115条を適用していません");
 	}
-
+	if (this->isRule114()) {
+        sResult += _T("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
+		sResult += this->getRule114apply_terminal_station();
+	}
     sWork = this->getTOICACalcRoute_string();
     if (sWork != _T("")) {
         sResult += _T("\r\nIC運賃計算経路: ");
@@ -3101,6 +3104,12 @@ JR東日本 株主優待4： \123,456
 	return sResult;
 }
 
+// Rule114 適用となった計算駅
+//
+tstring     FARE_INFO::getRule114apply_terminal_station() const
+{
+	return RouteUtil::StationName(rule114Info.stationId()).c_str(); 
+}
 
 /*  public
  *  運賃計算
@@ -6595,7 +6604,7 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 			/* 着駅のみ特定都区市内着経路に変換 */
 			CalcRoute::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list);
 
-			// 69を適用したものをroute_list_tmp3へ
+			// 69を適用したものをroute_list_specialへ
 			CalcRoute::ReRouteRule69j(route_list, &route_list_special);	/* 69条適用(route_list->route_list_special) */
 			CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
 
@@ -7137,13 +7146,13 @@ void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sal
 			arrive_station_id = route_list_special.front().stationId;  // 
 		}
 		if (STATION_IS_JUNCTION(arrive_station_id)) {
-			TRACE(_T("  terminal was junction. sales_km_special:%d\n"), sales_km_special);
+			TRACE(_T("  terminal was junction. sales_km_special:%d from:%s\n"), sales_km_special, SNAME(arrive_station_id));
 
 			IntPair v(sales_km_special, arrive_station_id);
 			junctions.push_back(v);
 			base_sales_km = 0;
 		} else {
-			TRACE(_T("  terminal was non-junction. sales_km_special:%d\n"), sales_km_special);
+			TRACE(_T("  terminal was non-junction. sales_km_special:%d from:%s\n"), sales_km_special, SNAME(arrive_station_id));
 			junctions = enumJunctionRange(cond_km, sales_km_special, base_line_id, arrive_station_id);
 			base_sales_km = sales_km_special;
 		}
@@ -7222,6 +7231,7 @@ vector<IntPair> CalcRoute::CRule114::enumJunctionRange(int32_t cond_km, int32_t 
 		IntPair value;
 		value.one = dbo.getInt(0);
 		value.two = dbo.getInt(1);
+		TRACE(_T("enumJunctionRange found %d %s\n"), value.one, SNAME(value.two));
 		result.push_back(value);
 	}
 	return result;
