@@ -50,6 +50,7 @@ import static org.sutezo.alps.farertAssert.ASSERT;
 
 public class RouteUtil {
 
+    final static boolean C114NOFASTJUNCCHEK = false;
     final static String TITLE_NOTSAMEKOKURAHAKATASHINZAI = "(小倉博多間新幹線在来線別線)";
 
     static int g_tax;	/* in alps_mfc.cpp(Windows) or main.m(iOS) or main.cpp(unix) */
@@ -843,14 +844,31 @@ public class RouteUtil {
                      result_str += "]";
                  }
                  //result_str += stationName;	// 着駅
-                 result_str += "\r\n";
              }
              //result_str += buf;
          }
          return result_str;
      }
 
-      //static private
+    // static version
+    //	@brief 完全な経由文字列を返す
+    //	(for Debug only use)
+    //	@param [in] routeList    route
+    //	@param [in] route_flag    route flag(LF_OSAKAKAN_MASK:大阪環状線関連フラグのみ).
+    //	@retval 文字列
+    //
+    public String Show_route_full(final RouteItem[] routeList, final RouteFlag routeFlag)
+    {
+        if (routeList.length == 0) {	/* 経路なし(AutoRoute) */
+            return "";
+        }
+        String startStationName = RouteUtil.StationName(routeList[0].stationId);
+        String route_str = RouteUtil.Show_route(routeList, routeFlag);
+        String arriveStationName = RouteUtil.StationName(routeList[routeList.length - 1].stationId);
+        return startStationName + route_str + arriveStationName;
+    }
+
+    //static private
      //	@brief 大阪環状線 方向文字列を返すで
      //
      //	@param [in] station_id1  発駅
