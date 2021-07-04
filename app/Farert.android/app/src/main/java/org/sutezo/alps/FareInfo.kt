@@ -27,7 +27,7 @@ class FareInfo {
     var rule114_salesKm : Int = 0
     var rule114_calcKm : Int = 0
     var isRule114Applied : Boolean = false
-
+    var rule114_apply_terminal_station : String = ""
     var isSpecificFare : Boolean = false
 
     var totalSalesKm : Int = 0
