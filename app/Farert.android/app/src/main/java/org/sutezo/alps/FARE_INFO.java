@@ -100,9 +100,7 @@ public class FARE_INFO {
     int companymask;
 
     /* 114 */
-    int rule114_fare;
-    int rule114_sales_km;
-    int rule114_calc_km;
+    Rule114Info rule114Info = new Rule114Info();
 
     boolean roundTripDiscount;
 
@@ -159,9 +157,8 @@ public class FARE_INFO {
         fare_ic = fi.fare_ic;					//*** 0以外で有効
         avail_days = fi.avail_days;					//***
         companymask = fi.companymask;
-        rule114_fare = fi.rule114_fare;
-        rule114_sales_km = fi.rule114_sales_km;
-        rule114_calc_km = fi.rule114_calc_km;
+
+        rule114Info.set(fi.rule114Info);
         roundTripDiscount = fi.roundTripDiscount;
         route_for_disp = fi.route_for_disp;
         calc_route_for_disp = fi.calc_route_for_disp;
@@ -857,7 +854,7 @@ public class FARE_INFO {
                 " -> " +
                 CalcRoute.BeginOrEndStationName(this.getEndTerminalId()) +
                 "\r\n経由：" +
-                this.getRoute_string());
+                this.getRoute_string() + "\r\n");
 
         ASSERT (100<=this.getFareForDisplay());
 
@@ -1000,7 +997,7 @@ public class FARE_INFO {
                         RouteUtil.num_str_yen(normal_fare),
                         company_option));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s     往復： ¥%-5s",
+                buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s    往復： ¥%-5s",
                         RouteUtil.num_str_yen(normal_fare),
                         company_option,
                         RouteUtil.num_str_yen(fareW.fare)));
@@ -1107,15 +1104,47 @@ public class FARE_INFO {
             // 電車特定運賃区間(私鉄競合のアレ)
             buffer.append("\r\n特定区間割引運賃適用");
         }
+        if (getRouteFlag.no_rule && getRouteFlag.special_fare_enable) {
+            buffer.append("\r\n特定区間割引運賃を適用していません");
+        }
+        if (getRouteFlag.no_rule && getRouteFlag.isAvailableRule86()) {
+            buffer.append("\r\n旅客営業規則第86条を適用していません");
+        }
+        if (getRouteFlag.no_rule && getRouteFlag.isAvailableRule87()) {
+            buffer.append("\r\n旅客営業規則第87条を適用していません");
+        }
+        if (getRouteFlag.no_rule && getRouteFlag.isAvailableRule88()) {
+            buffer.append("\r\n旅客営業規則第88条を適用していません");
+        }
+        if (getRouteFlag.no_rule && getRouteFlag.isAvailableRule69()) {
+            buffer.append("\r\n旅客営業規則第69条を適用していません");
+        }
+        if (getRouteFlag.no_rule && getRouteFlag.isAvailableRule70()) {
+            buffer.append("\r\n旅客営業規則第70条を適用していません");
+        }
+        if (getRouteFlag.no_rule && getRouteFlag.isAvailableRule115()) {
+            buffer.append("\r\n旅客営業取扱基準規程第115条を適用していません");
+        }
+        if (this.isRule114()) {
+            buffer.append("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
+            buffer.append(this.getRule114apply_terminal_station());
+        }
         String sWork = this.getTOICACalcRoute_string();
         if (!sWork.isEmpty()) {
             buffer.append("\r\nIC運賃計算経路: ");
             buffer.append(sWork);
-        } else {
-            buffer.append("\r\n");
         }
+        buffer.append("\r\n");
         return buffer.toString();
     }
+
+    // Rule114 適用となった計算駅
+    //
+    String     getRule114apply_terminal_station()
+    {
+        return rule114Info.stationName();
+    }
+
 
     // Private:
     //	showFare() =>
@@ -1378,9 +1407,7 @@ public class FARE_INFO {
         fare_ic = 0;
         avail_days = 0;
 
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
+        rule114Info.clear();
 
         roundTripDiscount = false;
 
@@ -1526,8 +1553,8 @@ public class FARE_INFO {
         return sales_km;
     }
 
-    int		getRule114SalesKm() { return rule114_sales_km; }
-    int		getRule114CalcKm() { return rule114_calc_km;  }
+    int		getRule114SalesKm() { return rule114Info.sales_km(); }
+    int		getRule114CalcKm() { return rule114Info.calc_km();  }
 
     /**	JR線の営業キロを返す
      *
@@ -1711,7 +1738,7 @@ public class FARE_INFO {
 
         if (applied_r114) {
             if (isRule114()) {
-                cfare = rule114_fare - brtfare;
+                cfare = rule114Info.fare() - brtfare;
             } else {
                 ASSERT (false);
                 return ret;		// >>>>>>>>>
@@ -1890,41 +1917,18 @@ public class FARE_INFO {
         }
     }
 
-    static class Fare {
-        int fare;
-        int sales_km;
-        int calc_km;
-        Fare() { set(0, 0,0); }
-        Fare(int f, int sk, int ck) {
-            set(f, sk, ck);
-        }
-        void set(int f, int sk, int ck) {
-            fare = f;
-            sales_km = sk;
-            calc_km = ck;
-        }
+    Rule114Info  getRule114() {
+        return rule114Info;
     }
 
-    Fare  getRule114() {
-        Fare fare = new Fare();
-        fare.fare = rule114_fare;
-        fare.sales_km = rule114_sales_km;
-        fare.calc_km = rule114_calc_km;
-        return fare;
-    }
-
-    void     setRule114(final Fare fare) {
-        rule114_fare = fare.fare;
-        rule114_sales_km = fare.sales_km;
-        rule114_calc_km = fare.calc_km;
+    void     setRule114(final Rule114Info rule114) {
+        rule114Info.set(rule114);
     }
     void     clrRule114() {
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
+        rule114Info.clear();
     }
 
-    boolean	isRule114() { return 0 != rule114_fare; }
+    boolean	isRule114() { return rule114Info.isAvailable(); }
     boolean	isRoundTripDiscount() { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
     int getBeginTerminalId() { return beginTerminalId;}
     int getEndTerminalId() { return endTerminalId; }
@@ -2015,7 +2019,7 @@ public class FARE_INFO {
      */
     private int		jrFare() {
         if (isRule114()) {
-            return rule114_fare;
+            return rule114Info.fare();
         } else {
             return jr_fare;
         }
