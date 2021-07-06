@@ -308,15 +308,16 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     /* rule 114 */
     val rule114Fare = fi.getRule114();
-    if (rule114Fare.fare == 0) {
+    if (!rule114Fare.isAvailable()) {
         result.rule114_salesKm = 0;
         result.rule114_calcKm = 0;
         result.isRule114Applied = false;
         result.fareForStockDiscounts = stks
     } else {
         result.isRule114Applied = true;
-        result.rule114_salesKm = rule114Fare.sales_km;
-        result.rule114_calcKm = rule114Fare.calc_km;
+        result.rule114_salesKm = rule114Fare.sales_km();
+        result.rule114_calcKm = rule114Fare.calc_km();
+        result.rule114_apply_terminal_station = rule114Fare.stationName();
 
         /* stock discount (114 applied) */
         for (i in 0..1) {

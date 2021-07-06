@@ -8,7 +8,7 @@ android {
     signingConfigs {
         config {
             keyAlias 'farert.sutezo.org'
-            storeFile file('/Users/ntake/exports/devel/farert-app-key/android/farert-upload-keystore.jks')
+            storeFile file('farert-upload-keystore.jks')
             keyPassword RELEASE_STORE_PASSWORD
             storePassword RELEASE_KEY_PASSWORD
         }
