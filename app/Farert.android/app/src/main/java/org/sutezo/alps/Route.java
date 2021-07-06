@@ -5,6 +5,8 @@ package org.sutezo.alps;
 import java.util.*;
 import android.database.Cursor;
 
+import org.sutezo.farert.BuildConfig;
+
 import static org.sutezo.alps.RouteUtil.*;
 import static org.sutezo.alps.farertAssert.*;
 
@@ -708,7 +710,7 @@ public class Route extends RouteList {
             for (i = 0; i < count; i++) {
                 jct_mask.and(i, routePassed.at(i));
 
-                if (RouteDB.debug) {
+                if (BuildConfig.DEBUG) {
                     for (int j = 0; j < 8; j++) {
                         if ((routePassed.at(i) & (1 << j)) != 0) {
                             System.out.printf("removed.  : %s\n", JctName(i * 8 + j));
@@ -729,7 +731,7 @@ public class Route extends RouteList {
             int count = JctMask.JCTMASKSIZE();
             for (i = 0; i < count; i++) {
                 jct_mask.or(i, routePassed.at(i));
-                if (RouteDB.debug) {
+                if (BuildConfig.DEBUG) {
                     for (int j = 0; j <= 8; j++) {
                         if (((1 << j) & routePassed.at(i)) != 0) {
                             System.out.printf("  add-mask on: %s(%d,%d)\n", JctName((i * 8) + j), Jct2id((i * 8) + j), (i * 8) + j);
@@ -1078,15 +1080,15 @@ public class Route extends RouteList {
         int stationId1;
         int lflg1;
         int lflg2;
-        int start_station_id;
+        int start_station_id = 0;
         boolean replace_flg = false;	// 経路追加ではなく置換
         int jct_flg_on = 0;   // 水平型検知(D-2) / BSRNOTYET_NA
         int type = 0;
         JCTSP_DATA jctspdt = new JCTSP_DATA();
 
-        //if (RouteDB.debug) {
+        //if (BuildConfig.DEBUG) {
         int original_line_id = line_id;
-        int first_station_id1;
+        int first_station_id1 = 0;
         //}
 
         //RouteFlag.   System.out.printf("route_flag=%x\n", route_flag);
@@ -1112,7 +1114,7 @@ public class Route extends RouteList {
         }
         start_station_id = route_list_raw.get(0).stationId;
         stationId1 = route_list_raw.get(route_list_raw.size() - 1).stationId;
-        if (RouteDB.debug) {
+        if (BuildConfig.DEBUG) {
             first_station_id1 = stationId1;
         }
 		/* 発駅 */
@@ -1251,7 +1253,7 @@ public class Route extends RouteList {
                     System.out.println("JCT: D-2");
                     j = NextShinkansenTransferTerm(line_id, stationId1, stationId2);
                     if (j <= 0) {	// 隣駅がない場合
-                        if (RouteDB.debug) {
+                        if (BuildConfig.DEBUG) {
                             ASSERT (original_line_id == line_id);
                         }
                         i = route_list_raw.get(num - 1).lineId;	// 並行在来線
@@ -1299,7 +1301,7 @@ public class Route extends RouteList {
             // 段差型
             if (BIT_CHK(lflg2, BSRJCTSP)) {	// 水平型でもある?
                 // retrieve from a, d to b, c
-                if (RouteDB.debug) {
+                if (BuildConfig.DEBUG) {
                     ASSERT (original_line_id == line_id);
                 }
                 type = RetrieveJunctionSpecific(line_id, stationId2, jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
@@ -1310,7 +1312,7 @@ public class Route extends RouteList {
                     break;
                 }
             }
-            if (RouteDB.debug) {
+            if (BuildConfig.DEBUG) {
                 ASSERT (original_line_id == line_id);
                 ASSERT (first_station_id1 == stationId1);
             }
@@ -1360,7 +1362,7 @@ public class Route extends RouteList {
                         stationId1 = jctspdt.jctSpStationId;
                     }
                 } else {
-                    if (RouteDB.debug) {
+                    if (BuildConfig.DEBUG) {
                         ASSERT (first_station_id1 == stationId1);
                     }
                     if ((num < 2) ||
@@ -1414,7 +1416,7 @@ public class Route extends RouteList {
                             stationId1 = jctspdt.jctSpStationId;
                         }
                     } else {
-                        if (RouteDB.debug) {
+                        if (BuildConfig.DEBUG) {
                             ASSERT (first_station_id1 == stationId1);
                         }
                         // C-2
@@ -1456,7 +1458,7 @@ public class Route extends RouteList {
                     lflg2 = BIT_OFF(lflg2, BSRJCTSP);
                 }
                 line_id = jctspdt.jctSpMainLineId;
-                if (RouteDB.debug) {
+                if (BuildConfig.DEBUG) {
                     ASSERT(first_station_id1 == stationId1);
                 }
                 if ((2 <= num) &&
@@ -1488,7 +1490,7 @@ public class Route extends RouteList {
         if (BIT_CHK(lflg2, BSRJCTSP)) {
             // 水平型
             // a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
-            if (RouteDB.debug) {
+            if (BuildConfig.DEBUG) {
                 ASSERT (original_line_id == line_id);
                 //ASSERT (first_station_id1 == stationId2);
             }
@@ -2434,11 +2436,15 @@ public class Route extends RouteList {
 
 
     /*  通過連絡運輸チェック
-     *  param [in] line_id  路線id
-     *
-     *  @retval 0 = continue
-     *	@retval -4 = 会社線 通過連絡運輸なし
-     */
+    *  param [in] line_id  路線id
+    *
+    *  @param [in] line_id  路線
+    *  @param [in] 駅1
+    *  @param [in] 駅2
+    *  @param [in] num route_list.size()=経路数
+    *  @retval 0 = continue
+    *	@retval -4 = 会社線 通過連絡運輸なし
+    */
     private int companyPassCheck(int line_id, int stationId1, int stationId2, int num) {
 
     	int rc;
@@ -2447,8 +2453,8 @@ public class Route extends RouteList {
         (IS_COMPANY_LINE(line_id) && route_flag.compnpass)) {
             return -4;      /* error x a c */
         }
-        if (IS_COMPANY_LINE(line_id) &&
-            !route_flag.compncheck && !route_flag.compnpass) {
+        if (IS_COMPANY_LINE(line_id) 
+        && (!route_flag.compncheck && !route_flag.compnpass)) {
 
     		route_flag.compnend  = true;	// if company_line
 
@@ -2460,7 +2466,7 @@ public class Route extends RouteList {
 
             /* after block check e f */
     		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
-    		if (rc == 0) {
+    		if (0 <= rc) {
                 route_flag.compnterm = false;	// initialize
 
                 route_flag.compnpass = true;
@@ -2570,7 +2576,7 @@ public class Route extends RouteList {
     					  route_list_raw.get(i).stationId);
             System.out.printf("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n", i, num, rc, 
                 LineName(route_list_raw.get(i).lineId), StationName(route_list_raw.get(i - 1).stationId), StationName(route_list_raw.get(i).stationId));
-        if (rc < 0) {
+            if (rc < 0) {
     			break;	/* disallow */
             }
             if (rc == 1) {
@@ -2640,14 +2646,19 @@ public class Route extends RouteList {
             }
             rc = cs.open(key1, key2);
             if (rc <= 0) {
+                System.out.printf("postCompanyPassCheck db open error(pass)\n");
                 rc = 0;
                 break;  // return 0;		/* Error or Non-record(always pass) as continue */
             }
             rc = cs.check(true, line_id, station_id1, station_id2);
-            if (cs.is_terminal()) {
-                rc = 4;
+            if (rc < 0) {
+    			// route_flag.compnda = true; /* 通過連絡運輸不正 */
+                if (cs.is_terminal()) {
+                    rc = 4;
+                }
             }
         } while (false);
+        System.out.printf("Leave postCompanyPassCheck(%d)\n", rc);
         return rc;	/* 0 / -4 */
     }
 
@@ -2683,6 +2694,8 @@ public class Route extends RouteList {
         " from t_compnpass" +
         " where station_id1=? and station_id2=?";
         	int i;
+            int stationId1;
+            int stationId2;
         	Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(key1), String.valueOf(key2)});
             int rc = -1;
             try {
@@ -2692,9 +2705,11 @@ public class Route extends RouteList {
         				return -1;		/* too many record */
         			}
         			results[i].line_id = dbo.getInt(0);
-        			results[i].stationId1 = dbo.getInt(1);
-        			results[i].stationId2 = dbo.getInt(2);
-                    if (results[i].stationId1 != 0 && (results[i].stationId1 == results[i].stationId2)) {
+        			stationId1 = dbo.getInt(1);
+        			stationId2 = dbo.getInt(2);
+                    results[i].stationId1 = stationId1;
+                    results[i].stationId2 = stationId2;
+                    if ((stationId1 != 0) && (stationId1 == stationId2)) {
                         terminal = true;
                     }
                 }
