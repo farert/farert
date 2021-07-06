@@ -1,5 +1,3 @@
-#!/bin/bash -u
-
 # Make database script Unix version.
 #
 # (How to get ACCESS_TOKEN)

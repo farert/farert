@@ -1,6 +1,6 @@
 /* c_route.mm */
 #import <Foundation/Foundation.h>
-#import "alpdb.h"
+#import "../../alps/alpdb.h"
 #import "c_route.h"
 #import "Farert-Bridging-Header.h"
 
@@ -822,7 +822,6 @@ int g_tax; /* main.m */
     string notused;
     int w2;
     int w3;
-    FARE_INFO::Fare rule114Fare;
     FARE_INFO::FareResult fareResult;
     const static char msgPossibleLowcost[] =
                     "近郊区間内ですので最短経路の運賃で利用可能です";
@@ -864,15 +863,14 @@ int g_tax; /* main.m */
     result.availCountForFareOfStockDiscount = fi.countOfFareStockDiscount();
 
     /* rule 114 */
-    rule114Fare = fi.getRule114();
-    if (rule114Fare.fare == 0) {
+    if (!fi.isRule114()) {
         result.rule114_salesKm = 0;
         result.rule114_calcKm = 0;
         result.isRule114Applied = NO;
     } else {
         result.isRule114Applied = YES;
-        result.rule114_salesKm = rule114Fare.sales_km;
-        result.rule114_calcKm = rule114Fare.calc_km;
+        result.rule114_salesKm = fi.getRule114SalesKm();
+        result.rule114_calcKm = fi.getRule114CalcKm();
 
         /* stock discount (114 applied) */
         w2 = fi.getFareStockDiscount(0, notused, true);
@@ -1033,7 +1031,11 @@ int g_tax; /* main.m */
     if (!result.isRuleApplied
         && obj_calcroute->getRouteFlag().isAvailableRule115()) {
         [resultMessage addObject:[NSString stringWithUTF8String:
-                                  "旅客営業基準規程第115条を適用していません"]];
+                                  "旅客営業取扱基準規程第115条を適用していません"]];
+    }
+    if (result.isRule114Applied) {
+        [resultMessage addObject:[NSString stringWithFormat:
+                                @"旅客営業取扱基準規程第114条適用営業キロ計算駅:%@",           [NSString stringWithUTF8String:fi.getRule114apply_terminal_station().c_str()]]];
     }
     result.resultMessage = [resultMessage componentsJoinedByString:@"\r\n"];
 
