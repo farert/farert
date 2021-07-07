@@ -472,7 +472,11 @@ fun CalcRoute.calcFareInfo() : FareInfo
         messages.add("旅客営業規則第70条を適用していません");
     }
     if (!result.isRuleApplied && this.route_flag.isAvailableRule115()) {
-        messages.add("旅客営業基準規程第115条を適用していません");
+        messages.add("旅客営業取扱基準規程第115条を適用していません");
+    }
+    if (rule114Fare.isAvailable()) {
+        val msg = "旅客営業取扱基準規程第114条適用営業キロ計算駅:${rule114Fare.stationName()}"
+        messages.add(msg)
     }
 
     result.resultMessage = messages.joinToString("\r\n")
