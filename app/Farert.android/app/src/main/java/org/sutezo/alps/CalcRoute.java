@@ -556,6 +556,8 @@ public class CalcRoute extends RouteList {
                     this.endStationId());
             if (fare_info.calc_fare(route_flag, route_list_raw)) {
                 fare_info.setRoute(this.route_list_raw, route_flag);
+                // routeFlag.rule115 のflag set  する為だけに以下を実行
+                fare_info.reCalcFareForOptiomizeRoute(this);
                 ASSERT(fare_info.getBeginTerminalId() == this.beginStationId());
                 ASSERT(fare_info.getEndTerminalId() == this.endStationId());
             }
