@@ -111,7 +111,7 @@ public class FARE_INFO {
 
     char enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
 
-    class ResultFlag {
+    static class ResultFlag {
         boolean comapany_first;		 /* 会社線から開始 */
         boolean comapany_end;			 /* 会社線で終了  通常OFF-OFF, ON-ONは会社線のみ */
         boolean company_incorrect;		 /* 会社線2社以上通過 */
@@ -3164,7 +3164,7 @@ public class FARE_INFO {
      *
      *	calc_fare() => aggregate_fare_info() =>
      *
-     *	@param  route_flag 	 大阪環状線通過フラグ
+     *	@param  osakakan_aggregate 	 大阪環状線通過フラグ
      *	@param  line_id   	 路線ID
      *	@param  station_id1  駅1
      *	@param  station_id2  駅2
@@ -3607,6 +3607,10 @@ public class FARE_INFO {
                     System.out.println("          over the 50.0km(cancel lowcost route)");
                     route_original.getRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
                 }
+                if (route_original.getRouteFlag().no_rule) {
+                    /* 非適用ではrule115 変数のみが欲しいので */
+                    return false;
+                }
                 if (route_original.getRouteFlag().urban_neerest < 0) {
                     System.out.println("Foreced choice appint route.");
                     return false;
@@ -3614,6 +3618,11 @@ public class FARE_INFO {
                 route_original.getRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
                 route_original.getRouteFlag().meihan_city_enable = false;   // 名阪のあれも。
             } else {
+                System.out.println("already neerest route.");
+                if (route_original.getRouteFlag().no_rule) {
+                    /* 非適用ではrule115 変数のみが欲しいので */
+                    return false;
+                }
                 route_original.getRouteFlag().urban_neerest = 0;    // すでに最安になってます(ので指定経路へ云々の選択肢なし)
             }
 
@@ -3652,7 +3661,10 @@ public class FARE_INFO {
                 decision = 1;
             }
         }
-
+        if (route_original.getRouteFlag().no_rule) {
+            /* 非適用ではrule115 変数のみが欲しいので */
+            return false;
+        }
         ASSERT(decision == 20 || decision == 1 || decision == 2 || decision == 0 || decision == 15);
 
         System.out.printf("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                          short=%s->%s(%d)(%dyen)\n",

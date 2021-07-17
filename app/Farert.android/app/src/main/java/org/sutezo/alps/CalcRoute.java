@@ -550,7 +550,6 @@ public class CalcRoute extends RouteList {
             }
         } else {
             /* 規則非適用 */ /* 単駅 */
-            int saveRule115Flag = route_flag.rule115;
             checkOfRuleSpecificCoreLine();    // route_list_raw -> route_list_cooked
             /* 規則非適用 */ /* 単駅 */
             fare_info.setTerminal(this.beginStationId(),
@@ -558,7 +557,7 @@ public class CalcRoute extends RouteList {
             if (fare_info.calc_fare(route_flag, route_list_raw)) {
                 fare_info.setRoute(this.route_list_raw, route_flag);
                 // routeFlag.rule115 のflag set  する為だけに以下を実行
-                route_flag.rule115 = saveRule115Flag;
+                fare_info.reCalcFareForOptiomizeRoute(this);
                 ASSERT(fare_info.getBeginTerminalId() == this.beginStationId());
                 ASSERT(fare_info.getEndTerminalId() == this.endStationId());
             }
