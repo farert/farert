@@ -3178,6 +3178,8 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
 		 				 this->endStationId());
 		if (pFi->calc_fare(&route_flag, route_list_raw)) {
             pFi->setRoute(this->route_list_raw, route_flag);
+			   // routeFlag.rule115 のflag set する為だけに以下を実行
+			(void)pFi->reCalcFareForOptiomizeRoute(*this);
 			ASSERT(pFi->getBeginTerminalId() == this->beginStationId());
 			ASSERT(pFi->getEndTerminalId() == this->endStationId());
         }
@@ -9724,12 +9726,37 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
                 return false;
             }
         }
-    }
+	}
 
     // 最短経路算出
     std::vector<RouteItem> shortRoute_List;
     RouteFlag short_route_flag;
     std::vector<RouteItem> route_nolocal_short;
+
+	if (route_original.refRouteFlag().no_rule) {
+	    if (decision != 20) {
+    	    ASSERT(decision == 0 || decision == 15);
+        	short_route_flag.setDisableRule86or87();
+        	if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute_List,
+                                                           route_original.departureStationId(),
+                                                           route_original.arriveStationId(),
+                                                           &short_route_flag)) {
+            	ASSERT(FALSE);
+            	return false;
+        	}
+
+			// 最短経路との差が、50km 越えならそのまま指定経路で一旦提示
+			int difference = (getTotalSalesKm() - fare_info_shorts.getTotalSalesKm());
+			if (0 < difference) {
+				TRACE("-The appoint route and neerest route was different.\n");
+				if (500 < difference) {
+					TRACE("-          over the 50.0km(cancel lowcost route)\n");
+					route_original.refRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
+				}
+			}
+		}
+		return false;
+	}
 
     if (decision != 20) {
         ASSERT(decision == 0 || decision == 15);
@@ -9757,7 +9784,8 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
             route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
         } else {
-            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
+            TRACE("already neerest route.\n");
+       	    route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
         }
 
         short_route_flag.rule86or87 = 0;
