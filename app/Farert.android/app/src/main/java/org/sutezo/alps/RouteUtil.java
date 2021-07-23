@@ -1309,7 +1309,7 @@ public class RouteUtil {
      //
      //	@return 駅id 0を返した場合、隣駅は駅2またはそれより先の駅
      //
-     static int NextShinkansenTransferTerm(int line_id, int station_id1, int station_id2) {
+     static int NextShinkansenTransferTermInRange(int line_id, int station_id1, int station_id2) {
          final String tsql =
                  "select station_id from t_lines where line_id=?1 and" +
                          " case when" +
@@ -1342,7 +1342,38 @@ public class RouteUtil {
          return stid;
      }
 
-     //static
+     static int NextShinkansenTransferTerm(int line_id, int station_id1, int station_id2) {
+        final String tsql =
+                "select station_id from t_lines where line_id=?1 and" +
+                        " case when" +
+                        "(select sales_km from t_lines where line_id=?1 and station_id=?3)<" +
+                        "(select sales_km from t_lines where line_id=?1 and station_id=?2) then" +
+                        " sales_km=(select max(sales_km) from t_lines where line_id=?1 and" +
+                        "	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and" +
+                        "	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2))" +
+                        " else" +
+                        " sales_km=(select min(sales_km) from t_lines where line_id=?1 and" +
+                        "	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and" +
+                        "	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2))" +
+                        " end";
+
+        Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(line_id),
+                String.valueOf(station_id1),
+                String.valueOf(station_id2)});
+
+        ASSERT (IS_SHINKANSEN_LINE(line_id));
+        int stid = 0;
+        try {
+            if (dbo.moveToNext()) {
+                stid = dbo.getInt(0);
+            }
+        } finally {
+            dbo.close();
+        }
+        return stid;
+    }
+
+    //static
      //	両隣の分岐駅を得る(非分岐駅指定、1つか2つ)
      //	changeNeerest() =>
      //

@@ -2616,7 +2616,7 @@ public class CalcRoute extends RouteList {
                             if (0 < zroute.size()) {
                                 bline_id = result_route.get(ite).lineId;
                                 if (0xffffffff == zline.get(0)) {
-                                    z_station_id = RouteUtil.NextShinkansenTransferTerm(bline_id, station_id1, station_id1n);
+                                    z_station_id = RouteUtil.NextShinkansenTransferTermInRange(bline_id, station_id1, station_id1n);
                                     if (0 < z_station_id) {
                                         result_route.get(ite).stationId = (short)z_station_id;
                                         result_route.get(ite).refresh();
@@ -2644,7 +2644,7 @@ public class CalcRoute extends RouteList {
                                     }
                                 }
                                 if (0xffffffff == zline.get(zline.size() - 1)) {
-                                    station_id2 = RouteUtil.NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
+                                    station_id2 = RouteUtil.NextShinkansenTransferTermInRange(bline_id, station_id1n, station_id1);
                                     if (0 < station_id2) {
                                         if (z_station_id == station_id2) {
                                             // いわて沼宮内 - 新花巻
