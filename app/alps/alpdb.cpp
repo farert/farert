@@ -2039,21 +2039,27 @@ first_station_id1 = stationId1;
 		BIT_ON(jct_flg_on, BSRNOTYET_NA);	/* 不完全経路フラグ */
 	} else {
 		/* 新幹線在来線同一視区間の重複経路チェック(lastItemのflagがBSRJCTHORD=ONがD-2ケースである */
-        int shinzairev = 0;
+        int32_t shinzairev = 0; // 新幹線在来線別線区間でも折返は重複駅までではなくその直前まで(OやPは認めれない。Uまで)
         BIT_OFF(jct_flg_on, BSRSHINZAIREV);
-        if ((0 == (ctlflg & ADD_BULLET_NC)) && (1 < num)) {
-            shinzairev = Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
-                                    route_list_raw.at(num - 2).stationId, stationId1, stationId2);
-            if (shinzairev == 1) {
+        if ((0 == (ctlflg & ADD_BULLET_NC)) 
+		   && (1 < num)
+           && (0 != (shinzairev = Route::CheckTransferShinkansen(route_list_raw.at(num - 1).lineId, line_id,
+                                    route_list_raw.at(num - 2).stationId, stationId1, stationId2)))) {
+            if ((0 < shinzairev) && checkPassStation(shinzairev)) {
+				// 在来線戻り
+	            TRACE(_T("deletect shinkansen-zairaisen too return.\n"));
                 BIT_ON(jct_flg_on, BSRSHINZAIREV);
-            }
+				// return -1;	// 高崎~長岡 上越新幹線 新潟 "信越線(直江津-新潟)" 長岡 (北長岡までなら良い)
+				// 大宮 上越新幹線 長岡 信越線(直江津-新潟) 直江津
+				// 岡山 山陽新幹線 新大阪 東海道線 大阪 福知山線 谷川
+				// では、許されるので、保留にする
+            } 
+			if (shinzairev < 0 && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B)) {
+				/* 上の2条件で、直江津 信越線(直江津-新潟) 長岡 上越新幹線 大宮 は除外する */
+				TRACE("JCT: F-3b\n");
+				return -1;		// F-3b
+			}
         }
-		if ((0 == (ctlflg & ADD_BULLET_NC)) &&
-			(1 < num) && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B) &&
-            (shinzairev < 0)) {
-            TRACE("JCT: F-3b\n");
-			return -1;		// F-3b
-		}
 	}
 	TRACE(_T("add %s(%d)-%s(%d), %s(%d)\n"), LNAME(line_id), line_id, SNAME(stationId1), stationId1, SNAME(stationId2), stationId2);
 
@@ -2118,7 +2124,7 @@ first_station_id1 = stationId1;
 			ASSERT(IS_SHINKANSEN_LINE(line_id));
 			if (0 != RouteUtil::InStation(route_list_raw.at(num - 2).stationId, line_id, stationId1, stationId2)) {
 				TRACE("JCT: D-2\n");
-				j = RouteUtil::NextShinkansenTransferTerm(line_id, stationId1, stationId2);
+				j = RouteUtil::NextShinkansenTransferTermInRange(line_id, stationId1, stationId2);
 				if (j <= 0) {	// 隣駅がない場合
 #ifdef _DEBUG
                     ASSERT(original_line_id == line_id);
@@ -2291,7 +2297,7 @@ ASSERT(first_station_id1 == stationId1);
 					ASSERT(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId));
 					routePassOff(jctspdt.jctSpMainLineId,
 								 jctspdt.jctSpStationId, stationId1);
-					i = RouteUtil::NextShinkansenTransferTerm(route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId);
+					i = RouteUtil::NextShinkansenTransferTermInRange(route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId);
 					if (i <= 0) {	// 隣駅がない場合
 						TRACE("JCT: C-2(none next station on bullet line)\n");
 						// 新幹線の発駅には並行在来線(路線b)に所属しているか?
@@ -2516,13 +2522,18 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 			(((0 < end_station_id) && (end_station_id != stationId2) && (2 <= route_list_raw.size())) &&
 			(0 != RouteList::InStation(end_station_id, line_id, stationId1, stationId2)))*/) {
 			rc = -1;	/* <v> <p> <l> <w> */
+			TRACE("y p l w\n");
 		} else if (start_station_id == stationId2) {
 			rc = 2;		/* <f> */
+			TRACE("<f>\n");
 		} else {
 			rc = 0;		/* <a> <d> <g> */
+			TRACE("<a> <d> <g>\n");
 		}
 	} else {	// 復乗
 		if ((rc & 1) == 0) { /* last */
+#if 0
+//よくわかんないが、着駅指定UIだった頃の残骸？不要と思われるので消してみる。test_exec は、OK
 			if (
 		//	(!STATION_IS_JUNCTION(stationId2)) ||
 		// sflg.12は特例乗り換え駅もONなのでlflg.15にした
@@ -2540,9 +2551,16 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 		//	((2 <= num) && (0 < RouteList::InStation(stationId2, line_id, route_list_raw.at(num - 2).stationId, stationId1)))
 			) {
 				rc = -1;	/* <k> <e> <r> <x> <u> <m> */
+				TRACE(_T("%x %d %d %d<k> <e> <r> <x> <u> <m> %s in %s: between %s and %s\n"), 
+				lflg2, STATION_IS_JUNCTION_F(lflg2), start_station_id,stationId2,
+				SNAME(start_station_id), LNAME(line_id), SNAME(stationId1), SNAME(stationId2));
 			} else  {
+#endif
 				rc = 1;		/* <b> <j> <h> */
+				TRACE("<b> <j> <h>\n");
+#if 0
 			}
+#endif
 		} else {
 			rc = -1;	/* 既に通過済み */
 		}
@@ -2620,7 +2638,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 		if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
 			TRACE(_T("？？？西小倉・吉塚.rc=%d\n"), rc);
 			return ADDRC_OK;	/* 西小倉、吉塚 */
-		} else if (BIT_CHK(lflg2, BSRSHINZAIREV)) {
+        } else if (BIT_CHK(lflg2, BSRSHINZAIREV)) {
             TRACE(_T("deletect shinkansen-zairaisen too return.\n"));
             removeTail();
             return -1;  /* route is duplicate */
@@ -3900,8 +3918,7 @@ bool RouteList::checkPassStation(int32_t stationId)
 //	分岐駅が経路内に含まれているか？
 //
 //	@param [in] stationId   駅ident
-//	@retval true found
-//	@retval false notfound
+//	@retval count of found(0 or 1)
 //
 int32_t Route::junctionStationExistsInRoute(int32_t stationId)
 {
@@ -6712,7 +6729,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), LNAME(zline_id), zline_id, SNAME(station_id2),
 					if (0 < zroute.size()) {
 						bline_id = ite->lineId;
 						if (0xffffffff == zline.front()) {
-							z_station_id = RouteUtil::NextShinkansenTransferTerm(bline_id, station_id1, station_id1n);
+							z_station_id = RouteUtil::NextShinkansenTransferTermInRange(bline_id, station_id1, station_id1n);
 							if (0 < z_station_id) {
 								ite->stationId = z_station_id;
 								ite->refresh();
@@ -6740,7 +6757,7 @@ TRACE(_T("::%15s(%d)\t%s(%d)\n"), LNAME(zline_id), zline_id, SNAME(station_id2),
 							}
 						}
 						if (0xffffffff == zline.back()) {
-							station_id2 = RouteUtil::NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
+							station_id2 = RouteUtil::NextShinkansenTransferTermInRange(bline_id, station_id1n, station_id1);
 							if (0 < station_id2) {
 								if (z_station_id == station_id2) {
 									// いわて沼宮内 - 新花巻
@@ -7462,8 +7479,9 @@ const char tsql_hzl[] =
 //	@param [in] station_id2  接続駅
 //	@param [in] station_id3  着駅
 //
-//	@return 0: N/A(OK) / 1: OK / -1: NG
-//
+//	@retval 0: N/A(OK)
+//	@retval -1: NG
+//	@retval 1<: 新幹線接続駅の（乗ってきた、乗る予定の）次の在来線接続駅
 //                 国府津 s1                東京
 // l1 東海道線     小田原 s2 東海道新幹線   静岡
 // l2 東海道新幹線 名古屋 s3 東海道線       草薙
@@ -7475,16 +7493,19 @@ int Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t s
 	int32_t dir;
 	int32_t hzl;
     int32_t flgbit;
+    int32_t opposite_bullet_station;
 
 	if (IS_SHINKANSEN_LINE(line_id2)) {
 		bullet_line = line_id2;		// 在来線->新幹線乗換
 		local_line = line_id1;
+		opposite_bullet_station = station_id3;
 		hzl = RouteUtil::GetHZLine(bullet_line, station_id2, station_id3);
 
 	} else if (IS_SHINKANSEN_LINE(line_id1)) {
 		bullet_line = line_id1;		// 新幹線->在来線乗換
 		local_line = line_id2;
 		hzl = RouteUtil::GetHZLine(bullet_line, station_id2, station_id1);
+		opposite_bullet_station = station_id1;
 
 	} else {
 		return 0;				// それ以外は対象外
@@ -7503,8 +7524,11 @@ int Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t s
     } else {
         flgbit = 0x02;
     }
-	if (((RouteUtil::AttrOfStationOnLineLine(local_line, station_id2) >> 19) & flgbit) != 0) {
-        return 1;
+	if (((RouteUtil::AttrOfStationOnLineLine(local_line, station_id2) >> BSRSHINKTRSALW) & flgbit) != 0) {
+		int chk_station = RouteUtil::NextShinkansenTransferTerm(bullet_line, station_id2, opposite_bullet_station);
+		TRACE(_T("shinzai: %s -> %s, %s(%d)\n"), SNAME(station_id2), SNAME(opposite_bullet_station), SNAME(chk_station), chk_station);
+		ASSERT(0 < chk_station);
+        return chk_station;
     } else {
         return -1;
     }
@@ -7520,7 +7544,7 @@ int Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t s
 //
 //	@return 駅id 0を返した場合、隣駅は駅2またはそれより先の駅
 //
-int32_t RouteUtil::NextShinkansenTransferTerm(int32_t line_id, int32_t station_id1, int32_t station_id2)
+int32_t RouteUtil::NextShinkansenTransferTermInRange(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	const static char tsql[] =
 	"select station_id from t_lines where line_id=?1 and"
@@ -7536,6 +7560,36 @@ int32_t RouteUtil::NextShinkansenTransferTerm(int32_t line_id, int32_t station_i
 	"	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and"
 	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
 	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?3))"
+	" end";
+
+	DBO dbo(DBS::getInstance()->compileSql(tsql));
+
+	ASSERT(IS_SHINKANSEN_LINE(line_id));
+
+	dbo.setParam(1, line_id);
+	dbo.setParam(2, station_id1);
+	dbo.setParam(3, station_id2);
+
+	if (dbo.moveNext()) {
+		return dbo.getInt(0);
+	}
+	return 0;
+}
+
+int32_t RouteUtil::NextShinkansenTransferTerm(int32_t line_id, int32_t station_id1, int32_t station_id2)
+{
+	const static char tsql[] =
+	"select station_id from t_lines where line_id=?1 and"
+	" case when"
+	"(select sales_km from t_lines where line_id=?1 and station_id=?3)<"
+	"(select sales_km from t_lines where line_id=?1 and station_id=?2) then"
+	" sales_km=(select max(sales_km) from t_lines where line_id=?1 and"
+	"	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and"
+	"	sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2))"
+	" else"
+	" sales_km=(select min(sales_km) from t_lines where line_id=?1 and"
+	"	((lflg>>19)&15)!=0 and (lflg&((1<<17)|(1<<31)))=0 and"
+	"	sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2))"
 	" end";
 
 	DBO dbo(DBS::getInstance()->compileSql(tsql));
