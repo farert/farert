@@ -2047,14 +2047,14 @@ first_station_id1 = stationId1;
                                     route_list_raw.at(num - 2).stationId, stationId1, stationId2)))) {
             if ((0 < shinzairev) && checkPassStation(shinzairev)) {
 				// 在来線戻り
-	            TRACE(_T("deletect shinkansen-zairaisen too return.\n"));
+	            TRACE(_T("assume deletect shinkansen-zairaisen too return.\n"));
                 BIT_ON(jct_flg_on, BSRSHINZAIREV);
 				// return -1;	// 高崎~長岡 上越新幹線 新潟 "信越線(直江津-新潟)" 長岡 (北長岡までなら良い)
 				// 大宮 上越新幹線 長岡 信越線(直江津-新潟) 直江津
 				// 岡山 山陽新幹線 新大阪 東海道線 大阪 福知山線 谷川
 				// では、許されるので、保留にする
             } 
-			if (shinzairev < 0 && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B)) {
+			if ((shinzairev < 0) && !BIT_CHK2(route_list_raw.at(num - 1).flag, BSRJCTHORD, BSRJCTSP_B)) {
 				/* 上の2条件で、直江津 信越線(直江津-新潟) 長岡 上越新幹線 大宮 は除外する */
 				TRACE("JCT: F-3b\n");
 				return -1;		// F-3b
