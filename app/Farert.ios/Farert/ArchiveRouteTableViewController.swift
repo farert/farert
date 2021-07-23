@@ -523,7 +523,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
 
         // インポートする経路をテキストで「メモ」等の外部エディタで作成してください
         // (スペースまたはカンマ','区切りで1行1経路)で指定します）
-        // その後、クリップボードにコピーしてで本機能を実行します.
+        // その後、クリップボードにコピーして本機能を実行します.
         // わからないという人は使用しないでください
         //
         let msg = NSLocalizedString("title_import", comment: "")

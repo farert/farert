@@ -184,7 +184,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
             R.id.menu_item_import -> {
                 // 経路文字列を複数行得る
                 // Wait ProgressDialog
-                var sw = readParam(this, KEY_INPORT_AVAILABLE)
+                        var sw = readParam(this, KEY_INPORT_AVAILABLE)
                 if (sw == "true") {
                     if (!mbAvailRecyclerView) {
                         setContentView(R.layout.activity_archive_route)
@@ -613,7 +613,6 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
             if (0 < new_count) {
                 values = route_list.toList()
             }
-
 
             var msg_trail: String? = null
             if (0 < noadd_count) {
