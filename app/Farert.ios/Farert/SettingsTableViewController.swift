@@ -57,9 +57,15 @@ class SettingsTableViewController: UITableViewController {
         self.sgmDataVer.selectedSegmentIndex = before_dbid_idx - DB._MIN_ID.rawValue;
         self.swShinkansenKokuraHakataOther.setOn(isSameShinkanzanKokuraHakataOther, animated: false);
         
-        let s1 = cRouteUtil.read(fromKey: "setting_key_hide_osakakan_detour_info")
-        let s2 = cRouteUtil.read(fromKey: "setting_key_hide_no_rule_info")
-        if (s1 == "true" || s2 == "true") {
+        var b : Bool = false
+        let keys = [ "setting_key_hide_osakakan_detour_info", "setting_key_hide_no_rule_info", "import_guide"]
+        for (_, k) in keys.enumerated() {
+            if (cRouteUtil.read(fromKey: k) != nil) {
+                b = true
+                break
+            }
+        }
+        if b {
             // どっちか1つでも抑制されてたら復活できるようにボタン有効
             btnResetInfoMessage.isEnabled = true
             isSaved = false
@@ -150,8 +156,10 @@ class SettingsTableViewController: UITableViewController {
 
     @IBAction func actBtnResetInfoMessageTouched(_ sender: UIButton) {
         if !isSaved {
-            cRouteUtil.save(toKey: "setting_key_hide_no_rule_info", value: "", sync: false)
-            cRouteUtil.save(toKey: "setting_key_hide_osakakan_detour_info", value: "", sync: true)
+            let keys = [ "setting_key_hide_osakakan_detour_info", "setting_key_hide_no_rule_info", "import_guide"]
+            for (_, k) in keys.enumerated() {
+                cRouteUtil.save(toKey: k, value: "", sync: true)
+            }
             isSaved = true
             sender.isEnabled = false
         }

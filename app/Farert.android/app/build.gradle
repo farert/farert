@@ -6,11 +6,17 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     signingConfigs {
+        debug {
+            storeFile file('farert-upload-keystore.jks')
+            storePassword RELEASE_STORE_PASSWORD
+            keyPassword RELEASE_KEY_PASSWORD
+            keyAlias 'farert.sutezo.org'
+        }
         config {
             keyAlias 'farert.sutezo.org'
             storeFile file('farert-upload-keystore.jks')
-            keyPassword RELEASE_STORE_PASSWORD
-            storePassword RELEASE_KEY_PASSWORD
+            keyPassword RELEASE_KEY_PASSWORD
+            storePassword RELEASE_STORE_PASSWORD
         }
     }
     compileSdkVersion 30
