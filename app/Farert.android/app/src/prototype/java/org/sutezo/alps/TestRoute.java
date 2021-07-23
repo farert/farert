@@ -20,7 +20,7 @@ public class TestRoute {
 
     public static void exec(Context ctx) {
     /////////////////////////////////////////////////////////////
-        if (true) { // !!! @@@@ TESTを有効にする場合Trueにする
+        if (false) { // !!! @@@@ TESTを有効にする場合Trueにする
             if (one_test(false)) { // さらに1テストを有効にする場合Trueにする
                                             // 全テストはFalse
                 while (true);
