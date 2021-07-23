@@ -61,6 +61,7 @@ public class RouteList {
 
     final static int BSR69TERM	= 24;    // [r] not used
     final static int BSR69CONT	= 23;    // [r]
+    final static int BSRSHINKTRSALW	= 19;    // [r]
     final static int BSRJCT	= 15;       // [r]
     final static int BSRBORDER	= 16;    // [r]
 
