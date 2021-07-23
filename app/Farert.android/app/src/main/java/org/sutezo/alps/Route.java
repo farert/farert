@@ -3181,7 +3181,7 @@ public class Route extends RouteList {
             flgbit = 0x02;
         }
 
-        if (((AttrOfStationOnLineLine(local_line, station_id2) >>> 19) & flgbit) != 0) {
+        if (((AttrOfStationOnLineLine(local_line, station_id2) >>> BSRSHINKTRSALW) & flgbit) != 0) {
             return 1;
         } else {
             return -1;
