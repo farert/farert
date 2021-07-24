@@ -17,7 +17,6 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_archive_route.*
 import kotlinx.android.synthetic.main.content_archive_route_list.view.*
 import kotlinx.android.synthetic.main.content_line_list.*
-import kotlinx.android.synthetic.main.content_list_empty.*
 import kotlinx.android.synthetic.main.route_list.*
 import org.sutezo.alps.*
 
@@ -33,13 +32,13 @@ class ArchiveRouteActivity : AppCompatActivity(),
     private var mbAvailSave : Boolean = false
     private var mCurRouteScript : String = ""
     private var mbAvailRecyclerView : Boolean = false
+    private var mbSaved : Boolean = false
 
     /**
      *
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_archive_route)
 
         setTitle(R.string.title_main_menu_archive)
 
@@ -56,30 +55,22 @@ class ArchiveRouteActivity : AppCompatActivity(),
         // 保存経路リスト
         var listItems = readParams(this, KEY_ARCHIVE)
 
-        if (listItems.isEmpty() && mCurRouteScript == "") {
-            setContentView(R.layout.content_list_empty)
-            list_empty.text = resources.getString(R.string.no_archive_route)
-            mbAvailClear = false
-            mbAvailSave = false
-            mbAvailRecyclerView = false
-        } else {
-            // 上限チェック
-            if ((MAX_ARCHIVE_ROUTE - countOfRoute(listItems)) <= 0) {
+        // 上限チェック
+        if ((MAX_ARCHIVE_ROUTE - countOfRoute(listItems)) <= 0) {
 
-                val build = AlertDialog.Builder(this).apply {
-                    setTitle(R.string.title_main_menu_archive)
-                    setMessage(R.string.arch_title_over)
-                    setPositiveButton(R.string.agree) { _, _ ->
-                        mCurRouteScript = ""    // 追加できない
-                    }
+            val build = AlertDialog.Builder(this).apply {
+                setTitle(R.string.title_main_menu_archive)
+                setMessage(R.string.arch_title_over)
+                setPositiveButton(R.string.agree) { _, _ ->
+                    mCurRouteScript = ""    // 追加できない
                 }
-                val dlg = build.create()
-                dlg.show()
-            } else {
-                setupRecyclerView(listItems)
-                mbAvailRecyclerView = true
             }
+            val dlg = build.create()
+            dlg.show()
         }
+        setContentView(R.layout.activity_archive_route)
+        mbAvailRecyclerView = true
+        setupRecyclerView(listItems)
     }
 
     fun setupRecyclerView(listItems: List<String>) {
@@ -184,20 +175,18 @@ class ArchiveRouteActivity : AppCompatActivity(),
             R.id.menu_item_import -> {
                 // 経路文字列を複数行得る
                 // Wait ProgressDialog
-                        var sw = readParam(this, KEY_INPORT_AVAILABLE)
+                var sw = readParam(this, KEY_INPORT_AVAILABLE)
                 if (sw == "true") {
                     if (!mbAvailRecyclerView) {
+                        mbAvailRecyclerView = true
                         setContentView(R.layout.activity_archive_route)
                         setupRecyclerView(listOf<String>())
-                        mbAvailRecyclerView = true
                     }
                     this.doImportRoute()
                     // 保存経路リスト
                     var listItems = readParams(this, KEY_ARCHIVE)
 
                     if (listItems.isEmpty() && mCurRouteScript == "") {
-                        setContentView(R.layout.content_list_empty)
-                        list_empty.text = resources.getString(R.string.no_archive_route)
                         mbAvailClear = false
                         mbAvailSave = false
                         mbAvailRecyclerView = false
@@ -236,7 +225,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
      *  @param routeScript 選択した経路
      */
     override fun onClickRow(routeScript: String) {
-        if ((mCurRouteScript != "") && (routeScript != mCurRouteScript)) {
+        if (!mbSaved) {
             // 経路が破棄されて更新されるが良いの？と。
             AlertDialog.Builder(this).apply {
                 setTitle(R.string.main_alert_query_route_update_title)
@@ -293,6 +282,8 @@ class ArchiveRouteActivity : AppCompatActivity(),
         mbAvailSave = enSave
         mbAvailClear = enClear
         invalidateOptionsMenu()
+
+        mbSaved = !enSave
     }
 
     /**
@@ -383,12 +374,24 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         RecyclerView.Adapter<ArchiveRouteListRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
-    private var existIndex : Int = 0
-
+//    private var existIndex : Int = 0
+                    // -3 empty and currentScript nothing
+                    // -2 currentScript nothing(保存済み or メイン画面経路なし)
+                    // -1 currentScript not in values(未保存)
+                    // 0-N currentScript index of values
+    enum class CUR_STATE {
+        TOP,                // currentScript is exist top
+        EXIST,
+        EMPTY,              // -3 empty and currentScript nothing
+        NOTHING_OR_SAVED,   // -2 currentScript nothing(保存済み or メイン画面経路なし)
+        UNSAVE,             // -1 currentScript is exist in values
+    }
+    private var curState : CUR_STATE = CUR_STATE.EMPTY
     enum class ITEM_TYPE {
         NORMAL,
         UNSAVED,
         SAVED,
+        EMPTY,
     }
 
     /**
@@ -396,27 +399,40 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
      */
     init {
         if (curRouteScript == "") {
-            existIndex = -2     // d
+            if (values.count() <= 0) {
+                curState = CUR_STATE.EMPTY     // f
+            } else {
+                curState = CUR_STATE.NOTHING_OR_SAVED     // d
+            }
         } else {
-            existIndex = values.indexOf(curRouteScript) // 0 or N or -1
-            if (1 <= existIndex) {
-                // b
-                // メイン経路は先頭以外に保存されている
-                val tmp = mutableListOf(curRouteScript)
-                values.filter { it != curRouteScript }.forEach {
-                    tmp.add(it)
+            val exist_idx = values.indexOf(curRouteScript) // 0 or N or -1
+            when {
+                1 <= exist_idx -> {
+                    // b
+                    // メイン経路は先頭以外に保存されている
+                    curState = CUR_STATE.EXIST
+                    val tmp = mutableListOf(curRouteScript)
+                    values.filter { it != curRouteScript }.forEach {
+                        tmp.add(it)
+                    }
+                    values = tmp.toList()
                 }
-                values = tmp.toList()
-            } else if (-1 == existIndex) {
-                // c    メイン経路は保存されていない
-                val tmp = mutableListOf(curRouteScript)
-                tmp.addAll(values)
-                values = tmp.toList()
-            } // else if existIndex == 0 // a
+                -1 == exist_idx -> {
+                    // c    メイン経路は保存されていない
+                    curState = CUR_STATE.UNSAVE
+                    val tmp = mutableListOf(curRouteScript)
+                    tmp.addAll(values)
+                    values = tmp.toList()
+                }
+                0 == exist_idx -> {
+                    // a
+                    curState = CUR_STATE.TOP
+                }
+            }
         }
 
-        val enClear = if (existIndex == -1) 1 < itemCount else 0 < itemCount
-        listener.onChangeItem(enClear, existIndex == -1)
+        val enClear = if (curState == CUR_STATE.EMPTY) false else if (curState == CUR_STATE.UNSAVE) 1 < itemCount else 0 < itemCount
+        listener.onChangeItem(enClear, curState == CUR_STATE.UNSAVE)
 
         onClickListener = View.OnClickListener { v ->
             listener.onClickRow(v.id_route.text.toString())
@@ -434,7 +450,8 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
                 setTextColor(Color.parseColor("red"))
                 typeface = Typeface.DEFAULT_BOLD
             }
-        } else if (viewType == ITEM_TYPE.SAVED.ordinal) {
+        } else if ((viewType == ITEM_TYPE.SAVED.ordinal)
+                || (viewType == ITEM_TYPE.EMPTY.ordinal)) {
             with(view.id_route) {
                 setTextColor(Color.parseColor("gray"))
                 typeface = Typeface.DEFAULT_BOLD
@@ -447,7 +464,11 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
      *  ビューに値（経路）を設定
      */
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = values[position]
+        val item = if (curState == CUR_STATE.EMPTY) {
+            holder.itemView.context.resources.getString(R.string.no_archive_route)
+        } else {
+            values[position]
+        }
 
         with(holder.itemView) {
             holder.idView.text = item
@@ -458,14 +479,16 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     /**
      *  リスト数
      */
-    override fun getItemCount() = values.size
+    override fun getItemCount() = if (curState == CUR_STATE.EMPTY) 1 else values.size
 
     /**
      *  経路が現在の経路で保存済みなら2、保存されていなければ1、それ以外は0
      */
     override fun getItemViewType(position: Int): Int {
+        if (curState == CUR_STATE.EMPTY) return ITEM_TYPE.EMPTY.ordinal
+
         if (values[position] == curRouteScript) {
-            if (existIndex == -1) {
+            if (curState == CUR_STATE.UNSAVE) {
                 return ITEM_TYPE.UNSAVED.ordinal
             } else {
                 return ITEM_TYPE.SAVED.ordinal
@@ -479,44 +502,42 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
      *  経路を削除
      */
     fun removeAt(position: Int) {
-        if (values.count() <= 0 || position < 0 || values.count() <= position) {
-            return
+        if (!(values.count() <= 0 || position < 0 || values.count() <= position)) {
+            val removedVal = values.filterIndexed { index, _ -> index != position }
+            values = removedVal
+            if (curState == CUR_STATE.TOP || curState == CUR_STATE.NOTHING_OR_SAVED) {
+                // a or d
+                if (position == 0) {
+                    curState = CUR_STATE.NOTHING_OR_SAVED // same as 'd'
+                }
+                listener.onSaveRoute(values)
+            } else if (curState == CUR_STATE.EXIST) {
+                // b
+                if (position == 0) {
+                    curState = CUR_STATE.NOTHING_OR_SAVED
+                } else {
+                    curState = CUR_STATE.TOP
+                }
+                listener.onSaveRoute(values)
+            } else if (curState == CUR_STATE.UNSAVE) {
+                // c
+                if (position == 0) {
+                    // c. 未保存で先頭を削除したらメイン経路のみ保存経路のみ破棄なので
+                    //    永続データには影響なし
+                    curState = CUR_STATE.NOTHING_OR_SAVED
+                    // no save
+                } else {
+                    // c. 未保存の場合は先頭に保存候補の経路が入っているので破棄
+                    val saveLists = values.drop(1)
+                    listener.onSaveRoute(saveLists)
+                }
+            }
         }
-        val removedVal = values.filterIndexed { index, _ ->  index != position }
-        values = removedVal
-        if (existIndex == 0 || existIndex == -2) {
-            // a or d
-            if (position == 0) {
-                existIndex = -2 // same as 'd'
-            }
-            listener.onSaveRoute(values)
-        } else if (0 < existIndex) {
-            // b
-            if (position == 0) {
-                existIndex = -2
-            } else {
-                existIndex = 0
-            }
-            listener.onSaveRoute(values)
-        } else if (existIndex == -1) {
-            // c
-            if (position == 0) {
-                // c. 未保存で先頭を削除したらメイン経路のみ保存経路のみ破棄なので
-                //    永続データには影響なし
-                existIndex = -2
-                // no save
-            } else {
-                // c. 未保存の場合は先頭に保存候補の経路が入っているので破棄
-                val saveLists = values.drop(1)
-                listener.onSaveRoute(saveLists)
-            }
-        }
-
         notifyItemRemoved(position)
         notifyItemRangeChanged(position, values.size)
 
-        val enClear = if (existIndex == -1) 1 < itemCount else 0 < itemCount
-        listener.onChangeItem(enClear, existIndex == -1)
+        val enClear = if (curState == CUR_STATE.EMPTY) false else if (curState == CUR_STATE.UNSAVE) 1 < itemCount else 0 < itemCount
+        listener.onChangeItem(enClear, curState == CUR_STATE.UNSAVE)
     }
 
     /**
@@ -525,7 +546,7 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     fun clearContents() {
         values = listOf()
         listener.onSaveRoute(values)
-        existIndex = -2
+        curState = CUR_STATE.EMPTY
         listener.onChangeItem(false, false)
         notifyDataSetChanged()
     }
@@ -539,12 +560,12 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
             return
         }
 
-        if (existIndex == -1) {
+        if (curState == CUR_STATE.UNSAVE) { // 未保存
             saveParam(context, ArchiveRouteActivity.KEY_ARCHIVE, values)
-            existIndex = -2
+            curState = CUR_STATE.NOTHING_OR_SAVED     // 保存済み
         }
-        val enClear = if (existIndex == -1) 1 < itemCount else 0 < itemCount
-        listener.onChangeItem(enClear, existIndex == -1)
+        val enClear = 0 < itemCount
+        listener.onChangeItem(enClear, curState == CUR_STATE.UNSAVE)
         notifyDataSetChanged()
     }
 
@@ -646,23 +667,22 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
             setPositiveButton(R.string.agree) { _, _ ->
 
                 if (0 < new_count) {
-                    if ((existIndex == -1) && (!is_top_import)) {
+                    if ((curState == CUR_STATE.UNSAVE) && (!is_top_import)) {
                         // c. 未保存の場合は先頭に保存候補の経路が入っているので破棄
                         val route_list = values.drop(1)
                         saveParam(context, ArchiveRouteActivity.KEY_ARCHIVE, route_list)
                     } else {
                         saveParam(context, ArchiveRouteActivity.KEY_ARCHIVE, values)
                     }
-
-                    if (0 < existIndex) {
+                    if ((curState == CUR_STATE.EXIST) || (curState == CUR_STATE.EMPTY)) {
                         // b
-                        existIndex = -2
-                    } else if ((existIndex == -1) && is_top_import) {
+                        curState = CUR_STATE.NOTHING_OR_SAVED
+                    } else if ((curState == CUR_STATE.UNSAVE) && is_top_import) {
                         // c
-                        existIndex = 0  // same as 'a'
+                        curState = CUR_STATE.TOP  // same as 'a'
                     }
-                    val enClear = if (existIndex == -1) 1 < itemCount else 0 < itemCount
-                    listener.onChangeItem(enClear, existIndex == -1)
+                    val enClear = if (curState == CUR_STATE.UNSAVE) 1 < itemCount else 0 < itemCount
+                    listener.onChangeItem(enClear, curState == CUR_STATE.UNSAVE)
                     notifyDataSetChanged()
                 }
             }
