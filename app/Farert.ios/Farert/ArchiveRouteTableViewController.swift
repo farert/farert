@@ -324,49 +324,18 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
             || (self.tableView.indexPathForSelectedRow?.row == 0)) {
                 return true
             } else {
-
-                if #available(iOS 8, OSX 10.10, *) {
     // iOS8
-                    let ac : UIAlertController = UIAlertController(title: "経路は保存されていません.", message: nil, preferredStyle: .actionSheet)
-                    ac.addAction(UIAlertAction(title: "選択した経路を表示", style: .default, handler: { (action) in self.actionSelectProc(0, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
-                    ac.addAction(UIAlertAction(title: "経路選択画面へ元の経路を保持したまま戻る", style: .default, handler: { (action) in self.actionSelectProc(1, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
-                    ac.addAction(UIAlertAction(title: "キャンセル", style: UIAlertAction.Style.cancel, handler:  { (action) in self.actionSelectProc(2, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
-                    // for iPad
-                    ac.modalPresentationStyle = UIModalPresentationStyle.popover
-                    ac.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: self.tableView.indexPathForSelectedRow!)
-                    ac.popoverPresentationController?.sourceView = self.view
-                    // end of for iPad
-                    self.present(ac, animated: true, completion: nil)
+                let ac : UIAlertController = UIAlertController(title: "経路は保存されていません.", message: nil, preferredStyle: .actionSheet)
+                ac.addAction(UIAlertAction(title: "破棄して選択した経路を表示", style: .default, handler: { (action) in self.actionSelectProc(0, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
+//                ac.addAction(UIAlertAction(title: "経路選択画面へ元の経路を保持したまま戻る", style: .default, handler: { (action) in self.actionSelectProc(1, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
+                ac.addAction(UIAlertAction(title: "キャンセル", style: UIAlertAction.Style.cancel, handler:  { (action) in self.actionSelectProc(2, Tag: self.TAG_UIACTIONSHEET_SELECTFUNC)}))
+                // for iPad
+                ac.modalPresentationStyle = UIModalPresentationStyle.popover
+                ac.popoverPresentationController?.sourceRect = self.tableView.rectForRow(at: self.tableView.indexPathForSelectedRow!)
+                ac.popoverPresentationController?.sourceView = self.view
+                // end of for iPad
+                self.present(ac, animated: true, completion: nil)
 
-                } else {
-                    // iOS7
-                    let actsheet : UIActionSheet = UIActionSheet()
-
-                    actsheet.delegate = self
-                    actsheet.title = "経路は保存されていません."
-
-                    actsheet.addButton(withTitle: "選択した経路を表示")
-                    actsheet.addButton(withTitle: "経路選択画面に元の経路のまま戻る")
-                    actsheet.addButton(withTitle: "キャンセル")
-                    actsheet.cancelButtonIndex = actsheet.numberOfButtons - 1
-                    actsheet.tag = TAG_UIACTIONSHEET_SELECTFUNC
-
-                    if UIDevice.current.userInterfaceIdiom == .pad {
-                        self.clearsSelectionOnViewWillAppear = false
-                        self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
-                        actsheet.show(from: self.tableView.rectForRow(at: self.tableView.indexPathForSelectedRow!), in: self.view, animated: true)
-                    } else {
-                        let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-                        let win : UIWindow = apd.window!
-
-                        if (win.subviews ).contains(self.tableView as UIView) {
-                            actsheet.show(in: self.view)
-                        } else {
-                            actsheet.show(in: win)
-                        }
-                    }
-                }
-//
                 return false
             }
         } else {

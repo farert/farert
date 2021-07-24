@@ -207,8 +207,8 @@
     <string name="menu_item_import">インポート</string>
     <string name="menu_item_export">エクスポート</string>
 
-    <string name="main_alert_query_route_update_title">経路更新</string>
-    <string name="main_alert_query_route_update_mesg">経路を選択された経路で更新します.現在の経路は破棄されます.よろしいでしょうか?</string>
+    <string name="main_alert_query_route_update_title">経路が保存されていません</string>
+    <string name="main_alert_query_route_update_mesg">選択した経路を表示します.保存していない経路は破棄されます.よろしいでしょうか?</string>
 
     <string name="no_archive_route">保存された経路はありません</string>
     <string name="arch_title_over">保存された経路が多すぎますので、これ以上保存できません.\n新しい経路を保存するには、不要な経路を削除してください</string>
