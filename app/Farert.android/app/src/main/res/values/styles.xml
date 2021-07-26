@@ -36,4 +36,9 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <style name="TicketListKm" parent="Theme.AppCompat.Light">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">12sp</item>
+    </style>
 </resources>
