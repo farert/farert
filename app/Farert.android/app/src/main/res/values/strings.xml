@@ -142,6 +142,7 @@
     <string name="result_normal_with_brt">普通\nBRT</string>
     <string name="result_companyfare">うち会社線</string>
     <string name="result_farevalue">¥84,558-</string>
+    <string name="result_kmvalue">123,888km</string>
     <string name="result_round">往復</string>
     　　　
     <string name="result_icfare">IC運賃</string>
@@ -351,5 +352,7 @@
     <string name="msgCanYouNeerestStation">「単駅最安」で単駅発着が選択可能です"</string>
 
     <string name="msgCanYouSpecificTerm">「特定都区市内発着」で特定都区市内発着が選択可能です"</string>
+
+    <string name="folder_button_title_km">キロ程</string>
 
 </resources>
