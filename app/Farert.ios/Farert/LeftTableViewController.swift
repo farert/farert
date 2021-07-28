@@ -309,9 +309,11 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
             let begin : Int = rt.startStationId()
             let arrive : Int = rt.lastStationId()
             cell.holderItemTitle.text = "\(cRouteUtil.terminalName(begin)!) → \(cRouteUtil.terminalName(arrive)!)"
-            cell.itemFare.text = self.routeFolder.routeItemFare(index: indexPath.row)
+            let item_fare = self.routeFolder.routeItemFare(index: indexPath.row)
+            cell.itemFare.text = item_fare.fare
             cell.aggregateType.setTitle(aggregate_label[bi], for: .normal)
             cell.aggregateType.tag = indexPath.row
+            cell.itemSalesKm.text = item_fare.salesKm
         }
         return cell
     }
