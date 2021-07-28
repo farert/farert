@@ -89,17 +89,18 @@ public class Routefolder {
         }
     }
 
-    func routeItemFare(index : Int) -> String {
+    func routeItemFare(index : Int) -> (fare : String, salesKm : String) {
         if index < routeList.count {
             let fare = self.calcFare(item: routeList[index])
             let formatter = NumberFormatter()
             formatter.numberStyle = NumberFormatter.Style.decimal
             formatter.groupingSeparator = ","
             formatter.groupingSize = 3
-            return "¥\(formatter.string(from: NSNumber(value: fare.fare)) ?? "")"
+            return ("¥\(formatter.string(from: NSNumber(value: fare.fare)) ?? "")-",
+                    "\(String(describing: cRouteUtil.kmNumStr(fare.sales_km)!)) km")
         } else {
             assert(false, "Index failure...")
-            return ""
+            return ("", "")
         }
     }
     

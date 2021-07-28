@@ -14,6 +14,7 @@ class HolderTableViewCell: UITableViewCell {
     @IBOutlet weak var holderItemTitle: UILabel!
     @IBOutlet weak var itemFare: UILabel!
     
+    @IBOutlet weak var itemSalesKm: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
