@@ -31,7 +31,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
     private var mbAvailClear : Boolean = false
     private var mbAvailSave : Boolean = false
     private var mCurRouteScript : String = ""
-    private var mbAvailRecyclerView : Boolean = false
     private var mbSaved : Boolean = false
 
     /**
@@ -69,7 +68,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
             dlg.show()
         }
         setContentView(R.layout.activity_archive_route)
-        mbAvailRecyclerView = true
         setupRecyclerView(listItems)
     }
 
@@ -177,11 +175,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 // Wait ProgressDialog
                 var sw = readParam(this, KEY_INPORT_AVAILABLE)
                 if (sw == "true") {
-                    if (!mbAvailRecyclerView) {
-                        mbAvailRecyclerView = true
-                        setContentView(R.layout.activity_archive_route)
-                        setupRecyclerView(listOf<String>())
-                    }
                     this.doImportRoute()
                     // 保存経路リスト
                     var listItems = readParams(this, KEY_ARCHIVE)
@@ -189,7 +182,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
                     if (listItems.isEmpty() && mCurRouteScript == "") {
                         mbAvailClear = false
                         mbAvailSave = false
-                        mbAvailRecyclerView = false
                     }
 
                 } else {
@@ -604,6 +596,9 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
             var route_list = mutableListOf<String>(*values.toTypedArray())
 
             for (scriptRoute: String in route_script_list) {
+                if ("" == scriptRoute.trim()) {
+                    continue
+                }
                 val scr_route = scriptRoute.split(*ArchiveRouteActivity.delim).filter { it != "" }.joinToString(",")
                 if (free_archive_route <= 0) {
                     noadd_count += 1
