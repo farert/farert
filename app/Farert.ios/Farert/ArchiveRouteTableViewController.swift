@@ -561,6 +561,9 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                 let cs = CharacterSet(charactersIn: " ,.[]")
                 let route_script_list = scr_route.components(separatedBy: "\n")
                 for scriptRoute : String in route_script_list {
+                    if "" == scriptRoute.trimmingCharacters(in: .whitespacesAndNewlines) {
+                        continue
+                    }
                     let scr_route = scriptRoute.components(separatedBy: cs).filter()
                     { $0 != ""}.joined(separator: ",")
                     if (free_archive_route <= 0) {
