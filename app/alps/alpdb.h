@@ -1168,7 +1168,7 @@ private:
     public:
         RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id = 0);
         ~RoutePass() {  }
-        int32_t check() const;
+        int32_t check(bool is_no_station_id1_first_jct = false) const;
         void off(int32_t jid);
         void off(BYTE* jct_mask);
         void on(BYTE* jct_mask);
