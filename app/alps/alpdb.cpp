@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -1341,7 +1341,7 @@ void Route::RoutePass::off(BYTE* jct_mask)
 }
 
 //public
-//	分岐駅リストの乗車マスクをOff
+//	分岐駅リストの乗車マスクをOn
 //
 //	@param [in]  jct_mask   分岐mask
 //
@@ -1362,7 +1362,7 @@ void Route::RoutePass::on(BYTE* jct_mask)
 }
 
 //public
-//	分岐駅リストの乗車マスクをOff
+//	分岐駅リストの乗車マスクをCheck
 //
 //	@param [in]  jct_mask   分岐mask
 //	@retval 0 = success
@@ -1370,7 +1370,7 @@ void Route::RoutePass::on(BYTE* jct_mask)
 //	@retval 3 = already passed and last arrive point passed.
 //	@retval 2 = last arrive point.
 //
-int32_t Route::RoutePass::check() const
+int32_t Route::RoutePass::check(bool is_no_station_id1_first_jct /* = false */) const
 {
 	int32_t i;
 	int32_t j;
@@ -1392,7 +1392,8 @@ int32_t Route::RoutePass::check() const
 					jctid = (i * 8) + j; /* 通過済みポイント */
 					if (Route::Jct2id(jctid) == _station_id2) {
 						rc |= 2;   /* 終了駅 */
-					} else if (Route::Jct2id(jctid) != _station_id1) {
+					} else if (is_no_station_id1_first_jct || (Route::Jct2id(jctid) != _station_id1)) {
+						// 前回着駅=今回着駅は、通過済みフラグON
 						rc |= 1;	/* 既に通過済み */
 						TRACE(_T("  already passed error: %s(%d,%d)\n"), Route::JctName(jctid).c_str(), Route::Jct2id(jctid), jctid);
 						break;
@@ -1799,7 +1800,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 	}
 	rc = cs.open(station_id1, station_id2);
 	if (rc <= 0) {
-        TRACE("preCompanyPassCheck db open error(pass)\n");
+        TRACE("preCompanyPassCheck not found db record(pass)\n");
 		return 0;		/* Error or Non-record(always pass) as continue */
 	}
     rc = 0;
@@ -1884,7 +1885,7 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 		}
 		rc = cs.open(key1, key2);
 		if (rc <= 0) {
-			TRACE("postCompanyPassCheck db open error(pass)\n");
+			TRACE("postCompanyPassCheck not found in db(pass)\n");
 			rc = 0;		/* Error or Non-record(always pass) as continue */
 			break;		// return 0
 		}
@@ -1954,11 +1955,12 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 	bool replace_flg = false;	// 経路追加ではなく置換
 	SPECIFICFLAG jct_flg_on = 0;   // 水平型検知(D-2) / BSRNOTYET_NA
 	int32_t type = 0;
+	int32_t is_no_station_id1_first_jct = 0;
 	JCTSP_DATA jctspdt;
 #ifdef _DEBUG
 	int32_t original_line_id = line_id;
-	int32_t first_station_id1;
 #endif
+	int32_t first_station_id1;
 
 	if (route_flag.end) {
         if (route_flag.compnda) {
@@ -1980,9 +1982,9 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 	}
 	start_station_id = route_list_raw.front().stationId;
 	stationId1 = route_list_raw.back().stationId;
-#ifdef _DEBUG
-first_station_id1 = stationId1;
-#endif
+	
+	first_station_id1 = stationId1;
+
 	/* 発駅 */
 	lflg1 = RouteUtil::AttrOfStationOnLineLine(line_id, stationId1);
 	if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
@@ -2187,8 +2189,8 @@ ASSERT(original_line_id == line_id);
 		}
 #ifdef _DEBUG
 ASSERT(original_line_id == line_id);
-ASSERT(first_station_id1 == stationId1);
 #endif
+ASSERT(first_station_id1 == stationId1);
 		// retrieve from a, d to b, c
 		type = Route::RetrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
 		ASSERT(0 < type);
@@ -2204,15 +2206,17 @@ ASSERT(first_station_id1 == stationId1);
 					routePassOff(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, stationId1);	// C-1
 				} else { // A-1
 					TRACE("JCT: A-1\n");
+					is_no_station_id1_first_jct = 1;
 				}
 				if ((2 <= num) && (jctspdt.jctSpStationId == route_list_raw.at(num - 2).stationId)) {
 					removeTail();
 					TRACE(_T("JCT: A-C\n"));		// 3, 4, 8, 9, g,h
 					--num;
 				} else {
+					TRACE("JCT: b#21072801D\n");
 					route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
 														   jctspdt.jctSpStationId);
-					TRACE("JCT: %d\n", __LINE__);
+					is_no_station_id1_first_jct++;
 				}
 				if (jctspdt.jctSpStationId2 != 0) {		// 分岐特例路線2
 					TRACE("JCT: step_(2)detect\n");
@@ -2232,12 +2236,15 @@ ASSERT(first_station_id1 == stationId1);
 					}
 					stationId1 = jctspdt.jctSpStationId2;
 				} else {
+					if ((is_no_station_id1_first_jct == 2) && !STATION_IS_JUNCTION_F(lflg1)) {
+                        TRACE(_T("is_no_station_id1_first_jct is on: is_no_station_id1_first_jct=%d, is_junction %d, %s <- %s\n"), is_no_station_id1_first_jct, STATION_IS_JUNCTION_F(lflg1), SNAME(stationId1), SNAME(jctspdt.jctSpStationId));
+						is_no_station_id1_first_jct = 555;
+					}
 					stationId1 = jctspdt.jctSpStationId;
 				}
 			} else {
-#ifdef _DEBUG
                 ASSERT(first_station_id1 == stationId1);
-#endif
+
                 if ((num < 2) ||
 				!Route::IsAbreastShinkansen(jctspdt.jctSpMainLineId,
 											route_list_raw.at(num - 1).lineId,
@@ -2289,9 +2296,7 @@ ASSERT(first_station_id1 == stationId1);
 						stationId1 = jctspdt.jctSpStationId;
 					}
 				} else {
-#ifdef _DEBUG
-ASSERT(first_station_id1 == stationId1);
-#endif
+					ASSERT(first_station_id1 == stationId1);
 					// C-2
 					TRACE("JCT: C-2\n");
 					ASSERT(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId));
@@ -2331,9 +2336,8 @@ ASSERT(first_station_id1 == stationId1);
 				BIT_OFF(lflg2, BSRJCTSP);
 			}
 			line_id = jctspdt.jctSpMainLineId;
-#ifdef _DEBUG
-ASSERT(first_station_id1 == stationId1);
-#endif
+			ASSERT(first_station_id1 == stationId1);
+
 			if ((2 <= num) &&
 //			!BIT_CHK(RouteUtil::AttrOfStationOnLineLine(line_id, stationId2), BSRJCTSP_B) &&
 			(0 < RouteUtil::InStation(stationId2, jctspdt.jctSpMainLineId,
@@ -2436,10 +2440,12 @@ ASSERT(original_line_id == line_id);
 			stationId1 = jctspdt.jctSpStationId;
 		}
 		route_flag.jctsp_route_change = true;	/* route modified */
+		is_no_station_id1_first_jct = 0;
 	}
 
 	// 長岡周りの段差型
 	if ((2 <= num) && BIT_CHK(lflg1, BSRJCTSP_B)) {
+		is_no_station_id1_first_jct = 0;
 		if (JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(line_id,
 		                                                route_list_raw.at(num - 1).stationId, &jctspdt)) {
 		 	/* 信越線下り(直江津→長岡方面) && 新幹線|上越線上り(長岡-大宮方面)? */
@@ -2485,7 +2491,7 @@ ASSERT(original_line_id == line_id);
 	}
 
 	// Route passed check
-	rc = route_pass.check();
+	rc = route_pass.check(is_no_station_id1_first_jct == 555);
 
 	if (line_id == LINE_ID(_T("大阪環状線"))) {
 		if ((rc & 0x01) != 0) {
@@ -2569,6 +2575,12 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 	if (rc < 0) {
 		// 不正ルートなのでmaskを反映しないで破棄する
 
+		if (is_no_station_id1_first_jct == 555) {
+			// b#21072801D
+			// don't necessary   stationId1 = first_station_id1;
+			route_list_raw.at(num - 1).stationId = first_station_id1;
+			TRACE(_T("Detect finish. %d\n"), first_station_id1);
+		}
 		TRACE(_T("add_abort(%d)\n"), rc);
 		route_flag.trackmarkctl = false;
 		// E-12, 6, b, c, d, e
@@ -2702,6 +2714,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 		i = Route::Id2jctId(begin_station_id);
 		if (0 < i) {
 			route_pass.off(i);
+			TRACE(_T("removeTail-begin %s\n"), SNAME(begin_station_id));
 		}
 	}
 
@@ -2709,6 +2722,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 	if ((0 < i) && route_flag.trackmarkctl) {
 		/* 最近分岐駅でO型経路、P型経路の着駅の場合は除外 */
 		route_pass.off(i);
+		TRACE(_T("removeTail %s\n"), SNAME(to_station_id));
 	}
 
 	route_pass.off(jct_mask);
