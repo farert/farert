@@ -1316,6 +1316,7 @@ int32_t Route::RoutePass::enum_junctions_of_line_for_osakakan()
 //
 void Route::RoutePass::off(int jid)
 {
+	TRACE(_T("off %s\n"), Route::JctName(jid).c_str());
 	JctMaskOff(_jct_mask, jid);
 }
 
@@ -2709,7 +2710,7 @@ void Route::removeTail(bool begin_off/* = false*/)
 
 	RoutePass route_pass(NULL, route_flag, line_id, to_station_id, begin_station_id);
 
-	if (!begin_off) {
+	if (begin_off) {
 		/* 開始駅はOffしない(前路線の着駅なので) */
 		i = Route::Id2jctId(begin_station_id);
 		if (0 < i) {
@@ -2725,7 +2726,26 @@ void Route::removeTail(bool begin_off/* = false*/)
 		TRACE(_T("removeTail %s\n"), SNAME(to_station_id));
 	}
 
+#if defined _DEBUG
+	BYTE tmp[JCTMASKSIZE];
+	memcpy(tmp, jct_mask, JCTMASKSIZE);
+#endif
 	route_pass.off(jct_mask);
+#if defined _DEBUG
+    for (i = 0; i < JCTMASKSIZE; i++) {
+        if (tmp[i] != jct_mask[i]) {
+            for (int j = 0; j < 8; j++) {
+                if (((1 << j) & tmp[i]) != ((1 << j) & jct_mask[i])) {
+                    if (((1 << j) & jct_mask[i]) != 0) {
+						ASSERT(FALSE);
+                    } else {
+						TRACE(_T("   off: %s\n"), JctName(i * 8 + j).c_str());
+                    }
+                }
+            }
+        }
+    }
+#endif
 
 	route_pass.update_flag(&route_flag); /* update route_flag LF_OSAKAKAN_MASK */
     route_flag.end = false;
