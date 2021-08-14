@@ -2379,7 +2379,9 @@ public class TestRoute {
             "新宮 紀勢線 松阪",
             "新宮 紀勢線 和歌山",
             // <<b#21071101D
-            
+            // b#21053101
+            "JR総持寺 東海道線 大阪",
+
 
             // append new test pattern is here TODO @@@@
     };

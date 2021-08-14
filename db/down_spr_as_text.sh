@@ -18,7 +18,7 @@ function usage() {
 }
 
 if [ "$#" -eq 1 ]; then
-  ACCESS_TOKEN=$1
+  ACCESS_TOKEN="$1"
 elif [ "$#" -ne 0 -o -z "$ACCESS_TOKEN" ]; then
   usage
 fi

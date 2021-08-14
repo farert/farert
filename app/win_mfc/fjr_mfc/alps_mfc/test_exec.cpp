@@ -2329,6 +2329,8 @@ _T("c--other--"),
 		_T("新宮 紀勢線 松阪"),
 		_T("新宮 紀勢線 和歌山"),
 		// <<b#21071101D
+		// b#21053101
+		_T("JR総持寺 東海道線 大阪"),
 
 			// append new test pattern is here TODO @@@
 
