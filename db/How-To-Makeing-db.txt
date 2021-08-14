@@ -17,7 +17,7 @@
  ◆ 作成方法
 
      1) スプレッドシート jrdb2021 を編集
-     2) Access Tokenを取得（取得方法は、 down_spr_as_text.sh のヘッダコメントを参照)
+     2) Access Tokenを取得（取得方法は、 Makefile のヘッダコメントを参照)
      3) Shellにて（Mac zsh, bash, linux bash, Windows wsl bash等）、db フォルダで、
         make ACCESS_TOKEN=xxxxx       xxxx は取得したアクセストークンの文字列です
         を実行（ユーザ権限で可）
