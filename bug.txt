@@ -165,8 +165,14 @@ OKだが、115は適用云云は不要
 b#21071101D
 京都 奈良線 木津 関西線 王寺 和歌山線 和歌山 紀勢線 亀山
 とした時に、JR西の株主優待が適用できてしまう。
+
+和歌山 紀勢線 亀山
+も（が）ダメ
+company_id1=4, sub_company_id1=0, company_id2=3, sub_company_id2=4
+company_id1=3, sub_company_id1=4, company_id2=4, sub_company_id2=0
 ->
-TBD
+修正ずみ
+//
 
 
 b#2107034F
