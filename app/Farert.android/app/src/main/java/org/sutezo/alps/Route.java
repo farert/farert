@@ -1698,7 +1698,7 @@ public class Route extends RouteList {
                 // restore
                 route_list_raw.get(num - 1).let(new RouteItem(route_list_raw.get(num - 1).lineId,
                 (short)first_station_id1));
-                TRACE(_T("Detect finish. %d\n"), first_station_id1);
+                System.out.printf("Detect finish. %d\n", first_station_id1);
             }
             System.out.printf("add_abort(%d)\n", rc);
             route_flag.trackmarkctl = false;
