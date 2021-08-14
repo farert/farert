@@ -3121,14 +3121,29 @@ public class FARE_INFO {
 
                     if (company_id1 != company_id2) {
                         if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2)) {
-                            // 猪谷(4)(4) 富山(4)
+                            // 本州内
+                            // (company)(subcompany) - (company)(subcompany)
+                            // 猪谷(4)(3) 富山(4)
                             // 猪谷(4)(3) 名古屋(3)
                             // 神戸(4)　門司(3)(4)
                             // 品川(2)-新大阪(4)
                             // 長野(2)-金沢(4)
-                            // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない
-                            // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
-                            if (sub_company_id1 == company_id2) {
+                                // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない>紀勢線 亀山 新宮 以西間にあり
+                                // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
+                            // 亀山(3)(4)-和歌山(4)
+                            // 亀山(3)(4)-新宮(4)(3)
+                            // 松阪(3)-新宮(4)(3)
+                            // 松阪(3)-亀山(3)(4)
+                            if ((line_id == DbIdOf.INSTANCE.line("紀勢線"))
+                            && (((company_id1 == JR_CENTRAL)
+                            && (sub_company_id1 == JR_WEST) && (company_id2 == JR_WEST) && (sub_company_id2 == 0))
+                            || ((company_id2 == JR_CENTRAL)
+                            && (sub_company_id2 == JR_WEST) && (company_id1 == JR_WEST) && (sub_company_id1 == 0)))) {
+                                // do-noghint
+                                System.out.println("detect kisyu-sen kameyama-(wakayama-miwasaki)");
+
+                            } else if (sub_company_id1 == company_id2) {
+    							// 猪谷-富山、神戸-門司
                                 company_id1 = sub_company_id1;
                             } else if (company_id1 == sub_company_id2) {
                                 company_id2 = sub_company_id2;
