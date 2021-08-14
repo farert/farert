@@ -40,7 +40,7 @@ $(1) : $(patsubst %.db, %.txt, $(1))
 	$(PYTHON) scripts/node_list.py $(1) > scripts/node_list.txt
 endef
 
-.PHONY : 
+.PHONY : clean download
 
 all : $(patsubst %.db, %.txt, $(DBFILES)) $(DBFILES) $(DB_IOS) $(DB_WIN) $(DB_ANDROID)
 
@@ -48,7 +48,7 @@ all : $(patsubst %.db, %.txt, $(DBFILES)) $(DBFILES) $(DB_IOS) $(DB_WIN) $(DB_AN
 $(patsubst %.db, %.txt, $(DBFILES)): $(patsubst %, %.tmp, $(SHEETS))
 
 $(patsubst %, %.tmp, $(SHEETS)) :
-	./down_spr_as_text.sh $(ACCESS_TOKEN)
+	./down_spr_as_text.sh "$(ACCESS_TOKEN)"
 
 # make db
 $(foreach OBJ, $(DBFILES), $(eval $(call MKDB, $(OBJ))))
@@ -64,3 +64,8 @@ $(foreach OBJ, $(DBFILES), $(eval $(call COPY, $(addprefix $(IOS_DBDIR), $(OBJ))
 $(foreach OBJ, $(DBFILES), $(eval $(call COPY, $(addprefix $(WIN_DBDIR), $(OBJ)), $(OBJ))))
 
 
+download :
+	./down_spr_as_text.sh "$(ACCESS_TOKEN)"
+
+clean:
+	rm -f *.tmp *.db
