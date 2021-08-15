@@ -142,7 +142,8 @@ BOOL Calps_mfcApp::InitInstance()
 						UnlockResource(hGlbl);
 
 						// restore(decrypt)
-						dwDbEncSize = rd((unsigned char*)np, dwDbEncSize);
+						// à√çÜâªÇ‚ÇﬂÇÈ ExcelÇ‚ÇﬂÇΩ   
+						//dwDbEncSize = rd((unsigned char*)np, dwDbEncSize);
 						
 						GetTempPath(MAX_PATH, impdbfn);
 						GetTempFileName(impdbfn, _T("@~~"), 0, impdbfn);
