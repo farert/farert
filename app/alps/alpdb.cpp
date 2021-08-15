@@ -3143,6 +3143,9 @@ JR東日本 株主優待4： \123,456
 	if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule115()) {
         sResult += _T("\r\n旅客営業取扱基準規程第115条を適用していません");
 	}
+	if (refRouteFlag.isAvailableRule16_5()) {
+        sResult += _T("\r\nこの乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+	}
 	if (this->isRule114()) {
         sResult += _T("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
 		sResult += this->getRule114apply_terminal_station();
@@ -3219,6 +3222,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
                 // rule 114 applied
                 pFi->setRule114(rule114Info);
             }
+			pFi->setIsRule16_5_route(*this);
         } else {
     		pFi->reset();
     	}
@@ -3235,6 +3239,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
 			ASSERT(pFi->getBeginTerminalId() == this->beginStationId());
 			ASSERT(pFi->getEndTerminalId() == this->endStationId());
         }
+		pFi->setIsRule16_5_route(*this);
     }
 	return 1;
 }
@@ -10047,6 +10052,23 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
         }
     }
     return shortRoute;
+}
+
+void FARE_INFO::setIsRule16_5_route(RouteList& route_original)
+{
+	int32_t arriveStationId = route_original.arriveStationId();
+	int32_t departureStationId = route_original.departureStationId();
+
+	if ((((arriveStationId == STATION_ID(_T("綾瀬")))
+	&& (departureStationId == STATION_ID(_T("北千住"))))
+	|| ((arriveStationId == STATION_ID(_T("北千住")))
+	&& (departureStationId == STATION_ID(_T("綾瀬")))))
+	&& getTotalSalesKm() < 50) {
+		route_original.refRouteFlag().rule16_5 = true;
+		TRACE("applied Rule16-5.\n");
+	} else {
+		route_original.refRouteFlag().rule16_5 = false;
+	}
 }
 
 //static

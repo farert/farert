@@ -183,6 +183,24 @@ public class FARE_INFO {
         return ((((fare) / 10 * (10 - (per))) + 5) / 10 * 10);
     }
 
+
+    void setIsRule16_5_route(RouteList route_original)
+    {
+        int arriveStationId = route_original.arriveStationId();
+        int departureStationId = route_original.departureStationId();
+
+        if ((((arriveStationId == DbIdOf.INSTANCE.station("綾瀬"))
+        && (departureStationId == DbIdOf.INSTANCE.station("北千住")))
+        || ((arriveStationId == DbIdOf.INSTANCE.station("北千住"))
+        && (departureStationId == DbIdOf.INSTANCE.station("綾瀬"))))
+        && getTotalSalesKm() < 50) {
+            route_original.getRouteFlag().rule16_5 = true;
+            System.out.println("applied Rule16-5.");
+        } else {
+            route_original.getRouteFlag().rule16_5 = false;
+        }
+    }
+
     //static
     //	集計された営業キロ、計算キロより運賃額を算出(運賃計算最終工程)
     //	(JRのみ)
@@ -1124,6 +1142,9 @@ public class FARE_INFO {
         }
         if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule115()) {
             buffer.append("\r\n旅客営業取扱基準規程第115条を適用していません");
+        }
+        if (argRouteFlag.isAvailableRule16_5()) {
+            buffer.append("\r\nこの乗車券はJRで発券されません. 東京メトロでのみ発券されます");
         }
         if (this.isRule114()) {
             buffer.append("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
