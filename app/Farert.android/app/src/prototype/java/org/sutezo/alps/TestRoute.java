@@ -2381,6 +2381,9 @@ public class TestRoute {
             // <<b#21071101D
             // b#21053101
             "JR総持寺 東海道線 大阪",
+            // b#21062001A
+    	    "北千住 常磐線 日暮里 東北線 東京 総武線 西船橋 武蔵野線 新松戸 常磐線 綾瀬",
+            "北千住 常磐線 綾瀬",
 
 
             // append new test pattern is here TODO @@@@

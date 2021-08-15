@@ -474,12 +474,15 @@ fun CalcRoute.calcFareInfo() : FareInfo
     if (!result.isRuleApplied && this.route_flag.isAvailableRule115()) {
         messages.add("旅客営業取扱基準規程第115条を適用していません");
     }
+    if (this.route_flag.isAvailableRule16_5()) {
+        messages.add("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+    }
     if (rule114Fare.isAvailable()) {
         val msg = "旅客営業取扱基準規程第114条適用営業キロ計算駅:${rule114Fare.stationName()}"
         messages.add(msg)
     }
 
-    result.resultMessage = messages.joinToString("\r\n")
+    result.resultMessage = messages.joinToString("\n")
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
