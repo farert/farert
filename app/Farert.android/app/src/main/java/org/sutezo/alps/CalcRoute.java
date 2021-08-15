@@ -545,6 +545,7 @@ public class CalcRoute extends RouteList {
                     // rule 114 applied
                     fare_info.setRule114(rule114Info);
                 }
+                fare_info.setIsRule16_5_route(this);
             } else {
                 fare_info.reset();
             }
@@ -561,6 +562,7 @@ public class CalcRoute extends RouteList {
                 ASSERT(fare_info.getBeginTerminalId() == this.beginStationId());
                 ASSERT(fare_info.getEndTerminalId() == this.endStationId());
             }
+            fare_info.setIsRule16_5_route(this);
         }
     	// success
     	return 1;

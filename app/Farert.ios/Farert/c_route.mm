@@ -1033,6 +1033,10 @@ int g_tax; /* main.m */
         [resultMessage addObject:[NSString stringWithUTF8String:
                                   "旅客営業取扱基準規程第115条を適用していません"]];
     }
+    if (obj_calcroute->getRouteFlag().isAvailableRule16_5()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "この乗車券はJRで発券されません. 東京メトロでのみ発券されます"]];
+    }
     if (result.isRule114Applied) {
         [resultMessage addObject:[NSString stringWithFormat:
                                 @"旅客営業取扱基準規程第114条適用営業キロ計算駅:%@",           [NSString stringWithUTF8String:fi.getRule114apply_terminal_station().c_str()]]];

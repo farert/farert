@@ -281,6 +281,7 @@ public:
     bool special_fare_enable;
     int8_t rule115;
     bool rule70bullet;
+    bool rule16_5;
 
     bool bullet_line;           // 新幹線乗車している
     bool bJrTokaiOnly;
@@ -353,6 +354,7 @@ public:
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
+        rule16_5 = false;
 
         bullet_line = false;
         bJrTokaiOnly = false;
@@ -416,6 +418,7 @@ public:
     bool isAvailableRule70() const { return rule70; }
     bool isAvailableRule69() const { return rule69; }
     bool isAvailableRule115() const { return 0 < rule115; }
+    bool isAvailableRule16_5() const { return rule16_5; }
 
     //
     bool isMeihanCityEnable() const {
@@ -811,6 +814,8 @@ public:
         route_for_disp.clear();
         calc_route_for_disp.clear();
 	}
+    void setIsRule16_5_route(RouteList& route_original);
+
     class FareResult {
     public:
         int fare;
