@@ -24,6 +24,7 @@ public class RouteFlag {
     boolean special_fare_enable;
     int    rule115;
     boolean rule70bullet;
+    boolean rule16_5;
 
     boolean bullet_line;    // 新幹線乗車している
     boolean bJrTokaiOnly;
@@ -132,6 +133,7 @@ public class RouteFlag {
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
+        rule16_5 = false;
 
         bullet_line = false;
         bJrTokaiOnly = false;
@@ -166,6 +168,7 @@ public class RouteFlag {
         rule70bullet = o.rule70bullet;
         bullet_line = o.bullet_line;
         bJrTokaiOnly = o.bJrTokaiOnly;
+        rule16_5 = o.rule16_5;
 
         trackmarkctl = o.trackmarkctl;
         jctsp_route_change = o.jctsp_route_change;
@@ -237,7 +240,7 @@ public class RouteFlag {
     boolean isAvailableRule70() { return rule70; }
     boolean isAvailableRule69() { return rule69; }
     boolean isAvailableRule115() { return 0 < rule115; }
-
+    boolean isAvailableRule16_5() { return rule16_5; }
     //
     public boolean isMeihanCityEnable() {
         return !no_rule && meihan_city_enable;
