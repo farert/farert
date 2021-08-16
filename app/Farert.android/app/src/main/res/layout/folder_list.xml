@@ -58,11 +58,23 @@
         app:layout_constraintTop_toTopOf="@id/ticket_type"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <TextView
+        android:id="@+id/itemKm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/result_kmvalue"
+        style="@style/TicketListKm"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintRight_toLeftOf="@id/imageView_left"
+        app:layout_constraintTop_toBottomOf="@id/itemFare"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
     <ImageView
         android:id="@+id/imageView_left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintRight_toLeftOf="@id/imageView_right"
         app:layout_constraintTop_toBottomOf="@id/itemSection"
         app:srcCompat="@drawable/ic_jyubako"

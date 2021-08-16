@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import org.sutezo.farert.BuildConfig;
+
 import static org.sutezo.alps.RouteUtil.*;
 import static org.sutezo.alps.farertAssert.*;
 
@@ -52,6 +54,8 @@ public class CalcRoute extends RouteList {
     private List<RouteItem> route_list_cooked = new ArrayList<RouteItem>(0);
 
     List<RouteItem> routeList() { return route_list_cooked; }
+
+    Rule114Info rule114Info = new Rule114Info();
 
     private CalcRoute() {
 
@@ -131,11 +135,15 @@ public class CalcRoute extends RouteList {
     //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
     //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
     //
-    public FARE_INFO.Fare checkOfRuleSpecificCoreLine() {
+    private static final int RULE114_SALES_KM_86 = 648;
+    private static final int RULE114_SALES_KM_87 = 800;
+    public void checkOfRuleSpecificCoreLine() {
+        checkOfRuleSpecificCoreLine(false);
+    }
+    public void checkOfRuleSpecificCoreLine(boolean isCheckRule114) {
 
         int[] cityId = new int [2];
         int jsales_km;
-        int skm;
         List<RouteItem> route_list_tmp = new ArrayList<RouteItem>();
         List<RouteItem> route_list_tmp2 = new ArrayList<RouteItem>();
         List<RouteItem> route_list_tmp3 = new ArrayList<RouteItem>();
@@ -201,7 +209,7 @@ public class CalcRoute extends RouteList {
 			/* 未変換 */
             System.out.printf("no applied for rule86/87\n");
             cpyRouteItems(route_list_tmp2, route_list_cooked);
-            return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
 
 		/* (発駅=都区市内 or 着駅=都区市内)
@@ -271,7 +279,7 @@ public class CalcRoute extends RouteList {
             // route_list_cooked = route_list_tmp3
             cpyRouteItems(route_list_tmp3, route_list_cooked);
 
-            return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
 
 		/* 101km - 200km : 山手線発着 or 200km以下の都区市内間(名古屋-大阪など)チェック */
@@ -329,12 +337,12 @@ public class CalcRoute extends RouteList {
                 // route_list_cooked = route_list_tmp3
                 cpyRouteItems(route_list_tmp3, route_list_cooked);
 
-                return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             }
-            sk = 900;	/* 90km */
+            sk = RULE114_SALES_KM_87;	/* 90km */
         } else {
 			/* can't apply to 87 */
-            sk = 1900;	/* 190km */
+            sk = RULE114_SALES_KM_86;	/* 190km */
         }
 
         // route_list_tmp4 = route_list_tmp3
@@ -357,8 +365,7 @@ public class CalcRoute extends RouteList {
 
 				/* 発駅のみ都区市内にしても201/101km以上か？ */
                 km = Get_route_distance(route_flag, route_list_tmp3);
-                skm = km.sales_km - km.company_km - km.brt_km;
-                if (sk2 < skm) {
+                if (sk2 < (km.sales_km - km.company_km - km.brt_km)) {
                     // 発 都区市内有効
                     flg = 0x01;
                 }
@@ -374,8 +381,7 @@ public class CalcRoute extends RouteList {
 
 				/* 着駅のみ都区市内にしても201/101km以上か？ */
                 km = Get_route_distance(route_flag, route_list_tmp3);
-                skm = km.sales_km - km.company_km - km.brt_km;
-                if (sk2 < skm) {
+                if (sk2 < (km.sales_km - km.company_km - km.brt_km)) {
                     // 着 都区市内有効
                     flg |= 0x02;
                 }
@@ -406,11 +412,11 @@ public class CalcRoute extends RouteList {
                         }
                         // route_list_cooked = route_list_tmp3
                         cpyRouteItems(route_list_tmp3, route_list_cooked);
-                        return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     } else {
 						/* 着のみ都区市内適用 */
 						/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
-                        if (sk == 900) {
+                        if (sk == RULE114_SALES_KM_87) {
                             System.out.printf("applied for rule87(end)\n");
                             route_flag.terCityReset();
         					route_flag.ter_fin_yamate = true;
@@ -421,7 +427,7 @@ public class CalcRoute extends RouteList {
                         }
                         // route_list_cooked = route_list_tmp3
                         cpyRouteItems(route_list_tmp3, route_list_cooked);
-                        return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     }
                 } else if (flg == 0x01) {
 					/* route_list_tmp = route_list_tmp2 */
@@ -447,10 +453,10 @@ public class CalcRoute extends RouteList {
                     }
                     // route_list_cooked = route_list_tmp3
                     cpyRouteItems(route_list_tmp3, route_list_cooked);
-                    return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 } else if (flg == 0x02) {
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
-                    if (sk == 900) {
+                    if (sk == RULE114_SALES_KM_87) {
                         System.out.printf("applied for rule87(end)\n");
                         route_flag.terCityReset();
     					route_flag.ter_fin_yamate = true;
@@ -461,10 +467,10 @@ public class CalcRoute extends RouteList {
                     }
                     // route_list_cooked = route_list_tmp3
                     cpyRouteItems(route_list_tmp3, route_list_cooked);
-                    return new FARE_INFO.Fare();			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 }
 				/* flg == 0 */
-                if ((sk != 900) || (sk2 == 1000)) {
+                if ((sk != RULE114_SALES_KM_87) || (sk2 == 1000)) {
 					/* 87無効 or 営業キロ200km越え判定は済 */
                     break;
                 }
@@ -482,64 +488,21 @@ public class CalcRoute extends RouteList {
 		/* 未変換 */
         System.out.printf("no applied for rule86/87(jsales_km=%d)\n", jsales_km);
 
-        FARE_INFO.Fare r114;
-
-        if (sk <= jsales_km) {
-				/* 114条適用かチェック */
-
-            if ((0x03 & chk) == 3) {
-                /* 発のみ都区市内適用 */
-                /* route_list_tmp = route_list_tmp2 */
-                cpyRouteItems(route_list_tmp2, route_list_tmp);
-                /* 発駅のみ特定都区市内着経路に変換 */
-                ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp);
-
-                // 69を適用したものをroute_list_tmp3へ
-                ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
-                route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
-
-                cpyRouteItems(route_list_tmp2, route_list_tmp);
-                route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
-							/* 86,87適用前,   86,87適用後 */
-                r114 = CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
-                        0x01 | ((sk2 == 2000) ? 0 : 0x8000));
-                if (r114 == null) {
-                    /* 着のみ都区市内適用 */
-                    /* route_list_tmp = route_list_tmp2 */
-                    cpyRouteItems(route_list_tmp2, route_list_tmp);
-                    /* 発駅のみ特定都区市内着経路に変換 */
-                    ReRouteRule86j87j(cityId, 2, exit, enter, /*out*/route_list_tmp);
-
-                    // 69を適用したものをroute_list_tmp3へ
-                    ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
-                    route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
-
-                    cpyRouteItems(route_list_tmp2, route_list_tmp);
-                    route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
-                    r114 = CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
-                            0x02 | ((sk2 == 2000) ? 0 : 0x8000));
-                }
-            } else {
-                cpyRouteItems(route_list_tmp2, route_list_tmp);
-                cpyRouteItems(route_list_tmp4, route_list_tmp3);
-
-                route_list_tmp = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp);
-                route_list_tmp3 = ConvertShinkansen2ZairaiFor114Judge(route_list_tmp3);
-                ASSERT (((0x03 & chk) == 1) || ((0x03 & chk) == 2));
-                r114 = CheckOfRule114j(route_flag, route_list_tmp, route_list_tmp3,
-                                (chk & 0x03) | ((sk == 1900) ? 0 : 0x8000));
+        if (isCheckRule114 && (sk <= jsales_km)) {
+            /* 114条適用かチェック */
+            CalcRoute.CRule114 rule114 = new CalcRoute.CRule114();
+            if (rule114.check(route_flag, chk, sk, route_list_tmp2, route_list_tmp4, cityId, enter, exit)) {
+                rule114Info.set(new Rule114Info(rule114.fare, rule114.apply_terminal_station));
             }
         } else {
             // do nothing(not 114)
-            r114 = new FARE_INFO.Fare();
+            ;
         }
 		/* 86-87非適用 */
         // route_list_cooked = route_list_tmp2
         cpyRouteItems(route_list_tmp2, route_list_cooked);
-        if (r114 == null) {
-            r114 = new FARE_INFO.Fare();
-        }
-        return r114;
+
+        return;
     }
 
     /*  public
@@ -549,8 +512,6 @@ public class CalcRoute extends RouteList {
 	 *   1 : normal(Success)
 	 */
     public int calcFare(FARE_INFO fare_info) {
-
-    	FARE_INFO.Fare rule114;	// [0] = 運賃, [1] = 営業キロ, [2] = 計算キロ
 
     	if (route_list_raw.size() <= 1) {
     		fare_info.setEmpty();
@@ -565,7 +526,7 @@ public class CalcRoute extends RouteList {
     	if (!route_flag.no_rule && !route_flag.osakakan_detour) {
     		/* 規則適用 */
     		/* 86, 87, 69, 70条 114条適用かチェック */
-    		rule114 = checkOfRuleSpecificCoreLine();	// route_list_raw -> route_list_cooked
+    		checkOfRuleSpecificCoreLine(true);	// route_list_raw -> route_list_cooked
             fare_info.setTerminal(this.beginStationId(),
                     this.endStationId());    // set is begin/end terminal Id.
 
@@ -582,8 +543,9 @@ public class CalcRoute extends RouteList {
                     ; // DO NOTHING
                 } else {
                     // rule 114 applied
-                    fare_info.setRule114(rule114);
+                    fare_info.setRule114(rule114Info);
                 }
+                fare_info.setIsRule16_5_route(this);
             } else {
                 fare_info.reset();
             }
@@ -595,9 +557,12 @@ public class CalcRoute extends RouteList {
                     this.endStationId());
             if (fare_info.calc_fare(route_flag, route_list_raw)) {
                 fare_info.setRoute(this.route_list_raw, route_flag);
+                // routeFlag.rule115 のflag set  する為だけに以下を実行
+                fare_info.reCalcFareForOptiomizeRoute(this);
                 ASSERT(fare_info.getBeginTerminalId() == this.beginStationId());
                 ASSERT(fare_info.getEndTerminalId() == this.endStationId());
             }
+            fare_info.setIsRule16_5_route(this);
         }
     	// success
     	return 1;
@@ -793,145 +758,10 @@ public class CalcRoute extends RouteList {
         return 0;
     }
 
-    //private
-    //static
-    //	114条のチェック
-    //
-    //	@param [in] route         経路(86, 87変換前)
-    //	@param [in] routeSpecial  経路(86, 87変換後)
-    //	@param [in] kind       種別
-    //							bit0:発駅が特定都区市内または山手線内
-    //							bit1:着駅が特定都区市内または山手線内
-    //							bit15:OFF=特定都区市内
-    //							      ON =山手線内
-    //	@param [out] rule114   (戻り値True時のみ有効) [0]適用運賃(未適用時、0), [1]営業キロ, [2]計算キロ)
-    //
-    //	@note 86/87適用後の営業キロが200km/100km以下であること.
-    //
-    private static FARE_INFO.Fare CheckOfRule114j(final RouteFlag route_flag_, final List<RouteItem> route, final List<RouteItem> routeSpecial, int kind) {
-
-        int dkm;
-        int km;				// 100km or 200km
-        int aSales_km;		// 86/87 applied
-        short line_id;
-        short station_id1;
-        short station_id2;
-        short station_id3;
-        //if (RoudeDB.debug) {
-        KM km_raw ;		// 86 or 87 適用前 [0]:営業キロ、[1]計算キロ
-        //}
-        KM km_spe;		// 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
-        FARE_INFO fi = new FARE_INFO();
-        int fare_normal;			/* 200(100)km以下により, 86 or 87 非適用の通常計算運賃 */
-        int fare_applied;			/* より遠い駅までの都区市内発着の仮適用運賃 */
-
-		/* 経路は乗換なしの単一路線 */
-        if (route.size() <= 2) {
-            return null;
-        }
-
-        if (RouteDB.debug) {
-            km_raw = Get_route_distance(route_flag_, route); 			/* 経路距離 */
-        }
-        km_spe = Get_route_distance(route_flag_, routeSpecial); 	/* 経路距離(86,87適用後) */
-
-        aSales_km = km_spe.sales_km - km_spe.company_km - km_spe.brt_km;			// 営業キロ
-
-		/* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
-        if ((0x8000 & kind) == 0) {
-            // 200km
-            km = 2000;
-        } else {
-            // 100km
-            km = 1000;
-        }
-		/* 距離があと86、87条適用距離-10kmの範囲内ではない */
-        if ((aSales_km < (km * 9 / 10)) || (km < aSales_km)) {
-            return null;
-        }
-
-        if ((kind & 1) != 0) {		/* 発駅が特定都区市内 */
-            line_id = route.get(route.size() - 1).lineId;				// 着 路線 発-着
-            station_id1 = route.get(route.size() - 2).stationId;
-            station_id2 = route.get(route.size() - 1).stationId;
-        } else if ((kind & 2) != 0) { /* 着駅が特定都区市内 */
-            line_id = route.get(1).lineId;								// 発 路線.発-着
-            station_id1 = route.get(1).stationId;
-            station_id2 = route.get(0).stationId;
-        } else {
-            ASSERT (false);
-            return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        }
-        // ex. 国母-横浜-長津田の場合、身延線.富士-国母 間の距離を引く
-        dkm = RouteUtil.GetDistance(line_id, station_id1, station_id2).get(0);
-        aSales_km -= dkm;	/* 発駅から初回乗換駅までの営業キロを除いた営業キロ */
-
-        if (aSales_km < 0) {
-            return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        }
-
-        ASSERT (0 <= aSales_km);
-        ASSERT (0 < dkm);
-
-        if (RouteUtil.LINE_DIR.LDIR_ASC != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
-			/* 上り */
-            km = -km;
-        }
-		/* 中心駅から目的地方向に最初に200(100)kmに到達する駅を得る */
-		/* 富士から身延線で甲府方向に */
-        station_id3 = Retreive_SpecificCoreAvailablePoint(km, aSales_km, line_id, station_id1);
-
-        //#2013.6.28:modified>> ASSERT (0 < station_id3);
-        if (station_id3 <= 0) {
-            return null;
-        }
-        //<<
-
-		/* (86, 87条適用前されなかった)運賃その駅までの運賃より高ければ、その駅までの運賃とする */
-
-        // <- routeSpecial
-        List<RouteItem> route_work = dupRouteItems(routeSpecial);
-
-        if ((kind & 1) != 0) {			/* 発駅が特定都区市内 */
-            route_work.get(route_work.size() - 1).stationId = station_id3;	/* 最終着駅を置き換える */
-        } else if ((kind & 2) != 0) {	/* 着駅が特定都区市内 */
-            route_work.get(0).stationId = station_id3;	/* 始発駅を置き換える */
-        } else {
-            ASSERT (false);
-            return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        }
-
-		/* 通常運賃を得る */
-        if (!fi.calc_fare(route_flag_, route)) {
-            ASSERT (false);
-            return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        }
-        fare_normal = fi.getFareForJR();			/* 200(100)km以下により, 86 or 87 非適用の通常計算運賃(長津田-横浜-国母) */
-
-        if (RouteDB.debug) {
-            ASSERT (km_raw.sales_km == fi.getJRSalesKm());
-            ASSERT (km_raw.calc_km == fi.getJRCalcKm());
-        }
-		/* 86,87適用した最短駅の運賃を得る(上例では甲斐住吉-横浜間) */
-        if (!fi.calc_fare(route_flag_, route_work)) {
-            ASSERT (false);
-            return null;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        }
-        fare_applied = fi.getFareForJR();			/* より遠い駅までの都区市内発着の仮適用運賃(横浜-甲斐住吉) */
-
-        if (fare_applied < fare_normal) {
-			/* 114条適用 */
-            System.out.printf("Rule 114 Applied(%d->%d)\n", fare_normal, fare_applied);
-			/* 先の駅の86,87適用運賃 */
-            return new FARE_INFO.Fare(fare_applied, fi.getJRSalesKm(), fi.getJRCalcKm());
-        }
-        System.out.print("Rule 114 no applied\n");
-        return null;
-    }
 
     //	Route 営業キロを計算
     //	showFare() => calcFare() => checkOfRuleSpecificCoreLine() =>
-    //	CheckOfRule114j() =>
+    //	checkOfRule114j() =>
     //
     //	@param [in]  route_flag_ 大阪環状線通過方向(osakakan_1dir, osakakan_2dir, osakakan_1pass)
     //                         * osakakan_1pass はwork用に使用可
@@ -985,7 +815,7 @@ public class CalcRoute extends RouteList {
 
     //static
     //	指定路線・駅からの100/200km到達地点の駅を得る
-    //	CheckOfRule114j() =>
+    //	checkOfRule114j() =>
     //
     //	@param [in] km  下り: 100=1000, 200=2000(上り: -1000 / -2000)
     //	@param [in] line_id   路線
@@ -2218,113 +2048,648 @@ public class CalcRoute extends RouteList {
         return affects;
     }
 
-
-    //static
-    //	並行在来線へ変換
-    //	114条判定用
-    //  都区市内駅から200kmを超える場合は結果が正しくない場合がある
-    //	(東北新幹線 仙台 八戸 など)この場合は前段でチェックされるので
-    //  ここにくることはない(114条チェック候補から外れるため)。
-    //
     protected  void testConvertShinkansen2ZairaiFor114Judge() {
-        List<RouteItem> r = ConvertShinkansen2ZairaiFor114Judge(route_list_raw);
+        CRule114 rule114 = new CRule114();
+        List<RouteItem> r = rule114.ConvertShinkansen2ZairaiFor114Judge(route_list_raw);
         cpyRouteItems(r, route_list_raw);
     }
-    static List<RouteItem> ConvertShinkansen2ZairaiFor114Judge(List<RouteItem> route) {
-        int station_id1 = 0;
-        int station_id1n = 0;
-        int station_id2 = 0;
-        int j_station_id = 0;
-        int z_station_id = 0;
-        int cline_id = 0;
-        int bline_id = 0;
-        int zline_id = 0;
-        int i;
-        List<Integer> zroute = new ArrayList<Integer>();
-        List<RouteItem> result_route = dupRouteItems(route);
-        int replace = 0;
 
-        for (int ite = 0; ite < result_route.size(); ) {
-            station_id1n = result_route.get(ite).stationId;
-            n1:
-            if ((station_id1 != 0) && RouteUtil.IS_SHINKANSEN_LINE(result_route.get(ite).lineId)) {
-                List<Integer> zline = RouteUtil.EnumHZLine(result_route.get(ite).lineId, station_id1, station_id1n);
-                //System.out.printf("?%d?%d %d %d", zline.size(), zline[0], zline[1], zline[2]);
-                if (3 <= zline.size()) {
-                    // 並行在来線
-                    cline_id = 0;
-                    zline_id = 0;
-                    j_station_id = 0;
-                    zroute.clear();
-                    for (i = 1; i < (zline.size() - 1); i++) {
-                        zline_id = (0xffff & zline.get(i));
-                        station_id2 = (zline.get(i) >>> 16);
+    class CRule114 {
+        List<RouteItem> route_list = new ArrayList<RouteItem>();
+        List<RouteItem> route_list_special = new ArrayList<RouteItem>();
+        List<RouteItem> route_list_replace = new ArrayList<RouteItem>();
+        Map<Integer, Integer> collectCheckedJunction = new HashMap<Integer, Integer>();
+        RouteFlag route_flag = new RouteFlag();
+        boolean is_start_city;  /* true : start is city otherwise arrive is city */
+        boolean is100km;        /* true : rule87 otherwise rule86 */
+        int deep_count;
+        int locost_fare;
+        int sales_km_special;
 
-                        //    if (i == 0) {
-                        //    System.out.printf("++%15s(%d)\t%s(%d)\n", RouteUtil.LineName(zline_id), zline_id, RouteUtil.StationName(station_i    //d2), station_id2);
-                        //    } else if (i == (zline.size() - 1)) {
-                        //    System.out.printf("--%15s(%d)\t%s(%d)\n", RouteUtil.LineName(zline_id), zline_id, RouteUtil.StationName(station_i    //d2), station_id2);
-                        //    } else {
-                        //    System.out.printf(".%15s(%d)\t%s(%d)\n", RouteUtil.LineName(zline_id), zline_id, RouteUtil.StationName(station_i    //d2), station_id2);
-                        //    }
-                        if ((0 < zline_id) && (cline_id != zline_id)) {
-                            cline_id = zline_id;
-                        } else {
-                            zline_id = 0;
+        public Fare fare = new Fare();
+        public int  apply_terminal_station;
+        public int  normal_fare;
+
+        public CRule114() {
+            normal_fare = 0;
+        }
+
+        //	駅の所属する路線一覧を返す（新幹線除く）
+        //
+        List<Integer> ArrayOfLinesOfStationId(int junction_station_id) {
+            List<Integer> results = new ArrayList<Integer>();
+
+            Cursor lines = RouteUtil.Enum_line_of_stationId(junction_station_id);
+
+            try {
+                while (lines.moveToNext()) {
+                    int lflg = lines.getInt(2);
+                    if (((1 << 31) & lflg) == 0) {
+                        int line_id = lines.getInt(1);
+                        if (!IS_SHINKANSEN_LINE(line_id) && !IS_COMPANY_LINE(line_id)
+                                && !IS_BRT_LINE(line_id)) {
+                            results.add(line_id);
                         }
+                    }
+                }
+            } finally {
+                lines.close();
+            }
+            return results;
+        }
 
-                        if ((zroute.size() % 2) == 0) {
-                            // 高崎着
-                            if (zline_id != 0) {
-                                zroute.add(zline_id);
+        //	Rule114 check
+        //	@param [in] rRouteFlag	route flag(refer only)
+        //	@param [in] chk		86or86 applied flag.
+        //	@param [in] sk		86 or 87
+        //	@param [in] rRoute_list_no_applied_86or87
+        //	@param [in] rRoute_list_applied_86or87
+        //	@param [in] cityId
+        //	@param [in] enter
+        //	@param [in] exit
+        //
+        public boolean check(final RouteFlag rRouteFlag, int chk, int sk,
+                             final List<RouteItem> rRoute_list_no_applied_86or87,
+                             final List<RouteItem> rRoute_list_applied_86or87,
+                             final int[] cityId, final Station enter, final Station exit) {
+
+            this.route_flag.setAnotherRouteFlag(rRouteFlag);
+
+            if ((0x03 & chk) == 3) {
+                /* 発のみ都区市内適用 */
+                /* route_list = rRoute_list_no_applied_86or87 */
+                cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
+                /* 発駅のみ特定都区市内着経路に変換 */
+                ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list);
+
+                // 69を適用したものを route_list_special へ
+                ReRouteRule69j(route_list, route_list_special);	/* 69条適用(route_list->route_list_special) */
+                route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+
+                cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
+                route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                /* 86,87適用前,   86,87適用後 */
+                if (!checkOfRule114j(0x01 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000))) {
+                    /* 着のみ都区市内適用 */
+                    /* route_list = rRoute_list_no_applied_86or87 */
+                    cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
+                    /* 発駅のみ特定都区市内着経路に変換 */
+                    ReRouteRule86j87j(cityId, 2, exit, enter, /*out*/route_list);
+
+                    // 69を適用したものをroute_list_specialへ
+                    ReRouteRule69j(route_list, route_list_special);	/* 69条適用(route_list->route_list_special) */
+                    route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+
+                    cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
+                    route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                    return checkOfRule114j(0x02 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
+                }
+            } else {
+                cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
+                cpyRouteItems(rRoute_list_applied_86or87, route_list_special);
+
+                route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+                ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
+                return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
+            }
+            return false;
+        }
+
+        //	指定路線・駅からの100/200km到達地点の駅を得る
+        //	checkOfRule114j() =>
+        //
+        //	@param [in] km  下り: 100=1000, 200=2000(上り: -1000 / -2000)
+        //	@param [in] line_id   路線
+        //	@param [in] station_id   起点駅
+        //	@retval 到達駅id. 0はなし
+        //
+        public int	retreive_SpecificCoreAvailablePoint(int cond_km, int km_offset, int line_id, int station_id) {
+            // 上り方向で200km到達地点
+            final String tsql_desc =
+                    "select station_id from t_lines where line_id=?1 and (lflg&(1<<17))=0 and (lflg&(1<<31))=0 and sales_km<" +
+                            "(select sales_km-%d from t_lines where line_id=?1 and station_id=?2) order by sales_km desc limit 1";
+
+            // 下り方向で200km到達地点
+            final String tsql_asc =
+                    "select station_id from t_lines where line_id=?1 and (lflg&(1<<17))=0 and (lflg&(1<<31))=0 and sales_km>" +
+                            "(select sales_km+%d from t_lines where line_id=?1 and station_id=?2) order by sales_km limit(1)";
+
+            String sql_buf;
+
+            if (cond_km < 0) {
+                cond_km = -cond_km;	/* 上り */
+                sql_buf = String.format(Locale.JAPANESE, tsql_desc, cond_km - km_offset);
+            } else {		/* 下り */
+                sql_buf = String.format(Locale.JAPANESE, tsql_asc, cond_km - km_offset);
+            }
+            //int32_t akm;
+            int aStationId = 0;
+            Cursor dbo = RouteDB.db().rawQuery(sql_buf,
+                    new String[] { String.valueOf(line_id), String.valueOf(station_id) });
+
+            try {
+                if (dbo.moveToNext()) {
+                    aStationId = dbo.getInt(0);
+                    return aStationId;
+                }
+            } finally {
+                dbo.close();
+            }
+            return 0;
+        }
+        //	指定路線・駅から、指定方面へ100/200kmまでの分岐駅を得る
+        //	@param [in]	cond_km		上り ／ 下り, 86(200km) or 87(100km)
+        //	@param [in] base_sales_km 86,87条中心駅からの指定駅までの営業キロ
+        //	@param [in] base_line_id 指定路線
+        //	@param [in] base_station_id 指定駅
+        //	@retval DBO(0:int(指定駅からの営業キロ), 1:int(分岐駅))
+        //
+        public List<Integer[]>  enumJunctionRange(int cond_km, int base_sales_km, int base_line_id, int base_station_id) {
+            // 上り方向
+            final String tsql_desc =
+                    "select l1.sales_km-l2.sales_km, l2.station_id from t_lines l1 left join t_lines l2 on l1.line_id=l2.line_id" +
+                            " left join t_station t on t.rowid=l2.station_id " +
+                            "where l1.line_id=?1 and l1.station_id=?2 and l1.sales_km>l2.sales_km and (l1.sales_km-%d)<=l2.sales_km" +
+                            " and (l2.lflg&(1<<17))=0 and (l2.lflg&(1<<31))=0 and (l2.lflg&(1<<15))!=0 and (sflg&(1<<12))!=0" +
+                            " order by l2.sales_km desc";
+
+            // 下り方向
+            final String tsql_asc =
+                    "select l2.sales_km-l1.sales_km, l2.station_id from t_lines l1 left join t_lines l2 on l1.line_id=l2.line_id" +
+                            " left join t_station t on t.rowid=l2.station_id " +
+                            "where l1.line_id=?1 and l1.station_id=?2 and l1.sales_km<l2.sales_km and (l1.sales_km+%d)>=l2.sales_km" +
+                            " and (l2.lflg&(1<<17))=0 and (l2.lflg&(1<<31))=0 and (l2.lflg&(1<<15))!=0 and (sflg&(1<<12))!=0" +
+                            " order by l2.sales_km";
+
+            String sql_buf;
+            List<Integer[]> result = new ArrayList<Integer[]>();
+
+            if (cond_km < 0) {
+                /* 上り */
+                sql_buf = String.format(Locale.JAPANESE, tsql_desc, -cond_km - base_sales_km);
+            } else {		/* 下り */
+                sql_buf = String.format(Locale.JAPANESE, tsql_asc, cond_km - base_sales_km);
+            }
+            System.out.printf("enumJunctionRange start:%s-%s cond_km=%d, base_salles_km=%d\n",
+                    RouteUtil.LineName(base_line_id), RouteUtil.StationName(base_station_id), cond_km, base_sales_km);
+
+            Cursor dbo = RouteDB.db().rawQuery(sql_buf,
+                    new String[] { String.valueOf(base_line_id), String.valueOf(base_station_id) });
+
+            try {
+                while (dbo.moveToNext()) {
+                    int distance = dbo.getInt(0);
+                    int term_station_id = dbo.getInt(1);
+                    System.out.printf("enumJunctionRange found %d %s\n", distance, RouteUtil.StationName(term_station_id));
+                    result.add(new Integer[] { distance, term_station_id} );
+                }
+            } finally {
+                dbo.close();
+            }
+            return result;
+        }
+
+        // 運賃計算して比較する
+        // 最安運賃更新
+        //
+        //	@param [in] arrive_station_id	    last(arrive) station
+        //	@param [in] base_line_id    last line
+        //	@param [in] base_station_id last start station
+        //	@retval applied/non-applied of rule114
+        //
+        public void judgementOfFare(int arrive_station_id, int base_line_id, int base_station_id) {
+            FARE_INFO fi = new FARE_INFO();
+            int fare_applied;
+
+            RouteFlag rRoute_flag_ref = new RouteFlag();
+            rRoute_flag_ref.setAnotherRouteFlag(route_flag);
+
+            /* 通常運賃を得る */
+            if (normal_fare == 0) {
+                if (!fi.calc_fare(rRoute_flag_ref, route_list)) {
+                    ASSERT(false);
+                    return ;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                }
+                normal_fare = fi.getFareForJR(); /* 200(100)km以下により, 86 or 87 非適用の通常計算運賃(長津田-横浜-国母) */
+                locost_fare = normal_fare;
+            }
+
+            List<RouteItem> route_work = new ArrayList<RouteItem>();	// <- route_list_special
+            cpyRouteItems(route_list_special, route_work);
+
+            if (is_start_city) {			/* 発駅が特定都区市内 */
+                /* 最終着駅を置き換える */
+                if (BuildConfig.DEBUG) {
+                    System.out.printf("@@@ Down %d\n",route_list_replace.size());
+                    for (int i = 0; i < route_work.size(); i++ ) {
+                        System.out.printf("  D(%d)route[%s-%s]\n", i, RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
+                    }
+                    for (int i = 0; i < route_list_replace.size(); i++ ) {
+                        System.out.printf("  D(%d)strage[%s-%s]\n", i, RouteUtil.LineName(route_list_replace.get(i).lineId), RouteUtil.StationName(route_list_replace.get(i).stationId));
+                    }
+                }
+                route_work.remove(route_work.size() - 1);
+                for (int i = 0; i < route_list_replace.size(); i++) {
+                    if (i < (route_list_replace.size() - 1)) {
+                        route_work.add(new RouteItem(route_list_replace.get(i).lineId,
+                                route_list_replace.get(i + 1).stationId));
+                    } else {
+                        route_work.add(new RouteItem(route_list_replace.get(i).lineId,
+                                base_station_id));
+                    }
+                }
+                route_work.add(new RouteItem(base_line_id, arrive_station_id));
+            } else {	/* 着駅が特定都区市内 */
+                if (BuildConfig.DEBUG) {
+                    System.out.printf("@@@ Up %d\n",route_list_replace.size());
+                    for (int i = 0; i < route_work.size(); i++ ) {
+                        System.out.printf("  U(%d)route[%s-%s]\n", i, RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
+                    }
+                    for (int i = 0; i < route_list_replace.size(); i++ ) {
+                        System.out.printf("  U(%d)strage[%s-%s]\n", i, RouteUtil.LineName(route_list_replace.get(i).lineId), RouteUtil.StationName(route_list_replace.get(i).stationId));
+                    }
+                }
+                /* 始発駅を置き換える */
+                route_work.get(0).stationId = (short)arrive_station_id;
+                for (int i = 1; i < route_list_replace.size(); i++) {
+                    route_work.add(0, new RouteItem(route_work.get(0).lineId,
+                                                           route_work.get(0).stationId));
+                    route_work.get(1).stationId = route_list_replace.get(i).stationId;
+                    route_work.get(1).lineId = route_list_replace.get(i).lineId;
+                }
+                route_work.add(0, new RouteItem(route_work.get(0).lineId,
+                                                       route_work.get(0).stationId));
+                route_work.get(1).stationId = (short) base_station_id;
+                route_work.get(1).lineId = (short)base_line_id;
+            }
+            if (BuildConfig.DEBUG) {
+                for (int i = 0; i < route_work.size(); i++ ) {
+                    System.out.printf("  >>[%s-%s]\n", RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
+                }
+            }
+            /* 86,87適用した最短駅の運賃を得る(上例では甲斐住吉-横浜間) */
+            if (!fi.calc_fare(rRoute_flag_ref, route_work)) {
+                ASSERT(false);
+                return ;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            }
+            fare_applied = fi.getFareForJR();			/* より遠い駅までの都区市内発着の仮適用運賃(横浜-甲斐住吉) */
+
+            if (fare_applied < normal_fare) {
+                /* 114条適用 */
+                System.out.printf("Rule 114 Applied(%d->%d)\n", normal_fare, fare_applied);
+                System.out.printf("      saleskm=%d / calckm=%d\n", fi.getJRSalesKm(), fi.getJRCalcKm());
+
+                System.out.printf("    *** update lowcost %d-> %d ***\n", locost_fare, fare_applied);
+                if (locost_fare != normal_fare && locost_fare != fare_applied) {
+                    // ここに来ることはないので（若松-佐伯除く）、114運賃は通常一つ検出できれば以降検索しなくても良い。
+                    ASSERT(false);
+                }
+                if ((0 == fare.sales_km) || (fi.getJRSalesKm() < fare.sales_km)) {
+                    locost_fare = fare_applied;
+                    fare.fare = fare_applied;		/* 先の駅の86,87適用運賃 */
+                    fare.sales_km = fi.getJRSalesKm();
+                    fare.calc_km = fi.getJRCalcKm();
+                    apply_terminal_station = arrive_station_id;
+                }
+            }
+        }
+
+        //	指定路線・駅からの101/201km到達地点の駅を得る
+        //	checkOfRule114j() =>
+        //
+        //	@param [in] cond_km  下り: 100=1000, 200=2000(上り: -1000 / -2000)
+        //	@param [in] base_sales_km     都区市内駅からみて最後の路線の起点駅までの営業キロ
+        //                                都区市内着の場合、最初の路線の降車駅から都区市内駅までの営業キロ
+        //	@param [in] base_line_id      都区市内駅からみて最後の路線
+        //	@param [in] base_station_id   都区市内駅から最後の路線の起点駅
+        //	member: is100km, is_start_city
+        //	@retval なし
+        //
+        public void get86or87firstPoint(int cond_km, int base_sales_km, int base_line_id, int base_station_id) {
+            List<Integer[]> junctions = new ArrayList<Integer[]>();
+
+            deep_count++;
+            System.out.printf("[get86or87firstPoint]: dept%d: cond_km=%d, base km=%d, %s %s @@@\n", deep_count, cond_km, base_sales_km, RouteUtil.LineName(base_line_id), RouteUtil.StationName(base_station_id));
+
+            int arrive8687_station_id = retreive_SpecificCoreAvailablePoint(cond_km, base_sales_km, base_line_id, base_station_id);
+            if (0 != arrive8687_station_id) {  // with junction もあり得るのでelseにしていない
+                // 運賃計算して比較する
+                // 最安運賃更新
+                System.out.printf("judgementOfFare(%s, %s, %s)\n", RouteUtil.StationName(arrive8687_station_id), RouteUtil.LineName(base_line_id), RouteUtil.StationName(base_station_id));
+                judgementOfFare(arrive8687_station_id, base_line_id, base_station_id);
+            }
+            // 100/200km までの分岐駅一覧
+            if ((!RouteUtil.C114NOFASTJUNCCHEK) && (deep_count == 1)) {
+                // 井原市 芸備線 広島 山陽線 幡生
+                // enumJunctionRange start:山陽線-櫛ケ浜 cond_km=2000, base_salles_km=851(広島〜櫛ケ浜)
+                // 幡生から先200
+                // base_station_id ではなく、幡生から先の200未満までの分岐駅
+
+                // 広島-幡生 1982=sales_km_special base_sales 1131
+                int arrive_station_id;
+                if (is_start_city) {
+                    arrive_station_id = route_list_special.get(route_list_special.size() - 1).stationId;   // 幡生
+                } else {
+                    arrive_station_id = route_list_special.get(0).stationId;  //
+                }
+                if (STATION_IS_JUNCTION(arrive_station_id)) {
+                    System.out.printf("  terminal was junction. sales_km_special:%d from:%s\n", sales_km_special, RouteUtil.StationName(arrive_station_id));
+
+                    Integer[] v = {sales_km_special, arrive_station_id};
+                    junctions.add(v);
+                    base_sales_km = 0;
+                } else {
+                    System.out.printf("  terminal was non-junction. sales_km_special:%d from:%s\n", sales_km_special, RouteUtil.StationName(arrive_station_id));
+                    junctions = enumJunctionRange(cond_km, sales_km_special, base_line_id, arrive_station_id);
+                    base_sales_km = sales_km_special;
+                }
+                //       幡生から(2000-1982=18)kmまでの分岐駅
+            } else {
+                junctions = enumJunctionRange(cond_km, base_sales_km, base_line_id, base_station_id);
+            }
+
+            for (int jIdx = 0; jIdx < junctions.size(); jIdx++) {
+                int offset_sales_km = junctions.get(jIdx)[0] + base_sales_km;
+                int last_station_id = junctions.get(jIdx)[1];
+                System.out.printf("Enum_line_of_stationId start %s from %s-%s:\n", RouteUtil.StationName(last_station_id), RouteUtil.LineName(base_line_id), RouteUtil.StationName(base_station_id));
+                if (!collectCheckedJunction.containsKey(last_station_id)) {
+                    collectCheckedJunction.put(last_station_id, last_station_id);
+                    // 分岐駅から分かれる路線一覧
+                    // DBO lines = RouteUtil::Enum_line_of_stationId(last_station_id);
+                    List<Integer> lines = ArrayOfLinesOfStationId(last_station_id);
+                    for (int idxLine = 0; idxLine < lines.size(); idxLine++) {
+                        int jct_line_id = lines.get(idxLine);
+                        System.out.printf("found junction:%s(%s)\n", RouteUtil.LineName(jct_line_id), RouteUtil.StationName(last_station_id));
+                        if (base_line_id != jct_line_id) {
+                            route_list_replace.add(new RouteItem(base_line_id, base_station_id)); // 1st station will not used.
+                            get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
+                            get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
+                            route_list_replace.remove(route_list_replace.size() - 1);
+                        }
+                    }
+                }
+            }
+            deep_count--;
+        }
+        //	@param [in][ro] route_flag    経路フラグ
+        //	@param [in][ro] route_list         経路(86, 87変換前)
+        //	@param [in][ro] route_list_special  経路(86, 87変換後)
+        //	@param [in] kind       種別
+        //							bit0:発駅が特定都区市内または山手線内
+        //							bit1:着駅が特定都区市内または山手線内
+        //							bit15:OFF=特定都区市内
+        //							      ON =山手線内
+        //	@param [out] rule114   (戻り値True時のみ有効) [0]適用運賃(未適用時、0), [1]営業キロ, [2]計算キロ)
+        //
+        //	@note 86/87適用後の営業キロが200km/100km以下であること.
+        //
+        public boolean checkOfRule114j(int kind) {
+            int km;				// 100km or 200km
+            int aSales_km;		// 86/87 applied
+            int line_id;
+            int station_id1;
+            int station_id2;
+            int last_arrive_sales_km;
+
+            /* 経路は乗換なしの単一路線 */
+            if (route_list.size() <= 2) {
+                return false;
+            }
+
+            KM km_raw = CalcRoute.Get_route_distance(route_flag, route_list); 			/* 経路距離 */
+
+            KM km_spe = CalcRoute.Get_route_distance(route_flag, route_list_special); 	/* 経路距離(86,87適用後) */
+
+            sales_km_special = km_spe.sales_km - km_spe.brt_km - km_spe.company_km; // sales_km as except BRT and company line;
+
+            System.out.printf("checkOfRule114j: raw = %d, cook = %d (%d)\n", (km_raw.sales_km - km_raw.brt_km - km_raw.company_km),
+                    (km_spe.sales_km - km_spe.brt_km - km_spe.company_km),
+                    ((km_raw.sales_km - km_raw.brt_km - km_raw.company_km) - ((km_spe.sales_km - km_spe.brt_km - km_spe.company_km))));
+            if (((km_raw.sales_km - km_raw.brt_km - km_raw.company_km) - sales_km_special) < 100) {
+                return false;
+            }
+            /* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
+            if ((0x8000 & kind) == 0) {
+                // 200km
+                km = 2000;
+            } else {
+                // 100km
+                km = 1000;
+            }
+
+            this.is_start_city = ((kind & 1) != 0);
+            this.is100km = (km == 1000);
+
+            /* 距離があと86、87条適用距離-10kmの範囲内ではない */
+
+            if ((kind & 1) != 0) {		/* 発駅が特定都区市内 */
+                line_id = route_list.get(route_list.size() - 1).lineId;			// 着 路線 発-着
+                station_id1 = route_list.get(route_list.size() - 2).stationId;
+                station_id2 = route_list.get(route_list.size() - 1).stationId;
+            } else if ((kind & 2) != 0) { /* 着駅が特定都区市内 */
+                line_id = route_list.get(1).lineId;								// 発 路線.発-着
+                station_id1 = route_list.get(1).stationId;
+                station_id2 = route_list.get(0).stationId;
+            } else {
+                ASSERT(false);
+                return false;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            }
+
+            // ex. 国母-横浜-長津田の場合、身延線.富士-国母 間の距離を引く
+            //                            | 富士         国母
+            // City ------------||--------+------------/ Arrive
+            //  +--------------------------------------/ sales_km_special
+            //  |                         +------------/ last_arrive_sales_km
+            //  +-------------------------| aSalesKm
+            last_arrive_sales_km = RouteUtil.GetDistance(line_id, station_id1, station_id2).get(0);
+            aSales_km = sales_km_special - last_arrive_sales_km;	/* 発駅から初回乗換駅までの営業キロを除いた営業キロ */
+
+            if (aSales_km < 0) {
+                return false;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            }
+            ASSERT(0 <= aSales_km);
+            ASSERT(0 < last_arrive_sales_km);
+
+            if (RouteUtil.LINE_DIR.LDIR_ASC != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
+                /* 上り */
+                km = -km;
+            }
+            System.out.printf("@@@@@ aSakes_km=%d, last_arrive_sales_km=%d, km=%d, %s, %s, %s\n", aSales_km, last_arrive_sales_km, km, RouteUtil.LineName(line_id), RouteUtil.StationName(station_id1), RouteUtil.StationName(station_id2));
+            /* 中心駅から目的地方向に最初に200(100)kmに到達する駅を得る */
+            /* 富士から身延線で甲府方向に */
+            route_list_replace.clear();
+            collectCheckedJunction.clear();
+            deep_count = 0;
+            /* (86, 87条適用前されなかった)運賃その駅までの運賃より高ければ、その駅までの運賃とする */
+            get86or87firstPoint(km, aSales_km, line_id, station_id1);
+            if (fare.fare != 0) {
+                return true;
+            } else {
+                System.out.print("Rule 114 no applied\n");
+                return false;
+            }
+        }
+
+        public boolean isEnable() {
+            return fare.fare != 0;
+        }
+
+        //static
+        //	並行在来線へ変換
+        //	114条判定用
+        //  都区市内駅から200kmを超える場合は結果が正しくない場合がある
+        //	(東北新幹線 仙台 八戸 など)この場合は前段でチェックされるので
+        //  ここにくることはない(114条チェック候補から外れるため)。
+        //
+        public List<RouteItem> ConvertShinkansen2ZairaiFor114Judge(List<RouteItem> route) {
+            int station_id1 = 0;
+            int station_id1n = 0;
+            int station_id2 = 0;
+            int j_station_id = 0;
+            int z_station_id = 0;
+            int cline_id = 0;
+            int bline_id = 0;
+            int zline_id = 0;
+            int i;
+            List<Integer> zroute = new ArrayList<Integer>();
+            List<RouteItem> result_route = dupRouteItems(route);
+            int replace = 0;
+
+            for (int ite = 0; ite < result_route.size(); ) {
+                station_id1n = result_route.get(ite).stationId;
+                n1:
+                if ((station_id1 != 0) && RouteUtil.IS_SHINKANSEN_LINE(result_route.get(ite).lineId)) {
+                    List<Integer> zline = RouteUtil.EnumHZLine(result_route.get(ite).lineId, station_id1, station_id1n);
+                    //System.out.printf("?%d?%d %d %d", zline.size(), zline[0], zline[1], zline[2]);
+                    if (3 <= zline.size()) {
+                        // 並行在来線
+                        cline_id = 0;
+                        zline_id = 0;
+                        j_station_id = 0;
+                        zroute.clear();
+                        for (i = 1; i < (zline.size() - 1); i++) {
+                            zline_id = (0xffff & zline.get(i));
+                            station_id2 = (zline.get(i) >>> 16);
+
+                            //    if (i == 0) {
+                            //    System.out.printf("++%15s(%d)\t%s(%d)\n", RouteUtil.LineName(zline_id), zline_id, RouteUtil.StationName(station_i    //d2), station_id2);
+                            //    } else if (i == (zline.size() - 1)) {
+                            //    System.out.printf("--%15s(%d)\t%s(%d)\n", RouteUtil.LineName(zline_id), zline_id, RouteUtil.StationName(station_i    //d2), station_id2);
+                            //    } else {
+                            //    System.out.printf(".%15s(%d)\t%s(%d)\n", RouteUtil.LineName(zline_id), zline_id, RouteUtil.StationName(station_i    //d2), station_id2);
+                            //    }
+                            if ((0 < zline_id) && (cline_id != zline_id)) {
+                                cline_id = zline_id;
+                            } else {
+                                zline_id = 0;
+                            }
+
+                            if ((zroute.size() % 2) == 0) {
+                                // 高崎着
+                                if (zline_id != 0) {
+                                    zroute.add(zline_id);
+                                    if (station_id2 != 0) {
+                                        // 境界駅通過
+                                        zroute.add(station_id2);
+                                    }
+                                } else {
+                                    // 高崎 - 新潟 /
+                                    j_station_id = station_id2;
+                                }
+                            } else {
                                 if (station_id2 != 0) {
                                     // 境界駅通過
                                     zroute.add(station_id2);
-                                }
-                            } else {
-                                // 高崎 - 新潟 /
-                                j_station_id = station_id2;
-                            }
-                        } else {
-                            if (station_id2 != 0) {
-                                // 境界駅通過
-                                zroute.add(station_id2);
-                                if (zline_id != 0) {
-                                    zroute.add(zline_id);
+                                    if (zline_id != 0) {
+                                        zroute.add(zline_id);
+                                    } else {
+                                        // 大宮－高崎 / 0 - 高崎
+                                    }
                                 } else {
-                                    // 大宮－高崎 / 0 - 高崎
+                                    // 大宮-新潟 / 信越線 - 0
+                                    ASSERT (zroute.get(zroute.size() - 1) == (0xffff & zline.get(i)));
                                 }
-                            } else {
-                                // 大宮-新潟 / 信越線 - 0
-                                ASSERT (zroute.get(zroute.size() - 1) == (0xffff & zline.get(i)));
                             }
                         }
-                    }
-                    // 上毛高原-高崎-xxや、本庄早稲田-高崎-xxはj_station_id=高崎 else j_station_id=0
-                    // (xxは高崎かその上毛高原か本庄早稲田)
-                    if (j_station_id == 0) {
-                        if (0 < zroute.size()) {
-                            bline_id = result_route.get(ite).lineId;
-                            if (0xffffffff == zline.get(0)) {
-                                z_station_id = RouteUtil.NextShinkansenTransferTerm(bline_id, station_id1, station_id1n);
-                                if (0 < z_station_id) {
-                                    result_route.get(ite).stationId = (short)z_station_id;
-                                    result_route.get(ite).refresh();
-                                    ite++;
-                                    result_route.add(ite, new RouteItem(zroute.get(0), station_id1n));
+                        // 上毛高原-高崎-xxや、本庄早稲田-高崎-xxはj_station_id=高崎 else j_station_id=0
+                        // (xxは高崎かその上毛高原か本庄早稲田)
+                        if (j_station_id == 0) {
+                            if (0 < zroute.size()) {
+                                bline_id = result_route.get(ite).lineId;
+                                if (0xffffffff == zline.get(0)) {
+                                    z_station_id = RouteUtil.NextShinkansenTransferTermInRange(bline_id, station_id1, station_id1n);
+                                    if (0 < z_station_id) {
+                                        result_route.get(ite).stationId = (short)z_station_id;
+                                        result_route.get(ite).refresh();
+                                        ite++;
+                                        result_route.add(ite, new RouteItem(zroute.get(0), station_id1n));
+                                    } else {
+                                        // 新横浜→品川、本庄早稲田→熊谷
+                                        break n1;
+                                    }
                                 } else {
-                                    // 新横浜→品川、本庄早稲田→熊谷
-                                    break n1;
+                                    z_station_id = 0;
+                                    result_route.get(ite).lineId = zroute.get(0).shortValue();
                                 }
-                            } else {
-                                z_station_id = 0;
-                                result_route.get(ite).lineId = zroute.get(0).shortValue();
-                            }
 
-                            if (1 < zroute.size()) {
-                                result_route.get(ite).stationId = zroute.get(1).shortValue();
+                                if (1 < zroute.size()) {
+                                    result_route.get(ite).stationId = zroute.get(1).shortValue();
+                                    result_route.get(ite).refresh();
+                                    for (i = 2; i < zroute.size() - 1; i += 2) {
+                                        ite++;
+                                        result_route.add(ite, new RouteItem(zroute.get(i), zroute.get(i + 1)));
+                                    }
+                                    if (i < zroute.size()) {
+                                        ite++;
+                                        result_route.add(ite, new RouteItem(zroute.get(i), station_id1n));
+                                    }
+                                }
+                                if (0xffffffff == zline.get(zline.size() - 1)) {
+                                    station_id2 = RouteUtil.NextShinkansenTransferTermInRange(bline_id, station_id1n, station_id1);
+                                    if (0 < station_id2) {
+                                        if (z_station_id == station_id2) {
+                                            // いわて沼宮内 - 新花巻
+                                            result_route.remove(ite - 1);
+                                            result_route.get(ite - 1).let(new RouteItem(bline_id, station_id1n));
+                                            --replace;
+                                        } else {
+                                            result_route.get(ite).stationId = (short)station_id2;
+                                            result_route.get(ite).refresh();
+                                            ite++;
+                                            result_route.add(ite, new RouteItem(bline_id, station_id1n));
+                                        }
+                                    } else {
+                                        // 品川-新横浜
+                                        result_route.get(ite).let(new RouteItem(bline_id, station_id1n));
+                                        result_route.get(ite).refresh();
+                                    }
+                                } else {
+                                    result_route.get(ite).stationId = (short)station_id1n;
+                                    result_route.get(ite).refresh();
+                                }
+                                ++replace;
+                            } else {
+                                ASSERT (false);
+                            }
+                        } else {
+                            if (0 < zroute.size()) {
+                                if (station_id1 == j_station_id) {
+                                    // 高崎発
+                                    // k
+                                    result_route.get(ite).lineId = zroute.get(0).shortValue();
+                                    if (1 < zroute.size()) {
+                                        result_route.get(ite).stationId = zroute.get(1).shortValue();
+                                    }
+                                    i = 2;
+                                } else {
+                                    // 高崎の隣の非在来線駅発高崎通過
+                                    //  x, y, ag
+                                    result_route.get(ite).stationId = (short)j_station_id;
+                                    i = 0;
+                                }
                                 result_route.get(ite).refresh();
-                                for (i = 2; i < zroute.size() - 1; i += 2) {
+                                for (; i < zroute.size() - 1; i += 2) {
                                     ite++;
                                     result_route.add(ite, new RouteItem(zroute.get(i), zroute.get(i + 1)));
                                 }
@@ -2332,65 +2697,12 @@ public class CalcRoute extends RouteList {
                                     ite++;
                                     result_route.add(ite, new RouteItem(zroute.get(i), station_id1n));
                                 }
+                                ++replace;
+                                // n, o
+                                // DO NOTHING
+                                // l, m,
+                                // DO NOTHING
                             }
-                            if (0xffffffff == zline.get(zline.size() - 1)) {
-                                station_id2 = RouteUtil.NextShinkansenTransferTerm(bline_id, station_id1n, station_id1);
-                                if (0 < station_id2) {
-                                    if (z_station_id == station_id2) {
-                                        // いわて沼宮内 - 新花巻
-                                        result_route.remove(ite - 1);
-                                        result_route.get(ite - 1).let(new RouteItem(bline_id, station_id1n));
-                                        --replace;
-                                    } else {
-                                        result_route.get(ite).stationId = (short)station_id2;
-                                        result_route.get(ite).refresh();
-                                        ite++;
-                                        result_route.add(ite, new RouteItem(bline_id, station_id1n));
-                                    }
-                                } else {
-                                    // 品川-新横浜
-                                    result_route.get(ite).let(new RouteItem(bline_id, station_id1n));
-                                    result_route.get(ite).refresh();
-                                }
-                            } else {
-                                result_route.get(ite).stationId = (short)station_id1n;
-                                result_route.get(ite).refresh();
-                            }
-                            ++replace;
-                        } else {
-                            ASSERT (false);
-                        }
-                    } else {
-                        if (0 < zroute.size()) {
-                            if (station_id1 == j_station_id) {
-                                // 高崎発
-                                // k
-                                result_route.get(ite).lineId = zroute.get(0).shortValue();
-                                if (1 < zroute.size()) {
-                                    result_route.get(ite).stationId = zroute.get(1).shortValue();
-                                }
-                                i = 2;
-                            } else {
-                                // 高崎の隣の非在来線駅発高崎通過
-                                //  x, y, ag
-                                result_route.get(ite).stationId = (short)j_station_id;
-                                i = 0;
-                            }
-                            result_route.get(ite).refresh();
-                            for (; i < zroute.size() - 1; i += 2) {
-                                ite++;
-                                result_route.add(ite, new RouteItem(zroute.get(i), zroute.get(i + 1)));
-                            }
-                            if (i < zroute.size()) {
-                                ite++;
-                                result_route.add(ite, new RouteItem(zroute.get(i), station_id1n));
-                            }
-                            ++replace;
-                            // n, o
-                            // DO NOTHING
-                            // l, m,
-                            // DO NOTHING
-                        }
 	/*
 						if (station_id1 == j_station_id) {
 							// 高崎発
@@ -2435,7 +2747,7 @@ public class CalcRoute extends RouteList {
 							} // else // r, t, v, w
 						}
 	*/
-                    }
+                        }
 	/*
 	System.out.printf("\n;;%15s(%d)\t%s(%d)\n", RouteUtil.LineName(result_route.get(result_route.size() - 1).lineId),
 	                                    result_route.get(result_route.size() - 1).lineId,
@@ -2448,18 +2760,19 @@ public class CalcRoute extends RouteList {
 	 System.out.printf("\n");
 	 if (j_station_id != 0) { System.out.printf("/%s/\n", RouteUtil.StationName(j_station_id)); }
 	*/
-                } else {
-                    // 整備新幹線
-                    // DO NOTHING
+                    } else {
+                        // 整備新幹線
+                        // DO NOTHING
+                    }
+                    //System.out.printf("---------------------------------\n");
                 }
-                //System.out.printf("---------------------------------\n");
+                //n1:
+                station_id1 = station_id1n;
+                ite++;
             }
-            //n1:
-            station_id1 = station_id1n;
-            ite++;
-        }
-        ////return 0 < replace;
+            ////return 0 < replace;
 
-        return result_route;
+            return result_route;
+        }
     }
 }

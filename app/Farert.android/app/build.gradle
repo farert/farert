@@ -6,11 +6,17 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     signingConfigs {
+        debug {
+            storeFile file('farert-upload-keystore.jks')
+            storePassword RELEASE_STORE_PASSWORD
+            keyPassword RELEASE_KEY_PASSWORD
+            keyAlias 'farert.sutezo.org'
+        }
         config {
             keyAlias 'farert.sutezo.org'
-            storeFile file('/Users/ntake/exports/devel/farert-app-key/android/farert-upload-keystore.jks')
-            keyPassword '(todo)'
-            storePassword '(todo)'
+            storeFile file('farert-upload-keystore.jks')
+            keyPassword RELEASE_KEY_PASSWORD
+            storePassword RELEASE_STORE_PASSWORD
         }
     }
     compileSdkVersion 30
@@ -18,8 +24,8 @@ android {
         applicationId "org.sutezo.farert"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 26
-        versionName '21.04.1'
+        versionCode 27
+        versionName '21.08'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
