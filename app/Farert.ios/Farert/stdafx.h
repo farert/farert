@@ -23,6 +23,7 @@ typedef char TCHAR;
 
 #if DEBUG   // for XCODE
 #define TRACE printf
+#define _DEBUG
 #else
 #define TRACE(c, ...)   {}  //printf
 #endif
