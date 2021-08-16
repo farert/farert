@@ -142,6 +142,7 @@
     <string name="result_normal_with_brt">普通\nBRT</string>
     <string name="result_companyfare">うち会社線</string>
     <string name="result_farevalue">¥84,558-</string>
+    <string name="result_kmvalue">123,888km</string>
     <string name="result_round">往復</string>
     　　　
     <string name="result_icfare">IC運賃</string>
@@ -207,8 +208,8 @@
     <string name="menu_item_import">インポート</string>
     <string name="menu_item_export">エクスポート</string>
 
-    <string name="main_alert_query_route_update_title">経路更新</string>
-    <string name="main_alert_query_route_update_mesg">経路を選択された経路で更新します.現在の経路は破棄されます.よろしいでしょうか?</string>
+    <string name="main_alert_query_route_update_title">経路が保存されていません</string>
+    <string name="main_alert_query_route_update_mesg">選択した経路を表示します.保存していない経路は破棄されます.よろしいでしょうか?</string>
 
     <string name="no_archive_route">保存された経路はありません</string>
     <string name="arch_title_over">保存された経路が多すぎますので、これ以上保存できません.\n新しい経路を保存するには、不要な経路を削除してください</string>
@@ -287,7 +288,7 @@
     <string name="desc_specific_calc_option">%1$sに設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。
         \n本機能は指定経路の営業キロを知るためだけのものです"</string>
     <string name="title_specific_calc_option_osakakan">大阪環状線遠回り</string>
-    <string name="title_specific_calc_option_norule">特例非特例</string>
+    <string name="title_specific_calc_option_norule">特例非適用</string>
     <string name="hide_specific_calc_option_info">今後、この画面は表示しない</string>
 
     <string-array name="list_ticket_type">
@@ -351,5 +352,7 @@
     <string name="msgCanYouNeerestStation">「単駅最安」で単駅発着が選択可能です"</string>
 
     <string name="msgCanYouSpecificTerm">「特定都区市内発着」で特定都区市内発着が選択可能です"</string>
+
+    <string name="folder_button_title_km">キロ程</string>
 
 </resources>

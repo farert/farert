@@ -8,6 +8,7 @@ static const char* subword(const char* src_str, int num);
 static int num_of_word(const char* buf);
 static void rtrim(char* str);
 static void remove_comment(char* str);
+static void parse_cmdline(int argc, char** argv, int isrev);
 
 //int g_tax = 8;
 int g_tax = 10;
@@ -29,6 +30,7 @@ const TCHAR* tr_a[] = { tbuf,  tbuf2, _T("") };
    4: 特例非適用なし
    5: 特例非適用＋往復なし
    6〜 無効(0指定とおなじ)
+   -r : 経路を反転して読み込む
    ※ 最短経路、引数なしの標準テストでは無効
 
    引数1つで渡す定義ファイルは、空行と'#'で始まる行はスキップ.
@@ -36,9 +38,9 @@ const TCHAR* tr_a[] = { tbuf,  tbuf2, _T("") };
 */
 void usage(const char* prgm)
 {
-	fprintf(stderr, "Usage: %s [-h|-num] [<path>|<station1 ... stationN>]\n", prgm);
+	fprintf(stderr, "Usage: %s [-h|-num][r] [<path>|<station1 ... stationN>]\n", prgm);
 	fprintf(stderr, "      -exec : Execute the all test.\n");
-	fprintf(stderr, "      -num : (test_route).\n");
+	fprintf(stderr, "      -num[r] : (test_route).\n");
 	fprintf(stderr, "               result format.\n");
 	fprintf(stderr, "               0: all(default)\n");
 	fprintf(stderr, "               1: no return\n");
@@ -54,6 +56,7 @@ void usage(const char* prgm)
 	fprintf(stderr, "               4: with company line and shinkansen\n");
 	fprintf(stderr, "               0 or 4<: all(default)\n");
 	fprintf(stderr, "              +10: One result for rule apllied only.\n");
+	fprintf(stderr, "      r    : reverse route(-num and direct command line and non-auto route only)\n");
 	fprintf(stderr, "      path : route description file.\n");
 	fprintf(stderr, "      　　　　　If the first column is '#', it represents a comment.\n");
 	fprintf(stderr, "      　　　　　If the blank line, it's skip.\n");
@@ -67,6 +70,7 @@ void usage(const char* prgm)
 int main(int argc, char** argv)
 {
 	int option_num = 0;
+	int option_rev = 0;
 #if defined _WINDOWS
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 #endif
@@ -93,10 +97,35 @@ int main(int argc, char** argv)
 				test_exec();
 				return 0;
 			} else {
-				/* result variation */
-				option_num = atoi((*(argv + 1)) + 1);
-				++argv;
-				--argc;
+#if 0
+				int c;
+				for (c = 0; '-' == *(*(argv + c + 1)); c++) {
+					char* p = NULL;
+					unsigned long ul;
+					/* result variation */
+					ul = strtoul((*(argv + c + 1)) + 1, &p, 0);
+					if (*p == '\0') {
+						option_num = (int)ul;
+					} else {
+						if (*(*(argv + c + 1) + 1) == 'r') {
+							option_rev = 1;
+						} else {
+							usage(*argv);
+							return -1;
+						}
+					}
+				}
+				argv += c;
+				argc -= c;
+#else
+				char *p = NULL;
+				option_num = strtol((*(argv + 1) + 1), &p, 0);
+				if (*p == 'r') {
+					option_rev = 1;
+				}
+				argv++;
+				argc--;
+#endif
 			}
 		}
 		if (argc == 2) {
@@ -105,18 +134,8 @@ int main(int argc, char** argv)
 		} else {
 			/* route as command line direct */
 			/* even of num = auto, odd of num 0 route(start, line, end) */
-			char *t = tbuf;
+			parse_cmdline(argc, argv, option_rev);
 
-			for (int i = 1; i < argc; i++) {
-				if (((argc % 2) != 0) && (i == (argc - 1))) {
-					strcpy(tbuf2, *++argv);
-				} else {
-					strcpy(t, *++argv);
-					t = tbuf + strlen(tbuf);
-					*t++ = _T(' ');
-					*t = _T('\0');
-				}
-			}
 			if ((argc % 2) == 0) {
 				test_route(tr, option_num);
 			} else {
@@ -130,6 +149,30 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+static void parse_cmdline(int argc, char** argv, int isrev)
+{
+	char *t = tbuf;
+
+	if (isrev && ((argc % 2) == 0)) {
+		for (int i = (argc - 1); 0 < i; i--) {
+			strcpy(t, *(argv + i));
+			t = tbuf + strlen(tbuf);
+			*t++ = _T(' ');
+			*t = _T('\0');
+		}
+	} else {
+		for (int i = 1; i < argc; i++) {
+			if (((argc % 2) != 0) && (i == (argc - 1))) {
+				strcpy(tbuf2, *++argv);
+			} else {
+				strcpy(t, *++argv);
+				t = tbuf + strlen(tbuf);
+				*t++ = _T(' ');
+				*t = _T('\0');
+			}
+		}
+	}
+}
 
 static void from_stream(char* file, int option_num)
 {

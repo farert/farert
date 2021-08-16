@@ -308,15 +308,16 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     /* rule 114 */
     val rule114Fare = fi.getRule114();
-    if (rule114Fare.fare == 0) {
+    if (!rule114Fare.isAvailable()) {
         result.rule114_salesKm = 0;
         result.rule114_calcKm = 0;
         result.isRule114Applied = false;
         result.fareForStockDiscounts = stks
     } else {
         result.isRule114Applied = true;
-        result.rule114_salesKm = rule114Fare.sales_km;
-        result.rule114_calcKm = rule114Fare.calc_km;
+        result.rule114_salesKm = rule114Fare.sales_km();
+        result.rule114_calcKm = rule114Fare.calc_km();
+        result.rule114_apply_terminal_station = rule114Fare.stationName();
 
         /* stock discount (114 applied) */
         for (i in 0..1) {
@@ -471,10 +472,17 @@ fun CalcRoute.calcFareInfo() : FareInfo
         messages.add("旅客営業規則第70条を適用していません");
     }
     if (!result.isRuleApplied && this.route_flag.isAvailableRule115()) {
-        messages.add("旅客営業基準規程第115条を適用していません");
+        messages.add("旅客営業取扱基準規程第115条を適用していません");
+    }
+    if (this.route_flag.isAvailableRule16_5()) {
+        messages.add("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+    }
+    if (rule114Fare.isAvailable()) {
+        val msg = "旅客営業取扱基準規程第114条適用営業キロ計算駅:${rule114Fare.stationName()}"
+        messages.add(msg)
     }
 
-    result.resultMessage = messages.joinToString("\r\n")
+    result.resultMessage = messages.joinToString("\n")
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
