@@ -96,13 +96,13 @@ class Routefolder {
         }
     }
 
-    fun routeItemFare(index : Int) : String {
+    fun routeItemFareKm(index : Int) : Pair<Int, Int> {
         if (index < _routeList.count()) {
             val fare = calcFare(_routeList[index])
-            return "¥${fareNumStr(fare.first)}"
+            return fare
         } else {
             assert(false)//, "Index failure...")
-            return ""
+            return Pair(0, 0)
         }
     }
 

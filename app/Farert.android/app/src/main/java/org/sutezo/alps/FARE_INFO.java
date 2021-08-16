@@ -100,9 +100,7 @@ public class FARE_INFO {
     int companymask;
 
     /* 114 */
-    int rule114_fare;
-    int rule114_sales_km;
-    int rule114_calc_km;
+    Rule114Info rule114Info = new Rule114Info();
 
     boolean roundTripDiscount;
 
@@ -113,7 +111,7 @@ public class FARE_INFO {
 
     char enableTokaiStockSelect;  // 0: NoJR東海 1=JR東海株主可 2=JR東海のみ(Toica)
 
-    class ResultFlag {
+    static class ResultFlag {
         boolean comapany_first;		 /* 会社線から開始 */
         boolean comapany_end;			 /* 会社線で終了  通常OFF-OFF, ON-ONは会社線のみ */
         boolean company_incorrect;		 /* 会社線2社以上通過 */
@@ -159,9 +157,8 @@ public class FARE_INFO {
         fare_ic = fi.fare_ic;					//*** 0以外で有効
         avail_days = fi.avail_days;					//***
         companymask = fi.companymask;
-        rule114_fare = fi.rule114_fare;
-        rule114_sales_km = fi.rule114_sales_km;
-        rule114_calc_km = fi.rule114_calc_km;
+
+        rule114Info.set(fi.rule114Info);
         roundTripDiscount = fi.roundTripDiscount;
         route_for_disp = fi.route_for_disp;
         calc_route_for_disp = fi.calc_route_for_disp;
@@ -184,6 +181,24 @@ public class FARE_INFO {
     /* discount 5円の端数切上 */
     static int fare_discount5(int fare, int per) {
         return ((((fare) / 10 * (10 - (per))) + 5) / 10 * 10);
+    }
+
+
+    void setIsRule16_5_route(RouteList route_original)
+    {
+        int arriveStationId = route_original.arriveStationId();
+        int departureStationId = route_original.departureStationId();
+
+        if ((((arriveStationId == DbIdOf.INSTANCE.station("綾瀬"))
+        && (departureStationId == DbIdOf.INSTANCE.station("北千住")))
+        || ((arriveStationId == DbIdOf.INSTANCE.station("北千住"))
+        && (departureStationId == DbIdOf.INSTANCE.station("綾瀬"))))
+        && getTotalSalesKm() < 50) {
+            route_original.getRouteFlag().rule16_5 = true;
+            System.out.println("applied Rule16-5.");
+        } else {
+            route_original.getRouteFlag().rule16_5 = false;
+        }
     }
 
     //static
@@ -837,7 +852,7 @@ public class FARE_INFO {
     //	運賃表示
     //	@return 運賃、営業キロ情報 表示文字列
     //
-    public String showFare(final RouteFlag getRouteFlag) {
+    public String showFare(final RouteFlag argRouteFlag) {
 //	final static int MAX_BUF = 1024;
         StringBuffer buffer = new StringBuffer();
 
@@ -857,28 +872,28 @@ public class FARE_INFO {
                 " -> " +
                 CalcRoute.BeginOrEndStationName(this.getEndTerminalId()) +
                 "\r\n経由：" +
-                this.getRoute_string());
+                this.getRoute_string() + "\r\n");
 
         ASSERT (100<=this.getFareForDisplay());
 
         final String msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n";
         final String msgAppliedLowcost = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n";
 
-        if (!getRouteFlag.no_rule && !getRouteFlag.osakakan_detour
-                && this.isUrbanArea() && !getRouteFlag.isUseBullet()
-                && !getRouteFlag.isIncludeCompanyLine()) {
+        if (!argRouteFlag.no_rule && !argRouteFlag.osakakan_detour
+                && this.isUrbanArea() && !argRouteFlag.isUseBullet()
+                && !argRouteFlag.isIncludeCompanyLine()) {
             if (this.getBeginTerminalId() == this.getEndTerminalId()) {
                 // buffer.append("近郊区間内ですので同一駅発着のきっぷは購入できません.\r\n");
-            } else if (getRouteFlag.isEnableRule115() && getRouteFlag.isRule115specificTerm()) {
+            } else if (argRouteFlag.isEnableRule115() && argRouteFlag.isRule115specificTerm()) {
                 // 115の都区市内発着指定Optionは最安最短じゃあないので.
-            } else if (getRouteFlag.isLongRoute()) {
+            } else if (argRouteFlag.isLongRoute()) {
                 buffer.append(msgPossibleLowcost);
             } else {
                 buffer.append(msgAppliedLowcost);
             }
             // 大回り指定では115適用はみない
-            if (getRouteFlag.isEnableRule115() && !getRouteFlag.isEnableLongRoute()) {
-                if (getRouteFlag.isRule115specificTerm()) {
+            if (argRouteFlag.isEnableRule115() && !argRouteFlag.isEnableLongRoute()) {
+                if (argRouteFlag.isRule115specificTerm()) {
                     buffer.append("「単駅最短適用」で単駅発着が選択可能です\r\n");
                 } else {
                     buffer.append("「都区内発着適用」で特定都区市内発着が選択可能です\r\n");
@@ -995,12 +1010,12 @@ public class FARE_INFO {
             company_option = "";
         }
         if (fare_ic == 0) {
-            if (!getRouteFlag.isRoundTrip()) {
+            if (!argRouteFlag.isRoundTrip()) {
                 buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s\r\n",
                         RouteUtil.num_str_yen(normal_fare),
                         company_option));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s     往復： ¥%-5s",
+                buffer.append(String.format(Locale.JAPANESE, "運賃： ¥%-7s %s    往復： ¥%-5s",
                         RouteUtil.num_str_yen(normal_fare),
                         company_option,
                         RouteUtil.num_str_yen(fareW.fare)));
@@ -1011,7 +1026,7 @@ public class FARE_INFO {
                 }
             }
             if (this.isRule114()) {
-                if (!getRouteFlag.isRoundTrip()) {
+                if (!argRouteFlag.isRoundTrip()) {
                     buffer.append(String.format(Locale.JAPANESE, "規程114条 適用前運賃： {¥%-5s}\r\n",
                             RouteUtil.num_str_yen(this.getFareForDisplayPriorRule114())));
                 } else {
@@ -1024,7 +1039,7 @@ public class FARE_INFO {
             //ASSERT (!fareW.isDiscount);
             ASSERT (company_fare == 0);
             //ASSERT (normal_fare  *  2 == this.roundTripFareWithCompanyLine().fare);
-            if (!getRouteFlag.isRoundTrip()) {
+            if (!argRouteFlag.isRoundTrip()) {
                 buffer.append(String.format(Locale.JAPANESE, "運賃(IC)： ¥%s(¥%s)  %s\r\n",
                         RouteUtil.num_str_yen(normal_fare), RouteUtil.num_str_yen(fare_ic),
                         company_option));
@@ -1066,7 +1081,7 @@ public class FARE_INFO {
         }
 
         /* child fare */
-        if (!getRouteFlag.isRoundTrip()) {
+        if (!argRouteFlag.isRoundTrip()) {
             buffer.append(String.format(Locale.JAPANESE, "\r\n小児運賃： ¥%-7s\r\n",
                     RouteUtil.num_str_yen(this.getChildFareForDisplay())));
         } else {
@@ -1076,7 +1091,7 @@ public class FARE_INFO {
         }
         normal_fare = this.getAcademicDiscountFare();
         if (0 < normal_fare) {
-            if (!getRouteFlag.isRoundTrip()) {
+            if (!argRouteFlag.isRoundTrip()) {
                 buffer.append(String.format(Locale.JAPANESE,"学割運賃： ¥%-7s\r\n",
                         RouteUtil.num_str_yen(normal_fare)));
             } else {
@@ -1102,20 +1117,55 @@ public class FARE_INFO {
         if (this.isBRT_discount()) {
             buffer.append("\r\nBRT乗継ぎ割引適用");
         }
-        if (!getRouteFlag.no_rule && !getRouteFlag.osakakan_detour
-                && getRouteFlag.special_fare_enable) {
+        if (!argRouteFlag.no_rule && !argRouteFlag.osakakan_detour
+                && argRouteFlag.special_fare_enable) {
             // 電車特定運賃区間(私鉄競合のアレ)
             buffer.append("\r\n特定区間割引運賃適用");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.special_fare_enable) {
+            buffer.append("\r\n特定区間割引運賃を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule86()) {
+            buffer.append("\r\n旅客営業規則第86条を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule87()) {
+            buffer.append("\r\n旅客営業規則第87条を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule88()) {
+            buffer.append("\r\n旅客営業規則第88条を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule69()) {
+            buffer.append("\r\n旅客営業規則第69条を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule70()) {
+            buffer.append("\r\n旅客営業規則第70条を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule115()) {
+            buffer.append("\r\n旅客営業取扱基準規程第115条を適用していません");
+        }
+        if (argRouteFlag.isAvailableRule16_5()) {
+            buffer.append("\r\nこの乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+        }
+        if (this.isRule114()) {
+            buffer.append("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
+            buffer.append(this.getRule114apply_terminal_station());
         }
         String sWork = this.getTOICACalcRoute_string();
         if (!sWork.isEmpty()) {
             buffer.append("\r\nIC運賃計算経路: ");
             buffer.append(sWork);
-        } else {
-            buffer.append("\r\n");
         }
+        buffer.append("\r\n");
         return buffer.toString();
     }
+
+    // Rule114 適用となった計算駅
+    //
+    String     getRule114apply_terminal_station()
+    {
+        return rule114Info.stationName();
+    }
+
 
     // Private:
     //	showFare() =>
@@ -1378,9 +1428,7 @@ public class FARE_INFO {
         fare_ic = 0;
         avail_days = 0;
 
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
+        rule114Info.clear();
 
         roundTripDiscount = false;
 
@@ -1526,8 +1574,8 @@ public class FARE_INFO {
         return sales_km;
     }
 
-    int		getRule114SalesKm() { return rule114_sales_km; }
-    int		getRule114CalcKm() { return rule114_calc_km;  }
+    int		getRule114SalesKm() { return rule114Info.sales_km(); }
+    int		getRule114CalcKm() { return rule114Info.calc_km();  }
 
     /**	JR線の営業キロを返す
      *
@@ -1711,7 +1759,7 @@ public class FARE_INFO {
 
         if (applied_r114) {
             if (isRule114()) {
-                cfare = rule114_fare - brtfare;
+                cfare = rule114Info.fare() - brtfare;
             } else {
                 ASSERT (false);
                 return ret;		// >>>>>>>>>
@@ -1890,41 +1938,18 @@ public class FARE_INFO {
         }
     }
 
-    static class Fare {
-        int fare;
-        int sales_km;
-        int calc_km;
-        Fare() { set(0, 0,0); }
-        Fare(int f, int sk, int ck) {
-            set(f, sk, ck);
-        }
-        void set(int f, int sk, int ck) {
-            fare = f;
-            sales_km = sk;
-            calc_km = ck;
-        }
+    Rule114Info  getRule114() {
+        return rule114Info;
     }
 
-    Fare  getRule114() {
-        Fare fare = new Fare();
-        fare.fare = rule114_fare;
-        fare.sales_km = rule114_sales_km;
-        fare.calc_km = rule114_calc_km;
-        return fare;
-    }
-
-    void     setRule114(final Fare fare) {
-        rule114_fare = fare.fare;
-        rule114_sales_km = fare.sales_km;
-        rule114_calc_km = fare.calc_km;
+    void     setRule114(final Rule114Info rule114) {
+        rule114Info.set(rule114);
     }
     void     clrRule114() {
-        rule114_fare = 0;
-        rule114_sales_km = 0;
-        rule114_calc_km = 0;
+        rule114Info.clear();
     }
 
-    boolean	isRule114() { return 0 != rule114_fare; }
+    boolean	isRule114() { return rule114Info.isAvailable(); }
     boolean	isRoundTripDiscount() { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
     int getBeginTerminalId() { return beginTerminalId;}
     int getEndTerminalId() { return endTerminalId; }
@@ -2015,7 +2040,7 @@ public class FARE_INFO {
      */
     private int		jrFare() {
         if (isRule114()) {
-            return rule114_fare;
+            return rule114Info.fare();
         } else {
             return jr_fare;
         }
@@ -3117,14 +3142,29 @@ public class FARE_INFO {
 
                     if (company_id1 != company_id2) {
                         if (IS_JR_MAJOR_COMPANY(company_id1) && IS_JR_MAJOR_COMPANY(company_id2)) {
-                            // 猪谷(4)(4) 富山(4)
+                            // 本州内
+                            // (company)(subcompany) - (company)(subcompany)
+                            // 猪谷(4)(3) 富山(4)
                             // 猪谷(4)(3) 名古屋(3)
                             // 神戸(4)　門司(3)(4)
                             // 品川(2)-新大阪(4)
                             // 長野(2)-金沢(4)
-                            // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない
-                            // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
-                            if (sub_company_id1 == company_id2) {
+                                // 同一路線で会社A-会社B-会社Aなどというパターンはあり得ない>紀勢線 亀山 新宮 以西間にあり
+                                // A-B-Cはあり得る。熱海 新幹線 京都　の場合、JR海-西であるべきだが　東-西となる(現在は本州3社は同一と見て問題ない)
+                            // 亀山(3)(4)-和歌山(4)
+                            // 亀山(3)(4)-新宮(4)(3)
+                            // 松阪(3)-新宮(4)(3)
+                            // 松阪(3)-亀山(3)(4)
+                            if ((line_id == DbIdOf.INSTANCE.line("紀勢線"))
+                            && (((company_id1 == JR_CENTRAL)
+                            && (sub_company_id1 == JR_WEST) && (company_id2 == JR_WEST) && (sub_company_id2 == 0))
+                            || ((company_id2 == JR_CENTRAL)
+                            && (sub_company_id2 == JR_WEST) && (company_id1 == JR_WEST) && (sub_company_id1 == 0)))) {
+                                // do-noghint
+                                System.out.println("detect kisyu-sen kameyama-(wakayama-miwasaki)");
+
+                            } else if (sub_company_id1 == company_id2) {
+    							// 猪谷-富山、神戸-門司
                                 company_id1 = sub_company_id1;
                             } else if (company_id1 == sub_company_id2) {
                                 company_id2 = sub_company_id2;
@@ -3160,7 +3200,7 @@ public class FARE_INFO {
      *
      *	calc_fare() => aggregate_fare_info() =>
      *
-     *	@param  route_flag 	 大阪環状線通過フラグ
+     *	@param  osakakan_aggregate 	 大阪環状線通過フラグ
      *	@param  line_id   	 路線ID
      *	@param  station_id1  駅1
      *	@param  station_id2  駅2
@@ -3603,6 +3643,10 @@ public class FARE_INFO {
                     System.out.println("          over the 50.0km(cancel lowcost route)");
                     route_original.getRouteFlag().rule115 = 0; // 大回り指定の場合、115条は無効（打ち消す)
                 }
+                if (route_original.getRouteFlag().no_rule) {
+                    /* 非適用ではrule115 変数のみが欲しいので */
+                    return false;
+                }
                 if (route_original.getRouteFlag().urban_neerest < 0) {
                     System.out.println("Foreced choice appint route.");
                     return false;
@@ -3610,6 +3654,11 @@ public class FARE_INFO {
                 route_original.getRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
                 route_original.getRouteFlag().meihan_city_enable = false;   // 名阪のあれも。
             } else {
+                System.out.println("already neerest route.");
+                if (route_original.getRouteFlag().no_rule) {
+                    /* 非適用ではrule115 変数のみが欲しいので */
+                    return false;
+                }
                 route_original.getRouteFlag().urban_neerest = 0;    // すでに最安になってます(ので指定経路へ云々の選択肢なし)
             }
 
@@ -3648,7 +3697,10 @@ public class FARE_INFO {
                 decision = 1;
             }
         }
-
+        if (route_original.getRouteFlag().no_rule) {
+            /* 非適用ではrule115 変数のみが欲しいので */
+            return false;
+        }
         ASSERT(decision == 20 || decision == 1 || decision == 2 || decision == 0 || decision == 15);
 
         System.out.printf("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                          short=%s->%s(%d)(%dyen)\n",

@@ -560,7 +560,7 @@ class Dbreg:
 		if linitems[COL_STATION].strip().startswith("-"):
 			return
 
-		if COL_NUM != len(linitems):
+		if len(linitems) < COL_NUM:
 			print(self.num_of_line, lin)
 			raise ValueError
 
@@ -924,6 +924,14 @@ insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
 		
 		if int(db_name) < 2019 and (station1[0] == "あしかがフラワーパーク" or 
 									 station2[0] == "あしかがフラワーパーク"):
+			return
+
+		if int(db_name) < 2019 and (station1[0] == "高輪ゲートウェイ" or 
+									 station2[0] == "高輪ゲートウェイ"):
+			return
+
+		if int(db_name) < 2019 and (station1[0] == "JR総持寺" or 
+									 station2[0] == "JR総持寺"):
 			return
 
 		kind = int(linitems[4].replace(',', ''))

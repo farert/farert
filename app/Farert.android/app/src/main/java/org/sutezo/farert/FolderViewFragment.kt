@@ -293,8 +293,9 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                     }
                 }
             }
-            val fareValue  = routefolder.routeItemFare(position)
-            holder.fareValue.text = fareValue    // 運賃額
+            val fareValue  = routefolder.routeItemFareKm(position)
+            holder.fareValue.text = "¥${fareNumStr(fareValue.first)}"    // 運賃額
+            holder.salesKm.text = "${kmNumStr(fareValue.second)}km"
             holder.deleteCheck.isChecked = mCheck[position]
             holder.deleteCheck.tag = position
             holder.deleteCheck.setOnClickListener {v: View? ->
@@ -362,6 +363,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             var fareType = itemView.ticket_type
             var fareValue = itemView.itemFare
             var deleteCheck = itemView.chk_delete
+            var salesKm = itemView.itemKm
             init {
                 if (mContext != null) {
                     val adapter = ArrayAdapter.createFromResource(mContext!!, R.array.list_ticket_type, R.layout.tv_folder_ticket_type)
