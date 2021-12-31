@@ -135,7 +135,7 @@ public class CalcRoute extends RouteList {
     //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
     //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
     //
-    private static final int RULE114_SALES_KM_86 = 648;
+    private static final int RULE114_SALES_KM_86 = 1700;
     private static final int RULE114_SALES_KM_87 = 800;
     public void checkOfRuleSpecificCoreLine() {
         checkOfRuleSpecificCoreLine(false);
