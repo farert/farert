@@ -4,5 +4,5 @@ source ./start.sh
 eval `cat ./start.sh`
 
 # execute of test
-./test > log.txt
+./farert > log.txt
 
