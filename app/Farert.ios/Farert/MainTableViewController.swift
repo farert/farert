@@ -657,7 +657,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 // と、同時にチケットホルダの経路も読み直す
                 // delegate the Leftview load script
                 let lvd = self.slideMenuController()?.leftViewController as! LeftTableViewController
-                lvd.reload()
+                lvd.reload(true)
                 self.setViewTitle()
             }
             ds.setNotSameKokuraHakataShinZai(view.isSameShinkanzanKokuraHakataOther)
