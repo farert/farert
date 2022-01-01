@@ -98,8 +98,8 @@ class LeftTableViewController: UIViewController, UITableViewDataSource, UITableV
     
     // MARK: helper method
     
-    func reload() {
-        self.routeFolder.load()
+    func reload(_ doCalc: Bool? = nil) {
+        self.routeFolder.load(doCalc)
         updateAggregate()
         self.tableView.reloadData()
     }
