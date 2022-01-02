@@ -1904,9 +1904,9 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 
 int32_t Route::brtPassCheck(int32_t stationId2)
 {
-    if (stationId2 == STATION_ID(_T("柳津"))) {
-        return -1;
-    }
+//    if (stationId2 == STATION_ID(_T("柳津"))) {
+//        return -1;
+//    }
     return 0;
 }
 
