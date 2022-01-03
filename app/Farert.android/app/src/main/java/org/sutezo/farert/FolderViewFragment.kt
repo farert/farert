@@ -158,9 +158,11 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         updateFareInfo()
     }
 
-    fun reload() {
+    fun reload(doCalc: Boolean?) {
         mContext?:return
-        ticketFolder.load(mContext!!)
+        if (doCalc == true) {
+            ticketFolder.load(mContext!!, doCalc)
+        }
         rv_drawer_list.adapter?.notifyDataSetChanged()
         updateFareInfo()
     }
