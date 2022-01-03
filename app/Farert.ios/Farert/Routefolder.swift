@@ -26,6 +26,8 @@ public let aggregate_label = [
 struct folder {
     var routeList : cRouteList
     var indexOfAggregate : Int
+    var fare : Int?
+    var salesKm : Int?
 }
 
 public class Routefolder {
@@ -91,13 +93,23 @@ public class Routefolder {
 
     func routeItemFare(index : Int) -> (fare : String, salesKm : String) {
         if index < routeList.count {
-            let fare = self.calcFare(item: routeList[index])
+            var fare : Int
+            var salesKm : Int
+
+            if ((routeList[index].fare != nil) && (routeList[index].salesKm != nil)) {
+                fare = routeList[index].fare!
+                salesKm = routeList[index].salesKm!
+            } else {
+                let fareSalesKm = self.calcFare(item: routeList[index])
+                fare = fareSalesKm.fare
+                salesKm = fareSalesKm.sales_km
+            }
             let formatter = NumberFormatter()
             formatter.numberStyle = NumberFormatter.Style.decimal
             formatter.groupingSeparator = ","
             formatter.groupingSize = 3
-            return ("¥\(formatter.string(from: NSNumber(value: fare.fare)) ?? "")-",
-                    "\(String(describing: cRouteUtil.kmNumStr(fare.sales_km)!)) km")
+            return ("¥\(formatter.string(from: NSNumber(value: fare)) ?? "")-",
+                    "\(String(describing: cRouteUtil.kmNumStr(salesKm)!)) km")
         } else {
             assert(false, "Index failure...")
             return ("", "")
@@ -117,8 +129,11 @@ public class Routefolder {
     }
 
     func setAggregateType(index : Int, aggr : Int) -> Void {
-        if index < routeList.count {
+        if ((index < routeList.count) && (routeList[index].indexOfAggregate != aggr)) {
             routeList[index].indexOfAggregate = aggr
+            // do re-calc fare
+            routeList[index].fare = nil
+            routeList[index].salesKm = nil
             calc()
             save()
         }
@@ -150,15 +165,23 @@ public class Routefolder {
     
 
     func calc() {
-        var ta : Int = 0
-        var td : Int = 0
-        for route in self.routeList {
-            let result = self.calcFare(item: route)
-            ta += result.fare
-            td += result.sales_km
+        var fare_sum : Int = 0
+        var salesKm_sum : Int = 0
+        for (i, route) in self.routeList.enumerated() {
+            if ((route.fare != nil) && (route.salesKm != nil)) {
+                fare_sum += route.fare!
+                salesKm_sum += route.salesKm!
+            } else {
+                let result = self.calcFare(item: route)
+                fare_sum += result.fare
+                salesKm_sum += result.sales_km
+
+                self.routeList[i].fare = result.fare
+                self.routeList[i].salesKm = result.sales_km
+            }
         }
-        self._totalFare = ta
-        self._totalSalesKm = td
+        self._totalFare = fare_sum
+        self._totalSalesKm = salesKm_sum
     }
     
     private var filePath : String {
@@ -172,29 +195,56 @@ public class Routefolder {
         //print(filePath)
         if let os = OutputStream(toFileAtPath: filePath, append: false) {
             os.open()
+            let dbver = cRouteUtil.getDatabaseId().rawValue
+            let strDbVer = "DBVer|" + String(dbver) + "\n"
+            os.write(strDbVer, maxLength: strDbVer.count)
             for one in routeList {
-                let rs = String(one.indexOfAggregate) + "|" + one.routeList.routeScript() + "\n"
+                let rs : String
+                if ((one.fare != nil) && (one.salesKm != nil)) {
+                    rs = String(one.indexOfAggregate) + "|" + one.routeList.routeScript()
+                     + "|" + String(one.fare!) + "|" + String(one.salesKm!) + "\n"
+                } else {
+                    rs = String(one.indexOfAggregate) + "|" + one.routeList.routeScript() + "\n"
+                }
                 os.write(rs, maxLength: rs.lengthOfBytes(using: String.Encoding.utf8))
             }
             os.close()
         }
     }
     
-    func load() {
+    func load(_ doCalc : Bool? = nil) {
         do {
             self.routeList.removeAll()
             var num : Int = 0
+            var isDbChanged : Bool = doCalc ?? false
             let text = try String(contentsOf: URL(fileURLWithPath: filePath), encoding: String.Encoding.utf8)
             text.enumerateLines { line, stop in
                 if num < Int(MAX_ARCHIVE_ROUTE) {
                     let record : [String] = line.components(separatedBy: "|")
-                    if record.count == 2 {
-                        if let agr : Int = Int(record[0]) {
-                            if let rt = cRoute() {
-                                let result = rt.setupRoute(record[1])
-                                if 0 <= result {
-                                    self.routeList.append(folder(routeList: cRouteList(route: rt), indexOfAggregate: agr))
-                                    num += 1
+                    if 2 <= record.count {
+                        if ((num == 0) && ("DBVer" == String(record[0]))) {
+                            let dbVer = cRouteUtil.getDatabaseId().rawValue
+                            if dbVer != Int(record[1]) {
+                                isDbChanged = true
+                            }
+                        } else {
+                            if let agr : Int = Int(record[0]) {
+                                if let rt = cRoute() {
+                                    let result = rt.setupRoute(record[1])
+                                    if 0 <= result {
+                                        if (!isDbChanged && (4 == record.count)) {
+                                            let fare = Int(record[2])
+                                            let salesKm = Int(record[3])
+                                            self.routeList.append(
+                                                folder(routeList: cRouteList(route: rt),
+                                                       indexOfAggregate: agr,
+                                                       fare: fare,
+                                                       salesKm: salesKm))
+                                        } else {
+                                            self.routeList.append(folder(routeList: cRouteList(route: rt), indexOfAggregate: agr))
+                                        }
+                                        num += 1
+                                    }
                                 }
                             }
                         }
@@ -203,6 +253,7 @@ public class Routefolder {
             }
         } catch {
             // Failed to read file
+
             print("read fail!!!!!!!!!")
         }
         self.calc()
@@ -285,28 +336,37 @@ public class Routefolder {
     func makeExportText() -> String {
         var result : String = ""
         
-        var ta : Int = 0
-        var td : Int = 0
-        for one in self.routeList {
+        var fare_sum : Int = 0
+        var salesKm_sum : Int = 0
+        for folder_ in self.routeList {
+            let fare : Int
+            let salesKm : Int
+            if ((folder_.salesKm != nil) && (folder_.fare != nil)) {
+                fare = folder_.fare!
+                salesKm = folder_.salesKm!
+            } else {
+                let fare_ = self.calcFare(item: folder_)
+                fare = fare_.fare
+                salesKm = fare_.sales_km
+            }
             var cols = Array<String>()
-            let fare = self.calcFare(item: one)
-            ta += fare.fare
-            td += fare.sales_km
+            fare_sum += fare
+            salesKm_sum += salesKm
 
-            cols.append(aggregate_label[one.indexOfAggregate]) // 運賃
-            cols.append(conmaNumStr(fare.fare))
+            cols.append(aggregate_label[folder_.indexOfAggregate]) // 運賃
+            cols.append(conmaNumStr(fare))
             cols.append("営業キロ")
-            cols.append("\(String(describing: cRouteUtil.kmNumStr(fare.sales_km)!)) km")
+            cols.append("\(String(describing: cRouteUtil.kmNumStr(salesKm_sum)!)) km")
 
-            let s = one.routeList.routeScript()?.replacingOccurrences(of: ",", with: " ", options: .literal, range: nil) ?? ""
+            let s = folder_.routeList.routeScript()?.replacingOccurrences(of: ",", with: " ", options: .literal, range: nil) ?? ""
             cols.append(s)
             result += (cols.joined(separator: ",") + "\n")
         }
         var cols = Array<String>()
         cols.append("総額")
-        cols.append(conmaNumStr(ta))
+        cols.append(conmaNumStr(fare_sum))
         cols.append("総営業キロ")
-        cols.append("\(String(describing: cRouteUtil.kmNumStr(td)!)) km")
+        cols.append("\(String(describing: cRouteUtil.kmNumStr(salesKm_sum)!)) km")
         result += (cols.joined(separator: ",") + "\n")
         return result
     }

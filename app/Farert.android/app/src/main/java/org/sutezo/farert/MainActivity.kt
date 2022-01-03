@@ -494,9 +494,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                     // データベース変更されたら経路を再パースする
                     val rc = mRoute.setup_route(mRouteScript)
                     update_fare(rc)
+                    mDrawerFragment.reload(true)
+                } else {
+                    // LeftViewも
+                    mDrawerFragment.reload(false)
                 }
-                // LeftViewも
-                mDrawerFragment.reload()
             }
         }
         mRouteScript = ""
