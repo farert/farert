@@ -203,7 +203,7 @@ class Routefolder {
                 if (item[0].toString() == "DBVer") {
                     val dbver = DatabaseOpenHelper.DATABASE_VERSION
                     val folderDbVer = item[1].trim { c -> c == '\n'}.toInt()
-                    if (dbver == folderDbVer) {
+                    if (dbver != folderDbVer) {
                         isDbChanged = true
                     }
                     continue
