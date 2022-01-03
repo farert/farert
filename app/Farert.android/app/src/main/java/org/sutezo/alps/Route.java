@@ -1030,7 +1030,7 @@ public class Route extends RouteList {
     }
 
     int brtPassCheck(int stationId2) {
-        return (stationId2 == DbIdOf.INSTANCE.station("柳津")) ? -1 : 0;
+        return /*(stationId2 == DbIdOf.INSTANCE.station("柳津")) ? -1 : */0;
     }
 
     public boolean isNotSameKokuraHakataShinZai()

@@ -135,7 +135,7 @@ public class CalcRoute extends RouteList {
     //	@return false : rule 114 no applied. true: rule 114 applied(available for rule114[] )
     //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
     //
-    private static final int RULE114_SALES_KM_86 = 648;
+    private static final int RULE114_SALES_KM_86 = 1700;
     private static final int RULE114_SALES_KM_87 = 800;
     public void checkOfRuleSpecificCoreLine() {
         checkOfRuleSpecificCoreLine(false);
@@ -559,8 +559,8 @@ public class CalcRoute extends RouteList {
                 fare_info.setRoute(this.route_list_raw, route_flag);
                 // routeFlag.rule115 のflag set  する為だけに以下を実行
                 fare_info.reCalcFareForOptiomizeRoute(this);
-                ASSERT(fare_info.getBeginTerminalId() == this.beginStationId());
-                ASSERT(fare_info.getEndTerminalId() == this.endStationId());
+                assert (fare_info.getBeginTerminalId() == this.beginStationId());
+                assert (fare_info.getEndTerminalId() == this.endStationId());
             }
             fare_info.setIsRule16_5_route(this);
         }
