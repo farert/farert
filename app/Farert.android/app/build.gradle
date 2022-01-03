@@ -24,8 +24,8 @@ android {
         applicationId "org.sutezo.farert"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 27
-        versionName '21.08'
+        versionCode 28
+        versionName '22.01'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -58,6 +58,7 @@ android {
         // but continue the build even when errors are found:
         abortOnError false
     }
+    buildToolsVersion '30.0.2'
 }
 
 dependencies {

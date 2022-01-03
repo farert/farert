@@ -4,5 +4,6 @@ source ./start.sh
 eval `cat ./start.sh`
 
 # execute of test
-./test > log.txt
-
+./farert > log.txt
+or 
+./farert | tee log.txt
