@@ -34,8 +34,9 @@ function download_gspread() {
       C=$(( 5 - $CNT ))
       [ $C -ne 0 ] || echo "download ${gid}"
       [ $C -eq 0 ] || echo "download ${gid} (retry ${C} time.)"
-      curl -L -o ${gid}.tmp -H "Authorization: OAuth ${ACCESS_TOKEN}" \
-      -X POST -H "Content-Type: application/json" \
+      curl --retry 10 --silent --show-error --connect-timeout 20 --max-time 60 \
+           -L -o ${gid}.tmp -H "Authorization: OAuth ${ACCESS_TOKEN}" \
+           -X POST -H "Content-Type: application/json" \
       "${URL_BASE}/d/${BID}/export?format=tsv&gid=${GID}"
       ST=$?
       if [ $ST -eq 0 ] ; then
