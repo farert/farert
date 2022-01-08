@@ -1,6 +1,6 @@
 
-BID=1tVIkbCGtK4HGdeOli3dYZ4K__0h4ySCMl0XaTuKrHmY
-URL_BASE=https://docs.google.com/spreadsheets
+SpredsSheetsId=1tVIkbCGtK4HGdeOli3dYZ4K__0h4ySCMl0XaTuKrHmY
+UrlBase=https://docs.google.com/spreadsheets
 
 # spreadsheet sheet id(gid)
 node=1754394316
