@@ -85,11 +85,10 @@
 		2A5711A11EB8CFA800D593DD /* RoundButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		2A69CCDE1E736EF1007F478A /* jrdb2017.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2017.db; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		2A69CD0C1E75153D007F478A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		2A8A972B2371A70700706B93 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
 		2A969B332354B2F400B8689F /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		2AB326432789FFFF00E8BD0F /* ja */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = ja; path = ja.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2ABD92E61E19EEA9002488E0 /* c_route.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = c_route.mm; sourceTree = "<group>"; };
 		2ABD92E81E19F685002488E0 /* c_route.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c_route.h; sourceTree = "<group>"; };
 		2AC0BD80261F3C8000FB4593 /* Farert.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Farert.entitlements; sourceTree = "<group>"; };
@@ -155,7 +154,6 @@
 		2A2BB0821AD6966500F7DED2 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				2A69CD0C1E75153D007F478A /* Info.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -257,7 +255,7 @@
 			attributes = {
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0700;
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1320;
 				ORGANIZATIONNAME = "TAKEDA, Noriyuki";
 				TargetAttributes = {
 					2A2BB07E1AD6966500F7DED2 = {
@@ -348,7 +346,7 @@
 		2A2BB0881AD6966500F7DED2 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				2A8A972B2371A70700706B93 /* Base */,
+				2AB326432789FFFF00E8BD0F /* ja */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -413,7 +411,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "6ef08ebf-2541-401d-8b4d-9b0afdc47a22";
@@ -466,7 +464,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
 				SDKROOT = iphoneos;
@@ -487,7 +485,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 70;
 				DEVELOPMENT_TEAM = W6SVZ3YCU5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
@@ -499,7 +497,7 @@
 				);
 				MARKETING_VERSION = 22.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Farert;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = YES;
@@ -519,7 +517,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 70;
 				DEVELOPMENT_TEAM = W6SVZ3YCU5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
@@ -531,7 +529,7 @@
 				);
 				MARKETING_VERSION = 22.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "経路運賃営業キロ計算アプリ";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = YES;
