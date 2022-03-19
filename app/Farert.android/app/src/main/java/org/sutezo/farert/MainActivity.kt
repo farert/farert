@@ -181,16 +181,50 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
 
                 val subtitle = RouteUtil.StationNameEx(stationId)
                 val dlg_title = resources.getString(R.string.title_autoroute_selection, subtitle)
-
-                AlertDialog.Builder(this).apply {
-                    setTitle(dlg_title)
-                    setItems(R.array.select_autoroute_option) { _, which ->
-                        val rc = mRoute.changeNeerest(which, stationId)
-                        update_fare(if (rc == 4) 40 else rc)
-                        recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
+                val choiceTitles = resources.getStringArray(R.array.select_autoroute_option)
+                val choiceTitle = mutableListOf<String>()
+                val rtTest = Route()
+                rtTest.assign(mRoute)
+                rtTest.changeNeerest(3, stationId)
+                var args = arrayOf<Int>()
+                when (rtTest.typeOfPassedLine(mRoute.count)) {
+                    0 -> {
+                        // 在来線のみなので、選択肢なし（新幹線も在来線も使う=3で検索）
+                        // do-nothing
                     }
-                    create()
-                    show()
+                    1 -> {
+                        // "在来線のみ, 新幹線を使う
+                        args = arrayOf(0, 1)
+                        choiceTitle.addAll(listOf(choiceTitles[args[0]], choiceTitles[args[1]]))
+                    }
+                    2 -> {
+                        // 在来線のみ、会社線も使う
+                        args = arrayOf(0, 2)
+                        choiceTitle.addAll(listOf(choiceTitles[args[0]], choiceTitles[args[1]]))
+                    }
+                    3 -> {
+                        choiceTitle.addAll(choiceTitles)
+                        args = arrayOf(0, 1, 2, 3)
+                    }
+                }
+                fun neerest(mode: Int) {
+                    val rc = mRoute.changeNeerest(mode, stationId)
+                    update_fare(if (rc == 4) 40 else rc)
+                    recycler_view_route.smoothScrollToPosition(
+                       recycler_view_route.adapter?.itemCount ?: 1 - 1
+                    )
+                }
+                if (args.isNotEmpty()) {
+                    AlertDialog.Builder(this).apply {
+                        setTitle(dlg_title)
+                        setItems(choiceTitle.toTypedArray()) { _, which ->
+                            neerest(args[which % args.size])
+                        }
+                        create()
+                        show()
+                    }
+                } else {
+                    neerest(3)
                 }
             }
             "terminal" -> {

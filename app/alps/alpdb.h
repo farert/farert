@@ -1194,7 +1194,8 @@ private:
 	static int32_t 	RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStationId, JCTSP_DATA* jctspdt);
 	int32_t			getBsrjctSpType(int32_t line_id, int32_t station_id);
 	int32_t			junctionStationExistsInRoute(int32_t stationId);
-
+public:
+    int32_t         typeOfPassedLine(int offset);
 private:
     int32_t         reBuild();
 public:
