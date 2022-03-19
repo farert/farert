@@ -933,6 +933,34 @@ public class Route extends RouteList {
         return c;
     }
 
+    //	経路の種類を得る
+    //
+    //	@retval bit0 : there is shinkansen.
+    //	@retval bit1 : there is company line.
+    //
+    public int typeOfPassedLine(int offset)
+    {
+        int c;
+        int n;
+        c = 0;
+        n = 0;
+        for (RouteItem route_item : route_list_raw) {
+            ++n;
+            if (offset < n) {
+                if (IS_SHINKANSEN_LINE(route_item.lineId)) {
+                    c |= 0x01;
+                }
+                if (IS_COMPANY_LINE(route_item.lineId)) {
+                    c |= 0x02;
+                }
+                if (c == 0x03) {
+                    break;
+                }
+            }
+        }
+        return c;
+    }
+
     //private:
     //	大阪環状線経路変更による経路再構成
     //

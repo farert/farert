@@ -8,7 +8,7 @@ class CQueryNeerest : public CDialogEx
 	DECLARE_DYNAMIC(CQueryNeerest)
 
 public:
-	CQueryNeerest(int initialSel, CWnd* pParent = nullptr);   // 標準コンストラクター
+	CQueryNeerest(int pass_route, int initialSel, CWnd* pParent = nullptr);   // 標準コンストラクター
 	virtual ~CQueryNeerest();
 
 // ダイアログ データ
@@ -18,8 +18,11 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 
 	DECLARE_MESSAGE_MAP()
+private:
+	int m_choice;
+	int m_pass_route;
 public:
-	int choice;
+	int choice() const { return m_choice; }
 	CString target;
 	afx_msg void OnBnClickedMfcbuttonNormal();
 	afx_msg void OnBnClickedMfcbuttonBullet();
