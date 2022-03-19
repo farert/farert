@@ -2674,6 +2674,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		} else {
 			_ftprintf(os, _T("* auto route(新幹線未使用) >>>>>>>\n"));
 		}
+		_ftprintf(os, _T("arg=%d\n"), resopt ? autotype : 0);
 		rc = route.changeNeerest(resopt ? autotype : 0, RouteUtil::GetStationId(p));
 		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s, rc=%d\n"), fail != 0 ? _T("(OK)") : _T("(NG)"), rc);
@@ -2707,6 +2708,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
+		_ftprintf(os, _T("arg=%d\n"), resopt ? autotype : 0);
 		rc = route.changeNeerest(1, RouteUtil::GetStationId(p));
 		_ftprintf(os, _T("auto route(ret=%d)\n"), rc);
 		if ((rc < 0) || (rc == 5)) {
@@ -2736,6 +2738,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(会社線使用) >>>>>>>\n"));
+		_ftprintf(os, _T("arg=%d\n"), resopt ? autotype : 0);
 		rc = route.changeNeerest(2, RouteUtil::GetStationId(p));
 		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
@@ -2764,6 +2767,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(会社線+新幹線使用) >>>>>>>\n"));
+		_ftprintf(os, _T("arg=%d\n"), resopt ? autotype : 0);
 		rc = route.changeNeerest(3, RouteUtil::GetStationId(p));
 		if ((rc < 0) || (rc == 5)) {
 			_ftprintf(os, _T("Can't route.%s\n"), fail != 0 ? _T("(OK)") : _T("(NG)"));
