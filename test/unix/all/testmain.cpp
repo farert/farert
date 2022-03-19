@@ -49,13 +49,13 @@ void usage(const char* prgm)
 	fprintf(stderr, "               4: no no_rule.\n");
 	fprintf(stderr, "               5: no no_rule + no return.\n");
 	fprintf(stderr, "               other: Non-available(default 0)\n");
-	fprintf(stderr, "           (auto route only).\n");
+	fprintf(stderr, "           (auto route).\n");
 	fprintf(stderr, "               1: zairaisen only\n");
 	fprintf(stderr, "               2: with shinkansen\n");
 	fprintf(stderr, "               3: with company line\n");
 	fprintf(stderr, "               4: with company line and shinkansen\n");
 	fprintf(stderr, "               0 or 4<: all(default)\n");
-	fprintf(stderr, "              +10: One result for rule apllied only.\n");
+	fprintf(stderr, "              One result for rule apllied only.\n");
 	fprintf(stderr, "      r    : reverse route(-num and direct command line and non-auto route only)\n");
 	fprintf(stderr, "      path : route description file.\n");
 	fprintf(stderr, "      　　　　　If the first column is '#', it represents a comment.\n");
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 				// option_num  0 or 5~9 線パターン  1 在来線のみ 2 新幹線使う 3 会社線もつかう 4 新幹線も会社線もつかう
 				//        +10 特例適用のみ表示
 
-				test_autoroute(tr_a, option_num);
+				test_autoroute(tr_a, 0x10000 + option_num);
 			}
 		}
 	}
@@ -200,7 +200,7 @@ static void from_stream(char* file, int option_num)
 			lp = subword(tbuf, c);
 			strcpy(tbuf2, lp);
 			tbuf[lp - tbuf] = '\0';
-			test_autoroute(tr_a, option_num);
+			test_autoroute(tr_a, 0x10000 + option_num);
 		}
 	}
 	fclose(fp);
