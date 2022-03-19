@@ -635,6 +635,11 @@ int g_tax; /* main.m */
     return obj_route->changeNeerest(useLine, (int)stationId);
 }
 
+- (NSInteger)typeOfPassedLine:(NSInteger)offset
+{
+    return obj_route->typeOfPassedLine((int)offset);
+}
+
 // reverse
 - (NSInteger)reverseRoute
 {

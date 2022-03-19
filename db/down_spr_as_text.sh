@@ -24,27 +24,29 @@ elif [ "$#" -ne 0 -o -z "$ACCESS_TOKEN" ]; then
 fi
 
 # book, url, sheet def.
+### for public shared ### . SPREADSHEET.copy
 . SPREADSHEET
 
 function download_gspread() {
-  for gid in $* ;do
-    GID=$( eval echo '$'$gid ) # sheet id
+  for sheet_name in $* ;do
+    GID=$( eval echo '$'$sheet_name ) # sheet id
     CNT=5
     while :; do
       C=$(( 5 - $CNT ))
-      [ $C -ne 0 ] || echo "download ${gid}"
-      [ $C -eq 0 ] || echo "download ${gid} (retry ${C} time.)"
-      curl -L -o ${gid}.tmp -H "Authorization: OAuth ${ACCESS_TOKEN}" \
-      -X POST -H "Content-Type: application/json" \
-      "${URL_BASE}/d/${BID}/export?format=tsv&gid=${GID}"
+      [ $C -ne 0 ] || echo "download ${sheet_name}"
+      [ $C -eq 0 ] || echo "download ${sheet_name} (retry ${C} time.)"
+      curl --retry 10 --silent --show-error --connect-timeout 20 --max-time 60 \
+           -L -o ${sheet_name}.tmp -H "Authorization: OAuth ${ACCESS_TOKEN}" \
+           -X POST -H "Content-Type: application/json" \
+      "${UrlBase}/d/${SpredsSheetsId}/export?format=tsv&gid=${GID}"
       ST=$?
       if [ $ST -eq 0 ] ; then
-          grep -q 'Internal Server Error' ${gid}.tmp
+          grep -q 'Internal Server Error' ${sheet_name}.tmp
           if [ $? -eq 0 ]; then
               echo "Error!! must be set to the ACCESS_TOKEN environment."
               exit -1
           else
-              grep -qi '<html' ${gid}.tmp
+              grep -qi '<html' ${sheet_name}.tmp
               [ $? -eq 0 ] || break
               sleep 3
               echo "busy retry..."
