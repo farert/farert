@@ -334,6 +334,7 @@ Route::Route()
 
 Route::Route(const RouteList& route_list)
 {
+	JctMaskClear(jct_mask);
 	assign(route_list);
 }
 
@@ -3968,6 +3969,40 @@ int32_t Route::junctionStationExistsInRoute(int32_t stationId)
 	for (route_item = route_list_raw.cbegin(); route_item != route_list_raw.cend(); route_item++) {
 		if (stationId == route_item->stationId) {
 			c++;
+		}
+	}
+	return c;
+}
+
+//	経路の種類を得る
+//
+//	@retval bit0 : there is shinkansen.
+//	@retval bit1 : there is company line.
+//
+int32_t Route::typeOfPassedLine(int offset)
+{
+	int32_t c;
+	int32_t count;
+	vector<RouteItem>::const_iterator route_item;
+
+	c = 0;
+	count = 0;
+	route_item = route_list_raw.cbegin();
+	if (route_item != route_list_raw.cend()) {
+		count++;
+		for (route_item++; route_item != route_list_raw.cend(); route_item++) {
+			count++;
+			if (offset < count) {
+				if (IS_SHINKANSEN_LINE(route_item->lineId)) {
+					c |= 0x01;
+				}
+				if (IS_COMPANY_LINE(route_item->lineId)) {
+					c |= 0x02;
+				}
+				if (c == 0x03) {
+					break;
+				}
+			}
 		}
 	}
 	return c;
