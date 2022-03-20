@@ -4,22 +4,18 @@
 # Download the google spreadsheet in tsv format and save it as *.tmp.
 # This script is called by the 'make' profess
 #
-# [Usage] $0 <ACCESS_TOKEN>
+# [Usage] $0
 #
 # 2021.4.19 / sutezo
 #
 ####################
 
 function usage() {
-  echo '[Usage]'" $0 <access_token>"
-  echo ' or'
-  echo '       '" ACCESS_TOKEN=xxx $0"
+  echo '[Usage]'" $0"
   exit 1
 }
 
-if [ "$#" -eq 1 ]; then
-  ACCESS_TOKEN="$1"
-elif [ "$#" -ne 0 -o -z "$ACCESS_TOKEN" ]; then
+if [ "$#" -ne 0 ]; then
   usage
 fi
 
@@ -35,15 +31,15 @@ function download_gspread() {
       C=$(( 5 - $CNT ))
       [ $C -ne 0 ] || echo "download ${sheet_name}"
       [ $C -eq 0 ] || echo "download ${sheet_name} (retry ${C} time.)"
+
       curl --retry 10 --silent --show-error --connect-timeout 20 --max-time 60 \
-           -L -o ${sheet_name}.tmp -H "Authorization: OAuth ${ACCESS_TOKEN}" \
-           -X POST -H "Content-Type: application/json" \
+          -L -o ${sheet_name}.tmp \
       "${UrlBase}/d/${SpredsSheetsId}/export?format=tsv&gid=${GID}"
       ST=$?
       if [ $ST -eq 0 ] ; then
           grep -q 'Internal Server Error' ${sheet_name}.tmp
           if [ $? -eq 0 ]; then
-              echo "Error!! must be set to the ACCESS_TOKEN environment."
+              echo "Internal Server Error ${sheet_name}.tmp"
               exit -1
           else
               grep -qi '<html' ${sheet_name}.tmp
