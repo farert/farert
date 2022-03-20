@@ -1,6 +1,82 @@
 ﻿*** This document is UTF-8 Japanese only.
 
 データベースの作成方法
+ ◆ 使用環境
+  - MacOS
+  - Linux
+  - Windows(WSLに何らかのLinuxディストリビューション必要)
+   - python3
+   - curl
+   - gnu Make
+   - bash or zsh
+ 
+ 以下URLの、Googleスプレッドシートを共有にし「リンクを知っているすべてのユーザーが閲覧可能」とする。
+ https://docs.google.com/spreadsheets/d/1tVIkbCGtK4HGdeOli3dYZ4K__0h4ySCMl0XaTuKrHmY
+
+※ URLを変更する場合、 SPREADSHEET　ファイルを編集する
+※ アクセストークン、認証キーを使用しないようにした
+ 
+ ◆ 作成方法
+
+     1) スプレッドシート jrdb2022 を編集
+     2) Shellにて（Mac zsh, bash, linux bash, Windows wsl bash等）、db フォルダで、
+        make
+        を実行（ユーザ権限で可）
+
+        linux/mac環境には、curl, python3 が必要です
+        python3 には、sqlite3 モジュールが必要です
+
+     4) 全DBが作成され, Windows, iOS, Android 開発環境へもセットアップされる
+        （ただしDB名の変更はそれぞれ行う必要があります）
+
+ ◆ 少し内部解説
+   - make の処理は、以下順です
+     *.tmp => down_spr_as_text.sh  => *.tmp, *.txt ： Googleスプレッドシートの各シートをダウンロードします
+     *.tmp をマージして、*.txt を作成するため、*.tmp は不要です. Makeは*.tmpを削除しません。
+　　　削除すると、Googleスプレッドシートのダウンロードから始まります
+     *.txt から *.db （SQLITE用DB）を作成
+     *.db を各OS開発環境ディレクトリへコピー
+   - Googleスプレッドのダウンロードを実施したい場合は、*.tmp を削除します（*.txtも更新されます)
+   - DBを作成し直す場合、*.db を削除します。Makeでは、node 作成に失敗しても、*.dbは残るため、
+     削除してからmakeの再実行が必要となります。
+
+     ※ スプレッドシートのURLとシートIDは、ファイル SPREADSHEET に記載されています。
+ 
+ ◆ DB名の変更
+
+
+ spr2tsv.gs - Googleスプレッドシートアドイン用、Google Application Script（未使用）
+
+
+---- 2022.3.19
+https://developers.google.com/oauthplayground/
+のページで、ACCESS_TOKEN が取得できなくなった。
+以下の、ACCESS_TOKEN 指定はできなくなった。
+curl --retry 10 --show-error --connect-timeout 20 --max-time 60 \
+           -L -o xxxx.tmp \
+           -X POST -H "Content-Type: application/json" \
+           -H "Content-Length: 32" \
+      "https://docs.google.com/spreadsheets/d/1tVIkbCGtK4HGdeOli3dYZ4K__0h4ySCMl0XaTuKrHmY/export?format=tsv&gid=1659391783"
+
+https://console.cloud.google.com/apis/credentials?project=farert-spreadsheet
+の認証鍵（APIキー）を作成して、以下としてダメだった
+curl --retry 10 --show-error --connect-timeout 20 --max-time 60 \
+           -L -o xxxx.tmp \
+           -X POST -H "Content-Type: application/json" \
+           -H "Content-Length: 32" \
+      "https://docs.google.com/spreadsheets/d/1tVIkbCGtK4HGdeOli3dYZ4K__0h4ySCMl0XaTuKrHmY/export?format=tsv&gid=1659391783&key=AIzaSyDx_86CPFkbD6tr7DZ1KFQlHMfDjpXQwa8"
+
+ので、スプレッドシートを「共有」して、「リンクを知っているユーザ全員に閲覧可能」とした。
+ただし、POSTや、ヘッダを含めると失敗するので、以下に修正した。
+curl --retry 10 --show-error --connect-timeout 20 --max-time 60 \
+           -L -o xxxx.tmp \
+      "https://docs.google.com/spreadsheets/d/1tVIkbCGtK4HGdeOli3dYZ4K__0h4ySCMl0XaTuKrHmY/export?format=tsv&gid=1659391783"
+
+
+---- 以下は、2022.2 まで使用していた方法（認証は不要とした）
+
+
+データベースの作成方法
  2021.5 より、データベースマスターをExcelからGoogle Spreadsheet へ移行しました。
  そのまま手を加えずに、ExcelをGoogleスプレッドシートへインポートしました。
  （マクロなど特殊なコードやシート関数など使っていませんので、特に警告も失われたものもないようです）
