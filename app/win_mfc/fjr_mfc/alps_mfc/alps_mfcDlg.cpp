@@ -1448,11 +1448,11 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 			int rc;
 
 			if (m_route.getRouteFlag().is_osakakan_1pass()) {
-
+#if 0
 				if (0 <= menuTitle.Find(_T("‰“"))) {
 					alert_message(OSAKAKAN);
 				}
-
+#endif
 				ASSERT((m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("‹ß"))))
 					|| (!m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("‰“")))));
 
