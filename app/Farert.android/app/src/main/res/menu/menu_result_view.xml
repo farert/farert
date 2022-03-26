@@ -13,14 +13,14 @@
         android:icon="@drawable/ic_specific_rule"
         app:showAsAction="never"
         />
-
+<!--
     <item
         android:title="@string/result_menu_osakakan_far"
         android:id="@+id/menu_osakakan"
         android:icon="@drawable/ic_osakakan"
         app:showAsAction="never"
         />
-
+-->
     <item
         android:title="@string/result_menu_meihancity_arrive"
         android:id="@+id/menu_meihancity"
