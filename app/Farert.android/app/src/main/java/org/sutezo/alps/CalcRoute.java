@@ -71,11 +71,6 @@ public class CalcRoute extends RouteList {
 
     public void sync(RouteList route, int count) {
         assign(route, count);
-        route_flag = new RouteFlag(route.getRouteFlag());
-        if ((0 < count) && route.routeList().size() != count) {
-            route_flag.end = false;
-            route_flag.compnda = false;
-        }
         route_list_cooked.clear();
     }
 

@@ -30,7 +30,7 @@ class ResultViewActivity : AppCompatActivity() {
 
     enum class OptionItem {
         stocktokai,     // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
-        osakakan,       // TRUEは遠回り、FALSEは近回り
+//        osakakan,       // TRUEは遠回り、FALSEは近回り
         neerest,        // TRUEは適用、FALSEは非適用
         sperule,        // TRUEは非適用、FALSEは特例適用
         meihancity,     // TRUEは着駅を単駅指定、FALSEは発駅を単駅指定
@@ -40,7 +40,7 @@ class ResultViewActivity : AppCompatActivity() {
 
     var mOpt_items = arrayOf(
         Option.N_A,
-        Option.N_A,
+//        Option.N_A,
         Option.N_A,
         Option.N_A,
         Option.N_A,
@@ -49,7 +49,7 @@ class ResultViewActivity : AppCompatActivity() {
 
     val mOptMap = mutableMapOf<OptionItem, String>(
             OptionItem.stocktokai to "stocktokai",
-            OptionItem.osakakan to "osakakan",
+//            OptionItem.osakakan to "osakakan",
             OptionItem.neerest to "neerest",
             OptionItem.sperule to "sperule",
             OptionItem.meihancity to "meihancity",
@@ -173,6 +173,7 @@ class ResultViewActivity : AppCompatActivity() {
                 }
             }
 */
+            /*
             R.id.menu_osakakan -> {
                 if (Option.N_A != mOpt_items[OptionItem.osakakan.ordinal]) {
                     mOpt_items[OptionItem.osakakan.ordinal] =
@@ -190,6 +191,7 @@ class ResultViewActivity : AppCompatActivity() {
                     }
                 }
             }
+             */
   /*          R.id.menu_stocktokai -> {
                 if (Option.N_A != mOpt_items[OptionItem.stocktokai.ordinal]) {
                     mOpt_items[OptionItem.stocktokai.ordinal] =
@@ -652,7 +654,7 @@ class ResultViewActivity : AppCompatActivity() {
             return
         }
         */
-
+        /*
         if (mOpt_items[OptionItem.osakakan.ordinal] == Option.TRUE
                 || mOpt_items[OptionItem.osakakan.ordinal] == Option.FALSE) {
             // 遠回り・近回り
@@ -671,7 +673,7 @@ class ResultViewActivity : AppCompatActivity() {
                 }
             }
         }
-
+        */
         // 特例
         if (Option.TRUE == mOpt_items[OptionItem.sperule.ordinal]) {
             // @"特例を適用しない";
@@ -783,6 +785,7 @@ class ResultViewActivity : AppCompatActivity() {
             }
 
         //大阪環状線 周り方向
+        /*
         mOpt_items[OptionItem.osakakan.ordinal] =
             if (fi.isOsakakanDetourEnable) {
                 if (fi.isOsakakanDetour) {
@@ -796,7 +799,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 Option.N_A
             }
-
+        */
         // "最短経路算出"
         /*
         if (opt_neerest != Option.DO_TRUE) {
@@ -829,7 +832,7 @@ class ResultViewActivity : AppCompatActivity() {
         //
         menu?.apply {
             val mi_specialrule = findItem(R.id.menu_specialrule) ?: return
-            val mi_osakakan = findItem(R.id.menu_osakakan) ?: return
+            //val mi_osakakan = findItem(R.id.menu_osakakan) ?: return
             val mi_meihancity = findItem(R.id.menu_meihancity) ?: return
             //val mi_stocktokai = findItem(R.id.menu_stocktokai) ?: return
             val mi_neerest = findItem(R.id.menu_neerest) ?: return
@@ -924,6 +927,7 @@ class ResultViewActivity : AppCompatActivity() {
                 mi_stocktokai.setVisible(false) // 非表示
             }
             */
+            /*
             if (mOpt_items[OptionItem.osakakan.ordinal] != Option.N_A) { // fi.isOsakakanDetourEnable) {
                 if (mOpt_items[OptionItem.osakakan.ordinal] == Option.TRUE) { // fi.isOsakakanDetour) {
                     // "大阪環状線 遠回りだと近回り選択メニューが表示される"(Optional -> default)
@@ -936,6 +940,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 mi_osakakan.setVisible(false)
             }
+             */
         }
     }
 
@@ -1023,9 +1028,9 @@ class ResultViewActivity : AppCompatActivity() {
             //OptionItem.stocktokai -> {     // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
             //    route.routeFlag.setJrTokaiStockApply(mOpt_items[opt.ordinal] == Option.TRUE)
             //}
-            OptionItem.osakakan -> {      // TRUEは遠回り、FALSEは近回り
-                route.setDetour(mOpt_items[opt.ordinal] == Option.TRUE)
-            }
+            //OptionItem.osakakan -> {      // TRUEは遠回り、FALSEは近回り
+            //    route.setDetour(mOpt_items[opt.ordinal] == Option.TRUE)
+            //}
             OptionItem.sperule -> {  // TRUEは非適用、FALSEは特例適用
                 route.setNoRule(mOpt_items[opt.ordinal] == Option.TRUE)
             }
@@ -1050,12 +1055,12 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // 大阪環状線 遠回り TRUE=遠回り
-        if (route.isOsakakanDetourEnable) {
-            mOpt_items[OptionItem.osakakan.ordinal] = if (route.isOsakakanDetour)
-                Option.TRUE else Option.FALSE
-        } else {
-            mOpt_items[OptionItem.osakakan.ordinal] = Option.N_A
-        }
+        //if (route.isOsakakanDetourEnable) {
+        //    mOpt_items[OptionItem.osakakan.ordinal] = if (route.isOsakakanDetour)
+        //        Option.TRUE else Option.FALSE
+        //} else {
+        //    mOpt_items[OptionItem.osakakan.ordinal] = Option.N_A
+        //}
 
         // 特例非適用(TRUE) / 適用
         if (route.routeFlag.rule_en()) {
