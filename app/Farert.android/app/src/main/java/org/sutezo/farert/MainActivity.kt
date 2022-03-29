@@ -473,9 +473,9 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         mOsakakan_detour = OSAKA_KAN.FAR
                     }
                     val far = (mOsakakan_detour == OSAKA_KAN.FAR)
-                    if (far) {
-                        showInfoAsOsakaKanjyouDetour()
-                    }
+                    //if (far) {
+                    //    showInfoAsOsakaKanjyouDetour()
+                    //}
                     val rc = mRoute.setDetour(far)   // True=Far, False=Neerest
 
                     update_fare(rc)
@@ -488,6 +488,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
     }
 
+    /*
     fun showInfoAsOsakaKanjyouDetour() {
         val key = "setting_key_hide_osakakan_detour_info"
         val r = readParam(this, key)
@@ -506,7 +507,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             dlg.show()
         }
     }
-
+    */
 
     // <- bottun
     override fun onBackPressed() {

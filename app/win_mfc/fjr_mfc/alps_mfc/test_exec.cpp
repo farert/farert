@@ -2345,7 +2345,7 @@ _T("c--other--"),
 //       bit2 : Disabled No Ruled.
 void test_route(const TCHAR *route_def[], int32_t round = 0)
 {
-	TCHAR buffer[1024];
+	TCHAR buffer[4096];
 	LPCTSTR psz_title = _T("結果");
 	int i;
 	int t;
@@ -2375,10 +2375,10 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 		} else if (route_def[i][0] == _T('s')) {
 			/* 新幹線在来線別線扱い（小倉-博多) */
 			route.setNotSameKokuraHakataShinZai(true);
-			STRCPY(1024, buffer, &route_def[i][1]);
+			STRCPY(4096, buffer, &route_def[i][1]);
 		} else {
 			route.setNotSameKokuraHakataShinZai(false);
-			STRCPY(1024, buffer, route_def[i]);
+			STRCPY(4096, buffer, route_def[i]);
 		}
 		if (STRCMP(buffer, _T("若松")) == 0)
 			rc = 2;
@@ -2516,11 +2516,11 @@ void test_hzl(const TCHAR *hzl_route_def[])
 {
 	// route.add() チェック xのついた駅へ着時、エラーとなること.
 	Route route;
-	TCHAR buffer[1024];
+	TCHAR buffer[4096];
 	int i;
 	for (i = 0; '\0' != *hzl_route_def[i]; i++) {
 		route.removeAll();
-		STRCPY(1024, buffer, hzl_route_def[i]);
+		STRCPY(4096, buffer, hzl_route_def[i]);
 
 
 		TCHAR* p;
@@ -2582,7 +2582,7 @@ void test_hzl(const TCHAR *hzl_route_def[])
 
 static void test_hzl2(const TCHAR *param[])
 {
-	TCHAR buffer[1024];
+	TCHAR buffer[4096];
 	int i;
 
 	for (i = 0; '\0' != *param[i]; i++) {
@@ -2593,7 +2593,7 @@ static void test_hzl2(const TCHAR *param[])
 		int ip0, ip1, ip2, ip3;
 		TCHAR* ctx = NULL;
 		int t;
-		STRCPY(1024, buffer, param[i]);
+		STRCPY(4096, buffer, param[i]);
 		p0 = _tcstok_s(buffer, _T(", \t"), &ctx);
 		p1 = _tcstok_s(NULL, _T(", \t"), &ctx);
 		p2 = _tcstok_s(NULL, _T(", \t"), &ctx);
@@ -2618,7 +2618,7 @@ static void test_hzl2(const TCHAR *param[])
 //        +0x10000 特例適用のみ表示
 void test_autoroute(const TCHAR *route_def[], int option = 0)
 {
-	TCHAR buffer[1024];
+	TCHAR buffer[4096];
 	Route route;
 	int i;
 	int rc;
@@ -2632,7 +2632,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		_ftprintf(os, _T("!===<%02d>: auto route ==================\n\n"), i / 2);
 		TRACE(_T("test_exec(auto route): %d*************************************************\n"), i / 2);
 		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
+		STRCPY(4096, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 
@@ -2704,7 +2704,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		if (resopt) break;
 
 		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
+		STRCPY(4096, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(新幹線使用) >>>>>>>\n"));
@@ -2734,7 +2734,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		}
 		//
 		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
+		STRCPY(4096, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(会社線使用) >>>>>>>\n"));
@@ -2763,7 +2763,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		}
 		//
 		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
+		STRCPY(4096, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
 		ASSERT(0 <= rc);
 		_ftprintf(os, _T("* auto route(会社線+新幹線使用) >>>>>>>\n"));
@@ -2797,7 +2797,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 //
 void test_jctspecial(const TCHAR *route_def[])
 {
-	TCHAR buffer[1024];
+	TCHAR buffer[4096];
 	TCHAR *pbuffer;
 	int i;
 	int rc;
@@ -2805,7 +2805,7 @@ void test_jctspecial(const TCHAR *route_def[])
 
 	for (i = 0; '\0' != *route_def[i]; i++) {
 		route.removeAll();
-		STRCPY(1024, buffer, route_def[i]);
+		STRCPY(4096, buffer, route_def[i]);
 		pbuffer = _tcschr(buffer, '|');
 		*pbuffer = _T('\0');
 		pbuffer++;
