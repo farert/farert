@@ -1050,7 +1050,6 @@ int g_tax; /* main.m */
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
-                              self.isOsakakanDetourEnable  ||
                               result.isJRCentralStockEnable ||
                               result.isEnableRule115 ||
                               result.isEnableLongRoute ||

@@ -347,13 +347,7 @@ Route::~Route()
 // operator=(const Route& source_route)
 void Route::assign(const RouteList& source_route, int32_t count /* = -1 */)
 {
-	if (0 <= count) {
-    	route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cbegin() + count);
-	} else {
-		route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
-	}
-    route_flag = source_route.getRouteFlag();
-    reBuild();
+    RouteList::assign(source_route, count);
 }
 
 
@@ -362,21 +356,32 @@ RouteList::RouteList(const RouteList& route_list)
     assign(route_list);
 }
 
-
 // operator=(const Route& source_route)
 void RouteList::assign(const RouteList& source_route, int32_t count /* = -1 */)
 {
-	if (0 <= count) {
-    	route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cbegin() + count);
-	} else {
-		route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
-	}
-    route_flag = source_route.getRouteFlag();
-    if ((0 < count) && source_route.routeList().size() != count) {
-        route_flag.end = false;
-        route_flag.compnda = false;
+    if (count < 0) {
+        route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
+        route_flag = source_route.getRouteFlag();
+    } else {
+        vector<RouteItem>::const_iterator pos = source_route.routeList().cbegin();
+        int row = 1;
+        // build
+        Route build_route;
+        if (0 < count) {
+            build_route.add(pos->stationId);
+            for (pos++; pos != source_route.routeList().cend() && row < count ; pos++, row++) {
+                build_route.add(pos->lineId, pos->stationId);
+            }
+        }
+        // copy of route
+        route_list_raw.assign(build_route.routeList().cbegin(),
+                              build_route.routeList().cend());
+        // copy of flag
+        if (source_route.getRouteFlag().osakakan_detour) {
+            build_route.setDetour(true);
+        }
+        route_flag = build_route.getRouteFlag();
     }
-
     /* It's necessary to rebuild() if Route object. */
 }
 
@@ -398,18 +403,8 @@ void CalcRoute::sync(const RouteList& route)
 
 void CalcRoute::sync(const RouteList& route, int count)
 {
-    //assign(route);
-    if (count < 0) {
-        route_list_raw.assign(route.routeList().cbegin(), route.routeList().cend());
-    } else {
-        route_list_raw.assign(route.routeList().cbegin(), route.routeList().cbegin() + count);
-    }
-    route_flag = route.getRouteFlag();
-    if ((0 < count) && route.routeList().size() != count) {
-        route_flag.end = false;
-        route_flag.compnda = false;
-    }
     route_list_cooked.clear();
+    RouteList::assign(route, count);
     TRACE("CalcRoute::sync() %d\n", route_flag.is_osakakan_1pass());
 }
 
@@ -2800,6 +2795,9 @@ int32_t Route::reBuild()
 			break;
 		}
 	}
+    if (rc == ADDRC_LAST) {
+        ++pos;
+    }
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
         route_flag.osakakan_detour = false;
         TRACE(_T("Can't reBuild() rc=%d¥n"), rc);
@@ -3318,7 +3316,6 @@ int32_t Route::setDetour(bool enabled)
 	int32_t rc;
     route_flag.osakakan_detour = enabled;
     rc = reBuild();
-	route_flag.no_rule = enabled;
 	return rc;
 }
 
@@ -10146,7 +10143,7 @@ void FARE_INFO::retr_fare(bool useBullet)
 			ASSERT(this->base_sales_km == _total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
             ASSERT(this->base_calc_km == _total_jr_calc_km);
-			ASSERT(_total_jr_calc_km == _total_jr_calc_km);
+			ASSERT(_total_jr_sales_km == _total_jr_calc_km);
 			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(osaka-kan)\n");
 				_total_jr_fare = FARE_INFO::Fare_osakakan(_total_jr_sales_km);

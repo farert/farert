@@ -81,9 +81,7 @@ public class Route extends RouteList {
     }
 
     void assign(final Route source_route, int count) {
-        route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = new RouteFlag(source_route.getRouteFlag());
-        reBuild();
+        assign(source_route, count);
     }
 
 
@@ -1024,7 +1022,6 @@ public class Route extends RouteList {
 
         route_flag.osakakan_detour = enabled;
         rc = reBuild();
-        route_flag.no_rule = enabled;
 
         return rc;
     }
