@@ -87,11 +87,33 @@ public class RouteList {
     }
 
     public void assign(RouteList source_route, int count) {
-        route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = new RouteFlag(source_route.route_flag);
-        if ((0 < count) && source_route.route_list_raw.size() != count) {
-            route_flag.end = false;
-            route_flag.compnda = false;
+        if (count < 0) {
+            route_list_raw = dupRouteItems(source_route.route_list_raw, count);
+            route_flag = new RouteFlag(source_route.route_flag);
+        } else {
+            int row = 0;
+            // build
+            Route build_route = new Route();
+            if (0 < count) {
+                for (RouteItem ri : source_route.route_list_raw) {
+                    ++row;
+                    if (count < row) {
+                        break;
+                    }
+                    if (1 < row) {
+                        build_route.add(ri.lineId, ri.stationId);
+                    } else {
+                        build_route.add(ri.stationId);
+                    }
+                }
+            }
+            // copy of route
+            route_list_raw = dupRouteItems(build_route.route_list_raw, count);
+            // copy of flag
+            if (source_route.route_flag.osakakan_detour) {
+                build_route.setDetour(true);
+            }
+            route_flag = build_route.route_flag;
         }
     }
 
