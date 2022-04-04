@@ -9480,8 +9480,8 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 				if (0 < special_fare) {
 		            this->jr_fare = special_fare - this->company_fare;	/* IRいしかわ 乗継割引 */
 				}
-		} else if ( !pRoute_flag->isUseBullet()            /* b#18111401: 新幹線乗車なく、 */
-		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
+		} else if ( //!pRoute_flag->isUseBullet() &&           /* b#18111401: 新幹線乗車なく、 */
+		            (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
 					&& !pRoute_flag->isIncludeCompanyLine()) { // 東京メトロは適用外
 			special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
 			if (0 < special_fare) {
@@ -10143,7 +10143,6 @@ void FARE_INFO::retr_fare(bool useBullet)
 			ASSERT(this->base_sales_km == _total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
             ASSERT(this->base_calc_km == _total_jr_calc_km);
-			ASSERT(_total_jr_sales_km == _total_jr_calc_km);
 			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(osaka-kan)\n");
 				_total_jr_fare = FARE_INFO::Fare_osakakan(_total_jr_sales_km);
