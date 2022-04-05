@@ -20,7 +20,7 @@
 
      1) スプレッドシート jrdb2022 を編集
      2) Shellにて（Mac zsh, bash, linux bash, Windows wsl bash等）、db フォルダで、
-        make
+        make update
         を実行（ユーザ権限で可）
 
         linux/mac環境には、curl, python3 が必要です
