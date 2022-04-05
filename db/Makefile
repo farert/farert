@@ -51,6 +51,7 @@ $(foreach OBJ, $(DBFILES), $(eval $(call COPY, $(addprefix $(IOS_DBDIR), $(OBJ))
 # Windows (DB_WIN)
 $(foreach OBJ, $(DBFILES), $(eval $(call COPY, $(addprefix $(WIN_DBDIR), $(OBJ)), $(OBJ))))
 
+update : clean all
 
 download :
 	./down_spr_as_text.sh
