@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A07D79D27FDD547004FA2D2 /* jrdbnewest.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A07D79C27FDD547004FA2D2 /* jrdbnewest.db */; };
 		2A0A0B5C1EE994ED00764EF1 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */; };
 		2A26688D20119EAB00FC0E17 /* McPickerBarButtonItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A26688C20119EAB00FC0E17 /* McPickerBarButtonItem.swift */; };
 		2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */; };
@@ -30,7 +31,6 @@
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
-		2A3F372F2642AAF70009C04A /* jrdb2021.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A3F372E2642AAF70009C04A /* jrdb2021.db */; };
 		2A4CCE271EB556A00083260C /* Routefolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4CCE261EB556A00083260C /* Routefolder.swift */; };
 		2A57119E1EB836F800D593DD /* McPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119D1EB836F800D593DD /* McPicker.swift */; };
 		2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */; };
@@ -50,6 +50,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2A07D79C27FDD547004FA2D2 /* jrdbnewest.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdbnewest.db; sourceTree = "<group>"; };
 		2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = alpdb.cpp; path = ../../alps/alpdb.cpp; sourceTree = "<group>"; };
 		2A0A0B5B1EE994ED00764EF1 /* alpdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = alpdb.h; path = ../../alps/alpdb.h; sourceTree = "<group>"; };
 		2A26688C20119EAB00FC0E17 /* McPickerBarButtonItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPickerBarButtonItem.swift; sourceTree = "<group>"; };
@@ -78,7 +79,6 @@
 		2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DbSys.h; sourceTree = "<group>"; };
 		2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DbSys.m; sourceTree = "<group>"; };
 		2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		2A3F372E2642AAF70009C04A /* jrdb2021.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2021.db; sourceTree = "<group>"; };
 		2A4CCE261EB556A00083260C /* Routefolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Routefolder.swift; sourceTree = "<group>"; };
 		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
 		2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolderTableViewCell.swift; sourceTree = "<group>"; };
@@ -182,7 +182,7 @@
 		2A2BB0CA1AD6980600F7DED2 /* model */ = {
 			isa = PBXGroup;
 			children = (
-				2A3F372E2642AAF70009C04A /* jrdb2021.db */,
+				2A07D79C27FDD547004FA2D2 /* jrdbnewest.db */,
 				2A4CCE261EB556A00083260C /* Routefolder.swift */,
 				2A69CCDE1E736EF1007F478A /* jrdb2017.db */,
 				2ABD92E61E19EEA9002488E0 /* c_route.mm */,
@@ -290,12 +290,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */,
+				2A07D79D27FDD547004FA2D2 /* jrdbnewest.db in Resources */,
 				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
 				2A9AF26C2369B86B00262E98 /* LaunchScreen.storyboard in Resources */,
 				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,
 				2A969B322354B2F400B8689F /* Localizable.strings in Resources */,
 				2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */,
-				2A3F372F2642AAF70009C04A /* jrdb2021.db in Resources */,
 				2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -99,7 +99,7 @@ BOOL Calps_mfcApp::InitInstance()
 				g_tax = 8;
 			} else {
 				// default
-				dbid = IDR_DB2019;
+				dbid = IDR_DBNEWEST;
 				if (g_tax != 5) {
 					g_tax = DEFAULT_TAX;
 				}
