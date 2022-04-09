@@ -111,7 +111,7 @@ public class RouteDB {
         return createdate;
     }
     public boolean isLatest() {
-        return DatabaseOpenHelper.Companion.dbIndex() == DatabaseOpenHelper.Companion.getDEFAULT_DB_IDX();
+        return DatabaseOpenHelper.Companion.dbIndex() == DatabaseOpenHelper.DEFAULT_DB_IDX;
     }
 
 }
