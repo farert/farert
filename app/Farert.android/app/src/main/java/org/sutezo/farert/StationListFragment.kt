@@ -1,20 +1,16 @@
 package org.sutezo.farert
 
-import android.os.Bundle
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
-import android.provider.Settings.Global.getString
+import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.support.v7.widget.RecyclerView
 import android.widget.TextView
-import kotlinx.android.synthetic.main.row_line_list.view.*
 import kotlinx.android.synthetic.main.row_station_list.view.*
 import kotlinx.android.synthetic.main.station_list.view.*
-import kotlinx.android.synthetic.main.terminal_first_list.view.*
 import org.sutezo.alps.*
 
 /**
@@ -30,11 +26,11 @@ class StationListFragment : Fragment() {
      */
     var mode : String = ""          // terminal|autoroute|route
     var lineId : Int = 0
-    var srcType:String = ""         // prefect|company
-    var srcCompanyOrPrefectId: Int = 0
-    var stationMode : String = ""    // junction|
-    var srcStationId : Int = 0
-    var startStationId : Int = 0
+    private var srcType:String = ""         // prefect|company
+    private var srcCompanyOrPrefectId: Int = 0
+    private var stationMode : String = ""    // junction|
+    private var srcStationId : Int = 0
+    private var startStationId : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +50,7 @@ class StationListFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.station_list, container, false)
 
-        var list = {
+        val list = {
 
             if (mode != "route") {
                 // terminal or autoroute
@@ -95,14 +91,11 @@ class StationListRecyclerViewAdapter(private val lineId: Int,
                                      private val onClickCallBack: (Int) -> Unit) :
         RecyclerView.Adapter<StationListRecyclerViewAdapter.ViewHolder>() {
 
-    private val onClickListener: View.OnClickListener
-
-    init {
-        onClickListener = View.OnClickListener { v ->
-            val item = v.tag as Int
-            onClickCallBack(item)
-        }
+    private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
+        val item = v.tag as Int
+        onClickCallBack(item)
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.row_station_list, parent, false)

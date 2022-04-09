@@ -11,7 +11,6 @@ public class BottomNavigationViewHelper {
     /**
      * BottomNavigationViewのアイテムのサイズの調整、アイコンサイズ調整、タイトルの削除
      *
-     * @param view
      */
     public static void disableShiftMode(BottomNavigationView view) {
         BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
@@ -24,7 +23,7 @@ public class BottomNavigationViewHelper {
 
             for (int i = 0; i < menuView.getChildCount(); i++) {
 
-                /**
+                /*
                  * アイテムの幅調整
                  */
                 BottomNavigationItemView bottomNavigationItemView = (BottomNavigationItemView) menuView.getChildAt(i);
@@ -38,9 +37,7 @@ public class BottomNavigationViewHelper {
                 //bottomNavigationItemView.setEnabled(false);
             }
 
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }

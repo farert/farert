@@ -8,7 +8,7 @@
     <string name="query">確認</string>
     <string name="error">エラー</string>
 
-    <string name="main_last_list_caption">追加...     ></string>
+    <string name="main_last_list_caption">追加…     ></string>
     <string name="main_alert_query_terminal_title">発駅選択</string>
     <string name="main_alert_query_terminal_mesg">経路を削除してもよろしいでしょうか？</string>
     <string name="main_alert_query_bullet">新幹線を使いますか？</string>
@@ -59,8 +59,8 @@
     <string name="agree">了解</string>
     <string name="disagree">いいえ</string>
 
-    <string name="title_version_close">ok</string>
-    <string name="copyright">Copyright(c) Sutezo 2014-2022</string>
+    <string name="title_version_close">OK</string>
+    <string name="copyright">Copyright© Sutezo 2014–2022</string>
 
     <string name="btn_edit">編集</string>
     <string name="btn_del">削除</string>
@@ -227,7 +227,7 @@
     <string name="arch_title_import">インポートする経路をテキストで「メモ」等の外部エディタで作成してください\n(スペースまたはカンマ\',\'区切りで1行1経路)で指定します）\nその後、クリップボードへコピーして本機能を実行します.\nわからないという人は使用しないでください</string>
 
     <string name="main_alert_query_all_clear_title">確認</string>
-    <string name="main_alert_query_all_clear_mesg">すべて削除してよいでしょうか？</string>
+    <string name="main_alert_query_all_clear_mesg">元に戻せませんが、すべて削除してよいでしょうか？\n1行の削除はスワイプ操作でおこないます</string>
 
 
     <string name="pref_title_display_name">Display name</string>

@@ -1,19 +1,14 @@
 package org.sutezo.farert
 
 import android.app.Activity
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import kotlinx.android.synthetic.main.activity_settings.*
 import org.sutezo.alps.readParam
 import org.sutezo.alps.saveParam
-import org.sutezo.farert.R.id.spinner
-import org.sutezo.farert.R.id.swKokuraShinZai
-import java.lang.NumberFormatException
-import android.content.Intent
-
 
 
 class SettingsActivity : AppCompatActivity() {
@@ -35,10 +30,10 @@ class SettingsActivity : AppCompatActivity() {
 
         val adapter = spinner.adapter
 
-        try {
-            mSelIndex = Integer.parseInt(selDatabase)
+        mSelIndex = try {
+            Integer.parseInt(selDatabase)
         } catch (e: NumberFormatException) {
-            mSelIndex = -1
+            -1
         }
 
         if (mSelIndex < 0) {
@@ -75,17 +70,11 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
-    override fun onStop() {
-        super.onStop()
-
-    }
-
     /**
      *
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             android.R.id.home -> {
                 var rc : Int = Activity.RESULT_CANCELED
 

@@ -2,13 +2,10 @@ package org.sutezo.alps;
 
 //package Route;
 
-import java.util.*;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteOpenHelper;
-
 import static org.sutezo.alps.farertAssert.ASSERT;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /*!	@file Route core logic implement.
@@ -73,14 +70,11 @@ public class RouteList {
 
     // route_flag
 
-    List<RouteItem> route_list_raw = new ArrayList<RouteItem>(0);
+    List<RouteItem> route_list_raw = new ArrayList<>(0);
 
     RouteFlag route_flag = new RouteFlag();	// add() - removeTail() work
 
     public RouteList() {}
-    public RouteList(RouteList route_list) {
-
-    }
 
     public void assign(RouteList source_route) {
         this.assign(source_route, -1);
@@ -122,7 +116,7 @@ public class RouteList {
     }
 
     static List<RouteItem> dupRouteItems(final List<RouteItem> source, int count) {
-        List<RouteItem> dest = new ArrayList<RouteItem>(source.size());
+        List<RouteItem> dest = new ArrayList<>(source.size());
         int n = 0;
         for (RouteItem ri : source) {
             ++n;
@@ -175,7 +169,7 @@ public class RouteList {
 	 *	@remark showFare()の呼び出し後にのみ有効
 	 */
     public String route_script() {
-        StringBuffer result_str = new StringBuffer();
+        StringBuilder result_str = new StringBuilder();
         boolean oskk_flag;
         int i;
 
