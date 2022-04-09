@@ -2,12 +2,6 @@ package org.sutezo.alps;
 
 //package Route;
 
-import java.util.*;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteOpenHelper;
-
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.

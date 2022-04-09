@@ -457,14 +457,15 @@ public class FARE_INFO {
                     }
                 }
             }
-            if (0 < comfare.fareAcademic) {
-                /* 学割ありの場合は割引額を加算 */
-                ASSERT (comfare.fareAcademic < comfare.fare);
-                this.company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
+            if (comfare != null) {
+                if (0 < comfare.fareAcademic) {
+                    /* 学割ありの場合は割引額を加算 */
+                    ASSERT(comfare.fareAcademic < comfare.fare);
+                    this.company_fare_ac_discount += (comfare.fare - comfare.fareAcademic);
+                }
+                this.company_fare += comfare.fare;
+                this.company_fare_child += comfare.fareChild;
             }
-            this.company_fare += comfare.fare;
-            this.company_fare_child += comfare.fareChild;
-
         } else {
             /* 1回目の会社線 */
             if (firstCompany) {
@@ -523,20 +524,19 @@ public class FARE_INFO {
 
         station_id_0 = station_id1 = 0;
 
-        for (Iterator ite = routeList.iterator(); ite.hasNext(); ) {
-            RouteItem ri = (RouteItem)ite.next();
+        for (RouteItem ri : routeList) {
             //ASSERT ((ite.flag) == 0);
             if (station_id1 != 0) {
-                                /* 会社別営業キロ、計算キロの取得 */
+                /* 会社別営業キロ、計算キロの取得 */
 
                 if (ri.lineId == RouteUtil.ID_L_RULE70) {
                     int sales_km;
                     sales_km = Retrieve70Distance(station_id1, ri.stationId);
-                    ASSERT (0 < sales_km);
-                    this.sales_km += sales_km;			// total 営業キロ(会社線含む、有効日数計算用)
-                    this.base_sales_km	+= sales_km;
+                    ASSERT(0 < sales_km);
+                    this.sales_km += sales_km;            // total 営業キロ(会社線含む、有効日数計算用)
+                    this.base_sales_km += sales_km;
                     this.base_calc_km += sales_km;
-                    this.local_only = false;		// 幹線
+                    this.local_only = false;        // 幹線
 
                 } else {
                     int company_id1;
@@ -552,8 +552,8 @@ public class FARE_INFO {
                     }
 
                     if (8 != dex.length) {
-                        ASSERT (false);
-                        return -1;	/* failure abort end. >>>>>>>>> */
+                        ASSERT(false);
+                        return -1;    /* failure abort end. >>>>>>>>> */
                     }
                     company_id1 = dex[4];
                     company_id2 = dex[5];
@@ -570,14 +570,14 @@ public class FARE_INFO {
                     this.companymask |= ((1 << (company_id1 - 1)) | ((1 << (company_id2 - 1))));
 
                     if ((company_id1 == JR_CENTRAL) || (company_id1 == RouteUtil.JR_WEST)) {
-                        company_id1 = RouteUtil.JR_EAST;	/* 本州三社としてJR東海、JR西は、JR東とする */
+                        company_id1 = RouteUtil.JR_EAST;    /* 本州三社としてJR東海、JR西は、JR東とする */
                     }
                     if ((company_id2 == JR_CENTRAL) || (company_id2 == RouteUtil.JR_WEST)) {
-                        company_id2 = RouteUtil.JR_EAST;	/* 本州三社としてJR東海、JR西は、JR東とする */
+                        company_id2 = RouteUtil.JR_EAST;    /* 本州三社としてJR東海、JR西は、JR東とする */
                     }
 
-                    this.sales_km += dex[0];			// total 営業キロ(会社線含む、有効日数計算用)
-                    if (RouteUtil.IS_COMPANY_LINE(ri.lineId)) {	/* 会社線 */
+                    this.sales_km += dex[0];            // total 営業キロ(会社線含む、有効日数計算用)
+                    if (RouteUtil.IS_COMPANY_LINE(ri.lineId)) {    /* 会社線 */
                         station_id_0 = this.aggregate_fare_company(this.sales_km == dex[0],
                                 routeFlag_,
                                 station_id_0,
@@ -593,11 +593,11 @@ public class FARE_INFO {
                         if (RouteUtil.IS_SHINKANSEN_LINE(ri.lineId)) {
                             /* 山陽新幹線 広島-徳山間を通る場合の1経路では、fare(l, i) とされてしまうけんのぉ
                              */
-                            this.local_only = false;		// 幹線
+                            this.local_only = false;        // 幹線
                         }
 
                         if (this.aggregate_fare_jr(RouteUtil.IS_BRT_LINE(ri.lineId), company_id1, company_id2, dex) < 0) {
-                            return -1;	// error >>>>>>>>>>>>>>>>>>>>>>>>>>>
+                            return -1;    // error >>>>>>>>>>>>>>>>>>>>>>>>>>>
                         }
                     }
                     if ((this.flag & RouteUtil.FLAG_FARECALC_INITIAL) == 0) { // b15が0の場合最初なので駅1のフラグも反映
@@ -609,10 +609,10 @@ public class FARE_INFO {
                     }
                     flag = (RouteUtil.FLAG_FARECALC_INITIAL | RouteUtil.MASK_FARECALC_INITIAL | dex[7]);
                     if ((flag & RouteUtil.MASK_URBAN) != (this.flag & RouteUtil.MASK_URBAN)) {/* 近郊区間(b7-9) の比較 */
-                        flag &= ~RouteUtil.MASK_URBAN;				/* 近郊区間 OFF */
+                        flag &= ~RouteUtil.MASK_URBAN;                /* 近郊区間 OFF */
                     }
-                    this.flag &= flag;	/* b11,10,5(大阪/東京電車特定区間, 山手線／大阪環状線内) */
-                                        /* ~(反転）不要 */
+                    this.flag &= flag;    /* b11,10,5(大阪/東京電車特定区間, 山手線／大阪環状線内) */
+                    /* ~(反転）不要 */
                     /* flag(sflg)は、b11,10,5, 7-9 のみ使用で他はFARE_INFOでは使用しない */
 
                     // 特別加算区間
@@ -854,25 +854,27 @@ public class FARE_INFO {
     //
     public String showFare(final RouteFlag argRouteFlag) {
 //	final static int MAX_BUF = 1024;
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         switch (resultCode()) {
             case 0:     // success, company begin/first or too many company
                 break;  // OK
             case -1:    /* In completed */
-                return new String("この経路の片道乗車券は購入できません.続けて経路を指定してください.");
+                return "この経路の片道乗車券は購入できません.続けて経路を指定してください.";
             case -2:     // empty.
-                return new String("");
+                return "";
             default:
-                return new String("予期せぬエラーです");
+                return "予期せぬエラーです";
         }
 
         /* 発駅→着駅 */
-        buffer.append(CalcRoute.BeginOrEndStationName(this.getBeginTerminalId()) +
-                " -> " +
-                CalcRoute.BeginOrEndStationName(this.getEndTerminalId()) +
-                "\r\n経由：" +
-                this.getRoute_string() + "\r\n");
+        buffer.append(CalcRoute.BeginOrEndStationName(
+                      this.getBeginTerminalId())
+             ).append(" -> "
+             ).append(CalcRoute.BeginOrEndStationName(this.getEndTerminalId())
+             ).append("\r\n経由："
+             ).append(this.getRoute_string()
+             ).append("\r\n");
 
         ASSERT (100<=this.getFareForDisplay());
 
@@ -1279,11 +1281,8 @@ public class FARE_INFO {
                 this.avail_days = days_ticket(this.sales_km);
             }
 
-            if (6000 < total_jr_sales_km) {	/* 往復割引 */
-                this.roundTripDiscount = true;
-            } else {
-                this.roundTripDiscount = false;
-            }
+            /* 往復割引 */
+            this.roundTripDiscount = 6000 < total_jr_sales_km;
             return true;
 
         } else {
@@ -1337,7 +1336,7 @@ public class FARE_INFO {
             || (id == DbIdOf.INSTANCE.station("多治見"))) {
                 bNeer = true;
             } else {
-                if (bNeer == true) {
+                if (bNeer) {
                     rc = shortRoute.changeNeerest(0, id);
                     if (rc < 0) {
                         ASSERT(false);
@@ -1357,7 +1356,7 @@ public class FARE_INFO {
             /* error */
             return route;
         }
-        if (bNeer == true) {
+        if (bNeer) {
             rc = shortRoute.changeNeerest(0, route.arriveStationId());
             if (rc < 0) {
                 ASSERT(false);
@@ -1443,7 +1442,7 @@ public class FARE_INFO {
         calc_route_for_disp = "";
     }
 
-    class FareResult {
+    static class FareResult {
         int fare;
         boolean isDiscount;
         FareResult() { fare = 0; isDiscount = false; }
@@ -1506,9 +1505,8 @@ public class FARE_INFO {
     boolean didHaveLocalLine() { return !local_only && total_jr_calc_km != total_jr_sales_km; }
     boolean isLocalOnly() { return local_only; }
 
-    /**	往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
+    /*	往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
      *
-     *	@retval [円]
      */
     FareResult 	roundTripFareWithCompanyLine() {
         FareResult fareW = new FareResult();
@@ -1525,10 +1523,8 @@ public class FARE_INFO {
         return fareW;
     }
 
-    /**	114条適用前の往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
-     *
-     *	@retval [円]
-     */
+    /*	114条適用前の往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
+     **/
     int 	roundTripFareWithCompanyLinePriorRule114() {
         int fareW;
 
@@ -1542,10 +1538,8 @@ public class FARE_INFO {
         return fareW;
     }
 
-    /**	小児往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
+    /*	小児往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
      *
-     *	@paramm discount [out]  true=割引あり
-     *	@retval [円]
      */
     int 	roundTripChildFareWithCompanyLine()	{
         int fareW;
@@ -1558,17 +1552,13 @@ public class FARE_INFO {
         return fareW;
     }
 
-    /**	近郊区間内かを返す(有効日数を1にする)
-     *
-     *	@retval	true 近郊区間
+    /*	近郊区間内かを返す(有効日数を1にする)
      */
     boolean 	isUrbanArea() {
         return ((MASK_URBAN & flag) != 0);
     }
 
-    /**	総営業キロを返す
-     *
-     *	@retval 営業キロ
+    /*	総営業キロを返す
      */
     int 	getTotalSalesKm() {
         return sales_km;
@@ -1578,132 +1568,100 @@ public class FARE_INFO {
     int		getRule114CalcKm() { return rule114Info.calc_km();  }
 
     /**	JR線の営業キロを返す
-     *
-     *	@retval 計算キロ
      */
     int		getJRSalesKm() {
         return total_jr_sales_km;
     }
 
     /**	JR線の計算キロを返す
-     *
-     *	@retval 計算キロ
      */
     int		getJRCalcKm() {
         return total_jr_calc_km;
     }
 
     /**	会社線の営業キロ総数を返す
-     *
-     *	@retval 営業キロ
      */
     int		getCompanySalesKm() {
         return sales_km - total_jr_sales_km;
     }
 
     /** BRT 営業キロ
-     *
-     *  @retval 営業キロ
      */
     int     getBRTSalesKm() {
         return brt_sales_km;
     }
 
     /** BRT 運賃
-     *
-     *  @retval BRT運賃
      */
     int     getFareForBRT() {
         return brt_fare;
     }
 
     /** BRT乗り継ぎ割引
-     * @retval あり
      */
     boolean isBRT_discount() { return brt_discount_fare != 0; }
 
     /**	JR北海道の営業キロを返す
-     *
-     *	@retval 営業キロ
      */
     int		getSalesKmForHokkaido() {
         return hokkaido_sales_km;
     }
 
     /**	JR四国の営業キロを返す
-     *
-     *	@retval	営業キロ
      */
     int		getSalesKmForShikoku() {
         return shikoku_sales_km;
     }
 
     /**	JR九州の営業キロを返す
-     *
-     *	@retval	営業キロ
      */
     int		getSalesKmForKyusyu() {
         return kyusyu_sales_km;
     }
 
     /**	JR北海道の計算キロを返す
-     *
-     *	@retval	計算キロ
      */
     int		getCalcKmForHokkaido() {
         return hokkaido_calc_km;
     }
 
     /**	JR四国の計算キロを返す
-     *
-     *	@retval	計算キロ
      */
     int		getCalcKmForShikoku() {
         return shikoku_calc_km;
     }
 
     /**	JR九州の計算キロを返す
-     *
-     *	@retval	計算キロ
      */
     int		getCalcKmForKyusyu() {
         return kyusyu_calc_km;
     }
 
     /**	乗車券の有効日数を返す
-     *
-     *	@retval	有効日数[日]
      */
     int		getTicketAvailDays() {
         return avail_days;
     }
 
     /**	会社線の運賃額を返す
-     *
-     *	@retval	[円]
      */
     int		getFareForCompanyline() {
         return company_fare;
     }
 
     /**	JR線＋会社線の小児運賃額を返す
-     *
-     *	@retval	[円]
      */
     int		getChildFareForDisplay() {
         return company_fare_child + fare_discount(jrFare(), 5);
     }
 
     /**	JR線の運賃額を返す(114条未適用計算値)
-     *
-     *	@retval	[円]
      */
     int		getFareForJR() {
         return jr_fare;
     }
 
     /**	株主優待割引有効数を返す
-     *	@retval	[円](無割引、無効は0)
      */
     int countOfFareStockDiscount() {
         // 通過連絡運輸も株優は有効らしい
@@ -1738,7 +1696,6 @@ public class FARE_INFO {
      *
      *	@param index      [in]   0から1 JR東日本のみ 0は2割引、1は4割引を返す
      *	@param applied_r114  [in]  true = 114条適用 / false = 114条適用前
-     *	@retval	[円](無割引、無効は0)
      */
     StockFare getFareStockDiscount(int index, boolean applied_r114) {
         StockFare ret = new StockFare();
@@ -1848,8 +1805,6 @@ public class FARE_INFO {
 
     /**	学割運賃を返す(会社線+JR線=全線)
      *
-     *	@retval	学割運賃[円]
-     *	@retval 0 非適用
      */
     int		getAcademicDiscountFare() {
         int result_fare;
@@ -1870,8 +1825,6 @@ public class FARE_INFO {
     }
 
     /**	学割往復運賃を返す(会社線含む総額)(JR分は601km以上で1割引)
-     *
-     *	@retval [円]
      */
     int 	roundTripAcademicFareWithCompanyLine() {
         int fareS;
@@ -1903,16 +1856,12 @@ public class FARE_INFO {
     }
 
     /**	JR線＋会社線の運賃額を返す
-     *
-     *	@retval	[円]
      */
     int		getFareForDisplay() {
         return getFareForCompanyline() + jrFare();
     }
 
     /**	JR線＋会社線の運賃額を返す(114条非適用運賃)
-     *
-     *	@retval	[円]
      */
     int		getFareForDisplayPriorRule114() {
         if (isRule114()) {
@@ -1925,7 +1874,6 @@ public class FARE_INFO {
 
     /**	IC運賃を返す
      *
-     *	@retval IC運賃(x10[円])
      */
     int		getFareForIC()
     {
@@ -1973,13 +1921,10 @@ public class FARE_INFO {
                         " ((station_id1=?1 and station_id2=?2) or" +
                         "  (station_id1=?2 and station_id2=?1))";
         int rc = 0;
-        Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(station_id1), String.valueOf(station_id2)});
-        try {
+        try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(station_id1), String.valueOf(station_id2)})) {
             if (dbo.moveToNext()) {
                 rc = dbo.getInt(0);
             }
-        } finally {
-            dbo.close();
         }
         return rc;
     }
@@ -2036,7 +1981,6 @@ public class FARE_INFO {
 
     /**	JR線の運賃額を返す(含114条適用／非適用判定)
      *
-     *	@retval	[円]
      */
     private int		jrFare() {
         if (isRule114()) {
@@ -2620,7 +2564,7 @@ public class FARE_INFO {
                 } else if ((KM.KM(ckm) == 11) && (KM.KM(skm) == 10)) {
                     return 230;	/* \ */
                 }
-                /*** JR四国は消費税8%でもここは据え置きみたい ***/
+                /* JR四国は消費税8%でもここは据え置きみたい */
             }
         }
 
@@ -2829,26 +2773,24 @@ public class FARE_INFO {
                 "  (station_id1=?2 and station_id2=?1))";
 
         sql = String.format(Locale.JAPANESE, tsql, RouteDB.getInstance().tax());
-        Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {String.valueOf(station_id1), String.valueOf(station_id2)});	// false));
-        boolean rc = false;
-        try {
+        // false));
+        try (Cursor dbo = RouteDB.db().rawQuery(sql, new String[]{String.valueOf(station_id1), String.valueOf(station_id2)})) {
+            boolean rc = false;
             int fare_work;
             if (dbo.moveToNext()) {
                 companyFare = new CompanyFare();
-                fare_work = dbo.getInt(0);	// fare
+                fare_work = dbo.getInt(0);    // fare
                 companyFare.fare = fare_work;
-        		companyFare.fareAcademic = dbo.getInt(1);	// academic
-        		companyFare.passflg = (short) dbo.getInt(2);	// flg
+                companyFare.fareAcademic = dbo.getInt(1);    // academic
+                companyFare.passflg = (short) dbo.getInt(2);    // flg
                 rc = true;
-        		// (0=5円は切り捨て, 1=5円未満切り上げ)
-        		if (companyFare.is_round_up_children_fare()) {
-        			companyFare.fareChild = RouteUtil.round_up(fare_work / 2);
-        		} else {
-        			companyFare.fareChild = RouteUtil.round_down(fare_work / 2);
-        		}
+                // (0=5円は切り捨て, 1=5円未満切り上げ)
+                if (companyFare.is_round_up_children_fare()) {
+                    companyFare.fareChild = RouteUtil.round_up(fare_work / 2);
+                } else {
+                    companyFare.fareChild = RouteUtil.round_down(fare_work / 2);
+                }
             }
-        } finally {
-            dbo.close();
         }
         return companyFare;
     }
@@ -3225,20 +3167,18 @@ public class FARE_INFO {
         result.add(0);	// calc_km  for in company as station_id1 [3]
         result.add(RouteUtil.JR_WEST);	// 駅ID1の会社ID [4]
         result.add(RouteUtil.JR_WEST);	// 駅ID2の会社ID [5]
-        Cursor ctx = RouteDB.db().rawQuery("select" +
-                " (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)"		// [5]
-                , new String[] {String.valueOf(station_id1), String.valueOf(station_id2)});
-        try {
+        // [5]
+        try (Cursor ctx = RouteDB.db().rawQuery("select" +
+                        " (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)"        // [5]
+                , new String[]{String.valueOf(station_id1), String.valueOf(station_id2)})) {
             if (ctx.moveToNext()) {
                 rslt = ctx.getLong(0);
             }
-        } finally {
-            ctx.close();
         }
         result.add((int)(0xffff & rslt));			// 駅1のsflg [6]
         result.add((int)(0xffff & (rslt >>> 16)));	// 駅2のsflg [7]
 
-        System.out.print(String.format(Locale.JAPANESE, "oskkan:s1km=%d, c1km=%d\n", result.get(0), result.get(1)));
+        System.out.printf(Locale.JAPANESE, "oskkan:s1km=%d, c1km=%d\n", result.get(0), result.get(1));
         return result.toArray(new Integer[0]);
     }
 
@@ -3280,15 +3220,12 @@ public class FARE_INFO {
             return true;
         }
 
-        Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(line_id),
+        try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(line_id),
                 String.valueOf(station_id1),
-                String.valueOf(station_id2)});
-        try {
+                String.valueOf(station_id2)})) {
             if (dbo.moveToNext()) {
                 rsd = dbo.getInt(0);
             }
-        } finally {
-            dbo.close();
         }
         return 0 < rsd;
     }
@@ -3450,7 +3387,7 @@ public class FARE_INFO {
 
     static List<RouteItem> IsHachikoLineHaijima(final List<RouteItem> route_list) {
 
-        List<RouteItem> out_route_list = new ArrayList<RouteItem>();
+        List<RouteItem> out_route_list = new ArrayList<>();
         int sid1;
         boolean b;
         boolean bb;
@@ -3575,13 +3512,13 @@ public class FARE_INFO {
 
             if (route_original.getRouteFlag().ter_begin_yamate ||
                 route_original.getRouteFlag().ter_begin_city) {
-                stid = this.CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CSTART));
+                stid = CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CSTART));
             } else {
                 stid = route_original.departureStationId();
             }
             if (route_original.getRouteFlag().ter_fin_yamate ||
                 route_original.getRouteFlag().ter_fin_city) {
-                edid = this.CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CEND));
+                edid = CenterStationIdFromCityId(route_original.coreAreaIDByCityId(CEND));
             } else {
                 edid = route_original.arriveStationId();
             }
@@ -3713,7 +3650,7 @@ public class FARE_INFO {
             fare_info_shorts.getTotalSalesKm(), fare_info_shorts.jr_fare);
 
         if ((decision == 1/*最短経路*/) ||
-                (route_original.getRouteFlag().special_fare_enable == true)) {
+                route_original.getRouteFlag().special_fare_enable) {
             // 私鉄競合区間特別運賃適用の場合経路が大回りのままで不自然なので最短経路を表示するように
             if (getStockDiscountCompany() != JR_CENTRAL) {
                 // 東海道新幹線(新大阪-米原間は大都市近郊区間適用)利用は
@@ -3721,7 +3658,9 @@ public class FARE_INFO {
                 // 新幹線経路が在来線経路に勝手に書き換わってしまうので。
                 // 最短経路=最安
 			    this.apply(fare_info_shorts);
-                setRoute(shortRoute_List, short_route_flag);
+			    if (shortRoute_List != null) {
+                    setRoute(shortRoute_List, short_route_flag);
+                }
             } else {
                 jr_fare = fare_info_shorts.jr_fare;
             }
@@ -3814,8 +3753,7 @@ public class FARE_INFO {
             "select station_id1, station_id2, type from t_brtsp where line_id=?1";
         List<KM> results = new ArrayList<>();
 
-        Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(line_id)});
-        try {
+        try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(line_id)})) {
             while (dbo.moveToNext()) {
                 int k, l, c;
                 k = dbo.getInt(0); // sakes_km
@@ -3823,8 +3761,6 @@ public class FARE_INFO {
                 c = dbo.getInt(2); // type
                 results.add(new KM(k, l, c, 0));
             }
-        } finally {
-            dbo.close();
         }
         return results;
     }
@@ -3845,12 +3781,7 @@ public class FARE_INFO {
             if (station_id1 != 0) {
                 if (lineId == 0) {
                     /* first line */
-                    if (IS_BRT_LINE(ite.lineId)) {
-                        bBRTPassed = true;
-                    }
-                    else {
-                        bBRTPassed = false;
-                    }
+                    bBRTPassed = IS_BRT_LINE(ite.lineId);
                 }
                 lineId = ite.lineId;
 

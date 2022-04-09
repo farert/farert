@@ -3,13 +3,9 @@ package org.sutezo.farert
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.annotation.RequiresApi
 import android.support.design.internal.BottomNavigationItemView
 import android.support.design.internal.BottomNavigationMenuView
@@ -18,15 +14,13 @@ import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.view.*
-import android.widget.Toast
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.route_list.view.*
-import kotlinx.android.synthetic.main.route_list_last.*
 import kotlinx.android.synthetic.main.route_list_last.view.*
 import org.sutezo.alps.*
-import java.lang.NumberFormatException
 
 
 class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListener, RouteRecyclerAdapter.RecyclerListener {
@@ -40,10 +34,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         FAR,
         NEAR,
     }
-    var mOsakakan_detour : OSAKA_KAN = OSAKA_KAN.DISABLE
+    private var mOsakakan_detour : OSAKA_KAN = OSAKA_KAN.DISABLE
 
     companion object {
-        val RESULT_CODE_SETTING = 3948
+        const val RESULT_CODE_SETTING = 3948
     }
 
     // 再下端のバーボタン
@@ -147,11 +141,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         // first launch check
 
         val rd = readParam(this, "hasLaunched")
-        var num : Int
-        try {
-            num = Integer.parseInt(rd)
+        val num : Int = try {
+            Integer.parseInt(rd)
         } catch (e: NumberFormatException) {
-            num = -1
+            -1
         }
         if ((-1 == num) || (num < 16)) {
             welcome_show()
@@ -288,7 +281,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
 
     // 計算結果表示
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "NotifyDataSetChanged")
     private fun update_fare(rc : Int)
     {
         // 下部計算結果
@@ -355,10 +348,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             (recycler_view_route.adapter as? RouteRecyclerAdapter)?.status_message(msg)
             // 大阪環状線
             if (mRoute.isOsakakanDetourEnable) {
-                if (mRoute.isOsakakanDetour) {
-                    mOsakakan_detour = OSAKA_KAN.FAR
+                mOsakakan_detour = if (mRoute.isOsakakanDetour) {
+                    OSAKA_KAN.FAR
                 } else {
-                    mOsakakan_detour = OSAKA_KAN.NEAR
+                    OSAKA_KAN.NEAR
                 }
             }
             revButton = cr.isAvailableReverse
@@ -467,10 +460,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             // 大阪環状線 大回り/近回り
             R.id.action_osakakanrev -> {
                 if (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE) {
-                    if (mOsakakan_detour == OSAKA_KAN.FAR) {
-                        mOsakakan_detour = OSAKA_KAN.NEAR
+                    mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) {
+                        OSAKA_KAN.NEAR
                     } else {
-                        mOsakakan_detour = OSAKA_KAN.FAR
+                        OSAKA_KAN.FAR
                     }
                     val far = (mOsakakan_detour == OSAKA_KAN.FAR)
                     //if (far) {
@@ -525,7 +518,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 // val r = data!!.getIntExtra("test", 0)
                 setTitlebar()
 
-                if (!mRouteScript.isEmpty()) {
+                if (mRouteScript.isNotEmpty()) {
                     // データベース変更されたら経路を再パースする
                     val rc = mRoute.setup_route(mRouteScript)
                     update_fare(rc)
@@ -609,15 +602,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
 class RouteRecyclerAdapter(private val listener : RecyclerListener,
                            private val route : RouteList) : RecyclerView.Adapter<RouteRecyclerAdapter.RouteListViewHolder>() {
 
-    private val onClickListener: View.OnClickListener
-    private var status : String = ""
-
-    init {
-        onClickListener = View.OnClickListener { v ->
-            val selitem = v.tag as Int
-            listener.onClickRow(selitem)
-        }
+    private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
+        val selitem = v.tag as Int
+        listener.onClickRow(selitem)
     }
+    private var status : String = ""
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RouteListViewHolder {
@@ -653,7 +642,7 @@ class RouteRecyclerAdapter(private val listener : RecyclerListener,
         return if (position == route.count - 1) 1 else 0
     }
 
-    fun status_message(msg : String) : Unit {
+    fun status_message(msg : String) {
         status = msg
         if (1 < route.count) {
             notifyItemChanged(route.count - 1)

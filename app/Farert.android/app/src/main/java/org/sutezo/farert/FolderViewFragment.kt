@@ -1,8 +1,8 @@
 package org.sutezo.farert
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.ShareCompat
@@ -16,12 +16,12 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CheckBox
-import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_archive_route.*
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
-import org.sutezo.alps.*
-import java.lang.Exception
+import org.sutezo.alps.RouteList
+import org.sutezo.alps.fareNumStr
+import org.sutezo.alps.kmNumStr
+import org.sutezo.alps.terminalName
 
 interface RecyclerClickListener {
     fun onClickRow(view: View, position: Int)
@@ -61,6 +61,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         return inflater.inflate(R.layout.fragment_drawer, container, false)
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -158,6 +159,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         updateFareInfo()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun reload(doCalc: Boolean?) {
         mContext?:return
         if (doCalc == true) {
@@ -219,21 +221,17 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
     internal class RecyclerTouchListener(context: Context, recyclerView: RecyclerView, private val clickListener: ClickListener?) : RecyclerView.OnItemTouchListener {
 
-        private val gestureDetector: GestureDetector
-
-        init {
-            gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-                override fun onSingleTapUp(e: MotionEvent): Boolean {
-                    return true
+        private val gestureDetector: GestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                return true
+            }
+            override fun onLongPress(e: MotionEvent) {
+                val child = recyclerView.findChildViewUnder(e.x, e.y)
+                if (child != null && clickListener != null) {
+                    clickListener.onLongClick(child, recyclerView.getChildAdapterPosition(child))
                 }
-                override fun onLongPress(e: MotionEvent) {
-                    val child = recyclerView.findChildViewUnder(e.x, e.y)
-                    if (child != null && clickListener != null) {
-                        clickListener.onLongClick(child, recyclerView.getChildAdapterPosition(child))
-                    }
-                }
-            })
-        }
+            }
+        })
 
         override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
 
@@ -267,6 +265,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             return MyViewHolder(view)
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val current = routefolder.routeItem(position)
             val begin = current.departureStationId()
@@ -284,7 +283,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                     parent?.let {
                         try {
-                            val row_index = it.tag as Int
+                            val row_index: Int = it.tag as Int
                             val agt = Routefolder.Aggregate.values()[position]
                             routefolder.setAggregateType(it.context, row_index, agt)
                             notifyItemChanged(row_index) // 運賃額の変更
@@ -318,6 +317,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
 
         // 経路追加ボタン
+        @SuppressLint("NotifyDataSetChanged")
         fun add(context: Context, route : RouteList) {
             val rl = RouteList()    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
             rl.assign(route)
@@ -329,6 +329,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
 
         // 削除ボタン
+        @SuppressLint("NotifyDataSetChanged")
         fun deleteChecked() {
 
             AlertDialog.Builder(mContext).apply {
@@ -355,6 +356,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
 
         // 削除用チェックボタンを全切り替え
+        @SuppressLint("NotifyDataSetChanged")
         fun checkAll(value : Boolean) {
             mCheck = MutableList(routefolder.count()) {value}
             notifyDataSetChanged()

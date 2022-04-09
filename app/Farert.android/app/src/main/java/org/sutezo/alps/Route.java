@@ -111,9 +111,7 @@ public class Route extends RouteList {
             clear();
         }
         void clear() {
-            for (int i = 0; i < jct_mask.length; i++) {
-                jct_mask[i] = 0;
-            }
+            Arrays.fill(jct_mask, (char) 0);
         }
         void on(int jctid) {
             jct_mask[jctid / 8] |= (1 << (jctid % 8));
@@ -136,9 +134,7 @@ public class Route extends RouteList {
             jct_mask[index] &= ~mask;
         }
         void assign(final JctMask jctmask) {
-            for (int i = 0; i < jct_mask.length; i++) {
-                jct_mask[i] = jctmask.jct_mask[i];
-            }
+            System.arraycopy(jctmask.jct_mask, 0, jct_mask, 0, jct_mask.length);
         }
     }
 
@@ -431,11 +427,10 @@ public class Route extends RouteList {
                             " then sales_km" +
                             " end asc";
 
-            Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(_line_id),
+            try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(_line_id),
                     String.valueOf(_station_id1),
-                    String.valueOf(_station_id2) });
-            c = 0;
-            try {
+                    String.valueOf(_station_id2)})) {
+                c = 0;
                 ++c;
                 while (dbo.moveToNext()) {
                     routePassed.on(dbo.getInt(0));
@@ -443,8 +438,6 @@ public class Route extends RouteList {
                 }
             } catch (Exception e) {
                 c = -1;
-            } finally {
-                dbo.close();
             }
             return c;
         }
@@ -464,19 +457,15 @@ public class Route extends RouteList {
 
             ASSERT (_line_id == DbIdOf.INSTANCE.line("大阪環状線"));
 
-            Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(_line_id),
+            try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(_line_id),
                     String.valueOf(_station_id1),
-                    String.valueOf(_station_id2)});
-            c = 0;
-
-            try {
+                    String.valueOf(_station_id2)})) {
+                c = 0;
                 while (dbo.moveToNext()) {
                     routePassed.on(dbo.getInt(0));
                     c++;
                 }
                 return c;
-            } finally {
-                dbo.close();
             }
             //return -1;	/* error */
         }
@@ -980,7 +969,7 @@ public class Route extends RouteList {
         routeWork.getRouteFlag().osakakan_detour = route_flag.osakakan_detour;
         routeWork.getRouteFlag().notsamekokurahakatashinzai = route_flag.notsamekokurahakatashinzai;
 
-        Iterator pos = route_list_raw.iterator();
+        Iterator<RouteItem> pos = route_list_raw.iterator();
         if (pos.hasNext()) {
             pos.next();
         }
@@ -993,7 +982,7 @@ public class Route extends RouteList {
             }
         }
         if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos.hasNext())))) {
-            System.out.print(String.format("Can't reBuild() rc={0}\n", rc));
+            System.out.printf("Can't reBuild() rc=%d\n", rc);
             route_flag.osakakan_detour = false;
             return -1;	/* error */
         }
@@ -1047,11 +1036,7 @@ public class Route extends RouteList {
     //
     public void setNotSameKokuraHakataShinZai(boolean enabled)
     {
-    	if (enabled) {
-    		route_flag.notsamekokurahakatashinzai = true;
-    	} else {
-    		route_flag.notsamekokurahakatashinzai = false;
-    	}
+        route_flag.notsamekokurahakatashinzai = enabled;
     }
 
     int brtPassCheck(int stationId2) {
@@ -1329,6 +1314,7 @@ public class Route extends RouteList {
         }
 
         // 151 check
+        // while is only using it because don't want to use goto.
         while (BIT_CHK(lflg1, BSRJCTSP)) {
             System.out.println(">");
             // 段差型
@@ -1946,7 +1932,7 @@ public class Route extends RouteList {
         int line_id;
         int rc = -1;
 
-        List<RouteItem> route_list_rev = new ArrayList<RouteItem>(route_list_raw.size());
+        List<RouteItem> route_list_rev = new ArrayList<>(route_list_raw.size());
 
         if (route_list_raw.size() <= 1) {
             return rc;  // -1
@@ -2031,8 +2017,8 @@ public class Route extends RouteList {
                     done_flg = false;
                     line_id = 0;
                 }
-        	};
-            NODE_JCT [] d;
+        	}
+            final NODE_JCT [] d;
         	Dijkstra() {
         		int i;
         		d = new NODE_JCT [MAX_JCT];
@@ -2270,7 +2256,7 @@ public class Route extends RouteList {
                         ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ &&
                         ((((0x01 & useBulletTrain) != 0) || !IS_SHINKANSEN_LINE(node[2])) &&
                          (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(node[2])))) {
-                                 /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
+                                 /* コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
 					/* 新幹線でない */
                     cost = dijkstra.minCost(doneNode) + node[1]; // cost
 
@@ -2295,10 +2281,10 @@ public class Route extends RouteList {
                     System.out.printf("x(%s)", StationName(Jct2id(a + 1)));
                 }
             }
-            System.out.println("");
+            System.out.println();
         }
 
-        List<Integer> route = new ArrayList<Integer>();
+        List<Integer> route = new ArrayList<>();
         short lineid = 0;
         short idb;
 
@@ -2396,7 +2382,7 @@ public class Route extends RouteList {
 
         System.out.printf( "----------[%s]------\n", StationName(Jct2id(id)));
 
-        List<Integer> route_rev = new ArrayList<Integer>(route.size());
+        List<Integer> route_rev = new ArrayList<>(route.size());
         int bid = -1;
         for (int ritr = route.size() - 1; 0 <= ritr; ritr--) {
             System.out.printf("> %s %s\n", LineName(dijkstra.lineId(route.get(ritr))), StationName(Jct2id(route.get(ritr)+ 1)));
@@ -2410,7 +2396,7 @@ public class Route extends RouteList {
             bid = route.get(ritr);
         }
 		/* reverse(route_rev->route) */
-        route = new ArrayList<Integer>(route_rev);
+        route = new ArrayList<>(route_rev);
         route_rev.clear();	/* release */
 
         if (lastNode == 0) {	// 着駅は非分岐駅?
@@ -2682,13 +2668,12 @@ public class Route extends RouteList {
                 route_flag.compnda  = true; /* 通過連絡運輸不正 */
                 if (route_flag.compnbegin) {
                     rc = 0;	/* 会社線始発なら終了 */
-                    break;  // return 0
                 }
                 else {
                     ASSERT(false);
-                    rc = -4;
-                    break;  // return -4;
+                    rc = -4;    // return -4;
                 }
+                break;  // return 0 or -4
             }
             rc = cs.open(key1, key2);
             if (rc <= 0) {
@@ -2709,7 +2694,7 @@ public class Route extends RouteList {
     }
 
     static class CompnpassSet {
-		class recordset
+		static class recordset
 		{
 			int line_id;
 			int stationId1;
@@ -2794,8 +2779,8 @@ public class Route extends RouteList {
         		if ((results[i].line_id & 0x80000000) != 0) {
         			/* company */
                     int company_mask = results[i].line_id;
-                    int cid1[] = CompanyIdFromStation(station_id1);
-                    int cid2[] = CompanyIdFromStation(station_id2);
+                    int[] cid1 = CompanyIdFromStation(station_id1);
+                    int[] cid2 = CompanyIdFromStation(station_id2);
 
                     if ((0 != (company_mask & (1 << cid1[0] | 1 << cid1[1])))
                      && (0 != (company_mask & (1 << cid2[0] | 1 << cid2[1])))) {
@@ -3098,7 +3083,7 @@ public class Route extends RouteList {
                         " from	t_lines" +
                         " where line_id=?1 and (lflg&(1<<31))=0 and	(station_id=?2 or station_id=?3)";
 
-        /****	// 140416
+        /*	// 140416
          "select case when sum(calc_km)=0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end"
          " from	t_lines"
          " where line_id=?1"

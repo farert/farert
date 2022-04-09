@@ -15,7 +15,7 @@ class FarertApp : Application() {
         lateinit var instance: Application private set
     }
 
-    lateinit var mDbHelper : DatabaseOpenHelper
+    private lateinit var mDbHelper : DatabaseOpenHelper
 
     override fun onCreate() {
         super.onCreate()
@@ -44,12 +44,11 @@ class FarertApp : Application() {
     }
 
     private fun setDatabase() {
-        val dbno = readParam(this, "datasource").toString()
-        var dbidx : Int
-        try {
-            dbidx = Integer.parseInt(dbno)
+        val dbno = readParam(this, "datasource")
+        var dbidx : Int = try {
+            Integer.parseInt(dbno)
         } catch (e: Throwable) {
-            dbidx = -1
+            -1
         }
         // 有効なDBIndexに変換
         dbidx = DatabaseOpenHelper.validDBidx(dbidx)

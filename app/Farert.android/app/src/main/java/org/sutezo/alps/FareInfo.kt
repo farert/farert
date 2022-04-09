@@ -1,7 +1,5 @@
 package org.sutezo.alps
 
-import org.sutezo.alps.farertAssert.*
-
 class FareInfo {
     // 株主割引
     var fareForStockDiscounts : List<Triple<String, Int, Int>>? = null
