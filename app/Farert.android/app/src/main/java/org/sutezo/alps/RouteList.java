@@ -75,6 +75,9 @@ public class RouteList {
     RouteFlag route_flag = new RouteFlag();	// add() - removeTail() work
 
     public RouteList() {}
+    public RouteList(RouteList base_route) {
+        this.assign(base_route, -1);
+    }
 
     public void assign(RouteList source_route) {
         this.assign(source_route, -1);

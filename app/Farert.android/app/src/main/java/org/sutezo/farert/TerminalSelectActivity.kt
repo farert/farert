@@ -271,7 +271,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         getPrefects()
                     }
                     LIST_TYPE.HISTORY -> { // history
-                        readParams(activity!!, "history").map{ RouteUtil.GetStationId(it) }
+                        readParams(activity!!, "history").map{ RouteUtil.GetStationId(it) }.filter { 0 < it }
                     }
                     LIST_TYPE.SEARCH -> { //search text
                         keyMatchStations(arguments?.getString("search_text", "x") ?: "null")
