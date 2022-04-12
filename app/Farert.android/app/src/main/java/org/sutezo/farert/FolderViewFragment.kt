@@ -319,8 +319,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         // 経路追加ボタン
         @SuppressLint("NotifyDataSetChanged")
         fun add(context: Context, route : RouteList) {
-            val rl = RouteList()    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
-            rl.assign(route)
+            val rl = RouteList(route)    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
             routefolder.add(context, rl)
             mCheck.add(false)
             // notifyItemInserted(routefolder.count() - 1)
