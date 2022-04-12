@@ -227,7 +227,7 @@
     <string name="arch_title_import">インポートする経路をテキストで「メモ」等の外部エディタで作成してください\n(スペースまたはカンマ\',\'区切りで1行1経路)で指定します）\nその後、クリップボードへコピーして本機能を実行します.\nわからないという人は使用しないでください</string>
 
     <string name="main_alert_query_all_clear_title">確認</string>
-    <string name="main_alert_query_all_clear_mesg">元に戻せませんが、すべて削除してよいでしょうか？\n1行の削除はスワイプ操作でおこないます</string>
+    <string name="main_alert_query_all_clear_mesg">この操作は、すべての項目を削除します。さらに元に戻せませんがよろしいでしょうか？\n1行の削除はスワイプ操作でおこないます</string>
 
 
     <string name="pref_title_display_name">Display name</string>
