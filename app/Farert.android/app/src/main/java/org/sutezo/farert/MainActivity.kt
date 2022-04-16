@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     private lateinit var mDrawerFragment: FolderViewFragment
     private lateinit var mRoute : Route
     private var mRouteScript : String = ""
+    private var mDbIndex : Int = DatabaseOpenHelper.dbIndex()
 
     enum class OSAKA_KAN {
         DISABLE,
@@ -447,6 +448,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             //設定
             R.id.action_settings -> {
                 mRouteScript = mRoute.route_script()
+                mDbIndex = DatabaseOpenHelper.dbIndex()
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivityForResult(intent, RESULT_CODE_SETTING)
                 true
@@ -518,15 +520,16 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 // val r = data!!.getIntExtra("test", 0)
                 setTitlebar()
 
+                var doFolderReCalculate = false
                 if (mRouteScript.isNotEmpty()) {
                     // データベース変更されたら経路を再パースする
                     val rc = mRoute.setup_route(mRouteScript)
                     update_fare(rc)
-                    mDrawerFragment.reload(true)
-                } else {
-                    // LeftViewも
-                    mDrawerFragment.reload(false)
                 }
+                if (mDbIndex != DatabaseOpenHelper.dbIndex()) {
+                    doFolderReCalculate = true
+                }
+                mDrawerFragment.reload(doFolderReCalculate)
             }
         }
         mRouteScript = ""
@@ -620,11 +623,11 @@ class RouteRecyclerAdapter(private val listener : RecyclerListener,
     override fun onBindViewHolder(holder: RouteListViewHolder, position: Int) {
         if (position == route.count - 1) {
             // last item
-            holder.status_message.text = status
+            holder.status_message?.text = status
         } else {
             val current = route.item(position + 1)
-            holder.line_item.text = RouteUtil.LineName(current.lineId())
-            holder.station_item.text = RouteUtil.StationName(current.stationId())
+            holder.line_item?.text = RouteUtil.LineName(current.lineId())
+            holder.station_item?.text = RouteUtil.StationName(current.stationId())
         }
         with(holder.itemView) {
             tag = position
@@ -650,11 +653,9 @@ class RouteRecyclerAdapter(private val listener : RecyclerListener,
     }
 
     inner class RouteListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var line_item = itemView.junction_line
-        var station_item = itemView.junction_station
-        var status_message = itemView.status_message
-        init {
-        }
+        var line_item: TextView? = itemView.junction_line
+        var station_item: TextView? = itemView.junction_station
+        var status_message: TextView? = itemView.status_message
     }
     interface RecyclerListener {
         fun onClickRow(selectItem: Int)

@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.ShareCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.widget.AppCompatSpinner
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
@@ -16,6 +17,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CheckBox
+import android.widget.TextView
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
 import org.sutezo.alps.RouteList
@@ -81,7 +83,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 val to = target.adapterPosition
 
                 adapter.routefolder.swap(adapter.mContext!!, from, to)
-                adapter.mCheck.swap(from, to)
+                adapter.mCheck?.swap(from, to)
                 adapter.notifyItemMoved(from, to)
 
                 return true
@@ -93,7 +95,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
                 adapter.mContext?: return
                 adapter.routefolder.remove(adapter.mContext!!, idx)
-                adapter.mCheck.removeAt(idx)
+                adapter.mCheck?.removeAt(idx)
             }
         })
 
@@ -257,7 +259,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         : RecyclerView.Adapter<FolderRecyclerAdapter.MyViewHolder>() {
 
         var mContext : Context? = null
-        var mCheck : MutableList<Boolean> = MutableList(routefolder.count()) {false}
+        var mCheck : MutableList<Boolean>? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.folder_list, parent, false)
@@ -271,10 +273,10 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             val begin = current.departureStationId()
             val term = current.arriveStationId()
             val label  =  "${terminalName(begin)} - ${terminalName(term)}"
-            holder.title.text = label
-            holder.fareType.tag = position
-            holder.fareType.setSelection(routefolder.aggregateType(position).ordinal)
-            holder.fareType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            holder.title?.text  = label
+            holder.fareType?.tag = position
+            holder.fareType?.setSelection(routefolder.aggregateType(position).ordinal)
+            holder.fareType?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                 override fun onNothingSelected(parent: AdapterView<*>?) {
 
                 }
@@ -295,15 +297,18 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 }
             }
             val fareValue  = routefolder.routeItemFareKm(position)
-            holder.fareValue.text = "¥${fareNumStr(fareValue.first)}"    // 運賃額
-            holder.salesKm.text = "${kmNumStr(fareValue.second)}km"
-            holder.deleteCheck.isChecked = mCheck[position]
-            holder.deleteCheck.tag = position
-            holder.deleteCheck.setOnClickListener {v: View? ->
+            holder.fareValue?.text  = "¥${fareNumStr(fareValue.first)}"    // 運賃額
+            holder.salesKm?.text  = "${kmNumStr(fareValue.second)}km"
+            if (mCheck == null || mCheck!!.count() != routefolder.count()) {
+                mCheck = MutableList(routefolder.count()) {false}
+            }
+            holder.deleteCheck?.isChecked  = mCheck?.get(position) ?: false
+            holder.deleteCheck?.tag = position
+            holder.deleteCheck?.setOnClickListener { v: View? ->
                 v?.let {
                     val idx = v.tag as Int
                     val chk = v as CheckBox
-                    mCheck[idx] = chk.isChecked
+                    mCheck?.set(idx, chk.isChecked)
                 }
             }
             holder.itemView.tag = position
@@ -321,7 +326,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         fun add(context: Context, route : RouteList) {
             val rl = RouteList(route)    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
             routefolder.add(context, rl)
-            mCheck.add(false)
+            mCheck?.add(false)
             // notifyItemInserted(routefolder.count() - 1)
             mCheck = MutableList(routefolder.count()) {false}
             notifyDataSetChanged()
@@ -336,7 +341,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 setMessage(R.string.folder_content_query_clear_mesg)
                 setPositiveButton("Yes") { _, _ ->
                     for (i in (routefolder.count() - 1) downTo  0) {
-                        if (mCheck[i]) {
+                        if (mCheck?.get(i) == true) {
                             mContext?.let {
                                 routefolder.remove(it, i)
                                 notifyItemRemoved(i)
@@ -362,16 +367,16 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
 
         inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var title = itemView.itemSection
-            var fareType = itemView.ticket_type
-            var fareValue = itemView.itemFare
-            var deleteCheck = itemView.chk_delete
-            var salesKm = itemView.itemKm
+            var title: TextView? = itemView.itemSection
+            var fareType: AppCompatSpinner? = itemView.ticket_type
+            var fareValue: TextView? = itemView.itemFare
+            var deleteCheck: CheckBox? = itemView.chk_delete
+            var salesKm: TextView? = itemView.itemKm
             init {
                 if (mContext != null) {
                     val adapter = ArrayAdapter.createFromResource(mContext!!, R.array.list_ticket_type, R.layout.tv_folder_ticket_type)
                     adapter.setDropDownViewResource(R.layout.tv_folder_ticket_type_drop_down)
-                    fareType.adapter = adapter
+                    fareType?.adapter = adapter
                 }
             }
         }

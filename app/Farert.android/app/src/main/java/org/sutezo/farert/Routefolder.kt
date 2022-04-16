@@ -15,7 +15,12 @@ import org.sutezo.alps.*
 
 class Routefolder {
 
-    data class Folder(val routeList: RouteList, var aggregateType: Aggregate, var fare: Int? = null, var salesKm: Int? = null)
+    data class Folder(
+        val routeList: RouteList,
+        var aggregateType: Aggregate,
+        var fare: Int? = null,
+        var salesKm: Int? = null
+    )
 
     //private static let onlyObj = Routefolder()
     
@@ -101,7 +106,7 @@ class Routefolder {
             if ((_routeList[index].fare != null) && (_routeList[index].salesKm != null)) {
                 Pair(_routeList[index].fare!!, _routeList[index].salesKm!!)
             } else {
-                val fare = calcFare(_routeList[index])
+                val fare = calculateFareAndSalesKm(_routeList[index])
                 fare
             }
         } else {
@@ -158,7 +163,7 @@ class Routefolder {
                 fare_sum += route.fare!!
                 salesKm_sum += route.salesKm!!
             } else {
-                val result = calcFare(route)
+                val result = calculateFareAndSalesKm(route)
                 fare_sum += result.first
                 salesKm_sum += result.second
                 route.fare = result.first
@@ -169,7 +174,7 @@ class Routefolder {
         _totalSalesKm = salesKm_sum
     }
 
-    fun save(context: Context) {
+    private fun save(context: Context) {
         val folders : MutableList<String> = mutableListOf()
         val dbver = DatabaseOpenHelper.DATABASE_VERSION
         val strDbVer = "DBVer|$dbver\n"
@@ -185,11 +190,14 @@ class Routefolder {
             }
             folders.add(rs)
         }
-        saveParam(context, "folder", folders.toList())
+        saveParam(context, "folder" + DatabaseOpenHelper.dbIndex().toString(), folders.toList())
     }
 
     fun load(context: Context, doCalc: Boolean? = false) {
-        val folders = readParams(context, "folder")
+        var folders = readParams(context, "folder" + DatabaseOpenHelper.dbIndex().toString())
+        if (folders.count() <= 0) {
+            folders = readParams(context, "folder") // assume read old version.
+        }
         var isDbChanged : Boolean = doCalc ?: false
         _routeList.removeAll { true }
 
@@ -237,7 +245,7 @@ class Routefolder {
         calc()
     }
 
-    fun calcFare(item : Folder) : Pair<Int, Int> {
+    private fun calculateFareAndSalesKm(item : Folder) : Pair<Int, Int> {
 
         val cds = CalcRoute(item.routeList)
         cds.let {
@@ -295,7 +303,6 @@ class Routefolder {
             }
             return Pair(fare, fareInfo.totalSalesKm)
         }
-        return Pair(0, 0)
     }
 
     fun makeExportText() : String {
@@ -311,7 +318,7 @@ class Routefolder {
                 fare = route.fare!!
                 salesKm = route.salesKm!!
             } else {
-                val fare_salesKm: Pair<Int, Int> = this.calcFare(route)
+                val fare_salesKm: Pair<Int, Int> = this.calculateFareAndSalesKm(route)
                 fare = fare_salesKm.first
                 salesKm = fare_salesKm.second
             }
