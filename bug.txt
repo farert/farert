@@ -17,13 +17,45 @@ TBD               TBC もある。(優先度低い)
 ==================================================================
 末尾 A: AppleStore G: Google Play F: blog D: Direct mail T: Twitter M: my
 
+b#22041301M
+経路エクスポートで、鹿児島線 小倉 博多を含まなければ、「鹿児島線・新幹線 小倉博多同一視」云々の文字列は含ませなくて良い。
+->
+TODO
+
+
+b#22041601M
+きっぷホルダへ保存する際
+過去DBを選択すると、配列Outboundエラー
+FolderViewFlagment L300 で飛ぶ。配列Outboundエラー
+1つしか配列用意して居ないのにDB Index変えたら2つ入って居たらから。
+
+Main L532 -> FolderViewFragment 166 -> RouteFolder.load()
+
+再現方法>
+新DBで、海尻-長津田 をきっぷホルダへ入れる。
+旧DBへ切り替え、中小国経由の経路をきっぷホルダへ追加
+新DBへ切り替え
+終了、再起動
+旧DBへ切り替えると、FolderViewFragmentのonBindViewHolderで、mCheckの配列の数が1しかないのに、中小国経由の2つめの経路を追加使用して例外
+load()で、_routeFolder の数は更新しているが、mCheckの配列数は依然として、1なので。
+->
+修正：FolderRecyclerAdapter - onBindViewHolder で、mCheck 配列を参照するとき、routeFolder のサイズに合わせて再生成する
+4/16 Android version complete.
+
+TODO not yet iOS
+
+
 b#22040801M
 駅名や路線名変更して、Archiveされている、経路を選択すると、
 「不正な経路が含まれています」のメッセージが表示されるが、打ち切られるだけなので、
 「不正な経路が含まれていました」のAlertメッセージにし、メイン経路の警告メッセージは不要かと。
 iOSだが、Androidも確認。
+Androidはさらに異なる挙動で、DBを変更すると、FolderView表示で配列アクセス違反で落ちたり、
+メチャクチャな経路（DBが変わってもIDで保持しているためと思われる）で表示され、選択するとやはり落ちる
+という問題がある。
 ->
 TODO
+
 
 b#22040701M
 駅名変更された駅を履歴選択すると「経路を戻ってから〜」みたいな不適切なメッセージが表示される
