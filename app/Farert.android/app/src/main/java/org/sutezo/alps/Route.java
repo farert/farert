@@ -203,7 +203,7 @@ public class Route extends RouteList {
                  * 4: company pass finish
                  * -4: wrong company pass
 				 */
-                ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
+                //ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
                 if (rc <= 0) {
                     break;
                 }
