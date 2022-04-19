@@ -42,8 +42,18 @@ load()で、_routeFolder の数は更新しているが、mCheckの配列数は�
 修正：FolderRecyclerAdapter - onBindViewHolder で、mCheck 配列を参照するとき、routeFolder のサイズに合わせて再生成する
 4/16 Android version complete.
 
-TODO not yet iOS
+また、iOS もAndroidもフォルダ経路保存時に、1行目にDB IndexをWriteしているのだが、誤り。DBバージョンを保存すべきだったので修正
+まとめると
+|                 | Android                |  iOS |
+|-----------------|------------------------|------|
+|フォルダファイル名  |folder.txt             |  routeholder.txt|
+|1行目に書くDB情報   |DB version(2桁の整数*1) | DB名とDB作成日時(UTC)|
+|レコードに書くDB情報 | きっぷ種別             | きっぷ種別 |
+|フォルダファイル名Postfix| DB Index(0~)      |DB Index(10~)|
+*1 ２桁というのは2022年現在
 
+4/20 iOS Complete
+//
 
 b#22040801M
 駅名や路線名変更して、Archiveされている、経路を選択すると、
