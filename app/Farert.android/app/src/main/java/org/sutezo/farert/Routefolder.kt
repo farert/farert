@@ -194,9 +194,11 @@ class Routefolder {
     }
 
     fun load(context: Context, doCalc: Boolean? = false) {
+        var doSave = false
         var folders = readParams(context, "folder" + DatabaseOpenHelper.dbIndex().toString())
         if (folders.count() <= 0) {
             folders = readParams(context, "folder") // assume read old version.
+            doSave = true
         }
         var isDbChanged : Boolean = doCalc ?: false
         _routeList.removeAll { true }
@@ -241,6 +243,11 @@ class Routefolder {
             if (MAX_HOLDER <= _routeList.count()) {
                 break
             }
+        }
+        if (doSave) {
+            // change version to 22.04
+            save(context)
+            saveParam(context, "folder", "")
         }
         calc()
     }
