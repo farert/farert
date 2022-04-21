@@ -282,11 +282,11 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
 
     // 計算結果表示
-    @SuppressLint("RestrictedApi", "NotifyDataSetChanged")
+    @SuppressLint("RestrictedApi")
     private fun update_fare(rc : Int)
     {
         // 下部計算結果
-        val msg =
+        var msg =
                     when (rc) {
                         0 -> {
                             //"経路は終端に達しています"
@@ -308,15 +308,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         }
                         -200 -> {
                             // 不正な駅名が含まれています.
-                            resources.getString(R.string.main_rc_iregalstation)
+                            resources.getString(R.string.main_rc_iregal_station)
                         }
                         -300 -> {
                             // 不正な路線名が含まれています.
-                            resources.getString(R.string.main_rc_iregalline)
+                            resources.getString(R.string.main_rc_iregal_line)
                         }
                         -2 -> {
                             // 経路不正
-                            resources.getString(R.string.main_rc_iregaroute)
+                            resources.getString(R.string.main_rc_iregal_route)
                         }
                         -4 -> {
                             // 許可されていない会社線通過です
@@ -331,6 +331,20 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             resources.getString(R.string.main_rc_duplicate_route)
                         }
                     }
+        if (rc == -2 || rc == -200 || rc == -300) {
+            val message = msg
+            msg = ""
+            // Script parse 経路エラー
+            val build = AlertDialog.Builder(this).apply {
+                setTitle(R.string.main_rc_alert_title)
+                setMessage(resources.getString(R.string.main_rc_script_parse_error, message))
+                setPositiveButton(R.string.title_version_close) { _, _ -> }
+                setIcon(android.R.drawable.ic_dialog_info)
+            }
+            val dlg = build.create()
+            dlg.show()
+        }
+
         var revButton = false
 
         mOsakakan_detour = OSAKA_KAN.DISABLE
