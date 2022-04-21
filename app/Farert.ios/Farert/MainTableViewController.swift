@@ -314,13 +314,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     lbl.text = "会社線のみの運賃は表示できません.";
                     break;
                 case ROUTE.SCRIPT_STATION_ERR:
-                    lbl.text = "不正な駅名が含まれています.";
+                    //lbl.text = "不正な駅名が含まれています.";
                     break;
                 case ROUTE.SCRIPT_LINE_ERR:
-                    lbl.text = "不正な路線名が含まれています.";
+                    //lbl.text = "不正な路線名が含まれています.";
                     break;
                 case ROUTE.SCRIPT_ROUTE_ERR:
-                    lbl.text = "経路不正";
+                    //lbl.text = "経路不正";
                     break;
                 case ROUTE.DUPCHG_ERROR:
                     lbl.text = "経路が重複していますので変更できません";
@@ -1062,7 +1062,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
             let rc = self.ds.setupRoute(rs)
             if (rc < 0) {
-                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
                 switch (rc) {
                 case -200:
                     self.routeStat = .SCRIPT_STATION_ERR;
@@ -1082,6 +1081,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 } else {
                     self.routeStat = .OK  // success
                 }
+            }
+            var scriptErrorMessage = ""
+            if (self.routeStat == .SCRIPT_STATION_ERR) {
+                scriptErrorMessage = "駅名"
+            } else if (self.routeStat == .SCRIPT_LINE_ERR) {
+                scriptErrorMessage = "路線"
+            } else if (self.routeStat == .SCRIPT_ROUTE_ERR) {
+                scriptErrorMessage = "経路"
+            }
+            if (!scriptErrorMessage.isEmpty) {
+                self.alertMessage("経路エラー", message: "不明な"
+                              + scriptErrorMessage
+                              + "が含まれてましたので打ち切りました")
+                self.routeStat = .OK
             }
             if let cds = cCalcRoute(route: self.ds) {
                 self.fareInfo = cds.calcFare()
