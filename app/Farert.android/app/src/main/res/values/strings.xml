@@ -101,9 +101,11 @@
 
     <string name="main_rc_finished">経路は終端に達しています</string>
     <string name="main_rc_neerested">すでに経路は最短となっています</string>
-    <string name="main_rc_iregalstation">不正な駅名が含まれています.</string>
-    <string name="main_rc_iregalline">不正な路線名が含まれています.</string>
-    <string name="main_rc_iregaroute">経路不正.</string>
+    <string name="main_rc_iregal_station">駅名</string>
+    <string name="main_rc_iregal_line">路線名</string>
+    <string name="main_rc_iregal_route">経路</string>
+    <string name="main_rc_script_parse_error">不正な%1$sが含まれてましたので打ち切りました</string>
+    <string name="main_rc_alert_title">経路エラー</string>
     <string name="main_rc_wrongcompany_pass">許可されていない会社線通過です.</string>
     <string name="main_rc_cantautostart">経路を算出できません.</string>
     <string name="main_rc_duplicate_route">経路が重複しているため追加できません.</string>

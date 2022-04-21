@@ -194,11 +194,13 @@ fun saveParam(context: Context, key:String, value:String) {
 }
 
 fun saveParam(context: Context, key: String, values: List<String>) {
-    val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val jsonArray = JSONArray(values)
-    val shredEdit = sharedPref.edit()
-    shredEdit.putString(key, jsonArray.toString())
-    shredEdit.apply()
+    try {
+        val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val jsonArray = JSONArray(values)
+        val shredEdit = sharedPref.edit()
+        shredEdit.putString(key, jsonArray.toString())
+        shredEdit.apply()
+    } catch(_: Exception) {}
 }
 
 fun readParam(context: Context, key: String) : String {
@@ -212,10 +214,12 @@ fun readParams(context: Context, key: String) : List<String> {
     return values
 
     val params = sharedPref.getString(key, "[]")
-    val jsonArray = JSONArray(params)
-    for (i in 0 until jsonArray.length()) {
-        values.add(jsonArray.get(i).toString())
-    }
+    try {
+        val jsonArray = JSONArray(params)
+        for (i in 0 until jsonArray.length()) {
+            values.add(jsonArray.get(i).toString())
+        }
+    } catch(_: Exception) {}
     return values
 }
 
