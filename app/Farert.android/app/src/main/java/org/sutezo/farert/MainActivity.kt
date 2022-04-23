@@ -10,6 +10,7 @@ import android.support.annotation.RequiresApi
 import android.support.design.internal.BottomNavigationItemView
 import android.support.design.internal.BottomNavigationMenuView
 import android.support.design.widget.BottomNavigationView
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
@@ -214,6 +215,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         setItems(choiceTitle.toTypedArray()) { _, which ->
                             neerest(args[which % args.size])
                         }
+                        setIcon(ResourcesCompat.getDrawable(resources, R.drawable.ic_auto_route, null))
                         create()
                         show()
                     }
@@ -234,6 +236,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                             beginRoute(stationId)
                         }
                         setNegativeButton("No", null)
+                        setIcon(ResourcesCompat.getDrawable(resources, R.drawable.ic_question_answer, null))
                         create()
                         show()
                     }
@@ -276,13 +279,14 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             setNegativeButton(R.string.disagree) { _, _ ->
                 finish()
             }
+            setIcon(android.R.drawable.ic_dialog_info)
         }
         val dlg = build.create()
         dlg.show()
     }
 
     // 計算結果表示
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "NotifyDataSetChanged")
     private fun update_fare(rc : Int)
     {
         // 下部計算結果
@@ -339,7 +343,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 setTitle(R.string.main_rc_alert_title)
                 setMessage(resources.getString(R.string.main_rc_script_parse_error, message))
                 setPositiveButton(R.string.title_version_close) { _, _ -> }
-                setIcon(android.R.drawable.ic_dialog_info)
+                setIcon(android.R.drawable.ic_dialog_alert)
             }
             val dlg = build.create()
             dlg.show()
@@ -581,6 +585,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                         update_fare(rc)
                     }
                     setNegativeButton("No", null)
+                    setIcon(android.R.drawable.ic_dialog_alert)
                     create()
                     show()
                 }

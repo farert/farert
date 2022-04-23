@@ -10,7 +10,7 @@
 
     <string name="main_last_list_caption">追加…     ></string>
     <string name="main_alert_query_terminal_title">発駅選択</string>
-    <string name="main_alert_query_terminal_mesg">経路を削除してもよろしいでしょうか？</string>
+    <string name="main_alert_query_terminal_mesg">表示している経路を破棄してもよろしいでしょうか？</string>
     <string name="main_alert_query_bullet">新幹線を使いますか？</string>
     <string name="main_head_caption">　発：　%1$s  %2$s</string>
 
@@ -229,7 +229,7 @@
     <string name="arch_title_import">インポートする経路をテキストで「メモ」等の外部エディタで作成してください\n(スペースまたはカンマ\',\'区切りで1行1経路)で指定します）\nその後、クリップボードへコピーして本機能を実行します.\nわからないという人は使用しないでください</string>
 
     <string name="main_alert_query_all_clear_title">確認</string>
-    <string name="main_alert_query_all_clear_mesg">この操作は、すべての項目を削除します。さらに元に戻せませんがよろしいでしょうか？\n1行の削除はスワイプ操作でおこないます</string>
+    <string name="main_alert_query_all_clear_mesg">この操作は、すべての項目を削除します。また、元に戻すことはできませんがよろしいでしょうか？\n1行の削除はスワイプ操作でおこないます</string>
 
 
     <string name="pref_title_display_name">Display name</string>

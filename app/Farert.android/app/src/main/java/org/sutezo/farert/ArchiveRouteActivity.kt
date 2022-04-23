@@ -1,14 +1,11 @@
 package org.sutezo.farert
 
-import android.annotation.SuppressLint
+import android.R.color
 import android.app.AlertDialog
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.graphics.Typeface
+import android.graphics.*
 import android.os.Bundle
 import android.support.v4.app.ShareCompat
 import android.support.v4.content.res.ResourcesCompat
@@ -19,8 +16,8 @@ import android.view.*
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_archive_route.*
 import kotlinx.android.synthetic.main.content_archive_route_list.view.*
+import kotlinx.android.synthetic.main.content_line_list.*
 import org.sutezo.alps.*
-
 
 /**
  * 経路保存画面
@@ -64,6 +61,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 setPositiveButton(R.string.agree) { _, _ ->
                     mCurRouteScript = ""    // 追加できない
                 }
+                setIcon(android.R.drawable.ic_dialog_alert)
             }
             val dlg = build.create()
             dlg.show()
@@ -166,6 +164,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                         item.isEnabled = false
                     }
                     setNegativeButton("No", null)
+                    setIcon(android.R.drawable.ic_dialog_alert)
                     create()
                     show()
                 }
@@ -197,6 +196,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                         }
                         setPositiveButton(R.string.agree, null) // "了解" -> なにもしない
                         // "今後、この画面は表示せず、インポート機能を実行する" -> 以降実行可能
+                        setIcon(android.R.drawable.ic_dialog_info)
                     }
                     val dlg = build.create()
                     dlg.show()
@@ -228,6 +228,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
                 }
                 setCancelable(false)
+                setIcon(context?.let { ResourcesCompat.getDrawable(it.resources, R.drawable.ic_question_answer, null) })
                 create()
                 show()
             }
@@ -299,7 +300,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
     /**
      * エクスポート
      */
-    @SuppressLint("QueryPermissionsNeeded")
     private fun doExportRoute() {
         val trv = archive_route_list.adapter as ArchiveRouteListRecyclerViewAdapter
 
@@ -531,7 +531,6 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     /**
      *  経路を全削除
      */
-    @SuppressLint("NotifyDataSetChanged")
     fun clearContents() {
         values = listOf()
         listener.onSaveRoute(values)
@@ -543,7 +542,6 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     /**
      *  経路を保存
      */
-    @SuppressLint("NotifyDataSetChanged")
     fun saveParams(context: Context) {
         // 上限チェック
         if ((MAX_ARCHIVE_ROUTE - ArchiveRouteActivity.countOfRoute(values)) <= 0) {
@@ -569,7 +567,6 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     /**
      * インポート
      */
-    @SuppressLint("NotifyDataSetChanged")
     fun importRoute(context: Context, text: String) {
         // 文字列をパースして配列を作成する(エラーがあったらエラーカウントする)(経路にXX箇所不正な路線・駅を検出しました）
         // 配列へマージする(既に入っているものは削除して後ろへ追加する）
@@ -665,6 +662,8 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         val build = AlertDialog.Builder(context).apply {
             setTitle(R.string.menu_item_import)
             setMessage(msg)
+            setIcon(if (0 < new_count) android.R.drawable.ic_dialog_info
+                    else android.R.drawable.ic_dialog_alert)
             setPositiveButton(R.string.agree) { _, _ ->
 
                 if (0 < new_count) {
