@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.ShareCompat
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.widget.AppCompatSpinner
@@ -354,6 +355,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                     notifyDataSetChanged()
                 }
                 setNegativeButton("No", null)
+                setIcon(mContext?.let { ResourcesCompat.getDrawable(it.resources, R.drawable.ic_question_answer, null) })
                 create()
                 show()
             }
