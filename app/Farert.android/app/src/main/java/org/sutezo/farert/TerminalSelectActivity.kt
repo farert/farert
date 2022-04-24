@@ -1,38 +1,31 @@
 package org.sutezo.farert
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.support.design.widget.TabLayout
-import android.support.v7.app.AppCompatActivity
-
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import android.os.Bundle
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v4.view.ViewPager
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_result_view.*
-
 import kotlinx.android.synthetic.main.activity_terminal_select.*
-import kotlinx.android.synthetic.main.activity_terminal_select.container
 import kotlinx.android.synthetic.main.content_list_empty.view.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.*
 import kotlinx.android.synthetic.main.fragment_terminal_select.view.*
 import kotlinx.android.synthetic.main.terminal_first_list.view.*
 import org.sutezo.alps.*
-
 
 
 class TerminalSelectActivity : AppCompatActivity() {
@@ -96,8 +89,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                     val flgm = mSectionsPagerAdapter?.findFragmentByPosition(
                             tabcontainer, TAB_PAGE.HISTORY.rowValue) as? PlaceholderFragment
                     flgm?.let {
-                        var b = 0 < it.numOfContent()
-                        mi.setEnabled(b)
+                        mi.setEnabled(0 < it.numOfContent())
                     }
                 }
             }
@@ -161,15 +153,13 @@ class TerminalSelectActivity : AppCompatActivity() {
             Log.d("TAG","on search click")
             //searchView.onActionViewExpanded()
         }
-        searchView.setOnCloseListener(object : SearchView.OnCloseListener {
-            override fun onClose(): Boolean {
-                Log.d("TAG","on close")
-                searchView.onActionViewCollapsed()
-                searchView.clearFocus()
+        searchView.setOnCloseListener {
+            Log.d("TAG", "on close")
+            searchView.onActionViewCollapsed()
+            searchView.clearFocus()
 
-                return true
-            }
-        })
+            true
+        }
 
         searchView.setOnClickListener {
             Log.d("TAG", "setOnClickListener")
@@ -182,9 +172,8 @@ class TerminalSelectActivity : AppCompatActivity() {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
 
-        when (id) {
+        when (item.itemId) {
             R.id.action_settings -> {
                 return true
             }
@@ -203,6 +192,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         saveHistory(context, listOf())
                     }
                     setNegativeButton("No", null)
+                    setIcon(ResourcesCompat.getDrawable(resources, R.drawable.ic_question_answer, null))
                     create()
                     show()
                 }
@@ -223,7 +213,7 @@ class TerminalSelectActivity : AppCompatActivity() {
         if (mi.isVisible) {
               //val trv = list_terminal.adapter as TerminalRecyclerViewAdapter
               //mi.setEnabled(0 < trv.itemCount)
-            mi.setEnabled(0 < numItem)
+            mi.isEnabled = 0 < numItem
         }
     }
 
@@ -283,7 +273,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         getPrefects()
                     }
                     LIST_TYPE.HISTORY -> { // history
-                        readParams(activity!!, "history").map{ RouteUtil.GetStationId(it) }
+                        readParams(activity!!, "history").map{ RouteUtil.GetStationId(it) }.filter { 0 < it }
                     }
                     LIST_TYPE.SEARCH -> { //search text
                         keyMatchStations(arguments?.getString("search_text", "x") ?: "null")
@@ -403,15 +393,12 @@ class TerminalSelectActivity : AppCompatActivity() {
         //           2 = history
         //           3 = search view
 
-        private val onClickListener: View.OnClickListener
+        private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
+            val selitem = v.id_text.tag as Int
+            listener.onClickRow(selitem, listType)
+        }
         private var context : Context? = null
 
-        init {
-            onClickListener = View.OnClickListener { v ->  
-                val selitem = v.id_text.tag as Int
-                listener.onClickRow(selitem, listType)
-            }
-        }
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.terminal_first_list, parent, false)
@@ -470,10 +457,11 @@ class TerminalSelectActivity : AppCompatActivity() {
             notifyItemInserted(values.size)
         }*/
 
+        @SuppressLint("NotifyDataSetChanged")
         fun removeAt(position: Int) {
             val removedVal = values.filterIndexed { index, _ ->  index != position }
             values = removedVal
-            context?.let {
+            context?.let { it ->
                 saveHistory(it, values.map { RouteUtil.StationNameEx(it) })
             }
             notifyItemRemoved(position)
@@ -481,6 +469,7 @@ class TerminalSelectActivity : AppCompatActivity() {
             notifyDataSetChanged()
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         fun clearContents() {
             values = listOf()
             notifyDataSetChanged()

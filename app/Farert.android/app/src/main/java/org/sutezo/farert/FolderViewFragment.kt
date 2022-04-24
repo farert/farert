@@ -1,13 +1,15 @@
 package org.sutezo.farert
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.ShareCompat
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.widget.AppCompatSpinner
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
@@ -17,11 +19,12 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_archive_route.*
 import kotlinx.android.synthetic.main.folder_list.view.*
 import kotlinx.android.synthetic.main.fragment_drawer.*
-import org.sutezo.alps.*
-import java.lang.Exception
+import org.sutezo.alps.RouteList
+import org.sutezo.alps.fareNumStr
+import org.sutezo.alps.kmNumStr
+import org.sutezo.alps.terminalName
 
 interface RecyclerClickListener {
     fun onClickRow(view: View, position: Int)
@@ -61,6 +64,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         return inflater.inflate(R.layout.fragment_drawer, container, false)
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -80,7 +84,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 val to = target.adapterPosition
 
                 adapter.routefolder.swap(adapter.mContext!!, from, to)
-                adapter.mCheck.swap(from, to)
+                adapter.mCheck?.swap(from, to)
                 adapter.notifyItemMoved(from, to)
 
                 return true
@@ -92,7 +96,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
                 adapter.mContext?: return
                 adapter.routefolder.remove(adapter.mContext!!, idx)
-                adapter.mCheck.removeAt(idx)
+                adapter.mCheck?.removeAt(idx)
             }
         })
 
@@ -158,6 +162,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         updateFareInfo()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun reload(doCalc: Boolean?) {
         mContext?:return
         if (doCalc == true) {
@@ -219,21 +224,17 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
 
     internal class RecyclerTouchListener(context: Context, recyclerView: RecyclerView, private val clickListener: ClickListener?) : RecyclerView.OnItemTouchListener {
 
-        private val gestureDetector: GestureDetector
-
-        init {
-            gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-                override fun onSingleTapUp(e: MotionEvent): Boolean {
-                    return true
+        private val gestureDetector: GestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                return true
+            }
+            override fun onLongPress(e: MotionEvent) {
+                val child = recyclerView.findChildViewUnder(e.x, e.y)
+                if (child != null && clickListener != null) {
+                    clickListener.onLongClick(child, recyclerView.getChildAdapterPosition(child))
                 }
-                override fun onLongPress(e: MotionEvent) {
-                    val child = recyclerView.findChildViewUnder(e.x, e.y)
-                    if (child != null && clickListener != null) {
-                        clickListener.onLongClick(child, recyclerView.getChildAdapterPosition(child))
-                    }
-                }
-            })
-        }
+            }
+        })
 
         override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
 
@@ -259,7 +260,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         : RecyclerView.Adapter<FolderRecyclerAdapter.MyViewHolder>() {
 
         var mContext : Context? = null
-        var mCheck : MutableList<Boolean> = MutableList(routefolder.count()) {false}
+        var mCheck : MutableList<Boolean>? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.folder_list, parent, false)
@@ -267,15 +268,16 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
             return MyViewHolder(view)
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val current = routefolder.routeItem(position)
             val begin = current.departureStationId()
             val term = current.arriveStationId()
             val label  =  "${terminalName(begin)} - ${terminalName(term)}"
-            holder.title.text = label
-            holder.fareType.tag = position
-            holder.fareType.setSelection(routefolder.aggregateType(position).ordinal)
-            holder.fareType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            holder.title?.text  = label
+            holder.fareType?.tag = position
+            holder.fareType?.setSelection(routefolder.aggregateType(position).ordinal)
+            holder.fareType?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                 override fun onNothingSelected(parent: AdapterView<*>?) {
 
                 }
@@ -284,7 +286,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                     parent?.let {
                         try {
-                            val row_index = it.tag as Int
+                            val row_index: Int = it.tag as Int
                             val agt = Routefolder.Aggregate.values()[position]
                             routefolder.setAggregateType(it.context, row_index, agt)
                             notifyItemChanged(row_index) // 運賃額の変更
@@ -296,15 +298,18 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 }
             }
             val fareValue  = routefolder.routeItemFareKm(position)
-            holder.fareValue.text = "¥${fareNumStr(fareValue.first)}"    // 運賃額
-            holder.salesKm.text = "${kmNumStr(fareValue.second)}km"
-            holder.deleteCheck.isChecked = mCheck[position]
-            holder.deleteCheck.tag = position
-            holder.deleteCheck.setOnClickListener {v: View? ->
+            holder.fareValue?.text  = "¥${fareNumStr(fareValue.first)}"    // 運賃額
+            holder.salesKm?.text  = "${kmNumStr(fareValue.second)}km"
+            if (mCheck == null || mCheck!!.count() != routefolder.count()) {
+                mCheck = MutableList(routefolder.count()) {false}
+            }
+            holder.deleteCheck?.isChecked  = mCheck?.get(position) ?: false
+            holder.deleteCheck?.tag = position
+            holder.deleteCheck?.setOnClickListener { v: View? ->
                 v?.let {
                     val idx = v.tag as Int
                     val chk = v as CheckBox
-                    mCheck[idx] = chk.isChecked
+                    mCheck?.set(idx, chk.isChecked)
                 }
             }
             holder.itemView.tag = position
@@ -318,17 +323,18 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
         }
 
         // 経路追加ボタン
+        @SuppressLint("NotifyDataSetChanged")
         fun add(context: Context, route : RouteList) {
-            val rl = RouteList()    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
-            rl.assign(route)
+            val rl = RouteList(route)    // ここでコピーをつくっておかないと追加経路がみな後に追加したものと同じになってしまう
             routefolder.add(context, rl)
-            mCheck.add(false)
+            mCheck?.add(false)
             // notifyItemInserted(routefolder.count() - 1)
             mCheck = MutableList(routefolder.count()) {false}
             notifyDataSetChanged()
         }
 
         // 削除ボタン
+        @SuppressLint("NotifyDataSetChanged")
         fun deleteChecked() {
 
             AlertDialog.Builder(mContext).apply {
@@ -336,7 +342,7 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                 setMessage(R.string.folder_content_query_clear_mesg)
                 setPositiveButton("Yes") { _, _ ->
                     for (i in (routefolder.count() - 1) downTo  0) {
-                        if (mCheck[i]) {
+                        if (mCheck?.get(i) == true) {
                             mContext?.let {
                                 routefolder.remove(it, i)
                                 notifyItemRemoved(i)
@@ -349,28 +355,30 @@ class FolderViewFragment : Fragment(), RecyclerClickListener {
                     notifyDataSetChanged()
                 }
                 setNegativeButton("No", null)
+                setIcon(mContext?.let { ResourcesCompat.getDrawable(it.resources, R.drawable.ic_question_answer, null) })
                 create()
                 show()
             }
         }
 
         // 削除用チェックボタンを全切り替え
+        @SuppressLint("NotifyDataSetChanged")
         fun checkAll(value : Boolean) {
             mCheck = MutableList(routefolder.count()) {value}
             notifyDataSetChanged()
         }
 
         inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var title = itemView.itemSection
-            var fareType = itemView.ticket_type
-            var fareValue = itemView.itemFare
-            var deleteCheck = itemView.chk_delete
-            var salesKm = itemView.itemKm
+            var title: TextView? = itemView.itemSection
+            var fareType: AppCompatSpinner? = itemView.ticket_type
+            var fareValue: TextView? = itemView.itemFare
+            var deleteCheck: CheckBox? = itemView.chk_delete
+            var salesKm: TextView? = itemView.itemKm
             init {
                 if (mContext != null) {
                     val adapter = ArrayAdapter.createFromResource(mContext!!, R.array.list_ticket_type, R.layout.tv_folder_ticket_type)
                     adapter.setDropDownViewResource(R.layout.tv_folder_ticket_type_drop_down)
-                    fareType.adapter = adapter
+                    fareType?.adapter = adapter
                 }
             }
         }

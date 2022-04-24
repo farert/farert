@@ -2,16 +2,27 @@ package org.sutezo.alps;
 
 //package Route;
 
-import java.util.*;
+import static org.sutezo.alps.RouteUtil.CEND;
+import static org.sutezo.alps.RouteUtil.CITYNO_NAGOYA;
+import static org.sutezo.alps.RouteUtil.CSTART;
+import static org.sutezo.alps.RouteUtil.IS_BRT_LINE;
+import static org.sutezo.alps.RouteUtil.IS_COMPANY_LINE;
+import static org.sutezo.alps.RouteUtil.IS_SHINKANSEN_LINE;
+import static org.sutezo.alps.RouteUtil.JR_CENTRAL;
+import static org.sutezo.alps.RouteUtil.STATION_IS_JUNCTION;
+import static org.sutezo.alps.farertAssert.ASSERT;
+
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import org.sutezo.farert.BuildConfig;
 
-import static org.sutezo.alps.RouteUtil.*;
-import static org.sutezo.alps.farertAssert.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -51,7 +62,7 @@ import static org.sutezo.alps.farertAssert.*;
 
 public class CalcRoute extends RouteList {
 
-    private List<RouteItem> route_list_cooked = new ArrayList<RouteItem>(0);
+    private final List<RouteItem> route_list_cooked = new ArrayList<>(0);
 
     List<RouteItem> routeList() { return route_list_cooked; }
 
@@ -71,11 +82,6 @@ public class CalcRoute extends RouteList {
 
     public void sync(RouteList route, int count) {
         assign(route, count);
-        route_flag = new RouteFlag(route.getRouteFlag());
-        if ((0 < count) && route.routeList().size() != count) {
-            route_flag.end = false;
-            route_flag.compnda = false;
-        }
         route_list_cooked.clear();
     }
 
@@ -144,15 +150,15 @@ public class CalcRoute extends RouteList {
 
         int[] cityId = new int [2];
         int jsales_km;
-        List<RouteItem> route_list_tmp = new ArrayList<RouteItem>();
-        List<RouteItem> route_list_tmp2 = new ArrayList<RouteItem>();
-        List<RouteItem> route_list_tmp3 = new ArrayList<RouteItem>();
-        List<RouteItem> route_list_tmp4 = new ArrayList<RouteItem>();
+        List<RouteItem> route_list_tmp = new ArrayList<>();
+        List<RouteItem> route_list_tmp2 = new ArrayList<>();
+        List<RouteItem> route_list_tmp3 = new ArrayList<>();
+        List<RouteItem> route_list_tmp4 = new ArrayList<>();
         Station enter = new Station();
         Station exit = new Station();
         int n;
         int sk;         /* 114 check 90km or 190km */
-        int sk2 = 0;	/* begin and arrive point as city, 101km or 201km */
+        int sk2;	/* begin and arrive point as city, 101km or 201km */
         int chk;        /* 86 applied flag */
         int rtky;       /* 87 applied flag */
         int flg;
@@ -173,7 +179,7 @@ public class CalcRoute extends RouteList {
         // route_list_tmp2 = route_list_tmp
         // 70を適用したものをroute_list_tmp2へ
         n = reRouteRule70j(route_list_tmp, /*out*/route_list_tmp2);
-        System.out.printf(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
+        System.out.print(0 == n ? "Rule70 applied.\n" : "Rule70 not applied.\n");
         if (0 == n) {
             route_flag.rule70 = true;    // applied rule
         }
@@ -182,11 +188,11 @@ public class CalcRoute extends RouteList {
         aply88 = CheckOfRule88j(route_list_tmp2);
         if (0 != aply88) {
             if ((aply88 & 1) != 0) {
-                System.out.printf("Apply to rule88 for start.\n");
+                System.out.print("Apply to rule88 for start.\n");
                 route_flag.terCityReset();
                 route_flag.ter_begin_oosaka = true;
             } else if ((aply88 & 2) != 0) {
-                System.out.printf("Apply to rule88 for arrive.\n");
+                System.out.print("Apply to rule88 for arrive.\n");
                 route_flag.terCityReset();
                 route_flag.ter_fin_oosaka = true;
             }
@@ -196,18 +202,14 @@ public class CalcRoute extends RouteList {
 		/* 特定都区市内発着可否判定 */
         chk = CheckOfRule86(route_list_tmp2.toArray(new RouteItem[0]), route_flag, exit, enter, cityId);
         System.out.printf("RuleSpecific:chk 0x%x, %d -> %d\n", chk, cityId[0], cityId[1]);
-        if (RouteUtil.BIT_CHK(chk, 31)) {
-            route_flag.jrtokaistock_enable = true; // for UI
-    	}
-    	else {
-            route_flag.jrtokaistock_enable = false; // for UI
-    	}
+        // for UI
+        route_flag.jrtokaistock_enable = RouteUtil.BIT_CHK(chk, 31); // for UI
     	chk &= ~(1 << 31);
 
 		/* 86, 87適用可能性None？ */
         if ((chk == 4) || (chk == 0)) {  /* 全駅特定都区市内駅 or 発着とも特定都区市内駅でない場合 */
 			/* 未変換 */
-            System.out.printf("no applied for rule86/87\n");
+            System.out.print("no applied for rule86/87\n");
             cpyRouteItems(route_list_tmp2, route_list_cooked);
             return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
@@ -307,7 +309,7 @@ public class CalcRoute extends RouteList {
                             route_flag.ter_fin_yamate = true;
                             break;
                     }
-    				System.out.printf("applied for rule87\n");
+    				System.out.print("applied for rule87\n");
     			} else {
                     System.out.print("no applied rule87 reson the JR tokai stock enable.\n");
                 }
@@ -328,11 +330,11 @@ public class CalcRoute extends RouteList {
                     cpyRouteItems(route_list_tmp2, route_list_tmp);
                     ReRouteRule86j87j(cityId, flg, exit, enter, route_list_tmp);
                     // 69を適用したものをroute_list_tmp3へ
-                    n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
+                    /*n=*/ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
                     route_flag.rule69 = true;
-                } else {
+                } //else {
                     // 東京,京葉線,蘇我,外房線,勝浦 -> [山]外房線,勝浦
-                }
+                //}
 
                 // route_list_cooked = route_list_tmp3
                 cpyRouteItems(route_list_tmp3, route_list_cooked);
@@ -401,12 +403,12 @@ public class CalcRoute extends RouteList {
                             route_flag.rule69 = true;
                         }
 						/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
-                        if (sk == 900) {
-                            System.out.printf("applied for rule87(start)\n");
+                        if (sk == RULE114_SALES_KM_87) {
+                            System.out.print("applied for rule87(start)\n");
                             route_flag.terCityReset();
             				route_flag.ter_begin_yamate = true;
                         } else {
-                            System.out.printf("applied for rule86(start)\n");
+                            System.out.print("applied for rule86(start)\n");
                             route_flag.terCityReset();
             				route_flag.ter_begin_city = true;
                         }
@@ -417,11 +419,11 @@ public class CalcRoute extends RouteList {
 						/* 着のみ都区市内適用 */
 						/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
                         if (sk == RULE114_SALES_KM_87) {
-                            System.out.printf("applied for rule87(end)\n");
+                            System.out.print("applied for rule87(end)\n");
                             route_flag.terCityReset();
         					route_flag.ter_fin_yamate = true;
                         } else {
-                            System.out.printf("applied for rule86(end)\n");
+                            System.out.print("applied for rule86(end)\n");
                             route_flag.terCityReset();
         					route_flag.ter_fin_city = true;
                         }
@@ -442,12 +444,12 @@ public class CalcRoute extends RouteList {
                         route_flag.rule69 = true;
                     }
 					/* 発駅・着駅特定都区市内だが発駅のみ都区市内適用 */
-                    if (sk == 900) {
-                        System.out.printf("applied for rule87(start)\n");
+                    if (sk == RULE114_SALES_KM_87) {
+                        System.out.print("applied for rule87(start)\n");
                         route_flag.terCityReset();
-    					route_flag.ter_begin_yamate = true;;
+    					route_flag.ter_begin_yamate = true;
                     } else {
-                        System.out.printf("applied for rule86(start)\n");
+                        System.out.print("applied for rule86(start)\n");
                         route_flag.terCityReset();
     					route_flag.ter_begin_city = true;
                     }
@@ -457,11 +459,11 @@ public class CalcRoute extends RouteList {
                 } else if (flg == 0x02) {
 					/* 発駅・着駅特定都区市内だが着駅のみ都区市内適用 */
                     if (sk == RULE114_SALES_KM_87) {
-                        System.out.printf("applied for rule87(end)\n");
+                        System.out.print("applied for rule87(end)\n");
                         route_flag.terCityReset();
     					route_flag.ter_fin_yamate = true;
                     } else {
-                        System.out.printf("applied for rule86(end)\n");
+                        System.out.print("applied for rule86(end)\n");
                         route_flag.terCityReset();
     					route_flag.ter_fin_city = true;
                     }
@@ -494,15 +496,13 @@ public class CalcRoute extends RouteList {
             if (rule114.check(route_flag, chk, sk, route_list_tmp2, route_list_tmp4, cityId, enter, exit)) {
                 rule114Info.set(new Rule114Info(rule114.fare, rule114.apply_terminal_station));
             }
-        } else {
+        } //else {
             // do nothing(not 114)
-            ;
-        }
+            //;
+        //}
 		/* 86-87非適用 */
         // route_list_cooked = route_list_tmp2
         cpyRouteItems(route_list_tmp2, route_list_cooked);
-
-        return;
     }
 
     /*  public
@@ -540,7 +540,7 @@ public class CalcRoute extends RouteList {
                 }
                 if (b_more_low_cost) {
                     System.out.print("changed fare for lowcost\n");
-                    ; // DO NOTHING
+                    // ;DO NOTHING
                 } else {
                     // rule 114 applied
                     fare_info.setRule114(rule114Info);
@@ -648,8 +648,8 @@ public class CalcRoute extends RouteList {
     //
     static int CheckOfRule88j(List<RouteItem> route) {
         int lastIndex;
-		/*static*/ int chk_distance1 = 0;
-		/*static*/ int chk_distance2 = 0;
+		/*static*/ int chk_distance1;
+		/*static*/ int chk_distance2;
 
         lastIndex = (int)route.size() - 1;
 
@@ -853,16 +853,13 @@ public class CalcRoute extends RouteList {
         }
         //int akm;
         short aStationId = 0;
-        Cursor dbo = RouteDB.db().rawQuery(sql_buf, new String[]{String.valueOf(line_id),
-                String.valueOf(station_id)});
 
-        try {
+        try (Cursor dbo = RouteDB.db().rawQuery(sql_buf, new String[]{String.valueOf(line_id),
+                String.valueOf(station_id)})) {
             if (dbo.moveToNext()) {
                 //akm = dbo.getInt(0);		// 未使用(営業キロじゃ貰っても要らん)
                 aStationId = dbo.getShort(1);
             }
-        } finally {
-            dbo.close();
         }
         return aStationId;
     }
@@ -1168,17 +1165,13 @@ public class CalcRoute extends RouteList {
         "   ((station70_id1=?3 and station70_id2=?4) or" +
         "    (station70_id1=?4 and station70_id2=?3));";
 
-        Cursor ctx = RouteDB.db().rawQuery(tsql, new String[] { String.valueOf(station_id1),
-                                                    String.valueOf(station_id2),
-                                                    String.valueOf(stationId_o70),
-                                                    String.valueOf(stationId_e70) });
-
-        try {
+        try (Cursor ctx = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(station_id1),
+                String.valueOf(station_id2),
+                String.valueOf(stationId_o70),
+                String.valueOf(stationId_e70)})) {
             if (ctx.moveToNext()) {
                 return 1 == ctx.getInt(0);
             }
-        } finally {
-            ctx.close();
         }
         return false;
     }
@@ -1246,16 +1239,15 @@ public class CalcRoute extends RouteList {
 
         System.out.printf("c69 line_id=%d, station_id1=%d, station_id2=%d\n", line_id, station_id1, station_id2);
 
-        Cursor ctx = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(line_id),
+        try (Cursor ctx = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(line_id),
                 String.valueOf(station_id1),
-                String.valueOf(station_id2)});
-        try {
+                String.valueOf(station_id2)})) {
             while (ctx.moveToNext()) {
                 cur_stid = ctx.getInt(0);
                 cur_flag = ctx.getInt(1);
                 // bit23 -> bit15 | bit3-0
                 cur_flag = ((cur_flag >>> (BSR69CONT - 15)) & (1 << 15)) | (cur_flag & 0x0f);
-                pre_list.add(new Integer[] {cur_stid, cur_flag});
+                pre_list.add(new Integer[]{cur_stid, cur_flag});
             }
             cur_stid = 0;
             cur_flag = 0;
@@ -1273,7 +1265,7 @@ public class CalcRoute extends RouteList {
                         prev_flag = 0;
                         continue;
                     }
-                    results.add(new Integer[][] {{prev_stid, (prev_flag & 0x0f)},
+                    results.add(new Integer[][]{{prev_stid, (prev_flag & 0x0f)},
                             {cur_stid, (cur_flag & 0x0f)}});
                     prev_flag = 0;
 
@@ -1287,7 +1279,7 @@ public class CalcRoute extends RouteList {
 
                     }
                 } else {
-					/* 継続以外で継続フラグ付BSR69TERMは無効*/
+                    /* 継続以外で継続フラグ付BSR69TERMは無効*/
                     if ((continue_flag && ((cur_flag & (1 << 15)) != 0) && (station_id1 == cur_stid)) ||
                             (!continue_flag && ((cur_flag & (1 << 15)) == 0))) {
                         // OK
@@ -1298,11 +1290,9 @@ public class CalcRoute extends RouteList {
                         prev_flag = 0;
                         prev_stid = 0;
                     }
-                    continue_flag = false;	/* 1回目以外はOff */
+                    continue_flag = false;    /* 1回目以外はOff */
                 }
             }
-        } finally {
-            ctx.close();
         }
         return next_continue;
     }
@@ -1323,17 +1313,17 @@ public class CalcRoute extends RouteList {
 
         results.clear();
 
-        Cursor ctx = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(ident)});
-        try {
+        try (Cursor ctx = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(ident)})) {
             while (ctx.moveToNext()) {
-                results.add(new Integer[] {ctx.getInt(0), ctx.getInt(1), ctx.getInt(2)});
+                results.add(new Integer[]{ctx.getInt(0), ctx.getInt(1), ctx.getInt(2)});
             }
 
             s1 = 0;
             in1 = 0;
             int leng = results.size();
-            ASSERT (0 < leng);
-            leave: for (RouteItem route_item : in_route_list) {
+            ASSERT(0 < leng);
+            leave:
+            for (RouteItem route_item : in_route_list) {
                 s2 = route_item.stationId;
                 if (s1 != 0) { /* 2回目以降 ? */
                     if (!cur.is_equal(route_item)) {
@@ -1343,35 +1333,35 @@ public class CalcRoute extends RouteList {
                             stationId2 = results.get(i)[2];
                             in = RouteUtil.InStation(s2, lineId, stationId1, stationId2);
                             in1 = RouteUtil.InStation(s1, lineId, stationId1, stationId2);
-							/* 2駅とも置換路線上にあれば置換しない
-							 * 1駅のみ置換路線上にある場合、その駅が端駅でなければ置換しない
-							 */
+                            /* 2駅とも置換路線上にあれば置換しない
+                             * 1駅のみ置換路線上にある場合、その駅が端駅でなければ置換しない
+                             */
                             if (leng == 1) {
                                 if (((in != 0) && (in1 != 0)) ||
                                         ((0 != RouteUtil.InStation(stationId1, lineId, s1, s2)) &&
-                                         (0 != RouteUtil.InStation(stationId2, lineId, s1, s2)))) {
-                                    results.clear();	/* 置換対象外とする */
+                                                (0 != RouteUtil.InStation(stationId2, lineId, s1, s2)))) {
+                                    results.clear();    /* 置換対象外とする */
                                     break leave;
                                 }
                             } else if (i == 0) {
                                 if (((in != 0) && (in1 != 0)) ||
-                                        ((in  != 0) && (s2 != stationId1)) ||
+                                        ((in != 0) && (s2 != stationId1)) ||
                                         ((in1 != 0) && (s1 != stationId1))) {
-                                    results.clear();	/* 置換対象外とする */
+                                    results.clear();    /* 置換対象外とする */
                                     break leave;
                                 }
-                            } else if (i  == (leng - 1)) {
-								/* last */
+                            } else if (i == (leng - 1)) {
+                                /* last */
                                 if (((in != 0) && (in1 != 0)) ||
-                                        ((in  != 0) && (s2 != stationId2)) ||
+                                        ((in != 0) && (s2 != stationId2)) ||
                                         ((in1 != 0) && (s1 != stationId2))) {
-                                    results.clear();	/* 置換対象外とする */
+                                    results.clear();    /* 置換対象外とする */
                                     break leave;
                                 }
                             } else {
                                 /* Don't come here */
                                 if ((in != 0) || (in1 != 0)) {
-                                    results.clear();	/* 置換対象外とする */
+                                    results.clear();    /* 置換対象外とする */
                                     break leave;
                                 }
                             }
@@ -1380,8 +1370,6 @@ public class CalcRoute extends RouteList {
                 }
                 s1 = s2;
             }
-        } finally {
-            ctx.close();
         }
         return 0 < results.size();
     }
@@ -1700,8 +1688,8 @@ public class CalcRoute extends RouteList {
         int coreStationId;
         boolean skip;
         int lineId;
-        List<RouteItem> work_route_list = new ArrayList<RouteItem>();
-        List<Station> firstTransferStation = new ArrayList<Station>();
+        List<RouteItem> work_route_list = new ArrayList<>();
+        List<Station> firstTransferStation = new ArrayList<>();
         int c;   // work counter
         int n;   // work counter
 
@@ -2552,7 +2540,7 @@ public class CalcRoute extends RouteList {
             int bline_id = 0;
             int zline_id = 0;
             int i;
-            List<Integer> zroute = new ArrayList<Integer>();
+            List<Integer> zroute = new ArrayList<>();
             List<RouteItem> result_route = dupRouteItems(route);
             int replace = 0;
 

@@ -1,7 +1,6 @@
 package org.sutezo.farert
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
@@ -100,13 +99,17 @@ class StationListActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
 
-        if (title == resources.getString(R.string.title_station_select_junction)) {
-            menu?.findItem(R.id.action_switch)?.title = resources.getString(R.string.title_station_select_arrive)
-        } else if (title == resources.getString(R.string.title_station_select_arrive)) {
-            menu?.findItem(R.id.action_switch)?.title = resources.getString(R.string.title_station_select_junction)
-        } else {
-            invalidateOptionsMenu();
-            menu?.findItem(R.id.action_switch)?.setVisible(false)
+        when (title) {
+            resources.getString(R.string.title_station_select_junction) -> {
+                menu?.findItem(R.id.action_switch)?.title = resources.getString(R.string.title_station_select_arrive)
+            }
+            resources.getString(R.string.title_station_select_arrive) -> {
+                menu?.findItem(R.id.action_switch)?.title = resources.getString(R.string.title_station_select_junction)
+            }
+            else -> {
+                invalidateOptionsMenu()
+                menu?.findItem(R.id.action_switch)?.isVisible = false
+            }
         }
         return super.onPrepareOptionsMenu(menu)
     }

@@ -167,6 +167,9 @@ typedef NS_ENUM(NSInteger, DB) {
 // Auto route
 - (NSInteger)autoRoute:(NSInteger)useLine arrive:(NSInteger)stationId;
 
+//
+- (NSInteger)typeOfPassedLine:(NSInteger)offset;
+
 // reverse
 - (NSInteger)reverseRoute;
 

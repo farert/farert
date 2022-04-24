@@ -17,9 +17,7 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_archive_route.*
 import kotlinx.android.synthetic.main.content_archive_route_list.view.*
 import kotlinx.android.synthetic.main.content_line_list.*
-import kotlinx.android.synthetic.main.route_list.*
 import org.sutezo.alps.*
-
 
 /**
  * 経路保存画面
@@ -52,7 +50,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
         }
 
         // 保存経路リスト
-        var listItems = readParams(this, KEY_ARCHIVE)
+        val listItems = readParams(this, KEY_ARCHIVE)
 
         // 上限チェック
         if ((MAX_ARCHIVE_ROUTE - countOfRoute(listItems)) <= 0) {
@@ -63,6 +61,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 setPositiveButton(R.string.agree) { _, _ ->
                     mCurRouteScript = ""    // 追加できない
                 }
+                setIcon(android.R.drawable.ic_dialog_alert)
             }
             val dlg = build.create()
             dlg.show()
@@ -71,7 +70,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
         setupRecyclerView(listItems)
     }
 
-    fun setupRecyclerView(listItems: List<String>) {
+    private fun setupRecyclerView(listItems: List<String>) {
         archive_route_list.adapter =
                 ArchiveRouteListRecyclerViewAdapter(listItems,
                         mCurRouteScript,
@@ -100,9 +99,9 @@ class ArchiveRouteActivity : AppCompatActivity(),
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
 
         val m = menu?: return super.onPrepareOptionsMenu(menu)
-        val btnIconClear = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_delete_forever_black_24dp, null)
-        val btnIconSave = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_system_update_alt_black_24dp, null)
-        val btnIconExport = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_menu_share_light, null)
+        val btnIconClear = ResourcesCompat.getDrawable(resources, R.drawable.ic_delete_forever_black_24dp, null)
+        val btnIconSave = ResourcesCompat.getDrawable(resources, R.drawable.ic_system_update_alt_black_24dp, null)
+        val btnIconExport = ResourcesCompat.getDrawable(resources, R.drawable.ic_menu_share_light, null)
 
         this.menu = m
 
@@ -113,25 +112,25 @@ class ArchiveRouteActivity : AppCompatActivity(),
         if (!mbAvailClear) {
             btnIconClear?.mutate()?.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP)
             //btnIconClear?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_ATOP))
-            mnuClear.setIcon(btnIconClear)
+            mnuClear.icon = btnIconClear
         }
-        mnuClear.setEnabled(mbAvailClear)
+        mnuClear.isEnabled = mbAvailClear
 
         val mnuSave = m.findItem(R.id.menu_item_save)
         if (!mbAvailSave) {
             btnIconSave?.mutate()?.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
             //btnIconSave?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
-            mnuSave.setIcon(btnIconSave)
+            mnuSave.icon = btnIconSave
         }
-        mnuSave.setEnabled(mbAvailSave)
+        mnuSave.isEnabled = mbAvailSave
 
         val mnuExport = m.findItem(R.id.menu_item_export)
         if (!mbAvailClear) { // same as clear button and export button
             btnIconExport?.mutate()?.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
             //btnIconExport?.mutate()?.setColorFilter(BlendModeColorFilter(Color.GRAY, BlendMode.SRC_IN))
-            mnuExport.setIcon(btnIconExport)
+            mnuExport.icon = btnIconExport
         }
-        mnuExport.setEnabled(mbAvailClear)
+        mnuExport.isEnabled = mbAvailClear
 
         return super.onPrepareOptionsMenu(menu)
     }
@@ -140,8 +139,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
      *  Menu選択処理(保存/削除)
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             android.R.id.home -> {
                 // return to back view
                 finish()
@@ -152,7 +150,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                 val trv = archive_route_list.adapter
                         as ArchiveRouteListRecyclerViewAdapter
                 trv.saveParams(this)
-                item.setEnabled(false)
+                item.isEnabled = false
             }
             R.id.menu_item_all_delete -> {
                 // 全削除は訊いてからやる
@@ -163,9 +161,10 @@ class ArchiveRouteActivity : AppCompatActivity(),
                         val trv = archive_route_list.adapter
                                 as ArchiveRouteListRecyclerViewAdapter
                         trv.clearContents()
-                        item.setEnabled(false)
+                        item.isEnabled = false
                     }
                     setNegativeButton("No", null)
+                    setIcon(android.R.drawable.ic_dialog_alert)
                     create()
                     show()
                 }
@@ -173,11 +172,11 @@ class ArchiveRouteActivity : AppCompatActivity(),
             R.id.menu_item_import -> {
                 // 経路文字列を複数行得る
                 // Wait ProgressDialog
-                var sw = readParam(this, KEY_INPORT_AVAILABLE)
+                val sw = readParam(this, KEY_INPORT_AVAILABLE)
                 if (sw == "true") {
                     this.doImportRoute()
                     // 保存経路リスト
-                    var listItems = readParams(this, KEY_ARCHIVE)
+                    val listItems = readParams(this, KEY_ARCHIVE)
 
                     if (listItems.isEmpty() && mCurRouteScript == "") {
                         mbAvailClear = false
@@ -197,6 +196,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
                         }
                         setPositiveButton(R.string.agree, null) // "了解" -> なにもしない
                         // "今後、この画面は表示せず、インポート機能を実行する" -> 以降実行可能
+                        setIcon(android.R.drawable.ic_dialog_info)
                     }
                     val dlg = build.create()
                     dlg.show()
@@ -213,7 +213,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
      *  行を選択した場合、選択経路を表示する。既に別の経路が表示されていてその経路が保存されて
      *  いなければ警告し確認させる
      *
-     *  @param context コンテキスト
      *  @param routeScript 選択した経路
      */
     override fun onClickRow(routeScript: String) {
@@ -229,6 +228,7 @@ class ArchiveRouteActivity : AppCompatActivity(),
 
                 }
                 setCancelable(false)
+                setIcon(context?.let { ResourcesCompat.getDrawable(it.resources, R.drawable.ic_question_answer, null) })
                 create()
                 show()
             }
@@ -244,11 +244,11 @@ class ArchiveRouteActivity : AppCompatActivity(),
      */
     private fun doChangeRoute(routeScript: String) {
         // 選択した経路が保存済みで先頭にない場合は先頭に移動して保存し直す
-        var listItems = readParams(this, KEY_ARCHIVE)
+        val listItems = readParams(this, KEY_ARCHIVE)
         if (listItems.contains(routeScript)) {
             val s = listItems[0]
             if (routeScript != s) {
-                var wl = listItems.toMutableList()
+                val wl = listItems.toMutableList()
                 wl.remove(routeScript)
                 wl.add(0, routeScript)
                 saveParam(this, KEY_ARCHIVE, wl.toList())
@@ -268,7 +268,6 @@ class ArchiveRouteActivity : AppCompatActivity(),
     /**
      * アイテム(保存経路)が削除されたり、保存された場合に呼ばれる
      *
-     * @param numItem 行Index
      */
     override fun onChangeItem(enClear: Boolean, enSave: Boolean) {
         mbAvailSave = enSave
@@ -304,16 +303,13 @@ class ArchiveRouteActivity : AppCompatActivity(),
     private fun doExportRoute() {
         val trv = archive_route_list.adapter as ArchiveRouteListRecyclerViewAdapter
 
-        // 文字列配列にはいった経路を、改行区切りの文字列として返す
-        val route_script_all = trv.exportRoute()
-
         val mimeType = "text/plain"
         val subject = "チケットフォルダ"
 
         val shareIntent = ShareCompat.IntentBuilder.from(this)
                 .setChooserTitle(resources.getString(R.string.title_share_text))
                 .setType(mimeType)
-                .setText(route_script_all)
+                .setText(trv.exportRoute()) // 文字列配列にはいった経路を、改行区切りの文字列として返す
                 .setSubject(subject)
                 .intent
         if (shareIntent.resolveActivity(this.packageManager) != null) {
@@ -326,8 +322,8 @@ class ArchiveRouteActivity : AppCompatActivity(),
      * 保存パラメータキー定義
      */
     companion object {
-        val KEY_ARCHIVE = "archive_route"
-        val KEY_INPORT_AVAILABLE = "import_guide"
+        const val KEY_ARCHIVE = "archive_route"
+        const val KEY_INPORT_AVAILABLE = "import_guide"
 
         val delim = arrayOf(" ", ",", ".", "[", "]", "<", ">", "/", "{", "}")
 
@@ -391,13 +387,13 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
      */
     init {
         if (curRouteScript == "") {
-            if (values.count() <= 0) {
-                curState = CUR_STATE.EMPTY     // f
+            curState = if (values.count() <= 0) {
+                CUR_STATE.EMPTY     // f
             } else {
-                curState = CUR_STATE.NOTHING_OR_SAVED     // d
+                CUR_STATE.NOTHING_OR_SAVED     // d
             }
         } else {
-            val exist_idx = values.indexOf(curRouteScript) // 0 or N or -1
+            val exist_idx: Int = values.indexOf(curRouteScript) // 0 or N or -1
             when {
                 1 <= exist_idx -> {
                     // b
@@ -479,14 +475,14 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
     override fun getItemViewType(position: Int): Int {
         if (curState == CUR_STATE.EMPTY) return ITEM_TYPE.EMPTY.ordinal
 
-        if (values[position] == curRouteScript) {
+        return if (values[position] == curRouteScript) {
             if (curState == CUR_STATE.UNSAVE) {
-                return ITEM_TYPE.UNSAVED.ordinal
+                ITEM_TYPE.UNSAVED.ordinal
             } else {
-                return ITEM_TYPE.SAVED.ordinal
+                ITEM_TYPE.SAVED.ordinal
             }
         } else {
-            return 0
+            0
         }
     }
 
@@ -505,10 +501,10 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
                 listener.onSaveRoute(values)
             } else if (curState == CUR_STATE.EXIST) {
                 // b
-                if (position == 0) {
-                    curState = CUR_STATE.NOTHING_OR_SAVED
+                curState = if (position == 0) {
+                    CUR_STATE.NOTHING_OR_SAVED
                 } else {
-                    curState = CUR_STATE.TOP
+                    CUR_STATE.TOP
                 }
                 listener.onSaveRoute(values)
             } else if (curState == CUR_STATE.UNSAVE) {
@@ -539,7 +535,7 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         values = listOf()
         listener.onSaveRoute(values)
         curState = CUR_STATE.EMPTY
-        listener.onChangeItem(false, false)
+        listener.onChangeItem(enClear = false, enSave = false)
         notifyDataSetChanged()
     }
 
@@ -558,15 +554,14 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         }
         val enClear = 0 < itemCount
         listener.onChangeItem(enClear, curState == CUR_STATE.UNSAVE)
-        notifyDataSetChanged()
+        this.notifyDataSetChanged()
     }
 
     /**
      *  エクスポート用テキスト
      */
-    fun exportRoute() : String {
-        val s = values.joinToString("\n")
-        return s
+    fun exportRoute(): String {
+        return values.joinToString("\n")
     }
 
     /**
@@ -593,7 +588,7 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         } else {
             // クリップボードから経由を得る
             val route_script_list = text.split("\n")
-            var route_list = mutableListOf<String>(*values.toTypedArray())
+            val route_list = mutableListOf(*values.toTypedArray())
 
             for (scriptRoute: String in route_script_list) {
                 if ("" == scriptRoute.trim()) {
@@ -639,18 +634,26 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
                 msg_fail = "\n%d経路が不正書式でした.".format(error_count)
             }
 
-            if (new_count <= 0) {
-                if (0 < error_count) {
-                    msg = "追加経路はありません(すべて不正書式でした）"
-                } else if (exist_count <= 0) {
-                    msg = "追加経路はありません."
-                } else {
-                    msg = "追加経路はありません(既に全経路あります)."
+            msg = when {
+                new_count <= 0 -> {
+                    when {
+                        0 < error_count -> {
+                            "追加経路はありません(すべて不正書式でした）"
+                        }
+                        exist_count <= 0 -> {
+                            "追加経路はありません."
+                        }
+                        else -> {
+                            "追加経路はありません(既に全経路あります)."
+                        }
+                    }
                 }
-            } else if (0 < exist_count) {
-                msg = "%d経路を追加しました(%d経路は既にあります.)".format(new_count, exist_count)
-            } else {
-                msg = "%d経路を追加しました".format(new_count)
+                0 < exist_count -> {
+                    "%d経路を追加しました(%d経路は既にあります.)".format(new_count, exist_count)
+                }
+                else -> {
+                    "%d経路を追加しました".format(new_count)
+                }
             }
             msg += msg_fail ?: ""
             msg += msg_trail ?: ""
@@ -659,6 +662,8 @@ private class ArchiveRouteListRecyclerViewAdapter(private var values: List<Strin
         val build = AlertDialog.Builder(context).apply {
             setTitle(R.string.menu_item_import)
             setMessage(msg)
+            setIcon(if (0 < new_count) android.R.drawable.ic_dialog_info
+                    else android.R.drawable.ic_dialog_alert)
             setPositiveButton(R.string.agree) { _, _ ->
 
                 if (0 < new_count) {

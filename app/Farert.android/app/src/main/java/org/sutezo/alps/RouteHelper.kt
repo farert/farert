@@ -23,7 +23,7 @@ fun getCompanys() : List<Int> {
 
     dbo.use {
         while (dbo.moveToNext()) {
-            val ident = dbo.getInt(1);
+            val ident = dbo.getInt(1)
             if (ident < 0x10000) {
                 companys.add(ident)
             }
@@ -39,7 +39,7 @@ fun getPrefects() : List<Int> {
 
     dbo.use {
         while (dbo.moveToNext()) {
-            val ident = dbo.getInt(1);
+            val ident = dbo.getInt(1)
             if (ident < 0x10000) {
                 // ignored
             } else {
@@ -65,11 +65,11 @@ fun kmNumStr(num: Int): String
 //  ひらがな昇順ソート
 fun keyMatchStations(key: String): List<Int>
 {
-    val stations: MutableList<Int> = mutableListOf<Int>()
+    val stations: MutableList<Int> = mutableListOf()
     val dbo = RouteUtil.Enum_station_match(key)
     dbo.use {
         while (dbo.moveToNext()) {
-            val station_id = dbo.getInt(1);
+            val station_id = dbo.getInt(1)
             stations.add(station_id)
         }
     }
@@ -102,10 +102,10 @@ fun lineName(ident:Int) : String
 // Company or Prefect Name
 fun companyOrPrefectName(ident:Int):String
 {
-    if (ident < 0x10000) {
-        return RouteUtil.CompanyName(ident)
+    return if (ident < 0x10000) {
+        RouteUtil.CompanyName(ident)
     } else {
-        return RouteUtil.PrefectName(ident)
+        RouteUtil.PrefectName(ident)
     }
 }
 
@@ -113,7 +113,7 @@ fun companyOrPrefectName(ident:Int):String
 //  会社/都道府県idから路線を返す
 fun linesFromCompanyOrPrefect(id:Int): List<Int>
 {
-    val lines : MutableList<Int> = mutableListOf<Int>()
+    val lines : MutableList<Int> = mutableListOf()
     val dbo = RouteUtil.Enum_lines_from_company_prefect(id)
     dbo.use {
         while (dbo.moveToNext()) {
@@ -127,14 +127,14 @@ fun linesFromCompanyOrPrefect(id:Int): List<Int>
 //	会社or都道府県 + 路線に属する駅を列挙
 fun stationsWithInCompanyOrPrefectAnd(id:Int, line_id:Int) : List<Int>
 {
-    val stations : MutableList<Int> = mutableListOf<Int>()
+    val stations : MutableList<Int> = mutableListOf()
     val dbo = RouteUtil.Enum_station_located_in_prefect_or_company_and_line(id, line_id)
     dbo.use {
         while (dbo.moveToNext()) {
             stations.add(dbo.getInt(1))
         }
     }
-    return stations;
+    return stations
 }
 
 fun lineIdsFromStation(id:Int):List<Int>
@@ -146,7 +146,7 @@ fun lineIdsFromStation(id:Int):List<Int>
             lines.add(dbo.getInt(1))
         }
     }
-    return lines;
+    return lines
 }
 
 fun stationsIdsOfLineId(lineId:Int):List<Int>
@@ -158,7 +158,7 @@ fun stationsIdsOfLineId(lineId:Int):List<Int>
             stations.add(dbo.getInt(1))
         }
     }
-    return stations;
+    return stations
 }
 
 fun junctionIdsOfLineId(lineId:Int, stationId: Int = 0):List<Int>
@@ -170,7 +170,7 @@ fun junctionIdsOfLineId(lineId:Int, stationId: Int = 0):List<Int>
             stations.add(dbo.getInt (1))
         }
     }
-    return stations;
+    return stations
 }
 
 fun terminalName(ident:Int):String = CalcRoute.BeginOrEndStationName(ident)
@@ -186,20 +186,21 @@ fun PrectNameByStation(stationId:Int):String = RouteUtil.GetPrefectByStationId(s
 fun getKanaFromStationId(ident:Int): String = RouteUtil.GetKanaFromStationId(ident)
 
 
-fun saveParam(context: Context, key:String, value:String) : Unit
-{
+fun saveParam(context: Context, key:String, value:String) {
     val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val sharedEdit = sharedPref.edit()
     sharedEdit.putString(key, value)
     sharedEdit.apply()
 }
 
-fun saveParam(context: Context, key: String, values: List<String>):Unit {
-    val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val jsonArray = JSONArray(values)
-    val shredEdit = sharedPref.edit()
-    shredEdit.putString(key, jsonArray.toString())
-    shredEdit.apply()
+fun saveParam(context: Context, key: String, values: List<String>) {
+    try {
+        val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val jsonArray = JSONArray(values)
+        val shredEdit = sharedPref.edit()
+        shredEdit.putString(key, jsonArray.toString())
+        shredEdit.apply()
+    } catch(_: Exception) {}
 }
 
 fun readParam(context: Context, key: String) : String {
@@ -209,14 +210,16 @@ fun readParam(context: Context, key: String) : String {
 
 fun readParams(context: Context, key: String) : List<String> {
     val values = mutableListOf<String>()
-    var sharedPref  = context.getSharedPreferences("settings", Context.MODE_PRIVATE ) ?:
+    val sharedPref  = context.getSharedPreferences("settings", Context.MODE_PRIVATE ) ?:
     return values
 
     val params = sharedPref.getString(key, "[]")
-    val jsonArray = JSONArray(params)
-    for (i in 0 until jsonArray.length()) {
-        values.add(jsonArray.get(i).toString())
-    }
+    try {
+        val jsonArray = JSONArray(params)
+        for (i in 0 until jsonArray.length()) {
+            values.add(jsonArray.get(i).toString())
+        }
+    } catch(_: Exception) {}
     return values
 }
 
@@ -224,7 +227,7 @@ fun saveHistory(context: Context, history : List<String>) {
     saveParam(context,"history", history)
 }
 
-fun appendHistory(context: Context, terminal : String) : Unit {
+fun appendHistory(context: Context, terminal : String) {
     val history = mutableListOf<String>()
     history.addAll(0, readParams(context, "history"))
     if (history.contains(terminal)) {
@@ -238,8 +241,8 @@ fun appendHistory(context: Context, terminal : String) : Unit {
 // 駅リスト選択でつかう
 // line_id : 除外する路線
 fun getDetailStationInfoForSelList(line_id : Int, station_id: Int) : String {
-    var details : String = "(${RouteUtil.GetKanaFromStationId(station_id)}) "
-    var f : Boolean = false
+    var details = "(${RouteUtil.GetKanaFromStationId(station_id)}) "
+    var f = false
 
     if (RouteUtil.STATION_IS_JUNCTION(station_id) &&
             !RouteUtil.IsSpecificJunction(line_id, station_id)) {
@@ -269,10 +272,10 @@ fun CalcRoute.calcFareInfo() : FareInfo
     this.calcFare(fi)
     when (fi.resultCode()) {
         0 -> {     // success, company begin/first or too many company
-            result.result = 0;
+            result.result = 0
         }
         -1 -> {    /* In completed (吉塚、西小倉における不完全ルート) */
-            result.result = 1;     //"この経路の片道乗車券は購入できません.続けて経路を指定してください."
+            result.result = 1    //"この経路の片道乗車券は購入できません.続けて経路を指定してください."
         }
         else -> {
             result.result = -2 /* -2:empty or -3:fail */
@@ -281,8 +284,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
     }
 
 
-    result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine()
-    result.isResultCompanyMultipassed = fi.isMultiCompanyLine()
+    result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine
+    result.isResultCompanyMultipassed = fi.isMultiCompanyLine
 
     //result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect()
 
@@ -290,11 +293,11 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.beginStationId = fi.getBeginTerminalId()
     result.endStationId = fi.getEndTerminalId()
 
-    result.isBeginInCity = FARE_INFO.IsCityId(fi.getBeginTerminalId());
+    result.isBeginInCity = FARE_INFO.IsCityId(fi.getBeginTerminalId())
     result.isEndInCity = FARE_INFO.IsCityId(fi.getEndTerminalId())
 
     /* route */
-    result.routeList = fi.getRoute_string()
+    result.routeList = fi.route_string
     result.routeListForTOICA = fi.calc_route_for_disp
 
     /* stock discount (114 no applied) */
@@ -307,17 +310,17 @@ fun CalcRoute.calcFareInfo() : FareInfo
     }
 
     /* rule 114 */
-    val rule114Fare = fi.getRule114();
-    if (!rule114Fare.isAvailable()) {
-        result.rule114_salesKm = 0;
-        result.rule114_calcKm = 0;
-        result.isRule114Applied = false;
+    val rule114Fare = fi.rule114
+    if (!rule114Fare.isAvailable) {
+        result.rule114_salesKm = 0
+        result.rule114_calcKm = 0
+        result.isRule114Applied = false
         result.fareForStockDiscounts = stks
     } else {
-        result.isRule114Applied = true;
-        result.rule114_salesKm = rule114Fare.sales_km();
-        result.rule114_calcKm = rule114Fare.calc_km();
-        result.rule114_apply_terminal_station = rule114Fare.stationName();
+        result.isRule114Applied = true
+        result.rule114_salesKm = rule114Fare.sales_km()
+        result.rule114_calcKm = rule114Fare.calc_km()
+        result.rule114_apply_terminal_station = rule114Fare.stationName()
 
         /* stock discount (114 applied) */
         for (i in 0..1) {
@@ -331,13 +334,13 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     result.isMeihanCityStartTerminalEnable = this.route_flag.isMeihanCityEnable
     result.isMeihanCityStart = this.route_flag.isStartAsCity
-    result.isMeihanCityTerminal = this.route_flag.isArriveAsCity;
+    result.isMeihanCityTerminal = this.route_flag.isArriveAsCity
 
     result.isRuleAppliedEnable = this.route_flag.rule_en()
-    result.isRuleApplied = !this.route_flag.no_rule;
+    result.isRuleApplied = !this.route_flag.no_rule
 
-    result.isJRCentralStockEnable = this.route_flag.jrtokaistock_enable;
-    result.isJRCentralStock = this.route_flag.jrtokaistock_applied;
+    result.isJRCentralStockEnable = this.route_flag.jrtokaistock_enable
+    result.isJRCentralStock = this.route_flag.jrtokaistock_applied
 
     result.isEnableLongRoute = this.route_flag.isEnableLongRoute
     result.isLongRoute = this.route_flag.isLongRoute
@@ -347,34 +350,34 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
     result.isOsakakanDetour = this.route_flag.osakakan_detour
 
-    result.totalSalesKm = fi.getTotalSalesKm();
-    result.jrCalcKm = fi.getJRCalcKm();
-    result.jrSalesKm = fi.getJRSalesKm();
+    result.totalSalesKm = fi.totalSalesKm
+    result.jrCalcKm = fi.jrCalcKm
+    result.jrSalesKm = fi.jrSalesKm
 
     /* 会社線有無はtotalSalesKm != jrSalesKm */
 
-    result.companySalesKm = fi.getCompanySalesKm();
-    result.salesKmForHokkaido = fi.getSalesKmForHokkaido();
-    result.calcKmForHokkaido = fi.getCalcKmForHokkaido();
+    result.companySalesKm = fi.companySalesKm
+    result.salesKmForHokkaido = fi.salesKmForHokkaido
+    result.calcKmForHokkaido = fi.calcKmForHokkaido
 
-    result.salesKmForShikoku = fi.getSalesKmForShikoku();
-    result.calcKmForShikoku = fi.getCalcKmForShikoku();
+    result.salesKmForShikoku = fi.salesKmForShikoku
+    result.calcKmForShikoku = fi.calcKmForShikoku
 
-    result.salesKmForKyusyu = fi.getSalesKmForKyusyu();
-    result.calcKmForKyusyu = fi.getCalcKmForKyusyu();
+    result.salesKmForKyusyu = fi.salesKmForKyusyu
+    result.calcKmForKyusyu = fi.calcKmForKyusyu
 
     // BRT営業キロ
     result.brtSalesKm = fi.brtSalesKm
 
     // 往復割引有無
-    result.isRoundtripDiscount = fi.isRoundTripDiscount();
+    result.isRoundtripDiscount = fi.isRoundTripDiscount
 
     // 会社線部分の運賃
-    result.fareForCompanyline = fi.getFareForCompanyline();
+    result.fareForCompanyline = fi.fareForCompanyline
 
     // 普通運賃
-    result.fare = fi.getFareForDisplay();
-    result.farePriorRule114 = fi.getFareForDisplayPriorRule114();
+    result.fare = fi.fareForDisplay
+    result.farePriorRule114 = fi.fareForDisplayPriorRule114
 
     // BRT運賃
     result.fareForBRT = fi.fareForBRT
@@ -383,20 +386,20 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // 往復
     val fareResult = fi.roundTripFareWithCompanyLine()
     result.roundTripFareWithCompanyLine = fareResult.fare
-    if (fi.isRule114()) {
-        result.roundTripFareWithCompanyLinePriorRule114 = fi.roundTripFareWithCompanyLinePriorRule114();
+    if (fi.isRule114) {
+        result.roundTripFareWithCompanyLinePriorRule114 = fi.roundTripFareWithCompanyLinePriorRule114()
     }
 
     // IC運賃
-    result.fareForIC = fi.getFareForIC();
+    result.fareForIC = fi.fareForIC
 
     // 小児運賃
-    result.childFare = fi.getChildFareForDisplay();
+    result.childFare = fi.childFareForDisplay
 
     result.roundtripChildFare = fi.roundTripChildFareWithCompanyLine()
 
     // 学割運賃
-    result.academicFare = fi.getAcademicDiscountFare()
+    result.academicFare = fi.academicDiscountFare
     if (0 < result.academicFare) {
         result.isAcademicFare = true
         result.roundtripAcademicFare = fi.roundTripAcademicFareWithCompanyLine()
@@ -405,14 +408,14 @@ fun CalcRoute.calcFareInfo() : FareInfo
         result.roundtripAcademicFare = 0
     }
     // 有効日数
-    result.ticketAvailDays = fi.getTicketAvailDays();
+    result.ticketAvailDays = fi.ticketAvailDays
 
 
     // make message
     val messages : MutableList<String> = mutableListOf()
 
     if (result.isRuleApplied &&
-            fi.isUrbanArea() && !this.route_flag.isUseBullet) {
+            fi.isUrbanArea && !this.route_flag.isUseBullet) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
             // messages.add(msgCantMetroTicket)
         } else if (!this.route_flag.isEnableRule115 ||
@@ -454,30 +457,30 @@ fun CalcRoute.calcFareInfo() : FareInfo
     }
 
     if (!result.isRuleApplied && result.isSpecificFare) {
-        messages.add("特定区間割引運賃を適用していません");
+        messages.add("特定区間割引運賃を適用していません")
     }
-    if (!result.isRuleApplied && this.route_flag.isAvailableRule86()) {
-        messages.add("旅客営業規則第86条を適用していません");
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule86) {
+        messages.add("旅客営業規則第86条を適用していません")
     }
-    if (!result.isRuleApplied && this.route_flag.isAvailableRule87()) {
-        messages.add("旅客営業規則第87条を適用していません");
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule87) {
+        messages.add("旅客営業規則第87条を適用していません")
     }
-    if (!result.isRuleApplied && this.route_flag.isAvailableRule88()) {
-        messages.add("旅客営業規則第88条を適用していません");
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule88) {
+        messages.add("旅客営業規則第88条を適用していません")
     }
-    if (!result.isRuleApplied && this.route_flag.isAvailableRule69()) {
-        messages.add("旅客営業規則第69条を適用していません");
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule69) {
+        messages.add("旅客営業規則第69条を適用していません")
     }
-    if (!result.isRuleApplied && this.route_flag.isAvailableRule70()) {
-        messages.add("旅客営業規則第70条を適用していません");
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule70) {
+        messages.add("旅客営業規則第70条を適用していません")
     }
-    if (!result.isRuleApplied && this.route_flag.isAvailableRule115()) {
-        messages.add("旅客営業取扱基準規程第115条を適用していません");
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule115) {
+        messages.add("旅客営業取扱基準規程第115条を適用していません")
     }
-    if (this.route_flag.isAvailableRule16_5()) {
-        messages.add("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+    if (this.route_flag.isAvailableRule16_5) {
+        messages.add("この乗車券はJRで発券されません. 東京メトロでのみ発券されます")
     }
-    if (rule114Fare.isAvailable()) {
+    if (rule114Fare.isAvailable) {
         val msg = "旅客営業取扱基準規程第114条適用営業キロ計算駅:${rule114Fare.stationName()}"
         messages.add(msg)
     }
@@ -486,7 +489,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
-            route_flag.is_osakakan_1pass() ||
+            route_flag.is_osakakan_1pass ||
             result.isJRCentralStockEnable ||
             result.isEnableRule115 ||
             result.isLongRoute ||
@@ -497,7 +500,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
 // 経路は不揮発メモリに保存されたものか？
 fun isStrageInRoute(context: Context, routeScript : String) : Boolean {
-    var listItems = readParams(context, ArchiveRouteActivity.KEY_ARCHIVE)
+    val listItems = readParams(context, ArchiveRouteActivity.KEY_ARCHIVE)
     return listItems.contains(routeScript)
 }
 
