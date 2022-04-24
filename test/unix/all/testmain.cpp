@@ -13,7 +13,7 @@ static void parse_cmdline(int argc, char** argv, int isrev);
 //int g_tax = 8;
 int g_tax = 10;
 
-char tbuf[1024];
+char tbuf[4096];
 char tbuf2[64];
 const TCHAR* tr[] = { tbuf,  _T("") };
 const TCHAR* tr_a[] = { tbuf,  tbuf2, _T("") };

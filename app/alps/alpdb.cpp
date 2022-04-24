@@ -334,6 +334,7 @@ Route::Route()
 
 Route::Route(const RouteList& route_list)
 {
+	JctMaskClear(jct_mask);
 	assign(route_list);
 }
 
@@ -346,13 +347,7 @@ Route::~Route()
 // operator=(const Route& source_route)
 void Route::assign(const RouteList& source_route, int32_t count /* = -1 */)
 {
-	if (0 <= count) {
-    	route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cbegin() + count);
-	} else {
-		route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
-	}
-    route_flag = source_route.getRouteFlag();
-    reBuild();
+    RouteList::assign(source_route, count);
 }
 
 
@@ -361,21 +356,32 @@ RouteList::RouteList(const RouteList& route_list)
     assign(route_list);
 }
 
-
 // operator=(const Route& source_route)
 void RouteList::assign(const RouteList& source_route, int32_t count /* = -1 */)
 {
-	if (0 <= count) {
-    	route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cbegin() + count);
-	} else {
-		route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
-	}
-    route_flag = source_route.getRouteFlag();
-    if ((0 < count) && source_route.routeList().size() != count) {
-        route_flag.end = false;
-        route_flag.compnda = false;
+    if (count < 0) {
+        route_list_raw.assign(source_route.routeList().cbegin(), source_route.routeList().cend());
+        route_flag = source_route.getRouteFlag();
+    } else {
+        vector<RouteItem>::const_iterator pos = source_route.routeList().cbegin();
+        int row = 1;
+        // build
+        Route build_route;
+        if (0 < count) {
+            build_route.add(pos->stationId);
+            for (pos++; pos != source_route.routeList().cend() && row < count ; pos++, row++) {
+                build_route.add(pos->lineId, pos->stationId);
+            }
+        }
+        // copy of route
+        route_list_raw.assign(build_route.routeList().cbegin(),
+                              build_route.routeList().cend());
+        // copy of flag
+        if (source_route.getRouteFlag().osakakan_detour) {
+            build_route.setDetour(true);
+        }
+        route_flag = build_route.getRouteFlag();
     }
-
     /* It's necessary to rebuild() if Route object. */
 }
 
@@ -397,18 +403,8 @@ void CalcRoute::sync(const RouteList& route)
 
 void CalcRoute::sync(const RouteList& route, int count)
 {
-    //assign(route);
-    if (count < 0) {
-        route_list_raw.assign(route.routeList().cbegin(), route.routeList().cend());
-    } else {
-        route_list_raw.assign(route.routeList().cbegin(), route.routeList().cbegin() + count);
-    }
-    route_flag = route.getRouteFlag();
-    if ((0 < count) && route.routeList().size() != count) {
-        route_flag.end = false;
-        route_flag.compnda = false;
-    }
     route_list_cooked.clear();
+    RouteList::assign(route, count);
     TRACE("CalcRoute::sync() %d\n", route_flag.is_osakakan_1pass());
 }
 
@@ -2799,6 +2795,9 @@ int32_t Route::reBuild()
 			break;
 		}
 	}
+    if (rc == ADDRC_LAST) {
+        ++pos;
+    }
 	if ((rc < 0) || ((rc != ADDRC_OK) && ((rc == ADDRC_LAST) && (pos != route_list_raw.cend())))) {
         route_flag.osakakan_detour = false;
         TRACE(_T("Can't reBuild() rc=%d¥n"), rc);
@@ -3317,7 +3316,6 @@ int32_t Route::setDetour(bool enabled)
 	int32_t rc;
     route_flag.osakakan_detour = enabled;
     rc = reBuild();
-	route_flag.no_rule = enabled;
 	return rc;
 }
 
@@ -3968,6 +3966,40 @@ int32_t Route::junctionStationExistsInRoute(int32_t stationId)
 	for (route_item = route_list_raw.cbegin(); route_item != route_list_raw.cend(); route_item++) {
 		if (stationId == route_item->stationId) {
 			c++;
+		}
+	}
+	return c;
+}
+
+//	経路の種類を得る
+//
+//	@retval bit0 : there is shinkansen.
+//	@retval bit1 : there is company line.
+//
+int32_t Route::typeOfPassedLine(int offset)
+{
+	int32_t c;
+	int32_t count;
+	vector<RouteItem>::const_iterator route_item;
+
+	c = 0;
+	count = 0;
+	route_item = route_list_raw.cbegin();
+	if (route_item != route_list_raw.cend()) {
+		count++;
+		for (route_item++; route_item != route_list_raw.cend(); route_item++) {
+			count++;
+			if (offset < count) {
+				if (IS_SHINKANSEN_LINE(route_item->lineId)) {
+					c |= 0x01;
+				}
+				if (IS_COMPANY_LINE(route_item->lineId)) {
+					c |= 0x02;
+				}
+				if (c == 0x03) {
+					break;
+				}
+			}
 		}
 	}
 	return c;
@@ -9448,8 +9480,8 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 				if (0 < special_fare) {
 		            this->jr_fare = special_fare - this->company_fare;	/* IRいしかわ 乗継割引 */
 				}
-		} else if ( !pRoute_flag->isUseBullet()            /* b#18111401: 新幹線乗車なく、 */
-		            && (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
+		} else if ( //!pRoute_flag->isUseBullet() &&           /* b#18111401: 新幹線乗車なく、 */
+		            (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
 					&& !pRoute_flag->isIncludeCompanyLine()) { // 東京メトロは適用外
 			special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
 			if (0 < special_fare) {
@@ -10111,7 +10143,6 @@ void FARE_INFO::retr_fare(bool useBullet)
 			ASSERT(this->base_sales_km == _total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
             ASSERT(this->base_calc_km == _total_jr_calc_km);
-			ASSERT(_total_jr_calc_km == _total_jr_calc_km);
 			if (IS_YAMATE(this->flag)) {
 				TRACE("fare(osaka-kan)\n");
 				_total_jr_fare = FARE_INFO::Fare_osakakan(_total_jr_sales_km);

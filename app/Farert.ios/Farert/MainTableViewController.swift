@@ -195,11 +195,30 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         case .AUTOROUTE_ACTION:
             let appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate
             if let selid = appDelegate.selectTerminalId {
-                self.actionSheetController(
-                    ["在来線のみ","新幹線を使う", "会社線を使う", "新幹線も会社線も使う"],
-                    title: cRouteUtil.stationName(selid) + "までの最短経路追加",
-                    message: "",
-                    from: TAG_UIACTIONSHEET_AUTOROUTE)
+                if let testRoute = cRoute(route: self.ds) {
+                    _ = testRoute.autoRoute(3, arrive: appDelegate.selectTerminalId!)
+                    let passRoute = testRoute.type(ofPassedLine: self.ds.getCount())
+                    var menuArray = [String]()
+                    switch (passRoute) {
+                    case 0: // local onky
+                        menuArray = []
+                        break
+                    case 1: // bullet only
+                        menuArray = ["在来線のみ","新幹線を使う"]
+                        break
+                    case 2: // Company only
+                        menuArray = ["在来線のみ","会社線を使う"]
+                        break
+                    default:
+                        menuArray = ["在来線のみ","新幹線を使う", "会社線を使う", "新幹線も会社線も使う"]
+                        break
+                    }
+                    self.actionSheetController(
+                        menuArray,
+                        title: cRouteUtil.stationName(selid) + "までの最短経路追加",
+                        message: "",
+                        from: TAG_UIACTIONSHEET_AUTOROUTE)
+                }
             }
     
         case .ROUTESELECT_VIEW:
@@ -295,13 +314,13 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     lbl.text = "会社線のみの運賃は表示できません.";
                     break;
                 case ROUTE.SCRIPT_STATION_ERR:
-                    lbl.text = "不正な駅名が含まれています.";
+                    //lbl.text = "不正な駅名が含まれています.";
                     break;
                 case ROUTE.SCRIPT_LINE_ERR:
-                    lbl.text = "不正な路線名が含まれています.";
+                    //lbl.text = "不正な路線名が含まれています.";
                     break;
                 case ROUTE.SCRIPT_ROUTE_ERR:
-                    lbl.text = "経路不正";
+                    //lbl.text = "経路不正";
                     break;
                 case ROUTE.DUPCHG_ERROR:
                     lbl.text = "経路が重複していますので変更できません";
@@ -762,18 +781,19 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
     
     // begin Action select menu.(クエリ系UI表示前処理) -> このあと、ユーザ操作により、actionSelectProcFrom へ
     func actionSheetController(_ menu_list : [String], title : String, message : String, from : Int) {
-        
-        if #available(iOS 8, OSX 10.10, *) {
-            // iOS8
+        // iOS8
+        if (0 < menu_list.count) {
             let ac : UIAlertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
             var idx : Int = 0
             for item : String in menu_list {
                 let itemIdx = idx
-                ac.addAction(UIAlertAction(title: item, style: .default, handler: { (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item, index: itemIdx)}))
+                ac.addAction(UIAlertAction(title: item, style: .default, handler: { 
+                    (action: UIAlertAction) in self.actionSelectProcFrom(from, label: item, index: itemIdx)}))
                 idx += 1
             }
             if nil == menu_list.last!.range(of: "いいえ") {
-                ac.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: {(action: UIAlertAction) in self.actionSelectProcFrom(from, label: "キャンセル")}))
+                ac.addAction(UIAlertAction(title: "キャンセル", style: .cancel, handler: {
+                    (action: UIAlertAction) in self.actionSelectProcFrom(from, label: "キャンセル")}))
             }
             // for iPad
             ac.modalPresentationStyle = UIModalPresentationStyle.popover
@@ -790,50 +810,11 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 break
             }
             // end of for iPad
-            self.present(ac, animated: true, completion: nil)
-            
+            self.present(ac, animated: true, completion: nil)            
+            //
         } else {
-            // iOS7
-            let actsheet : UIActionSheet = UIActionSheet()
-            
-            actsheet.delegate = self
-            actsheet.title = title
-            
-            for item : String in menu_list {
-                actsheet.addButton(withTitle: item)
-            }
-            if nil == menu_list.last!.range(of: "いいえ") {
-                actsheet.addButton(withTitle: "キャンセル")
-                actsheet.cancelButtonIndex = actsheet.numberOfButtons - 1
-            }
-            actsheet.tag = from
-            
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                self.clearsSelectionOnViewWillAppear = false
-                self.preferredContentSize = CGSize(width: self.navigationController!.view!.frame.width/2, height: self.view!.frame.height)
-                switch (from) {
-                case TAG_UIACTIONSHEET_OSAKAKANDETOUR:
-                    actsheet.show(from: self.actionBarButton, animated: true)
-                case TAG_UIACTIONSHEET_AUTOROUTE:
-                    actsheet.show(from: self.tableView.rectForRow(at: self.tableView.indexPathForSelectedRow!), in: self.view, animated: true)
-                case TAG_UIACTIONSHEET_QUERYSETUPROUTE:
-                    actsheet.show(from: self.tableView.rectForHeader(inSection: 0), in: self.view, animated: true)
-                default:
-                    assert(false)
-                    break
-                }
-            } else {
-                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-                let win : UIWindow = apd.window!
-                
-                if (win.subviews ).contains(self.tableView as UIView) {
-                    actsheet.show(in: self.view)
-                } else {
-                    actsheet.show(in: win)
-                }
-            }
+            self.actionSelectProcFrom(from, label: "", index: 0)
         }
-        //
     }
 
     //  Action Sheet
@@ -882,8 +863,17 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 //          1 新幹線をつかう
                 //          2 会社線をつかう
                 //          3 新幹線も在来線も使う
-                let bullet : Int = (((index < 0) || (3 < index)) ? 0 : index)
-
+                var bullet : Int = 0
+                switch (title) {
+                case "在来線のみ":
+                    bullet = 0
+                case "新幹線を使う":
+                    bullet = 1
+                case "会社線を使う":
+                    bullet = 2
+                default:
+                    bullet = 3
+                }
                 //let n = param as? Int
                 let saveRoute = cRouteList(route: self.ds)
                 
@@ -930,27 +920,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             if nil == title.range(of: "キャンセル") {
                 if (nil != title.range(of: "大阪環状線")) {
                     let detour = nil != title.range(of: "遠")
-                    if (detour) {
-                        let sw = cRouteUtil.read(fromKey: "osakakan")
-                        if sw != "true" {
-                            let subtitle = NSLocalizedString("title_osakakan_detour", comment: "")
-                            let msg = String(format: NSLocalizedString("desc_specific_calc_option", comment: ""), subtitle)
-                            
-                            let ac = UIAlertController(title: subtitle, message: msg, preferredStyle: .alert)
-                            
-                            let agree = NSLocalizedString("agree", comment: "")
-                            let hide_later = NSLocalizedString("hide_specific_calc_option_info", comment: "")
-
-                            ac.addAction( UIAlertAction(title: hide_later, style: .default) {
-                                action in
-                                cRouteUtil.save(toKey: "setting_key_hide_osakakan_detour_info", value:"true", sync: true)
-                            })
-                            ac.addAction(UIAlertAction(title: agree, style: .default) {
-                                action in
-                            })
-                            self.present(ac, animated: true, completion: nil)
-                        }
-                    }
                     rc = ds.setDetour(detour)
                     if (rc < 0) {
                         routeStat = ROUTE.DUPCHG_ERROR;
@@ -1093,7 +1062,6 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             }
             let rc = self.ds.setupRoute(rs)
             if (rc < 0) {
-                //[self alertMessage:@"経路追加エラー" message:@"経路が重複している等追加できません."];
                 switch (rc) {
                 case -200:
                     self.routeStat = .SCRIPT_STATION_ERR;
@@ -1113,6 +1081,20 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 } else {
                     self.routeStat = .OK  // success
                 }
+            }
+            var scriptErrorMessage = ""
+            if (self.routeStat == .SCRIPT_STATION_ERR) {
+                scriptErrorMessage = "駅名"
+            } else if (self.routeStat == .SCRIPT_LINE_ERR) {
+                scriptErrorMessage = "路線"
+            } else if (self.routeStat == .SCRIPT_ROUTE_ERR) {
+                scriptErrorMessage = "経路"
+            }
+            if (!scriptErrorMessage.isEmpty) {
+                self.alertMessage("経路エラー", message: "不明な"
+                              + scriptErrorMessage
+                              + "が含まれてましたので打ち切りました")
+                self.routeStat = .OK
             }
             if let cds = cCalcRoute(route: self.ds) {
                 self.fareInfo = cds.calcFare()

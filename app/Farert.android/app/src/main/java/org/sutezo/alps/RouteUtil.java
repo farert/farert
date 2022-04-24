@@ -2,14 +2,13 @@ package org.sutezo.alps;
 
 //package Route;
 
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteOpenHelper;
-
 import static org.sutezo.alps.farertAssert.ASSERT;
+
+import android.database.Cursor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 
 /*!	@file Route core logic implement.
@@ -83,7 +82,7 @@ public class RouteUtil {
     static final int JR_KYUSYU	= 5;
     static final int JR_SHIKOKU	= 6;
     static final int JR_GROUP_MASK  = ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0));
-    static final boolean IS_JR_MAJOR_COMPANY(int c)	{
+    static boolean IS_JR_MAJOR_COMPANY(int c)	{
         return ((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c));
     }
 
@@ -163,7 +162,7 @@ public class RouteUtil {
 
     final static int FLG_HIDE_LINE	= (1<<19);
     final static int FLG_HIDE_STATION	= (1<<18);
-    final static boolean IS_FLG_HIDE_LINE(int lflg)	{
+    static boolean IS_FLG_HIDE_LINE(int lflg)	{
         return (0!=(lflg&FLG_HIDE_LINE));		// 路線非表示
     }
     static boolean IS_FLG_HIDE_STATION(int lflg) {
@@ -268,11 +267,7 @@ public class RouteUtil {
     //
     static boolean isKanaString(String szStr) {
 
-        if (szStr.matches("^[\\u3040-\\u309F\\u30a0-\\u30ff]+$")) {
-            return true;
-        } else {
-            return false;
-        }
+        return szStr.matches("^[\\u3040-\\u309F\\u30a0-\\u30ff]+$");
     }
 
     //	カナをかなに
@@ -280,7 +275,7 @@ public class RouteUtil {
     //	@param [in][out] kana_str  変換文字列
     //
     static String conv_to_kana2hira(String kana_str) {
-        StringBuffer sb = new StringBuffer(kana_str);
+        StringBuilder sb = new StringBuilder(kana_str);
         for (int i = 0; i < sb.length(); i++) {
             char c = sb.charAt(i);
             if (c >= 'ァ' && c <= 'ン') {
@@ -347,7 +342,7 @@ public class RouteUtil {
          final String tsql_e = " order by kana";
 
          String sameName;
-         String stationName = new String(station);		// WIN32 str to C++ string
+         String stationName = station;		// WIN32 str to C++ string
 
          if (MAX_STATION_CHR < stationName.length()) {
              stationName = stationName.substring(0, MAX_STATION_CHR);
@@ -443,10 +438,8 @@ public class RouteUtil {
          String sql = String.format(Locale.JAPANESE, tsql,
                  (0x10000 <= prefectOrCompanyId) ? "prefect_id" : "company_id");
 
-         Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {String.valueOf(lineId),
+         return RouteDB.db().rawQuery(sql, new String[] {String.valueOf(lineId),
                  String.valueOf(ident)});
-
-         return dbo;
      }
 
      // static
@@ -487,9 +480,7 @@ public class RouteUtil {
                          //" where station_id=? and (lflg&((1<<31)|(1<<17)))=0 and sales_km>=0";
                          " where station_id=? and (lflg&(1<<17))=0 order by n.kana";
 
-         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(stationId)});
-
-         return dbo;
+         return RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(stationId)});
      }
 
 
@@ -533,9 +524,8 @@ public class RouteUtil {
          //--#endif
          //--#endif
 
-         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(lineId),
+         return RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(lineId),
                  String.valueOf(stationId)});
-         return dbo;
      }
 
      //static
@@ -552,8 +542,7 @@ public class RouteUtil {
                          " and (lflg&((1<<31)|(1<<17)))=0" +
                          " order by l.sales_km";
 
-         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(lineId)});
-         return dbo;
+         return RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(lineId)});
      }
 
      // 駅名より駅IDを返す(私鉄含)
@@ -564,7 +553,7 @@ public class RouteUtil {
          final String tsql = "select rowid from t_station where (sflg&(1<<18))=0 and name=?1 and samename=?2";
 
          String sameName;
-         String stationName = new String(station);
+         String stationName = station;
 
          int pos = stationName.indexOf('(');
          if (0 <= pos) {
@@ -611,14 +600,11 @@ public class RouteUtil {
      public static String StationName(int id)	{
          String name = "";		//[MAX_STATION_CHR];
 
-         Cursor ctx = RouteDB.db().rawQuery(
-                 "select name from t_station where rowid=?", new String[] {String.valueOf(id)});
-         try {
+         try (Cursor ctx = RouteDB.db().rawQuery(
+                 "select name from t_station where rowid=?", new String[]{String.valueOf(id)})) {
              if (ctx.moveToNext()) {
                  name = ctx.getString(0);
              }
-         } finally {
-             ctx.close();
          }
          return name;
      }
@@ -629,16 +615,13 @@ public class RouteUtil {
      public static String StationNameEx(int id) {
          String name = "";	//[MAX_STATION_CHR];
 
-         Cursor ctx = RouteDB.db().rawQuery(
+         try (Cursor ctx = RouteDB.db().rawQuery(
                  "select name,samename from t_station where rowid=?",
-                 new String[] {String.valueOf(id)});
-         try {
+                 new String[]{String.valueOf(id)})) {
              if (ctx.moveToNext()) {
                  name = ctx.getString(0);
                  name += ctx.getString(1);
              }
-         } finally {
-             ctx.close();
          }
          return name;
      }
@@ -670,14 +653,11 @@ public class RouteUtil {
              id = id >>> 16;
          }
 
-         Cursor ctx = RouteDB.db().rawQuery("select name from t_prefect where rowid=?",
-                 new String[] {String.valueOf(id)});
-         try {
+         try (Cursor ctx = RouteDB.db().rawQuery("select name from t_prefect where rowid=?",
+                 new String[]{String.valueOf(id)})) {
              if (ctx.moveToNext()) {
                  name = ctx.getString(0);
              }
-         } finally {
-             ctx.close();
          }
          return name;
      }
@@ -688,14 +668,11 @@ public class RouteUtil {
      public static String CompanyName(int id) {
          String name = "";	//[MAX_PREFECT_CHR];
 
-         Cursor ctx = RouteDB.db().rawQuery("select name from t_company where rowid=?",
-                 new String[] {String.valueOf(id)});
-         try {
+         try (Cursor ctx = RouteDB.db().rawQuery("select name from t_company where rowid=?",
+                 new String[]{String.valueOf(id)})) {
              if (ctx.moveToNext()) {
                  name = ctx.getString(0);
              }
-         } finally {
-             ctx.close();
          }
          return name;
      }
@@ -709,14 +686,11 @@ public class RouteUtil {
          if (STATION_ID_AS_CITYNO <= id) {
              id -= STATION_ID_AS_CITYNO;
          }
-         Cursor ctx = RouteDB.db().rawQuery(
-                 "select name from t_coreareac where rowid=?", new String[] {String.valueOf(id)});
-         try {
+         try (Cursor ctx = RouteDB.db().rawQuery(
+                 "select name from t_coreareac where rowid=?", new String[]{String.valueOf(id)})) {
              if (ctx.moveToNext()) {
                  name = ctx.getString(0);
              }
-         } finally {
-             ctx.close();
          }
          return name;
      }
@@ -795,18 +769,17 @@ public class RouteUtil {
      public static String Show_route(final RouteItem[] routeList, final RouteFlag routeFlag) {
          String lineName;
          String stationName;
-         RouteFlag _route_flag = routeFlag;
          //TCHAR buf[MAX_BUF];
-         String result_str;
+         StringBuilder result_str;
          int station_id1;
 
          if (routeList.length == 0) {	/* 経路なし(AutoRoute) */
              return "";
          }
 
-         result_str = "";
+         result_str = new StringBuilder();
          station_id1 = routeList[0].stationId;
-         _route_flag.setOsakaKanFlag(RouteFlag.OSAKAKAN_PASS.OSAKAKAN_NOPASS);	// BIT_OFF(last_flag, osakakan_1pass)
+         routeFlag.setOsakaKanFlag(RouteFlag.OSAKAKAN_PASS.OSAKAKAN_NOPASS);	// BIT_OFF(last_flag, osakakan_1pass)
 
          for (int pos = 1; pos < routeList.length ; pos++) {
 
@@ -816,38 +789,38 @@ public class RouteUtil {
  				/* 中間駅 */
                  if (!IS_FLG_HIDE_LINE(routeList[pos].flag)) {
                      if (ID_L_RULE70 != routeList[pos].lineId) {
-                         result_str += "[";
-                         result_str += lineName;
+                         result_str.append("[");
+                         result_str.append(lineName);
                          if (DbIdOf.INSTANCE.line("大阪環状線") == routeList[pos].lineId) {
-                             result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, _route_flag);
-                             _route_flag.setOsakaKanPass(true);
+                             result_str.append(RouteOsakaKanDir(station_id1, routeList[pos].stationId, routeFlag));
+                             routeFlag.setOsakaKanPass(true);
                          }
-                         result_str += "]";
+                         result_str.append("]");
                      } else {
-                         result_str += ",";
+                         result_str.append(",");
                      }
                  }
                  station_id1 = routeList[pos].stationId;
                  if (!IS_FLG_HIDE_STATION(routeList[pos].flag)) {
                      stationName = StationName(station_id1);
-                     result_str += stationName;
+                     result_str.append(stationName);
                  }
              } else {
  				/* 着駅 */
                  if (!IS_FLG_HIDE_LINE(routeList[pos].flag)) {
-                     result_str += "[";
-                     result_str += lineName;
+                     result_str.append("[");
+                     result_str.append(lineName);
                      if (DbIdOf.INSTANCE.line("大阪環状線") == routeList[pos].lineId) {
-                         result_str += RouteOsakaKanDir(station_id1, routeList[pos].stationId, _route_flag);
-                         _route_flag.setOsakaKanPass(true);
+                         result_str.append(RouteOsakaKanDir(station_id1, routeList[pos].stationId, routeFlag));
+                         routeFlag.setOsakaKanPass(true);
                      }
-                     result_str += "]";
+                     result_str.append("]");
                  }
                  //result_str += stationName;	// 着駅
              }
              //result_str += buf;
          }
-         return result_str;
+         return result_str.toString();
      }
 
     // static version
@@ -877,13 +850,12 @@ public class RouteUtil {
      //	@retval 文字列
      //
      private static String  RouteOsakaKanDir(int station_id1, int station_id2, final RouteFlag routeFlag) {
-         String result_str;
-         final String result[] = {
+         final String[] result = {
                  "",
                  "(内回り)",
                  "(外回り)",
          };
-         byte inner_outer[] = {
+         byte[] inner_outer = {
                  0, 2, 2, 2, 1, 1, 0, 1, 1, 1, 1, 1, 2, 2, 0, 2, 0,
                  //     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
          };
@@ -971,7 +943,7 @@ public class RouteUtil {
      //	@note station_id_a, station_id_bは区別はなし
      //
      public static int DirOsakaKanLine(int station_id_a, int station_id_b) {
-         if (GetDistance(DbIdOf.INSTANCE.line("大阪環状線"), station_id_a, station_id_b).get(0).intValue() <=
+         if (GetDistance(DbIdOf.INSTANCE.line("大阪環状線"), station_id_a, station_id_b).get(0) <=
                  GetDistanceOfOsakaKanjyouRvrs(DbIdOf.INSTANCE.line("大阪環状線"), station_id_a, station_id_b)) {
              return 0;
          } else {
@@ -987,18 +959,15 @@ public class RouteUtil {
      // @return int[0]: 会社1 / int[1]: 会社2
      //
      static int[]  CompanyIdFromStation(int station_id) {
-         int results[] = {0, 0};
-         Cursor ctx = RouteDB.db().rawQuery(
-                 "select company_id, sub_company_id from t_station where rowid=?",
-                 new String[] {String.valueOf(station_id)});
+         int[] results = {0, 0};
 
-         try {
+         try (Cursor ctx = RouteDB.db().rawQuery(
+                 "select company_id, sub_company_id from t_station where rowid=?",
+                 new String[]{String.valueOf(station_id)})) {
              if (ctx.moveToNext()) {
                  results[0] = ctx.getInt(0);
                  results[1] = ctx.getInt(1);
              }
-         } finally {
-             ctx.close();
          }
          return results;
      }
@@ -1018,7 +987,7 @@ public class RouteUtil {
                          " from t_lines" +
                          " where line_id=?1 and (lflg&(1<<31))=0 and (station_id=?2 or station_id=?3)";
 
-         /***	// 140416
+         /*	// 140416
           "select max(sales_km)-min(sales_km), case max(calc_km)-min(calc_km) when 0 then max(sales_km)-min(sales_km) else max(calc_km)-min(calc_km) end"
           " from t_lines"
           " where line_id=?1"
@@ -1036,18 +1005,15 @@ public class RouteUtil {
           " and ((l1.station_id=?2 and l2.station_id=?3)"
           " or (l1.station_id=?3 and l2.station_id=?2))";
           ****/
-         List<Integer> v = new ArrayList<Integer>(2);
+         List<Integer> v = new ArrayList<>(2);
 
-         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(line_id),
+         try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(line_id),
                  String.valueOf(station_id1),
-                 String.valueOf(station_id2)});
-         try {
+                 String.valueOf(station_id2)})) {
              if (dbo.moveToNext()) {
                  v.add(dbo.getInt(0));
                  v.add(dbo.getInt(1));
              }
-         } finally {
-             dbo.close();
          }
          return v;
      }
@@ -1065,7 +1031,7 @@ public class RouteUtil {
      //	@note used aggregate_fare_info()* -> GetDistanceEx(), Get_route_distance()
      //
      static List<Integer> GetDistance(final RouteFlag oskkflg, int line_id, int station_id1, int station_id2) {
-         List<Integer> d = new ArrayList<Integer>(2);
+         List<Integer> d = new ArrayList<>(2);
          int sales_km;
 
          if (line_id != DbIdOf.INSTANCE.line("大阪環状線"))  {
@@ -1082,10 +1048,10 @@ public class RouteUtil {
          if ((!oskkflg.getOsakaKanPass() && oskkflg.osakakan_1dir) ||
              (oskkflg.getOsakaKanPass() && oskkflg.osakakan_2dir)) {
              sales_km = GetDistanceOfOsakaKanjyouRvrs(line_id, station_id1, station_id2);
-             System.out.printf("Osaka-kan reverse\n");
+             System.out.print("Osaka-kan reverse\n");
          } else {
              sales_km = GetDistance(line_id, station_id1, station_id2).get(0);
-             System.out.printf("Osaka-kan forward\n");
+             System.out.print("Osaka-kan forward\n");
          }
 
          d.add(sales_km);
@@ -1275,27 +1241,22 @@ public class RouteUtil {
  	   となる
  	*/
 
-         List<Integer> rslt = new ArrayList<Integer>();
+         List<Integer> rslt = new ArrayList<>();
          int lineId;
          int flg;
 
-         Cursor dbo = RouteDB.db().rawQuery(tsql_hzl, new String[] {String.valueOf(line_id),
+         try (Cursor dbo = RouteDB.db().rawQuery(tsql_hzl, new String[]{String.valueOf(line_id),
                  String.valueOf(station_id),
-                 String.valueOf(station_id2)});
-
-         ASSERT (IS_SHINKANSEN_LINE(line_id));
-
-         try {
+                 String.valueOf(station_id2)})) {
+             ASSERT(IS_SHINKANSEN_LINE(line_id));
              while (dbo.moveToNext()) {
                  lineId = dbo.getInt(0);
                  flg = dbo.getInt(1);
                  if ((flg == 1) && (lineId == 0)) {
-                     lineId = -1;	/* 新幹線駅だが在来線接続駅でない */
+                     lineId = -1;    /* 新幹線駅だが在来線接続駅でない */
                  } /* else if ((flg == 0) && (lineId == 0)) 不正(新幹線にない駅) */
                  rslt.add(lineId);
              }
-         } finally {
-             dbo.close();
          }
          return rslt;
      }
@@ -1389,8 +1350,7 @@ public class RouteUtil {
                  result[i][j] = 0;
              }
          }
-         Cursor dbo = Enum_neer_node(station_id);
-         try {
+         try (Cursor dbo = Enum_neer_node(station_id)) {
              for (idx = 0; idx < 2; idx++) {
                  if (dbo.moveToNext()) {
                      short stationId = dbo.getShort(0);
@@ -1399,8 +1359,6 @@ public class RouteUtil {
                      result[idx][1] = cost;
                  }
              }
-         } finally {
-             dbo.close();
          }
          return result;
      }
@@ -1444,9 +1402,8 @@ public class RouteUtil {
                          "					  and	0<=y.sales_km and (1<<15)=(y.lflg&((1<<31)|(1<<17)|(1<<15)))" +
                          "					  and	x.station_id=?1" +
                          "					  and	x.sales_km<y.sales_km))";
-         Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(stationId)});
 
-         return dbo;
+         return RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(stationId)});
      }
 
      //static
@@ -1550,24 +1507,21 @@ public class RouteUtil {
         "                  and sales_km<=(select max(sales_km)" +
         "                                  from t_lines" +
         "                                  where line_id=?1 and (station_id=?4 or station_id=?5));";
-        List<Integer> sales_calc_km = new ArrayList<Integer>();
+        List<Integer> sales_calc_km = new ArrayList<>();
 
         int sales_km = 0;
         int calc_km = 0;
 
-        Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {
+        try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{
                 String.valueOf(line_id),
                 String.valueOf(station_id1),
                 String.valueOf(station_id2),
                 String.valueOf(station_id3),
-                String.valueOf(station_id4)});
-        try {
+                String.valueOf(station_id4)})) {
             if (dbo.moveToNext()) {
                 sales_km = dbo.getInt(0);
                 calc_km = dbo.getInt(1);
             }
-        } finally {
-            dbo.close();
         }
         return new KM(sales_km, calc_km);
     }
@@ -1593,21 +1547,18 @@ public class RouteUtil {
 
         boolean rc = false;
 
-        Cursor dbo = RouteDB.db().rawQuery(sql, new String[] {
+        try (Cursor dbo = RouteDB.db().rawQuery(sql, new String[]{
                 String.valueOf(line_id),
                 String.valueOf(station_id1),
                 String.valueOf(station_id2),
                 String.valueOf(station_id3),
-                String.valueOf(station_id4)});
-        try {
+                String.valueOf(station_id4)})) {
             if (dbo.moveToNext()) {
                 int res = dbo.getInt(0);
                 if (res == 1) {
                     rc = true;
                 }
             }
-        } finally {
-            dbo.close();
         }
         return rc;
     }

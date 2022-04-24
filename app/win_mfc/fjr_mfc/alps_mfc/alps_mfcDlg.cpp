@@ -98,7 +98,7 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_RESULTCOPY, &Calps_mfcDlg::OnBnClickedButtonResultcopy)
 	ON_BN_CLICKED(IDC_BUTTON_RSLTOPEN, &Calps_mfcDlg::OnBnClickedButtonRsltopen)
 	ON_BN_CLICKED(IDC_BUTTON_ROUTE_OPEN, &Calps_mfcDlg::OnBnClickedButtonRouteOpen)
-	ON_BN_CLICKED(IDC_BUTTON_NEEREST, &Calps_mfcDlg::OnBnClickedButtonNeerest)
+	ON_BN_CLICKED(IDC_BUTTON_NEEREST, &Calps_mfcDlg::OnBnClickedButtonNeerest) // deleted
 	ON_BN_CLICKED(IDC_MFCMENUBUTTON_FAREOPT, &Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt)
 END_MESSAGE_MAP()
 
@@ -566,11 +566,18 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 	}
 
 	RouteList route(m_route);		// backup to route
-	CQueryNeerest queryDlg(m_selAutorouteOption, this);
+	Route test_route(route);
+	(void)test_route.changeNeerest(3, endStationId);
+	int pass_route = test_route.typeOfPassedLine(m_route.routeList().size());
+	// 0 alloff(在来線のみなので選択肢なし)
+	// 1 会社線OFF(新幹線はあるが会社線はない)
+	// 2 新幹線OFF(会社線はあるが新幹線はない)
+	// 3 そのまま(新幹線も会社線もある)(OFFにしない)
+	CQueryNeerest queryDlg(pass_route, m_selAutorouteOption, this);
 	queryDlg.target.Format(_T("%sまでの最短経路"), RouteUtil::StationNameEx(endStationId).c_str());
-	if (IDOK == queryDlg.DoModal()) {
-		m_selAutorouteOption = queryDlg.choice;
-		rc = m_route.changeNeerest(m_selAutorouteOption, endStationId);
+	if ((pass_route == 0) || (IDOK == queryDlg.DoModal())) {
+		m_selAutorouteOption = queryDlg.choice();
+		rc = m_route.changeNeerest((pass_route == 0) ? 0 : m_selAutorouteOption, endStationId);
 		if ((rc == 5) || (rc == 0)) {
 			if (m_route.isModified()) {
 				UpdateRouteList();
@@ -1004,6 +1011,7 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 	}
 }
 
+//	(deleted)
 //	[最短経路]
 //	すでに発駅、着駅が指定してある経路を最短経路で再構成する
 //
@@ -1440,11 +1448,11 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 			int rc;
 
 			if (m_route.getRouteFlag().is_osakakan_1pass()) {
-
+#if 0
 				if (0 <= menuTitle.Find(_T("遠"))) {
 					alert_message(OSAKAKAN);
 				}
-
+#endif
 				ASSERT((m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("近"))))
 					|| (!m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("遠")))));
 

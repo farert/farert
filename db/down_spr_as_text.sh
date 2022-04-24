@@ -4,30 +4,36 @@
 # Download the google spreadsheet in tsv format and save it as *.tmp.
 # This script is called by the 'make' profess
 #
-# [Usage] $0 <ACCESS_TOKEN>
+# [Usage] $0
 #
 # 2021.4.19 / sutezo
 #
 ####################
 
 function usage() {
-  echo '[Usage]'" $0 <access_token>"
-  echo ' or'
-  echo '       '" ACCESS_TOKEN=xxx $0"
+  echo '[Usage]'" $0"
   exit 1
 }
 
-if [ "$#" -eq 1 ]; then
-  ACCESS_TOKEN="$1"
-elif [ "$#" -ne 0 -o -z "$ACCESS_TOKEN" ]; then
+if [ "$#" -ne 4 ]; then
   usage
 fi
+
+DB1=$1
+DB2=$2
+DB3=$3
+DB4=$4
 
 # book, url, sheet def.
 ### for public shared ### . SPREADSHEET.copy
 . SPREADSHEET
 
 function download_gspread() {
+  local GID
+  local CNT
+  local C
+  local ST
+
   for sheet_name in $* ;do
     GID=$( eval echo '$'$sheet_name ) # sheet id
     CNT=5
@@ -35,15 +41,15 @@ function download_gspread() {
       C=$(( 5 - $CNT ))
       [ $C -ne 0 ] || echo "download ${sheet_name}"
       [ $C -eq 0 ] || echo "download ${sheet_name} (retry ${C} time.)"
+
       curl --retry 10 --silent --show-error --connect-timeout 20 --max-time 60 \
-           -L -o ${sheet_name}.tmp -H "Authorization: OAuth ${ACCESS_TOKEN}" \
-           -X POST -H "Content-Type: application/json" \
+          -L -o ${sheet_name}.tmp \
       "${UrlBase}/d/${SpredsSheetsId}/export?format=tsv&gid=${GID}"
       ST=$?
       if [ $ST -eq 0 ] ; then
           grep -q 'Internal Server Error' ${sheet_name}.tmp
           if [ $? -eq 0 ]; then
-              echo "Error!! must be set to the ACCESS_TOKEN environment."
+              echo "Internal Server Error ${sheet_name}.tmp"
               exit -1
           else
               grep -qi '<html' ${sheet_name}.tmp
@@ -87,8 +93,8 @@ function mktext() {
 }
 
 download_gspread fare2 rule86 rule70_new rule69 clinfar2014 lines2014 clinfar2015 clinfar2019 lines2015 lines2017 lines2019 brt
-mktext jrdb2014.txt lines2014.tmp clinfar2014.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
-mktext jrdb2015.txt lines2015.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
-mktext jrdb2017.txt lines2017.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
-mktext jrdb2021.txt lines2019.tmp clinfar2019.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp brt.tmp
+mktext ${DB1} lines2014.tmp clinfar2014.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
+mktext ${DB2} lines2015.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
+mktext ${DB3} lines2017.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
+mktext ${DB4} lines2019.tmp clinfar2019.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp brt.tmp
 exit 0

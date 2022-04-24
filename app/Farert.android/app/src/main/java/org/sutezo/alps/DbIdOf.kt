@@ -5,7 +5,7 @@ import org.sutezo.alps.farertAssert.*
 
 object DbIdOf {
 
-    val retrieve_id_map = HashMap<String, Int>()
+    private val retrieve_id_map = HashMap<String, Int>()
 
     init {
 

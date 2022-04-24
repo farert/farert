@@ -11,10 +11,11 @@
 
 IMPLEMENT_DYNAMIC(CQueryNeerest, CDialogEx)
 
-CQueryNeerest::CQueryNeerest(int initialSel, CWnd* pParent /*=nullptr*/)
+CQueryNeerest::CQueryNeerest(int pass_route, int initialSel, CWnd* pParent /*=nullptr*/)
 	: CDialogEx(CQueryNeerest::IDD, pParent)
 {
-	choice = initialSel;
+	m_choice = initialSel;
+	m_pass_route = pass_route;
 }
 
 CQueryNeerest::~CQueryNeerest()
@@ -43,10 +44,21 @@ BOOL CQueryNeerest::OnInitDialog()
 	((CButton*)GetDlgItem(IDC_CHK_SHINKANSEN))->SetCheck(BST_UNCHECKED);
 	((CButton*)GetDlgItem(IDC_CHK_COMPANY))->SetCheck(BST_UNCHECKED);
 
-	if (choice == 1 || choice == 3) {
+	// 0 alloff(在来線のみなので選択肢なし)(ここへは来ない)
+	// 1 会社線OFF(新幹線はあるが会社線はない)
+	// 2 新幹線OFF(会社線はあるが新幹線はない)
+	// 3 そのまま(新幹線も会社線もある)(OFFにしない)
+	if (m_pass_route == 2) {
+		GetDlgItem(IDC_CHK_SHINKANSEN)->EnableWindow(FALSE);
+	} else if (m_pass_route == 1) {
+		GetDlgItem(IDC_CHK_COMPANY)->EnableWindow(FALSE);
+	} else {
+		// 3
+	}
+	if ((m_pass_route != 2) && (m_choice == 1 || m_choice == 3)) {
 		((CButton*)GetDlgItem(IDC_CHK_SHINKANSEN))->SetCheck(BST_CHECKED);
 	}
-	if (choice == 2 || choice == 3) {
+	if ((m_pass_route != 1) && (m_choice == 2 || m_choice == 3)) {
 		((CButton*)GetDlgItem(IDC_CHK_COMPANY))->SetCheck(BST_CHECKED);
 	}
 
@@ -63,18 +75,18 @@ void CQueryNeerest::OnBnClickedOk()
 		// 会社線
 		if (((CButton*)GetDlgItem(IDC_CHK_COMPANY))->GetCheck()
 			== BST_CHECKED) {
-			choice = 3;	// 新幹線も在来線も使う
+			m_choice = 3;	// 新幹線も在来線も使う
 		}
 		else {
-			choice = 1;	// 新幹線をつかう
+			m_choice = 1;	// 新幹線をつかう
 		}
 	}
 	else if (((CButton*)GetDlgItem(IDC_CHK_COMPANY))->GetCheck()
 		== BST_CHECKED) {
-		choice = 2;	// 会社線をつかう
+		m_choice = 2;	// 会社線をつかう
 	}
 	else {
-		choice = 0;	// 在来線のみ
+		m_choice = 0;	// 在来線のみ
 	}
 	CDialogEx::OnOK();
 }

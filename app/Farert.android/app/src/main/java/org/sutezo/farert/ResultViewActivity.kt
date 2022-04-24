@@ -1,5 +1,6 @@
 package org.sutezo.farert
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -17,8 +18,8 @@ import android.widget.Toast
  */
 class ResultViewActivity : AppCompatActivity() {
 
-    var mCalcRoute : CalcRoute? = null
-    var mIsRoundTrip : Boolean = true
+    private var mCalcRoute : CalcRoute? = null
+    private var mIsRoundTrip : Boolean = true
 
     enum class Option {
         N_A,
@@ -30,7 +31,7 @@ class ResultViewActivity : AppCompatActivity() {
 
     enum class OptionItem {
         stocktokai,     // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
-        osakakan,       // TRUEは遠回り、FALSEは近回り
+//        osakakan,       // TRUEは遠回り、FALSEは近回り
         neerest,        // TRUEは適用、FALSEは非適用
         sperule,        // TRUEは非適用、FALSEは特例適用
         meihancity,     // TRUEは着駅を単駅指定、FALSEは発駅を単駅指定
@@ -38,18 +39,18 @@ class ResultViewActivity : AppCompatActivity() {
         rule115,        // TRUEは115条 都区市内発着指定
     }
 
-    var mOpt_items = arrayOf(
+    private var mOpt_items = arrayOf(
         Option.N_A,
-        Option.N_A,
+//        Option.N_A,
         Option.N_A,
         Option.N_A,
         Option.N_A,
         Option.N_A,
         Option.N_A)
 
-    val mOptMap = mutableMapOf<OptionItem, String>(
+    private val mOptMap = mutableMapOf(
             OptionItem.stocktokai to "stocktokai",
-            OptionItem.osakakan to "osakakan",
+//            OptionItem.osakakan to "osakakan",
             OptionItem.neerest to "neerest",
             OptionItem.sperule to "sperule",
             OptionItem.meihancity to "meihancity",
@@ -76,7 +77,7 @@ class ResultViewActivity : AppCompatActivity() {
             }
         } else {
             mOptMap.forEach {
-                System.out.println("@@@ %d:%s, %d @@@".format(it.key.ordinal, it.value, intent.getIntExtra(it.value, Option.N_A.ordinal)))
+                println("@@@ %d:%s, %d @@@".format(it.key.ordinal, it.value, intent.getIntExtra(it.value, Option.N_A.ordinal)))
                 mOpt_items[it.key.ordinal] = opts[intent.getIntExtra(it.value, Option.N_A.ordinal)]
             }
         }
@@ -127,8 +128,7 @@ class ResultViewActivity : AppCompatActivity() {
     //  Action menu
     //
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             android.R.id.home -> {
               finish()
               return true
@@ -173,6 +173,7 @@ class ResultViewActivity : AppCompatActivity() {
                 }
             }
 */
+            /*
             R.id.menu_osakakan -> {
                 if (Option.N_A != mOpt_items[OptionItem.osakakan.ordinal]) {
                     mOpt_items[OptionItem.osakakan.ordinal] =
@@ -190,6 +191,7 @@ class ResultViewActivity : AppCompatActivity() {
                     }
                 }
             }
+             */
   /*          R.id.menu_stocktokai -> {
                 if (Option.N_A != mOpt_items[OptionItem.stocktokai.ordinal]) {
                     mOpt_items[OptionItem.stocktokai.ordinal] =
@@ -272,10 +274,10 @@ class ResultViewActivity : AppCompatActivity() {
         //_mailViewCtl = [[MFMailComposeViewController alloc] init];
 
         if (fi.isRuleAppliedEnable) {
-            if (fi.isRuleApplied) {
-                body += "(特例適用)\n"
+            body += if (fi.isRuleApplied) {
+                "(特例適用)\n"
             } else {
-                body += "(特例未適用)\n"
+                "(特例未適用)\n"
             }
         }
         body += "\n[指定経路]\n"
@@ -435,69 +437,74 @@ class ResultViewActivity : AppCompatActivity() {
 
         if (fi.isRule114Applied) strFareOpt += "(${fareNumStr(fi.roundTripFareWithCompanyLinePriorRule114)})"
 
-        if (fi.fareForCompanyline != 0) {
-            /* 1: 普通運賃 + 会社線 */
-            if (fi.fareForBRT == 0) {
-                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-                text_title_company_fare.text = resources.getString(R.string.result_companyfare)
-                text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
+        when {
+            fi.fareForCompanyline != 0 -> {
+                /* 1: 普通運賃 + 会社線 */
+                if (fi.fareForBRT == 0) {
+                    text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                    text_title_company_fare.text = resources.getString(R.string.result_companyfare)
+                    text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
 
-                val row_brt = row_brtyen
-                result_table.removeView(row_brt)   // BRT fare
+                    val row_brt = row_brtyen
+                    result_table.removeView(row_brt)   // BRT fare
 
-            } else {
-                // 普通運賃,BRT運賃 + 会社線
-                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-                text_title_company_fare.text = resources.getString(R.string.result_companyfare)
-                text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
-                text_brtline_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT))
+                } else {
+                    // 普通運賃,BRT運賃 + 会社線
+                    text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                    text_title_company_fare.text = resources.getString(R.string.result_companyfare)
+                    text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline))
+                    text_brtline_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT))
+                }
+                /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
+                val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
+                text_round.text = s
+                text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline * 2))
+                // BRT往復までイラン!
             }
-            /* 2: 往復運賃(割引可否) ＋ 会社線往復 */
-            val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
-            text_round.text = s
-            text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForCompanyline * 2))
-            // BRT往復までイラン!
-        } else if (fi.fareForBRT != 0) {
-            // 1: 普通運賃 + BRT運賃
-            text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-            text_title_company_fare.text = resources.getString(R.string.result_inbrtline)
-            text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT))
+            fi.fareForBRT != 0 -> {
+                // 1: 普通運賃 + BRT運賃
+                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                text_title_company_fare.text = resources.getString(R.string.result_inbrtline)
+                text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT))
 
-            val rowtbl = row_brtyen
-            result_table.removeView(rowtbl)   // BRT fare
+                val rowtbl = row_brtyen
+                result_table.removeView(rowtbl)   // BRT fare
 
-            /* 2: 往復運賃(割引可否) ＋ BRT往復 */
-            val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
-            text_round.text = s
-            text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT * 2))
+                /* 2: 往復運賃(割引可否) ＋ BRT往復 */
+                val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
+                text_round.text = s
+                text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForBRT * 2))
 
-        } else if (fi.fareForIC != 0) {
-            /* 1: 普通運賃 ＋ IC運賃 */
-            text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-            text_title_company_fare.text = resources.getString(R.string.result_icfare)
-            text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForIC))
+            }
+            fi.fareForIC != 0 -> {
+                /* 1: 普通運賃 ＋ IC運賃 */
+                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                text_title_company_fare.text = resources.getString(R.string.result_icfare)
+                text_company_fare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForIC))
 
-            val rowtbl = row_brtyen
-            result_table.removeView(rowtbl)   // BRT fare
+                val rowtbl = row_brtyen
+                result_table.removeView(rowtbl)   // BRT fare
 
-            /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
-            val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
-            text_round.text = s
-            text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForIC * 2))
+                /* 2: 往復運賃 ＋ IC往復運賃 (割引無し) */
+                val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
+                text_round.text = s
+                text_round2.text = resources.getString(R.string.result_yen, fareNumStr(fi.fareForIC * 2))
 
-        } else {
-            /* 1: 普通運賃 */
-            text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-            text_title_company_fare.text = resources.getString(R.string.blank)
-            text_company_fare.text = resources.getString(R.string.blank)
+            }
+            else -> {
+                /* 1: 普通運賃 */
+                text_normalfare.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
+                text_title_company_fare.text = resources.getString(R.string.blank)
+                text_company_fare.text = resources.getString(R.string.blank)
 
-            val rowtbl = row_brtyen
-            result_table.removeView(rowtbl)   // BRT fare
+                val rowtbl = row_brtyen
+                result_table.removeView(rowtbl)   // BRT fare
 
-            /* 2: 往復運賃(割引可否) */
-            val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
-            text_round.text = s
-            text_round2.text = resources.getString(R.string.blank)
+                /* 2: 往復運賃(割引可否) */
+                val s = resources.getString(R.string.result_yen, fareNumStr(fi.roundTripFareWithCompanyLine)) + strFareOpt
+                text_round.text = s
+                text_round2.text = resources.getString(R.string.blank)
+            }
         }
 
         if (!mIsRoundTrip) {
@@ -522,23 +529,23 @@ class ResultViewActivity : AppCompatActivity() {
                 sn++
                 text_title_stock_discount1.text = it[0].first
                 var s : String
-                if (fi.isRule114Applied) {
-                    s = "${resources.getString(R.string.result_yen,
-                            fareNumStr(it[0].third))}(${resources.getString(
-                            R.string.result_yen, fareNumStr(it[0].second))})"
+                s = if (fi.isRule114Applied) {
+                    "${resources.getString(R.string.result_yen,
+                        fareNumStr(it[0].third))}(${resources.getString(
+                        R.string.result_yen, fareNumStr(it[0].second))})"
                 } else {
-                    s = resources.getString(R.string.result_yen, fareNumStr(it[0].second))
+                    resources.getString(R.string.result_yen, fareNumStr(it[0].second))
                 }
                 text_stock_discount1.text = s
 
                 if (2 <= it.size) {
                     sn++
                     text_title_stock_discount2.text = it[1].first
-                    if (fi.isRule114Applied) {
-                        s = "${resources.getString(R.string.result_yen, fareNumStr(it[1].third))}" +
-                            "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
+                    s = if (fi.isRule114Applied) {
+                        resources.getString(R.string.result_yen, fareNumStr(it[1].third)) +
+                                "(${resources.getString(R.string.result_yen, fareNumStr(it[1].second))})"
                     } else {
-                        s = resources.getString(R.string.result_yen, fareNumStr(it[1].second))
+                        resources.getString(R.string.result_yen, fareNumStr(it[1].second))
                     }
                     text_stock_discount2.text = s
                 }
@@ -584,19 +591,18 @@ class ResultViewActivity : AppCompatActivity() {
         text_availdays.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
 
         if (1 < fi.ticketAvailDays) {
-            var str : String
-            if (fi.isBeginInCity && fi.isEndInCity) {
+            val str : String = if (fi.isBeginInCity && fi.isEndInCity) {
                 //発着駅都区市内の駅を除き
-                str = resources.getString(R.string.result_availday_except_begin_end)
+                resources.getString(R.string.result_availday_except_begin_end)
             } else if (fi.isBeginInCity) {
                 //発駅都区市内の駅を除き
-                str = resources.getString(R.string.result_availday_except_begin)
+                resources.getString(R.string.result_availday_except_begin)
             } else if (fi.isEndInCity) {
                 //着駅都区市内の駅を除き
-                str = resources.getString(R.string.result_availday_except_end)
+                resources.getString(R.string.result_availday_except_end)
             } else {
                 //''
-                str = resources.getString(R.string.result_availday_empty)
+                resources.getString(R.string.result_availday_empty)
             }
             // 途中下車可能
             text_availdays2.text = resources.getString(R.string.result_availday_stopover, str)
@@ -610,7 +616,7 @@ class ResultViewActivity : AppCompatActivity() {
 
         /* ROUTE 経由 */
         var s = fi.routeList
-        if (!fi.routeListForTOICA.isNullOrEmpty()) {
+        if (fi.routeListForTOICA.isNotEmpty()) {
             s += "\n${resources.getString(R.string.result_toica_calc_route)}\n${fi.routeListForTOICA}"
         }
         s += "\n\n"
@@ -652,7 +658,7 @@ class ResultViewActivity : AppCompatActivity() {
             return
         }
         */
-
+        /*
         if (mOpt_items[OptionItem.osakakan.ordinal] == Option.TRUE
                 || mOpt_items[OptionItem.osakakan.ordinal] == Option.FALSE) {
             // 遠回り・近回り
@@ -671,7 +677,7 @@ class ResultViewActivity : AppCompatActivity() {
                 }
             }
         }
-
+        */
         // 特例
         if (Option.TRUE == mOpt_items[OptionItem.sperule.ordinal]) {
             // @"特例を適用しない";
@@ -702,10 +708,10 @@ class ResultViewActivity : AppCompatActivity() {
         // 指定した経路で運賃計算 / 最安経路で運賃計算(Default)
         if (Option.FALSE == mOpt_items[OptionItem.longroute.ordinal]) {
             // 最安経路で運賃計算(Default)
-            ds.routeFlag.setLongRoute(false)
+            ds.routeFlag.isLongRoute = false
         } else if (Option.TRUE == mOpt_items[OptionItem.longroute.ordinal]) {
             // 指定した経路で運賃計算
-            ds.routeFlag.setLongRoute(true)
+            ds.routeFlag.isLongRoute = true
         }
 
         // 旅客営業取扱基準規程115条(特定都区市内発着) / (単駅最安)(default)
@@ -783,6 +789,7 @@ class ResultViewActivity : AppCompatActivity() {
             }
 
         //大阪環状線 周り方向
+        /*
         mOpt_items[OptionItem.osakakan.ordinal] =
             if (fi.isOsakakanDetourEnable) {
                 if (fi.isOsakakanDetour) {
@@ -796,7 +803,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 Option.N_A
             }
-
+        */
         // "最短経路算出"
         /*
         if (opt_neerest != Option.DO_TRUE) {
@@ -829,7 +836,7 @@ class ResultViewActivity : AppCompatActivity() {
         //
         menu?.apply {
             val mi_specialrule = findItem(R.id.menu_specialrule) ?: return
-            val mi_osakakan = findItem(R.id.menu_osakakan) ?: return
+            //val mi_osakakan = findItem(R.id.menu_osakakan) ?: return
             val mi_meihancity = findItem(R.id.menu_meihancity) ?: return
             //val mi_stocktokai = findItem(R.id.menu_stocktokai) ?: return
             val mi_neerest = findItem(R.id.menu_neerest) ?: return
@@ -854,17 +861,21 @@ class ResultViewActivity : AppCompatActivity() {
             }
 
             if (mOpt_items[OptionItem.meihancity.ordinal] != Option.N_A) {
-                mi_meihancity.setVisible(true)
-                if (mOpt_items[OptionItem.meihancity.ordinal] == Option.TRUE) {
-                    // fi.isMeihanCityStart()
-                    // 発駅=都区市内
-                    // "発駅を単駅指定"(Optional -> default)
-                    mi_meihancity.title = resources.getString(R.string.result_menu_meihancity_start)
-                } else  if (mOpt_items[OptionItem.meihancity.ordinal] == Option.FALSE) {
-                    // "着駅を単駅指定"
-                    mi_meihancity.title = resources.getString(R.string.result_menu_meihancity_arrive)
-                } else {
-                    assert(false)
+                mi_meihancity.isVisible = true
+                when {
+                    mOpt_items[OptionItem.meihancity.ordinal] == Option.TRUE -> {
+                        // fi.isMeihanCityStart()
+                        // 発駅=都区市内
+                        // "発駅を単駅指定"(Optional -> default)
+                        mi_meihancity.title = resources.getString(R.string.result_menu_meihancity_start)
+                    }
+                    mOpt_items[OptionItem.meihancity.ordinal] == Option.FALSE -> {
+                        // "着駅を単駅指定"
+                        mi_meihancity.title = resources.getString(R.string.result_menu_meihancity_arrive)
+                    }
+                    else -> {
+                        assert(false)
+                    }
                 }
             } else {
                 mi_meihancity.setVisible(false)
@@ -924,6 +935,7 @@ class ResultViewActivity : AppCompatActivity() {
                 mi_stocktokai.setVisible(false) // 非表示
             }
             */
+            /*
             if (mOpt_items[OptionItem.osakakan.ordinal] != Option.N_A) { // fi.isOsakakanDetourEnable) {
                 if (mOpt_items[OptionItem.osakakan.ordinal] == Option.TRUE) { // fi.isOsakakanDetour) {
                     // "大阪環状線 遠回りだと近回り選択メニューが表示される"(Optional -> default)
@@ -936,6 +948,7 @@ class ResultViewActivity : AppCompatActivity() {
             } else {
                 mi_osakakan.setVisible(false)
             }
+             */
         }
     }
 
@@ -961,6 +974,7 @@ class ResultViewActivity : AppCompatActivity() {
      *  @param subject タイトル
      *  @param text 運賃計算結果テキスト
      */
+    @SuppressLint("QueryPermissionsNeeded")
     fun shareText(subject: String, text: String) {
         val mimeType = "text/plain"
 
@@ -979,17 +993,17 @@ class ResultViewActivity : AppCompatActivity() {
      *  情報アラートを抑制するか(最初の一回)
      *  @param key 大阪環状線か特例非適用か
      */
-    fun showInfoAlert(key : Int) {
+    private fun showInfoAlert(key : Int) {
 
         val info = mapOf(
                 R.string.title_specific_calc_option_norule to arrayOf("setting_key_hide_no_rule_info"),
                 R.string.title_specific_calc_option_osakakan to arrayOf("setting_key_hide_osakakan_detour_info"))
 
-        val keyInfo = info.get(key) ?: return
+        val keyInfo = info[key] ?: return
 
-        val valKey = keyInfo.get(0)
+        val valKey = keyInfo[0]
 
-        if (valKey.isNullOrEmpty()) {
+        if (valKey.isEmpty()) {
             return
         }
 
@@ -1023,9 +1037,9 @@ class ResultViewActivity : AppCompatActivity() {
             //OptionItem.stocktokai -> {     // TRUEはJR東海株主優待券を使用する、FALSEは使用しない
             //    route.routeFlag.setJrTokaiStockApply(mOpt_items[opt.ordinal] == Option.TRUE)
             //}
-            OptionItem.osakakan -> {      // TRUEは遠回り、FALSEは近回り
-                route.setDetour(mOpt_items[opt.ordinal] == Option.TRUE)
-            }
+            //OptionItem.osakakan -> {      // TRUEは遠回り、FALSEは近回り
+            //    route.setDetour(mOpt_items[opt.ordinal] == Option.TRUE)
+            //}
             OptionItem.sperule -> {  // TRUEは非適用、FALSEは特例適用
                 route.setNoRule(mOpt_items[opt.ordinal] == Option.TRUE)
             }
@@ -1050,12 +1064,12 @@ class ResultViewActivity : AppCompatActivity() {
         }
 
         // 大阪環状線 遠回り TRUE=遠回り
-        if (route.isOsakakanDetourEnable) {
-            mOpt_items[OptionItem.osakakan.ordinal] = if (route.isOsakakanDetour)
-                Option.TRUE else Option.FALSE
-        } else {
-            mOpt_items[OptionItem.osakakan.ordinal] = Option.N_A
-        }
+        //if (route.isOsakakanDetourEnable) {
+        //    mOpt_items[OptionItem.osakakan.ordinal] = if (route.isOsakakanDetour)
+        //        Option.TRUE else Option.FALSE
+        //} else {
+        //    mOpt_items[OptionItem.osakakan.ordinal] = Option.N_A
+        //}
 
         // 特例非適用(TRUE) / 適用
         if (route.routeFlag.rule_en()) {

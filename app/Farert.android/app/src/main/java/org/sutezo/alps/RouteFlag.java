@@ -1,7 +1,5 @@
 package org.sutezo.alps;
 
-import static org.sutezo.alps.farertAssert.*;
-
 public class RouteFlag {
 
     private byte osakaKanPass = 0;
@@ -245,8 +243,8 @@ public class RouteFlag {
     public boolean isMeihanCityEnable() {
         return !no_rule && meihan_city_enable;
     }
-    public boolean isArriveAsCity()  { return (meihan_city_enable == true) &&  (meihan_city_flag == false); }
-    public boolean isStartAsCity()  { return (meihan_city_enable == true) &&  (meihan_city_flag == true); }
+    public boolean isArriveAsCity()  { return (meihan_city_enable &&  !meihan_city_flag); }
+    public boolean isStartAsCity()  { return (meihan_city_enable &&  meihan_city_flag); }
 
 
     // for debug print
@@ -256,7 +254,7 @@ public class RouteFlag {
         OSAKAKAN_NOPASS,	// 初期状態(大阪環状線未通過)
         OSAKAKAN_1PASS,	    // 大阪環状線 1回通過
         OSAKAKAN_2PASS, 	// 大阪環状線 2回通過
-    };
+    }
 
     boolean is_osakakan_1pass() {
         return OSAKAKAN_PASS.OSAKAKAN_1PASS.ordinal() == (osakaKanPass & 0x03);

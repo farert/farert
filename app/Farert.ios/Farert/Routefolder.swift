@@ -184,19 +184,44 @@ public class Routefolder {
         self._totalSalesKm = salesKm_sum
     }
     
-    private var filePath : String {
-        get {
-            let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
-            return documentsPath + "/routeholder.txt"
+    private func filePath(dbIndex: Int) -> String {
+        guard let docUrl = FileManager.default.urls(for:.documentDirectory,
+                                                    in:.userDomainMask).first
+        else {
+            fatalError("フォルダ取得エラー")
         }
+        
+        var filename : String
+        if 0 <= dbIndex {
+            filename = "routeholder"
+            + String(dbIndex)
+            + ".txt"
+        } else {
+            filename = "routeholder.txt"
+        }
+        return docUrl.appendingPathComponent(filename).path
     }
 
+    private func removeOldData() {
+        guard let docUrl = FileManager.default.urls(for:.documentDirectory,
+                                                    in:.userDomainMask).first
+        else {
+            fatalError("フォルダ取得エラー")
+        }
+        do {
+            try FileManager.default.removeItem(at:  docUrl.appendingPathComponent("routerholder.txt"))
+        } catch {
+            // do-nothing
+        }
+    }
+    
     func save() {
         //print(filePath)
-        if let os = OutputStream(toFileAtPath: filePath, append: false) {
+        let dbName = headerDbName()
+        let dbIndex = cRouteUtil.getDatabaseId().rawValue
+        if let os = OutputStream(toFileAtPath: filePath(dbIndex: dbIndex), append: false) {
             os.open()
-            let dbver = cRouteUtil.getDatabaseId().rawValue
-            let strDbVer = "DBVer|" + String(dbver) + "\n"
+            let strDbVer = "DBVer|" + dbName + "\n"
             os.write(strDbVer, maxLength: strDbVer.count)
             for one in routeList {
                 let rs : String
@@ -212,49 +237,78 @@ public class Routefolder {
         }
     }
     
+    private func headerDbName() -> String {
+        guard let dbverInf : DbSys = cRouteUtil.databaseVersion() else {return ""}
+        return "\(dbverInf.name!)\(dbverInf.create_date!)".replacingOccurrences(
+            of: "/", with: "").replacingOccurrences(
+            of: "-", with: "").replacingOccurrences(
+            of: ":", with: "").replacingOccurrences(
+            of: " ", with:"")
+    }
+    
     func load(_ doCalc : Bool? = nil) {
+        var doSave = false
+        let dbName = headerDbName()
+        let dbIndex = cRouteUtil.getDatabaseId().rawValue
+
+        var text : String
         do {
-            self.routeList.removeAll()
-            var num : Int = 0
-            var isDbChanged : Bool = doCalc ?? false
-            let text = try String(contentsOf: URL(fileURLWithPath: filePath), encoding: String.Encoding.utf8)
-            text.enumerateLines { line, stop in
-                if num < Int(MAX_ARCHIVE_ROUTE) {
-                    let record : [String] = line.components(separatedBy: "|")
-                    if 2 <= record.count {
-                        if ((num == 0) && ("DBVer" == String(record[0]))) {
-                            let dbVer = cRouteUtil.getDatabaseId().rawValue
-                            if dbVer != Int(record[1]) {
-                                isDbChanged = true
-                            }
-                        } else {
-                            if let agr : Int = Int(record[0]) {
-                                if let rt = cRoute() {
-                                    let result = rt.setupRoute(record[1])
-                                    if 0 <= result {
-                                        if (!isDbChanged && (4 == record.count)) {
-                                            let fare = Int(record[2])
-                                            let salesKm = Int(record[3])
-                                            self.routeList.append(
-                                                folder(routeList: cRouteList(route: rt),
-                                                       indexOfAggregate: agr,
-                                                       fare: fare,
-                                                       salesKm: salesKm))
-                                        } else {
-                                            self.routeList.append(folder(routeList: cRouteList(route: rt), indexOfAggregate: agr))
-                                        }
-                                        num += 1
+            text = try String(contentsOf:
+                                URL(fileURLWithPath: filePath(dbIndex: dbIndex)),
+                              encoding: String.Encoding.utf8)
+        } catch {
+            // old version
+            do {
+                text = try String(contentsOf:
+                                URL(fileURLWithPath: filePath(dbIndex: -1)),
+                              encoding: String.Encoding.utf8)
+            } catch {
+                // Failed to read file
+                print("read fail!!!!!!!!!")
+                return;
+            }
+            // convert if version up
+            doSave = true
+        }
+        self.routeList.removeAll()
+        var num : Int = 0
+        var isDbChanged : Bool = doCalc ?? false
+
+        text.enumerateLines { line, stop in
+            if num < Int(MAX_ARCHIVE_ROUTE) {
+                let record : [String] = line.components(separatedBy: "|")
+                if 2 <= record.count {
+                    if ((num == 0) && ("DBVer" == String(record[0]))) {
+                        if dbName != record[1] {
+                            isDbChanged = true
+                        }
+                    } else {
+                        if let agr : Int = Int(record[0]) {
+                            if let rt = cRoute() {
+                                let result = rt.setupRoute(record[1])
+                                if 0 <= result {
+                                    if (!isDbChanged && (4 == record.count)) {
+                                        let fare = Int(record[2])
+                                        let salesKm = Int(record[3])
+                                        self.routeList.append(
+                                            folder(routeList: cRouteList(route: rt),
+                                                   indexOfAggregate: agr,
+                                                   fare: fare,
+                                                   salesKm: salesKm))
+                                    } else {
+                                        self.routeList.append(folder(routeList: cRouteList(route: rt), indexOfAggregate: agr))
                                     }
+                                    num += 1
                                 }
                             }
                         }
                     }
                 }
             }
-        } catch {
-            // Failed to read file
-
-            print("read fail!!!!!!!!!")
+        }
+        if doSave {
+            save()
+            removeOldData()
         }
         self.calc()
     }

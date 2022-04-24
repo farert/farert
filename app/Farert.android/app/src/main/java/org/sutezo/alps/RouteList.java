@@ -2,13 +2,10 @@ package org.sutezo.alps;
 
 //package Route;
 
-import java.util.*;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteOpenHelper;
-
 import static org.sutezo.alps.farertAssert.ASSERT;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /*!	@file Route core logic implement.
@@ -73,13 +70,13 @@ public class RouteList {
 
     // route_flag
 
-    List<RouteItem> route_list_raw = new ArrayList<RouteItem>(0);
+    List<RouteItem> route_list_raw = new ArrayList<>(0);
 
     RouteFlag route_flag = new RouteFlag();	// add() - removeTail() work
 
     public RouteList() {}
-    public RouteList(RouteList route_list) {
-
+    public RouteList(RouteList base_route) {
+        this.assign(base_route, -1);
     }
 
     public void assign(RouteList source_route) {
@@ -87,11 +84,33 @@ public class RouteList {
     }
 
     public void assign(RouteList source_route, int count) {
-        route_list_raw = dupRouteItems(source_route.route_list_raw, count);
-        route_flag = new RouteFlag(source_route.route_flag);
-        if ((0 < count) && source_route.route_list_raw.size() != count) {
-            route_flag.end = false;
-            route_flag.compnda = false;
+        if (count < 0) {
+            route_list_raw = dupRouteItems(source_route.route_list_raw, count);
+            route_flag = new RouteFlag(source_route.route_flag);
+        } else {
+            int row = 0;
+            // build
+            Route build_route = new Route();
+            if (0 < count) {
+                for (RouteItem ri : source_route.route_list_raw) {
+                    ++row;
+                    if (count < row) {
+                        break;
+                    }
+                    if (1 < row) {
+                        build_route.add(ri.lineId, ri.stationId);
+                    } else {
+                        build_route.add(ri.stationId);
+                    }
+                }
+            }
+            // copy of route
+            route_list_raw = dupRouteItems(build_route.route_list_raw, count);
+            // copy of flag
+            if (source_route.route_flag.osakakan_detour) {
+                build_route.setDetour(true);
+            }
+            route_flag = build_route.route_flag;
         }
     }
 
@@ -100,7 +119,7 @@ public class RouteList {
     }
 
     static List<RouteItem> dupRouteItems(final List<RouteItem> source, int count) {
-        List<RouteItem> dest = new ArrayList<RouteItem>(source.size());
+        List<RouteItem> dest = new ArrayList<>(source.size());
         int n = 0;
         for (RouteItem ri : source) {
             ++n;
@@ -153,7 +172,7 @@ public class RouteList {
 	 *	@remark showFare()の呼び出し後にのみ有効
 	 */
     public String route_script() {
-        StringBuffer result_str = new StringBuffer();
+        StringBuilder result_str = new StringBuilder();
         boolean oskk_flag;
         int i;
 
