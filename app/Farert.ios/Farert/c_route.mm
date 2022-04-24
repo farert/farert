@@ -76,12 +76,12 @@ int g_tax; /* main.m */
             break;
         case DB_2019_8:
             g_tax = 8;
-            dbname = @"jrdb2021";
+            dbname = @"jrdbnewest";
             break;
         case DB_2019_10:
         default:
             g_tax = 10;
-            dbname = @"jrdb2021";
+            dbname = @"jrdbnewest";
             break;
     }
     dbpath = [[NSBundle mainBundle] pathForResource:dbname ofType:@"db"];
@@ -635,6 +635,11 @@ int g_tax; /* main.m */
     return obj_route->changeNeerest(useLine, (int)stationId);
 }
 
+- (NSInteger)typeOfPassedLine:(NSInteger)offset
+{
+    return obj_route->typeOfPassedLine((int)offset);
+}
+
 // reverse
 - (NSInteger)reverseRoute
 {
@@ -1045,7 +1050,6 @@ int g_tax; /* main.m */
 
     // UI結果オプションメニュー
     result.isFareOptEnabled = result.isRuleAppliedEnable ||
-                              self.isOsakakanDetourEnable  ||
                               result.isJRCentralStockEnable ||
                               result.isEnableRule115 ||
                               result.isEnableLongRoute ||

@@ -11,21 +11,16 @@ import java.util.zip.ZipInputStream
 
 class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DATABASE_VERSION) {
 
-    val mContext : Context
-    val mDatabasePath : File
-
-    init  {
-        mContext = context
-        mDatabasePath = mContext.getDatabasePath(DB_NAME)
-    }
+    private val mContext : Context = context
+    private val mDatabasePath : File = mContext.getDatabasePath(DB_NAME)
 
     companion object {
-        val DB_NAME = "jrdb.db"
+        const val DB_NAME = "jrdb.db"
         //val DB_NAME_ASSET = "routeDB/jrdb2017.db"
-        val DATABASE_VERSION = 20    // 20=2022.01.03
-        val DEFAULT_DB_IDX = 5  // "2019.db, 2021"     // !!! DB更新したらDATABASE_VERSION を更新
-        val MIN_DB_IDX = 0
-        val MAX_DB_IDX = 5
+        const val DATABASE_VERSION = 21    // 20=2022.04.06
+        const val DEFAULT_DB_IDX = 5  // "2019.db, 2021"     // !!! DB更新したらDATABASE_VERSION を更新
+        private const val MIN_DB_IDX = 0
+        private const val MAX_DB_IDX = 5
 
         var mDatabaseIndex : Int = DEFAULT_DB_IDX
 
@@ -34,8 +29,8 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
                 0, 1 -> { "2014" } // 消費税5%, 2014
                 2 -> { "2015" }
                 3 -> { "2017" }
-                4 -> { "2021" }     // 2019版(消費税8%)
-                else -> { "2021" }  // 2019版(消費税10%)
+                4 -> { "2022" }     // 2019版(消費税8%)
+                else -> { "2022" }  // 2022版(消費税10%)
             }
         }
         fun dbIdx2NameWithTax(dbidx : Int) : String {
@@ -45,7 +40,7 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
                 2 -> { "2015" }
                 3 -> { "2017" }
                 4 -> { "2019版(消費税8%)" }
-                else -> { "2021版(消費税10%)" }
+                else -> { "2022版(消費税10%)" }
             }
         }
         fun dbIndex() : Int = mDatabaseIndex
@@ -69,7 +64,7 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
 
         } else {
             // このメソッドを呼ぶことで、空のデータベースがアプリのデフォルトシステムパスに作られる
-            getReadableDatabase()
+            readableDatabase
             close()
 
              try {
@@ -178,7 +173,7 @@ return it
 /*** original code is unnecessary ***/
 
 */
-        return getReadableDatabase();
+        return readableDatabase
 
     }
 

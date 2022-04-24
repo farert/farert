@@ -8,9 +8,9 @@
     <string name="query">確認</string>
     <string name="error">エラー</string>
 
-    <string name="main_last_list_caption">追加...     ></string>
+    <string name="main_last_list_caption">追加…     ></string>
     <string name="main_alert_query_terminal_title">発駅選択</string>
-    <string name="main_alert_query_terminal_mesg">経路を削除してもよろしいでしょうか？</string>
+    <string name="main_alert_query_terminal_mesg">表示している経路を破棄してもよろしいでしょうか？</string>
     <string name="main_alert_query_bullet">新幹線を使いますか？</string>
     <string name="main_head_caption">　発：　%1$s  %2$s</string>
 
@@ -59,8 +59,8 @@
     <string name="agree">了解</string>
     <string name="disagree">いいえ</string>
 
-    <string name="title_version_close">ok</string>
-    <string name="copyright">Copyright(c) Sutezo 2014-2022</string>
+    <string name="title_version_close">OK</string>
+    <string name="copyright">Copyright© Sutezo 2014–2022</string>
 
     <string name="btn_edit">編集</string>
     <string name="btn_del">削除</string>
@@ -101,9 +101,11 @@
 
     <string name="main_rc_finished">経路は終端に達しています</string>
     <string name="main_rc_neerested">すでに経路は最短となっています</string>
-    <string name="main_rc_iregalstation">不正な駅名が含まれています.</string>
-    <string name="main_rc_iregalline">不正な路線名が含まれています.</string>
-    <string name="main_rc_iregaroute">経路不正.</string>
+    <string name="main_rc_iregal_station">駅名</string>
+    <string name="main_rc_iregal_line">路線名</string>
+    <string name="main_rc_iregal_route">経路</string>
+    <string name="main_rc_script_parse_error">不正な%1$sが含まれてましたので打ち切りました</string>
+    <string name="main_rc_alert_title">経路エラー</string>
     <string name="main_rc_wrongcompany_pass">許可されていない会社線通過です.</string>
     <string name="main_rc_cantautostart">経路を算出できません.</string>
     <string name="main_rc_duplicate_route">経路が重複しているため追加できません.</string>
@@ -227,7 +229,7 @@
     <string name="arch_title_import">インポートする経路をテキストで「メモ」等の外部エディタで作成してください\n(スペースまたはカンマ\',\'区切りで1行1経路)で指定します）\nその後、クリップボードへコピーして本機能を実行します.\nわからないという人は使用しないでください</string>
 
     <string name="main_alert_query_all_clear_title">確認</string>
-    <string name="main_alert_query_all_clear_mesg">すべて削除してよいでしょうか？</string>
+    <string name="main_alert_query_all_clear_mesg">この操作は、すべての項目を削除します。また、元に戻すことはできませんがよろしいでしょうか？\n1行の削除はスワイプ操作でおこないます</string>
 
 
     <string name="pref_title_display_name">Display name</string>

@@ -427,7 +427,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
     func actionSelectProc(_ title: String) {
         if nil != title.range(of: "特例") {
             if let route : cRoute = cRoute() {
-                route.sync(ds)
+                route.sync(ds)          // Route::assign(RouteList&)
                 if nil != title.range(of: "しない") {
                     // @"特例を適用しない";
                     self.showInfo(key: "norule")
@@ -436,7 +436,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     // @"特例を適用する";
                     route.setNoRule(false);
                 }
-                ds.sync(route)
+                ds.sync(route)          // RouteList::assign(RouteList&)
                 self.reCalcFareInfo()
                 self.tableView.reloadData()
             }
@@ -466,6 +466,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
 //                self.processDuringIndicatorAnimating(NSNull.self)
 //            })
 //
+/*
         } else if nil != title.range(of: "回り") {
             if let route : cRoute = cRoute() {
                 route.sync(ds)
@@ -482,6 +483,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                     self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
                 }
             }
+ */
         /*} else if nil != title.range(of: "株主優待") {
             if nil != title.range(of: "しない") {
                 // @"JR東海株主優待券を適用しない";
@@ -559,7 +561,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
             }
         }
-
+        /*
         if self.fareInfo.isJRCentralStockEnable {
             // nagative logic
             if self.fareInfo.isJRCentralStock {
@@ -568,7 +570,6 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("JR東海株主優待券を適用する")
             }
         }
-
         if self.ds.isOsakakanDetourEnable() {
             // nagative logic
             if self.ds.isOsakakanDetour() {
@@ -577,7 +578,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("大阪環状線 遠回り")
             }
         }
-
+*/
         if #available(iOS 8, OSX 10.10, *) {            // iOS8
             let ac : UIAlertController = UIAlertController(title: self.title!, message: nil, preferredStyle: .actionSheet)
             for item in items {
@@ -1070,7 +1071,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             [ "norule": ["",
                         "title_norule",                   // sub title
                         "setting_key_hide_no_rule_info"], // param key
-             "osakakan":["",
+             "osakakan":["",    // not used
                           "title_osakakan_detour",
                           "setting_key_hide_osakakan_detour_info"]]
 

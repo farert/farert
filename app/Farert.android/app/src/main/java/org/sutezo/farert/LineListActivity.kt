@@ -1,21 +1,17 @@
 package org.sutezo.farert
 
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
-import android.support.design.widget.Snackbar
 import android.view.*
 import android.widget.TextView
-
 import kotlinx.android.synthetic.main.activity_line_list.*
-import kotlinx.android.synthetic.main.row_line_list.view.*
 import kotlinx.android.synthetic.main.line_list.*
+import kotlinx.android.synthetic.main.row_line_list.view.*
 import org.sutezo.alps.RouteUtil
-import org.sutezo.alps.RouteUtil.*
+import org.sutezo.alps.RouteUtil.LineName
 import org.sutezo.alps.lineIdsFromStation
 import org.sutezo.alps.linesFromCompanyOrPrefect
 
@@ -99,7 +95,8 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
                         lineIdsFromStation(mSrcStationId)
                     }
                     else -> {
-                        arrayListOf<Int>()
+                        val arrayListOf = arrayListOf<Int>()
+                        arrayListOf
                     }
                 }
 
@@ -138,7 +135,7 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
             else -> {
                 if ((mMode == "autoroute") || (mMode == "terminal")) {
                     invalidateOptionsMenu()
-                    menu?.findItem(R.id.action_switch)?.setVisible(false)
+                    menu?.findItem(R.id.action_switch)?.isVisible = false
                 }
             }
         }
@@ -147,9 +144,8 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
 
-        when (id) {
+        when (item.itemId) {
             R.id.action_settings -> {
                 return true
             }
@@ -169,17 +165,17 @@ class LineListActivity : AppCompatActivity() , ViewHolder.LineClickListener {
                             putInt("line_id", mLineId)
                             putInt("src_station_id", mSrcStationId)
                             putInt("start_station_id", mStartStationId)
-                            if (mStationSelMode == 1) {
+                            mStationSelMode = if (mStationSelMode == 1) {
                                 putString("station_mode", "all")
-                                mStationSelMode = 2
+                                2
                             } else {
                                 putString("station_mode", "junction")
-                                mStationSelMode = 1
+                                1
                             }
                         }
                     }
                     menuTitleChangeAtTwoPain(this.menu)
-                    toolbar.title = "${title} - ${resources.getString(
+                    toolbar.title = "$title - ${resources.getString(
                             if (mStationSelMode == 2) R.string.title_station_select_arrive
                                                  else R.string.title_station_select_junction)}"
                     supportFragmentManager
@@ -254,13 +250,9 @@ private class LineListRecyclerViewAdapter(private val values: List<Int>,
                                           private val listener : ViewHolder.LineClickListener) :
         RecyclerView.Adapter<ViewHolder>() {
 
-    private val onClickListener: View.OnClickListener
-
-    init {
-        onClickListener = View.OnClickListener { v ->
-            val item = v.tag as Int
-            listener.onLineClick(v, item)
-        }
+    private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
+        val item = v.tag as Int
+        listener.onLineClick(v, item)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

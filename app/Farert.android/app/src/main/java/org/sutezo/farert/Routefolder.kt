@@ -15,7 +15,12 @@ import org.sutezo.alps.*
 
 class Routefolder {
 
-    data class Folder(val routeList: RouteList, var aggregateType: Aggregate, var fare: Int? = null, var salesKm: Int? = null)
+    data class Folder(
+        val routeList: RouteList,
+        var aggregateType: Aggregate,
+        var fare: Int? = null,
+        var salesKm: Int? = null
+    )
 
     //private static let onlyObj = Routefolder()
     
@@ -30,13 +35,13 @@ class Routefolder {
         NULLFARE,   // 無効
     }
 
-    val aggregate_label = arrayListOf<String>("普通運賃","小児運賃","往復運賃","株割運賃","株割x2運賃","学割運賃","学割往復","無効")
+    private val aggregate_label = arrayListOf("普通運賃","小児運賃","往復運賃","株割運賃","株割x2運賃","学割運賃","学割往復","無効")
 
     private var _routeList : MutableList<Folder> = arrayListOf()
     private var _totalFare : Int = 0
     private var _totalSalesKm : Int = 0
 
-    fun MutableList<Folder>.swap(index_a : Int, index_b: Int) {
+    private fun MutableList<Folder>.swap(index_a : Int, index_b: Int) {
         val tmp = this[index_a]
         this[index_a] = this[index_b]
         this[index_b] = tmp
@@ -97,16 +102,16 @@ class Routefolder {
     }
 
     fun routeItemFareKm(index : Int) : Pair<Int, Int> {
-        if (index < _routeList.count()) {
+        return if (index < _routeList.count()) {
             if ((_routeList[index].fare != null) && (_routeList[index].salesKm != null)) {
-                return Pair(_routeList[index].fare!!, _routeList[index].salesKm!!)
+                Pair(_routeList[index].fare!!, _routeList[index].salesKm!!)
             } else {
-                val fare = calcFare(_routeList[index])
-                return fare
+                val fare = calculateFareAndSalesKm(_routeList[index])
+                fare
             }
         } else {
             assert(false)//, "Index failure...")
-            return Pair(0, 0)
+            Pair(0, 0)
         }
     }
 
@@ -115,14 +120,14 @@ class Routefolder {
     }
 
     fun aggregateType(index : Int) : Aggregate {
-        if (index < _routeList.count()) {
-            return _routeList[index].aggregateType
+        return if (index < _routeList.count()) {
+            _routeList[index].aggregateType
         } else {
-            return Aggregate.NULLFARE
+            Aggregate.NULLFARE
         }
     }
 
-    public fun setAggregateType(context: Context, index : Int, aggr : Aggregate) : Unit {
+    fun setAggregateType(context: Context, index : Int, aggr : Aggregate) {
         if ((index < _routeList.count()) && (_routeList[index].aggregateType != aggr)) {
             _routeList[index].aggregateType = aggr
             // do re-calc fare
@@ -134,7 +139,7 @@ class Routefolder {
         }
     }
 
-    public fun remove(context: Context, index : Int, no_write: Boolean = false) {
+    fun remove(context: Context, index : Int, no_write: Boolean = false) {
         _routeList.removeAt(index)
         calc()
         if (!no_write) {
@@ -142,7 +147,7 @@ class Routefolder {
         }
     }
 
-    public fun removeAll(context: Context) {
+    fun removeAll(context: Context) {
         _totalSalesKm = 0
         _totalFare = 0
         _routeList.removeAll { true }
@@ -150,15 +155,15 @@ class Routefolder {
         save(context)
     }
 
-    fun calc() {
-        var fare_sum : Int = 0
-        var salesKm_sum : Int = 0
+    private fun calc() {
+        var fare_sum = 0
+        var salesKm_sum = 0
         for (route in this._routeList) {
             if ((route.fare != null) && (route.salesKm != null)) {
                 fare_sum += route.fare!!
                 salesKm_sum += route.salesKm!!
             } else {
-                val result = calcFare(route)
+                val result = calculateFareAndSalesKm(route)
                 fare_sum += result.first
                 salesKm_sum += result.second
                 route.fare = result.first
@@ -169,10 +174,10 @@ class Routefolder {
         _totalSalesKm = salesKm_sum
     }
 
-    fun save(context: Context) {
+    private fun save(context: Context) {
         val folders : MutableList<String> = mutableListOf()
         val dbver = DatabaseOpenHelper.DATABASE_VERSION
-        val strDbVer = "DBVer|${dbver.toString()}\n"
+        val strDbVer = "DBVer|$dbver\n"
         folders.add(strDbVer)
         for (one in _routeList) {
             val rs = if ((one.fare != null) && (one.salesKm != null)) {
@@ -185,11 +190,16 @@ class Routefolder {
             }
             folders.add(rs)
         }
-        saveParam(context, "folder", folders.toList())
+        saveParam(context, "folder" + DatabaseOpenHelper.dbIndex().toString(), folders.toList())
     }
 
     fun load(context: Context, doCalc: Boolean? = false) {
-        val folders = readParams(context, "folder")
+        var doSave = false
+        var folders = readParams(context, "folder" + DatabaseOpenHelper.dbIndex().toString())
+        if (folders.count() <= 0) {
+            folders = readParams(context, "folder") // assume read old version.
+            doSave = true
+        }
         var isDbChanged : Boolean = doCalc ?: false
         _routeList.removeAll { true }
 
@@ -200,7 +210,7 @@ class Routefolder {
                 continue
             }
             if ((nCol == 2) && (0 == _routeList.count())) {
-                if (item[0].toString() == "DBVer") {
+                if (item[0] == "DBVer") {
                     val dbver = DatabaseOpenHelper.DATABASE_VERSION
                     val folderDbVer = item[1].trim { c -> c == '\n'}.toInt()
                     if (dbver != folderDbVer) {
@@ -209,11 +219,10 @@ class Routefolder {
                     continue
                 }
             }
-            var ord : Int
-            try {
-                ord = item[0].toInt()
+            val ord : Int = try {
+                item[0].toInt()
             } catch (e: NumberFormatException) {
-                ord = 0
+                0
             }
             val agr: Aggregate = Aggregate.values()[ord]
             val script = item[1].trim { c -> c == '\n' }
@@ -235,15 +244,20 @@ class Routefolder {
                 break
             }
         }
+        if (doSave) {
+            // change version to 22.04
+            save(context)
+            saveParam(context, "folder", "")
+        }
         calc()
     }
 
-    fun calcFare(item : Folder) : Pair<Int, Int> {
+    private fun calculateFareAndSalesKm(item : Folder) : Pair<Int, Int> {
 
-        val cds : CalcRoute? = CalcRoute(item.routeList)
-        cds?.let {
+        val cds = CalcRoute(item.routeList)
+        cds.let {
             val fareInfo = it.calcFareInfo()
-            var fare : Int
+            val fare : Int
 
             when (item.aggregateType) {
                 Aggregate.NORMAL -> {   // 普通運賃
@@ -257,13 +271,13 @@ class Routefolder {
                 }
                 Aggregate.STOCK -> {     // 株割
                     val stocks = fareInfo.fareForStockDiscounts ?: listOf()
-                        fare =
-                            if (1 <= stocks.count()) {
-                                // title, normal_fare, 114applied_fare
-                                if (fareInfo.isRule114Applied) stocks[0].third else stocks[0].second    // thirdは114適用
-                            } else {
-                                fareInfo.fare
-                            }
+                    fare =
+                        if (1 <= stocks.count()) {
+                            // title, normal_fare, 114applied_fare
+                            if (fareInfo.isRule114Applied) stocks[0].third else stocks[0].second    // thirdは114適用
+                        } else {
+                            fareInfo.fare
+                        }
                 }
                 Aggregate.STOCKW -> {    // 株割り4割
                     val stocks = fareInfo.fareForStockDiscounts ?: listOf()
@@ -277,17 +291,17 @@ class Routefolder {
                         }
                 }
                 Aggregate.ACADEMIC -> {    // 学割
-                    if (fareInfo.isAcademicFare) {
-                        fare = fareInfo.academicFare
+                    fare = if (fareInfo.isAcademicFare) {
+                        fareInfo.academicFare
                     } else {
-                        fare = fareInfo.fare
+                        fareInfo.fare
                     }
                 }
                 Aggregate.ACADEMIC_ROUNDTRIP -> {    // 学割往復
-                    if (fareInfo.isAcademicFare) {
-                        fare = fareInfo.roundtripAcademicFare
+                    fare = if (fareInfo.isAcademicFare) {
+                        fareInfo.roundtripAcademicFare
                     } else {
-                        fare = fareInfo.roundTripFareWithCompanyLine
+                        fareInfo.roundTripFareWithCompanyLine
                     }
                 }
                 else -> {    // 無効
@@ -296,23 +310,22 @@ class Routefolder {
             }
             return Pair(fare, fareInfo.totalSalesKm)
         }
-        return Pair(0, 0)
     }
 
     fun makeExportText() : String {
-        var result = mutableListOf<String>()
+        val result = mutableListOf<String>()
 
-        var fare_sum : Int = 0
-        var salesKm_sum : Int = 0
+        var fare_sum = 0
+        var salesKm_sum = 0
         for (route in this._routeList) {
-            var cols = mutableListOf<String>()
+            val cols = mutableListOf<String>()
             var fare : Int
             var salesKm : Int
             if ((route.fare != null) && (route.salesKm != null)) {
                 fare = route.fare!!
                 salesKm = route.salesKm!!
             } else {
-                val fare_salesKm: Pair<Int, Int> = this.calcFare(route)
+                val fare_salesKm: Pair<Int, Int> = this.calculateFareAndSalesKm(route)
                 fare = fare_salesKm.first
                 salesKm = fare_salesKm.second
             }
@@ -328,7 +341,7 @@ class Routefolder {
             cols.add(s)
             result.add(cols.joinToString(","))
         }
-        var cols = mutableListOf<String>()
+        val cols = mutableListOf<String>()
         cols.add("総額")
         cols.add("¥${fareNumStr(fare_sum)}")
         cols.add("総営業キロ")

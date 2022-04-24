@@ -241,25 +241,39 @@ class TerminalSelectTableViewController: CSTableViewController {
     //  Selected Table cell
     //
     override func tableView(_ tableView : UITableView, didSelectRowAt indexPath : IndexPath) {
+        var selectionStationId : Int = -1
         
         if searchController.isActive && searchController.searchBar.text != "" {
             /* direct input */
             if indexPath.row < self.termFilteredArray.count {
-                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-                apd.selectTerminalId = self.termFilteredArray[indexPath.row]
-                self.performSegue(withIdentifier: "termSelectDone", sender: self)
+                selectionStationId = self.termFilteredArray[indexPath.row]
             }
         } else if SEGIDX_HISTORY == scopeBar.selectedSegmentIndex {
             /* history select */
             if indexPath.row < self.historyTerms.count {
-                let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
-                apd.selectTerminalId = cRouteUtil.getStationId(self.historyTerms[indexPath.row])
-                self.performSegue(withIdentifier: "termSelectDone", sender: self)
+                selectionStationId = cRouteUtil.getStationId(self.historyTerms[indexPath.row])
+                if selectionStationId <= 0 {
+                    // DB renamed Station Name
+                    let ac = UIAlertController(title: "エラー", message: "駅名が誤っております."
+                        + self.historyTerms[selectionStationId]
+                        +
+                        "駅は名前が変更されたか、データソースを変更したかも知れませんので他の方法で指定し直してください.", preferredStyle: .alert)
+                    let otherAction = UIAlertAction(title: "了解", style: .default) {
+                        action in
+                    }
+                    ac.addAction(otherAction)
+                    self.present(ac, animated: true, completion: nil)
+                }
             }
         } else {
             /* company or prefect select */
             // @"Select comapny or prefect");
         }
+        if (0 < selectionStationId) {
+            let apd : AppDelegate = UIApplication.shared.delegate as! AppDelegate
+            apd.selectTerminalId = selectionStationId
+            self.performSegue(withIdentifier: "termSelectDone", sender: self)
+            }
     }
     
     // MARK: - Navigation
