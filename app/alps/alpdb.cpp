@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*!	@file alpdb.cpp core logic implement.
@@ -1003,7 +1003,11 @@ Route::RoutePass::RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, 
 			else {
 				_num = enum_junctions_of_line();
 			}
-	    } else {
+        } else if (IS_COMPANY_LINE(line_id)) {
+            JctMaskOn(_jct_mask, Route::Id2jctId(station_id1));
+            JctMaskOn(_jct_mask, Route::Id2jctId(station_id2));
+            _num = 2;
+        } else {
 			_num = enum_junctions_of_line();
 		}
 	}
