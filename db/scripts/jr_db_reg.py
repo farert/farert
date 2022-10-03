@@ -361,7 +361,8 @@ class Dbreg:
 			station_id2 integer not null default(0),
 			en_line_id integer not null default(0),
 			en_station_id1 integer not null default(0),
-			en_station_id2 integer not null default(0)
+			en_station_id2 integer not null default(0),
+			option integer not null default(0)
 		);
 		""")
 		###########################################
@@ -828,9 +829,10 @@ insert into t_r70bullet values(
 
 	def reg_rule86(self, label, linitems, lin):
 	# rule86
-		if linitems[0].strip() != "":
-			if not db_name in linitems[0]:
-				return
+		# 2014/2015/2017/202x
+		l_dbver = linitems[0].strip()
+		if l_dbver.isnumeric() and int(db_name) < int(l_dbver):
+			return			# old db
 		#print(lin, end='')
 		self.con.execute("""
 insert into t_rule86 values(
@@ -960,6 +962,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 	def reg_t_compnpass(self, label, linitems, lin):
 		# t_compnpass
 		# 会社線通過連絡運輸
+		# 0:接続駅 1:発着駅 2:有効な路線(or 会社) 3:有効駅範囲1 4:有効駅範囲2　5:option
 
 		assert(label == "t_compnpass")
 
@@ -1004,9 +1007,9 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 										 else (select rowid from t_station where name=?6 and samename=?7) end),
 							(select case when (select rowid from t_station where name=?8 and samename=?9) is null then 0
 										 else (select rowid from t_station where name=?8 and samename=?9) end)
-							)""",
+							,?10)""",
 			[*same_staion(linitems[0].strip()), *same_staion(linitems[1].strip()), en_line_id, 
-			 *same_staion(linitems[3].strip()), *same_staion(linitems[4].strip())])
+			 *same_staion(linitems[3].strip()), *same_staion(linitems[4].strip()), linitems[5].strip()])
 
 #------------------------------------------------------------------------------
 	def reg_t_compnconc(self, label, linitems, lin):
