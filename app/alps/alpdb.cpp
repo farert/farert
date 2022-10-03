@@ -1578,26 +1578,22 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
     } else if (!IS_COMPANY_LINE(line_id) && (route_flag.compncheck)) {
 
         /* after block check e f */
+		route_flag.compnterm = false;	// initialize
 		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
 		if (0 <= rc) {
-			route_flag.compnterm = false;	// initialize
-
 			route_flag.compnpass = true;
 			route_flag.compnend = false;	// if company_line
 			if (rc == 1) {
 				route_flag.tokai_shinkansen = true;
 			} else if (rc == 3) {
-				//
-			} else if (rc == 4) {
 				if (STATION_IS_JUNCTION(stationId2)) {
-					route_flag.compnterm = true;
+                    route_flag.compnterm = true;    // 
 				} else {
-					return -4;	/* 分岐駅ではない場合、”~続けて経路を指定してください"ができない*/
+					rc = -4;	/* 分岐駅ではない場合、”~続けて経路を指定してください"ができない*/
 				}
-			} else if (rc == 2) {
-				// 
+			} else {
+				rc = 0;
 			}
-			rc = 0;
 		}
 		return rc;
 
@@ -1638,7 +1634,7 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
 int Route::CompnpassSet::open(int key1, int key2)
 {
 	static const char tsql[] =
-"select en_line_id, en_station_id1, en_station_id2"
+"select en_line_id, en_station_id1, en_station_id2, option"
 " from t_compnpass"
 " where station_id1=? and station_id2=?";
 	int i;
@@ -1659,11 +1655,11 @@ int Route::CompnpassSet::open(int key1, int key2)
 			results[i].line_id = dbo.getInt(0);
 			station_id1 = dbo.getInt(1);
 			station_id2 = dbo.getInt(2);
+			if (!terminal) {
+				terminal = 0 < dbo.getInt(3);
+			}
 			results[i].stationId1 = station_id1;
 			results[i].stationId2 = station_id2;
-			if (station_id1 != 0 && (station_id1 == station_id2)) {
-				terminal = true;
-			}
 		}
 		num_of_record = i;
 		return i;	/* num of receord */
@@ -1680,6 +1676,7 @@ int Route::CompnpassSet::open(int key1, int key2)
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
+ *	@retval 3 : 着駅有効
  *	@retval -4 : 通過連絡運輸禁止
  */
 int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2)
@@ -1719,16 +1716,6 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 				TRACE("JR-tolai Company line\n");
 				return 1;	/* OK possible pass */
 			}
-		} else if (terminal
-					&& (results[i].stationId1 != 0)
-				    && ((terminal_id == results[i].stationId1)
-					 && (terminal_id == results[i].stationId2))) {
-			ASSERT(results[i].stationId1 == results[i].stationId2);
-			TRACE("Company check OK(terminal) %s %s\n", is_postcheck ? "arrive":"leave", SNAME(terminal_id));
-			TRACE(_T("    (%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
-													 LNAME(line_id), SNAME(station_id1), SNAME(station_id2), 
-			                                         LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
-			rc = 3; 	// OK possible to pass
 		} else if (results[i].line_id == line_id) {
 			if ((results[i].stationId1 == 0) || (
 				(0 < RouteUtil::InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
@@ -1736,14 +1723,24 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 				TRACE(_T("Company check OK(%s,%s in %s:%s-%s)\n"), SNAME(station_id1), SNAME(station_id2), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 				return 0;	/* OK possible to pass */
 			}
-		    if (0 < RouteUtil::InStation(terminal_id, line_id, results[i].stationId1, results[i].stationId2)) {
-				rc = 2;		// OK possible to pass
-			}
-			TRACE(_T("Companny line allow range instation %d %s: %s, %s-%s%d\n"), is_postcheck, SNAME(terminal_id), LNAME(line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2), rc);
 		} else if (results[i].line_id == 0) {
 			TRACE(_T("Company check NG(%s,%s-%s = %s:%s-%s)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 			break;	/* can't possoble */
 		}
+		if (terminal
+					&& (results[i].stationId1 != 0)) {
+			TRACE(_T("Check company allow terminal(%s)(%s:%s-%s) in %s:%s-%s)\n"), SNAME(terminal_id), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
+		    if (0 < RouteUtil::InStation(terminal_id, results[i].line_id, results[i].stationId1, results[i].stationId2)) {
+				TRACE("Company check OK(terminal) %s %s\n", is_postcheck ? "arrive":"leave", SNAME(terminal_id));
+				TRACE(_T("    (%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
+														LNAME(line_id), SNAME(station_id1), SNAME(station_id2),
+														LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
+				return 2; 	// OK possible to pass
+			}
+		}
+	}
+	if (terminal) {
+		return 3;	/* 会社線契約着駅まで保留 */
 	}
 	return rc;
 }
@@ -1820,8 +1817,6 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 		if (rc == 1) {
 			route_flag.tokai_shinkansen = true;
 			rc = 0;
-		} else if (rc == 2) {
-			rc = 0;
 		} else if (rc == 3) {
 			rc = 0;		// terminal arrive/leave
 			break;
@@ -1892,9 +1887,9 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 		}
 		rc = cs.check(true, line_id, station_id1, station_id2);
 		if (rc < 0) {
-			// route_flag.compnda = true; /* 通過連絡運輸不正 */
 			if (cs.is_terminal()) {
-				rc = 4;
+				rc = 3;
+				break;
 			}
 		}
 	} while (false);
@@ -7053,7 +7048,6 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
 		/* 上り */
 		km = -km;
 	}
-printf("@@@@@ aSakes_km=%d, last_arrive_sales_km=%d, km=%d, %s, %s, %s\n", aSales_km, last_arrive_sales_km, km, LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
 	/* 中心駅から目的地方向に最初に200(100)kmに到達する駅を得る */
 	/* 富士から身延線で甲府方向に */
 	route_list_replace.clear();
