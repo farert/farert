@@ -1696,6 +1696,19 @@ int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t 
 		terminal_id = 0;
 	}
 	for (i = 0; i < num_of_record; i++) {
+		if ((terminal_id != 0) && terminal
+					&& (results[i].stationId1 != 0)) {
+			ASSERT(terminal_id != 0 && postcheck_flag != 0);
+		    if (0 < RouteUtil::InStation(terminal_id, results[i].line_id, results[i].stationId1, results[i].stationId2)) {
+				TRACE("Company check OK(terminal) %s %s\n", 0 < postcheck_flag ? "arrive":"leave", SNAME(terminal_id));
+				TRACE(_T("    (%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
+														LNAME(line_id), SNAME(station_id1), SNAME(station_id2),
+														LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
+				return 2; 	// OK possible to pass
+			} else {
+				TRACE(_T("Check company terminal notfound(%s)(%s:%s-%s) in %s:%s-%s)\n"), SNAME(terminal_id), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
+			}
+		}
 		if ((results[i].line_id & 0x80000000) != 0) {
 			/* company */
 			int32_t company_mask = results[i].line_id;
@@ -1728,19 +1741,6 @@ int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t 
 		} else if (results[i].line_id == 0) {
 			TRACE(_T("Company check NG(%s,%s-%s = %s:%s-%s)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 			break;	/* can't possoble */
-		}
-		if ((terminal_id != 0) && terminal
-					&& (results[i].stationId1 != 0)) {
-			ASSERT(terminal_id != 0 && postcheck_flag != 0);
-		    if (0 < RouteUtil::InStation(terminal_id, results[i].line_id, results[i].stationId1, results[i].stationId2)) {
-				TRACE("Company check OK(terminal) %s %s\n", 0 < postcheck_flag ? "arrive":"leave", SNAME(terminal_id));
-				TRACE(_T("    (%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
-														LNAME(line_id), SNAME(station_id1), SNAME(station_id2),
-														LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
-				return 2; 	// OK possible to pass
-			} else {
-				TRACE(_T("Check company terminal notfound(%s)(%s:%s-%s) in %s:%s-%s)\n"), SNAME(terminal_id), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
-			}
 		}
 	}
 	if (terminal) {
