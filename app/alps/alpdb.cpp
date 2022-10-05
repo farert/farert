@@ -1671,7 +1671,7 @@ int Route::CompnpassSet::open(int key1, int key2)
 /*!
  *	@brief 通過連絡運輸チェック
  *
- *  @param [in] is_postcheck true is preCompnayPasscheck otherwise postCompanyPasscheck
+ *  @param [in] is_postcheck plus is postCompnayPasscheck, minus is preCompanyPasscheck and leave, otherwise zero
  *	@param [in] line_id      add(),追加予定路線
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
@@ -1679,7 +1679,7 @@ int Route::CompnpassSet::open(int key1, int key2)
  *	@retval 3 : 着駅有効
  *	@retval -4 : 通過連絡運輸禁止
  */
-int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2)
+int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
 	int i;
 	int rc = -4;
@@ -1688,10 +1688,12 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 	if (num_of_record <= 0) {
 		return 0;
 	}
-	if (is_postcheck) {
+	if (0 < postcheck_flag) {
 		terminal_id = station_id2;
-	} else {
+	} else if (postcheck_flag < 0) {
 		terminal_id = station_id1;
+	} else {
+		terminal_id = 0;
 	}
 	for (i = 0; i < num_of_record; i++) {
 		if ((results[i].line_id & 0x80000000) != 0) {
@@ -1727,15 +1729,17 @@ int Route::CompnpassSet::check(bool is_postcheck, int32_t line_id, int32_t stati
 			TRACE(_T("Company check NG(%s,%s-%s = %s:%s-%s)\n"), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 			break;	/* can't possoble */
 		}
-		if (terminal
+		if ((terminal_id != 0) && terminal
 					&& (results[i].stationId1 != 0)) {
-			TRACE(_T("Check company allow terminal(%s)(%s:%s-%s) in %s:%s-%s)\n"), SNAME(terminal_id), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
+			ASSERT(terminal_id != 0 && postcheck_flag != 0);
 		    if (0 < RouteUtil::InStation(terminal_id, results[i].line_id, results[i].stationId1, results[i].stationId2)) {
-				TRACE("Company check OK(terminal) %s %s\n", is_postcheck ? "arrive":"leave", SNAME(terminal_id));
+				TRACE("Company check OK(terminal) %s %s\n", 0 < postcheck_flag ? "arrive":"leave", SNAME(terminal_id));
 				TRACE(_T("    (%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
 														LNAME(line_id), SNAME(station_id1), SNAME(station_id2),
 														LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 				return 2; 	// OK possible to pass
+			} else {
+				TRACE(_T("Check company terminal notfound(%s)(%s:%s-%s) in %s:%s-%s)\n"), SNAME(terminal_id), LNAME(line_id), SNAME(station_id1), SNAME(station_id2), LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 			}
 		}
 	}
@@ -1806,7 +1810,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
         if (IS_COMPANY_LINE(route_list_raw.at(i).lineId)) {
             continue;
         }
-		rc = cs.check(false, route_list_raw.at(i).lineId,
+		rc = cs.check((i == 1) ? -1 : 0, route_list_raw.at(i).lineId,
 					  route_list_raw.at(i - 1).stationId,
 					  route_list_raw.at(i).stationId);
         TRACE(_T("preCompanyPassCheck %d/%d->%d(%s:%s-%s)\n"), i, num, rc, 
@@ -1818,8 +1822,11 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 			route_flag.tokai_shinkansen = true;
 			rc = 0;
 		} else if (rc == 3) {
-			rc = 0;		// terminal arrive/leave
-			break;
+printf("@@@@ i=%d rc=%d\n", i, rc);
+			rc = -4;	// disallow pending through pre.
+			//break;
+		} else if (rc == 2) {
+			break;	// OK
 		} else {
 			ASSERT(rc == 0);
 		}
@@ -1885,13 +1892,7 @@ int32_t Route::postCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_
 			rc = 0;		/* Error or Non-record(always pass) as continue */
 			break;		// return 0
 		}
-		rc = cs.check(true, line_id, station_id1, station_id2);
-		if (rc < 0) {
-			if (cs.is_terminal()) {
-				rc = 3;
-				break;
-			}
-		}
+		rc = cs.check(1, line_id, station_id1, station_id2);
 	} while (false);
     TRACE("Leave postCompanyPassCheck(%d)\n", rc);
 	return rc;	/* 0 / -4 */
