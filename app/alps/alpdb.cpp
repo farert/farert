@@ -1732,6 +1732,9 @@ int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t 
 				return 1;	/* OK possible pass */
 			}
 		} else if (results[i].line_id == line_id) {
+			TRACE(_T("Company check begin(%d/%d %s,%s-%s def= %s:%s-%s)\n"), i, num_of_record,
+						LNAME(line_id), SNAME(station_id1), SNAME(station_id2),
+						LNAME(results[i].line_id), SNAME(results[i].stationId1), SNAME(results[i].stationId2));
 			if ((results[i].stationId1 == 0) || (
 				(0 < RouteUtil::InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
 			    (0 < RouteUtil::InStation(station_id2, line_id, results[i].stationId1, results[i].stationId2)))) {
