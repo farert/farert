@@ -5253,7 +5253,7 @@ taxValue	8	10								DBフィールドは、区間運賃、学割の税率がい
 																										
 																										
 *t_compnpass																										
-# station_id1	station_id2	en_line_id	en_station_id1	en_station_id2	flg																					
+# station_id1	station_id2	en_line_id	en_station_id1	en_station_id2	option																					
 津幡	高岡	七尾線																								
 高岡	津幡	氷見線						レコード定義しないのは無条件OK	石川県						富山県					新潟県						
 高岡	津幡	城端線						0は無条件NG																		
@@ -5287,7 +5287,7 @@ taxValue	8	10								DBフィールドは、区間運賃、学割の税率がい
 糸魚川	長野	信越線(直江津-新潟)					#																			
 長野	糸魚川	信越線(篠ノ井-長野)					#																			
 長野	糸魚川	篠ノ井線	篠ノ井	松本			#																			
-糸魚川	豊野	0					#																			
+糸魚川	豊野	0					# NG																			
 豊野	糸魚川	0					#																			
 豊野	長野	飯山線					#																			
 長野	豊野	信越線(篠ノ井-長野)					#																			
