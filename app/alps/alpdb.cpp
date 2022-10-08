@@ -1671,12 +1671,13 @@ int Route::CompnpassSet::open(int key1, int key2)
 /*!
  *	@brief 通過連絡運輸チェック
  *
- *  @param [in] is_postcheck plus is postCompnayPasscheck, minus is preCompanyPasscheck and leave, otherwise zero
+ *  @param [in] postcheck_flag plus is postCompnayPasscheck, minus is preCompanyPasscheck and leave, otherwise zero
  *	@param [in] line_id      add(),追加予定路線
  *	@param [in] station_id1  add(),最後に追加した駅
  *	@param [in] station_id2  add(),追加予定駅
  *	@retval 0 : エラーなし(継続)
- *	@retval 3 : 着駅有効
+ *	@retval 2 : 許可駅発着駅OK
+ *	@retval 3 : 着駅有効(pending)
  *	@retval -4 : 通過連絡運輸禁止
  */
 int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t station_id1, int32_t station_id2)
@@ -1689,10 +1690,13 @@ int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t 
 		return 0;
 	}
 	if (0 < postcheck_flag) {
+		// post
 		terminal_id = station_id2;
 	} else if (postcheck_flag < 0) {
+		// pre
 		terminal_id = station_id1;
 	} else {
+		// pre and throgh
 		terminal_id = 0;
 	}
 	for (i = 0; i < num_of_record; i++) {
@@ -1747,6 +1751,7 @@ int Route::CompnpassSet::check(int32_t postcheck_flag, int32_t line_id, int32_t 
 		}
 	}
 	if (terminal) {
+		TRACE(_T("Company check pending to terminal\n"));
 		return 3;	/* 会社線契約着駅まで保留 */
 	}
 	return rc;
@@ -1825,9 +1830,7 @@ int32_t Route::preCompanyPassCheck(int32_t line_id, int32_t station_id1, int32_t
 			route_flag.tokai_shinkansen = true;
 			rc = 0;
 		} else if (rc == 3) {
-printf("@@@@ i=%d rc=%d\n", i, rc);
 			rc = -4;	// disallow pending through pre.
-			//break;
 		} else if (rc == 2) {
 			break;	// OK
 		} else {
