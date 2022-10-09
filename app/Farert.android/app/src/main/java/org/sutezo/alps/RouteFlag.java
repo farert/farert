@@ -239,6 +239,7 @@ public class RouteFlag {
     boolean isAvailableRule69() { return rule69; }
     boolean isAvailableRule115() { return 0 < rule115; }
     boolean isAvailableRule16_5() { return rule16_5; }
+    boolean isCompnterm() { return compnterm; }
     //
     public boolean isMeihanCityEnable() {
         return !no_rule && meihan_city_enable;
