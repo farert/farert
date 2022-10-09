@@ -484,6 +484,9 @@ fun CalcRoute.calcFareInfo() : FareInfo
         val msg = "旅客営業取扱基準規程第114条適用営業キロ計算駅:${rule114Fare.stationName()}"
         messages.add(msg)
     }
+    if (this.route_flag.isCompnterm) {
+        messages.add("この経路の会社線通過連絡は許可されていません.")
+    }
 
     result.resultMessage = messages.joinToString("\n")
 

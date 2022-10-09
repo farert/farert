@@ -1246,7 +1246,7 @@ protected:
 
 		// 結果数を返す（0~N, -1 Error：レコード数がオーバー(あり得ないバグ)）
 		int open(int32_t key1, int32_t key2);
-		int check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2);
+		int check(int32_t postcheck_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
         bool is_terminal() const { return terminal; }
 	protected:
 		int en_line_id(int index) {
