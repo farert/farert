@@ -59,6 +59,7 @@
 @property (nonatomic) NSInteger rule114_calcKm;
 @property (nonatomic) BOOL isRule114Applied;
 @property (nonatomic) BOOL isSpecificFare;
+@property (nonatomic) BOOL isCompnterm;
 
 @property (nonatomic) NSInteger totalSalesKm;
 @property (nonatomic) NSInteger jrCalcKm;
