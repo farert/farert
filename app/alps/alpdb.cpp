@@ -2626,11 +2626,7 @@ TRACE(_T("osaka-kan passed error\n"));	// 要るか？2015-2-15
 
 	lflg2 |= (lflg1 & 0xff000000);
 	lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));	// 水平型検知(D-2);
-	if (route_flag.compnterm) {
-		lflg2 |= (1 << BSRNOTYET_NA);
-	} else {
-		lflg2 &= ~(1 << BSRNOTYET_NA);
-	}
+
 	lflg2 |= jct_flg_on;	// BSRNOTYET_NA:BSRJCTHORD
 	route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
 	++num;
@@ -3123,6 +3119,7 @@ JR東日本 株主優待4： \123,456
     if (this->getIsBRT_discount()) {
         sResult += _T("\r\nBRT乗継ぎ割引適用");
     }
+
     if (!refRouteFlag.no_rule && !refRouteFlag.osakakan_detour &&
         refRouteFlag.special_fare_enable) {
         sResult += _T("\r\n特定区間割引運賃適用");
@@ -3154,6 +3151,9 @@ JR東日本 株主優待4： \123,456
 	if (this->isRule114()) {
         sResult += _T("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
 		sResult += this->getRule114apply_terminal_station();
+	}
+	if (refRouteFlag.compnterm) {
+        sResult += tstring(_T("\r\nこの経路の会社線通過連絡は許可されていません."));
 	}
     sWork = this->getTOICACalcRoute_string();
     if (sWork != _T("")) {
