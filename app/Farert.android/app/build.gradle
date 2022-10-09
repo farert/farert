@@ -56,7 +56,6 @@ android {
         abortOnError false
         checkReleaseBuilds false
     }
-    buildToolsVersion '30.0.2'
 }
 
 dependencies {
