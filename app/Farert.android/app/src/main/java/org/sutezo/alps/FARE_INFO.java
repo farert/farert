@@ -1152,6 +1152,9 @@ public class FARE_INFO {
             buffer.append("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
             buffer.append(this.getRule114apply_terminal_station());
         }
+        if (argRouteFlag.isCompnterm()) {
+            buffer.append("\r\nこの経路の会社線通過連絡は許可されていません.");
+        }
         String sWork = this.getTOICACalcRoute_string();
         if (!sWork.isEmpty()) {
             buffer.append("\r\nIC運賃計算経路: ");
