@@ -17,7 +17,7 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
     companion object {
         const val DB_NAME = "jrdb.db"
         //val DB_NAME_ASSET = "routeDB/jrdb2017.db"
-        const val DATABASE_VERSION = 21    // 20=2022.04.06
+        const val DATABASE_VERSION = 23    // 20=2022.04.06
         const val DEFAULT_DB_IDX = 5  // "2019.db, 2021"     // !!! DB更新したらDATABASE_VERSION を更新
         private const val MIN_DB_IDX = 0
         private const val MAX_DB_IDX = 5
@@ -30,17 +30,7 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
                 2 -> { "2015" }
                 3 -> { "2017" }
                 4 -> { "2022" }     // 2019版(消費税8%)
-                else -> { "2022" }  // 2022版(消費税10%)
-            }
-        }
-        fun dbIdx2NameWithTax(dbidx : Int) : String {
-            return when (dbidx) {
-                0 -> { "2014(5%tax)" }
-                1 -> { "2014" }
-                2 -> { "2015" }
-                3 -> { "2017" }
-                4 -> { "2019版(消費税8%)" }
-                else -> { "2022版(消費税10%)" }
+                else -> { "Newest" }  // 2022版(消費税10%)
             }
         }
         fun dbIndex() : Int = mDatabaseIndex
