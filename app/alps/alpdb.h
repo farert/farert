@@ -1269,7 +1269,7 @@ private:
 	static int32_t 	Jct2id(int32_t jctId);
 	static tstring 	JctName(int32_t jctId);
 
-	static int32_t	InStationOnLine(int32_t line_id, int32_t station_id);
+	static int32_t	InStationOnLine(int32_t line_id, int32_t station_id, bool flag = false);
 
 	static int32_t	LineIdFromStationId(int32_t station_id);
 	static int32_t	LineIdFromStationId2(int32_t station_id1, int32_t station_id2);
