@@ -1196,8 +1196,13 @@ public class Route extends RouteList {
                                         route_list_raw.get(num - 2).stationId, stationId1, stationId2)))) {
                 if ((0 < shinzairev) && checkPassStation(shinzairev)) {
                     // 在来線戻り
-                    System.out.println("assume deletect shinkansen-zairaisen too return.");
-                    jct_flg_on = BIT_ON(jct_flg_on, BSRSHINZAIREV);
+                    System.out.printf("assume detect shinkansen-zairaisen too return.%s,%s %s %s\n", LineName(route_list_raw.get(num - 1).lineId), LineName(line_id), StationName(route_list_raw.get(num - 1).stationId), StationName(stationId2));
+                    if (0 < InStationOnLine(IS_SHINKANSEN_LINE(route_list_raw.get(num - 1).lineId)
+                        ? route_list_raw.get(num - 1).lineId : line_id, stationId2, true)) {
+                        System.out.println("      disable");
+                        jct_flg_on = BIT_ON(jct_flg_on, BSRSHINZAIREV); // この後着駅が終端だったらエラー
+                    }
+                    // 第16条の2-2 "〜の各駅を除く。）"
                     // return -1;	// 高崎~長岡 上越新幹線 新潟 "信越線(直江津-新潟)" 長岡 (北長岡までなら良い)
                     // 大宮 上越新幹線 長岡 信越線(直江津-新潟) 直江津
                     // 岡山 山陽新幹線 新大阪 東海道線 大阪 福知山線 谷川
@@ -1781,7 +1786,7 @@ public class Route extends RouteList {
                 System.out.printf("？？？西小倉・吉塚.rc=%d\n", rc);
                 return ADDRC_OK;	/* 西小倉、吉塚 */
             } else if (BIT_CHK(lflg2, BSRSHINZAIREV)) {
-                System.out.println("deletect shinkansen-zairaisen too return.");
+                System.out.printf("detect shinkansen-zairaisen too return.arrive %s replace to %s\n", StationName(route_list_raw.get(num - 1).stationId), StationName(route_list_raw.get(num - 2).stationId));
                 removeTail();
                 return -1;  /* route is duplicate */
             } else {
@@ -2934,11 +2939,19 @@ public class Route extends RouteList {
 
     //static
     //	駅は路線内にあるか否か？
-    //
+    //  @param [in] line_id    路線ID
+    //  @param [in] station_id 駅ID
+    //  @param [in] flag　     true: set follow flag / false: no-flag(default)
+    //  注： lflg&(1<<17)を含めていないため、新幹線内分岐駅、たとえば、
+    //       東海道新幹線 京都 米原間に草津駅は存在するとして返します.    //
     private static int InStationOnLine(int line_id, int station_id)	{
+        return InStationOnLine(line_id, station_id, false);
+    }
+    private static int InStationOnLine(int line_id, int station_id, boolean flag)	{
         Cursor ctx = RouteDB.db().rawQuery(
                 //		"select count(*) from t_lines where line_id=?1 and station_id=?2");
-                "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2",
+                flag ? "select count(*) from t_lines where (lflg&(1<<31))=0 and line_id=?1 and station_id=?2" :
+                       "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2",
                 new String[] {String.valueOf(line_id), String.valueOf(station_id)});
         int rc = 0;
         try {
