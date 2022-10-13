@@ -2053,8 +2053,17 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
             if ((0 < shinzairev) && checkPassStation(shinzairev)) {
 				// 在来線戻り
 	            TRACE(_T("assume detect shinkansen-zairaisen too return.%s,%s %s %s\n"), LNAME(route_list_raw.at(num - 1).lineId), LNAME(line_id), SNAME(route_list_raw.at(num - 1).stationId), SNAME(stationId2));
-				if (0 < Route::InStationOnLine(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId) 
-					? route_list_raw.at(num - 1).lineId : line_id, stationId2, true)) {
+				int32_t local_line;
+				int32_t bullet_line;
+				if (IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId)) {
+					local_line = line_id;
+					bullet_line = route_list_raw.at(num - 1).lineId;
+				} else {
+					local_line = route_list_raw.at(num - 1).lineId;
+					bullet_line = line_id;
+				}
+				if ((((RouteUtil::AttrOfStationOnLineLine(local_line, stationId2) >> BSRSHINKTRSALW) & 0x03) != 0) &&
+					(0 < Route::InStationOnLine(bullet_line, stationId2, true))) {
 		            TRACE(_T("      disable\n"));
 	                BIT_ON(jct_flg_on, BSRSHINZAIREV); // この後着駅が終端だったらエラー
 				}

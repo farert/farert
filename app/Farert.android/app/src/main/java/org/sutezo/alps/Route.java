@@ -1197,8 +1197,17 @@ public class Route extends RouteList {
                 if ((0 < shinzairev) && checkPassStation(shinzairev)) {
                     // 在来線戻り
                     System.out.printf("assume detect shinkansen-zairaisen too return.%s,%s %s %s\n", LineName(route_list_raw.get(num - 1).lineId), LineName(line_id), StationName(route_list_raw.get(num - 1).stationId), StationName(stationId2));
-                    if (0 < InStationOnLine(IS_SHINKANSEN_LINE(route_list_raw.get(num - 1).lineId)
-                        ? route_list_raw.get(num - 1).lineId : line_id, stationId2, true)) {
+                    int local_line;
+                    int bullet_line;
+                    if (IS_SHINKANSEN_LINE(route_list_raw.get(num - 1).lineId)) {
+                        local_line = line_id;
+                        bullet_line = route_list_raw.get(num - 1).lineId;
+                    } else {
+                        local_line = route_list_raw.get(num - 1).lineId;
+                        bullet_line = line_id;
+                    }
+                    if ((((AttrOfStationOnLineLine(local_line, stationId2) >>> BSRSHINKTRSALW) & 0x03) != 0) &&
+                        (0 < InStationOnLine(bullet_line, stationId2, true))) {
                         System.out.println("      disable");
                         jct_flg_on = BIT_ON(jct_flg_on, BSRSHINZAIREV); // この後着駅が終端だったらエラー
                     }
