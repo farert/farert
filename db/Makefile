@@ -27,6 +27,9 @@ endef
 
 define MKDB
 $(1) : $(patsubst %.db, %.txt, $(1))
+	echo ""
+	echo "===scripts/jr_db_reg.py $(patsubst %.db, %.txt, $(1)) ==="
+	echo ""
 	$(PYTHON) scripts/jr_db_reg.py $(patsubst %.db, %.txt, $(1)) \
 		$(patsubst $(NEWDB),$(THISYEAR),$(patsubst jrdb%.db, %, $(1)))
 	$(PYTHON) scripts/node_list.py $(1) > scripts/node_list.txt

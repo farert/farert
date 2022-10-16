@@ -117,7 +117,7 @@ typedef uint32_t SPECIFICFLAG;
 #define IS_SHINKANSEN_LINE(id)  ((LID_SHINKANZEN<(id)) && ((id) < (LID_SHINKANZEN+0x100)))	 /* 新幹線は将来的にも10または15以内 !! */
 #define IS_COMPANY_LINE(id)	    ((LID_COMPANY<(id)) && ((id) < (LID_COMPANY+0x100)))	     /* 会社線id */
 #define IS_BRT_LINE(id)	        ((LID_BRT<(id)) && ((id) < (LID_BRT+0x100)))            	 /* BRT id */
-#define MAX_JCT 340
+#define MAX_JCT 350
 #define MAX_COMPNPASSSET   25       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
