@@ -112,6 +112,7 @@
     <None Include="res\jrdb2015.db" />
     <None Include="res\jrdb2017.db" />
     <None Include="res\jrdb2021.db" />
+    <None Include="res\jrdbnewest.db" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alps_mfc.h" />
