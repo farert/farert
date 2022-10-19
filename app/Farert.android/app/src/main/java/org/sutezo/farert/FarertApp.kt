@@ -1,7 +1,6 @@
 package org.sutezo.farert
 
 import android.app.Application
-import android.content.pm.PackageManager
 import android.os.Build
 import android.support.annotation.RequiresApi
 import org.sutezo.alps.*
@@ -68,21 +67,9 @@ class FarertApp : Application() {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    fun getVersionCode(): Long {
-        val pm = this.packageManager
-        var versionCode : Long = 0
-        try {
-            val packageInfo = pm.getPackageInfo(this.packageName, 0)
-            // versionCode:通算バージョン(数値)
-            // versionName: "18.11" とか
-            //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                versionCode = packageInfo.longVersionCode
-            //} else {
-            //    versionCode = packageInfo.versionCode.toLong()
-            //}
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
-        }
-        return versionCode
+    fun getVersionCode(): Int {
+        // versionCode:通算バージョン(数値)
+        // versionName: "18.11" とか
+        return BuildConfig.VERSION_CODE
     }
 }
