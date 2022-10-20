@@ -24,7 +24,7 @@ android {
         applicationId "org.sutezo.farert"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 29
+        versionCode 31
         versionName '22.10'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -55,6 +55,11 @@ android {
     lintOptions {
         abortOnError false
         checkReleaseBuilds false
+    }
+    bundle {
+        storeArchive {
+            enable = false
+        }
     }
 }
 
