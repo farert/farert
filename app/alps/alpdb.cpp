@@ -10171,7 +10171,8 @@ void FARE_INFO::retr_fare(bool useBullet)
 			ASSERT(this->base_sales_km == _total_jr_sales_km);
 			ASSERT(this->base_sales_km == this->sales_km);
             ASSERT(this->base_calc_km == _total_jr_calc_km);
-			if (IS_YAMATE(this->flag)) {
+			if (IS_YAMATE(this->flag) && FARE_INFO::tax != 10) {
+                                        // 2025.4.1 大阪環状線特例廃止 
 				TRACE("fare(osaka-kan)\n");
 				_total_jr_fare = FARE_INFO::Fare_osakakan(_total_jr_sales_km);
 			} else {
@@ -10290,7 +10291,6 @@ void FARE_INFO::retr_fare(bool useBullet)
 			// (f)<c>
 			TRACE("fare(hokkaido-basic)\n");
 			_total_jr_fare = FARE_INFO::Fare_hokkaido_basic(_total_jr_calc_km);
-
 		}				// JR九
 	} else if (0 < (this->kyusyu_sales_km + this->kyusyu_calc_km)) {
 		/* JR九州のみ */
@@ -10408,9 +10408,12 @@ bool FARE_INFO::Fare_company(int32_t station_id1, int32_t station_id2, CompanyFa
 //
 int32_t	FARE_INFO::Fare_table(const char* tbl, const char* field, int32_t km)
 {
+	char sql[128];
 	static const char tsql[] =
 "select %s%x from t_fare%s where 0<=%s%x and km<=? order by km desc limit(1)";
-	char sql[128];
+
+    TRACE("Fare_table(%s, %s, %d)\n", tbl, field, km);
+
 	sqlite3_snprintf(sizeof(sql), sql, tsql, field, FARE_INFO::tax, tbl, field, FARE_INFO::tax);
 	DBO dbo(DBS::getInstance()->compileSql(sql));
 	dbo.setParam(1, KM(km));
@@ -10436,7 +10439,9 @@ int32_t	FARE_INFO::Fare_table(const char* tbl, char c, int32_t km)
 	int32_t ckm;
 	int32_t fare;
 
-	sql = sqlite3_mprintf(
+    TRACE("Fare_table(%s, %c, %d)\n", tbl, c, km);
+
+    sql = sqlite3_mprintf(
 	"select ckm, %c%x from t_fare%s where km<=? order by km desc limit(1)",
 	                      c, FARE_INFO::tax, tbl);
 
@@ -10456,7 +10461,8 @@ int32_t	FARE_INFO::Fare_table(const char* tbl, char c, int32_t km)
 }
 
 //static
-//	運賃テーブル参照(ls)
+//	運賃テーブル参照(ls) JR四国、JR九州 地方交通線のみ
+//    JR四国は2023.5より地方交通線特別運賃は廃止されたので、t_farels テーブルは0を返す
 //	calc_fare() => retr_fare() =>
 //
 //	@param [in] dkm   擬制キロ
@@ -10468,7 +10474,9 @@ int32_t FARE_INFO::Fare_table(int32_t dkm, int32_t skm, char c)
 {
 	int32_t fare;
 
-	char* sql = sqlite3_mprintf(
+    TRACE("Fare_table(%d, %d, %c)\n", dkm, skm, c);
+
+    char* sql = sqlite3_mprintf(
 #if 1
 	"select %c%x from t_farels where dkm=?2 and (skm=-1 or skm=?1)",
 	c, FARE_INFO::tax);
@@ -10602,6 +10610,11 @@ int32_t FARE_INFO::Fare_basic_f(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
+	fare = FARE_INFO::Fare_table("bspekm", "b", km);
+	if (0 != fare) {
+		return fare;
+	}
+    /* After 2025, less than 101 km doesn't pass  the following block. */
 	if (km < 31) {							// 1 to 3km
         if (FARE_INFO::tax == 10) {
             return 147;
@@ -10668,34 +10681,29 @@ int32_t FARE_INFO::Fare_sub_f(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
-	if (km < 31) {							// 1 to 3km
-        if (FARE_INFO::tax == 10) {
-            return 147;
-        } else if (FARE_INFO::tax == 5) {
-			return 140;
-		} else {
-			return 144;
-		}
-	}
-	if (km < 61) {							// 4 to 6km
-        if (FARE_INFO::tax == 10) {
-            return 189;
-        } else if (FARE_INFO::tax == 5) {
-			return 180;
-		} else {  // 8%
-			return 185;
-		}
-	}
-	if (km < 101) {							// 7 to 10km
-        if (FARE_INFO::tax == 10) {
-            return 210;
-        } else if (FARE_INFO::tax == 5) {
-			return 200;
-		} else {
-			return 206;
-		}
-	}
-
+    if (FARE_INFO::tax != 10) {
+        if (km < 31) {							// 1 to 3km
+            if (FARE_INFO::tax == 5) {
+                return 140;
+            } else {
+                return 144;
+            }
+        }
+        if (km < 61) {							// 4 to 6km
+            if (FARE_INFO::tax == 5) {
+                return 180;
+            } else {  // 8%
+                return 185;
+            }
+        }
+        if (km < 101) {							// 7 to 10km
+            if (FARE_INFO::tax == 5) {
+                return 200;
+            } else {
+                return 206;
+            }
+        }
+    }
 	if (12000 < km) {		// 1200km越えは別表第2号イの4にない
 		ASSERT(FALSE);
 		return -1;
@@ -10709,6 +10717,8 @@ int32_t FARE_INFO::Fare_sub_f(int32_t km)
 	if (c_km < 0) {
 		return -c_km;		/* fare 第77条の5の3*/
 	}
+
+    TRACE("Fare_sub_f: c_km=%d\n", c_km);
 
 	/* c_km : 第77条の5の2 */
 	c_km *= 10;
@@ -10741,6 +10751,11 @@ int32_t FARE_INFO::Fare_tokyo_f(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
+	fare = FARE_INFO::Fare_table("bspekm", "t", km);
+	if (0 != fare) {
+		return fare;
+	}
+    /* After 2025, less than 101 km doesn't pass  the following block. */
 	if (km < 31) {							// 1 to 3km
         if (FARE_INFO::tax == 10) {
             return 136;
@@ -10807,9 +10822,14 @@ int32_t FARE_INFO::Fare_osaka(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
-	if (km < 31) {							// 1 to 3km
+	fare = FARE_INFO::Fare_table("bspekm", "o", km);
+	if (0 != fare) {
+		return fare;
+	}
+    /* After 2025, less than 101 km doesn't pass  the following block. */
+    if (km < 31) {							// 1 to 3km
         if (FARE_INFO::tax == 10) {
-            return 130;
+            return 140;
         } else if (FARE_INFO::tax == 5) {
 			return 120;
 		} else {
@@ -10818,7 +10838,7 @@ int32_t FARE_INFO::Fare_osaka(int32_t km)
 	}
 	if (km < 61) {							// 4 to 6km
         if (FARE_INFO::tax == 10) {
-            return 160;
+            return 170;
         } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
@@ -10827,7 +10847,7 @@ int32_t FARE_INFO::Fare_osaka(int32_t km)
 	}
 	if (km < 101) {							// 7 to 10km
         if (FARE_INFO::tax == 10) {
-            return 180;
+            return 190;
         } else if (FARE_INFO::tax == 5) {
 			return 170;
 		} else {
@@ -10848,10 +10868,11 @@ int32_t FARE_INFO::Fare_osaka(int32_t km)
 		c_km = 0;
 	}
 
+    /* 2025 賃率変更しているので(2023.3改訂) tax5,8は不正な金額を返すで(このロジック使用する他もそうだが)*/
 	if (3000 < c_km) {
-		fare = 1530 * 3000 + 1215 * (c_km - 3000);
+		fare = 1550 * 3000 + 1230 * (c_km - 3000);
 	} else {
-		fare = 1530 * c_km;
+		fare = 1550 * c_km;
 	}
 	if (c_km <= 1000) {						// 100km以下は切り上げ
 		// 1の位を切り上げ
@@ -10873,9 +10894,14 @@ int32_t FARE_INFO::Fare_yamate_f(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
+	fare = FARE_INFO::Fare_table("bspekm", "y", km);
+	if (0 != fare) {
+		return fare;
+	}
+    /* After 2025, less than 101 km doesn't pass  the following block. */
 	if (km < 31) {							// 1 to 3km
         if (FARE_INFO::tax == 10) {
-            return 136;
+            return 146;
         } else if (FARE_INFO::tax == 5) {
 			return 130;
 		} else {
@@ -10884,7 +10910,7 @@ int32_t FARE_INFO::Fare_yamate_f(int32_t km)
 	}
 	if (km < 61) {							// 4 to 6km
         if (FARE_INFO::tax == 10) {
-            return 157;
+            return 167;
         } else if (FARE_INFO::tax == 5) {
 			return 150;
 		} else {
@@ -10893,7 +10919,7 @@ int32_t FARE_INFO::Fare_yamate_f(int32_t km)
 	}
 	if (km < 101) {							// 7 to 10km
         if (FARE_INFO::tax == 10) {
-            return 168;
+            return 178;
         } else if (FARE_INFO::tax == 5) {
 			return 160;
 		} else {
@@ -10926,6 +10952,7 @@ int32_t FARE_INFO::Fare_yamate_f(int32_t km)
 
 //	e: 電車特定区間(大阪環状線)
 //	calc_fare() => retr_fare() =>
+//  2025.4.1 廃止
 //
 //	@param [in] km    営業キロ
 //	@return 運賃額
@@ -10997,68 +11024,26 @@ int32_t FARE_INFO::Fare_hokkaido_basic(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
-	if (km < 31) {							// 1 to 3km
-        if (FARE_INFO::tax == 10) {
-            return 200;
-        } else if (FARE_INFO::tax == 5) {
-			return 160;
-		} else {
-			return 170;
-		}
-	}
-	if (km < 61) {							// 4 to 6km
-        if (FARE_INFO::tax == 10) {
-            return 250;
-        } else if (FARE_INFO::tax == 5) {
-			return 200;
-		} else {
-			return 210;
-		}
-	}
-	if (km < 101) {							// 7 to 10km
-        if (FARE_INFO::tax == 10) {
-            return 290;
-        } else if (FARE_INFO::tax == 5) {
-			return 210;
-		} else {
-			return 220;
-		}
-	}
-
 	fare = FARE_INFO::Fare_table("bspekm", "h", km);
 	if (0 != fare) {
 		return fare;
 	}
 
-	if (6000 < km) {						// 600km越えは40キロ刻み
-		c_km = (km - 1) / 400 * 400 + 200;
-	} else if (1000 < km) {					// 100.1-600kmは20キロ刻み
-		c_km = (km - 1) / 200 * 200 + 100;
-	} else if (500 < km) {					// 50.1-100kmは10キロ刻み
-		c_km = (km - 1) / 100 * 100 + 50;
-	} else if (100 < km) {					// 10.1-50kmは5キロ刻み
-		c_km = (km - 1) / 50 * 50 + 30;
-	} else {
-		ASSERT(FALSE);
-		c_km = 0;
-	}
+    TRACE(_T("Fare_hokkaido_basic: Calculate ckm for %d\n"), km);
 
-	if (6000 < c_km) {
-		fare = 1785 * 2000 + 1620 * (3000 - 2000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
-	} else if (3000 < c_km) {
-		fare = 1785 * 2000 + 1620 * (3000 - 2000) + 1285 * (c_km - 3000);
-	} else if (2000 < c_km) {
-		fare = 1785 * 2000 + 1620 * (c_km - 2000);
-	} else {
-		fare = 1785 * c_km;
-	}
-	if (c_km <= 1000) {						// 100km以下は切り上げ
-		// 1の位を切り上げ
-		fare = (fare + 9999) / 10000 * 10;
-	} else {								// 100㎞越えは四捨五入
-		fare = (fare + 50000) / 100000 * 100;
-	}
-	return taxadd(fare, FARE_INFO::tax);	// tax = +5%, 四捨五入
+    /* 第77条の2 */
+    if (6000 < km) {						// 600km越えは40キロ刻み
+        c_km = (km - 1) / 400 * 400 + 200;
+    } else {
+        ASSERT(FALSE);
+        return 99999;
+    }
+    fare = 2116 * 2000 + 1636 * (3000 - 2000) + 1283 * (6000 - 3000) + 705 * (c_km - 6000);
+
+    // 100㎞越えは四捨五入
+    fare = (fare + 50000) / 100000 * 100;
+
+    return taxadd(fare, FARE_INFO::tax);	// tax = +5%, 四捨五入
 }
 
 //	JR北海道地方交通線
@@ -11072,40 +11057,12 @@ int32_t FARE_INFO::Fare_hokkaido_sub(int32_t km)
 	int32_t fare;
 	int32_t c_km;
 
-	if (km < 31) {							// 1 to 3km
-        if (FARE_INFO::tax == 10) {
-            return 200;
-        } else if (FARE_INFO::tax == 5) {
-			return 160;
-		} else {
-			return 170;
-		}
-	}
-	if (km < 61) {							// 4 to 6km
-        if (FARE_INFO::tax == 10) {
-            return 250;
-        } else if (FARE_INFO::tax == 5) {
-			return 200;
-		} else {
-			return 210;
-		}
-	}
-	if (km < 101) {							// 7 to 10km
-        if (FARE_INFO::tax == 10) {
-            return 300;
-        } else if (FARE_INFO::tax == 5) {
-			return 220;
-		} else {
-			return 230;
-		}
-	}
-
 	if (12000 < km) {		// 1200km越えは別表第2号イの4にない
 		ASSERT(FALSE);
 		return -1;
 	}
 
-	c_km = Fare_table("lspekm", 'h', km);
+	c_km = Fare_table("lspekm", 'h', km); /* under 800km */
 	if (c_km == 0) {
 		ASSERT(FALSE);
 		return -1;
@@ -11114,16 +11071,18 @@ int32_t FARE_INFO::Fare_hokkaido_sub(int32_t km)
 		return -c_km;		/* fare */
 	}
 
-	c_km *= 10;
+    TRACE(_T("Fare_hokkaido_sub: Calculate ckm=%d\n"), c_km);
 
+    c_km *= 10;
+    /* 第77条の6(2) */
 	if (5460 <= c_km) {
-		fare = 1960 * 1820 + 1780 * (2730 - 1820) + 1410 * (5460 - 2730) + 770 * (c_km - 5460);
-	} else if (2730 < c_km) {
-		fare = 1960 * 1820 + 1780 * (2730 - 1820) + 1410 * (c_km - 2730);
+		fare = 2311 * 1820 + 1835 * (2730 - 1820) + 1402 * (5460 - 2730) + 772 * (c_km - 5460);
+	} else if (2730 < c_km) { /* Normally It doesn't pass below here. */
+		fare = 2311 * 1820 + 1835 * (2730 - 1820) + 1402 * (c_km - 2730);
 	} else if (1820 < c_km) {
-		fare = 1960 * 1820 + 1780 * (c_km - 1820);
+		fare = 2311 * 1820 + 1835 * (c_km - 1820);
 	} else { /* <= 182km */
-		fare = 1960 * c_km;
+		fare = 2311 * c_km;
 	}
 	if (c_km <= 1000) {						// 100km以下は切り上げ
 		// 1の位を切り上げ
@@ -11151,11 +11110,13 @@ int32_t FARE_INFO::Fare_shikoku(int32_t skm, int32_t ckm)
         if (FARE_INFO::tax == 10) {
                 /* JR四国 幹線+地方交通線 */
                 /* (m) */
+#if 0 /* (2023.4 廃止) */
             if ((KM(ckm) == 4) && (KM(skm) == 3)) {
                 return 170;	/* \ */
             } else if ((KM(ckm) == 11) && (KM(skm) == 10)) {
                 return 240;	/* \ */
             }
+#endif
         } else if (FARE_INFO::tax == 5) {
 			/* JR四国 幹線+地方交通線 */
 			/* (m) */
@@ -11176,38 +11137,11 @@ int32_t FARE_INFO::Fare_shikoku(int32_t skm, int32_t ckm)
 		}
 	}
 
-	if (ckm < 31) {							// 1 to 3km
-        if (FARE_INFO::tax == 10) {
-            return 170;
-        } else if (FARE_INFO::tax == 5) {
-			return 160;
-		} else {
-			return 160;
-		}
-	}
-	if (ckm < 61) {							// 4 to 6km
-        if (FARE_INFO::tax == 10) {
-            return 210;
-        } else if (FARE_INFO::tax == 5) {
-			return 200;
-		} else {
-			return 210;
-		}
-	}
-	if (ckm < 101) {						// 7 to 10km
-        if (FARE_INFO::tax == 10) {
-            return 220;
-        } else if (FARE_INFO::tax == 5) {
-			return 210;
-		} else {
-			return 220;
-		}
-	}
-
 	fare = FARE_INFO::Fare_table("bspekm", "s", ckm);
 	if (0 != fare) {
 		return fare;
 	}
+    TRACE(_T("Fare_shikoku: Calculate ckm=%d\n"), ckm);
 
 	if (6000 < ckm) {						// 600km越えは40キロ刻み
 		c_km = (ckm - 1) / 400 * 400 + 200;
@@ -11222,18 +11156,32 @@ int32_t FARE_INFO::Fare_shikoku(int32_t skm, int32_t ckm)
 		ASSERT(FALSE);
 		c_km = 0;
 	}
-
-	if (6000 <= c_km) {
-		fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
-	} else if (3000 < c_km) {
-		fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
-	} else if (1000 < c_km) {
-		fare = 1821 * 1000 + 1620 * (c_km - 1000);
-	} else {
-		/* 10.1km - 100.0 km */
-		fare = 1821 * c_km;
-	}
-
+    if (FARE_INFO::tax != 10) {
+            /* JR四国 幹線+地方交通線 */
+            /* (m) */
+        if (6000 <= c_km) {
+            fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+        } else if (3000 < c_km) {
+            fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
+        } else if (1000 < c_km) {
+            fare = 1821 * 1000 + 1620 * (c_km - 1000);
+        } else {
+            /* 10.1km - 100.0 km */
+            fare = 1821 * c_km;
+        }
+    } else {
+        /* 2023.5 update */
+        if (6000 <= c_km) {
+            fare = 1920 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+        } else if (3000 < c_km) {
+            fare = 1920 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
+        } else if (1000 < c_km) {
+            fare = 1920 * 1000 + 1620 * (c_km - 1000);
+        } else {
+            /* 10.1km - 100.0 km */
+            fare = 1920 * c_km;
+        }
+    }
 	if (c_km <= 1000) {						// 100km以下は切り上げ
 		// 1の位を切り上げ
 		fare = (fare + 9999) / 10000 * 10;
@@ -11261,9 +11209,9 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
             /* JR九州 幹線+地方交通線 */
             /* (n) */
             if ((KM(ckm) == 4) && (KM(skm) == 3)) {
-                return 180;	/* \ */
+                return 210;	/* \ */
             } else if ((KM(ckm) == 11) && (KM(skm) == 10)) {
-                return 260;	/* \ */
+                return 320;	/* \ */
             }
         } else if (FARE_INFO::tax == 5) {
 			/* JR九州 幹線+地方交通線 */
@@ -11284,39 +11232,12 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 		}
 	}
 
-	if (ckm < 31) {							// 1 to 3km
-        if (FARE_INFO::tax == 10) {
-            return 170;
-        } else if (FARE_INFO::tax == 5) {
-			return 160;
-		} else {
-			return 160;
-		}
-	}
-	if (ckm < 61) {							// 4 to 6km
-        if (FARE_INFO::tax == 10) {
-            return 210;
-        } else if (FARE_INFO::tax == 5) {
-			return 200;
-		} else {
-			return 210;
-		}
-	}
-	if (ckm < 101) {						// 7 to 10km
-        if (FARE_INFO::tax == 10) {
-            return 230;
-        } else if (FARE_INFO::tax == 5) {
-			return 220;
-		} else {
-			return 230;
-		}
-	}
-
-    // 多分、このブロックはなくてもいけるんだが。
 	fare = FARE_INFO::Fare_table("bspekm", "k", ckm);
 	if (0 != fare) {
 		return fare;
 	}
+
+    TRACE(_T("Fare_kyusyu: Calculate ckm=%d\n"), ckm);
 
 	if (6000 < ckm) {						// 600km越えは40キロ刻み
 		c_km = (ckm - 1) / 400 * 400 + 200;
@@ -11331,18 +11252,33 @@ int32_t FARE_INFO::Fare_kyusyu(int32_t skm, int32_t ckm)
 		ASSERT(FALSE);
 		c_km = 0;
 	}
-	if (6000 <= c_km) {
-		fare = 1775 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
-	} else if (3000 < c_km) {
-		fare = 1775 * 3000 + 1285 * (c_km - 3000);
-	} else if (1000 < c_km) {
-		fare = 1775 * c_km;
-	} else {
-		/* 10.1-100.0kmはDBで定義 */
-		ASSERT(FALSE);
-		fare = 0;
-	}
 
+    if (FARE_INFO::tax != 10) {
+        if (6000 <= c_km) {
+            fare = 1775 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+        } else if (3000 < c_km) {
+            fare = 1775 * 3000 + 1285 * (c_km - 3000);
+        } else if (1000 < c_km) {
+            fare = 1775 * c_km;
+        } else {
+            /* 10.1-100.0kmはDBで定義 */
+            ASSERT(FALSE);
+            fare = 0;
+        }
+    } else {
+        /* 2023.5 update */
+        if (6000 <= c_km) {
+            fare = 1975 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+        } else if (3000 < c_km) {
+            fare = 1975 * 3000 + 1285 * (c_km - 3000);
+        } else if (1000 < c_km) {
+            fare = 1975 * c_km;
+        } else {
+            /* 10.1-100.0kmはDBで定義 */
+            ASSERT(FALSE);
+            fare = 0;
+        }
+    }
 	if (c_km <= 1000) {							// 100km以下は切り上げ
 		// 1の位を切り上げ
 		fare = (fare + 9999) / 10000 * 10;
