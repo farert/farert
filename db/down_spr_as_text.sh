@@ -10,6 +10,7 @@
 #
 ####################
 
+
 function usage() {
   echo '[Usage]'" $0"
   exit 1
@@ -69,6 +70,7 @@ function download_gspread() {
        exit -1
     fi
   #  sleep 5
+    sed -i.bak 's/\r$//' ${sheet_name}.tmp && rm -f ${sheet_name}.tmp.bak
   done
 }
 
