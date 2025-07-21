@@ -117,7 +117,7 @@ typedef uint32_t SPECIFICFLAG;
 #define IS_SHINKANSEN_LINE(id)  ((LID_SHINKANZEN<(id)) && ((id) < (LID_SHINKANZEN+0x100)))	 /* 新幹線は将来的にも10または15以内 !! */
 #define IS_COMPANY_LINE(id)	    ((LID_COMPANY<(id)) && ((id) < (LID_COMPANY+0x100)))	     /* 会社線id */
 #define IS_BRT_LINE(id)	        ((LID_BRT<(id)) && ((id) < (LID_BRT+0x100)))            	 /* BRT id */
-#define MAX_JCT 340
+#define MAX_JCT 350
 #define MAX_COMPNPASSSET   25       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 （篠ノ井線、信越線(篠ノ井-長野)）*/
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
@@ -1246,7 +1246,7 @@ protected:
 
 		// 結果数を返す（0~N, -1 Error：レコード数がオーバー(あり得ないバグ)）
 		int open(int32_t key1, int32_t key2);
-		int check(bool is_postcheck, int32_t line_id, int32_t station_id1, int32_t station_id2);
+		int check(int32_t postcheck_flag, int32_t line_id, int32_t station_id1, int32_t station_id2);
         bool is_terminal() const { return terminal; }
 	protected:
 		int en_line_id(int index) {
@@ -1269,7 +1269,7 @@ private:
 	static int32_t 	Jct2id(int32_t jctId);
 	static tstring 	JctName(int32_t jctId);
 
-	static int32_t	InStationOnLine(int32_t line_id, int32_t station_id);
+	static int32_t	InStationOnLine(int32_t line_id, int32_t station_id, bool flag = false);
 
 	static int32_t	LineIdFromStationId(int32_t station_id);
 	static int32_t	LineIdFromStationId2(int32_t station_id1, int32_t station_id2);

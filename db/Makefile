@@ -4,9 +4,9 @@
 #
 PYTHON := python3
 THISYEAR := $(shell date +%Y)
-NEWDB := newest
+NEWDB := Newest
 DB = 2014 2015 2017 $(NEWDB)
-SHEETS := fare2 rule86 rule70_new rule69 clinfar2014 lines2014 clinfar2015 clinfar2019 lines2015 lines2017 lines2019 brt
+SHEETS := fare2 rule86 rule70_new rule69 clinfar2014 lines2014 clinfar2015 clinfarNewest lines2015 lines2017 linesNewest brt
 
 DBFILES := $(addprefix jrdb, $(patsubst %, %.db, $(DB)))
 
@@ -27,6 +27,9 @@ endef
 
 define MKDB
 $(1) : $(patsubst %.db, %.txt, $(1))
+	echo ""
+	echo "===scripts/jr_db_reg.py $(patsubst %.db, %.txt, $(1)) ==="
+	echo ""
 	$(PYTHON) scripts/jr_db_reg.py $(patsubst %.db, %.txt, $(1)) \
 		$(patsubst $(NEWDB),$(THISYEAR),$(patsubst jrdb%.db, %, $(1)))
 	$(PYTHON) scripts/node_list.py $(1) > scripts/node_list.txt
