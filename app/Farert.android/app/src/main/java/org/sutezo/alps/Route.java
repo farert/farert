@@ -346,45 +346,49 @@ public class Route extends RouteList {
 
             if (station_id1 == station_id2) {
                 _num = 0;
-            } else if ((line_id == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-    					route_flag.notsamekokurahakatashinzai) {
-    			if (station_id1 == DbIdOf.INSTANCE.station("博多")) {
-    				if (station_id2 == DbIdOf.INSTANCE.station("小倉")) {
-    					/* 山陽新幹線 博多 -> 小倉 */
-    					/* 博多の西はもうなかと、小倉の東は本州で閉塞区間じゃけん */
-                        routePassed.on(Route.Id2jctId(station_id1));
-    					routePassed.on(Route.Id2jctId(station_id2));
-    					_num = 2;
-    				}
-    				else {
-    					/* 博多 -> 小倉、広島方面の場合*/
-    					routePassed.on(Route.Id2jctId(station_id1)); // 博多
-    					_station_id1 = DbIdOf.INSTANCE.station("小倉");
-    					_num = 1 + enum_junctions_of_line(); // 小倉->小倉～新大阪間のどれか
-    					_station_id1 = station_id1; // restore(博多)
-    				}
-    			}
-    			else if (station_id2 == DbIdOf.INSTANCE.station("博多")) {
-    				/* 山陽新幹線 -> 博多 */
-    				if (station_id1 == DbIdOf.INSTANCE.station("小倉")) {
-    					routePassed.on(Route.Id2jctId(station_id1));
-    					routePassed.on(Route.Id2jctId(station_id2));
-    					_num = 2;
-    				}
-    				else {
-    					_station_id2 = DbIdOf.INSTANCE.station("小倉");
-    					_num = enum_junctions_of_line(); //新大阪-小倉間のどれかの駅～小倉
-    					_station_id2 = station_id2;	// restore(博多)
-    					routePassed.on(Route.Id2jctId(station_id2));
-    					_num += 1;
-    				}
-    			}
-    			else {
-    				_num = enum_junctions_of_line();
-    			}
             } else {
                 if (line_id == DbIdOf.INSTANCE.line("大阪環状線")) {
                     _num = enum_junctions_of_line_for_osakakan();
+                } else if ((line_id == DbIdOf.INSTANCE.line("山陽新幹線"))
+                        && route_flag.notsamekokurahakatashinzai) {
+    			    if (station_id1 == DbIdOf.INSTANCE.station("博多")) {
+    				    if (station_id2 == DbIdOf.INSTANCE.station("小倉")) {
+                            /* 山陽新幹線 博多 -> 小倉 */
+                            /* 博多の西はもうなかと、小倉の東は本州で閉塞区間じゃけん */
+                            routePassed.on(Route.Id2jctId(station_id1));
+                            routePassed.on(Route.Id2jctId(station_id2));
+                            _num = 2;
+    				    }
+                        else {
+                            /* 博多 -> 小倉、広島方面の場合*/
+                            routePassed.on(Route.Id2jctId(station_id1)); // 博多
+                            _station_id1 = DbIdOf.INSTANCE.station("小倉");
+                            _num = 1 + enum_junctions_of_line(); // 小倉->小倉～新大阪間のどれか
+                            _station_id1 = station_id1; // restore(博多)
+                        }
+                    }
+                    else if (station_id2 == DbIdOf.INSTANCE.station("博多")) {
+                        /* 山陽新幹線 -> 博多 */
+                        if (station_id1 == DbIdOf.INSTANCE.station("小倉")) {
+                            routePassed.on(Route.Id2jctId(station_id1));
+                            routePassed.on(Route.Id2jctId(station_id2));
+                            _num = 2;
+                        }
+                        else {
+                            _station_id2 = DbIdOf.INSTANCE.station("小倉");
+                            _num = enum_junctions_of_line(); //新大阪-小倉間のどれかの駅～小倉
+                            _station_id2 = station_id2;	// restore(博多)
+                            routePassed.on(Route.Id2jctId(station_id2));
+                            _num += 1;
+                        }
+                    }
+                    else {
+                        _num = enum_junctions_of_line();
+                    }
+                } else if (IS_COMPANY_LINE(line_id)) {
+                    routePassed.on(Route.Id2jctId(station_id1));
+                    routePassed.on(Route.Id2jctId(station_id2));
+                    _num = 2;
                 } else {
                     _num = enum_junctions_of_line();
                 }
@@ -1192,8 +1196,22 @@ public class Route extends RouteList {
                                         route_list_raw.get(num - 2).stationId, stationId1, stationId2)))) {
                 if ((0 < shinzairev) && checkPassStation(shinzairev)) {
                     // 在来線戻り
-                    System.out.println("assume deletect shinkansen-zairaisen too return.");
-                    jct_flg_on = BIT_ON(jct_flg_on, BSRSHINZAIREV);
+                    System.out.printf("assume detect shinkansen-zairaisen too return.%s,%s %s %s\n", LineName(route_list_raw.get(num - 1).lineId), LineName(line_id), StationName(route_list_raw.get(num - 1).stationId), StationName(stationId2));
+                    int local_line;
+                    int bullet_line;
+                    if (IS_SHINKANSEN_LINE(route_list_raw.get(num - 1).lineId)) {
+                        local_line = line_id;
+                        bullet_line = route_list_raw.get(num - 1).lineId;
+                    } else {
+                        local_line = route_list_raw.get(num - 1).lineId;
+                        bullet_line = line_id;
+                    }
+                    if ((((AttrOfStationOnLineLine(local_line, stationId2) >>> BSRSHINKTRSALW) & 0x03) != 0) &&
+                        (0 < InStationOnLine(bullet_line, stationId2, true))) {
+                        System.out.println("      disable");
+                        jct_flg_on = BIT_ON(jct_flg_on, BSRSHINZAIREV); // この後着駅が終端だったらエラー
+                    }
+                    // 第16条の2-2 "〜の各駅を除く。）"
                     // return -1;	// 高崎~長岡 上越新幹線 新潟 "信越線(直江津-新潟)" 長岡 (北長岡までなら良い)
                     // 大宮 上越新幹線 長岡 信越線(直江津-新潟) 直江津
                     // 岡山 山陽新幹線 新大阪 東海道線 大阪 福知山線 谷川
@@ -1754,11 +1772,6 @@ public class Route extends RouteList {
 
         lflg2 |= (lflg1 & 0xff000000);
         lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));	// 水平型検知(D-2);
-        if (route_flag.compnterm) {
-            lflg2 |= (1 << BSRNOTYET_NA);
-        } else {
-            lflg2 &= ~(1 << BSRNOTYET_NA);
-        }
         lflg2 |= jct_flg_on;	// BSRNOTYET_NA:BSRJCTHORD
         route_list_raw.add(new RouteItem((short)line_id, (short)stationId2, lflg2));
         ++num;
@@ -1782,7 +1795,7 @@ public class Route extends RouteList {
                 System.out.printf("？？？西小倉・吉塚.rc=%d\n", rc);
                 return ADDRC_OK;	/* 西小倉、吉塚 */
             } else if (BIT_CHK(lflg2, BSRSHINZAIREV)) {
-                System.out.println("deletect shinkansen-zairaisen too return.");
+                System.out.printf("detect shinkansen-zairaisen too return.arrive %s replace to %s\n", StationName(route_list_raw.get(num - 1).stationId), StationName(route_list_raw.get(num - 2).stationId));
                 removeTail();
                 return -1;  /* route is duplicate */
             } else {
@@ -2497,26 +2510,22 @@ public class Route extends RouteList {
         } else if (!IS_COMPANY_LINE(line_id) && route_flag.compncheck) {
 
             /* after block check e f */
+            route_flag.compnterm = false;	// initialize
     		rc = postCompanyPassCheck(line_id, stationId1, stationId2, num);
     		if (0 <= rc) {
-                route_flag.compnterm = false;	// initialize
-
                 route_flag.compnpass = true;
                 route_flag.compnend = false;	// if company_line
                 if (rc == 1) {
                     route_flag.tokai_shinkansen = true;
                 } else if (rc == 3) {
-                    //
-                } else if (rc == 4) {
                     if (STATION_IS_JUNCTION(stationId2)) {
                         route_flag.compnterm = true;
                     } else {
-                        return -4;	/* 分岐駅ではない場合、”~続けて経路を指定してください"ができない*/
+                        rc = -4;	/* 分岐駅ではない場合、”~続けて経路を指定してください"ができない*/
                     }
-                } else if (rc == 2) {
-                    // 
+                } else {
+                    rc = 0;
                 }
-                rc = 0;
     		}
     		return rc;
 
@@ -2602,7 +2611,7 @@ public class Route extends RouteList {
             if (IS_COMPANY_LINE(route_list_raw.get(i).lineId)) {
                 continue;
             }
-            rc = cs.check(false,
+            rc = cs.check((i == 1) ? -1 : 0,
                           route_list_raw.get(i).lineId,
     					  route_list_raw.get(i - 1).stationId,
     					  route_list_raw.get(i).stationId);
@@ -2614,11 +2623,10 @@ public class Route extends RouteList {
             if (rc == 1) {
                 route_flag.tokai_shinkansen = true;
                 rc = 0;
-            } else if (rc == 2) {
-                rc = 0;
             } else if (rc == 3) {
-                rc = 0;		// terminal arrive/leave
-                break;
+                rc = -4;	// disallow pending through pre.
+            } else if (rc == 2) {
+                break;	// OK
             } else {
                 ASSERT(rc == 0);
             }
@@ -2681,7 +2689,7 @@ public class Route extends RouteList {
                 rc = 0;
                 break;  // return 0;		/* Error or Non-record(always pass) as continue */
             }
-            rc = cs.check(true, line_id, station_id1, station_id2);
+            rc = cs.check(1, line_id, station_id1, station_id2);
             if (rc < 0) {
     			// route_flag.compnda = true; /* 通過連絡運輸不正 */
                 if (cs.is_terminal()) {
@@ -2721,7 +2729,7 @@ public class Route extends RouteList {
          */
 		int open(int key1, int key2) {
             final String tsql =
-        "select en_line_id, en_station_id1, en_station_id2" +
+        "select en_line_id, en_station_id1, en_station_id2, option" +
         " from t_compnpass" +
         " where station_id1=? and station_id2=?";
         	int i;
@@ -2738,11 +2746,10 @@ public class Route extends RouteList {
         			results[i].line_id = dbo.getInt(0);
         			stationId1 = dbo.getInt(1);
         			stationId2 = dbo.getInt(2);
-                    results[i].stationId1 = stationId1;
+                    if (!terminal) {
+                        terminal = 0 < dbo.getInt(3);
+                    }                    results[i].stationId1 = stationId1;
                     results[i].stationId2 = stationId2;
-                    if ((stationId1 != 0) && (stationId1 == stationId2)) {
-                        terminal = true;
-                    }
                 }
                 num_of_record = i;
         		rc = i;	/* num of receord */
@@ -2755,14 +2762,16 @@ public class Route extends RouteList {
         /*!
          *	@brief 通過連絡運輸チェック
          *
-         *  @param [in] is_postcheck true is preCompnayPasscheck
+         *  @param [in] postcheck_flag plus is postCompnayPasscheck, minus is preCompanyPasscheck and leave, otherwise zero
          *	@param [in] line_id      add(),追加予定路線
          *	@param [in] station_id1  add(),最後に追加した駅
          *	@param [in] station_id2  add(),追加予定駅
+         *	@retval 2 : 許可駅発着駅OK
+         *	@retval 3 : 着駅有効(pending)
          *	@retval 0 : エラーなし(継続)
          *	@retval -4 : 通過連絡運輸禁止
          */
-		int check(boolean is_postcheck, int line_id, int station_id1, int station_id2) {
+		int check(int postcheck_flag, int line_id, int station_id1, int station_id2) {
             int i;
             int rc = -4;
             int terminal_id;
@@ -2770,12 +2779,30 @@ public class Route extends RouteList {
         	if (num_of_record <= 0) {
         		return 0;
         	}
-            if (is_postcheck) {
+            if (0 < postcheck_flag) {
+                // post
                 terminal_id = station_id2;
-            } else {
+            } else if (postcheck_flag < 0) {
+                // pre
                 terminal_id = station_id1;
+            } else {
+                // pre and throgh
+                terminal_id = 0;
             }
             for (i = 0; i < num_of_record; i++) {
+                if ((terminal_id != 0) && terminal
+                        && (results[i].stationId1 != 0)) {
+                    ASSERT(terminal_id != 0 && postcheck_flag != 0);
+                    if (0 < RouteUtil.InStation(terminal_id, results[i].line_id, results[i].stationId1, results[i].stationId2)) {
+                        System.out.printf("Company check OK(terminal) %s %s\n", 0 < postcheck_flag ? "arrive":"leave", StationName(terminal_id));
+                        System.out.printf("    (%d/%d %s,%s-%s def= %s:%s-%s)\n", i, num_of_record,
+                                LineName(line_id), StationName(station_id1), StationName(station_id2),
+                                LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
+                        return 2; 	// OK possible to pass
+                    } else {
+                        System.out.printf("Check company terminal notfound(%s)(%s:%s-%s) in %s:%s-%s)\n", StationName(terminal_id), LineName(line_id), StationName(station_id1), StationName(station_id2), LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
+                    }
+                }
         		if ((results[i].line_id & 0x80000000) != 0) {
         			/* company */
                     int company_mask = results[i].line_id;
@@ -2794,33 +2821,26 @@ public class Route extends RouteList {
                         System.out.println("JR-tolai Company line");
                         return 1;       /* OK possible pass */
                     }
-                } else if (terminal
-                            && (results[i].stationId1 != 0)
-                            && ((terminal_id == results[i].stationId1)
-                            && (terminal_id == results[i].stationId2))) {
-                    ASSERT(results[i].stationId1 == results[i].stationId2);
-                    System.out.printf("Company check OK(terminal) %s %s\n", is_postcheck ? "arrive":"leave", StationName(terminal_id));
-                    System.out.printf("    (%d/%d %s,%s-%s def= %s:%s-%s)\n", i, num_of_record,
-                                                 LineName(line_id), StationName(station_id1), StationName(station_id2), 
-                                                 LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
-                    rc = 3; 	// OK possible to pass
-        		} else if (results[i].line_id == line_id) {
-        			if ((results[i].stationId1 == 0) || (
-        				(0 < InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
-        			    (0 < InStation(station_id2, line_id, results[i].stationId1, results[i].stationId2)))) {
-        				System.out.println("Company check OK");
-        			    return 0;	/* OK possible to pass */
-        			}
-                    if (0 < InStation(terminal_id, line_id, results[i].stationId1, results[i].stationId2)) {
-                        rc = 2;
+                } else if (results[i].line_id == line_id) {
+                    System.out.printf("Company check begin(%d/%d %s,%s-%s def= %s:%s-%s)\n", i, num_of_record,
+                            LineName(line_id), StationName(station_id1), StationName(station_id2),
+                            LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
+                    if ((results[i].stationId1 == 0) || (
+                            (0 < RouteUtil.InStation(station_id1, line_id, results[i].stationId1, results[i].stationId2)) &&
+                    (0 < RouteUtil.InStation(station_id2, line_id, results[i].stationId1, results[i].stationId2)))) {
+                        System.out.printf("Company check OK(%s,%s in %s:%s-%s)\n", StationName(station_id1), StationName(station_id2), LineName(line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
+                        return 0;	/* OK possible to pass */
                     }
-                    System.out.printf("Companny line allow range instation %s %s: %s, %s-%s%d\n", is_postcheck ? "true" : "false", StationName(terminal_id), LineName(line_id), StationName(results[i].stationId1), StationName(results[i].stationId2), rc);
-        		} else if (results[i].line_id == 0) {
+                } else if (results[i].line_id == 0) {
                     System.out.printf("Company check NG(%s,%s-%s = %s:%s-%s)\n", LineName(line_id), StationName(station_id1), StationName(station_id2), LineName(results[i].line_id), StationName(results[i].stationId1), StationName(results[i].stationId2));
-        			break;	/* can't possoble */
-        		}
-        	}
-        	return rc;
+                    break;	/* can't possoble */
+                }
+            }
+            if (terminal) {
+                System.out.printf("Company check pending to terminal\n");
+                return 3;	/* 会社線契約着駅まで保留 */
+            }
+            return rc;
         }
         boolean is_terminal() { return terminal; }
 
@@ -2928,11 +2948,19 @@ public class Route extends RouteList {
 
     //static
     //	駅は路線内にあるか否か？
-    //
+    //  @param [in] line_id    路線ID
+    //  @param [in] station_id 駅ID
+    //  @param [in] flag　     true: set follow flag / false: no-flag(default)
+    //  注： lflg&(1<<17)を含めていないため、新幹線内分岐駅、たとえば、
+    //       東海道新幹線 京都 米原間に草津駅は存在するとして返します.    //
     private static int InStationOnLine(int line_id, int station_id)	{
+        return InStationOnLine(line_id, station_id, false);
+    }
+    private static int InStationOnLine(int line_id, int station_id, boolean flag)	{
         Cursor ctx = RouteDB.db().rawQuery(
                 //		"select count(*) from t_lines where line_id=?1 and station_id=?2");
-                "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2",
+                flag ? "select count(*) from t_lines where (lflg&(1<<31))=0 and line_id=?1 and station_id=?2" :
+                       "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2",
                 new String[] {String.valueOf(line_id), String.valueOf(station_id)});
         int rc = 0;
         try {
