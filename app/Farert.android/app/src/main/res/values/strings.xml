@@ -356,5 +356,12 @@
     <string name="msgCanYouSpecificTerm">「特定都区市内発着」で特定都区市内発着が選択可能です"</string>
 
     <string name="folder_button_title_km">キロ程</string>
+    
+    <!-- Additional strings for Compose migration -->
+    <string name="back">戻る</string>
+    <string name="reverse">リバース</string>
+    <string name="archive">保存</string>
+    <string name="add_route">追加…</string>
+    <string name="fare_detail">詳細</string>
 
 </resources>

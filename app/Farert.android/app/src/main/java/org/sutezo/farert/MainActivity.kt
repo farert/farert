@@ -6,27 +6,22 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.support.annotation.RequiresApi
-import android.support.design.internal.BottomNavigationItemView
-import android.support.design.internal.BottomNavigationMenuView
-import android.support.design.widget.BottomNavigationView
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.RecyclerView
-import android.view.*
-import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.route_list.view.*
-import kotlinx.android.synthetic.main.route_list_last.view.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
+import androidx.activity.compose.setContent
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.sutezo.farert.ui.theme.FarertTheme
+import org.sutezo.farert.ui.compose.MainScreen
+import org.sutezo.farert.ui.state.MainUiEvent
+import org.sutezo.farert.ui.state.MainStateHolderProvider
 import org.sutezo.alps.*
 
 
-class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListener, RouteRecyclerAdapter.RecyclerListener {
+class MainActivity : AppCompatActivity() {
 
-    private lateinit var mDrawerFragment: FolderViewFragment
     private lateinit var mRoute : Route
     private var mRouteScript : String = ""
     private var mDbIndex : Int = DatabaseOpenHelper.dbIndex()
@@ -38,78 +33,34 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
     private var mOsakakan_detour : OSAKA_KAN = OSAKA_KAN.DISABLE
 
-    companion object {
-        const val RESULT_CODE_SETTING = 3948
-    }
-
-    // 再下端のバーボタン
-
-    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
-        when (item.itemId) {
-            // back to erase
-            R.id.navigation_back -> {
-                if (1 < mRoute.count) {
-                    mRoute.removeTail()
-                //    val cds = cCalcRoute(mRoute)?: {
-                //        fareInfo = cds.calcFare()
-                //    } else {
-                //        fareInfo = FareInfo()
-                //    }
-                //    self.fareResultSetting(1)
-                } else {
-                    mRoute.removeAll()    // removeAll, clear start
-                }
-                update_fare(1)
-            }
-            // reverse route
-            R.id.navigation_reverse -> {
-                val rc = mRoute.reverse()
+    // Activity Result API launcher
+    private val settingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            setTitlebar()
+            
+            var doFolderReCalculate = false
+            if (mRouteScript.isNotEmpty()) {
+                // データベース変更されたら経路を再パースする
+                val rc = mRoute.setup_route(mRouteScript)
                 update_fare(rc)
-                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
-
             }
-            // 経路保存
-            R.id.navigation_archive -> {
-                val intent = Intent(this, ArchiveRouteActivity::class.java)
-                val param = if (mRoute.count <= 1) "" else mRoute.route_script()
-                intent.putExtra("route_script", param)
-                startActivity(intent)
+            if (mDbIndex != DatabaseOpenHelper.dbIndex()) {
+                doFolderReCalculate = true
             }
         }
-        false
+        mRouteScript = ""
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.P)
+
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        toolbar.title = resources.getString(R.string.title_main_view) // Main View Title
-        setSupportActionBar(toolbar)
-
-        mDrawerFragment = supportFragmentManager.findFragmentById(R.id.fragment_navigation_drawer) as FolderViewFragment
-        mDrawerFragment.init(R.id.fragment_navigation_drawer, main_drawer_layout, toolbar)
-
-        // display
-        // changeRoute()
-
-        // 発駅選択
-        buttonTerminal.setOnClickListener {
-            val intent = Intent(this, TerminalSelectActivity::class.java)
-            intent.putExtra("mode", "terminal")
-            startActivity(intent)
-        }
-
-        // Show Detail Information of Result
-        buttonFareDetail.setOnClickListener {
-            if (1 < mRoute.count) {
-                val intent = Intent(this, ResultViewActivity::class.java)
-                intent.putExtra("arrive", -1)
-                startActivity(intent)
-            }
-        }
-
+        
+        setupBackPressedDispatcher()
+        
         if (application is FarertApp) {
             (application as? FarertApp)?.apply {
                 mRoute = this.ds
@@ -119,29 +70,48 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             mRoute = Route()
         }
 
-        recycler_view_route.adapter = RouteRecyclerAdapter(this, mRoute)
-
-        BottomNavigationViewHelper.disableShiftMode(bottombar)
-        bottombar.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
-
-        val menuView = bottombar.getChildAt(0) as BottomNavigationMenuView
-        // [back]
-        (menuView.getChildAt(0) as? BottomNavigationItemView)?.apply {
-            isEnabled = false
+        setContent {
+            FarertTheme {
+                val stateHolder = androidx.lifecycle.viewmodel.compose.viewModel<org.sutezo.farert.ui.state.MainStateHolder>()
+                
+                // Initialize the state holder with the existing route
+                LaunchedEffect(mRoute) {
+                    try {
+                        stateHolder.initializeRoute(mRoute)
+                    } catch (e: Exception) {
+                        // Log error or handle gracefully
+                        e.printStackTrace()
+                    }
+                }
+                
+                MainScreen(
+                    stateHolder = stateHolder,
+                    onNavigateToTerminalSelect = {
+                        val intent = Intent(this, TerminalSelectActivity::class.java)
+                        intent.putExtra("mode", "terminal")
+                        startActivity(intent)
+                    },
+                    onNavigateToFareDetail = {
+                        val intent = Intent(this, ResultViewActivity::class.java)
+                        intent.putExtra("arrive", -1)
+                        startActivity(intent)
+                    },
+                    onNavigateToArchive = { routeScript ->
+                        val intent = Intent(this, ArchiveRouteActivity::class.java)
+                        intent.putExtra("route_script", routeScript)
+                        startActivity(intent)
+                    },
+                    onNavigateToRouteDetail = { selectItem ->
+                        onClickRow(selectItem)
+                    },
+                    onNavigateToSettings = { openSettings() },
+                    onNavigateToVersion = { openVersion() },
+                    onToggleOsakakanDetour = { toggleOsakakanDetour() }
+                )
+            }
         }
-        // [reverse]
-        (menuView.getChildAt(1) as? BottomNavigationItemView)?.apply {
-            isEnabled = false
-        }
-        // [大阪環状線]
-        (menuView.getChildAt(2) as? BottomNavigationItemView)?.apply {
-            isEnabled = false
-        }
-        update_fare(1)
-
 
         // first launch check
-
         val rd = readParam(this, "hasLaunched")
         val num : Int = try {
             Integer.parseInt(rd)
@@ -150,24 +120,22 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         }
         if ((-1 == num) || (num < 16)) {
             welcome_show()
-            val cv = (application as? FarertApp)?.getVersionCode() ?: "0"
-            saveParam(this, "hasLaunched", cv.toString())
+            val cv = (application as? FarertApp)?.getVersionCode()?.toString() ?: "0"
+            saveParam(this, "hasLaunched", cv)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        main_constraint_layout.invalidate()
-
         setTitlebar()
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val func = intent?.getStringExtra("mode") ?: ""
-        val stationId = intent?.getIntExtra("dest_station_id", 0)?:0
-        val lineId = intent?.getIntExtra("line_id", 0) ?:0
-        val newScr = intent?.getStringExtra("script") ?: ""
+        val func = intent.getStringExtra("mode") ?: ""
+        val stationId = intent.getIntExtra("dest_station_id", 0)
+        val lineId = intent.getIntExtra("line_id", 0)
+        val newScr = intent.getStringExtra("script") ?: ""
 
         when (func) {
             "autoroute" -> {
@@ -205,9 +173,6 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 fun neerest(mode: Int) {
                     val rc = mRoute.changeNeerest(mode, stationId)
                     update_fare(if (rc == 4) 40 else rc)
-                    recycler_view_route.smoothScrollToPosition(
-                       recycler_view_route.adapter?.itemCount ?: 1 - 1
-                    )
                 }
                 if (args.isNotEmpty()) {
                     AlertDialog.Builder(this).apply {
@@ -251,14 +216,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                 }
                 val rc = mRoute.add(lineId, stationId)
                 update_fare(rc)
-                // scroll to last
-                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
             }
             "archive" -> {
                 val rc = mRoute.setup_route(newScr)
                 update_fare(rc)
-                // scroll to last
-                recycler_view_route.smoothScrollToPosition(recycler_view_route.adapter?.itemCount ?: 1 - 1)
             }
             else -> {
                 // illegal(nothing)
@@ -349,22 +310,10 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
             dlg.show()
         }
 
-        var revButton = false
-
         mOsakakan_detour = OSAKA_KAN.DISABLE
         if (1 < mRoute.count) {
-            fare_value.visibility = View.VISIBLE
-            saleskm_value.visibility = View.VISIBLE
-            availday_value.visibility = View.VISIBLE
             val cr = CalcRoute(mRoute)
             val fi = cr.calcFareInfo()
-            // 運賃(大都市近郊区間では指定した経路の計算値)
-            fare_value.text = resources.getString(R.string.result_yen, fareNumStr(fi.fare))
-            // 営業km
-            saleskm_value.text = resources.getString(R.string.result_km, kmNumStr(fi.totalSalesKm))
-            // 有効日数
-            availday_value.text = resources.getString(R.string.result_availdays_fmt, fi.ticketAvailDays)
-            (recycler_view_route.adapter as? RouteRecyclerAdapter)?.status_message(msg)
             // 大阪環状線
             if (mRoute.isOsakakanDetourEnable) {
                 mOsakakan_detour = if (mRoute.isOsakakanDetour) {
@@ -373,51 +322,7 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
                     OSAKA_KAN.NEAR
                 }
             }
-            revButton = cr.isAvailableReverse
-
-            footer_group.visibility = View.VISIBLE
-            buttonFareDetail.isEnabled = true
-
-            mDrawerFragment.route = mRoute
-        } else {
-            fare_value.visibility = View.INVISIBLE
-            saleskm_value.visibility = View.INVISIBLE
-            availday_value.visibility = View.INVISIBLE
-            (recycler_view_route.adapter as? RouteRecyclerAdapter)?.status_message(msg)
-            footer_group.visibility = View.INVISIBLE
-
-            buttonFareDetail.isEnabled = false
-            mDrawerFragment.route = null
         }
-
-        // 先頭部 開始駅
-        buttonTerminal.text = if (0 < mRoute.count) terminal_text() else resources.getString(R.string.should_select_terminal)
-
-        // 経路リスト更新
-        recycler_view_route.adapter?.notifyDataSetChanged()
-
-        // 経路戻り（Last経路削除）の有効化／無効化
-        (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
-            (getChildAt(0) as? BottomNavigationItemView)?.apply {
-                isEnabled = 0 < mRoute.count
-            }
-        }
-        // リバースボタンの有効化／無効化
-        (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
-            (getChildAt(1) as? BottomNavigationItemView)?.apply {
-                this.isEnabled = (1 < mRoute.count && revButton)
-            }
-        }
-
-        // 経路保存
-        (bottombar.getChildAt(0) as? BottomNavigationMenuView)?.apply {
-            (getChildAt(2) as? BottomNavigationItemView)?.apply {
-                this.isEnabled = true   // always enable
-            }
-        }
-        val m = toolbar.menu ?: return
-        val mi = m.findItem(R.id.action_osakakanrev) ?: return
-        mi.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
     }
 
     // 発駅設定
@@ -428,76 +333,29 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
         update_fare(1)
     }
 
-    // menu
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
+    // Settings and version navigation handlers
+    private fun openSettings() {
+        mRouteScript = mRoute.route_script()
+        mDbIndex = DatabaseOpenHelper.dbIndex()
+        val intent = Intent(this, SettingsActivity::class.java)
+        settingsLauncher.launch(intent)
     }
-
-    // menu didApear
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-
-        // 大阪環状線
-        val menu_osakakan = menu?.findItem(R.id.action_osakakanrev) ?: return true
-
-        if (1 < mRoute.count && mRoute.isOsakakanDetourEnable) {
-            if (mRoute.isOsakakanDetour) {
-                // 「遠回り」になっているので「近回り」と表示する
-                menu_osakakan.title = resources.getString(R.string.result_menu_osakakan_near)
+    
+    private fun openVersion() {
+        val intent = Intent(this, VersionActivity::class.java)
+        startActivity(intent)
+    }
+    
+    private fun toggleOsakakanDetour() {
+        if (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE) {
+            mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) {
+                OSAKA_KAN.NEAR
             } else {
-                // 「近回り」になっているので「遠回り」と表示する
-                menu_osakakan.title = resources.getString(R.string.result_menu_osakakan_far)
+                OSAKA_KAN.FAR
             }
-            menu_osakakan.isEnabled = true
-        } else {
-            menu_osakakan.isEnabled = false
-        }
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-
-    // menu selected
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            //設定
-            R.id.action_settings -> {
-                mRouteScript = mRoute.route_script()
-                mDbIndex = DatabaseOpenHelper.dbIndex()
-                val intent = Intent(this, SettingsActivity::class.java)
-                startActivityForResult(intent, RESULT_CODE_SETTING)
-                true
-            }
-            // バージョン情報
-            R.id.version_view -> {
-                val intent = Intent(this, VersionActivity::class.java)
-                startActivity(intent)
-                true
-            }
-            // 大阪環状線 大回り/近回り
-            R.id.action_osakakanrev -> {
-                if (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE) {
-                    mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) {
-                        OSAKA_KAN.NEAR
-                    } else {
-                        OSAKA_KAN.FAR
-                    }
-                    val far = (mOsakakan_detour == OSAKA_KAN.FAR)
-                    //if (far) {
-                    //    showInfoAsOsakaKanjyouDetour()
-                    //}
-                    val rc = mRoute.setDetour(far)   // True=Far, False=Neerest
-
-                    update_fare(rc)
-
-                    item.isEnabled = (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE)
-                }
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+            val far = (mOsakakan_detour == OSAKA_KAN.FAR)
+            val rc = mRoute.setDetour(far)   // True=Far, False=Nearest
+            update_fare(rc)
         }
     }
 
@@ -522,36 +380,15 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
     */
 
-    // <- bottun
-    override fun onBackPressed() {
-        if (main_drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            main_drawer_layout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // from SettingsActivity
-        if (requestCode == RESULT_CODE_SETTING) {
-            if (resultCode == Activity.RESULT_OK) {
-                // val r = data!!.getIntExtra("test", 0)
-                setTitlebar()
-
-                var doFolderReCalculate = false
-                if (mRouteScript.isNotEmpty()) {
-                    // データベース変更されたら経路を再パースする
-                    val rc = mRoute.setup_route(mRouteScript)
-                    update_fare(rc)
-                }
-                if (mDbIndex != DatabaseOpenHelper.dbIndex()) {
-                    doFolderReCalculate = true
-                }
-                mDrawerFragment.reload(doFolderReCalculate)
+    private fun setupBackPressedDispatcher() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Handle back press - previously handled in onBackPressed
+                finish()
             }
-        }
-        mRouteScript = ""
+        })
     }
+
 
 
     // Main titlebar
@@ -559,43 +396,13 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     //
     private fun setTitlebar() {
         // Show database name on titlebar if isn't default DB.
-        if (DatabaseOpenHelper.dbIndex() != DatabaseOpenHelper.DEFAULT_DB_IDX) {
-            toolbar.title = "${resources.getString(R.string.title_main_view)}(${RouteDB.getInstance().name()}tax${RouteDB.getInstance().tax()})"
-        } else {
-            toolbar.title = resources.getString(R.string.title_main_view)
-        }
+        // This will be handled in Compose UI now
     }
 
-    // FolderViewFragment.FragmentDrawerListener
-    override fun onDrawerItemSelected(view: View, leftRouteList: RouteList) {
-        val curScr = mRoute.route_script()
-        val newScr = leftRouteList.route_script()
-        if (curScr != newScr) {
-            if ((mRoute.count <= 1) || isStrageInRoute(this, curScr)) {
-                // すぐやる
-                val rc = mRoute.setup_route(newScr)
-                update_fare(rc)
-            } else {
-                // 聞いてからやる
-                AlertDialog.Builder(this).apply {
-                    setTitle(R.string.main_alert_query_left_route_overwrite_title)
-                    setMessage(R.string.main_alert_query_left_route_overwrite_mesg)
-                    setPositiveButton("Yes") { _, _ ->
-                        val rc = mRoute.setup_route(newScr)
-                        update_fare(rc)
-                    }
-                    setNegativeButton("No", null)
-                    setIcon(android.R.drawable.ic_dialog_alert)
-                    create()
-                    show()
-                }
-            }
-        }
-    }
 
     //  select row item
     //
-    override fun onClickRow(selectItem: Int) {
+    fun onClickRow(selectItem: Int) {
         if (0 < mRoute.count) {
             if ((mRoute.count - 1) <= selectItem) {
                 // add route
@@ -621,62 +428,3 @@ class MainActivity : AppCompatActivity(), FolderViewFragment.FragmentDrawerListe
     }
  }
 
-class RouteRecyclerAdapter(private val listener : RecyclerListener,
-                           private val route : RouteList) : RecyclerView.Adapter<RouteRecyclerAdapter.RouteListViewHolder>() {
-
-    private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
-        val selitem = v.tag as Int
-        listener.onClickRow(selitem)
-    }
-    private var status : String = ""
-
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RouteListViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(
-                if (viewType == 1) R.layout.route_list_last
-                else R.layout.route_list,
-                parent, false)
-        return RouteListViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: RouteListViewHolder, position: Int) {
-        if (position == route.count - 1) {
-            // last item
-            holder.status_message?.text = status
-        } else {
-            val current = route.item(position + 1)
-            holder.line_item?.text = RouteUtil.LineName(current.lineId())
-            holder.station_item?.text = RouteUtil.StationName(current.stationId())
-        }
-        with(holder.itemView) {
-            tag = position
-            setOnClickListener(onClickListener)
-        }
-    }
-
-    override fun getItemCount(): Int {
-        //return route.count
-        return route.count - 1 + 1
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        // return 1 if last index
-        return if (position == route.count - 1) 1 else 0
-    }
-
-    fun status_message(msg : String) {
-        status = msg
-        if (1 < route.count) {
-            notifyItemChanged(route.count - 1)
-        }
-    }
-
-    inner class RouteListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var line_item: TextView? = itemView.junction_line
-        var station_item: TextView? = itemView.junction_station
-        var status_message: TextView? = itemView.status_message
-    }
-    interface RecyclerListener {
-        fun onClickRow(selectItem: Int)
-    }
-}
