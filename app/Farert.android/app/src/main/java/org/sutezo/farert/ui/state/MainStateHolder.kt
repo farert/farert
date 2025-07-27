@@ -152,6 +152,18 @@ class MainStateHolder : ViewModel() {
         }
     }
     
+    fun updateRoute(route: Route) {
+        try {
+            uiState = uiState.copy(route = route)
+            updateFare(1)
+        } catch (e: Exception) {
+            uiState = uiState.copy(
+                route = route,
+                error = "ルート更新エラー: ${e.message}"
+            )
+        }
+    }
+    
     private fun updateFare(rc: Int) {
         val statusMsg = when (rc) {
             0 -> "経路は終端に達しています"

@@ -2,9 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+
 ## Project Overview
 
 Farert is an Android application for calculating Japanese railway fares and route planning. The app uses SQLite databases containing railway route information and calculates fares based on various factors including distance, tax rates, and special routes like the Osaka Loop Line.
+
+This project is a port from Android App /Users/ntake/priv/Farert.android
+Use to compose.
+Use to new modern develop
+Don't use regacy layout XML.
+Use to material3 design.
+Don't use fragment.
 
 ## Development Commands
 

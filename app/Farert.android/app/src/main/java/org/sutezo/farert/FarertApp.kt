@@ -2,12 +2,14 @@ package org.sutezo.farert
 
 import android.app.Application
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import org.sutezo.alps.*
 
 
 class FarertApp : Application() {
     val ds = Route()
+    val routefolder = Routefolder()
     var bKokuraHakataShinZaiFlag : Boolean = false
 
     companion object {
@@ -19,6 +21,8 @@ class FarertApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        Log.d("FarertApp", "FarertApp.onCreate() called - アプリケーション初期化開始")
+        
         //System.setOut(PrintStream("C:\\debug.log") )
         // System.setOut(NullPrintStream()) // Commented out - class not found
 
@@ -32,6 +36,7 @@ class FarertApp : Application() {
                 saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
             }
         } catch (e : NumberFormatException) {
+            Log.w("FarertApp", "hasLaunched parameter not found, initializing with default values")
             saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
         } finally {
             setDatabase()
@@ -40,6 +45,8 @@ class FarertApp : Application() {
         // TestRoute.exec(this)    // test function - Commented out - class not found
 
         bKokuraHakataShinZaiFlag = (readParam(this, "kokura_hakata_shinzai") == "true")
+        
+        Log.d("FarertApp", "FarertApp.onCreate() completed - アプリケーション初期化完了")
     }
 
     private fun setDatabase() {
