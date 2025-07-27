@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mRoute : Route
     private var mRouteScript : String = ""
     private var mDbIndex : Int = DatabaseOpenHelper.dbIndex()
+    private var mStateHolder: org.sutezo.farert.ui.state.MainStateHolder? = null
 
     enum class OSAKA_KAN {
         DISABLE,
@@ -62,17 +63,21 @@ class MainActivity : AppCompatActivity() {
         setupBackPressedDispatcher()
         
         if (application is FarertApp) {
+            android.util.Log.d("MainActivity", "FarertApp instance found - アプリケーション正常初期化")
             (application as? FarertApp)?.apply {
                 mRoute = this.ds
                 mRoute.isNotSameKokuraHakataShinZai = this.bKokuraHakataShinZaiFlag
+                android.util.Log.d("MainActivity", "Route initialized from FarertApp")
             }
         } else {
+            android.util.Log.w("MainActivity", "FarertApp instance NOT found - fallback to default Route")
             mRoute = Route()
         }
 
         setContent {
             FarertTheme {
                 val stateHolder = androidx.lifecycle.viewmodel.compose.viewModel<org.sutezo.farert.ui.state.MainStateHolder>()
+                mStateHolder = stateHolder
                 
                 // Initialize the state holder with the existing route
                 LaunchedEffect(mRoute) {
@@ -323,6 +328,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        
+        // StateHolderに変更を通知
+        mStateHolder?.updateRoute(mRoute)
     }
 
     // 発駅設定

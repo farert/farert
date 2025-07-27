@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -122,72 +123,155 @@ fun MainScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Terminal selection card with enhanced design
-            Card(
-                onClick = { onNavigateToTerminalSelect() },
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            // 発駅表示カード
+            if (uiState.route.count > 0) {
+                Card(
+                    onClick = { onNavigateToTerminalSelect() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "駅を選択",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Train,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Text(
-                            text = uiState.terminalButtonText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "発駅： ${RouteUtil.StationNameEx(uiState.route.item(0).stationId())}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "　　　 ${RouteUtil.GetKanaFromStationId(uiState.route.item(0).stationId())}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         )
                     }
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    )
+                }
+            } else {
+                // 駅未選択時の表示
+                Card(
+                    onClick = { onNavigateToTerminalSelect() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Train,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "駅を選択",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "発駅を選択してください",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
                 }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Route list
+            // 経路リスト（発駅以降）
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(
-                    items = (0 until uiState.route.count).toList(),
-                    key = { index, _ -> index }
-                ) { index, _ ->
-                    RouteListItem(
-                        route = uiState.route,
-                        position = index,
-                        isLast = index == uiState.route.count - 1,
-                        statusMessage = if (index == uiState.route.count - 1) uiState.statusMessage else "",
-                        onClick = { onNavigateToRouteDetail(index) }
-                    )
+                if (uiState.route.count > 1) {
+                    itemsIndexed(
+                        items = (1 until uiState.route.count).toList(),
+                        key = { _, index -> index }
+                    ) { _, n ->
+                        RouteDetailItem(
+                            route = uiState.route,
+                            position = n,
+                            onClick = { onNavigateToRouteDetail(n) }
+                        )
+                    }
+                }
+                
+                // 最後の項目（経路追加ボタン）
+                if (uiState.route.count > 0) {
+                    item {
+                        Card(
+                            onClick = { onNavigateToRouteDetail(uiState.route.count - 1) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (uiState.statusMessage.isNotEmpty()) Icons.Default.Warning else Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = if (uiState.statusMessage.isNotEmpty()) MaterialTheme.colorScheme.error 
+                                          else MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (uiState.statusMessage.isNotEmpty()) uiState.statusMessage 
+                                          else "経路を追加",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (uiState.statusMessage.isNotEmpty()) MaterialTheme.colorScheme.error
+                                           else MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
             
-            // Fare information with enhanced design
+            // 運賃・営業キロ情報の固定表示（クリックで結果詳細画面へ）
             uiState.fareInfo?.let { info ->
                 Card(
+                    onClick = { onNavigateToFareDetail() },
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -195,72 +279,47 @@ fun MainScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        // 運賃ヘッダー
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CurrencyYen,
-                                contentDescription = null,
-                                modifier = Modifier.size(28.dp),
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "運賃",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                                Text(
-                                    text = stringResource(R.string.result_yen, fareNumStr(info.fare)),
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                            Button(
-                                onClick = { onNavigateToFareDetail() },
-                                enabled = uiState.enableFareDetail,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                Text(stringResource(R.string.fare_detail))
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // 詳細情報
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column {
+                            Text(
+                                text = "普通運賃　¥${fareNumStr(info.fare)}-",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = "有効日数　${info.ticketAvailDays}日",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "営業キロ　${kmNumStr(info.totalSalesKm)} km.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
-                                    text = "営業キロ",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    text = "詳細を見る",
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                                 )
-                                Text(
-                                    text = stringResource(R.string.result_km, kmNumStr(info.totalSalesKm)),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = "有効日数",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                                )
-                                Text(
-                                    text = stringResource(R.string.result_availdays_fmt, info.ticketAvailDays),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                                 )
                             }
                         }
@@ -269,6 +328,66 @@ fun MainScreen(
             }
         }
     }
+    }
+}
+
+@Composable
+fun RouteDetailItem(
+    route: RouteList,
+    position: Int,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 路線番号アイコン
+            Card(
+                modifier = Modifier.size(40.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "$position",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = RouteUtil.LineName(route.item(position).lineId()),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = RouteUtil.StationName(route.item(position).stationId()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+            
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+        }
     }
 }
 
@@ -405,53 +524,63 @@ fun FolderDrawerContent(
     onRouteSelected: (RouteList) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     ModalDrawerSheet(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // ドロワーヘッダー
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Train,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "保存された経路",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = "タップして経路を選択",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // FolderViewScreenの内容を埋め込み
-            FolderViewScreen(
-                routefolder = remember { org.sutezo.farert.Routefolder() },
-                route = route,
-                onItemClick = onRouteSelected,
-                onCloseDrawer = { /* ドロワーを閉じる処理はMainScreenで行う */ }
-            )
+        // FolderViewScreenの内容を埋め込み
+        FolderViewScreen(
+            routefolder = (context.applicationContext as org.sutezo.farert.FarertApp).routefolder,
+            route = route,
+            onItemClick = onRouteSelected,
+            onCloseDrawer = { /* ドロワーを閉じる処理はMainScreenで行う */ }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RouteListItemPreview() {
+    MaterialTheme {
+        // Create a mock RouteList for preview
+        val mockRoute = RouteList().apply {
+            // This would typically be initialized with actual data
         }
+        
+        RouteListItem(
+            route = mockRoute,
+            position = 0,
+            isLast = false,
+            statusMessage = "",
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RouteListItemLastPreview() {
+    MaterialTheme {
+        val mockRoute = RouteList()
+        
+        RouteListItem(
+            route = mockRoute,
+            position = 1,
+            isLast = true,
+            statusMessage = "",
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomNavigationBarPreview() {
+    MaterialTheme {
+        BottomNavigationBar(
+            canGoBack = true,
+            canReverse = true,
+            onBackPressed = {},
+            onReverseRoute = {},
+            onArchiveRoute = {}
+        )
     }
 }

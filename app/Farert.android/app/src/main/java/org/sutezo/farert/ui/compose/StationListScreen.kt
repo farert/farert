@@ -1,6 +1,7 @@
 package org.sutezo.farert.ui.compose
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -10,13 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-// import androidx.compose.ui.graphics.Typeface // Not used in Compose version
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import org.sutezo.alps.RouteUtil
 import org.sutezo.alps.getDetailStationInfoForSelList
 import org.sutezo.farert.R
@@ -43,6 +45,20 @@ fun StationListScreen(
     val context = LocalContext.current
     val uiState = stateHolder.uiState
     
+    // フェードアニメーション状態
+    var isAnimating by remember { mutableStateOf(false) }
+    val alpha by animateFloatAsState(
+        targetValue = if (isAnimating) 0.3f else 1f,
+        animationSpec = tween(durationMillis = 300),
+        finishedListener = {
+            if (isAnimating) {
+                isAnimating = false
+                stateHolder.switchStationMode()
+            }
+        }
+    )
+    
+    
     // Initialize state
     LaunchedEffect(mode, lineId, srcType, srcCompanyOrPrefectId, stationMode, srcStationId, startStationId) {
         stateHolder.initialize(
@@ -65,7 +81,17 @@ fun StationListScreen(
         }
     }
     
+    // 表示するコンテンツは実際のuiStateを使用（90度以降は既にStateHolderで更新済み）
+    val displayCustomActionText = when (uiState.stationMode) {
+        "junction" -> "着駅選択"
+        "all", "" -> if (uiState.mode == "route") "分岐駅指定" else null
+        else -> null
+    }
+
     Scaffold(
+        modifier = Modifier.graphicsLayer {
+            this.alpha = alpha
+        },
         topBar = {
             FarertTopAppBar(
                 title = if (uiState.subtitle.isNotEmpty()) {
@@ -74,11 +100,17 @@ fun StationListScreen(
                     uiState.title
                 },
                 onBackClick = onNavigateUp,
-                onMenuClick = {
-                    if (uiState.showSwitchAction) {
+                useBackArrow = true,
+                customActionText = displayCustomActionText,
+                enableVerticalRotation = false, // ボタンは回転させない
+                onCustomActionClick = {
+                    if (uiState.mode == "route" && (uiState.stationMode == "junction" || uiState.stationMode == "all" || uiState.stationMode == "")) {
                         stateHolder.handleEvent(StationListUiEvent.SwitchActionClicked)
-                        onSwitchAction()
+                        isAnimating = true
                     }
+                },
+                onMenuClick = {
+                    // 3ドットメニューは使用しない（カスタムアクションボタンのみ使用）
                 }
             )
         }
