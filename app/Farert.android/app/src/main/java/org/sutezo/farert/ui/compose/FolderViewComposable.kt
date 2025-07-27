@@ -20,9 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ShareCompat
@@ -44,9 +46,10 @@ fun FolderViewScreen(
     val context = LocalContext.current
     var checkedItems by remember { mutableStateOf(setOf<Int>()) }
     var allChecked by remember { mutableStateOf(false) }
+    var refreshTrigger by remember { mutableStateOf(0) }
     
     // Reload when routefolder changes
-    LaunchedEffect(routefolder.count()) {
+    LaunchedEffect(routefolder.count(), refreshTrigger) {
         checkedItems = setOf()
         allChecked = false
     }
@@ -70,9 +73,13 @@ fun FolderViewScreen(
                 }
             },
             onAddItem = {
+                android.util.Log.d("FolderViewComposable", "Add button clicked, route is null: ${route == null}")
                 route?.let {
+                    android.util.Log.d("FolderViewComposable", "Adding route with count: ${it.count}")
                     val rl = RouteList(it)
                     routefolder.add(context, rl)
+                    refreshTrigger++
+                    android.util.Log.d("FolderViewComposable", "Route added, routefolder count now: ${routefolder.count()}")
                 }
             },
             onDeleteItems = {
@@ -83,6 +90,7 @@ fun FolderViewScreen(
                     }
                     checkedItems = setOf()
                     allChecked = false
+                    refreshTrigger++
                 }
             },
             onExport = {
@@ -157,14 +165,14 @@ private fun FolderHeader(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                imageVector = Icons.Default.FolderOpen,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(32.dp)
+                painter = painterResource(R.drawable.tickfolder3),
+                contentDescription = stringResource(R.string.nav_header_title),
+                modifier = Modifier.size(32.dp),
+                tint = Color.Unspecified
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Text(
                 text = stringResource(R.string.nav_header_title),
                 color = Color.White,
@@ -172,9 +180,9 @@ private fun FolderHeader(
                 fontWeight = FontWeight.Bold
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         // Total fare and distance
         Row(
             modifier = Modifier.fillMaxWidth()
@@ -192,7 +200,7 @@ private fun FolderHeader(
                 fontWeight = FontWeight.Bold
             )
         }
-        
+
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -209,9 +217,9 @@ private fun FolderHeader(
                 fontWeight = FontWeight.Bold
             )
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Action buttons
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -227,7 +235,7 @@ private fun FolderHeader(
                         checkedColor = colorResource(R.color.colorChkBoxFolder)
                     )
                 )
-                
+
                 TextButton(
                     onClick = onDeleteItems,
                     enabled = routefolder.count() > 0
@@ -238,7 +246,7 @@ private fun FolderHeader(
                     )
                 }
             }
-            
+
             Row {
                 IconButton(
                     onClick = onExport,
@@ -250,7 +258,7 @@ private fun FolderHeader(
                         tint = colorResource(R.color.colorTicketTypeText)
                     )
                 }
-                
+
                 TextButton(
                     onClick = onAddItem,
                     enabled = route != null
@@ -393,5 +401,56 @@ private fun FolderListItem(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FolderHeaderPreview() {
+    MaterialTheme {
+        FolderHeader(
+            routefolder = Routefolder().apply {
+                // Mock data for preview
+            },
+            route = null,
+            allChecked = false,
+            onAllCheckedChange = {},
+            onAddItem = {},
+            onDeleteItems = {},
+            onExport = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FolderListItemPreview() {
+    MaterialTheme {
+        val mockRoute = RouteList().apply {
+            // Mock route data for preview
+        }
+        
+        FolderListItem(
+            index = 0,
+            routeItem = mockRoute,
+            routefolder = Routefolder(),
+            isChecked = false,
+            onCheckedChange = {},
+            onItemClick = {},
+            onAggregateTypeChange = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FolderViewScreenPreview() {
+    MaterialTheme {
+        FolderViewScreen(
+            routefolder = Routefolder(),
+            route = null,
+            onItemClick = {},
+            onCloseDrawer = {}
+        )
     }
 }

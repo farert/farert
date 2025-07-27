@@ -103,8 +103,15 @@ private fun SinglePaneLineListLayout(
                     uiState.title
                 },
                 onBackClick = onNavigateUp,
+                useBackArrow = true,
+                customActionText = if (uiState.mode == "route") "最短距離" else null,
+                onCustomActionClick = {
+                    if (uiState.mode == "route") {
+                        onNavigateToTerminalSelect()
+                    }
+                },
                 onMenuClick = {
-                    if (uiState.showSwitchAction) {
+                    if (uiState.showSwitchAction && uiState.mode != "route") {
                         if (uiState.stationSelMode == 0) {
                             onNavigateToTerminalSelect()
                         } else {
@@ -186,6 +193,7 @@ private fun TwoPaneLineListLayout(
                     uiState.title
                 },
                 onBackClick = onNavigateUp,
+                useBackArrow = true,
                 onMenuClick = { /* No menu action for two-pane */ }
             )
             
