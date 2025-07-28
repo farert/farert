@@ -2,12 +2,15 @@ package org.sutezo.farert.ui.compose
 
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -17,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -27,6 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.geometry.Offset
+import kotlinx.coroutines.delay
 import androidx.core.app.ShareCompat
 import org.sutezo.alps.RouteList
 import org.sutezo.alps.fareNumStr
@@ -44,52 +52,37 @@ fun FolderViewScreen(
     onCloseDrawer: () -> Unit
 ) {
     val context = LocalContext.current
-    var checkedItems by remember { mutableStateOf(setOf<Int>()) }
-    var allChecked by remember { mutableStateOf(false) }
     var refreshTrigger by remember { mutableStateOf(0) }
+    var itemCount by remember { mutableStateOf(routefolder.count()) }
+    var draggedItem by remember { mutableStateOf<Int?>(null) }
     
     // Reload when routefolder changes
-    LaunchedEffect(routefolder.count(), refreshTrigger) {
-        checkedItems = setOf()
-        allChecked = false
+    LaunchedEffect(refreshTrigger) {
+        itemCount = routefolder.count()
     }
     
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.colorLeftHeadEnd))
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF2D1B69), // Rich purple
+                        Color(0xFF11998e), // Teal  
+                        Color(0xFF38ef7d)  // Light green
+                    )
+                )
+            )
     ) {
         // Header Section
         FolderHeader(
             routefolder = routefolder,
             route = route,
-            allChecked = allChecked,
-            onAllCheckedChange = { checked ->
-                allChecked = checked
-                checkedItems = if (checked) {
-                    (0 until routefolder.count()).toSet()
-                } else {
-                    setOf()
-                }
-            },
+            itemCount = itemCount,
             onAddItem = {
-                android.util.Log.d("FolderViewComposable", "Add button clicked, route is null: ${route == null}")
                 route?.let {
-                    android.util.Log.d("FolderViewComposable", "Adding route with count: ${it.count}")
                     val rl = RouteList(it)
                     routefolder.add(context, rl)
-                    refreshTrigger++
-                    android.util.Log.d("FolderViewComposable", "Route added, routefolder count now: ${routefolder.count()}")
-                }
-            },
-            onDeleteItems = {
-                if (checkedItems.isNotEmpty()) {
-                    // Delete in reverse order to maintain indices
-                    checkedItems.sortedDescending().forEach { index ->
-                        routefolder.remove(context, index)
-                    }
-                    checkedItems = setOf()
-                    allChecked = false
                     refreshTrigger++
                 }
             },
@@ -114,28 +107,30 @@ fun FolderViewScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             itemsIndexed(
-                items = (0 until routefolder.count()).map { routefolder.routeItem(it) },
+                items = (0 until itemCount).map { routefolder.routeItem(it) },
                 key = { index, _ -> index }
             ) { index, routeItem ->
                 FolderListItem(
                     index = index,
                     routeItem = routeItem,
                     routefolder = routefolder,
-                    isChecked = checkedItems.contains(index),
-                    onCheckedChange = { checked ->
-                        checkedItems = if (checked) {
-                            checkedItems + index
-                        } else {
-                            checkedItems - index
-                        }
-                        allChecked = checkedItems.size == routefolder.count()
-                    },
                     onItemClick = {
                         onItemClick(routeItem)
                         onCloseDrawer()
                     },
+                    onRemove = {
+                        routefolder.remove(context, index)
+                        refreshTrigger++
+                    },
                     onAggregateTypeChange = { newType ->
                         routefolder.setAggregateType(context, index, newType)
+                    },
+                    onDragStart = { draggedItem = index },
+                    onDragEnd = { draggedItem = null },
+                    onSwap = { fromIndex, toIndex ->
+                        if (routefolder.swap(context, fromIndex, toIndex)) {
+                            refreshTrigger++
+                        }
                     }
                 )
             }
@@ -147,10 +142,8 @@ fun FolderViewScreen(
 private fun FolderHeader(
     routefolder: Routefolder,
     route: RouteList?,
-    allChecked: Boolean,
-    onAllCheckedChange: (Boolean) -> Unit,
+    itemCount: Int,
     onAddItem: () -> Unit,
-    onDeleteItems: () -> Unit,
     onExport: () -> Unit
 ) {
     Column(
@@ -226,48 +219,27 @@ private fun FolderHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = allChecked,
-                    onCheckedChange = onAllCheckedChange,
-                    colors = CheckboxDefaults.colors(
-                        checkmarkColor = Color.White,
-                        checkedColor = colorResource(R.color.colorChkBoxFolder)
-                    )
+            // Left side - Export button
+            IconButton(
+                onClick = onExport,
+                enabled = itemCount > 0
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Export",
+                    tint = colorResource(R.color.colorTicketTypeText)
                 )
-
-                TextButton(
-                    onClick = onDeleteItems,
-                    enabled = routefolder.count() > 0
-                ) {
-                    Text(
-                        text = stringResource(R.string.btn_del),
-                        color = colorResource(R.color.colorTicketTypeText)
-                    )
-                }
             }
 
-            Row {
-                IconButton(
-                    onClick = onExport,
-                    enabled = routefolder.count() > 0
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Export",
-                        tint = colorResource(R.color.colorTicketTypeText)
-                    )
-                }
-
-                TextButton(
-                    onClick = onAddItem,
-                    enabled = route != null
-                ) {
-                    Text(
-                        text = stringResource(R.string.btn_add),
-                        color = colorResource(R.color.colorTicketTypeText)
-                    )
-                }
+            // Right side - Add button
+            TextButton(
+                onClick = onAddItem,
+                enabled = route != null
+            ) {
+                Text(
+                    text = stringResource(R.string.btn_add),
+                    color = colorResource(R.color.colorTicketTypeText)
+                )
             }
         }
     }
@@ -279,26 +251,51 @@ private fun FolderListItem(
     index: Int,
     routeItem: RouteList,
     routefolder: Routefolder,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
     onItemClick: () -> Unit,
-    onAggregateTypeChange: (Routefolder.Aggregate) -> Unit
+    onRemove: () -> Unit,
+    onAggregateTypeChange: (Routefolder.Aggregate) -> Unit,
+    onDragStart: () -> Unit = {},
+    onDragEnd: () -> Unit = {},
+    onSwap: (Int, Int) -> Unit = { _, _ -> }
 ) {
-    val context = LocalContext.current
     val fareTypes = stringArrayResource(R.array.list_ticket_type)
     var expanded by remember { mutableStateOf(false) }
     var selectedFareType by remember { 
-        mutableStateOf(routefolder.aggregateType(index).ordinal)
+        mutableIntStateOf(routefolder.aggregateType(index).ordinal)
     }
+    var isDragging by remember { mutableStateOf(false) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
     
     Card(
+        onClick = onItemClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clickable { onItemClick() },
+            .scale(if (isDragging) 1.05f else 1f)
+            .shadow(
+                elevation = if (isDragging) 8.dp else 4.dp,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .background(
+                Brush.verticalGradient(
+                    colors = if (isDragging) listOf(
+                        Color(0xFF2A2A3E), // Lighter when dragging
+                        Color(0xFF26314E), 
+                        Color(0xFF1F4470), 
+                        Color(0xFF634493)  
+                    ) else listOf(
+                        Color(0xFF1A1A2E), // Deep dark blue
+                        Color(0xFF16213E), // Dark navy
+                        Color(0xFF0F3460), // Rich blue
+                        Color(0xFF533483)  // Deep purple
+                    )
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = colorResource(R.color.colorLeftViewBackground)
-        )
+            containerColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -308,16 +305,58 @@ private fun FolderListItem(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = onCheckedChange,
-                    modifier = Modifier.padding(end = 8.dp)
+                // Drag handle
+                Icon(
+                    imageVector = Icons.Default.DragHandle,
+                    contentDescription = "Drag handle",
+                    tint = if (isDragging) Color.Yellow else Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(end = 8.dp)
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = { 
+                                    isDragging = true
+                                    onDragStart() 
+                                },
+                                onDragEnd = { 
+                                    isDragging = false
+                                    dragOffset = Offset.Zero
+                                    onDragEnd() 
+                                }
+                            ) { change, dragAmount ->
+                                dragOffset += dragAmount
+                                // Simple drag threshold for swapping
+                                if (dragOffset.y > 100f) {
+                                    // Drag down - swap with next item
+                                    onSwap(index, index + 1)
+                                    dragOffset = Offset.Zero
+                                } else if (dragOffset.y < -100f) {
+                                    // Drag up - swap with previous item
+                                    onSwap(index, index - 1)
+                                    dragOffset = Offset.Zero
+                                }
+                            }
+                        }
                 )
+                
+                IconButton(
+                    onClick = { onRemove() },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 
                 Text(
                     text = "${terminalName(routeItem.departureStationId())} - ${terminalName(routeItem.arriveStationId())}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
+                    color = Color.White,
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -328,14 +367,14 @@ private fun FolderListItem(
                         imageVector = Icons.Default.DirectionsTransit,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color.Gray
+                        tint = Color.White.copy(alpha = 0.8f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color.Gray
+                        tint = Color.White.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -362,7 +401,16 @@ private fun FolderListItem(
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
                         modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 12.sp)
+                        textStyle = LocalTextStyle.current.copy(
+                            fontSize = 12.sp,
+                            color = Color.White
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color.White.copy(alpha = 0.7f),
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f)
+                        )
                     )
                     
                     ExposedDropdownMenu(
@@ -371,11 +419,11 @@ private fun FolderListItem(
                     ) {
                         fareTypes.forEachIndexed { typeIndex, fareType ->
                             DropdownMenuItem(
-                                text = { Text(fareType, fontSize = 12.sp) },
+                                text = { Text(fareType, fontSize = 12.sp, color = Color.Black) },
                                 onClick = {
                                     selectedFareType = typeIndex
                                     expanded = false
-                                    val aggregateType = Routefolder.Aggregate.values()[typeIndex]
+                                    val aggregateType = Routefolder.Aggregate.entries[typeIndex]
                                     onAggregateTypeChange(aggregateType)
                                 }
                             )
@@ -391,12 +439,13 @@ private fun FolderListItem(
                     Text(
                         text = "¥${fareNumStr(fareValue.first)}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        color = Color.White
                     )
                     Text(
                         text = "${kmNumStr(fareValue.second)}km",
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = Color.White.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -413,10 +462,8 @@ fun FolderHeaderPreview() {
                 // Mock data for preview
             },
             route = null,
-            allChecked = false,
-            onAllCheckedChange = {},
+            itemCount = 0,
             onAddItem = {},
-            onDeleteItems = {},
             onExport = {}
         )
     }
@@ -434,10 +481,12 @@ fun FolderListItemPreview() {
             index = 0,
             routeItem = mockRoute,
             routefolder = Routefolder(),
-            isChecked = false,
-            onCheckedChange = {},
             onItemClick = {},
-            onAggregateTypeChange = {}
+            onRemove = {},
+            onAggregateTypeChange = {},
+            onDragStart = {},
+            onDragEnd = {},
+            onSwap = { _, _ -> }
         )
     }
 }

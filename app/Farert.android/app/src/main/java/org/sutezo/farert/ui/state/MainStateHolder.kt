@@ -104,7 +104,34 @@ class MainStateHolder : ViewModel() {
     
     private fun handleSetupRoute(routeScript: String) = viewModelScope.launch {
         try {
+            // Clear the current route completely
+            uiState.route.removeAll()
+            
+            // Reset UI state first to clear any existing display
+            uiState = uiState.copy(
+                route = uiState.route,
+                fareInfo = null,
+                statusMessage = "",
+                canGoBack = false,
+                canReverse = false,
+                enableFareDetail = false,
+                terminalButtonText = "発駅を選択してください"
+            )
+            
+            // Setup the new route
             val rc = uiState.route.setup_route(routeScript)
+            
+            // Create a new route object to ensure state change detection
+            val newRoute = Route()
+            val routeScript2 = uiState.route.route_script()
+            newRoute.setup_route(routeScript2)
+            
+            // Force UI state update with new route object
+            uiState = uiState.copy(
+                route = newRoute
+            )
+            
+            // Update the UI with the new route data
             updateFare(rc)
         } catch (e: Exception) {
             uiState = uiState.copy(error = e.message)
@@ -212,6 +239,7 @@ class MainStateHolder : ViewModel() {
         }
         
         uiState = uiState.copy(
+            route = uiState.route, // Ensure route object is updated in state
             fareInfo = fareInfo,
             statusMessage = statusMsg,
             canGoBack = uiState.route.count > 0,

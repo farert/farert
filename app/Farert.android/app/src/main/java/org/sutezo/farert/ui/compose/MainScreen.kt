@@ -50,13 +50,18 @@ fun MainScreen(
         }
     }
     
+    // Force recomposition when route changes
+    LaunchedEffect(uiState.route) {
+        // This will trigger recomposition when route object changes
+    }
+    
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             FolderDrawerContent(
                 route = uiState.route,
                 onRouteSelected = { selectedRoute ->
-                    onNavigateToArchive(selectedRoute.route_script())
+                    stateHolder.handleEvent(MainUiEvent.SetupRoute(selectedRoute.route_script()))
                     scope.launch {
                         drawerState.close()
                     }
@@ -117,6 +122,9 @@ fun MainScreen(
             )
         }
     ) { paddingValues ->
+        // Force recomposition when route changes
+        val routeKey = remember(uiState.route.hashCode()) { uiState.route.hashCode() }
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -127,7 +135,12 @@ fun MainScreen(
             if (uiState.route.count > 0) {
                 Card(
                     onClick = { onNavigateToTerminalSelect() },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            // Force recomposition when route changes
+                            Modifier
+                        ),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ),
@@ -147,13 +160,18 @@ fun MainScreen(
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
+                            // Use a derived state that updates when route changes
+                            val stationId = remember(uiState.route.hashCode()) {
+                                if (uiState.route.count > 0) uiState.route.item(0).stationId() else 0
+                            }
+                            
                             Text(
-                                text = "発駅： ${RouteUtil.StationNameEx(uiState.route.item(0).stationId())}",
+                                text = if (stationId > 0) "発駅： ${RouteUtil.StationNameEx(stationId)}" else "駅を選択",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Text(
-                                text = "　　　 ${RouteUtil.GetKanaFromStationId(uiState.route.item(0).stationId())}",
+                                text = if (stationId > 0) "　　　 ${RouteUtil.GetKanaFromStationId(stationId)}" else "発駅を選択してください",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                             )
@@ -219,7 +237,7 @@ fun MainScreen(
                 if (uiState.route.count > 1) {
                     itemsIndexed(
                         items = (1 until uiState.route.count).toList(),
-                        key = { _, index -> index }
+                        key = { _, index -> "${uiState.route.hashCode()}_$index" }
                     ) { _, n ->
                         RouteDetailItem(
                             route = uiState.route,

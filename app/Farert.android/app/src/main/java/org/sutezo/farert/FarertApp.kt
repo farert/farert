@@ -46,6 +46,9 @@ class FarertApp : Application() {
 
         bKokuraHakataShinZaiFlag = (readParam(this, "kokura_hakata_shinzai") == "true")
         
+        // Load saved routes from persistent storage
+        routefolder.load(this)
+        
         Log.d("FarertApp", "FarertApp.onCreate() completed - アプリケーション初期化完了")
     }
 
