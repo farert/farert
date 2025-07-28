@@ -34,7 +34,7 @@ fun getCompanys() : List<Int> {
 
 fun getPrefects() : List<Int> {
 
-    val prefects : MutableList<Int> = ArrayList(46) // Prefect
+    val prefects : MutableList<Int> = mutableListOf() // Prefect
     val dbo = RouteUtil.Enum_company_prefect()
 
     dbo.use {

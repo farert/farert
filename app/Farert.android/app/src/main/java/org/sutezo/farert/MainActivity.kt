@@ -6,7 +6,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.activity.compose.setContent
 import androidx.activity.OnBackPressedCallback
@@ -20,7 +20,7 @@ import org.sutezo.farert.ui.state.MainStateHolderProvider
 import org.sutezo.alps.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     private lateinit var mRoute : Route
     private var mRouteScript : String = ""
@@ -56,7 +56,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -255,7 +254,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // 計算結果表示
-    @SuppressLint("RestrictedApi", "NotifyDataSetChanged")
     private fun update_fare(rc : Int)
     {
         // 下部計算結果

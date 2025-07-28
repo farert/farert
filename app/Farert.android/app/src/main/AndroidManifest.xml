@@ -35,11 +35,7 @@
             android:label="@string/title_stationlistactivity"
             android:launchMode="singleTop"
             android:parentActivityName=".LineListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.sutezo.farert.LineListActivity" />
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".VersionActivity"
             android:label="@string/title_activity_version"

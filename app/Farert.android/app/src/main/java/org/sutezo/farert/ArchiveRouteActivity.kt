@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.ArchiveRouteScreen
 import org.sutezo.alps.*
@@ -14,7 +14,7 @@ import org.sutezo.alps.*
 /**
  * 経路保存画面
  */
-class ArchiveRouteActivity : AppCompatActivity() {
+class ArchiveRouteActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

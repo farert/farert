@@ -3,7 +3,7 @@ package org.sutezo.farert
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.StationListScreen
 
@@ -13,7 +13,7 @@ import org.sutezo.farert.ui.compose.StationListScreen
  * item details are presented side-by-side with a list of items
  * in a [LineListActivity].
  */
-class StationListActivity : AppCompatActivity() {
+class StationListActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
