@@ -9,7 +9,7 @@
 ## build & make
 
 ### Windows
-+ Open file app/win_mfc/fjr_mfc/alps_mfc.sln in Microsoft Visual Studio 2017 Express.
++ Open file app/win_mfc/fjr_mfc/alps_mfc.sln in Microsoft Visual Studio 2022 Express.
 + Run [build]-[batch build]-[release]
 
 ### Android
