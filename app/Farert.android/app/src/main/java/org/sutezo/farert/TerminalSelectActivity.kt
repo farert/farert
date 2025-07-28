@@ -5,7 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import android.util.Log
@@ -16,7 +16,7 @@ import org.sutezo.farert.ui.compose.TerminalSelectScreen
 import org.sutezo.alps.*
 
 
-class TerminalSelectActivity : AppCompatActivity() {
+class TerminalSelectActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

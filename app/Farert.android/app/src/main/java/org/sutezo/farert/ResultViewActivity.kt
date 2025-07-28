@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import android.widget.Toast
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.ResultViewScreen
@@ -13,7 +13,7 @@ import org.sutezo.farert.ui.state.ResultViewUiState
 /**
  * 運賃詳細結果ビューActivivty
  */
-class ResultViewActivity : AppCompatActivity() {
+class ResultViewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +52,6 @@ class ResultViewActivity : AppCompatActivity() {
     /**
      *  外部エクスポート用結果テキストをエクスポートする
      */
-    @SuppressLint("QueryPermissionsNeeded")
     private fun shareText(subject: String, text: String) {
         val shareIntent = Intent().apply {
             action = Intent.ACTION_SEND

@@ -3,14 +3,14 @@ package org.sutezo.farert
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.core.os.bundleOf
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.LineListScreen
 import org.sutezo.farert.ui.compose.LineListNavigationData
 
 
-class LineListActivity : AppCompatActivity() {
+class LineListActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
