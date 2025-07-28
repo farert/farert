@@ -92,18 +92,21 @@ class MainActivity : AppCompatActivity() {
                 MainScreen(
                     stateHolder = stateHolder,
                     onNavigateToTerminalSelect = {
-                        val intent = Intent(this, TerminalSelectActivity::class.java)
-                        intent.putExtra("mode", "terminal")
+                        val intent = Intent(this@MainActivity, TerminalSelectActivity::class.java).apply {
+                            putExtra("mode", "terminal")
+                        }
                         startActivity(intent)
                     },
                     onNavigateToFareDetail = {
-                        val intent = Intent(this, ResultViewActivity::class.java)
-                        intent.putExtra("arrive", -1)
+                        val intent = Intent(this@MainActivity, ResultViewActivity::class.java).apply {
+                            putExtra("arrive", -1)
+                        }
                         startActivity(intent)
                     },
                     onNavigateToArchive = { routeScript ->
-                        val intent = Intent(this, ArchiveRouteActivity::class.java)
-                        intent.putExtra("route_script", routeScript)
+                        val intent = Intent(this@MainActivity, ArchiveRouteActivity::class.java).apply {
+                            putExtra("route_script", routeScript)
+                        }
                         startActivity(intent)
                     },
                     onNavigateToRouteDetail = { selectItem ->
@@ -345,12 +348,12 @@ class MainActivity : AppCompatActivity() {
     private fun openSettings() {
         mRouteScript = mRoute.route_script()
         mDbIndex = DatabaseOpenHelper.dbIndex()
-        val intent = Intent(this, SettingsActivity::class.java)
+        val intent = Intent(this@MainActivity, SettingsActivity::class.java)
         settingsLauncher.launch(intent)
     }
     
     private fun openVersion() {
-        val intent = Intent(this, VersionActivity::class.java)
+        val intent = Intent(this@MainActivity, VersionActivity::class.java)
         startActivity(intent)
     }
     
@@ -415,16 +418,18 @@ class MainActivity : AppCompatActivity() {
             if ((mRoute.count - 1) <= selectItem) {
                 // add route
                 val lastIdx = mRoute.count - 1
-                val intent = Intent(this, LineListActivity::class.java)
-                intent.putExtra("mode", "route")
-                intent.putExtra("src_station_id", mRoute.item(lastIdx).stationId())
-                intent.putExtra("src_line_id", mRoute.item(lastIdx).lineId())
-                intent.putExtra("start_station_id", mRoute.item(0).stationId())
+                val intent = Intent(this@MainActivity, LineListActivity::class.java).apply {
+                    putExtra("mode", "route")
+                    putExtra("src_station_id", mRoute.item(lastIdx).stationId())
+                    putExtra("src_line_id", mRoute.item(lastIdx).lineId())
+                    putExtra("start_station_id", mRoute.item(0).stationId())
+                }
                 startActivity(intent)
             } else {
                 // result display
-                val intent = Intent(this, ResultViewActivity::class.java)
-                intent.putExtra("arrive", selectItem + 2)
+                val intent = Intent(this@MainActivity, ResultViewActivity::class.java).apply {
+                    putExtra("arrive", selectItem + 2)
+                }
                 startActivity(intent)
             }
         }

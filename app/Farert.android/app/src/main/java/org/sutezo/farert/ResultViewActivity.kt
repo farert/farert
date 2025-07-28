@@ -1,10 +1,10 @@
 package org.sutezo.farert
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ShareCompat
 import android.widget.Toast
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.ResultViewScreen
@@ -54,16 +54,20 @@ class ResultViewActivity : AppCompatActivity() {
      */
     @SuppressLint("QueryPermissionsNeeded")
     private fun shareText(subject: String, text: String) {
-        val mimeType = "text/plain"
-
-        val shareIntent = ShareCompat.IntentBuilder.from(this)
-                .setChooserTitle(resources.getString(R.string.title_share_text))
-                .setType(mimeType)
-                .setText(text)
-                .setSubject(subject)
-                .intent
-        if (shareIntent.resolveActivity(packageManager) != null) {
-            startActivity(shareIntent)
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+        }
+        
+        val chooserIntent = Intent.createChooser(
+            shareIntent, 
+            resources.getString(R.string.title_share_text)
+        )
+        
+        if (chooserIntent.resolveActivity(packageManager) != null) {
+            startActivity(chooserIntent)
         }
     }
 }

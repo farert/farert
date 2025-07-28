@@ -38,7 +38,7 @@ class StationListActivity : AppCompatActivity() {
                     srcStationId = srcStationId,
                     startStationId = startStationId,
                     onNavigateToMain = { destStationId ->
-                        val intent = Intent(this, MainActivity::class.java).apply {
+                        val intent = Intent(this@StationListActivity, MainActivity::class.java).apply {
                             putExtra("dest_station_id", destStationId)
                             putExtra("mode", mode)
                             putExtra("line_id", if (mode == "route") lineId else 0)
@@ -49,21 +49,32 @@ class StationListActivity : AppCompatActivity() {
                     onNavigateUp = { finish() },
                     onSwitchAction = {
                         // Handle switch action by recreating activity with different station_mode
-                        val curIntent = this.intent
-                        val intent = Intent(this, StationListActivity::class.java).apply {
-                            putExtra("mode", curIntent.getStringExtra("mode"))
-                            putExtra("line_id", curIntent.getIntExtra("line_id", 0))
-                            putExtra("line_to_type", curIntent.getStringExtra("line_to_type"))
-                            putExtra("line_to_id", curIntent.getIntExtra("line_to_id", 0))
-                            putExtra("src_station_id", curIntent.getIntExtra("src_station_id", 0))
-                            putExtra("start_station_id", curIntent.getIntExtra("start_station_id", 0))
-                            
-                            if (curIntent.getStringExtra("mode") == "route" &&
+                        val curIntent = this@StationListActivity.intent
+                        val intent = Intent(this@StationListActivity, StationListActivity::class.java).apply {
+                            val newStationMode = if (curIntent.getStringExtra("mode") == "route" &&
                                     curIntent.getStringExtra("station_mode") == "junction") {
-                                putExtra("station_mode", "all")
+                                "all"
                             } else {
-                                putExtra("station_mode", "junction")
+                                "junction"
                             }
+                            
+                            val intentExtras = mapOf(
+                                "mode" to curIntent.getStringExtra("mode"),
+                                "line_id" to curIntent.getIntExtra("line_id", 0),
+                                "line_to_type" to curIntent.getStringExtra("line_to_type"),
+                                "line_to_id" to curIntent.getIntExtra("line_to_id", 0),
+                                "src_station_id" to curIntent.getIntExtra("src_station_id", 0),
+                                "start_station_id" to curIntent.getIntExtra("start_station_id", 0),
+                                "station_mode" to newStationMode
+                            )
+                            
+                            intentExtras.forEach { (key, value) ->
+                                when (value) {
+                                    is String? -> value?.let { putExtra(key, it) }
+                                    is Int -> putExtra(key, value)
+                                }
+                            }
+                            
                             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         }
                         finish()

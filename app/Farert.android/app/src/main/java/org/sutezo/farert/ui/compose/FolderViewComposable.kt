@@ -1,6 +1,7 @@
 package org.sutezo.farert.ui.compose
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.*
@@ -35,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.delay
-import androidx.core.app.ShareCompat
 import org.sutezo.alps.RouteList
 import org.sutezo.alps.fareNumStr
 import org.sutezo.alps.kmNumStr
@@ -88,15 +88,20 @@ fun FolderViewScreen(
             },
             onExport = {
                 val text = routefolder.makeExportText()
-                val shareIntent = ShareCompat.IntentBuilder(context as androidx.fragment.app.FragmentActivity)
-                    .setChooserTitle(context.getString(R.string.title_share_text))
-                    .setType("text/plain")
-                    .setText(text)
-                    .setSubject("チケットフォルダ")
-                    .intent
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, text)
+                    putExtra(Intent.EXTRA_SUBJECT, "チケットフォルダ")
+                }
                 
-                if (shareIntent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(shareIntent)
+                val chooserIntent = Intent.createChooser(
+                    shareIntent, 
+                    context.getString(R.string.title_share_text)
+                )
+                
+                if (chooserIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(chooserIntent)
                 }
             }
         )
