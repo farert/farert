@@ -28,7 +28,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                 TerminalSelectScreen(
                     mode = mode,
                     onNavigateToLineList = { itemId, type, currentMode ->
-                        val intent = Intent(this, LineListActivity::class.java).apply {
+                        val intent = Intent(this@TerminalSelectActivity, LineListActivity::class.java).apply {
                             putExtra("mode", currentMode)
                             putExtra("line_to_id", itemId)
                             putExtra("line_to_type", type)
@@ -36,7 +36,7 @@ class TerminalSelectActivity : AppCompatActivity() {
                         startActivity(intent)
                     },
                     onNavigateToMain = { stationId, currentMode ->
-                        val intent = Intent(this, MainActivity::class.java).apply {
+                        val intent = Intent(this@TerminalSelectActivity, MainActivity::class.java).apply {
                             putExtra("dest_station_id", stationId)
                             putExtra("mode", currentMode)
                             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
