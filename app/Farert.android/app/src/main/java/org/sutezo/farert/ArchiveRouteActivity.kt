@@ -7,7 +7,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ShareCompat
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.ArchiveRouteScreen
 import org.sutezo.alps.*
@@ -70,17 +69,20 @@ class ArchiveRouteActivity : AppCompatActivity() {
     }
 
     private fun shareText(exportText: String) {
-        val mimeType = "text/plain"
-        val subject = "チケットフォルダ"
-
-        val shareIntent = ShareCompat.IntentBuilder.from(this)
-                .setChooserTitle(resources.getString(R.string.title_share_text))
-                .setType(mimeType)
-                .setText(exportText)
-                .setSubject(subject)
-                .intent
-        if (shareIntent.resolveActivity(this.packageManager) != null) {
-            startActivity(shareIntent)
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, exportText)
+            putExtra(Intent.EXTRA_SUBJECT, "チケットフォルダ")
+        }
+        
+        val chooserIntent = Intent.createChooser(
+            shareIntent, 
+            resources.getString(R.string.title_share_text)
+        )
+        
+        if (chooserIntent.resolveActivity(this.packageManager) != null) {
+            startActivity(chooserIntent)
         }
     }
 

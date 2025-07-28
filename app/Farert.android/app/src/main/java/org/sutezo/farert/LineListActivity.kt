@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.LineListScreen
 import org.sutezo.farert.ui.compose.LineListNavigationData
@@ -45,23 +46,34 @@ class LineListActivity : AppCompatActivity() {
                     srcLineId = srcLineId,
                     isTwoPane = isTwoPane,
                     onNavigateToStationList = { navigationData ->
-                        val intent = Intent(this, StationListActivity::class.java).apply {
-                            putExtra("mode", navigationData.mode)
-                            putExtra("line_id", navigationData.lineId)
-                            putExtra("line_to_type", navigationData.lineToType)
-                            if (navigationData.mode == "route") {
-                                putExtra("src_station_id", navigationData.srcStationId)
-                                putExtra("start_station_id", navigationData.startStationId)
-                            } else {
-                                putExtra("line_to_id", navigationData.lineToId)
+                        val intent = Intent(this@LineListActivity, StationListActivity::class.java).apply {
+                            val extras = buildMap {
+                                put("mode", navigationData.mode)
+                                put("line_id", navigationData.lineId)
+                                put("line_to_type", navigationData.lineToType)
+                                put("station_mode", navigationData.stationMode)
+                                
+                                if (navigationData.mode == "route") {
+                                    put("src_station_id", navigationData.srcStationId)
+                                    put("start_station_id", navigationData.startStationId)
+                                } else {
+                                    put("line_to_id", navigationData.lineToId)
+                                }
                             }
-                            putExtra("station_mode", navigationData.stationMode)
+                            
+                            extras.forEach { (key, value) ->
+                                when (value) {
+                                    is String -> putExtra(key, value)
+                                    is Int -> putExtra(key, value)
+                                }
+                            }
                         }
                         startActivity(intent)
                     },
                     onNavigateToTerminalSelect = {
-                        val intent = Intent(this, TerminalSelectActivity::class.java)
-                        intent.putExtra("mode", "autoroute")
+                        val intent = Intent(this@LineListActivity, TerminalSelectActivity::class.java).apply {
+                            putExtra("mode", "autoroute")
+                        }
                         startActivity(intent)
                     },
                     onNavigateUp = { finish() },
