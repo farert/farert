@@ -1,6 +1,8 @@
 package org.sutezo.farert.ui.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -8,9 +10,11 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sutezo.farert.R
 import org.sutezo.farert.ui.state.SettingsUiState
@@ -120,19 +124,40 @@ private fun SettingsContent(
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                             .fillMaxWidth()
+                            .padding(end = 8.dp),
+                        shape = RoundedCornerShape(12.dp)
                     )
                     
                     ExposedDropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        )
                     ) {
                         uiState.databaseOptions.forEachIndexed { index, option ->
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { 
+                                    Text(
+                                        text = option,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            lineHeight = 16.sp
+                                        )
+                                    ) 
+                                },
                                 onClick = {
                                     stateHolder.handleEvent(SettingsUiEvent.DatabaseSelectionChanged(index))
                                     expanded = false
-                                }
+                                },
+                                modifier = Modifier.height(40.dp),
+                                colors = MenuDefaults.itemColors(
+                                    textColor = MaterialTheme.colorScheme.onSurface
+                                )
                             )
                         }
                     }
