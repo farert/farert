@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.delay
 import org.sutezo.alps.RouteList
 import org.sutezo.alps.fareNumStr
@@ -275,7 +276,7 @@ private fun FolderListItem(
         onClick = onItemClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 0.dp)
             .scale(if (isDragging) 1.05f else 1f)
             .shadow(
                 elevation = if (isDragging) 8.dp else 4.dp,
@@ -285,9 +286,9 @@ private fun FolderListItem(
                 Brush.verticalGradient(
                     colors = if (isDragging) listOf(
                         Color(0xFF2A2A3E), // Lighter when dragging
-                        Color(0xFF26314E), 
-                        Color(0xFF1F4470), 
-                        Color(0xFF634493)  
+                        Color(0xFF26314E),
+                        Color(0xFF1F4470),
+                        Color(0xFF634493)
                     ) else listOf(
                         Color(0xFF1A1A2E), // Deep dark blue
                         Color(0xFF16213E), // Dark navy
@@ -320,14 +321,14 @@ private fun FolderListItem(
                         .padding(end = 8.dp)
                         .pointerInput(Unit) {
                             detectDragGestures(
-                                onDragStart = { 
+                                onDragStart = {
                                     isDragging = true
-                                    onDragStart() 
+                                    onDragStart()
                                 },
-                                onDragEnd = { 
+                                onDragEnd = {
                                     isDragging = false
                                     dragOffset = Offset.Zero
-                                    onDragEnd() 
+                                    onDragEnd()
                                 }
                             ) { change, dragAmount ->
                                 dragOffset += dragAmount
@@ -396,7 +397,7 @@ private fun FolderListItem(
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded },
-                    modifier = Modifier.width(120.dp)
+                    modifier = Modifier.width(140.dp)
                 ) {
                     OutlinedTextField(
                         value = fareTypes.getOrNull(selectedFareType) ?: "",
@@ -405,7 +406,9 @@ private fun FolderListItem(
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
-                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
+                        modifier = Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                            .clip(RoundedCornerShape(12.dp)),
                         textStyle = LocalTextStyle.current.copy(
                             fontSize = 12.sp,
                             color = Color.White
@@ -415,22 +418,44 @@ private fun FolderListItem(
                             unfocusedTextColor = Color.White,
                             focusedBorderColor = Color.White.copy(alpha = 0.7f),
                             unfocusedBorderColor = Color.White.copy(alpha = 0.5f)
-                        )
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
                     
                     ExposedDropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF2D1B69).copy(alpha = 0.95f), // Rich purple
+                                    Color(0xFF11998e).copy(alpha = 0.95f), // Teal  
+                                    Color(0xFF38ef7d).copy(alpha = 0.95f)  // Light green
+                                )
+                            )
+                        )
                     ) {
                         fareTypes.forEachIndexed { typeIndex, fareType ->
                             DropdownMenuItem(
-                                text = { Text(fareType, fontSize = 12.sp, color = Color.Black) },
+                                text = { 
+                                    Text(
+                                        text = fareType, 
+                                        fontSize = 12.sp, 
+                                        color = Color.White,
+                                        textAlign = TextAlign.Center,
+                                        lineHeight = 12.sp
+                                    ) 
+                                },
                                 onClick = {
                                     selectedFareType = typeIndex
                                     expanded = false
                                     val aggregateType = Routefolder.Aggregate.entries[typeIndex]
                                     onAggregateTypeChange(aggregateType)
-                                }
+                                },
+                                modifier = Modifier.height(36.dp),
+                                colors = MenuDefaults.itemColors(
+                                    textColor = Color.White
+                                )
                             )
                         }
                     }
