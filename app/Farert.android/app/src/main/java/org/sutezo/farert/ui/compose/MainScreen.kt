@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import org.sutezo.alps.RouteList
 import org.sutezo.alps.RouteUtil
 import org.sutezo.farert.R
+import org.sutezo.alps.Route
 import org.sutezo.alps.fareNumStr
 import org.sutezo.alps.kmNumStr
 import org.sutezo.farert.ui.state.MainUiState
@@ -58,16 +59,23 @@ fun MainScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            FolderDrawerContent(
-                route = uiState.route,
-                onRouteSelected = { selectedRoute ->
-                    stateHolder.handleEvent(MainUiEvent.SetupRoute(selectedRoute.route_script()))
-                    scope.launch {
-                        drawerState.close()
-                    }
-                },
-                modifier = Modifier.fillMaxHeight()
-            )
+            // Force recomposition when drawer state changes or route changes
+            val isDrawerOpen by remember { derivedStateOf { drawerState.isOpen } }
+            val currentRoute = uiState.route
+            
+            // Key ensures recomposition when drawer opens or route changes
+            key(isDrawerOpen, currentRoute) {
+                FolderDrawerContent(
+                    route = currentRoute,
+                    onRouteSelected = { selectedRoute ->
+                        stateHolder.handleEvent(MainUiEvent.SetupRoute(selectedRoute.route_script()))
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+                    modifier = Modifier.fillMaxHeight()
+                )
+            }
         }
     ) {
         Scaffold(
@@ -77,8 +85,10 @@ fun MainScreen(
             FarertTopAppBar(
                 title = stringResource(R.string.title_main_view),
                 onBackClick = {
+                    println("DEBUG: Hamburger menu tapped, opening drawer")
                     scope.launch {
                         drawerState.open()
+                        println("DEBUG: Drawer state opened")
                     }
                 },
                 showMenu = showMenu,
@@ -538,11 +548,14 @@ fun BottomNavigationBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderDrawerContent(
-    route: RouteList,
+    route: Route?,
     onRouteSelected: (RouteList) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    // Debug: Add a log to see if this is being called
+    println("DEBUG: FolderDrawerContent called with route: ${route?.count ?: "null"}")
+    
     ModalDrawerSheet(modifier = modifier) {
         // FolderViewScreenの内容を埋め込み
         FolderViewScreen(
