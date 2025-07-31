@@ -92,6 +92,7 @@ private fun SettingsContent(
         modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        /*
         // Database Selection
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -164,7 +165,7 @@ private fun SettingsContent(
                 }
             }
         }
-        
+        */
         // Kokura-Shinzai Setting
         Card(
             modifier = Modifier.fillMaxWidth()
