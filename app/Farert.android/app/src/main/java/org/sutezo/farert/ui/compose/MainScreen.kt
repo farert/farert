@@ -52,8 +52,9 @@ fun MainScreen(
     }
     
     // Force recomposition when route changes
-    LaunchedEffect(uiState.route) {
+    LaunchedEffect(uiState.route, uiState.route.hashCode()) {
         // This will trigger recomposition when route object changes
+        println("DEBUG: MainScreen recomposition triggered - route.count=${uiState.route.count}")
     }
     
     ModalNavigationDrawer(
@@ -124,7 +125,10 @@ fun MainScreen(
                 canGoBack = uiState.canGoBack,
                 canReverse = uiState.canReverse,
                 onBackPressed = { stateHolder.handleEvent(MainUiEvent.GoBack) },
-                onReverseRoute = { stateHolder.handleEvent(MainUiEvent.ReverseRoute) },
+                onReverseRoute = { 
+                    println("DEBUG: Reverse button tapped")
+                    stateHolder.handleEvent(MainUiEvent.ReverseRoute) 
+                },
                 onArchiveRoute = {
                     val routeScript = if (uiState.route.count <= 1) "" else uiState.route.route_script()
                     onNavigateToArchive(routeScript)
@@ -532,7 +536,10 @@ fun BottomNavigationBar(
             icon = { Icon(Icons.Default.SwapHoriz, contentDescription = null) },
             label = { Text(stringResource(R.string.reverse)) },
             selected = false,
-            onClick = onReverseRoute,
+            onClick = {
+                println("DEBUG: NavigationBarItem reverse clicked, canReverse=$canReverse")
+                onReverseRoute()
+            },
             enabled = canReverse
         )
         
