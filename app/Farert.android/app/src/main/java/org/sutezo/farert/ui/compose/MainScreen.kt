@@ -69,7 +69,9 @@ fun MainScreen(
                 FolderDrawerContent(
                     route = currentRoute,
                     onRouteSelected = { selectedRoute ->
-                        stateHolder.handleEvent(MainUiEvent.SetupRoute(selectedRoute.route_script()))
+                        val routeScript = selectedRoute.route_script()
+                        // Use RequestRouteChange to handle confirmation dialog logic
+                        stateHolder.handleEvent(MainUiEvent.RequestRouteChange(routeScript))
                         scope.launch {
                             drawerState.close()
                         }
@@ -359,6 +361,39 @@ fun MainScreen(
                 }
             }
         }
+    }
+    
+    // Route selection confirmation dialog
+    if (uiState.showRouteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                stateHolder.handleEvent(MainUiEvent.CancelRouteChange)
+            },
+            title = {
+                Text(stringResource(R.string.main_alert_query_left_route_overwrite_title))
+            },
+            text = {
+                Text(stringResource(R.string.main_alert_query_left_route_overwrite_mesg))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        stateHolder.handleEvent(MainUiEvent.ConfirmRouteChange)
+                    }
+                ) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        stateHolder.handleEvent(MainUiEvent.CancelRouteChange)
+                    }
+                ) {
+                    Text("No")
+                }
+            }
+        )
     }
     }
 }

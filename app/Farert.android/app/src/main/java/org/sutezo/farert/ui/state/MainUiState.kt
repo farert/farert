@@ -13,7 +13,9 @@ data class MainUiState(
     val canReverse: Boolean = false,
     val enableFareDetail: Boolean = false,
     val terminalButtonText: String = "",
-    val osakakanDetour: OsakaKanDetour = OsakaKanDetour.DISABLE
+    val osakakanDetour: OsakaKanDetour = OsakaKanDetour.DISABLE,
+    val showRouteConfirmDialog: Boolean = false,
+    val pendingRouteScript: String? = null
 ) {
     enum class OsakaKanDetour {
         DISABLE,
