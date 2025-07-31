@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import org.sutezo.alps.Route
 import org.sutezo.alps.RouteList
 import org.sutezo.alps.fareNumStr
 import org.sutezo.alps.kmNumStr
@@ -54,10 +55,13 @@ import org.sutezo.farert.Routefolder
 @Composable
 fun FolderViewScreen(
     routefolder: Routefolder,
-    route: RouteList?,
+    route: Route?,
     onItemClick: (RouteList) -> Unit,
     onCloseDrawer: () -> Unit
 ) {
+    // Debug: Add a log to see if this is being called
+    println("DEBUG: FolderViewScreen called with route: ${route?.count ?: "null"}")
+    
     val context = LocalContext.current
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
@@ -79,15 +83,7 @@ fun FolderViewScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF2D1B69), // Rich purple
-                        Color(0xFF11998e), // Teal  
-                        Color(0xFF38ef7d)  // Light green
-                    )
-                )
-            )
+            .background(colorResource(R.color.colorTicketTypeDropDownBackground))
     ) {
         // Header Section
         FolderHeader(
@@ -95,8 +91,9 @@ fun FolderViewScreen(
             route = route,
             itemCount = itemCount,
             onAddItem = {
-                route?.let {
-                    val rl = RouteList(it)
+                route?.let { routeObj ->
+                    val rl = RouteList()
+                    rl.assign(routeObj, -1)  // Copy all route items
                     routefolder.add(context, rl)
                     refreshTrigger = (refreshTrigger + 1) % 100000
                 }
@@ -278,27 +275,32 @@ private fun FolderHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left side - Export button
-            IconButton(
-                onClick = onExport,
-                enabled = itemCount > 0
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = "Export",
-                    tint = colorResource(R.color.colorTicketTypeText)
-                )
+            // Left side - Export button (show only when items exist)
+            if (itemCount > 0) {
+                IconButton(
+                    onClick = onExport
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Export",
+                        tint = colorResource(R.color.colorTicketTypeText)
+                    )
+                }
+            } else {
+                // Spacer to maintain layout when Share button is hidden
+                Spacer(modifier = Modifier.size(48.dp))
             }
 
-            // Right side - Add button
-            TextButton(
-                onClick = onAddItem,
-                enabled = route != null
-            ) {
-                Text(
-                    text = stringResource(R.string.btn_add),
-                    color = colorResource(R.color.colorTicketTypeText)
-                )
+            // Right side - Add button (show only when route is available)
+            if (route != null && route.count > 0) {
+                TextButton(
+                    onClick = onAddItem
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_add),
+                        color = colorResource(R.color.colorTicketTypeText)
+                    )
+                }
             }
         }
     }
@@ -511,7 +513,7 @@ private fun FolderListItem(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
                                     Color(0xFF2D1B69).copy(alpha = 0.95f), // Rich purple
-                                    Color(0xFF11998e).copy(alpha = 0.95f), // Teal  
+                                    Color(0xFF11998e).copy(alpha = 0.95f), // Teal
                                     Color(0xFF38ef7d).copy(alpha = 0.95f)  // Light green
                                 )
                             )
@@ -614,7 +616,7 @@ fun FolderViewScreenPreview() {
     MaterialTheme {
         FolderViewScreen(
             routefolder = Routefolder(),
-            route = null,
+            route = Route(),
             onItemClick = {},
             onCloseDrawer = {}
         )
