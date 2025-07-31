@@ -234,8 +234,8 @@ class MainActivity : ComponentActivity() {
                 update_fare(rc)
             }
             "archive" -> {
-                val rc = mRoute.setup_route(newScr)
-                update_fare(rc)
+                // Use StateHolder to handle confirmation dialog
+                mStateHolder?.handleEvent(MainUiEvent.RequestRouteChange(newScr))
             }
             else -> {
                 // illegal(nothing)

@@ -13,4 +13,7 @@ sealed interface MainUiEvent {
     data class AutoRoute(val stationId: Int, val mode: Int) : MainUiEvent
     data class ToggleOsakaKanDetour(val farMode: Boolean) : MainUiEvent
     data object ClearError : MainUiEvent
+    data class RequestRouteChange(val routeScript: String) : MainUiEvent
+    data object ConfirmRouteChange : MainUiEvent
+    data object CancelRouteChange : MainUiEvent
 }
