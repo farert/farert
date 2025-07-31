@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
+import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.material.icons.Icons
@@ -34,9 +35,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
-import kotlinx.coroutines.delay
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.zIndex
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import org.sutezo.alps.RouteList
 import org.sutezo.alps.fareNumStr
 import org.sutezo.alps.kmNumStr
@@ -53,14 +59,22 @@ fun FolderViewScreen(
     onCloseDrawer: () -> Unit
 ) {
     val context = LocalContext.current
-    var refreshTrigger by remember { mutableStateOf(0) }
-    var itemCount by remember { mutableStateOf(routefolder.count()) }
-    var draggedItem by remember { mutableStateOf<Int?>(null) }
+    var refreshTrigger by remember { mutableIntStateOf(0) }
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+    var originalDragIndex by remember { mutableStateOf<Int?>(null) }
+    val lazyListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     
-    // Reload when routefolder changes
-    LaunchedEffect(refreshTrigger) {
-        itemCount = routefolder.count()
+    // Create observable item list that forces recomposition
+    // Force recomposition by recreating the items list every time refreshTrigger changes
+    val items = remember(refreshTrigger) {
+        val count = routefolder.count()
+        (0 until count).map { index ->
+            routefolder.routeItem(index)
+        }
     }
+    
+    val itemCount = items.size
     
     Column(
         modifier = Modifier
@@ -84,7 +98,7 @@ fun FolderViewScreen(
                 route?.let {
                     val rl = RouteList(it)
                     routefolder.add(context, rl)
-                    refreshTrigger++
+                    refreshTrigger = (refreshTrigger + 1) % 100000
                 }
             },
             onExport = {
@@ -109,12 +123,12 @@ fun FolderViewScreen(
         
         // List Section
         LazyColumn(
-            state = rememberLazyListState(),
+            state = lazyListState,
             modifier = Modifier.fillMaxSize()
         ) {
             itemsIndexed(
-                items = (0 until itemCount).map { routefolder.routeItem(it) },
-                key = { index, _ -> index }
+                items = items,
+                key = { index, routeItem -> "route_${index}_${routeItem.departureStationId()}_${routeItem.arriveStationId()}_$refreshTrigger" }
             ) { index, routeItem ->
                 FolderListItem(
                     index = index,
@@ -126,18 +140,57 @@ fun FolderViewScreen(
                     },
                     onRemove = {
                         routefolder.remove(context, index)
-                        refreshTrigger++
+                        refreshTrigger = (refreshTrigger + 1) % 100000
                     },
                     onAggregateTypeChange = { newType ->
                         routefolder.setAggregateType(context, index, newType)
                     },
-                    onDragStart = { draggedItem = index },
-                    onDragEnd = { draggedItem = null },
-                    onSwap = { fromIndex, toIndex ->
-                        if (routefolder.swap(context, fromIndex, toIndex)) {
-                            refreshTrigger++
+                    onDragStart = { 
+                        originalDragIndex = index
+                        dragOffset = 0f
+                    },
+                    onDragEnd = { targetIndex ->
+                        // Perform final drop operation
+                        originalDragIndex?.let { fromIndex ->
+                            if (fromIndex != targetIndex && targetIndex in 0 until itemCount) {
+                                // Move item by performing multiple swaps
+                                var currentIndex = fromIndex
+                                val direction = if (targetIndex > fromIndex) 1 else -1
+                                
+                                while (currentIndex != targetIndex) {
+                                    val nextIndex = currentIndex + direction
+                                    if (nextIndex in 0 until itemCount && 
+                                        routefolder.swap(context, currentIndex, nextIndex)) {
+                                        currentIndex = nextIndex
+                                    } else {
+                                        break
+                                    }
+                                }
+                                
+                                // Force immediate UI refresh with unique value
+                                refreshTrigger = (refreshTrigger + 1) % 100000
+                            }
                         }
-                    }
+                        // Clear drag state
+                        originalDragIndex = null
+                        dragOffset = 0f
+                    },
+                    onCalculateTargetIndex = { dragY ->
+                        // Calculate target index based on drag position
+                        val itemHeight = 80f // Approximate item height in dp  
+                        val positionsToMove = (dragY / itemHeight).toInt()
+                        val targetIndex = (originalDragIndex ?: index) + positionsToMove
+                        targetIndex.coerceIn(0, itemCount - 1)
+                    },
+                    isDraggedItem = originalDragIndex == index,
+                    dragOffset = if (originalDragIndex == index) dragOffset else 0f,
+                    onUpdateDragOffset = { offset -> 
+                        if (originalDragIndex == index) {
+                            dragOffset = offset
+                        }
+                    },
+                    lazyListState = lazyListState,
+                    scope = scope
                 )
             }
         }
@@ -261,30 +314,37 @@ private fun FolderListItem(
     onRemove: () -> Unit,
     onAggregateTypeChange: (Routefolder.Aggregate) -> Unit,
     onDragStart: () -> Unit = {},
-    onDragEnd: () -> Unit = {},
-    onSwap: (Int, Int) -> Unit = { _, _ -> }
+    onDragEnd: (Int) -> Unit = {},
+    onCalculateTargetIndex: (Float) -> Int = { 0 },
+    isDraggedItem: Boolean = false,
+    dragOffset: Float = 0f,
+    onUpdateDragOffset: (Float) -> Unit = {},
+    lazyListState: LazyListState,
+    scope: CoroutineScope
 ) {
     val fareTypes = stringArrayResource(R.array.list_ticket_type)
     var expanded by remember { mutableStateOf(false) }
     var selectedFareType by remember { 
         mutableIntStateOf(routefolder.aggregateType(index).ordinal)
     }
-    var isDragging by remember { mutableStateOf(false) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    val haptic = LocalHapticFeedback.current
+    var cumulativeDragY by remember { mutableFloatStateOf(0f) }
     
     Card(
-        onClick = onItemClick,
+        onClick = if (isDraggedItem) { {} } else onItemClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 0.dp)
-            .scale(if (isDragging) 1.05f else 1f)
+            .zIndex(if (isDraggedItem) 1f else 0f)
+            .offset(y = if (isDraggedItem) dragOffset.dp else 0.dp)
+            .scale(if (isDraggedItem) 1.05f else 1f)
             .shadow(
-                elevation = if (isDragging) 8.dp else 4.dp,
+                elevation = if (isDraggedItem) 8.dp else 4.dp,
                 shape = RoundedCornerShape(12.dp)
             )
             .background(
                 Brush.verticalGradient(
-                    colors = if (isDragging) listOf(
+                    colors = if (isDraggedItem) listOf(
                         Color(0xFF2A2A3E), // Lighter when dragging
                         Color(0xFF26314E),
                         Color(0xFF1F4470),
@@ -315,32 +375,54 @@ private fun FolderListItem(
                 Icon(
                     imageVector = Icons.Default.DragHandle,
                     contentDescription = "Drag handle",
-                    tint = if (isDragging) Color.Yellow else Color.White.copy(alpha = 0.7f),
+                    tint = if (isDraggedItem) Color.Yellow else Color.White.copy(alpha = 0.7f),
                     modifier = Modifier
                         .size(24.dp)
                         .padding(end = 8.dp)
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragStart = {
-                                    isDragging = true
+                        .pointerInput(index) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = { offset ->
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onDragStart()
+                                    cumulativeDragY = 0f
                                 },
                                 onDragEnd = {
-                                    isDragging = false
-                                    dragOffset = Offset.Zero
-                                    onDragEnd()
+                                    // Calculate final target index and call onDragEnd
+                                    val targetIndex = onCalculateTargetIndex(cumulativeDragY)
+                                    onDragEnd(targetIndex)
+                                    cumulativeDragY = 0f
                                 }
                             ) { change, dragAmount ->
-                                dragOffset += dragAmount
-                                // Simple drag threshold for swapping
-                                if (dragOffset.y > 100f) {
-                                    // Drag down - swap with next item
-                                    onSwap(index, index + 1)
-                                    dragOffset = Offset.Zero
-                                } else if (dragOffset.y < -100f) {
-                                    // Drag up - swap with previous item
-                                    onSwap(index, index - 1)
-                                    dragOffset = Offset.Zero
+                                // Simple cumulative drag tracking
+                                cumulativeDragY += dragAmount.y
+                                onUpdateDragOffset(cumulativeDragY)
+                                
+                                // Auto-scroll logic
+                                val layoutInfo = lazyListState.layoutInfo
+                                
+                                // Check if we need to scroll
+                                val currentItemTop = layoutInfo.visibleItemsInfo.find { it.index == index }?.offset ?: 0
+                                val draggedY = currentItemTop + cumulativeDragY
+                                
+                                // Auto-scroll when near edges
+                                when {
+                                    draggedY < layoutInfo.viewportStartOffset + 100 -> {
+                                        // Scroll up
+                                        scope.launch {
+                                            if (index > 0) {
+                                                lazyListState.animateScrollToItem(maxOf(0, index - 1))
+                                            }
+                                        }
+                                    }
+                                    draggedY > layoutInfo.viewportEndOffset - 100 -> {
+                                        // Scroll down
+                                        scope.launch {
+                                            val totalItems = lazyListState.layoutInfo.totalItemsCount
+                                            if (index < totalItems - 1) {
+                                                lazyListState.animateScrollToItem(minOf(totalItems - 1, index + 1))
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -516,7 +598,12 @@ fun FolderListItemPreview() {
             onAggregateTypeChange = {},
             onDragStart = {},
             onDragEnd = {},
-            onSwap = { _, _ -> }
+            onCalculateTargetIndex = { 0 },
+            isDraggedItem = false,
+            dragOffset = 0f,
+            onUpdateDragOffset = {},
+            lazyListState = rememberLazyListState(),
+            scope = rememberCoroutineScope()
         )
     }
 }
