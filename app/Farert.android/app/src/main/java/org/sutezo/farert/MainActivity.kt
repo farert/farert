@@ -78,8 +78,17 @@ class MainActivity : ComponentActivity() {
                 val stateHolder = androidx.lifecycle.viewmodel.compose.viewModel<org.sutezo.farert.ui.state.MainStateHolder>()
                 mStateHolder = stateHolder
                 
+                // Set up callback for route changes
+                stateHolder.onRouteChanged = { updatedRoute ->
+                    // Update MainActivity's mRoute to keep legacy code working
+                    mRoute = updatedRoute
+                    
+                    // Also update FarertApp's ds route for ResultView and other legacy components
+                    (application as? FarertApp)?.ds?.assign(updatedRoute, -1)
+                }
+                
                 // Initialize the state holder with the existing route
-                LaunchedEffect(mRoute) {
+                LaunchedEffect(Unit) {
                     try {
                         stateHolder.initializeRoute(mRoute)
                     } catch (e: Exception) {
@@ -332,6 +341,9 @@ class MainActivity : ComponentActivity() {
         
         // StateHolderに変更を通知
         mStateHolder?.updateRoute(mRoute)
+        
+        // MainActivity's mRoute should be kept in sync for legacy code compatibility
+        // But we need to avoid circular dependencies by only updating when necessary
     }
 
     // 発駅設定
