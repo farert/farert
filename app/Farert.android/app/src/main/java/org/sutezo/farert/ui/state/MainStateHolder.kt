@@ -66,6 +66,18 @@ class MainStateHolder : ViewModel() {
             is MainUiEvent.ClearError -> {
                 uiState = uiState.copy(error = null)
             }
+            
+            is MainUiEvent.RequestRouteChange -> {
+                handleRequestRouteChange(event.routeScript)
+            }
+            
+            is MainUiEvent.ConfirmRouteChange -> {
+                handleConfirmRouteChange()
+            }
+            
+            is MainUiEvent.CancelRouteChange -> {
+                handleCancelRouteChange()
+            }
         }
     }
     
@@ -265,5 +277,36 @@ class MainStateHolder : ViewModel() {
         
         // Notify MainActivity of route changes (for legacy compatibility)
         onRouteChanged?.invoke(uiState.route)
+    }
+    
+    private fun handleRequestRouteChange(routeScript: String) {
+        // Check if current route exists and is different from requested route
+        if (uiState.route.count > 1 && uiState.route.route_script() != routeScript) {
+            // Show confirmation dialog
+            uiState = uiState.copy(
+                showRouteConfirmDialog = true,
+                pendingRouteScript = routeScript
+            )
+        } else {
+            // Directly apply the route
+            handleSetupRoute(routeScript)
+        }
+    }
+    
+    private fun handleConfirmRouteChange() {
+        uiState.pendingRouteScript?.let { routeScript ->
+            handleSetupRoute(routeScript)
+        }
+        uiState = uiState.copy(
+            showRouteConfirmDialog = false,
+            pendingRouteScript = null
+        )
+    }
+    
+    private fun handleCancelRouteChange() {
+        uiState = uiState.copy(
+            showRouteConfirmDialog = false,
+            pendingRouteScript = null
+        )
     }
 }
