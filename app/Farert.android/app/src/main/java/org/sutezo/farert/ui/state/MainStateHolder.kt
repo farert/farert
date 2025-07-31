@@ -13,6 +13,9 @@ class MainStateHolder : ViewModel() {
     
     var uiState by mutableStateOf(MainUiState())
         private set
+    
+    // Callback for notifying MainActivity when route changes
+    var onRouteChanged: ((Route) -> Unit)? = null
 
     fun handleEvent(event: MainUiEvent) {
         when (event) {
@@ -81,9 +84,13 @@ class MainStateHolder : ViewModel() {
     
     private fun handleReverseRoute() = viewModelScope.launch {
         try {
+            println("DEBUG: handleReverseRoute called - before reverse: route.count=${uiState.route.count}")
             val rc = uiState.route.reverse()
+            println("DEBUG: handleReverseRoute - reverse() returned: $rc")
             updateFare(rc)
+            println("DEBUG: handleReverseRoute completed - after reverse: route.count=${uiState.route.count}")
         } catch (e: Exception) {
+            println("DEBUG: handleReverseRoute error: ${e.message}")
             uiState = uiState.copy(error = e.message)
         }
     }
@@ -239,16 +246,24 @@ class MainStateHolder : ViewModel() {
         }
         
         uiState = uiState.copy(
-            route = uiState.route, // Ensure route object is updated in state
+            route = Route(uiState.route), // Create new Route object to trigger recomposition
             fareInfo = fareInfo,
             statusMessage = statusMsg,
             canGoBack = uiState.route.count > 0,
             canReverse = uiState.route.count > 1 && (fareInfo?.let { 
-                CalcRoute(uiState.route).isAvailableReverse 
-            } ?: false),
+                val result = CalcRoute(uiState.route).isAvailableReverse
+                println("DEBUG: canReverse - route.count=${uiState.route.count}, fareInfo!=null=${fareInfo != null}, isAvailableReverse=$result")
+                result
+            } ?: run {
+                println("DEBUG: canReverse - route.count=${uiState.route.count}, fareInfo=null")
+                false
+            }),
             enableFareDetail = uiState.route.count > 1,
             terminalButtonText = terminalText,
             osakakanDetour = osakakanDetour
         )
+        
+        // Notify MainActivity of route changes (for legacy compatibility)
+        onRouteChanged?.invoke(uiState.route)
     }
 }
