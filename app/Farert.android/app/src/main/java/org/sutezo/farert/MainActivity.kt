@@ -441,7 +441,7 @@ class MainActivity : ComponentActivity() {
             } else {
                 // result display
                 val intent = Intent(this@MainActivity, ResultViewActivity::class.java).apply {
-                    putExtra("arrive", selectItem + 2)
+                    putExtra("arrive", selectItem + 1)
                     // Pass current route options to ResultView
                     putExtra("stocktokai", ResultViewUiState.Option.N_A.ordinal)
                     putExtra("neerest", ResultViewUiState.Option.N_A.ordinal) 
