@@ -133,6 +133,16 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
+                            
+                            if (uiState.showOsakakanMenu) {
+                                DropdownMenuItem(
+                                    text = { Text(uiState.osakakanMenuTitle) },
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        stateHolder.handleEvent(ResultViewUiEvent.OsakakanClicked)
+                                    }
+                                )
+                            }
                         }
                     }
                 },

@@ -6,6 +6,7 @@ sealed interface ResultViewUiEvent {
     data object MeihanCityClicked : ResultViewUiEvent
     data object LongRouteClicked : ResultViewUiEvent
     data object Rule115Clicked : ResultViewUiEvent
+    data object OsakakanClicked : ResultViewUiEvent
     data object ShareClicked : ResultViewUiEvent
     data object ClearError : ResultViewUiEvent
 }
