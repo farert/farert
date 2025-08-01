@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.sutezo.farert.ui.theme.FarertTheme
 import org.sutezo.farert.ui.compose.MainScreen
+import org.sutezo.farert.ui.state.ResultViewUiState
 import org.sutezo.farert.ui.state.MainUiEvent
 import org.sutezo.farert.ui.state.MainStateHolderProvider
 import org.sutezo.alps.*
@@ -108,6 +109,25 @@ class MainActivity : ComponentActivity() {
                     onNavigateToFareDetail = {
                         val intent = Intent(this@MainActivity, ResultViewActivity::class.java).apply {
                             putExtra("arrive", -1)
+                            // Pass current route options to ResultView
+                            putExtra("stocktokai", ResultViewUiState.Option.N_A.ordinal)
+                            putExtra("neerest", ResultViewUiState.Option.N_A.ordinal) 
+                            putExtra("sperule", if (mRoute.routeFlag.rule_en()) {
+                                if (mRoute.routeFlag.no_rule()) ResultViewUiState.Option.TRUE.ordinal 
+                                else ResultViewUiState.Option.FALSE.ordinal
+                            } else ResultViewUiState.Option.N_A.ordinal)
+                            putExtra("meihancity", if (mRoute.routeFlag.isMeihanCityEnable) {
+                                if (mRoute.routeFlag.isStartAsCity) ResultViewUiState.Option.TRUE.ordinal 
+                                else ResultViewUiState.Option.FALSE.ordinal
+                            } else ResultViewUiState.Option.N_A.ordinal)
+                            putExtra("longroute", if (mRoute.routeFlag.isEnableLongRoute) {
+                                if (mRoute.routeFlag.isLongRoute) ResultViewUiState.Option.TRUE.ordinal 
+                                else ResultViewUiState.Option.FALSE.ordinal
+                            } else ResultViewUiState.Option.N_A.ordinal)
+                            putExtra("rule115", if (mRoute.routeFlag.isEnableRule115) {
+                                if (mRoute.routeFlag.isRule115specificTerm) ResultViewUiState.Option.TRUE.ordinal 
+                                else ResultViewUiState.Option.FALSE.ordinal
+                            } else ResultViewUiState.Option.N_A.ordinal)
                         }
                         startActivity(intent)
                     },
@@ -325,21 +345,12 @@ class MainActivity : ComponentActivity() {
             dlg.show()
         }
 
-        mOsakakan_detour = OSAKA_KAN.DISABLE
-        if (1 < mRoute.count) {
-            val cr = CalcRoute(mRoute)
-            val fi = cr.calcFareInfo()
-            // 大阪環状線
-            if (mRoute.isOsakakanDetourEnable) {
-                mOsakakan_detour = if (mRoute.isOsakakanDetour) {
-                    OSAKA_KAN.FAR
-                } else {
-                    OSAKA_KAN.NEAR
-                }
-            }
-        }
+        // 大阪環状線の状態管理はStateHolderで行うため、ここでの処理は不要
         
         // StateHolderに変更を通知
+        println("DEBUG: MainActivity.update_fare - mRoute.count=${mRoute.count}")
+        println("DEBUG: MainActivity.update_fare - mRoute.isOsakakanDetourEnable=${mRoute.isOsakakanDetourEnable}")
+        println("DEBUG: MainActivity.update_fare - mRoute.isOsakakanDetour=${mRoute.isOsakakanDetour}")
         mStateHolder?.updateRoute(mRoute)
         
         // MainActivity's mRoute should be kept in sync for legacy code compatibility
@@ -368,16 +379,8 @@ class MainActivity : ComponentActivity() {
     }
     
     private fun toggleOsakakanDetour() {
-        if (1 < mRoute.count && mOsakakan_detour != OSAKA_KAN.DISABLE) {
-            mOsakakan_detour = if (mOsakakan_detour == OSAKA_KAN.FAR) {
-                OSAKA_KAN.NEAR
-            } else {
-                OSAKA_KAN.FAR
-            }
-            val far = (mOsakakan_detour == OSAKA_KAN.FAR)
-            val rc = mRoute.setDetour(far)   // True=Far, False=Nearest
-            update_fare(rc)
-        }
+        // Use StateHolder to handle Osaka Kanjou Line toggle
+        mStateHolder?.handleEvent(MainUiEvent.ToggleOsakaKanDetour(true))
     }
 
     /*
@@ -439,6 +442,25 @@ class MainActivity : ComponentActivity() {
                 // result display
                 val intent = Intent(this@MainActivity, ResultViewActivity::class.java).apply {
                     putExtra("arrive", selectItem + 2)
+                    // Pass current route options to ResultView
+                    putExtra("stocktokai", ResultViewUiState.Option.N_A.ordinal)
+                    putExtra("neerest", ResultViewUiState.Option.N_A.ordinal) 
+                    putExtra("sperule", if (mRoute.routeFlag.rule_en()) {
+                        if (mRoute.routeFlag.no_rule()) ResultViewUiState.Option.TRUE.ordinal 
+                        else ResultViewUiState.Option.FALSE.ordinal
+                    } else ResultViewUiState.Option.N_A.ordinal)
+                    putExtra("meihancity", if (mRoute.routeFlag.isMeihanCityEnable) {
+                        if (mRoute.routeFlag.isStartAsCity) ResultViewUiState.Option.TRUE.ordinal 
+                        else ResultViewUiState.Option.FALSE.ordinal
+                    } else ResultViewUiState.Option.N_A.ordinal)
+                    putExtra("longroute", if (mRoute.routeFlag.isEnableLongRoute) {
+                        if (mRoute.routeFlag.isLongRoute) ResultViewUiState.Option.TRUE.ordinal 
+                        else ResultViewUiState.Option.FALSE.ordinal
+                    } else ResultViewUiState.Option.N_A.ordinal)
+                    putExtra("rule115", if (mRoute.routeFlag.isEnableRule115) {
+                        if (mRoute.routeFlag.isRule115specificTerm) ResultViewUiState.Option.TRUE.ordinal 
+                        else ResultViewUiState.Option.FALSE.ordinal
+                    } else ResultViewUiState.Option.N_A.ordinal)
                 }
                 startActivity(intent)
             }

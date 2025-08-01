@@ -112,13 +112,26 @@ fun MainScreen(
                             onNavigateToVersion()
                         }
                     )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.title_specific_calc_option_osakakan)) },
-                        onClick = {
-                            showMenu = false
-                            onToggleOsakakanDetour()
-                        }
-                    )
+                    // Show Osaka Kanjou Line menu only when available
+                    println("DEBUG: MainScreen - osakakanDetour = ${uiState.osakakanDetour}")
+                    if (uiState.osakakanDetour != MainUiState.OsakaKanDetour.DISABLE) {
+                        println("DEBUG: MainScreen - Showing Osaka Kanjou Line menu")
+                        DropdownMenuItem(
+                            text = { 
+                                Text(stringResource(
+                                    if (uiState.osakakanDetour == MainUiState.OsakaKanDetour.FAR) {
+                                        R.string.result_menu_osakakan_near
+                                    } else {
+                                        R.string.result_menu_osakakan_far
+                                    }
+                                ))
+                            },
+                            onClick = {
+                                showMenu = false
+                                onToggleOsakakanDetour()
+                            }
+                        )
+                    }
                 }
             )
         },

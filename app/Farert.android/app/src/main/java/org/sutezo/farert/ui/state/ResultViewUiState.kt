@@ -25,6 +25,8 @@ data class ResultViewUiState(
     val longRouteMenuTitle: String = "",
     val showRule115Menu: Boolean = false,
     val rule115MenuTitle: String = "",
+    val showOsakakanMenu: Boolean = false,
+    val osakakanMenuTitle: String = "",
     
     val isLoading: Boolean = false,
     val error: String? = null
