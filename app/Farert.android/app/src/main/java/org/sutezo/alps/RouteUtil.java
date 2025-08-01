@@ -65,7 +65,7 @@ public class RouteUtil {
     // length define(UTF-8)
     final static int MAX_STATION_CHR = 64;             // 38
 
-    final static int MAX_JCT = 340;		// 319
+    final static int MAX_JCT = 360;		// 319
 
     final static int MAX_COMPNPASSSET = 25;       // 会社線 限定的 通過連絡運輸での 有効路線数の最大 */
 
