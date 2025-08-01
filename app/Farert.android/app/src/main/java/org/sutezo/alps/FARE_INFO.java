@@ -241,7 +241,8 @@ public class FARE_INFO {
                 ASSERT (this.base_sales_km == this.sales_km);
                 ASSERT(this.base_calc_km == _total_jr_calc_km);
                 ASSERT(_total_jr_calc_km == _total_jr_calc_km);
-                if (RouteUtil.IS_YAMATE(this.flag)) {
+                if (RouteUtil.IS_YAMATE(this.flag) && RouteDB.getInstance().tax() != 10) {
+                                        // 2025.4.1 大阪環状線特例廃止
                     System.out.print("fare(osaka-kan)\n");
                     _total_jr_fare = Fare_osakakan(_total_jr_sales_km);
                 } else {
@@ -2004,6 +2005,10 @@ public class FARE_INFO {
         int fare;
         int c_km;
 
+        fare = Fare_table("bspekm", "b", km);
+        if (0 != fare) {
+            return fare;
+        }
         if (km < 31) {							// 1 to 3km
             if (RouteDB.getInstance().tax() == 10) {
                 return 147;
@@ -2069,34 +2074,29 @@ public class FARE_INFO {
         int fare;
         int c_km;
 
-        if (km < 31) {							// 1 to 3km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 147;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 140;
-            } else {
-                return 144;
+        if (RouteDB.getInstance().tax() != 10) {
+            if (km < 31) {							// 1 to 3km
+                if (RouteDB.getInstance().tax() == 5) {
+                    return 140;
+                } else {
+                    return 144;
+                }
+            }
+            if (km < 61) {							// 4 to 6km
+                if (RouteDB.getInstance().tax() == 5) {
+                    return 180;
+                } else {
+                    return 185;
+                }
+            }
+            if (km < 101) {							// 7 to 10km
+                if (RouteDB.getInstance().tax() == 5) {
+                    return 200;
+                } else {
+                    return 206;
+                }
             }
         }
-        if (km < 61) {							// 4 to 6km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 189;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 180;
-            } else {
-                return 185;
-            }
-        }
-        if (km < 101) {							// 7 to 10km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 210;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 200;
-            } else {
-                return 206;
-            }
-        }
-
         if (12000 < km) {		// 1200km越えは別表第2号イの4にない
             ASSERT (false);
             return -1;
@@ -2141,6 +2141,10 @@ public class FARE_INFO {
         int fare;
         int c_km;
 
+        fare = Fare_table("bspekm", "t", km);
+        if (0 != fare) {
+            return fare;
+        }
         if (km < 31) {							// 1 to 3km
             if (RouteDB.getInstance().tax() == 10) {
                 return 136;
@@ -2206,9 +2210,13 @@ public class FARE_INFO {
         int fare;
         int c_km;
 
+        fare = Fare_table("bspekm", "o", km);
+        if (0 != fare) {
+            return fare;
+        }
         if (km < 31) {							// 1 to 3km
             if (RouteDB.getInstance().tax() == 10) {
-                return 130;
+                return 140;
             } else if (RouteDB.getInstance().tax() == 5) {
                 return 120;
             } else {
@@ -2217,7 +2225,7 @@ public class FARE_INFO {
         }
         if (km < 61) {							// 4 to 6km
             if (RouteDB.getInstance().tax() == 10) {
-                return 160;
+                return 170;
             } else if (RouteDB.getInstance().tax() == 5) {
                 return 160;
             } else {
@@ -2226,7 +2234,7 @@ public class FARE_INFO {
         }
         if (km < 101) {							// 7 to 10km
             if (RouteDB.getInstance().tax() == 10) {
-                return 180;
+                return 190;
             } else if (RouteDB.getInstance().tax() == 5) {
                 return 170;
             } else {
@@ -2248,9 +2256,9 @@ public class FARE_INFO {
         }
 
         if (3000 < c_km) {
-            fare = 1530 * 3000 + 1215 * (c_km - 3000);
+            fare = 1550 * 3000 + 1230 * (c_km - 3000);
         } else {
-            fare = 1530 * c_km;
+            fare = 1550 * c_km;
         }
         if (c_km <= 1000) {						// 100km以下は切り上げ
             // 1の位を切り上げ
@@ -2271,9 +2279,13 @@ public class FARE_INFO {
         int fare;
         int c_km;
 
+        fare = Fare_table("bspekm", "y", km);
+        if (0 != fare) {
+            return fare;
+        }
         if (km < 31) {							// 1 to 3km
             if (RouteDB.getInstance().tax() == 10) {
-                return 136;
+                return 146;
             } else if (RouteDB.getInstance().tax() == 5) {
                 return 130;
             } else {
@@ -2282,7 +2294,7 @@ public class FARE_INFO {
         }
         if (km < 61) {							// 4 to 6km
             if (RouteDB.getInstance().tax() == 10) {
-                return 157;
+                return 167;
             } else if (RouteDB.getInstance().tax() == 5) {
                 return 150;
             } else {
@@ -2291,7 +2303,7 @@ public class FARE_INFO {
         }
         if (km < 101) {							// 7 to 10km
             if (RouteDB.getInstance().tax() == 10) {
-                return 168;
+                return 178;
             } else if (RouteDB.getInstance().tax() == 5) {
                 return 160;
             } else {
@@ -2394,34 +2406,6 @@ public class FARE_INFO {
         int c_km;
         String tbl;		// [16]
 
-        if (km < 31) {							// 1 to 3km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 200;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 160;
-            } else {
-                return 170;
-            }
-        }
-        if (km < 61) {							// 4 to 6km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 250;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 200;
-            } else {
-                return 210;
-            }
-        }
-        if (km < 101) {							// 7 to 10km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 290;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 210;
-            } else {
-                return 220;
-            }
-        }
-
         fare = Fare_table("bspekm", "h", km);
         if (0 != fare) {
             return fare;
@@ -2429,32 +2413,15 @@ public class FARE_INFO {
 
         if (6000 < km) {						// 600km越えは40キロ刻み
             c_km = (km - 1) / 400 * 400 + 200;
-        } else if (1000 < km) {					// 100.1-600kmは20キロ刻み
-            c_km = (km - 1) / 200 * 200 + 100;
-        } else if (500 < km) {					// 50.1-100kmは10キロ刻み
-            c_km = (km - 1) / 100 * 100 + 50;
-        } else if (100 < km) {					// 10.1-50kmは5キロ刻み
-            c_km = (km - 1) / 50 * 50 + 30;
         } else {
             ASSERT (false);
-            c_km = 0;
+            return 99999;
         }
 
-        if (6000 < c_km) {
-            fare = 1785 * 2000 + 1620 * (3000 - 2000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
-        } else if (3000 < c_km) {
-            fare = 1785 * 2000 + 1620 * (3000 - 2000) + 1285 * (c_km - 3000);
-        } else if (2000 < c_km) {
-            fare = 1785 * 2000 + 1620 * (c_km - 2000);
-        } else {
-            fare = 1785 * c_km;
-        }
-        if (c_km <= 1000) {						// 100km以下は切り上げ
-            // 1の位を切り上げ
-            fare = (fare + 9999) / 10000 * 10;
-        } else {								// 100㎞越えは四捨五入
-            fare = (fare + 50000) / 100000 * 100;
-        }
+        fare = 2116 * 2000 + 1636 * (3000 - 2000) + 1283 * (6000 - 3000) + 705 * (c_km - 6000);
+        // 100㎞越えは四捨五入
+        fare = (fare + 50000) / 100000 * 100;
+
         return RouteUtil.taxadd(fare, RouteDB.getInstance().tax());	// tax = +5%, 四捨五入
     }
 
@@ -2467,34 +2434,6 @@ public class FARE_INFO {
     private static int Fare_hokkaido_sub(int km) {
         int fare;
         int c_km;
-
-        if (km < 31) {							// 1 to 3km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 200;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 160;
-            } else {
-                return 170;
-            }
-        }
-        if (km < 61) {							// 4 to 6km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 250;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 200;
-            } else {
-                return 210;
-            }
-        }
-        if (km < 101) {							// 7 to 10km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 300;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 220;
-            } else {
-                return 230;
-            }
-        }
 
         if (12000 < km) {		// 1200km越えは別表第2号イの4にない
             ASSERT (false);
@@ -2513,13 +2452,13 @@ public class FARE_INFO {
         c_km *= 10;
 
         if (5460 <= c_km) {
-            fare = 1960 * 1820 + 1780 * (2730 - 1820) + 1410 * (5460 - 2730) + 770 * (c_km - 5460);
+            fare = 2311 * 1820 + 1835 * (2730 - 1820) + 1402 * (5460 - 2730) + 772 * (c_km - 5460);
         } else if (2730 < c_km) {
-            fare = 1960 * 1820 + 1780 * (2730 - 1820) + 1410 * (c_km - 2730);
+            fare = 2311 * 1820 + 1835 * (2730 - 1820) + 1402 * (c_km - 2730);
         } else if (1820 < c_km) {
-            fare = 1960 * 1820 + 1780 * (c_km - 1820);
+            fare = 2311 * 1820 + 1835 * (c_km - 1820);
         } else { /* <= 182km */
-            fare = 1960 * c_km;
+            fare = 2311 * c_km;
         }
         if (c_km <= 1000) {						// 100km以下は切り上げ
             // 1の位を切り上げ
@@ -2546,11 +2485,13 @@ public class FARE_INFO {
             if (RouteDB.getInstance().tax() == 10) {
                 /* JR四国 幹線+地方交通線 */
                 /* (m) */
+                /* 2023.4 廃止
                 if ((KM.KM(ckm) == 4) && (KM.KM(skm) == 3)) {
-                    return 170;	/* \ */
+                    return 170;	// \ 
                 } else if ((KM.KM(ckm) == 11) && (KM.KM(skm) == 10)) {
-                    return 240;	/* \ */
+                    return 240;	// \ 
                 }
+                */
             } else if (RouteDB.getInstance().tax() == 5) {
                 /* JR四国 幹線+地方交通線 */
                 /* (m) */
@@ -2568,34 +2509,6 @@ public class FARE_INFO {
                     return 230;	/* \ */
                 }
                 /* JR四国は消費税8%でもここは据え置きみたい */
-            }
-        }
-
-        if (ckm < 31) {							// 1 to 3km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 170;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 160;
-            } else {
-                return 160;
-            }
-        }
-        if (ckm < 61) {							// 4 to 6km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 210;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 200;
-            } else {
-                return 210;
-            }
-        }
-        if (ckm < 101) {						// 7 to 10km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 220;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 210;
-            } else {
-                return 220;
             }
         }
 
@@ -2617,18 +2530,29 @@ public class FARE_INFO {
             ASSERT (false);
             c_km = 0;
         }
-
-        if (6000 <= c_km) {
-            fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
-        } else if (3000 < c_km) {
-            fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
-        } else if (1000 < c_km) {
-            fare = 1821 * 1000 + 1620 * (c_km - 1000);
-        } else {
-            /* 10.1km - 100.0 km */
-            fare = 1821 * c_km;
+        if (RouteDB.getInstance().tax() != 10) {
+            if (6000 <= c_km) {
+                fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+            } else if (3000 < c_km) {
+                fare = 1821 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
+            } else if (1000 < c_km) {
+                fare = 1821 * 1000 + 1620 * (c_km - 1000);
+            } else {
+                /* 10.1km - 100.0 km */
+                fare = 1821 * c_km;
+            }
+        } else {		// tax == 10
+            if (6000 <= c_km) {
+                fare = 1920 * 1000 + 1620 * (3000 - 1000) + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+            } else if (3000 < c_km) {
+                fare = 1920 * 1000 + 1620 * (3000 - 1000) + 1285 * (c_km - 3000);
+            } else if (1000 < c_km) {
+                fare = 1920 * 1000 + 1620 * (c_km - 1000);
+            } else {
+                /* 10.1km - 100.0 km */
+                fare = 1920 * c_km;
+            }
         }
-
         if (c_km <= 1000) {						// 100km以下は切り上げ
             // 1の位を切り上げ
             fare = (fare + 9999) / 10000 * 10;
@@ -2655,9 +2579,9 @@ public class FARE_INFO {
                 /* JR九州 幹線+地方交通線 */
                 /* (n) */
                 if ((KM.KM(ckm) == 4) && (KM.KM(skm) == 3)) {
-                    return 180;	/* \ */
+                    return 210;	/* \ */
                 } else if ((KM.KM(ckm) == 11) && (KM.KM(skm) == 10)) {
-                    return 260;	/* \ */
+                    return 320;	/* \ */
                 }
             } else if (RouteDB.getInstance().tax() == 5) {
                 /* JR九州 幹線+地方交通線 */
@@ -2675,34 +2599,6 @@ public class FARE_INFO {
                 } else if ((KM.KM(ckm) == 11) && (KM.KM(skm) == 10)) {
                     return 250;	/* \ */
                 }
-            }
-        }
-
-        if (ckm < 31) {							// 1 to 3km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 170;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 160;
-            } else {
-                return 160;
-            }
-        }
-        if (ckm < 61) {							// 4 to 6km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 210;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 200;
-            } else {
-                return 210;
-            }
-        }
-        if (ckm < 101) {						// 7 to 10km
-            if (RouteDB.getInstance().tax() == 10) {
-                return 230;
-            } else if (RouteDB.getInstance().tax() == 5) {
-                return 220;
-            } else {
-                return 230;
             }
         }
 
@@ -2724,18 +2620,31 @@ public class FARE_INFO {
             ASSERT (false);
             c_km = 0;
         }
-        if (6000 <= c_km) {
-            fare = 1775 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
-        } else if (3000 < c_km) {
-            fare = 1775 * 3000 + 1285 * (c_km - 3000);
-        } else if (1000 < c_km) {
-            fare = 1775 * c_km;
-        } else {
-            /* 10.1-100.0kmはDBで定義 */
-            ASSERT (false);
-            fare = 0;
+        if (RouteDB.getInstance().tax() != 10) {
+            if (6000 <= c_km) {
+                fare = 1775 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+            } else if (3000 < c_km) {
+                fare = 1775 * 3000 + 1285 * (c_km - 3000);
+            } else if (1000 < c_km) {
+                fare = 1775 * c_km;
+            } else {
+                /* 10.1-100.0kmはDBで定義 */
+                ASSERT (false);
+                fare = 0;
+            }
+        } else {		// tax == 10
+            if (6000 <= c_km) {
+                fare = 1975 * 3000 + 1285 * (6000 - 3000) + 705 * (c_km - 6000);
+            } else if (3000 < c_km) {
+                fare = 1975 * 3000 + 1285 * (c_km - 3000);
+            } else if (1000 < c_km) {
+                fare = 1975 * c_km;
+            } else {
+                /* 10.1-100.0kmはDBで定義 */
+                ASSERT (false);
+                fare = 0;
+            }
         }
-
         if (c_km <= 1000) {							// 100km以下は切り上げ
             // 1の位を切り上げ
             fare = (fare + 9999) / 10000 * 10;
