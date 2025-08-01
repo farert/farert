@@ -34,7 +34,7 @@ fun getCompanys() : List<Int> {
 
 fun getPrefects() : List<Int> {
 
-    val prefects : MutableList<Int> = ArrayList(46) // Prefect
+    val prefects : MutableList<Int> = mutableListOf() // Prefect
     val dbo = RouteUtil.Enum_company_prefect()
 
     dbo.use {
@@ -503,7 +503,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
 
 // 経路は不揮発メモリに保存されたものか？
 fun isStrageInRoute(context: Context, routeScript : String) : Boolean {
-    val listItems = readParams(context, ArchiveRouteActivity.KEY_ARCHIVE)
+    val listItems = readParams(context, "archive_route")
     return listItems.contains(routeScript)
 }
 
