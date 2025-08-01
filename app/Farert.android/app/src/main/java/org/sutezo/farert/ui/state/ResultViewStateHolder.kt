@@ -18,6 +18,7 @@ class ResultViewStateHolder : ViewModel() {
 
     private lateinit var context: Context
     private var calcRoute: CalcRoute? = null
+    private var currentRoute: Route? = null
 
     fun initialize(
         context: Context,
@@ -68,6 +69,10 @@ class ResultViewStateHolder : ViewModel() {
                 handleRule115Click()
             }
             
+            is ResultViewUiEvent.OsakakanClicked -> {
+                handleOsakakanClick()
+            }
+            
             is ResultViewUiEvent.ShareClicked -> {
                 // Share handling will be done in the Activity
             }
@@ -88,23 +93,29 @@ class ResultViewStateHolder : ViewModel() {
             val ds = Route()
             ds.assign(appDs, uiState.routeEndIndex)
             
-            val isRoundTrip = ds.isAvailableReverse
+            if (ds.count <= 0) {
+                uiState = uiState.copy(error = "No route data available", isLoading = false)
+                return@launch
+            }
             
+            val isRoundTrip = ds.isAvailableReverse
             setRouteOption(ds)
             
+            currentRoute = ds
             calcRoute = CalcRoute(ds)
             val fareInfo = calcRoute?.calcFareInfo()
             
-            if (fareInfo != null) {
-                setOptionFlag(fareInfo)
-                updateMenuState()
-            }
-            
+            // Update UI state first
             uiState = uiState.copy(
                 fareInfo = fareInfo,
                 isRoundTrip = isRoundTrip,
                 isLoading = false
             )
+            
+            if (fareInfo != null) {
+                setOptionFlag(fareInfo)
+                updateMenuState()
+            }
         } catch (e: Exception) {
             uiState = uiState.copy(
                 error = e.message,
@@ -234,6 +245,18 @@ class ResultViewStateHolder : ViewModel() {
             else -> ""
         }
         
+        // Osaka Kanjou Line menu setup - use FareInfo instead of direct Route access
+        val fareInfo = uiState.fareInfo
+        val showOsakakan = fareInfo?.isOsakakanDetourEnable ?: false
+        val osakakanTitle = if (showOsakakan) {
+            if (fareInfo?.isOsakakanDetour == true) {
+                context.getString(R.string.result_menu_osakakan_near)
+            } else {
+                context.getString(R.string.result_menu_osakakan_far)
+            }
+        } else ""
+        
+        
         uiState = uiState.copy(
             showSpecialRuleMenu = showSpecialRule,
             specialRuleMenuTitle = specialRuleTitle,
@@ -242,8 +265,46 @@ class ResultViewStateHolder : ViewModel() {
             showLongRouteMenu = showLongRoute,
             longRouteMenuTitle = longRouteTitle,
             showRule115Menu = showRule115,
-            rule115MenuTitle = rule115Title
+            rule115MenuTitle = rule115Title,
+            showOsakakanMenu = showOsakakan,
+            osakakanMenuTitle = osakakanTitle
         )
+    }
+    
+    private fun recalculateWithNewOptions() = viewModelScope.launch {
+        try {
+            uiState = uiState.copy(isLoading = true)
+            
+            val app = context.applicationContext as? FarertApp
+            val appDs = app?.ds ?: return@launch
+            
+            val ds = Route()
+            ds.assign(appDs, uiState.routeEndIndex)
+            
+            val isRoundTrip = ds.isAvailableReverse
+            setRouteOption(ds)
+            
+            currentRoute = ds
+            calcRoute = CalcRoute(ds)
+            val fareInfo = calcRoute?.calcFareInfo()
+            
+            // Update UI state first
+            uiState = uiState.copy(
+                fareInfo = fareInfo,
+                isRoundTrip = isRoundTrip,
+                isLoading = false
+            )
+            
+            if (fareInfo != null) {
+                setOptionFlag(fareInfo)
+                updateMenuState()
+            }
+        } catch (e: Exception) {
+            uiState = uiState.copy(
+                error = e.message,
+                isLoading = false
+            )
+        }
     }
     
     private fun handleSpecialRuleClick() {
@@ -255,7 +316,7 @@ class ResultViewStateHolder : ViewModel() {
         
         uiState = uiState.copy(optSperule = newOpt)
         // Trigger recalculation
-        handleEvent(ResultViewUiEvent.LoadData)
+        recalculateWithNewOptions()
     }
     
     private fun handleMeihanCityClick() {
@@ -266,7 +327,7 @@ class ResultViewStateHolder : ViewModel() {
         }
         
         uiState = uiState.copy(optMeihancity = newOpt)
-        handleEvent(ResultViewUiEvent.LoadData)
+        recalculateWithNewOptions()
     }
     
     private fun handleLongRouteClick() {
@@ -277,7 +338,7 @@ class ResultViewStateHolder : ViewModel() {
         }
         
         uiState = uiState.copy(optLongroute = newOpt)
-        handleEvent(ResultViewUiEvent.LoadData)
+        recalculateWithNewOptions()
     }
     
     private fun handleRule115Click() {
@@ -288,7 +349,45 @@ class ResultViewStateHolder : ViewModel() {
         }
         
         uiState = uiState.copy(optRule115 = newOpt)
-        handleEvent(ResultViewUiEvent.LoadData)
+        recalculateWithNewOptions()
+    }
+    
+    private fun handleOsakakanClick() = viewModelScope.launch {
+        try {
+            // Toggle Osaka Kanjou Line detour setting using FareInfo state
+            val fareInfo = uiState.fareInfo
+            val currentDetour = fareInfo?.isOsakakanDetour ?: false
+            val newDetour = !currentDetour
+            
+            uiState = uiState.copy(isLoading = true)
+            
+            // Apply detour setting to current route directly
+            currentRoute?.setDetour(newDetour)
+            
+            // Also update the global route in FarertApp for consistency
+            val app = context.applicationContext as? org.sutezo.farert.FarertApp
+            app?.ds?.setDetour(newDetour)
+            
+            // Recalculate with the updated route
+            calcRoute = CalcRoute(currentRoute ?: return@launch)
+            val newFareInfo = calcRoute?.calcFareInfo()
+            
+            // Update UI state first
+            uiState = uiState.copy(
+                fareInfo = newFareInfo,
+                isLoading = false
+            )
+            
+            if (newFareInfo != null) {
+                setOptionFlag(newFareInfo)
+                updateMenuState()
+            }
+        } catch (e: Exception) {
+            uiState = uiState.copy(
+                error = e.message,
+                isLoading = false
+            )
+        }
     }
     
     fun getShareData(): Pair<String, String>? {

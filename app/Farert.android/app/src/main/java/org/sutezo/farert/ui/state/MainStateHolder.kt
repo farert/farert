@@ -60,6 +60,7 @@ class MainStateHolder : ViewModel() {
             }
             
             is MainUiEvent.ToggleOsakaKanDetour -> {
+                println("DEBUG: MainStateHolder - ToggleOsakaKanDetour event received")
                 handleToggleOsakaKanDetour(event.farMode)
             }
             
@@ -178,9 +179,15 @@ class MainStateHolder : ViewModel() {
     
     private fun handleToggleOsakaKanDetour(farMode: Boolean) = viewModelScope.launch {
         try {
-            val rc = uiState.route.setDetour(farMode)
+            // Toggle between far and near based on current state
+            val currentDetour = uiState.route.isOsakakanDetour
+            val newDetour = !currentDetour  // Toggle current state
+            
+            println("DEBUG: toggleOsakakanDetour - current: $currentDetour, new: $newDetour")
+            val rc = uiState.route.setDetour(newDetour)
             updateFare(rc)
         } catch (e: Exception) {
+            println("DEBUG: toggleOsakakanDetour error: ${e.message}")
             uiState = uiState.copy(error = e.message)
         }
     }
@@ -256,6 +263,12 @@ class MainStateHolder : ViewModel() {
         } else {
             MainUiState.OsakaKanDetour.DISABLE
         }
+        
+        println("DEBUG: MainStateHolder.updateFare - route.count=${uiState.route.count}")
+        println("DEBUG: MainStateHolder.updateFare - isOsakakanDetourEnable=${uiState.route.isOsakakanDetourEnable}")
+        println("DEBUG: MainStateHolder.updateFare - isOsakakanDetour=${uiState.route.isOsakakanDetour}")
+        println("DEBUG: MainStateHolder.updateFare - osakakanDetour=$osakakanDetour")
+        println("DEBUG: MainStateHolder.updateFare - fareInfo=${fareInfo != null}")
         
         uiState = uiState.copy(
             route = Route(uiState.route), // Create new Route object to trigger recomposition
