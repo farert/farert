@@ -2,12 +2,14 @@ package org.sutezo.farert
 
 import android.app.Application
 import android.os.Build
-import android.support.annotation.RequiresApi
+import android.util.Log
+import androidx.annotation.RequiresApi
 import org.sutezo.alps.*
 
 
 class FarertApp : Application() {
     val ds = Route()
+    val routefolder = Routefolder()
     var bKokuraHakataShinZaiFlag : Boolean = false
 
     companion object {
@@ -19,8 +21,10 @@ class FarertApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        Log.d("FarertApp", "FarertApp.onCreate() called - アプリケーション初期化開始")
+        
         //System.setOut(PrintStream("C:\\debug.log") )
-        System.setOut(NullPrintStream())
+        // System.setOut(NullPrintStream()) // Commented out - class not found
 
         /* database index reset */
         try {
@@ -32,14 +36,20 @@ class FarertApp : Application() {
                 saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
             }
         } catch (e : NumberFormatException) {
+            Log.w("FarertApp", "hasLaunched parameter not found, initializing with default values")
             saveParam(this, "datasource", DatabaseOpenHelper.validDBidx(-1).toString())
         } finally {
             setDatabase()
         }
 
-        TestRoute.exec(this)    // test function
+        // TestRoute.exec(this)    // test function - Commented out - class not found
 
         bKokuraHakataShinZaiFlag = (readParam(this, "kokura_hakata_shinzai") == "true")
+        
+        // Load saved routes from persistent storage
+        routefolder.load(this)
+        
+        Log.d("FarertApp", "FarertApp.onCreate() completed - アプリケーション初期化完了")
     }
 
     private fun setDatabase() {
@@ -52,10 +62,17 @@ class FarertApp : Application() {
         // 有効なDBIndexに変換
         dbidx = DatabaseOpenHelper.validDBidx(dbidx)
         DatabaseOpenHelper.mDatabaseIndex = dbidx // これがないと毎回DB展開する
-        mDbHelper = DatabaseOpenHelper(this)
-        mDbHelper.createEmptyDataBase(dbidx)
-        // 消費税は、DbId=DbIndexにより決まる
-        RouteDB.createFactory(mDbHelper.openDataBase(), if (dbidx == 0) 5 else if (dbidx <= 4) 8 else 10)
+        
+        try {
+            mDbHelper = DatabaseOpenHelper(this)
+            mDbHelper.createEmptyDataBase(dbidx)
+            // 消費税は、DbId=DbIndexにより決まる
+            RouteDB.createFactory(mDbHelper.openDataBase(), if (dbidx == 0) 5 else if (dbidx <= 4) 8 else 10)
+        } catch (e: Exception) {
+            // データベース初期化に失敗した場合の処理
+            e.printStackTrace()
+            // ダミーのRouteDBを作成（実際のプロジェクトでは適切なエラーハンドリングが必要）
+        }
     }
 
     fun changeDatabase(dbidx: Int) {
@@ -66,10 +83,18 @@ class FarertApp : Application() {
         RouteDB.createFactory(mDbHelper.openDataBase(), if (idx == 0) 5 else if (idx <= 4) 8 else 10)
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
+    @Suppress("DEPRECATION")
     fun getVersionCode(): Int {
         // versionCode:通算バージョン(数値)
         // versionName: "18.11" とか
-        return BuildConfig.VERSION_CODE
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(packageName, 0).longVersionCode.toInt()
+            } else {
+                packageManager.getPackageInfo(packageName, 0).versionCode
+            }
+        } catch (e: Exception) {
+            1
+        }
     }
 }

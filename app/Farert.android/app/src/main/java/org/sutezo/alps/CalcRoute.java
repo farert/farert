@@ -14,7 +14,7 @@ import static org.sutezo.alps.farertAssert.ASSERT;
 
 import android.database.Cursor;
 
-import org.sutezo.farert.BuildConfig;
+// import org.sutezo.farert.BuildConfig; // Removed - BuildConfig not available
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -2268,7 +2268,7 @@ public class CalcRoute extends RouteList {
 
             if (is_start_city) {			/* 発駅が特定都区市内 */
                 /* 最終着駅を置き換える */
-                if (BuildConfig.DEBUG) {
+                if (false) { // BuildConfig.DEBUG removed
                     System.out.printf("@@@ Down %d\n",route_list_replace.size());
                     for (int i = 0; i < route_work.size(); i++ ) {
                         System.out.printf("  D(%d)route[%s-%s]\n", i, RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
@@ -2289,7 +2289,7 @@ public class CalcRoute extends RouteList {
                 }
                 route_work.add(new RouteItem(base_line_id, arrive_station_id));
             } else {	/* 着駅が特定都区市内 */
-                if (BuildConfig.DEBUG) {
+                if (false) { // BuildConfig.DEBUG removed
                     System.out.printf("@@@ Up %d\n",route_list_replace.size());
                     for (int i = 0; i < route_work.size(); i++ ) {
                         System.out.printf("  U(%d)route[%s-%s]\n", i, RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
@@ -2311,7 +2311,7 @@ public class CalcRoute extends RouteList {
                 route_work.get(1).stationId = (short) base_station_id;
                 route_work.get(1).lineId = (short)base_line_id;
             }
-            if (BuildConfig.DEBUG) {
+            if (false) { // BuildConfig.DEBUG removed
                 for (int i = 0; i < route_work.size(); i++ ) {
                     System.out.printf("  >>[%s-%s]\n", RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
                 }
