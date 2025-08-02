@@ -13,39 +13,50 @@
 + Run [build]-[batch build]-[release]
 
 ### Android
-+ Open folder 'app/Farert.android/' in Android studio 4.
-+ build project.
++ Open folder 'app/Farert.android/' in Android studio.
+
+#### build project.
+
+##### APK
+
 ```
-# APK
-```
+
 ./gradlew assembleRelease
 ## output to app/build/outputs/apk/release/app-release.apk
 ```
 
-# AAB
+##### AAB
+
 ```
+
 ./gradlew bundleRelease
 ## output to app/build/outputs/bundle/release/app-release.aab
 ```
 
 ### iOS
+
 + Open file 'farert.ios/Farert.xcodeproj' in Xcode.
 + [build] or [archive]
 
 ### POSIX(CLI)
+
 ```
 $ cd test/unix/all
 $ make
 $ source start.sh
 $ ./farert <駅1> <路線1> <駅2> ...
 ```
+
 ### How to edit and make database
+
 - See db/ directory.
 
 ## license
+
 - GPL(v3)
 - See db/ directory for database license agreement.
 
 ## Author
+
 - Copyright(c) sutezo 2025
 
