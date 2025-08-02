@@ -90,6 +90,7 @@ fun FolderViewScreen(
             routefolder = routefolder,
             route = route,
             itemCount = itemCount,
+            refreshTrigger = refreshTrigger,
             onAddItem = {
                 route?.let { routeObj ->
                     val rl = RouteList()
@@ -141,6 +142,7 @@ fun FolderViewScreen(
                     },
                     onAggregateTypeChange = { newType ->
                         routefolder.setAggregateType(context, index, newType)
+                        refreshTrigger = (refreshTrigger + 1) % 100000
                     },
                     onDragStart = { 
                         originalDragIndex = index
@@ -199,9 +201,14 @@ private fun FolderHeader(
     routefolder: Routefolder,
     route: RouteList?,
     itemCount: Int,
+    refreshTrigger: Int,
     onAddItem: () -> Unit,
     onExport: () -> Unit
 ) {
+    // Cache total fare and km values that update when refreshTrigger changes
+    val totalFareText = remember(refreshTrigger) { routefolder.totalFare() }
+    val totalKmText = remember(refreshTrigger) { routefolder.totalSalesKm() }
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -243,7 +250,7 @@ private fun FolderHeader(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = routefolder.totalFare(),
+                text = totalFareText,
                 color = Color.White,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -260,7 +267,7 @@ private fun FolderHeader(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = routefolder.totalSalesKm(),
+                text = totalKmText,
                 color = Color.White,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -577,6 +584,7 @@ fun FolderHeaderPreview() {
             },
             route = null,
             itemCount = 0,
+            refreshTrigger = 0,
             onAddItem = {},
             onExport = {}
         )
