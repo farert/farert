@@ -2,6 +2,7 @@ package org.sutezo.farert
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.ComponentActivity
@@ -48,7 +49,13 @@ fun VersionScreen(
         context.packageManager.getPackageInfo(context.packageName, 0)
     }
     
-    val versionText = stringResource(R.string.version_number, packageInfo.versionName ?: "不明")
+    val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        packageInfo.longVersionCode
+    } else {
+        @Suppress("DEPRECATION")
+        packageInfo.versionCode.toLong()
+    }
+    val versionText = stringResource(R.string.version_number, packageInfo.versionName ?: "不明", versionCode)
     val dbVersionText = stringResource(
         R.string.db_version_name,
         RouteDB.getInstance().name(),
@@ -56,32 +63,35 @@ fun VersionScreen(
         RouteDB.getInstance().tax()
     )
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        TopAppBar(
-            title = {
-                Text(stringResource(R.string.title_version_info))
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateUp) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "戻る"
-                    )
-                }
-            },
-            colors = farertTopAppBarColors()
-        )
-        
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
+            TopAppBar(
+                title = {
+                    Text(stringResource(R.string.title_version_info))
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "戻る"
+                        )
+                    }
+                },
+                colors = farertTopAppBarColors()
+            )
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
@@ -142,6 +152,7 @@ fun VersionScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
+            }
             }
         }
     }
