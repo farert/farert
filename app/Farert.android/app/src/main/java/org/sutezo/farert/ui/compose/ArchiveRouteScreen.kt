@@ -138,6 +138,19 @@ fun ArchiveRouteScreen(
                 },
                 colors = farertTopAppBarColors(),
                 actions = {
+                    // Save button - shown directly when enabled, hidden when disabled (appears in menu)
+                    if (uiState.canSave) {
+                        IconButton(
+                            onClick = { stateHolder.handleEvent(ArchiveRouteUiEvent.SaveRoutes) }
+                        ) {
+                            Icon(
+                                Icons.Default.Save,
+                                contentDescription = "保存",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    
                     Box {
                         IconButton(onClick = { showOptionsMenu = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Options")
@@ -147,25 +160,24 @@ fun ArchiveRouteScreen(
                             expanded = showOptionsMenu,
                             onDismissRequest = { showOptionsMenu = false }
                         ) {
-                            // Save menu item
-                            DropdownMenuItem(
-                                text = { Text("保存") },
-                                onClick = {
-                                    showOptionsMenu = false
-                                    stateHolder.handleEvent(ArchiveRouteUiEvent.SaveRoutes)
-                                },
-                                enabled = uiState.canSave,
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Save,
-                                        contentDescription = null,
-                                        tint = if (uiState.canSave) 
-                                            MaterialTheme.colorScheme.onSurface 
-                                        else 
-                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                    )
-                                }
-                            )
+                            // Save menu item - only shown when save is disabled
+                            if (!uiState.canSave) {
+                                DropdownMenuItem(
+                                    text = { Text("保存") },
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        stateHolder.handleEvent(ArchiveRouteUiEvent.SaveRoutes)
+                                    },
+                                    enabled = false,
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Save,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                        )
+                                    }
+                                )
+                            }
                             
                             // Clear all menu item
                             DropdownMenuItem(
