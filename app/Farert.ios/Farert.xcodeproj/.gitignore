@@ -27,3 +27,76 @@ DerivedData/
 ## Gcc Patch
 /*.gcno
 
+# App Store & Distribution
+*.ipa
+*.xcarchive
+*.dSYM.zip
+*.dSYM
+
+# Provisioning & Certificates (CRITICAL - NEVER COMMIT)
+*.mobileprovision
+*.provisionprofile
+*.p12
+*.cer
+*.keychain
+embedded.mobileprovision
+
+# Export & Distribution
+ExportOptions.plist
+DistributionSummary.plist
+Packaging.log
+
+# API Keys & Configuration (ADD YOUR SPECIFIC FILES)
+# GoogleService-Info.plist
+# Config.plist
+# Secrets.swift
+# *-Info.plist (if contains API keys)
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+fastlane/readme.md
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+*.xcworkspace
+
+# Xcode Patch
+*.xcodeproj/*.pbxuser
+*.xcodeproj/*.mode1v3
+*.xcodeproj/*.mode2v3
+*.xcodeproj/*.perspectivev3
+*.xcworkspace/contents.xcworkspacedata
+
+# macOS
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
