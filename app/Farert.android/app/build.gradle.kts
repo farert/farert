@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.release
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("app/farert-upload-keystore.jks")
+            storePassword = project.property("RELEASE_STORE_PASSWORD") as String
+            keyPassword = project.property("RELEASE_KEY_PASSWORD") as String
+            keyAlias = project.property("RELEASE_KEY_ALIAS") as String
+        }
+    }
     namespace = "org.sutezo.farert"
     compileSdk = 36
 
@@ -25,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
