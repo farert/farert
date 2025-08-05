@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.release
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,7 +7,7 @@ plugins {
 android {
     signingConfigs {
         create("release") {
-            storeFile = file("app/farert-upload-keystore.jks")
+            storeFile = file("farert-upload-keystore.jks")
             storePassword = project.property("RELEASE_STORE_PASSWORD") as String
             keyPassword = project.property("RELEASE_KEY_PASSWORD") as String
             keyAlias = project.property("RELEASE_KEY_ALIAS") as String
@@ -22,7 +20,7 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 33
+        versionCode = 34
         versionName = "25.08"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -38,7 +36,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
