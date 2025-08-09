@@ -70,7 +70,13 @@ public class Route extends RouteList {
     }
     public Route(final RouteList other) {
         routePassed = new JctMask();
-        assign(other);
+        if (other instanceof Route) {
+            // If copying from another Route, preserve routePassed data
+            assign((Route)other);
+        } else {
+            // If copying from RouteList, use parent class assign
+            super.assign(other);
+        }
     }
     /* --------------------------------------- */
 
@@ -81,7 +87,15 @@ public class Route extends RouteList {
     }
 
     void assign(final Route source_route, int count) {
-        assign(source_route, count);
+        super.assign(source_route, count);  // Call RouteList.assign()
+        routePassed.assign(source_route.routePassed);  // Copy routePassed
+    }
+    
+    // Public method to preserve routePassed during route updates
+    public void preserveRoutePassed(final Route sourceRoute) {
+        if (sourceRoute != null) {
+            routePassed.assign(sourceRoute.routePassed);
+        }
     }
 
 

@@ -80,9 +80,17 @@ class MainActivity : ComponentActivity() {
                 mStateHolder = stateHolder
                 
                 // Set up callback for route changes
-                stateHolder.onRouteChanged = { updatedRoute ->
+                stateHolder.onRouteChanged = { updatedRoute: Route ->
+                    // Preserve existing routePassed before updating
+                    val originalRoute = if (::mRoute.isInitialized) mRoute else null
+                    
                     // Update MainActivity's mRoute to keep legacy code working
                     mRoute = updatedRoute
+                    
+                    // Restore routePassed if it was preserved
+                    originalRoute?.let { original ->
+                        mRoute.preserveRoutePassed(original)
+                    }
                     
                     // Also update FarertApp's ds route for ResultView and other legacy components
                     (application as? FarertApp)?.ds?.assign(updatedRoute, -1)
