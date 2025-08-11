@@ -2555,8 +2555,6 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
         }
     } else {    // 復乗
         if ((rc & 1) == 0) { /* last */
-// 活かすと、
-// がいけなくなくなる。しかし、備中高松-岡山-倉敷-総社-岡山とできてしまう。備中高松で打ち切り補正がされない。
             if (
                 //  (!STATION_IS_JUNCTION(stationId2)) ||
                 // sflg.12は特例乗り換え駅もONなのでlflg.15にした
@@ -2596,12 +2594,12 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
 
     if (rc < 0) {
         // 不正ルートなのでmaskを反映しないで破棄する
-        //! if (is_no_station_id1_first_jct == 555) {
+        if (is_no_station_id1_first_jct == 555) {
             // b#21072801D
             // don't necessary   stationId1 = first_station_id1;
             route_list_raw.at(num - 1).stationId = first_station_id1;
             TRACE(_T("Detect finish. %d\n"), first_station_id1);
-        //! }
+        }
         TRACE(_T("add_abort(%d)\n"), rc);
         route_flag.trackmarkctl = false;
         // E-12, 6, b, c, d, e
