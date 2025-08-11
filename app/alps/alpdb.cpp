@@ -2555,8 +2555,13 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
         }
     } else {    // 復乗
         if ((rc & 1) == 0) { /* last */
-#if 0
-//よくわかんないが、着駅指定UIだった頃の残骸？不要と思われるので消してみる。test_exec は、OK
+
+#define ENDCHECK
+#if defined ENDCHECK
+// 活かすと、岡山 山陽新幹線 新大阪 東海道線 尼崎 福知山線 福知山 山陰線 伯耆大山 伯備線 e岡山
+// がいけなくなくなる。しかし、備中高松-岡山-倉敷-総社-岡山とできてしまう。備中高松で打ち切り補正がされない。
+// 
+// よくわかんないが、着駅指定UIだった頃の残骸？不要と思われるので消してみる。test_exec は、OK
             if (
         //  (!STATION_IS_JUNCTION(stationId2)) ||
         // sflg.12は特例乗り換え駅もONなのでlflg.15にした
@@ -2581,7 +2586,7 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
 #endif
                 rc = 1;     /* <b> <j> <h> */
                 TRACE("<b> <j> <h>\n");
-#if 0
+#if defined ENDCHECK
             }
 #endif
         } else {
