@@ -2555,40 +2555,40 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
         }
     } else {    // 復乗
         if ((rc & 1) == 0) { /* last */
-
-#define ENDCHECK
-#if defined ENDCHECK
-// 活かすと、岡山 山陽新幹線 新大阪 東海道線 尼崎 福知山線 福知山 山陰線 伯耆大山 伯備線 e岡山
+// 活かすと、
 // がいけなくなくなる。しかし、備中高松-岡山-倉敷-総社-岡山とできてしまう。備中高松で打ち切り補正がされない。
-// 
-// よくわかんないが、着駅指定UIだった頃の残骸？不要と思われるので消してみる。test_exec は、OK
             if (
-        //  (!STATION_IS_JUNCTION(stationId2)) ||
-        // sflg.12は特例乗り換え駅もONなのでlflg.15にした
-        (!STATION_IS_JUNCTION_F(lflg2)) ||
-        ((2 <= num) && (start_station_id != stationId2) &&
-         (0 != RouteUtil::InStation(start_station_id, line_id, stationId1, stationId2)))
-         /* =Dec.2016:Reomve terminal=  ||
-        (((0 < end_station_id) && (end_station_id != stationId2) && (2 <= num)) &&
-        (0 != RouteList::InStation(end_station_id, line_id, stationId1, stationId2)))
-        */
-            // ||
-            // /*BIT_CHK(lflg1, BSRJCTSP) || */ BIT_CHK(lflg2, BSRJCTSP) || // E-12
-            // BIT_CHK(route_list_raw.back().flag, BSRJCTHORD) ||               // E-14
-            // (0 < junctionStationExistsInRoute(stationId2)) ||
-        //  ((2 <= num) && (0 < RouteList::InStation(stationId2, line_id, route_list_raw.at(num - 2).stationId, stationId1)))
+                //  (!STATION_IS_JUNCTION(stationId2)) ||
+                // sflg.12は特例乗り換え駅もONなのでlflg.15にした
+                (!STATION_IS_JUNCTION_F(lflg2)) ||
+                ((2 <= num) && (start_station_id != stationId2) &&
+                (0 != RouteUtil::InStation(start_station_id, line_id, stationId1, stationId2)))
+                /* =Dec.2016:Reomve terminal=  ||
+                (((0 < end_station_id) && (end_station_id != stationId2) && (2 <= num)) &&
+                (0 != RouteList::InStation(end_station_id, line_id, stationId1, stationId2)))
+                */
+                // ||
+                // /*BIT_CHK(lflg1, BSRJCTSP) || */ BIT_CHK(lflg2, BSRJCTSP) || // E-12
+                // BIT_CHK(route_list_raw.back().flag, BSRJCTHORD) ||               // E-14
+                // (0 < junctionStationExistsInRoute(stationId2)) ||
+            //  ((2 <= num) && (0 < RouteList::InStation(stationId2, line_id, route_list_raw.at(num - 2).stationId, stationId1)))
             ) {
-                rc = -1;    /* <k> <e> <r> <x> <u> <m> */
-                TRACE(_T("%x %d %d %d<k> <e> <r> <x> <u> <m> %s in %s: between %s and %s\n"), 
-                lflg2, STATION_IS_JUNCTION_F(lflg2), start_station_id,stationId2,
-                SNAME(start_station_id), LNAME(line_id), SNAME(stationId1), SNAME(stationId2));
+                if (STATION_IS_JUNCTION_F(lflg2)) {
+                    TRACE(_T("<k> <e> <r> <x> <u> <m> : Loop over\n"));
+                    // 備前一宮 吉備線 総社 伯備線 倉敷 山陽線 岡山 吉備線 総社
+                    rc = -1;
+                } else {
+                    TRACE(_T("<k> <e> <r> <x> <u> <m> : SpecialJunction loop\n"));
+                    // 岡山 山陽新幹線 新大阪 東海道線 尼崎 福知山線 福知山 山陰線 伯耆大山 伯備線 e岡山
+                    // 岡山 山陽線 神戸 東海道線 尼崎 福知山線 福知山 山陰線 伯耆大山 伯備線 e岡山
+                    rc = 1;    /* <k> <e> <r> <x> <u> <m> */
+                }
+                TRACE(_T("%x %s in %s: between %s and %s\n"), 
+                    lflg2, SNAME(start_station_id), LNAME(line_id), SNAME(stationId1), SNAME(stationId2));
             } else  {
-#endif
                 rc = 1;     /* <b> <j> <h> */
                 TRACE("<b> <j> <h>\n");
-#if defined ENDCHECK
             }
-#endif
         } else {
             rc = -1;    /* 既に通過済み */
         }
@@ -2596,18 +2596,16 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
 
     if (rc < 0) {
         // 不正ルートなのでmaskを反映しないで破棄する
-
-        if (is_no_station_id1_first_jct == 555) {
+        //! if (is_no_station_id1_first_jct == 555) {
             // b#21072801D
             // don't necessary   stationId1 = first_station_id1;
             route_list_raw.at(num - 1).stationId = first_station_id1;
             TRACE(_T("Detect finish. %d\n"), first_station_id1);
-        }
+        //! }
         TRACE(_T("add_abort(%d)\n"), rc);
         route_flag.trackmarkctl = false;
         // E-12, 6, b, c, d, e
         return -1;  /* already passed error >>>>>>>>>>>>>>>>>>>> */
-
     } else {
         // normality
         // 通過bit ON(maskをマージ)
