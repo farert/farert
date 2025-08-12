@@ -3,6 +3,7 @@ package org.sutezo.farert.ui.compose
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +45,9 @@ fun MainScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     
+    // LazyColumn state for auto-scrolling
+    val listState = rememberLazyListState()
+    
     // Handle error display
     uiState.error?.let { error ->
         LaunchedEffect(error) {
@@ -55,6 +60,15 @@ fun MainScreen(
     LaunchedEffect(uiState.route, uiState.route.hashCode()) {
         // This will trigger recomposition when route object changes
         println("DEBUG: MainScreen recomposition triggered - route.count=${uiState.route.count}")
+    }
+    
+    // Auto-scroll to last item when route is added
+    LaunchedEffect(uiState.route.count) {
+        if (uiState.route.count > 1) {
+            // Scroll to the last item (add route button)
+            val lastItemIndex = if (uiState.route.count > 1) uiState.route.count - 1 else 0
+            listState.animateScrollToItem(lastItemIndex)
+        }
     }
     
     ModalNavigationDrawer(
@@ -195,7 +209,7 @@ fun MainScreen(
                             }
                             
                             Text(
-                                text = if (stationId > 0) "発駅： ${RouteUtil.StationNameEx(stationId)}" else "駅を選択",
+                                text = if (stationId > 0) "発駅：${RouteUtil.StationNameEx(stationId)}" else "駅を選択",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -260,6 +274,7 @@ fun MainScreen(
             
             // 経路リスト（発駅以降）
             LazyColumn(
+                state = listState,
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -279,11 +294,24 @@ fun MainScreen(
                 // 最後の項目（経路追加ボタン）
                 if (uiState.route.count > 0) {
                     item {
+                        // Check if statusMessage is an error message
+                        val isErrorMessage = uiState.statusMessage.isNotEmpty() && (
+                            uiState.statusMessage.contains("会社線利用路線はこれ以上追加できません") ||
+                            uiState.statusMessage.contains("不正な駅名が含まれています") ||
+                            uiState.statusMessage.contains("不正な路線名が含まれています") ||
+                            uiState.statusMessage.contains("経路不正") ||
+                            uiState.statusMessage.contains("許可されていない会社線通過です") ||
+                            uiState.statusMessage.contains("経路を算出できません") ||
+                            uiState.statusMessage.contains("経路が重複しているため追加できません") ||
+                            uiState.statusMessage.contains("開始駅へ戻るにはもう少し経路を指定してからにしてください")
+                        )
+                        
                         Card(
                             onClick = { onNavigateToRouteDetail(uiState.route.count - 1) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                containerColor = if (isErrorMessage) MaterialTheme.colorScheme.errorContainer
+                                               else MaterialTheme.colorScheme.tertiaryContainer
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
@@ -298,15 +326,18 @@ fun MainScreen(
                                     imageVector = if (uiState.statusMessage.isNotEmpty()) Icons.Default.Warning else Icons.Default.Add,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = if (uiState.statusMessage.isNotEmpty()) MaterialTheme.colorScheme.error 
+                                    tint = if (isErrorMessage) MaterialTheme.colorScheme.onErrorContainer
+                                          else if (uiState.statusMessage.isNotEmpty()) MaterialTheme.colorScheme.error 
                                           else MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (uiState.statusMessage.isNotEmpty()) uiState.statusMessage 
                                           else "経路を追加",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = if (uiState.statusMessage.isNotEmpty()) MaterialTheme.colorScheme.error
+                                    style = if (isErrorMessage) MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                           else MaterialTheme.typography.bodyMedium,
+                                    color = if (isErrorMessage) MaterialTheme.colorScheme.onErrorContainer
+                                           else if (uiState.statusMessage.isNotEmpty()) MaterialTheme.colorScheme.error
                                            else MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }

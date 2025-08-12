@@ -20,8 +20,8 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 34
-        versionName = "25.08"
+        versionCode = 35
+        versionName = "25.08.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -68,19 +68,19 @@ dependencies {
     implementation(libs.androidx.material3)
     
     // Additional Compose dependencies
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2")
-    implementation("androidx.navigation:navigation-compose:2.9.3")
-    implementation("androidx.compose.runtime:runtime-livedata")
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.runtime.livedata)
     
     // Modern AndroidX libraries
-    implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("androidx.preference:preference-ktx:1.2.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.2")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.preference.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     
     // Material Design
-    implementation("com.google.android.material:material:1.12.0")
+    implementation(libs.material)
     
     // Testing
     testImplementation(libs.junit)
