@@ -80,9 +80,17 @@ class MainActivity : ComponentActivity() {
                 mStateHolder = stateHolder
                 
                 // Set up callback for route changes
-                stateHolder.onRouteChanged = { updatedRoute ->
+                stateHolder.onRouteChanged = { updatedRoute: Route ->
+                    // Preserve existing routePassed before updating
+                    val originalRoute = if (::mRoute.isInitialized) mRoute else null
+                    
                     // Update MainActivity's mRoute to keep legacy code working
                     mRoute = updatedRoute
+                    
+                    // Restore routePassed if it was preserved
+                    originalRoute?.let { original ->
+                        mRoute.preserveRoutePassed(original)
+                    }
                     
                     // Also update FarertApp's ds route for ResultView and other legacy components
                     (application as? FarertApp)?.ds?.assign(updatedRoute, -1)
@@ -282,22 +290,22 @@ class MainActivity : ComponentActivity() {
         dlg.show()
     }
 
-    // 計算結果表示
+    // \u8a08\u7b97\u7d50\u679c\u8868\u793a
     private fun update_fare(rc : Int)
     {
-        // 下部計算結果
+        // \u4e0b\u90e8\u8a08\u7b97\u7d50\u679c
         var msg =
                     when (rc) {
                         0 -> {
-                            //"経路は終端に達しています"
+                            //"\u7d4c\u8def\u306f\u7d42\u7aef\u306b\u9054\u3057\u3066\u3044\u307e\u3059"
                             resources.getString(R.string.main_rc_finished)
                         }
                         1 -> {
-                            // 正常
+                            // \u6b63\u5e38
                             ""
                         }
                         4 -> {
-                            // 会社線利用路線はこれ以上追加できません
+                            // \u4f1a\u793e\u7dda\u5229\u7528\u8def\u7dda\u306f\u3053\u308c\u4ee5\u4e0a\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093
                             resources.getString(R.string.main_rc_company_end)
                         }
                         5 -> {
@@ -307,34 +315,34 @@ class MainActivity : ComponentActivity() {
                             resources.getString(R.string.main_rc_auto_not_enough)
                         }
                         -200 -> {
-                            // 不正な駅名が含まれています.
+                            // \u4e0d\u6b63\u306a\u99c5\u540d\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059.
                             resources.getString(R.string.main_rc_iregal_station)
                         }
                         -300 -> {
-                            // 不正な路線名が含まれています.
+                            // \u4e0d\u6b63\u306a\u8def\u7dda\u540d\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059.
                             resources.getString(R.string.main_rc_iregal_line)
                         }
                         -2 -> {
-                            // 経路不正
+                            // \u7d4c\u8def\u4e0d\u6b63
                             resources.getString(R.string.main_rc_iregal_route)
                         }
                         -4 -> {
-                            // 許可されていない会社線通過です
+                            // \u8a31\u53ef\u3055\u308c\u3066\u3044\u306a\u3044\u4f1a\u793e\u7dda\u901a\u904e\u3067\u3059
                             resources.getString(R.string.main_rc_wrongcompany_pass)
                         }
                         -10, -11, -1002 -> {
-                            // -10, -11 経路を算出できません
+                            // -10, -11 \u7d4c\u8def\u3092\u7b97\u51fa\u3067\u304d\u307e\u305b\u3093
                             resources.getString(R.string.main_rc_cantautostart)
                         }
                         else -> {
-                            //経路が重複しているため追加できません
+                            //\u7d4c\u8def\u304c\u91cd\u8907\u3057\u3066\u3044\u308b\u305f\u3081\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093
                             resources.getString(R.string.main_rc_duplicate_route)
                         }
                     }
         if (rc == -2 || rc == -200 || rc == -300) {
             val message = msg
             msg = ""
-            // Script parse 経路エラー
+            // Script parse \u7d4c\u8def\u30a8\u30e9\u30fc
             val build = AlertDialog.Builder(this).apply {
                 setTitle(R.string.main_rc_alert_title)
                 setMessage(resources.getString(R.string.main_rc_script_parse_error, message))
@@ -345,13 +353,14 @@ class MainActivity : ComponentActivity() {
             dlg.show()
         }
 
-        // 大阪環状線の状態管理はStateHolderで行うため、ここでの処理は不要
-        
-        // StateHolderに変更を通知
+        // StateHolder\u306b\u5909\u66f4\u3092\u901a\u77e5\u3057\u3066\u304b\u3089\u30e1\u30c3\u30bb\u30fc\u30b8\u3092\u4e0a\u66f8\u304d
         println("DEBUG: MainActivity.update_fare - mRoute.count=${mRoute.count}")
         println("DEBUG: MainActivity.update_fare - mRoute.isOsakakanDetourEnable=${mRoute.isOsakakanDetourEnable}")
         println("DEBUG: MainActivity.update_fare - mRoute.isOsakakanDetour=${mRoute.isOsakakanDetour}")
         mStateHolder?.updateRoute(mRoute)
+        
+        // Update StateHolder with error message after updateRoute to override its message
+        mStateHolder?.updateStatusMessage(msg)
         
         // MainActivity's mRoute should be kept in sync for legacy code compatibility
         // But we need to avoid circular dependencies by only updating when necessary

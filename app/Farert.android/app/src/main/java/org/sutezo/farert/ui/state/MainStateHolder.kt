@@ -219,17 +219,17 @@ class MainStateHolder : ViewModel() {
     
     private fun updateFare(rc: Int) {
         val statusMsg = when (rc) {
-            0 -> "経路は終端に達しています"
-            1 -> "" // 正常
-            4 -> "会社線利用路線はこれ以上追加できません"
-            5 -> "経路は終端に達しています"
-            40 -> "開始駅へ戻るにはもう少し経路を指定してからにしてください"
-            -200 -> "不正な駅名が含まれています"
-            -300 -> "不正な路線名が含まれています"
-            -2 -> "経路不正"
-            -4 -> "許可されていない会社線通過です"
-            -10, -11, -1002 -> "経路を算出できません"
-            else -> "経路が重複しているため追加できません"
+            0 -> "\u7d4c\u8def\u306f\u7d42\u7aef\u306b\u9054\u3057\u3066\u3044\u307e\u3059"
+            1 -> "" // \u6b63\u5e38
+            4 -> "\u4f1a\u793e\u7dda\u5229\u7528\u8def\u7dda\u306f\u3053\u308c\u4ee5\u4e0a\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093"
+            5 -> "\u7d4c\u8def\u306f\u7d42\u7aef\u306b\u9054\u3057\u3066\u3044\u307e\u3059"
+            40 -> "\u958b\u59cb\u99c5\u3078\u623b\u308b\u306b\u306f\u3082\u3046\u5c11\u3057\u7d4c\u8def\u3092\u6307\u5b9a\u3057\u3066\u304b\u3089\u306b\u3057\u3066\u304f\u3060\u3055\u3044"
+            -200 -> "\u4e0d\u6b63\u306a\u99c5\u540d\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059"
+            -300 -> "\u4e0d\u6b63\u306a\u8def\u7dda\u540d\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059"
+            -2 -> "\u7d4c\u8def\u4e0d\u6b63"
+            -4 -> "\u8a31\u53ef\u3055\u308c\u3066\u3044\u306a\u3044\u4f1a\u793e\u7dda\u901a\u904e\u3067\u3059"
+            -10, -11, -1002 -> "\u7d4c\u8def\u3092\u7b97\u51fa\u3067\u304d\u307e\u305b\u3093"
+            else -> "\u7d4c\u8def\u304c\u91cd\u8907\u3057\u3066\u3044\u308b\u305f\u3081\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093"
         }
         
         val fareInfo = if (uiState.route.count > 1) {
@@ -248,10 +248,10 @@ class MainStateHolder : ViewModel() {
                 val stationId = uiState.route.item(0).stationId()
                 "${RouteUtil.StationNameEx(stationId)} ${RouteUtil.GetKanaFromStationId(stationId)}"
             } catch (e: Exception) {
-                "発駅を選択してください"
+                "\u767a\u99c5\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044"
             }
         } else {
-            "発駅を選択してください"
+            "\u767a\u99c5\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044"
         }
         
         val osakakanDetour = if (uiState.route.count > 1 && uiState.route.isOsakakanDetourEnable) {
@@ -290,6 +290,10 @@ class MainStateHolder : ViewModel() {
         
         // Notify MainActivity of route changes (for legacy compatibility)
         onRouteChanged?.invoke(uiState.route)
+    }
+    
+    fun updateStatusMessage(message: String) {
+        uiState = uiState.copy(statusMessage = message)
     }
     
     private fun handleRequestRouteChange(routeScript: String) {
