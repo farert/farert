@@ -2574,6 +2574,8 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
                 if (STATION_IS_JUNCTION_F(lflg2)) {
                     TRACE(_T("<k> <e> <r> <x> <u> <m> : Loop over\n"));
                     // 備前一宮 吉備線 総社 伯備線 倉敷 山陽線 岡山 吉備線 総社
+
+                    // 備前一宮 吉備線 総社 伯備線 倉敷 山陽線 岡山 吉備線 備前一宮 とならない
                     rc = -1;
                 } else {
                     TRACE(_T("<k> <e> <r> <x> <u> <m> : SpecialJunction loop\n"));
@@ -2598,7 +2600,7 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
             // b#21072801D
             // don't necessary   stationId1 = first_station_id1;
             route_list_raw.at(num - 1).stationId = first_station_id1;
-            TRACE(_T("Detect finish. %d\n"), first_station_id1);
+            TRACE(_T("Detect finish. %s\n"), SNAME(first_station_id1));
         }
         TRACE(_T("add_abort(%d)\n"), rc);
         route_flag.trackmarkctl = false;

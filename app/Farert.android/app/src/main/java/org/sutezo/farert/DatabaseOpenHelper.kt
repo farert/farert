@@ -17,8 +17,8 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
     companion object {
         const val DB_NAME = "jrdb.db"
         //val DB_NAME_ASSET = "routeDB/jrdb2017.db"
-        const val DATABASE_VERSION = 25    // 24=2022.10.16
-        const val DEFAULT_DB_IDX = 5  // "2022"     // !!! DB更新したらDATABASE_VERSION を更新
+        const val DATABASE_VERSION = 26    // 26=2025.8.11
+        const val DEFAULT_DB_IDX = 5  // "2025"     // !!! DB更新したらDATABASE_VERSION を更新
         private const val MIN_DB_IDX = 0
         private const val MAX_DB_IDX = 5
 

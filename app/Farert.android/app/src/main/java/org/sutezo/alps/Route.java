@@ -1192,7 +1192,7 @@ public class Route extends RouteList {
         }
 
         rc = companyPassCheck(line_id, stationId1, stationId2, num);
-    	if (rc < 0) {
+        if (rc < 0) {
     		return rc;	/* 通過連絡運輸なし >>>>>>>>>>>> */
     	}
 
@@ -1729,17 +1729,17 @@ public class Route extends RouteList {
                 //  ((2 <= num) && (0 < RouteList::InStation(stationId2, line_id, route_list_raw.at(num - 2).stationId, stationId1)))
                 ) {
                     if (STATION_IS_JUNCTION_F(lflg2)) {
-                        System.out.printf("<k> <e> <r> <x> <u> <m> : Loop over\n");
+                        System.out.println("<k> <e> <r> <x> <u> <m> : Loop over");
                         // 備前一宮 吉備線 総社 伯備線 倉敷 山陽線 岡山 吉備線 総社
                         rc = -1;
                     } else {
-                        System.out.printf("<k> <e> <r> <x> <u> <m> : SpecialJunction loop\n");
+                        System.out.println("<k> <e> <r> <x> <u> <m> : SpecialJunction loop");
                         // 岡山 山陽新幹線 新大阪 東海道線 尼崎 福知山線 福知山 山陰線 伯耆大山 伯備線 e岡山
                         // 岡山 山陽線 神戸 東海道線 尼崎 福知山線 福知山 山陰線 伯耆大山 伯備線 e岡山
                         rc = 1;    /* <k> <e> <r> <x> <u> <m> */
                     }
-                    System.out.printf("%x %s in %s: between %s and %s\n") 
-                        lflg2, SNAME(start_station_id), LNAME(line_id), SNAME(stationId1), SNAME(stationId2));
+                    System.out.printf("%x %s in %s: between %s and %s\n",
+                        lflg2, StationName(start_station_id), LineName(line_id), StationName(stationId1), StationName(stationId2));
                 } else  {
                     rc = 1;     /* <b> <j> <h> */
                     System.out.printf("<b> <j> <h>\n");
