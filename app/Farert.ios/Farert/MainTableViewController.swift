@@ -343,11 +343,12 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             *
             */
             let cell = tableView.dequeueReusableCell(withIdentifier: "RouteContentCell") as! FarertTableViewCell
-            
-            let ri = ds.getItem(indexPath.row + 1)
-            cell.lineName.text = ri?.line;
-            cell.stationName.text = ri?.station;
-
+                       
+            if let ri = ds.getItem(indexPath.row + 1) {
+                cell.configure(number: indexPath.row + 1, lineName: ri.line, stationName: ri.station)
+            } else {
+                cell.configure(number: indexPath.row + 1, lineName: "---", stationName: "error!!")
+            }
             return cell
         }
     }

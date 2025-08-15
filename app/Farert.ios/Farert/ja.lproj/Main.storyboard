@@ -68,22 +68,47 @@
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 <gestureRecognizers/>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="RouteContentCell" id="L00-nw-oJH" customClass="FarertTableViewCell" customModule="Farert" customModuleProvider="target">
+                            <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="RouteContentCell" id="L00-nw-oJH" customClass="FarertTableViewCell" customModule="Farert" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="94" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="L00-nw-oJH" id="fpd-rX-0yd">
                                     <rect key="frame" x="0.0" y="0.0" width="383.5" height="44"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
+                                        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j4l-rc-T3r">
+                                            <rect key="frame" x="16" y="4" width="36" height="36"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="luN-0S-bxg">
+                                                    <rect key="frame" x="14" y="8.5" width="8" height="19.5"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="36" id="MGs-Io-gwR"/>
+                                                <constraint firstItem="luN-0S-bxg" firstAttribute="centerX" secondItem="j4l-rc-T3r" secondAttribute="centerX" id="gPv-IB-063"/>
+                                                <constraint firstAttribute="height" constant="36" id="l4p-ep-fNr"/>
+                                                <constraint firstItem="luN-0S-bxg" firstAttribute="centerY" secondItem="j4l-rc-T3r" secondAttribute="centerY" id="myv-9K-cN7"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                    <integer key="value" value="9"/>
+                                                </userDefinedRuntimeAttribute>
+                                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </view>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="東海道新幹線" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YrB-Or-XCX">
-                                            <rect key="frame" x="68" y="3" width="135" height="17"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <rect key="frame" x="68" y="4.5" width="143.5" height="19.5"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="上越国際スキー場前" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UkB-Nk-pk6">
-                                            <rect key="frame" x="68" y="25" width="135" height="20"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                            <rect key="frame" x="68" y="25" width="143.5" height="20"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
@@ -91,15 +116,19 @@
                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     <constraints>
                                         <constraint firstItem="UkB-Nk-pk6" firstAttribute="leading" secondItem="fpd-rX-0yd" secondAttribute="leadingMargin" constant="48" id="C21-pa-hbv"/>
-                                        <constraint firstItem="UkB-Nk-pk6" firstAttribute="top" secondItem="YrB-Or-XCX" secondAttribute="bottom" constant="5" id="Gpy-gM-Qkl"/>
+                                        <constraint firstItem="j4l-rc-T3r" firstAttribute="leading" secondItem="fpd-rX-0yd" secondAttribute="leading" constant="16" id="C4j-fw-6a2"/>
+                                        <constraint firstItem="UkB-Nk-pk6" firstAttribute="top" secondItem="YrB-Or-XCX" secondAttribute="bottom" constant="1" id="Gpy-gM-Qkl"/>
                                         <constraint firstItem="UkB-Nk-pk6" firstAttribute="leading" secondItem="YrB-Or-XCX" secondAttribute="leading" id="PIo-iV-Cvd"/>
+                                        <constraint firstItem="j4l-rc-T3r" firstAttribute="centerY" secondItem="fpd-rX-0yd" secondAttribute="centerY" id="Q0d-vB-8H1"/>
                                         <constraint firstItem="UkB-Nk-pk6" firstAttribute="trailing" secondItem="YrB-Or-XCX" secondAttribute="trailing" id="rWL-ob-eta"/>
                                         <constraint firstAttribute="bottomMargin" secondItem="UkB-Nk-pk6" secondAttribute="bottom" constant="-12" id="rkC-vs-yKJ"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <outlet property="lineName" destination="YrB-Or-XCX" id="eV2-p8-7ST"/>
-                                    <outlet property="stationName" destination="UkB-Nk-pk6" id="kEa-dF-wSz"/>
+                                    <outlet property="lineLabel" destination="YrB-Or-XCX" id="16F-wX-5ai"/>
+                                    <outlet property="numberContainer" destination="j4l-rc-T3r" id="KIe-JM-eIw"/>
+                                    <outlet property="numberLabel" destination="luN-0S-bxg" id="V8v-LW-Qdg"/>
+                                    <outlet property="stationLabel" destination="UkB-Nk-pk6" id="BU6-WU-dMb"/>
                                     <segue destination="ptT-uq-AW3" kind="show" identifier="fareInfoDetailSegue" id="bnP-hf-m6Y"/>
                                 </connections>
                             </tableViewCell>
