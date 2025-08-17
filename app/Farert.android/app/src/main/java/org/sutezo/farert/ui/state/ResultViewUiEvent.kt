@@ -2,6 +2,7 @@ package org.sutezo.farert.ui.state
 
 sealed interface ResultViewUiEvent {
     data object LoadData : ResultViewUiEvent
+    data object StocktokaiClicked : ResultViewUiEvent
     data object SpecialRuleClicked : ResultViewUiEvent
     data object MeihanCityClicked : ResultViewUiEvent
     data object LongRouteClicked : ResultViewUiEvent

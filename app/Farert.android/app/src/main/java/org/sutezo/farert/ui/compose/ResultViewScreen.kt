@@ -104,6 +104,16 @@ fun ResultViewScreen(
                                 )
                             }
                             
+                            if (uiState.showStocktokaiMenu) {
+                                DropdownMenuItem(
+                                    text = { Text(uiState.stocktokaiMenuTitle) },
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        stateHolder.handleEvent(ResultViewUiEvent.StocktokaiClicked)
+                                    }
+                                )
+                            }
+                            
                             if (uiState.showMeihanCityMenu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.meihanCityMenuTitle) },

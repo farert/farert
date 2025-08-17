@@ -53,6 +53,10 @@ class ResultViewStateHolder : ViewModel() {
                 loadData()
             }
             
+            is ResultViewUiEvent.StocktokaiClicked -> {
+                handleStocktokaiClick()
+            }
+            
             is ResultViewUiEvent.SpecialRuleClicked -> {
                 handleSpecialRuleClick()
             }
@@ -132,6 +136,13 @@ class ResultViewStateHolder : ViewModel() {
             ds.setNoRule(false)
         }
         
+        // stocktokai: TRUE = JR東海株主優待券を使用する、FALSE = 使用しない
+        if (uiState.optStocktokai == ResultViewUiState.Option.TRUE) {
+            ds.routeFlag.setJrTokaiStockApply(true)
+        } else if (uiState.optStocktokai == ResultViewUiState.Option.FALSE) {
+            ds.routeFlag.setJrTokaiStockApply(false)
+        }
+        
         // meihancity: TRUE = 着駅を単駅指定、FALSE = 発駅を単駅指定
         if (uiState.optMeihancity == ResultViewUiState.Option.TRUE) {
             ds.routeFlag.setArriveAsCity()
@@ -165,6 +176,16 @@ class ResultViewStateHolder : ViewModel() {
                 ResultViewUiState.Option.FALSE
             } else {
                 ResultViewUiState.Option.TRUE
+            }
+        } else {
+            ResultViewUiState.Option.N_A
+        }
+        
+        val optStocktokai = if (fareInfo.isJRCentralStockEnable) {
+            if (fareInfo.isJRCentralStock) {
+                ResultViewUiState.Option.TRUE
+            } else {
+                ResultViewUiState.Option.FALSE
             }
         } else {
             ResultViewUiState.Option.N_A
@@ -213,6 +234,7 @@ class ResultViewStateHolder : ViewModel() {
         
         uiState = uiState.copy(
             optSperule = optSperule,
+            optStocktokai = optStocktokai,
             optMeihancity = optMeihancity,
             optLongroute = optLongroute,
             optRule115 = optRule115,
@@ -228,6 +250,17 @@ class ResultViewStateHolder : ViewModel() {
             }
             ResultViewUiState.Option.FALSE -> {
                 "${context.getString(R.string.result_menu_sperule)}${context.getString(R.string.nothing)}"
+            }
+            else -> ""
+        }
+        
+        val showStocktokai = uiState.optStocktokai != ResultViewUiState.Option.N_A
+        val stocktokaiTitle = when (uiState.optStocktokai) {
+            ResultViewUiState.Option.TRUE -> {
+                "JR東海株主優待券を適用"
+            }
+            ResultViewUiState.Option.FALSE -> {
+                "JR東海株主優待券を適用しない"
             }
             else -> ""
         }
@@ -280,6 +313,8 @@ class ResultViewStateHolder : ViewModel() {
         uiState = uiState.copy(
             showSpecialRuleMenu = showSpecialRule,
             specialRuleMenuTitle = specialRuleTitle,
+            showStocktokaiMenu = showStocktokai,
+            stocktokaiMenuTitle = stocktokaiTitle,
             showMeihanCityMenu = showMeihanCity,
             meihanCityMenuTitle = meihanCityTitle,
             showLongRouteMenu = showLongRoute,
@@ -336,6 +371,18 @@ class ResultViewStateHolder : ViewModel() {
         
         uiState = uiState.copy(optSperule = newOpt)
         // Trigger recalculation
+        recalculateWithNewOptions()
+    }
+
+    
+    private fun handleStocktokaiClick() {
+        val newOpt = if (uiState.stocktokaiMenuTitle == "JR東海株主優待券を適用しない") {
+            ResultViewUiState.Option.TRUE
+        } else {
+            ResultViewUiState.Option.FALSE
+        }
+        
+        uiState = uiState.copy(optStocktokai = newOpt)
         recalculateWithNewOptions()
     }
 
