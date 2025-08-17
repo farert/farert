@@ -89,6 +89,10 @@ class FareInfo {
     var isLongRoute : Boolean = false
     var isRule115specificTerm : Boolean = false
     var isEnableRule115 : Boolean = false
+    
+    // 単駅最安オプション
+    var isNeerestEnable : Boolean = false
+    var isNeerest : Boolean = false
 
     var resultMessage : String = ""
 

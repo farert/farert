@@ -132,10 +132,11 @@ class ResultViewStateHolder : ViewModel() {
             ds.setNoRule(false)
         }
         
+        // meihancity: TRUE = 着駅を単駅指定、FALSE = 発駅を単駅指定
         if (uiState.optMeihancity == ResultViewUiState.Option.TRUE) {
-            ds.routeFlag.setStartAsCity()
-        } else if (uiState.optMeihancity == ResultViewUiState.Option.FALSE) {
             ds.routeFlag.setArriveAsCity()
+        } else if (uiState.optMeihancity == ResultViewUiState.Option.FALSE) {
+            ds.routeFlag.setStartAsCity()
         }
         
         if (uiState.optLongroute == ResultViewUiState.Option.FALSE) {
@@ -148,6 +149,13 @@ class ResultViewStateHolder : ViewModel() {
             ds.routeFlag.setSpecificTermRule115(false)
         } else if (uiState.optRule115 == ResultViewUiState.Option.TRUE) {
             ds.routeFlag.setSpecificTermRule115(true)
+        }
+        
+        // 単駅最安オプション処理
+        if (uiState.optNeerest == ResultViewUiState.Option.TRUE) {
+            ds.routeFlag.setSpecificTermRule115(true)
+        } else if (uiState.optNeerest == ResultViewUiState.Option.FALSE) {
+            ds.routeFlag.setSpecificTermRule115(false)
         }
     }
     
@@ -192,11 +200,23 @@ class ResultViewStateHolder : ViewModel() {
             ResultViewUiState.Option.N_A
         }
         
+        // 単駅最安オプション
+        val optNeerest = if (fareInfo.isNeerestEnable) {
+            if (fareInfo.isNeerest) {
+                ResultViewUiState.Option.TRUE
+            } else {
+                ResultViewUiState.Option.FALSE
+            }
+        } else {
+            ResultViewUiState.Option.N_A
+        }
+        
         uiState = uiState.copy(
             optSperule = optSperule,
             optMeihancity = optMeihancity,
             optLongroute = optLongroute,
-            optRule115 = optRule115
+            optRule115 = optRule115,
+            optNeerest = optNeerest
         )
     }
     
@@ -215,10 +235,10 @@ class ResultViewStateHolder : ViewModel() {
         val showMeihanCity = uiState.optMeihancity != ResultViewUiState.Option.N_A
         val meihanCityTitle = when (uiState.optMeihancity) {
             ResultViewUiState.Option.TRUE -> {
-                context.getString(R.string.result_menu_meihancity_start)
+                "着駅を単駅に"
             }
             ResultViewUiState.Option.FALSE -> {
-                context.getString(R.string.result_menu_meihancity_arrive)
+                "発駅を単駅に"
             }
             else -> ""
         }
@@ -318,9 +338,12 @@ class ResultViewStateHolder : ViewModel() {
         // Trigger recalculation
         recalculateWithNewOptions()
     }
+
+    
+    
     
     private fun handleMeihanCityClick() {
-        val newOpt = if (uiState.meihanCityMenuTitle == context.getString(R.string.result_menu_meihancity_arrive)) {
+        val newOpt = if (uiState.meihanCityMenuTitle == "発駅を単駅に") {
             ResultViewUiState.Option.TRUE
         } else {
             ResultViewUiState.Option.FALSE
