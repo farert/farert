@@ -312,6 +312,72 @@ private fun DistanceSection(fareInfo: org.sutezo.alps.FareInfo) {
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+            
+            // 規程114条適用時の営業キロ表示
+            if (fareInfo.isRule114Applied) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "規程114条適用 営業キロ： ${kmNumStr(fareInfo.rule114_salesKm)} km 計算キロ： ${kmNumStr(fareInfo.rule114_calcKm)} km",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            
+            // JR北海道営業キロ表示
+            if (fareInfo.salesKmForHokkaido > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                if (fareInfo.calcKmForHokkaido > 0 && fareInfo.calcKmForHokkaido != fareInfo.salesKmForHokkaido) {
+                    Text(
+                        text = "JR北海道営業キロ： ${kmNumStr(fareInfo.salesKmForHokkaido)} km 計算キロ： ${kmNumStr(fareInfo.calcKmForHokkaido)} km",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = "JR北海道営業キロ： ${kmNumStr(fareInfo.salesKmForHokkaido)} km",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            
+            // JR四国営業キロ表示
+            if (fareInfo.salesKmForShikoku > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                if (fareInfo.calcKmForShikoku > 0 && fareInfo.salesKmForShikoku != fareInfo.calcKmForShikoku) {
+                    Text(
+                        text = "JR四国営業キロ： ${kmNumStr(fareInfo.salesKmForShikoku)} km 計算キロ： ${kmNumStr(fareInfo.calcKmForShikoku)} km",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = "JR四国営業キロ： ${kmNumStr(fareInfo.salesKmForShikoku)} km",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            
+            // JR九州営業キロ表示
+            if (fareInfo.salesKmForKyusyu > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                if (fareInfo.calcKmForKyusyu > 0 && fareInfo.salesKmForKyusyu != fareInfo.calcKmForKyusyu) {
+                    Text(
+                        text = "JR九州営業キロ： ${kmNumStr(fareInfo.salesKmForKyusyu)} km  計算キロ： ${kmNumStr(fareInfo.calcKmForKyusyu)} km",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = "JR九州営業キロ： ${kmNumStr(fareInfo.salesKmForKyusyu)} km",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            
+            // BRT営業キロ表示
+            if (fareInfo.brtSalesKm > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "BRT営業キロ： ${kmNumStr(fareInfo.brtSalesKm)} km",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
@@ -360,6 +426,24 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                     )
                     Text(
                         text = stringResource(R.string.result_yen, fareNumStr(fareInfo.fareForCompanyline)),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+            
+            // BRT fare if applicable
+            if (fareInfo.fareForBRT != 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "BRT運賃",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(R.string.result_yen, fareNumStr(fareInfo.fareForBRT)),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -481,6 +565,40 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                             text = stringResource(R.string.result_yen, fareNumStr(fareInfo.roundtripAcademicFare)),
                             style = MaterialTheme.typography.bodyLarge
                         )
+                    }
+                }
+            }
+            
+            // Stock discounts if applicable
+            fareInfo.fareForStockDiscounts?.let { stocks ->
+                if (stocks.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    stocks.forEach { (companyTitle, normalFare, rule114Fare) ->
+                        val fareToShow = if (fareInfo.isRule114Applied && rule114Fare > 0) {
+                            rule114Fare
+                        } else {
+                            normalFare
+                        }
+                        
+                        if (fareToShow > 0) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = companyTitle,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = stringResource(R.string.result_yen, fareNumStr(fareToShow)),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
                     }
                 }
             }
