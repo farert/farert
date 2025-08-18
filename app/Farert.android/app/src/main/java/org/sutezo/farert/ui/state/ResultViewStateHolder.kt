@@ -222,8 +222,8 @@ class ResultViewStateHolder : ViewModel() {
         }
         
         // 単駅最安オプション
-        val optNeerest = if (fareInfo.isNeerestEnable) {
-            if (fareInfo.isNeerest) {
+        val optNeerest = if (fareInfo.isEnableRule115) {
+            if (fareInfo.isRule115specificTerm) {
                 ResultViewUiState.Option.TRUE
             } else {
                 ResultViewUiState.Option.FALSE

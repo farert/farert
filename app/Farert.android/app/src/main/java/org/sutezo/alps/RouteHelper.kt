@@ -346,9 +346,6 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isRule115specificTerm = this.route_flag.isRule115specificTerm
     result.isEnableRule115 = this.route_flag.isEnableRule115
     
-    // 単駅最安オプション
-    result.isNeerestEnable = this.route_flag.isEnableRule115
-    result.isNeerest = this.route_flag.isRule115specificTerm
 
     result.isOsakakanDetourEnable = this.route_flag.is_osakakan_1pass
     result.isOsakakanDetour = this.route_flag.osakakan_detour
