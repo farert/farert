@@ -298,9 +298,13 @@ class ResultViewStateHolder : ViewModel() {
             else -> ""
         }
         
-        // Osaka Kanjou Line menu setup - use FareInfo instead of direct Route access
+        // Osaka Kanjou Line menu setup - match main screen logic
         val fareInfo = uiState.fareInfo
-        val showOsakakan = fareInfo?.isOsakakanDetourEnable ?: false
+        val showOsakakan = if (uiState.routeEndIndex > 1) {
+            fareInfo?.isOsakakanDetourEnable ?: false
+        } else {
+            false
+        }
         val osakakanTitle = if (showOsakakan) {
             if (fareInfo?.isOsakakanDetour == true) {
                 context.getString(R.string.result_menu_osakakan_near)
