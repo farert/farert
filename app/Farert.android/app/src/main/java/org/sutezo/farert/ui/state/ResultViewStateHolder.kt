@@ -300,7 +300,7 @@ class ResultViewStateHolder : ViewModel() {
         
         // Osaka Kanjou Line menu setup - match main screen logic
         val fareInfo = uiState.fareInfo
-        val showOsakakan = if (uiState.routeEndIndex > 1) {
+        val showOsakakan = if ((currentRoute?.count ?: 0) > 1) {
             fareInfo?.isOsakakanDetourEnable ?: false
         } else {
             false
