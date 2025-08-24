@@ -223,7 +223,7 @@ public class RouteFlag {
     }
     public void setStartAsCity() { /*ASSERT(meihan_city_enable); */ meihan_city_flag = true;   /* 着駅=単駅、発駅市内駅 */ }
     public void setArriveAsCity() { /*ASSERT(meihan_city_enable); */ meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
-//    public void setJrTokaiStockApply(boolean flag) { jrtokaistock_applied = flag; }
+    public void setJrTokaiStockApply(boolean flag) { jrtokaistock_applied = flag; }
     public boolean jrTokaiStockApply() { return jrtokaistock_applied; }
     public boolean jrtokaistock_enable() { return jrtokaistock_enable; }
     /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */

@@ -175,7 +175,7 @@ This project follows modern Android development best practices:
 
 ## License
 
-[License information to be added]
+- GPL(v3)
 
 ## Credits
 
