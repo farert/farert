@@ -21,7 +21,7 @@ typedef const char* LPCTSTR;
 typedef char* LPSTR;
 typedef char TCHAR;
 
-#if DEBUG   // for XCODE
+#if 0 // DEBUG   // for XCODE
 #define TRACE printf
 #define _DEBUG
 #else

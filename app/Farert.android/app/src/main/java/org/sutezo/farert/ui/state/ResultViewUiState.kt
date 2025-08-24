@@ -17,6 +17,8 @@ data class ResultViewUiState(
     val optRule115: Option = Option.N_A,
     
     // Menu visibility and text
+    val showStocktokaiMenu: Boolean = false,
+    val stocktokaiMenuTitle: String = "",
     val showSpecialRuleMenu: Boolean = false,
     val specialRuleMenuTitle: String = "",
     val showMeihanCityMenu: Boolean = false,

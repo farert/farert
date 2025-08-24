@@ -53,6 +53,10 @@ class ResultViewStateHolder : ViewModel() {
                 loadData()
             }
             
+            is ResultViewUiEvent.StocktokaiClicked -> {
+                handleStocktokaiClick()
+            }
+            
             is ResultViewUiEvent.SpecialRuleClicked -> {
                 handleSpecialRuleClick()
             }
@@ -132,10 +136,18 @@ class ResultViewStateHolder : ViewModel() {
             ds.setNoRule(false)
         }
         
+        // stocktokai: TRUE = JR東海株主優待券を使用する、FALSE = 使用しない
+        if (uiState.optStocktokai == ResultViewUiState.Option.TRUE) {
+            ds.routeFlag.setJrTokaiStockApply(true)
+        } else if (uiState.optStocktokai == ResultViewUiState.Option.FALSE) {
+            ds.routeFlag.setJrTokaiStockApply(false)
+        }
+        
+        // meihancity: TRUE = 着駅を単駅指定、FALSE = 発駅を単駅指定
         if (uiState.optMeihancity == ResultViewUiState.Option.TRUE) {
-            ds.routeFlag.setStartAsCity()
-        } else if (uiState.optMeihancity == ResultViewUiState.Option.FALSE) {
             ds.routeFlag.setArriveAsCity()
+        } else if (uiState.optMeihancity == ResultViewUiState.Option.FALSE) {
+            ds.routeFlag.setStartAsCity()
         }
         
         if (uiState.optLongroute == ResultViewUiState.Option.FALSE) {
@@ -149,6 +161,13 @@ class ResultViewStateHolder : ViewModel() {
         } else if (uiState.optRule115 == ResultViewUiState.Option.TRUE) {
             ds.routeFlag.setSpecificTermRule115(true)
         }
+        
+        // 単駅最安オプション処理
+        if (uiState.optNeerest == ResultViewUiState.Option.TRUE) {
+            ds.routeFlag.setSpecificTermRule115(true)
+        } else if (uiState.optNeerest == ResultViewUiState.Option.FALSE) {
+            ds.routeFlag.setSpecificTermRule115(false)
+        }
     }
     
     private fun setOptionFlag(fareInfo: FareInfo) {
@@ -157,6 +176,16 @@ class ResultViewStateHolder : ViewModel() {
                 ResultViewUiState.Option.FALSE
             } else {
                 ResultViewUiState.Option.TRUE
+            }
+        } else {
+            ResultViewUiState.Option.N_A
+        }
+        
+        val optStocktokai = if (fareInfo.isJRCentralStockEnable) {
+            if (fareInfo.isJRCentralStock) {
+                ResultViewUiState.Option.TRUE
+            } else {
+                ResultViewUiState.Option.FALSE
             }
         } else {
             ResultViewUiState.Option.N_A
@@ -192,11 +221,24 @@ class ResultViewStateHolder : ViewModel() {
             ResultViewUiState.Option.N_A
         }
         
+        // 単駅最安オプション
+        val optNeerest = if (fareInfo.isEnableRule115) {
+            if (fareInfo.isRule115specificTerm) {
+                ResultViewUiState.Option.TRUE
+            } else {
+                ResultViewUiState.Option.FALSE
+            }
+        } else {
+            ResultViewUiState.Option.N_A
+        }
+        
         uiState = uiState.copy(
             optSperule = optSperule,
+            optStocktokai = optStocktokai,
             optMeihancity = optMeihancity,
             optLongroute = optLongroute,
-            optRule115 = optRule115
+            optRule115 = optRule115,
+            optNeerest = optNeerest
         )
     }
     
@@ -212,13 +254,24 @@ class ResultViewStateHolder : ViewModel() {
             else -> ""
         }
         
+        val showStocktokai = uiState.optStocktokai != ResultViewUiState.Option.N_A
+        val stocktokaiTitle = when (uiState.optStocktokai) {
+            ResultViewUiState.Option.TRUE -> {
+                "JR東海株主優待券を適用"
+            }
+            ResultViewUiState.Option.FALSE -> {
+                "JR東海株主優待券を適用しない"
+            }
+            else -> ""
+        }
+        
         val showMeihanCity = uiState.optMeihancity != ResultViewUiState.Option.N_A
         val meihanCityTitle = when (uiState.optMeihancity) {
             ResultViewUiState.Option.TRUE -> {
-                context.getString(R.string.result_menu_meihancity_start)
+                "着駅を単駅に"
             }
             ResultViewUiState.Option.FALSE -> {
-                context.getString(R.string.result_menu_meihancity_arrive)
+                "発駅を単駅に"
             }
             else -> ""
         }
@@ -245,9 +298,13 @@ class ResultViewStateHolder : ViewModel() {
             else -> ""
         }
         
-        // Osaka Kanjou Line menu setup - use FareInfo instead of direct Route access
+        // Osaka Kanjou Line menu setup - match main screen logic
         val fareInfo = uiState.fareInfo
-        val showOsakakan = fareInfo?.isOsakakanDetourEnable ?: false
+        val showOsakakan = if ((currentRoute?.count ?: 0) > 1) {
+            fareInfo?.isOsakakanDetourEnable ?: false
+        } else {
+            false
+        }
         val osakakanTitle = if (showOsakakan) {
             if (fareInfo?.isOsakakanDetour == true) {
                 context.getString(R.string.result_menu_osakakan_near)
@@ -260,6 +317,8 @@ class ResultViewStateHolder : ViewModel() {
         uiState = uiState.copy(
             showSpecialRuleMenu = showSpecialRule,
             specialRuleMenuTitle = specialRuleTitle,
+            showStocktokaiMenu = showStocktokai,
+            stocktokaiMenuTitle = stocktokaiTitle,
             showMeihanCityMenu = showMeihanCity,
             meihanCityMenuTitle = meihanCityTitle,
             showLongRouteMenu = showLongRoute,
@@ -318,9 +377,24 @@ class ResultViewStateHolder : ViewModel() {
         // Trigger recalculation
         recalculateWithNewOptions()
     }
+
+    
+    private fun handleStocktokaiClick() {
+        val newOpt = if (uiState.stocktokaiMenuTitle == "JR東海株主優待券を適用しない") {
+            ResultViewUiState.Option.TRUE
+        } else {
+            ResultViewUiState.Option.FALSE
+        }
+        
+        uiState = uiState.copy(optStocktokai = newOpt)
+        recalculateWithNewOptions()
+    }
+
+    
+    
     
     private fun handleMeihanCityClick() {
-        val newOpt = if (uiState.meihanCityMenuTitle == context.getString(R.string.result_menu_meihancity_arrive)) {
+        val newOpt = if (uiState.meihanCityMenuTitle == "発駅を単駅に") {
             ResultViewUiState.Option.TRUE
         } else {
             ResultViewUiState.Option.FALSE
