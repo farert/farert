@@ -164,7 +164,7 @@ BOOL Calps_mfcDlg::OnInitDialog()
 
 //////////////////////////////////////#####################
 #ifdef _DEBUG
-	test_exec();	// 単体テストを実行(結果はtest_result.txt)
+//	test_exec();	// 単体テストを実行(結果はtest_result.txt)
 #endif
 //////////////////////////////////////#####################
 
@@ -309,9 +309,11 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 
 	if (m_selMode == SEL_LINE) {
 		// add route list 路線Id
-		pLRoute->SetItemText(pLRoute->InsertItem(LVIF_TEXT | LVIF_PARAM, nRoute, selTitle, 0, 0, 0, MAKEPAIR(selId, 0)), 1, _T(""));
+        CString str;
+        str.Format(_T("%d) %s"), static_cast<int>(nRoute + 1), static_cast<LPCTSTR>(selTitle));
+        pLRoute->SetItemText(pLRoute->InsertItem(LVIF_TEXT | LVIF_PARAM, nRoute, str, 0, 0, 0, MAKEPAIR(selId, 0)), 1, _T(""));
 		wc = pLRoute->GetColumnWidth(0);
-		wn = pLRoute->GetStringWidth(selTitle) + 16;
+		wn = pLRoute->GetStringWidth(str) + 16;
 		if (wc < wn) {
 			pLRoute->SetColumnWidth(0, wn);
 		}
@@ -539,8 +541,6 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 										_T("確認"), MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
-
-	CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 
 	CTermSel dlg(true, this);
 
@@ -1189,7 +1189,7 @@ int Calps_mfcDlg::UpdateRouteList()
 		stationId = pos->stationId;
 		stationName = RouteUtil::StationName(stationId).c_str();
 		lineId = pos->lineId;
-		lineName = RouteUtil::LineName(lineId).c_str();
+        lineName.Format(_T("%d) %s"), static_cast<int>(idx + 1), static_cast<LPCTSTR>(RouteUtil::LineName(lineId).c_str()));
 
 		pLRoute->SetItemText(
 			pLRoute->InsertItem(LVIF_TEXT | LVIF_PARAM,
