@@ -42,9 +42,18 @@ fun ResultViewScreen(
     val context = LocalContext.current
     val uiState = stateHolder.uiState
     var showOptionsMenu by remember { mutableStateOf(false) }
-    
+
     // Initialize state
-    LaunchedEffect(routeEndIndex, alertId, stocktokai, neerest, sperule, meihancity, longroute, rule115) {
+    LaunchedEffect(
+        routeEndIndex,
+        alertId,
+        stocktokai,
+        neerest,
+        sperule,
+        meihancity,
+        longroute,
+        rule115
+    ) {
         stateHolder.initialize(
             context = context,
             routeEndIndex = routeEndIndex,
@@ -57,7 +66,7 @@ fun ResultViewScreen(
             rule115 = rule115
         )
     }
-    
+
     // Handle error display
     uiState.error?.let { error ->
         LaunchedEffect(error) {
@@ -65,7 +74,7 @@ fun ResultViewScreen(
             stateHolder.handleEvent(ResultViewUiEvent.ClearError)
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,12 +93,12 @@ fun ResultViewScreen(
                     }) {
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }
-                    
+
                     Box {
                         IconButton(onClick = { showOptionsMenu = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Options")
                         }
-                        
+
                         DropdownMenu(
                             expanded = showOptionsMenu,
                             onDismissRequest = { showOptionsMenu = false }
@@ -103,7 +112,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
-                            
+
                             if (uiState.showStocktokaiMenu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.stocktokaiMenuTitle) },
@@ -113,7 +122,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
-                            
+
                             if (uiState.showMeihanCityMenu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.meihanCityMenuTitle) },
@@ -123,7 +132,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
-                            
+
                             if (uiState.showLongRouteMenu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.longRouteMenuTitle) },
@@ -133,7 +142,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
-                            
+
                             if (uiState.showRule115Menu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.rule115MenuTitle) },
@@ -143,7 +152,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
-                            
+
                             if (uiState.showOsakakanMenu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.osakakanMenuTitle) },
@@ -244,27 +253,27 @@ private fun ResultContent(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Distance information
         DistanceSection(fareInfo = fareInfo)
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Fare information
         FareSection(fareInfo = fareInfo, isRoundTrip = isRoundTrip)
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Validity information
         ValiditySection(fareInfo = fareInfo)
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Route information
         RouteSection(fareInfo = fareInfo)
-        
+
         // Notes
         if (fareInfo.resultMessage.isNotBlank()) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -304,89 +313,194 @@ private fun DistanceSection(fareInfo: org.sutezo.alps.FareInfo) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = stringResource(R.string.result_km, kmNumStr(fareInfo.totalSalesKm)),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.title_footer_saleskm),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = stringResource(R.string.result_km, kmNumStr(fareInfo.totalSalesKm)),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
             if (fareInfo.jrCalcKm != fareInfo.jrSalesKm) {
-                Text(
-                    text = stringResource(
-                        if (fareInfo.companySalesKm != 0) R.string.result_calckm else R.string.result_calckm_wo_jr
-                    ),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = stringResource(R.string.result_km, kmNumStr(fareInfo.jrCalcKm)),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                    Text(
+                        text = stringResource(
+                            if (fareInfo.companySalesKm != 0) R.string.result_calckm else R.string.result_calckm_wo_jr
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(R.string.result_km, kmNumStr(fareInfo.jrCalcKm)),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
-            
+
             // 規程114条適用時の営業キロ表示
             if (fareInfo.isRule114Applied) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "規程114条適用 営業キロ： ${kmNumStr(fareInfo.rule114_salesKm)} km 計算キロ： ${kmNumStr(fareInfo.rule114_calcKm)} km",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.result_rule114),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.result_km,
+                            kmNumStr(fareInfo.rule114_salesKm)
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.result_km,
+                            kmNumStr(fareInfo.rule114_calcKm)
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
-            
+
             // JR北海道営業キロ表示
             if (fareInfo.salesKmForHokkaido > 0) {
                 Spacer(modifier = Modifier.height(4.dp))
-                if (fareInfo.calcKmForHokkaido > 0 && fareInfo.calcKmForHokkaido != fareInfo.salesKmForHokkaido) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = "JR北海道営業キロ： ${kmNumStr(fareInfo.salesKmForHokkaido)} km 計算キロ： ${kmNumStr(fareInfo.calcKmForHokkaido)} km",
+                        text = stringResource(R.string.result_jrcompany_hokaido),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                } else {
                     Text(
-                        text = "JR北海道営業キロ： ${kmNumStr(fareInfo.salesKmForHokkaido)} km",
+                        text = stringResource(
+                            R.string.result_km,
+                            kmNumStr(fareInfo.salesKmForHokkaido)
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    if (fareInfo.calcKmForHokkaido > 0 && fareInfo.calcKmForHokkaido != fareInfo.salesKmForHokkaido) {
+                        Text(
+                            text = stringResource(
+                                R.string.result_km,
+                                kmNumStr(fareInfo.calcKmForHokkaido)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
-            
+
             // JR四国営業キロ表示
             if (fareInfo.salesKmForShikoku > 0) {
                 Spacer(modifier = Modifier.height(4.dp))
-                if (fareInfo.calcKmForShikoku > 0 && fareInfo.salesKmForShikoku != fareInfo.calcKmForShikoku) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = "JR四国営業キロ： ${kmNumStr(fareInfo.salesKmForShikoku)} km 計算キロ： ${kmNumStr(fareInfo.calcKmForShikoku)} km",
+                        text = stringResource(R.string.result_jrcompany_shikoku),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                } else {
                     Text(
-                        text = "JR四国営業キロ： ${kmNumStr(fareInfo.salesKmForShikoku)} km",
+                        text = stringResource(
+                            R.string.result_km,
+                            kmNumStr(fareInfo.salesKmForShikoku)
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    if (fareInfo.calcKmForShikoku > 0 && fareInfo.calcKmForShikoku != fareInfo.salesKmForShikoku) {
+                        Text(
+                            text = stringResource(
+                                R.string.result_km,
+                                kmNumStr(fareInfo.calcKmForShikoku)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
-            
+
             // JR九州営業キロ表示
             if (fareInfo.salesKmForKyusyu > 0) {
                 Spacer(modifier = Modifier.height(4.dp))
-                if (fareInfo.calcKmForKyusyu > 0 && fareInfo.salesKmForKyusyu != fareInfo.calcKmForKyusyu) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = "JR九州営業キロ： ${kmNumStr(fareInfo.salesKmForKyusyu)} km  計算キロ： ${kmNumStr(fareInfo.calcKmForKyusyu)} km",
+                        text = stringResource(R.string.result_jrcompany_kyusyu),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                } else {
                     Text(
-                        text = "JR九州営業キロ： ${kmNumStr(fareInfo.salesKmForKyusyu)} km",
+                        text = stringResource(
+                            R.string.result_km,
+                            kmNumStr(fareInfo.salesKmForKyusyu)
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    if (fareInfo.calcKmForKyusyu > 0 && fareInfo.calcKmForKyusyu != fareInfo.salesKmForKyusyu) {
+                        Text(
+                            text = stringResource(
+                                R.string.result_km,
+                                kmNumStr(fareInfo.calcKmForKyusyu)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
-            
-            // BRT営業キロ表示
-            if (fareInfo.brtSalesKm > 0) {
+
+            // BRT営業キロ表示 会社線営業キロ表示
+            if ((fareInfo.brtSalesKm > 0) || (fareInfo.companySalesKm > 0)) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "BRT営業キロ： ${kmNumStr(fareInfo.brtSalesKm)} km",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (fareInfo.companySalesKm > 0) {
+                        Text(
+                            text = stringResource(R.string.result_jrline),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = stringResource(R.string.result_km,kmNumStr(fareInfo.jrSalesKm)),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = stringResource(R.string.result_comapanyline),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.result_km,
+                                kmNumStr(fareInfo.companySalesKm)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    if (fareInfo.brtSalesKm > 0) {
+                        Text(
+                            text = stringResource(R.string.result_brtline),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.result_km,
+                                kmNumStr(fareInfo.brtSalesKm)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
         }
     }
@@ -406,7 +520,7 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // Normal fare
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -422,7 +536,7 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             // Company line fare if applicable
             if (fareInfo.fareForCompanyline != 0) {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -435,12 +549,15 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = stringResource(R.string.result_yen, fareNumStr(fareInfo.fareForCompanyline)),
+                        text = stringResource(
+                            R.string.result_yen,
+                            fareNumStr(fareInfo.fareForCompanyline)
+                        ),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
-            
+
             // BRT fare if applicable
             if (fareInfo.fareForBRT != 0) {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -449,7 +566,7 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "BRT運賃",
+                        text = stringResource(R.string.result_inbrtline),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
@@ -458,7 +575,7 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                     )
                 }
             }
-            
+
             // IC fare if applicable
             if (fareInfo.fareForIC != 0) {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -476,123 +593,123 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                     )
                 }
             }
-            
+
             // Round trip fare if applicable
             if (isRoundTrip) {
                 Spacer(modifier = Modifier.height(8.dp))
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 val discountText = if (fareInfo.isRoundtripDiscount) {
                     stringResource(R.string.result_value_discount)
                 } else {
                     ""
                 }
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "往復運賃",
+                        text = stringResource(R.string.result_round),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "${stringResource(R.string.result_yen, fareNumStr(fareInfo.roundTripFareWithCompanyLine))}$discountText",
+                        text = "${
+                            stringResource(
+                                R.string.result_yen,
+                                fareNumStr(fareInfo.roundTripFareWithCompanyLine)
+                            )
+                        }$discountText",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
-            
+
             // Child fare
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider()
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "小児運賃",
+                    text = stringResource(R.string.result_chilefare),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
                     text = stringResource(R.string.result_yen, fareNumStr(fareInfo.childFare)),
                     style = MaterialTheme.typography.bodyLarge
                 )
-            }
-            
-            if (isRoundTrip) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                if (isRoundTrip) {
                     Text(
-                        text = "小児往復運賃",
+                        text = stringResource(R.string.result_round),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = stringResource(R.string.result_yen, fareNumStr(fareInfo.roundtripChildFare)),
+                        text = stringResource(
+                            R.string.result_yen,
+                            fareNumStr(fareInfo.roundtripChildFare)
+                        ),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
-            
+
             // Academic discount if applicable
             if (fareInfo.isAcademicFare) {
                 Spacer(modifier = Modifier.height(8.dp))
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "学割運賃",
+                        text = stringResource(R.string.result_studentdiscount),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = stringResource(R.string.result_yen, fareNumStr(fareInfo.academicFare)),
+                        text = stringResource(
+                            R.string.result_yen,
+                            fareNumStr(fareInfo.academicFare)
+                        ),
                         style = MaterialTheme.typography.bodyLarge
                     )
-                }
-                
-                if (isRoundTrip) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                    if (isRoundTrip) {
                         Text(
-                            text = "学割往復運賃",
+                            text = stringResource(R.string.result_round),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = stringResource(R.string.result_yen, fareNumStr(fareInfo.roundtripAcademicFare)),
+                            text = stringResource(
+                                R.string.result_yen,
+                                fareNumStr(fareInfo.roundtripAcademicFare)
+                            ),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
             }
-            
+
             // Stock discounts if applicable
             fareInfo.fareForStockDiscounts?.let { stocks ->
                 if (stocks.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     HorizontalDivider()
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     stocks.forEach { (companyTitle, normalFare, rule114Fare) ->
                         val fareToShow = if (fareInfo.isRule114Applied && rule114Fare > 0) {
                             rule114Fare
                         } else {
                             normalFare
                         }
-                        
+
                         if (fareToShow > 0) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -603,7 +720,10 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                                 Text(
-                                    text = stringResource(R.string.result_yen, fareNumStr(fareToShow)),
+                                    text = stringResource(
+                                        R.string.result_yen,
+                                        fareNumStr(fareToShow)
+                                    ),
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -611,6 +731,28 @@ private fun FareSection(fareInfo: org.sutezo.alps.FareInfo, isRoundTrip: Boolean
                         }
                     }
                 }
+            }
+            if (fareInfo.isRule114Applied && fareInfo.farePriorRule114 > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.result_no_rule114_title_fare),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.result_yen,
+                            fareNumStr(fareInfo.farePriorRule114)
+                        ),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
     }
@@ -630,23 +772,26 @@ private fun ValiditySection(fareInfo: org.sutezo.alps.FareInfo) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = stringResource(R.string.result_availdays_fmt, fareInfo.ticketAvailDays),
                 style = MaterialTheme.typography.bodyLarge
             )
-            
+
             val availabilityText = if (fareInfo.ticketAvailDays > 1) {
                 val exceptText = when {
                     fareInfo.isBeginInCity && fareInfo.isEndInCity -> {
                         stringResource(R.string.result_availday_except_begin_end)
                     }
+
                     fareInfo.isBeginInCity -> {
                         stringResource(R.string.result_availday_except_begin)
                     }
+
                     fareInfo.isEndInCity -> {
                         stringResource(R.string.result_availday_except_end)
                     }
+
                     else -> {
                         stringResource(R.string.result_availday_empty)
                     }
@@ -655,7 +800,7 @@ private fun ValiditySection(fareInfo: org.sutezo.alps.FareInfo) {
             } else {
                 stringResource(R.string.result_availday_dontstopover)
             }
-            
+
             Text(
                 text = availabilityText,
                 style = MaterialTheme.typography.bodyMedium,
@@ -679,12 +824,12 @@ private fun RouteSection(fareInfo: org.sutezo.alps.FareInfo) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             var routeText = fareInfo.routeList
             if (fareInfo.routeListForTOICA.isNotEmpty()) {
                 routeText += "\n${stringResource(R.string.result_toica_calc_route)}\n${fareInfo.routeListForTOICA}"
             }
-            
+
             Text(
                 text = routeText,
                 style = MaterialTheme.typography.bodyMedium

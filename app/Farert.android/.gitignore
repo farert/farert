@@ -3,6 +3,8 @@
 *.aab
 *.ap_
 *.asar
+CLAUDE.md
+.claude/
 
 # Files for the ART/Dalvik VM
 *.dex
