@@ -10,6 +10,8 @@ import android.database.Cursor;
 import static org.sutezo.alps.RouteUtil.*;
 import static org.sutezo.alps.farertAssert.*;
 
+import org.sutezo.farert.BuildConfig;
+
 
 /*!	@file Route core logic implement.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -715,7 +717,7 @@ public class Route extends RouteList {
             for (i = 0; i < count; i++) {
                 jct_mask.and(i, routePassed.at(i));
 
-                if (false) { // BuildConfig.DEBUG removed
+                if (BuildConfig.DEBUG) {
                     for (int j = 0; j < 8; j++) {
                         if ((routePassed.at(i) & (1 << j)) != 0) {
                             System.out.printf("removed.  : %s\n", JctName(i * 8 + j));
@@ -736,7 +738,7 @@ public class Route extends RouteList {
             int count = JctMask.JCTMASKSIZE();
             for (i = 0; i < count; i++) {
                 jct_mask.or(i, routePassed.at(i));
-                if (false) { // BuildConfig.DEBUG removed
+                if (BuildConfig.DEBUG) {
                     for (int j = 0; j <= 8; j++) {
                         if (((1 << j) & routePassed.at(i)) != 0) {
                             System.out.printf("  add-mask on: %s(%d,%d)\n", JctName((i * 8) + j), Jct2id((i * 8) + j), (i * 8) + j);
@@ -1303,9 +1305,7 @@ public class Route extends RouteList {
                     System.out.println("JCT: D-2");
                     j = NextShinkansenTransferTermInRange(line_id, stationId1, stationId2);
                     if (j <= 0) {	// 隣駅がない場合
-                        if (false) { // BuildConfig.DEBUG removed
-                            ASSERT (original_line_id == line_id);
-                        }
+                        ASSERT (original_line_id == line_id);
                         i = route_list_raw.get(num - 1).lineId;	// 並行在来線
                         // 新幹線の発駅には並行在来線(路線b)に所属しているか?
                         if (0 == InStationOnLine(i, stationId2)) {
@@ -1352,9 +1352,7 @@ public class Route extends RouteList {
             // 段差型
             if (BIT_CHK(lflg2, BSRJCTSP)) {	// 水平型でもある?
                 // retrieve from a, d to b, c
-                if (false) { // BuildConfig.DEBUG removed
-                    ASSERT (original_line_id == line_id);
-                }
+                ASSERT (original_line_id == line_id);
                 type = RetrieveJunctionSpecific(line_id, stationId2, jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
                 ASSERT (0 < type);
                 System.out.printf("JCT: detect step-horiz:%d\n", type);
@@ -1363,9 +1361,7 @@ public class Route extends RouteList {
                     break;
                 }
             }
-            if (false) { // BuildConfig.DEBUG removed
-                ASSERT (original_line_id == line_id);
-            }
+            ASSERT (original_line_id == line_id);
             ASSERT (first_station_id1 == stationId1);
 
             // retrieve from a, d to b, c
@@ -1544,10 +1540,9 @@ public class Route extends RouteList {
         if (BIT_CHK(lflg2, BSRJCTSP)) {
             // 水平型
             // a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
-            if (false) { // BuildConfig.DEBUG removed
-                ASSERT (original_line_id == line_id);
-                //ASSERT (first_station_id1 == stationId2);
-            }
+            ASSERT (original_line_id == line_id);
+            //ASSERT (first_station_id1 == stationId2);
+
             type = RetrieveJunctionSpecific(line_id, stationId2, jctspdt);
             ASSERT (0 < type);
             System.out.printf("JCT:%d\n", type);
