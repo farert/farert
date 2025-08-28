@@ -238,7 +238,7 @@ cp coverage_html/index.html reports/coverage_$(date +%Y%m%d).html
 ### カスタムテストケースの実行
 ```bash
 # 特定のルートでテスト
-./farert "東京 新宿 渋谷"
+./farert "新宿 山手線 渋谷"
 
 # デバッグ情報付き
 ./farert -exec  # 全テストケース実行

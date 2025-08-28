@@ -4,6 +4,11 @@
 
 echo "Setting up Farert GCOV Development Environment..."
 
+# 必要なファイルへのシンボリックリンクを作成
+echo "Creating symbolic links to necessary files..."
+ln -sf ../all/Makefile /workspace/test/unix/gcov/Makefile 2>/dev/null || echo "Warning: Could not link Makefile from ../all"
+ln -sf ../all/testmain.cpp /workspace/test/unix/gcov/testmain.cpp 2>/dev/null || echo "Warning: Could not link testmain.cpp from ../all"
+
 # 権限を設定
 chmod +x /workspace/test/unix/gcov/farert 2>/dev/null || echo "farert binary not found (will be built)"
 
