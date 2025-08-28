@@ -1,0 +1,33 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "*.cpp": "cpp",
+        "*.c": "c"
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/g++",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.cppStandard": "c++11",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/../common",
+        "${workspaceFolder}/../../../app/win_mfc/fjr_mfc/lib/db",
+        "${workspaceFolder}/../../../app/alps"
+    ],
+    "C_Cpp.default.defines": [
+        "_DEBUG",
+        "_CONSOLE_TEST"
+    ],
+    "coverage-gutters.coverageFileNames": [
+        "*.gcov",
+        "coverage.info"
+    ],
+    "coverage-gutters.showLineCoverage": true,
+    "coverage-gutters.showRulerCoverage": true,
+    "coverage-gutters.showBranchCoverage": true,
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.exclude": {
+        "**/*.gcda": true,
+        "**/*.gcno": true,
+        "**/coverage_html": false
+    }
+}
