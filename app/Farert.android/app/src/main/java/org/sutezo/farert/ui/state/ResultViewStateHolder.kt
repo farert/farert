@@ -72,11 +72,11 @@ class ResultViewStateHolder : ViewModel() {
             is ResultViewUiEvent.Rule115Clicked -> {
                 handleRule115Click()
             }
-            
+/* b#22011101F
             is ResultViewUiEvent.OsakakanClicked -> {
                 handleOsakakanClick()
             }
-            
+*/
             is ResultViewUiEvent.ShareClicked -> {
                 // Share handling will be done in the Activity
             }
@@ -297,7 +297,7 @@ class ResultViewStateHolder : ViewModel() {
             }
             else -> ""
         }
-        
+/* b#22011101F
         // Osaka Kanjou Line menu setup - match main screen logic
         val fareInfo = uiState.fareInfo
         val showOsakakan = if ((currentRoute?.count ?: 0) > 1) {
@@ -312,7 +312,7 @@ class ResultViewStateHolder : ViewModel() {
                 context.getString(R.string.result_menu_osakakan_far)
             }
         } else ""
-        
+*/
         
         uiState = uiState.copy(
             showSpecialRuleMenu = showSpecialRule,
@@ -325,8 +325,8 @@ class ResultViewStateHolder : ViewModel() {
             longRouteMenuTitle = longRouteTitle,
             showRule115Menu = showRule115,
             rule115MenuTitle = rule115Title,
-            showOsakakanMenu = showOsakakan,
-            osakakanMenuTitle = osakakanTitle
+//b#22011101F            showOsakakanMenu = showOsakakan,
+//b#22011101F            osakakanMenuTitle = osakakanTitle
         )
     }
     
@@ -425,7 +425,8 @@ class ResultViewStateHolder : ViewModel() {
         uiState = uiState.copy(optRule115 = newOpt)
         recalculateWithNewOptions()
     }
-    
+
+/* b#22011101F
     private fun handleOsakakanClick() = viewModelScope.launch {
         try {
             // Toggle Osaka Kanjou Line detour setting using FareInfo state
@@ -463,7 +464,7 @@ class ResultViewStateHolder : ViewModel() {
             )
         }
     }
-    
+*/
     fun getShareData(): Pair<String, String>? {
         val fareInfo = uiState.fareInfo ?: return null
         val calcRoute = this.calcRoute ?: return null

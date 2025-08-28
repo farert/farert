@@ -21,7 +21,6 @@ import org.sutezo.farert.R
 import org.sutezo.farert.ui.state.ResultViewUiState
 import org.sutezo.farert.ui.state.ResultViewUiEvent
 import org.sutezo.farert.ui.state.ResultViewStateHolder
-import org.sutezo.farert.ui.components.FarertTopAppBar
 import org.sutezo.farert.ui.components.farertTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -152,7 +151,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
-
+/* b#22011101F
                             if (uiState.showOsakakanMenu) {
                                 DropdownMenuItem(
                                     text = { Text(uiState.osakakanMenuTitle) },
@@ -162,6 +161,7 @@ fun ResultViewScreen(
                                     }
                                 )
                             }
+*/
                         }
                     }
                 },

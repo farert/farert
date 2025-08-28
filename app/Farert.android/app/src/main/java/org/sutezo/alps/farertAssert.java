@@ -1,15 +1,18 @@
 package org.sutezo.alps;
+import org.sutezo.farert.BuildConfig;
 
 public class farertAssert {
     public static void ASSERT(boolean condition) {
         if (!condition) {
-            throw new AssertionError("Assertion failed");
+            if (BuildConfig.DEBUG)
+                throw new AssertionError("Assertion failed");
         }
     }
     
     public static void ASSERT(boolean condition, String message) {
         if (!condition) {
-            throw new AssertionError("Assertion failed: " + message);
+            if (BuildConfig.DEBUG)
+                throw new AssertionError("Assertion failed: " + message);
         }
     }
 }
