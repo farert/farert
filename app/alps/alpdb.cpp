@@ -23,6 +23,7 @@ Copyright (C) 2014 Sutezo (sutezo666@gmail.com)
     You should have received a copy of the GNU General Public License
     along with 'Farert'.  If not, see <http://www.gnu.org/licenses/>.
 
+/*
 このプログラムはフリーソフトウェアです。あなたはこれを、フリーソフトウェ
 ア財団によって発行された GNU 一般公衆利用許諾契約書(バージョン3か、希
 望によってはそれ以降のバージョンのうちどれか)の定める条件の下で再頒布
@@ -35,6 +36,7 @@ Copyright (C) 2014 Sutezo (sutezo666@gmail.com)
 あなたはこのプログラムと共に、GNU 一般公衆利用許諾契約書の複製物を一部
 受け取ったはずです。もし受け取っていなければ、フリーソフトウェア財団ま
 で請求してください
+*/
 
 #endif
 

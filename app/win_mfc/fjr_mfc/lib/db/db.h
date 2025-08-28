@@ -217,10 +217,10 @@ public:
 	bool open(LPCTSTR dbpath);
     void close(void) { cleanup(); }
 
-#if 0
+/*
 	compileSql()の戻されたDBOはテンポラリです。デストラクタ実行でクローズされます.
 	 恒久的に使用する場合, cache=true で実行する必要があります.
-#endif
+*/
 	DBO compileSql(const char* sql, bool cache = true) {
 		int rc;
 #if 0

@@ -1,0 +1,63 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Test Executable",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/farert",
+            "args": ["-exec"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "farertDB",
+                    "value": "/workspace/app/win_mfc/fjr_mfc/alps_mfc/res/jrdbnewest.db"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build with Coverage"
+        },
+        {
+            "name": "Debug Test with Custom Route",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/farert",
+            "args": ["${input:routeInput}"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "farertDB",
+                    "value": "/workspace/app/win_mfc/fjr_mfc/alps_mfc/res/jrdbnewest.db"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build with Coverage"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "routeInput",
+            "description": "Enter route stations",
+            "default": "東京 山手線 新宿",
+            "type": "promptString"
+        }
+    ]
+}

@@ -1,4 +1,5 @@
 ﻿#include <stdafx.h>
+#include <ctime>
 
 
 #if defined _DEBUG || !defined _WINDOWS || defined TEST
