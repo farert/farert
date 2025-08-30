@@ -1,4 +1,4 @@
-CFLAGS = -Wall -D_DEBUG -D_CONSOLE_TEST -g -fprofile-arcs -ftest-coverage
+CFLAGS = -Wall -D_DEBUG -D_CONSOLE_TEST -g
 # test_exec.cpp
 vpath %cpp ../../../app/win_mfc/fjr_mfc/alps_mfc
 
@@ -29,23 +29,9 @@ test :
 
 
 test : $(OBJS)
-	g++ -o $@ -std=c++0x $^ -lpthread -ldl -lgcov
+	g++ -o $@ -std=c++0x $^ -lpthread -ldl
 
 clean:
-	rm -f *.o test *.gcda *.gcno *.gcov
-	rm -rf coverage_html coverage.info
+	rm -f *.o test 
 
-coverage: test
-	./test -exec
-	gcov *.cpp
-	@echo "Coverage report generated. Check *.gcov files"
-
-coverage-html: coverage
-	@echo "Generating HTML coverage report with lcov..."
-	lcov --capture --directory . --output-file coverage.info
-	lcov --remove coverage.info '/usr/*' --output-file coverage.info
-	lcov --remove coverage.info '*/sqlite3.c' --output-file coverage.info
-	genhtml coverage.info --output-directory coverage_html
-	@echo "HTML coverage report generated in coverage_html/"
-	@echo "Open coverage_html/index.html in a browser"
 
