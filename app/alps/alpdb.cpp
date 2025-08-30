@@ -7813,8 +7813,8 @@ int32_t Route::NeerJunction(int32_t line_id, int32_t station_id1, int32_t statio
 //                             1 新幹線を利用
 //                             2 会社線を利用
 //                             3 新幹線も会社線も利用
-//                           100 地方交通線を覗く（在来線のみ)
-//
+//                          0x30 地方交通線、身延線を覗く（在来線のみ)
+//                          0x10 身延線を覗く（在来線のみ)
 //
 //  @retval true success
 //  @retval 1 : success
@@ -7884,14 +7884,7 @@ int32_t Route::changeNeerest(uint8_t useBulletTrain, int end_station_id)
     int32_t stationId;
     int32_t nLastNode;
     vector<PAIRIDENT> neer_node;
-    bool except_local;
 
-    if (useBulletTrain == 100) {
-        useBulletTrain = 0;
-        except_local = true;
-    } else {
-        except_local = false;
-    }
     /* 途中追加か、最初からか */
     if (1 < route_list_raw.size()) {
         do {
@@ -8058,7 +8051,7 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), SNAME(Jct2id(excNode1)), SNAME
             }
         }
 
-        vector<vector<int32_t>> nodes = Route::Node_next(doneNode + 1, except_local);
+        vector<vector<int32_t>> nodes = Route::Node_next(doneNode + 1, (0 != (useBulletTrain & 0x20)));
         vector<vector<int32_t>>::const_iterator ite;
 
         for (ite = nodes.cbegin(); ite != nodes.cend(); ite++) {
@@ -8069,7 +8062,8 @@ TRACE(_T("******** loopRouteY **%s, %s******\n"), SNAME(Jct2id(excNode1)), SNAME
                  ((0 < nLastNode) && (lastNode1 == (a + 1))) ||
                  ((1 < nLastNode) && (lastNode2 == (a + 1)))) &&
                 ((((0x01 & useBulletTrain) != 0) || !IS_SHINKANSEN_LINE(ite->at(2))) &&
-                 (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(ite->at(2))))) {
+                 (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(ite->at(2))))
+                && (((0x10 & useBulletTrain) == 0) || (ite->at(2) != LINE_ID("身延線")))) {
                 /** コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
                 /* 新幹線でない */
                 cost = dijkstra.minCost(doneNode) + ite->at(1); // cost
@@ -10033,7 +10027,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_
     Route shortRoute;
     int32_t rc = shortRoute.add(start_station_id);
     ASSERT(rc == 1);
-    rc = shortRoute.changeNeerest(except_local ? 100 : 0, end_station_id);
+    rc = shortRoute.changeNeerest(except_local ? 0x30 : 0x10, end_station_id);
     if (rc < 0) {
         ASSERT(except_local);
         return false;

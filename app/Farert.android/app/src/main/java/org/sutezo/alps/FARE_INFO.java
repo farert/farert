@@ -3628,7 +3628,7 @@ public class FARE_INFO {
 
         rc = shortRoute.add(start_station_id);
         ASSERT(rc == 1);
-        rc = shortRoute.changeNeerest(except_local ? 100 : 0, end_station_id);
+        rc = shortRoute.changeNeerest(except_local ? 0x30 : 0x10, end_station_id);
         if (rc < 0) {
             ASSERT(except_local);
             return null;
