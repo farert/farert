@@ -22,6 +22,7 @@ public class RouteFlag {
     boolean special_fare_enable;
     int    rule115;
     boolean rule70bullet;
+    boolean rule86bullet;
     boolean rule16_5;
 
     boolean bullet_line;    // 新幹線乗車している
@@ -127,6 +128,7 @@ public class RouteFlag {
         urban_neerest = 0;
         rule115 = 0;
         rule70bullet = false;
+        rule86bullet = false;
         rule88 = false;
         rule69 = false;
         rule70 = false;
@@ -164,6 +166,7 @@ public class RouteFlag {
         special_fare_enable = o.special_fare_enable;
         rule115 = o.rule115;
         rule70bullet = o.rule70bullet;
+        rule86bullet = o.rule86bullet;
         bullet_line = o.bullet_line;
         bJrTokaiOnly = o.bJrTokaiOnly;
         rule16_5 = o.rule16_5;
@@ -306,12 +309,13 @@ public class RouteFlag {
         rule69 = false;
         rule70 = false;
         rule70bullet = false;
+        rule86bullet = false;
     }
 
 
     // 特例非適用ならTrueを返す。LAST_FLAG.BLF_NO_RULEのコピー
     //
-    boolean isUseBullet()  { return bullet_line || rule70bullet; }
+    boolean isUseBullet()  { return bullet_line || rule70bullet || rule86bullet; }
 
     // 会社線含んでいる場合Trueを返す
     public boolean isIncludeCompanyLine() { return compncheck; }
