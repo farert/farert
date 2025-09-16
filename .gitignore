@@ -26,3 +26,5 @@ Debug/
 *.gcov
 *.gcno
 *.gcda
+..bfg-report/
+.serena/
