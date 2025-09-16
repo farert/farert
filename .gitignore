@@ -23,3 +23,6 @@ Debug/
 /captures
 .externalNativeBuild
 .vscode
+*.gcov
+*.gcno
+*.gcda

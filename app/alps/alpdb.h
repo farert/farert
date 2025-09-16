@@ -281,6 +281,7 @@ public:
     bool special_fare_enable;
     int8_t rule115;
     bool rule70bullet;
+    bool rule86bullet;
     bool rule16_5;
 
     bool bullet_line;           // 新幹線乗車している
@@ -350,6 +351,7 @@ public:
         rule86or87 = 0;
         rule115 = 0;
         rule70bullet = false;
+        rule86bullet = false;
         rule88 = false;
         rule69 = false;
         rule70 = false;
@@ -489,6 +491,7 @@ public:
         rule69 = false;
         rule70 = false;
         rule70bullet = false;
+        rule86bullet = false;
     }
     bool isTerCity() const {
         return
@@ -499,7 +502,7 @@ public:
 
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
     //
-    bool isUseBullet() const { return bullet_line || rule70bullet; }
+    bool isUseBullet() const { return bullet_line || rule70bullet || rule86bullet; }
 
     // 会社線含んでいる場合Trueを返す
     bool isIncludeCompanyLine() const { return compncheck; }
@@ -1023,6 +1026,12 @@ public:
         return lineId == item_.lineId &&
                stationId == item_.stationId;
     }
+    bool is_available() const {
+        return (0 != lineId) && (0 != stationId);
+    }
+    void clear() {
+        lineId = stationId = 0;
+    }
 };
 
 class Node
@@ -1329,7 +1338,7 @@ private:
     static bool     Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
     static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, const RouteFlag& rRoute_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
     static uint32_t CheckOfRule87(const vector<RouteItem>& in_route_list);
-    static void     ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
+    static int32_t  ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
     static uint8_t  InRouteUrban(const vector<RouteItem>& route_list);
     static int32_t  RetrieveOut70Station(int32_t line_id);
     static int32_t  InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1, int32_t stationId2);
