@@ -1,1 +1,1 @@
-export farertDB=../../../db/jrdbnewest.db
+export farertDB=`readlink -f ../../../db/jrdbnewest.db`

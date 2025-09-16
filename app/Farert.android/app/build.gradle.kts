@@ -56,6 +56,30 @@ android {
     lint {
         baseline = file("lint-baseline.xml")
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    androidComponents {
+        onVariants { variant ->
+            variant.packaging.dex.useLegacyPackaging = false
+        }
+    }
+
+    // Disable all baseline profile related tasks
+    afterEvaluate {
+        tasks.matching { it.name.contains("BaselineProfile", ignoreCase = true) }.configureEach {
+            enabled = false
+        }
+        tasks.matching { it.name.contains("ArtProfile", ignoreCase = true) }.configureEach {
+            enabled = false
+        }
+        tasks.matching { it.name.contains("StartupProfile", ignoreCase = true) }.configureEach {
+            enabled = false
+        }
+    }
+
 }
 
 dependencies {

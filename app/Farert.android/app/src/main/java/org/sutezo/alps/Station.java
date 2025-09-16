@@ -79,4 +79,7 @@ package org.sutezo.alps;
          return lineId == item_.lineId &&
                  stationId == item_.stationId;
      }
+     public boolean is_available() {
+         return stationId != 0 && lineId != 0;
+     }
 }

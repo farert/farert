@@ -16,6 +16,8 @@ import android.database.Cursor;
 
 // import org.sutezo.farert.BuildConfig; // Removed - BuildConfig not available
 
+import org.sutezo.farert.BuildConfig;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -222,7 +224,7 @@ public class CalcRoute extends RouteList {
 		/* 変換 -> route_list_tmp:86適用(仮)
 		   88変換したものは対象外(=山陽新幹線 新大阪着時、非表示フラグが消えてしまうのを避ける効果あり) */
         if (route_flag.isEnableRule86or87()) {
-            ReRouteRule86j87j(cityId, chk & ~aply88, exit, enter, /*out*/route_list_tmp);
+            route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, chk & ~aply88, exit, enter, /*out*/route_list_tmp));
         }
 
         // 88を適用
@@ -328,7 +330,7 @@ public class CalcRoute extends RouteList {
                     // 要らない。(ReRouteRule86j87j()が第2引数で制御できるので）cityId = MAKEPAIR(0, IDENT2(cityId));
                     /* route_list_tmp = route_list_tmp2 */
                     cpyRouteItems(route_list_tmp2, route_list_tmp);
-                    ReRouteRule86j87j(cityId, flg, exit, enter, route_list_tmp);
+                    route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, flg, exit, enter, route_list_tmp));
                     // 69を適用したものをroute_list_tmp3へ
                     /*n=*/ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
                     route_flag.rule69 = true;
@@ -359,7 +361,7 @@ public class CalcRoute extends RouteList {
 				/* route_list_tmp = route_list_tmp2 */
                 cpyRouteItems(route_list_tmp2, route_list_tmp);
 				/* 発駅のみ特定都区市内着経路に変換 */
-                ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp);
+                route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp));
 
                 // 69を適用したものをroute_list_tmp3へ
                 n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -375,7 +377,7 @@ public class CalcRoute extends RouteList {
 				/* route_list_tmp = route_list_tmp2 */
                 cpyRouteItems(route_list_tmp2, route_list_tmp);
 				/* 着駅のみ特定都区市内着経路に変換仮適用 */
-                ReRouteRule86j87j(cityId, 2, exit, enter, /*out*/route_list_tmp);
+                route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, 2, exit, enter, /*out*/route_list_tmp));
 
                 // 69を適用したものをroute_list_tmp3へ
                 n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -394,7 +396,7 @@ public class CalcRoute extends RouteList {
 						/* route_list_tmp = route_list_tmp2 */
                         cpyRouteItems(route_list_tmp2, route_list_tmp);
 						/* 発駅のみ特定都区市内着経路に変換 */
-                        ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp);
+                        route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp));
 
                         // 69を適用したものをroute_list_tmp3へ
                         n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -435,7 +437,7 @@ public class CalcRoute extends RouteList {
 					/* route_list_tmp = route_list_tmp2 */
                     cpyRouteItems(route_list_tmp2, route_list_tmp);
 					/* 発駅のみ特定都区市内着経路に変換 */
-                    ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp);
+                    route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, 1, exit, enter, /*out*/route_list_tmp));
 
                     // 69を適用したものをroute_list_tmp3へ
                     n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -1680,18 +1682,23 @@ public class CalcRoute extends RouteList {
     //	@param [in]     exit            脱出路線・駅
     //	@param [in]     entr            進入路線・駅
     //	@param [in/out] out_route_list  変換元・変換先経路
+    //  @return bool 大都市近郊区間無効となる新幹線乗車しているか？    
     //
     //	@remark このあと69条適用が必要(69条適用後でも可)
     //	@remark ルール未適用時はroute_list_cooked = route_list_rawである
     //
-    static void  ReRouteRule86j87j(int[] cityId, int mode, final Station exit, final Station enter, /*out*/List<RouteItem> out_route_list) {
+    static int  ReRouteRule86j87j(int[] cityId, int mode, final Station exit, final Station enter, /*out*/List<RouteItem> out_route_list) {
         int coreStationId;
         boolean skip;
-        int lineId;
+        int line_id;
+        int station_id;
         List<RouteItem> work_route_list = new ArrayList<>();
         List<Station> firstTransferStation = new ArrayList<>();
         int c;   // work counter
         int n;   // work counter
+        int bullet_use = 0;
+        Station bullet_pass_entr = new Station();
+        Station bullet_pass_exit = new Station();
 
         if ((mode & 1) != 0) {
 			/* 発駅-脱出: exit 有効*/		/* ex) [[東北線、日暮里]] = (常磐線, [区]) */
@@ -1700,11 +1707,15 @@ public class CalcRoute extends RouteList {
 		        /* テーブル未定義 */
                 cpyRouteItems(out_route_list, work_route_list);
             } else {
+                if ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.get(1).lineId)) {
+                    bullet_pass_exit = firstTransferStation.get(1);
+                    firstTransferStation.remove(firstTransferStation.size() - 1);
+                }
+                coreStationId = Retrieve_SpecificCoreStation(cityId[0]);
                 if (exit.lineId == firstTransferStation.get(firstTransferStation.size() - 1).lineId) {
                     work_route_list.add(new RouteItem(0, firstTransferStation.get(firstTransferStation.size() - 1).stationId));	/* 発駅:都区市内代表駅 */
                     // ASSERT (firstTransferStation[firstTransferStation.length - 1].stationId == Retrieve_SpecificCoreStation(short(cityId))); (新横浜とか新神戸があるので)
                 } else {
-                    coreStationId = Retrieve_SpecificCoreStation(cityId[0]);
                     ASSERT (0 < coreStationId);
                     work_route_list.add(new RouteItem(0, coreStationId));			/* 発駅:都区市内代表駅 */
                     ListIterator rite = firstTransferStation.listIterator(firstTransferStation.size());
@@ -1720,7 +1731,14 @@ public class CalcRoute extends RouteList {
                     if (exit.is_equal(ri)) {
                         skip = false;
                         work_route_list.add(ri);
-                    }/* else  脱出 路線:駅の前の経路をスキップ*/
+                    } else { /* 脱出 路線:駅の前の経路をスキップ*/
+                        if (bullet_pass_exit.is_available()
+                        && (bullet_pass_exit.lineId == ri.lineId)
+                        && (bullet_pass_exit.stationId == ri.stationId)) {
+                            bullet_use++;
+                            work_route_list.add(ri);
+                        }
+                    }
                 } else {
                     work_route_list.add(ri);
                 }
@@ -1734,48 +1752,64 @@ public class CalcRoute extends RouteList {
         out_route_list.clear();
 
         if ((mode & 2) != 0) {
-			/* 着駅-進入: entr 有効 */
-            n = 0;
-            c = 1;
-            for (RouteItem ri : work_route_list) {
-                if (enter.is_equal(ri)) {
-                    // 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
-                    n = c;
-                }
-                ++c;
-            }
-            c = 1;
-            for (RouteItem ri : work_route_list) {
-                if ((n == 0) || (c < n)) {
-                    out_route_list.add(ri);
-                }
-                ++c;
-            }
+            /* 着駅-進入: entr 有効 */
             firstTransferStation = SpecificCoreAreaFirstTransferStationBy(enter.lineId, cityId[1]);
             if (firstTransferStation.size() <= 0) {
                 // 博多南線で引っかかる ASSERT (false);
                 cpyRouteItems(work_route_list, out_route_list);
             } else {
+                if (( firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.get(1).lineId)) {
+                    bullet_pass_entr = firstTransferStation.get(1);
+                    firstTransferStation.remove(firstTransferStation.size() - 1);
+                }
+                n = 0;
+                c = 1;
+                for (RouteItem ri : work_route_list) {
+                    if (enter.is_equal(ri)) {
+                        // 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
+                        n = c;
+                    }
+                    ++c;
+                }
+                coreStationId = Retrieve_SpecificCoreStation(cityId[1]);
+                station_id = 0;
+                c = 1;
+                for (RouteItem ri : work_route_list) {
+                    if ((n == 0) || (c < n)) {
+                        out_route_list.add(ri);
+                    } else {
+                        if (bullet_pass_entr.is_available() && bullet_pass_entr.stationId == ri.stationId) {
+                            station_id = ri.stationId;
+                        } else if ((station_id != 0)
+                            && (bullet_pass_entr.lineId == ri.lineId) && (coreStationId == ri.stationId)) {
+                            bullet_use++;
+                            station_id = 0;
+                            out_route_list.add(ri);
+                        }
+                    }
+                    ++c;
+                }
+
                 if (enter.lineId == firstTransferStation.get(0).lineId) {
                     out_route_list.add(new RouteItem(firstTransferStation.get(0).lineId, firstTransferStation.get(0).stationId));
                     // ASSERT (firstTransferStation[0].stationId == Retrieve_SpecificCoreStation(cityId[1])); 新横浜とかあるので
                 } else {
                     out_route_list.add(new RouteItem(enter.lineId, firstTransferStation.get(0).stationId));
-                    lineId = firstTransferStation.get(0).lineId;
+                    line_id = firstTransferStation.get(0).lineId;
                     int firstTransferStationLen = firstTransferStation.size();
                     for (int sta_ite = 1; sta_ite < firstTransferStationLen; sta_ite++) {
-                        out_route_list.add(new RouteItem(lineId, firstTransferStation.get(sta_ite).stationId));
-                        lineId = firstTransferStation.get(sta_ite).lineId;
+                        out_route_list.add(new RouteItem(line_id, firstTransferStation.get(sta_ite).stationId));
+                        line_id = firstTransferStation.get(sta_ite).lineId;
                     }
-                    coreStationId = Retrieve_SpecificCoreStation(cityId[1]);
                     ASSERT (0 < coreStationId);
-                    out_route_list.add(new RouteItem(lineId, coreStationId));
+                    out_route_list.add(new RouteItem(line_id, coreStationId));
                 }
                 System.out.print("end station is re-route rule86/87\n");
             }
         } else {
             cpyRouteItems(work_route_list, out_route_list);
         }
+        return bullet_use;
     }
 
     //static

@@ -2286,7 +2286,7 @@ public class Route extends RouteList {
                         ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ &&
                         ((((0x01 & useBulletTrain) != 0) || !IS_SHINKANSEN_LINE(node[2])) &&
                          (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(node[2])))
-                     && (((0x10 & useBulletTrain) == 0) || (ite->at(2) != LINE_ID("身延線")))) {
+                     && (((0x10 & useBulletTrain) == 0) || (node[2] != DbIdOf.INSTANCE.line("身延線")))) {
                                  /* コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
 					/* 新幹線でない */
                     cost = dijkstra.minCost(doneNode) + node[1]; // cost
