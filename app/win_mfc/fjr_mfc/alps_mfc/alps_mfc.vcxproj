@@ -154,7 +154,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TermSel.cpp" />
-    <ClCompile Include="test_exec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="alps_mfc.rc" />
