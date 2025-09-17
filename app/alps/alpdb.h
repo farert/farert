@@ -197,6 +197,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define URB_OSAKA           3
 #define URB_FUKUOKA         4
 #define URB_SENDAI          5
+#define URB_NAGOYA          6
 
 #define FLAG_FARECALC_INITIAL       (1<<15)
 #define MASK_CITYNO(flg)            ((flg)&0x0f)
@@ -206,7 +207,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define URBAN_ID(flg)               (((int32_t)(flg)>>7)&7)
 #define IS_OSMSP(flg)               (((flg)&(1 << 11))!=0)  /* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)               (((flg)&(1 << 10))!=0)  /* 東京電車特定区間 ?*/
-#define IS_YAMATE(flg)              (((flg)&(1 << 5))!=0)   /* 山点線内／大阪環状線内 ?*/
+#define IS_YAMATE(flg)              (((flg)&(1 << 5))!=0)   /* 山手線内／大阪環状線内 ?*/
 
 #define MASK_FARECALC_INITIAL       0
 
