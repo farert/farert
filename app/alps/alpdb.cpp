@@ -9544,7 +9544,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                     this->jr_fare = special_fare - this->company_fare;  /* IRいしかわ 乗継割引 */
                 }
         } else if ( //!pRoute_flag->isUseBullet() &&           /* b#18111401: 新幹線乗車なく、 */
-                    (((MASK_URBAN & this->flag) != 0) || (this->sales_km < 500))
+                    (isUrbanArea() || (this->sales_km < 1200)) /* 大垣-豊橋: 116.5km */
                     && !pRoute_flag->isIncludeCompanyLine()) { // 東京メトロは適用外
             special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
             if (0 < special_fare) {
@@ -9572,10 +9572,18 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                     }
                 }
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
+            } else {
+                /* JR東海バリアフリー運賃 +10 */
+                if (URB_NAGOYA == URBAN_ID(this->flag)) {
+                    this->jr_fare += 10;
+                }
             }
             ASSERT(this->company_fare == 0);    // 会社線は通っていない
         }
-
+        /* 名古屋近郊区間 off */
+        if (URB_NAGOYA == URBAN_ID(this->flag)) {
+            this->flag &= ~MASK_URBAN; /* b7-9 近郊区間 OFF */
+        }
         // 特定区間は加算しない
         if (!pRoute_flag->special_fare_enable) {
             // 特別加算区間分
