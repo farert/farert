@@ -116,7 +116,7 @@ void DBS::cache_restrict(const char* sql)
 			itr++;
 		}
 		if (key == "") {
-			ASSERT(FALSE);	/* OK */
+		//	ASSERT(FALSE);	/* OK */
 		} else {
 			delete cache_pool[key];
 			cache_pool.erase(key);

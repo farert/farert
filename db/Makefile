@@ -60,7 +60,11 @@ $(foreach OBJ, $(DBFILES), $(eval $(call COPY, $(addprefix $(WIN_DBDIR), $(OBJ))
 update : clean all
 
 download :
-	./down_spr_as_text.sh $(patsubst %.db,%.txt,$(DBFILES))
+	@if [ ! -f lines2014.tmp ] || [ ! -f lines2015.tmp ] || [ ! -f lines2017.tmp ] || [ ! -f linesNewest.tmp ]; then \
+		./down_spr_as_text.sh $(patsubst %.db,%.txt,$(DBFILES)); \
+	else \
+		echo "All lines tmp files exist, skipping download"; \
+	fi
 
 clean:
 	rm -f *.tmp *.db
