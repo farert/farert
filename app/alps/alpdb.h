@@ -1111,6 +1111,8 @@ public:
 
     static tstring  Show_route(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
     static tstring  Show_route_full(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
+    static tstring  Show_route_for_debug(const vector<RouteItem>& routeList);
+
 private:
     static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, const RouteFlag& rRoute_flag);
 protected:

@@ -3737,6 +3737,12 @@ tstring RouteUtil::Show_route_full(const vector<RouteItem>& routeList, const Rou
     return startStationName + route_str + arriveStationName;
 }
 
+tstring RouteUtil::Show_route_for_debug(const vector<RouteItem>& routeList)
+{
+    RouteFlag rflg ;
+    return Show_route_full(routeList, rflg);
+}
+
 
 //static private
 //  @brief 大阪環状線 方向文字列を返すで
