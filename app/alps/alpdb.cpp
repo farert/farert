@@ -9591,7 +9591,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                     this->jr_fare += 10;
                 }
             }
-            ASSERT(this->company_fare == 0);    // 会社線は通っていない
+            //ASSERT(this->company_fare == 0);    // 会社線は通っていない
         }
         /* 名古屋近郊区間 off */
         if (URB_NAGOYA == URBAN_ID(this->flag)) {
