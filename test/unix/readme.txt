@@ -5,7 +5,7 @@ exp/ コマンドラインで実行
 autoroute/ コマンドラインで自動経路
 all/ test_exec.cpp の全テストパターン実行
 
-
+gcov/ all/ のカバレッジ版
 
 Unixでは、make
 Windowsコマンドプロンプトでは、vcvars32.batの実行で環境を整えてから、

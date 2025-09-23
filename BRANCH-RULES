@@ -1,0 +1,24 @@
+# mainブランチ（またはmaster）
+
+- 常にリリース可能な安定バージョンを保つ。
+
+# develop ブランチ
+- 開発の統合ブランチ。ここで複数人の変更をまとめてテスト。
+
+# feature/xxxxブランチ
+
+- 個別機能や修正ごとにブランチを切る（例: feature/login）。
+- 作業が終わったらmainへPull Request（PR）を出してマージ。
+
+# bugfix/xxxxやhotfix/xxxx
+- バグ修正や緊急修正用の一時的なブランチを用途に応じて切る。
+
+
+main
+ |
+develop
+ |
+ |- feature/xxx
+ |- bugfix/zzz
+ |- :
+

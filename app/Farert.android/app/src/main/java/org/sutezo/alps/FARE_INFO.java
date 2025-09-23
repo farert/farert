@@ -1239,7 +1239,7 @@ public class FARE_INFO {
     		            this.jr_fare = special_fare - this.company_fare;	/* IRいしかわ 乗継割引 */
     				}
     		} else if (!route_flag_.isUseBullet()        /* b#18111401: 新幹線乗車なく、 */
-                && (((RouteUtil.MASK_URBAN & this.flag) != 0) || (this.sales_km < 500))
+                && (isUrbanArea() || (this.sales_km < 1200)) /* 大垣-豊橋: 116.5km */
                 && !route_flag_.isIncludeCompanyLine()) {
     			special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 1);
     			if (0 < special_fare) {
@@ -1268,10 +1268,18 @@ public class FARE_INFO {
                         }
                     }
                     route_flag_.special_fare_enable = true; // 私鉄競合区間特別運賃適用
+                } else {
+                    /* JR東海バリアフリー運賃 +10 */
+                    if (URB_NAGOYA == URBAN_ID(this.flag)) {
+                        this.jr_fare += 10;
+                    }
                 }
-    			//ASSERT(this.company_fare == 0);	// 会社線は通っていない(しなの鉄道、伊勢線をとおるかも）
+                //ASSERT(this.company_fare == 0);	// 会社線は通っていない(しなの鉄道、伊勢線をとおるかも）
     		}
-
+            /* 名古屋近郊区間 off */
+            if (URB_NAGOYA == URBAN_ID(this.flag)){
+                this.flag &= ~MASK_URBAN; /* b7-9 近郊区間 OFF */
+            }
             // 特定区間は加算しない
             if (!route_flag_.special_fare_enable) {
                 // 特別加算区間分
@@ -1466,7 +1474,7 @@ public class FARE_INFO {
     boolean isMultiCompanyLine() {
          return result_flag.company_incorrect;
     }
-    boolean isBeginEndCompanyLine() {
+    public boolean isBeginEndCompanyLine() {
         return result_flag.comapany_first || result_flag.comapany_end;
     }
     public int resultCode() {
@@ -1684,7 +1692,7 @@ public class FARE_INFO {
     }
 
 
-    class StockFare {
+    public class StockFare {
         String title;
         int fare;
         StockFare() {
@@ -1693,7 +1701,7 @@ public class FARE_INFO {
         }
     }
 
-    StockFare getFareStockDiscount(int index) {
+    public StockFare getFareStockDiscount(int index) {
         return getFareStockDiscount(index, false);
     }
     /**	株主優待割引運賃を返す(会社線運賃は含まない)
@@ -1701,7 +1709,7 @@ public class FARE_INFO {
      *	@param index      [in]   0から1 JR東日本のみ 0は2割引、1は4割引を返す
      *	@param applied_r114  [in]  true = 114条適用 / false = 114条適用前
      */
-    StockFare getFareStockDiscount(int index, boolean applied_r114) {
+    public StockFare getFareStockDiscount(int index, boolean applied_r114) {
         StockFare ret = new StockFare();
         final String[] titles = {
                 "JR東日本 株主優待2割", // 0 2020.6より廃止
@@ -1903,11 +1911,11 @@ public class FARE_INFO {
 
     boolean	isRule114() { return rule114Info.isAvailable(); }
     boolean	isRoundTripDiscount() { /* roundTripFareWithCompanyLine() を前に呼んでいること */ return roundTripDiscount; }
-    int getBeginTerminalId() { return beginTerminalId;}
-    int getEndTerminalId() { return endTerminalId; }
+    public int getBeginTerminalId() { return beginTerminalId;}
+    public int getEndTerminalId() { return endTerminalId; }
     String getRoute_string() { return route_for_disp; }
     String getTOICACalcRoute_string() { return calc_route_for_disp; }
-    static boolean IsCityId(int id) { return RouteUtil.STATION_ID_AS_CITYNO <= id; }
+    public static boolean IsCityId(int id) { return RouteUtil.STATION_ID_AS_CITYNO <= id; }
 
 
     // static
@@ -3628,7 +3636,7 @@ public class FARE_INFO {
 
         rc = shortRoute.add(start_station_id);
         ASSERT(rc == 1);
-        rc = shortRoute.changeNeerest(except_local ? 100 : 0, end_station_id);
+        rc = shortRoute.changeNeerest(except_local ? 0x30 : 0x10, end_station_id);
         if (rc < 0) {
             ASSERT(except_local);
             return null;

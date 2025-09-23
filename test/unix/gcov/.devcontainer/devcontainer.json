@@ -1,0 +1,47 @@
+{
+  "name": "Farert GCOV Development",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.makefile-tools",
+        "ryanluker.vscode-coverage-gutters",
+        "gcov-viewer.gcov-viewer"
+      ],
+      "settings": {
+        "C_Cpp.default.compilerPath": "/usr/bin/g++",
+        "C_Cpp.default.cStandard": "c11",
+        "C_Cpp.default.cppStandard": "c++11",
+        "C_Cpp.default.includePath": [
+          "${workspaceFolder}",
+          "${workspaceFolder}/../common",
+          "${workspaceFolder}/../../../app/win_mfc/fjr_mfc/lib/db",
+          "${workspaceFolder}/../../../app/alps"
+        ],
+        "coverage-gutters.coverageFileNames": [
+          "*.gcov"
+        ],
+        "coverage-gutters.showLineCoverage": true,
+        "coverage-gutters.showRulerCoverage": true
+      }
+    }
+  },
+  "postCreateCommand": "chmod +x .devcontainer/setup.sh && ./.devcontainer/setup.sh",
+  "workspaceMount": "source=${localWorkspaceFolder}/../../../,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/test/unix/gcov",
+  "remoteEnv": {
+    "farertDB": "/workspace/app/win_mfc/fjr_mfc/alps_mfc/res/jrdbnewest.db"
+  }
+}

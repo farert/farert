@@ -2033,7 +2033,8 @@ public class Route extends RouteList {
     //                             1 新幹線を利用
     //                             2 会社線を利用
     //                             3 新幹線も会社線も利用
-    //                          100  地方交通線を除く(在来線のみ)
+    //                          0x30 地方交通線、身延線を覗く（在来線のみ)
+    //                          0x10 身延線を覗く（在来線のみ)
     //	@retval true success
     //	@retval 1 : success
     //	@retval 0 : loop end.
@@ -2100,15 +2101,6 @@ public class Route extends RouteList {
         short stationId;
         short nLastNode;
         short[][] neer_node;
-
-        boolean except_local;
-
-        if (useBulletTrain == 100) {
-            useBulletTrain = 0;
-            except_local = true;
-        } else {
-            except_local = false;
-        }
 
 		/* 途中追加か、最初からか */
         if (1 < route_list_raw.size()) {
@@ -2283,7 +2275,7 @@ public class Route extends RouteList {
                 }
             }
 
-            List<Integer[]> nodes = Node_next(doneNode + 1, except_local);
+            List<Integer[]> nodes = Node_next(doneNode + 1, (0 != (useBulletTrain & 0x20)));
 
             for (Integer[] node : nodes) {
 
@@ -2293,7 +2285,8 @@ public class Route extends RouteList {
                         ((0 < nLastNode) && (lastNode1 == (a + 1))) ||
                         ((1 < nLastNode) && (lastNode2 == (a + 1)))) /**/ &&
                         ((((0x01 & useBulletTrain) != 0) || !IS_SHINKANSEN_LINE(node[2])) &&
-                         (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(node[2])))) {
+                         (((0x02 & useBulletTrain) != 0) || !IS_COMPANY_LINE(node[2])))
+                     && (((0x10 & useBulletTrain) == 0) || (node[2] != DbIdOf.INSTANCE.line("身延線")))) {
                                  /* コメント化しても同じだが少し対象が減るので無駄な比較がなくなる */
 					/* 新幹線でない */
                     cost = dijkstra.minCost(doneNode) + node[1]; // cost

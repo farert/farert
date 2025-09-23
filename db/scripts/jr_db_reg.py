@@ -845,7 +845,8 @@ insert into t_r70bullet values(
     # rule86
         # 2014/2015/2017/202x
         l_dbver = linitems[0].strip()
-        if l_dbver.isnumeric() and int(db_name) < int(l_dbver):
+        t_dbver = int(db_name)
+        if l_dbver.isnumeric() and (t_dbver < int(l_dbver) or ((t_dbver < 2025) and (2025 == l_dbver))):
             return			# old db
         #print(lin, end='')
         self.con.execute("""
@@ -906,11 +907,21 @@ insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
                 if s in (station1[0], station2[0]):
                     return
     
-        kind = int(linitems[4].replace(',', ''))
+        kind = int(linitems[4]) # 種別 0: 通過加算 / 1: 特別運賃 / 2: IRいしかわ弊算
 
-        if db_name != "2014" or kind != 2:
-            #print(lin, end='')
-            self.con.execute("""
+        if 2014 == int(db_name) and kind == 2:   # 2014年版では、種別2は無視
+            return
+
+        # debug print("@@@@@@@@" + lin, ":::", linitems[2], linitems[3])
+        if linitems[2].strip() == 'barrier':
+            if int(db_name) < 2023:
+                    return
+            
+            linitems[2] = '0'
+            linitems[3] = '0'
+
+        #print(lin, end='')
+        self.con.execute("""
 insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) values(
  (select rowid from t_station where name=? and samename=?),
  (select rowid from t_station where name=? and samename=?),

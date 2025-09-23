@@ -197,6 +197,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define URB_OSAKA           3
 #define URB_FUKUOKA         4
 #define URB_SENDAI          5
+#define URB_NAGOYA          6
 
 #define FLAG_FARECALC_INITIAL       (1<<15)
 #define MASK_CITYNO(flg)            ((flg)&0x0f)
@@ -206,7 +207,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define URBAN_ID(flg)               (((int32_t)(flg)>>7)&7)
 #define IS_OSMSP(flg)               (((flg)&(1 << 11))!=0)  /* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)               (((flg)&(1 << 10))!=0)  /* 東京電車特定区間 ?*/
-#define IS_YAMATE(flg)              (((flg)&(1 << 5))!=0)   /* 山点線内／大阪環状線内 ?*/
+#define IS_YAMATE(flg)              (((flg)&(1 << 5))!=0)   /* 山手線内／大阪環状線内 ?*/
 
 #define MASK_FARECALC_INITIAL       0
 
@@ -281,6 +282,7 @@ public:
     bool special_fare_enable;
     int8_t rule115;
     bool rule70bullet;
+    bool rule86bullet;
     bool rule16_5;
 
     bool bullet_line;           // 新幹線乗車している
@@ -350,6 +352,7 @@ public:
         rule86or87 = 0;
         rule115 = 0;
         rule70bullet = false;
+        rule86bullet = false;
         rule88 = false;
         rule69 = false;
         rule70 = false;
@@ -489,6 +492,7 @@ public:
         rule69 = false;
         rule70 = false;
         rule70bullet = false;
+        rule86bullet = false;
     }
     bool isTerCity() const {
         return
@@ -499,7 +503,7 @@ public:
 
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
     //
-    bool isUseBullet() const { return bullet_line || rule70bullet; }
+    bool isUseBullet() const { return bullet_line || rule70bullet || rule86bullet; }
 
     // 会社線含んでいる場合Trueを返す
     bool isIncludeCompanyLine() const { return compncheck; }
@@ -1023,6 +1027,12 @@ public:
         return lineId == item_.lineId &&
                stationId == item_.stationId;
     }
+    bool is_available() const {
+        return (0 != lineId) && (0 != stationId);
+    }
+    void clear() {
+        lineId = stationId = 0;
+    }
 };
 
 class Node
@@ -1101,6 +1111,8 @@ public:
 
     static tstring  Show_route(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
     static tstring  Show_route_full(const vector<RouteItem>& routeList, const RouteFlag& rRoute_flag);
+    static tstring  Show_route_for_debug(const vector<RouteItem>& routeList);
+
 private:
     static tstring  RouteOsakaKanDir(int32_t station_id1, int32_t station_id2, const RouteFlag& rRoute_flag);
 protected:
@@ -1329,7 +1341,7 @@ private:
     static bool     Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
     static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, const RouteFlag& rRoute_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
     static uint32_t CheckOfRule87(const vector<RouteItem>& in_route_list);
-    static void     ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
+    static int32_t  ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
     static uint8_t  InRouteUrban(const vector<RouteItem>& route_list);
     static int32_t  RetrieveOut70Station(int32_t line_id);
     static int32_t  InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1, int32_t stationId2);

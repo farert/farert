@@ -1,0 +1,82 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Clean Build",
+            "type": "shell",
+            "command": "make",
+            "args": ["clean"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build with Coverage",
+            "type": "shell",
+            "command": "make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": ["$gcc"],
+            "dependsOn": "Clean Build"
+        },
+        {
+            "label": "Run Coverage Tests",
+            "type": "shell",
+            "command": "make",
+            "args": ["coverage"],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "dependsOn": "Build with Coverage"
+        },
+        {
+            "label": "Show Coverage Summary",
+            "type": "shell",
+            "command": "sh",
+            "args": ["-c", "echo '=== Coverage Summary ===' && for f in *.gcov; do echo \"$f:\"; head -5 \"$f\" | tail -4; echo; done"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Generate LCOV Report",
+            "type": "shell", 
+            "command": "sh",
+            "args": ["-c", "lcov --capture --directory . --output-file coverage.info && genhtml coverage.info --output-directory coverage_html"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

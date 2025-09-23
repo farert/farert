@@ -107,6 +107,7 @@ public class RouteUtil {
     static final int URB_OSAKA = 3;
     static final int URB_FUKUOKA = 4;
     static final int URB_SENDAI = 5;
+    static final int URB_NAGOYA = 6;
 
     static final int FLAG_FARECALC_INITIAL	= (1<<15);
     public static int MASK_CITYNO(int flg) {
@@ -124,7 +125,7 @@ public class RouteUtil {
         return (((flg)&(1 << 10))!=0);	/* 東京電車特定区間 ?*/
     }
     static boolean IS_YAMATE(int flg) {
-        return (((flg)&(1 << 5))!=0);	/* 山点線内／大阪環状線内 ?*/
+        return (((flg)&(1 << 5))!=0);  /* 山点線内／大阪環状線内 ?*/
     }
 
     static final int MASK_FARECALC_INITIAL = 0;
@@ -1184,43 +1185,50 @@ public class RouteUtil {
          // 新幹線-並行在来線取得クエリ
          final String tsql_hzl =
                  "select case when(select line_id from t_hzline where rowid=(" +
-                         "	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2)) > 0 then" +
-                         "(select line_id from t_hzline where rowid=(" +
-                         "	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2))" +
-                         " else 0 end," +
-                         "(select count(*) from t_lines where line_id=?1 and station_id=?2 and 0=(lflg&((1<<31)|(1<<17))))" +
-                         " union all" +
-                         " select distinct line_id, 0 from t_hzline h join (" +
-                         "	select (lflg>>19)&15 as x from t_lines" +
-                         "	where ((lflg>>19)&15)!=0 and (lflg&((1<<31)|(1<<17)))=0	and line_id=?1 and " +
-                         "	case when (select sales_km from t_lines where line_id=?1 and station_id=?2)<" +
-                         "	          (select sales_km from t_lines where line_id=?1 and station_id=?3)" +
-                         "	then" +
-                         "	sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?2) and" +
-                         "	sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?3) " +
-                         "	else" +
-                         "	sales_km<=(select sales_km from t_lines where line_id=?1 and station_id=?2) and" +
-                         "	sales_km>=(select sales_km from t_lines where line_id=?1 and station_id=?3)" +
-                         "	end" +
-                         " order by" +
-                         " case when" +
-                         " (select sales_km from t_lines where line_id=?1 and station_id=?3) <" +
-                         " (select sales_km from t_lines where line_id=?1 and station_id=?2) then" +
-                         " sales_km" +
-                         " end desc," +
-                         " case when" +
-                         " (select sales_km from t_lines where line_id=?1 and station_id=?3) >" +
-                         " (select sales_km from t_lines where line_id=?1 and station_id=?2) then" +
-                         " sales_km" +
-                         " end asc" +
-                         ") as y on y.x=h.rowid " +
-                         " union all" +
-                         " select case when(select line_id from t_hzline where rowid=(" +
-                         "	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?3)) > 0 then" +
-                         " (select line_id from t_hzline where rowid=(" +
-                         "	select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?3))" +
-                         " else 0 end,   " +
-                         " (select count(*) from t_lines where line_id=?1 and station_id=?3 and 0=(lflg&((1<<31)|(1<<17))))";
+                         "                    select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2)) > 0" +
+                         "                then" +
+                         "                    (select line_id from t_hzline where rowid=(" +
+                         "                     select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?2))" +
+                         "                else 0 end," +
+                         "                    (select count(*) from t_lines where line_id=?1 and station_id=?2 and 0=(lflg&((1<<31)|(1<<17))))" +
+                         "    union all" +
+                         "            select distinct line_id, 0 " +
+                         "            from (" +
+                         "                select hzline.line_id, t.sales_km" +
+                         "                from t_hzline hzline" +
+                         "                join t_lines t " +
+                         "                on hzline.rowid = (t.lflg>>19)&15" +
+                         "                where ((t.lflg>>19)&15)!=0" +
+                         "                and (t.lflg&((1<<31)|(1<<17)))=0" +
+                         "                and t.line_id=?1" +
+                         "                and case " +
+                         "                        when (select sales_km from t_lines where line_id=?1 and station_id=?2) <" +
+                         "                            (select sales_km from t_lines where line_id=?1 and station_id=?3)" +
+                         "                        then t.sales_km between" +
+                         "                            (select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+                         "                        and (select sales_km from t_lines where line_id=?1 and station_id=?3)" +
+                         "                        else t.sales_km between" +
+                         "                            (select sales_km from t_lines where line_id=?1 and station_id=?3)" +
+                         "                        and (select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+                         "                    end" +
+                         "                order by" +
+                         "                    case when (select sales_km from t_lines where line_id=?1 and station_id=?3) <" +
+                         "                            (select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+                         "                        then t.sales_km end desc," +
+                         "                    case when (select sales_km from t_lines where line_id=?1 and station_id=?3) >" +
+                         "                            (select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+                         "                        then t.sales_km end asc" +
+                         "            )" +
+                         "    union all" +
+                         "        select case when" +
+                         "                        (select line_id from t_hzline where rowid=(" +
+                         "                                select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?3)) > 0" +
+                         "                    then" +
+                         "                        (select line_id from t_hzline where rowid=(" +
+                         "                                select ((lflg>>19)&15) from t_lines where line_id=?1 and station_id=?3))" +
+                         "                    else 0 end,   " +
+                         "        (select count(*) from t_lines where line_id=?1 and station_id=?3 and 0=(lflg&((1<<31)|(1<<17))))"
+                 ;
  	/*
  	 名古屋－＞新横浜の場合
  	 	東海道線	1
