@@ -33,7 +33,7 @@ test : $(OBJS)
 	g++ -o $@ -std=c++0x $^ -lpthread -ldl -lgcov
 
 clean:
-	rm -f *.o test *.gcda *.gcno *.gcov
+	rm -f *.o test *.gcda *.gcno *.gcov ../common/*.o
 	rm -rf coverage_html coverage.info
 
 coverage: test
