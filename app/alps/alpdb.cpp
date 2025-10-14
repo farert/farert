@@ -373,15 +373,17 @@ void RouteList::assign(const RouteList& source_route, int32_t count /* = -1 */)
             build_route.add(pos->stationId);
             for (pos++; pos != source_route.routeList().cend() && row < count ; pos++, row++) {
                 build_route.add(pos->lineId, pos->stationId);
+                if (pos->lineId == LINE_ID(_T("大阪環状線"))) {
+                    // copy of flag
+                    if (source_route.getRouteFlag().osakakan_detour) {
+                        build_route.setDetour(true);
+                    }
+                }
             }
         }
         // copy of route
         route_list_raw.assign(build_route.routeList().cbegin(),
                               build_route.routeList().cend());
-        // copy of flag
-        if (source_route.getRouteFlag().osakakan_detour) {
-            build_route.setDetour(true);
-        }
         route_flag = build_route.getRouteFlag();
     }
     /* It's necessary to rebuild() if Route object. */
