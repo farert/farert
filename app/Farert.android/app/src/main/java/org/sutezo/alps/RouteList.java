@@ -99,14 +99,12 @@ public class RouteList {
                     }
                     if (1 < row) {
                         build_route.add(ri.lineId, ri.stationId);
-			if (ri.lineId == DbIdOf.INSTANCE.line("大阪環状線"))) {
-		            // copy of flag
-		            if (source_route.route_flag.osakakan_detour) {
-		                build_route.setDetour(true);
-		            }
-			}
                     } else {
                         build_route.add(ri.stationId);
+                        // copy of flag
+		        if (source_route.route_flag.osakakan_detour) {
+		            build_route.setDetour(true);
+			}
                     }
                 }
             }

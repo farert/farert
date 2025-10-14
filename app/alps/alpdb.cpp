@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "alpdb.h"
 
 /*! @file alpdb.cpp core logic implement.
@@ -371,14 +371,12 @@ void RouteList::assign(const RouteList& source_route, int32_t count /* = -1 */)
         Route build_route;
         if (0 < count) {
             build_route.add(pos->stationId);
+            // copy of flag
+            if (source_route.getRouteFlag().osakakan_detour) {
+                build_route.setDetour(true);
+            }
             for (pos++; pos != source_route.routeList().cend() && row < count ; pos++, row++) {
                 build_route.add(pos->lineId, pos->stationId);
-                if (pos->lineId == LINE_ID(_T("大阪環状線"))) {
-                    // copy of flag
-                    if (source_route.getRouteFlag().osakakan_detour) {
-                        build_route.setDetour(true);
-                    }
-                }
             }
         }
         // copy of route
