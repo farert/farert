@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "alpdb.h"
 
 /*! @file alpdb.cpp core logic implement.
@@ -9581,7 +9581,10 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                         }
                         this->jr_fare = round_up(special_fare); /* 大都市特定区間運賃(東京)(\10単位切り上げ) */
                     } else {
-                        this->jr_fare = special_fare;   /* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
+                        TRACE("specific fare section replace for Osaka or Nagoya urban area specifict:%d, original:%d\n", special_fare, this->jr_fare);
+                        if (special_fare < this->jr_fare) {
+                            this->jr_fare = special_fare;   /* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
+                        }
                     }
                 }
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
@@ -9589,6 +9592,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                 /* JR東海バリアフリー運賃 +10 */
                 if (URB_NAGOYA == URBAN_ID(this->flag)) {
                     this->jr_fare += 10;
+                    TRACE("JR Tokai barrier free fare +10 yen\n");
                 }
             }
             //ASSERT(this->company_fare == 0);    // 会社線は通っていない
@@ -10136,6 +10140,7 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
         id = pos->stationId;
         if ((id == STATION_ID(_T("金山(中)")))
         || (id == STATION_ID(_T("岐阜")))
+        || (id == STATION_ID(_T("沼津")))
         || (id == STATION_ID(_T("美濃太田")))
         || (id == STATION_ID(_T("多治見")))) {
             bNeer = true;
