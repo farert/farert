@@ -3131,7 +3131,9 @@ void show_time(time_t time)
 int test_exec(void)
 {
     time_t now;
-    time_t end;
+    clock_t end;
+    clock_t start = clock();
+    double elapsed;
 
     time(&now);		// current time
 
@@ -3141,7 +3143,8 @@ int test_exec(void)
 	os = _tfopen(_T("test_result.txt"), _T("w"));
 #endif
 	_ftprintf(os, _T("timestamp: "));
-	show_time(now);
+
+    show_time(now);
 
 //test_temp();		//臨時特設テスト
 //exit(-1)
@@ -3170,10 +3173,11 @@ int test_exec(void)
 	_ftprintf(os, _T("\n#---same kokura hakata shinzai-----------------------------------\n"));
 	test_route(test_route3_tbl);
 
-    time(&end);
-    end -= now;
-	_ftprintf(os, _T("lapse: "));
-	show_time(end);
+
+    end = clock();
+    elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+
+    _ftprintf(os, _T("proces lapse: %.3f sec.\n"), elapsed);
 
 	fclose(os);
 	return 1;
