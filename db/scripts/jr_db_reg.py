@@ -247,7 +247,7 @@ class Dbreg:
             station_id2 integer not null references t_station(rowid),
             kind	integer not null default(0),
 
-            primary key (id, station_id1)
+            primary key (id, station_id1, line_id)
         );
         """)
         ###########################################
@@ -833,7 +833,7 @@ insert into t_rule69(id, station_id1, station_id2, line_id, ord) values(
         # t_toica_range
         ident = int(linitems[0])
         kind = int(linitems[4])
-        if kind != 0:
+        if 0 < kind:
             self.con.execute("""
 insert into t_toica_range(id, station_id1, line_id, station_id2, kind) values(
  ?,
