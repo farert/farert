@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "alpdb.h"
 
 /*! @file alpdb.cpp core logic implement.
@@ -3234,7 +3234,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
         if (pFi->calc_fare(&route_flag, route_list_cooked)) {
             bool b_more_low_cost;
             pFi->setRoute(this->route_list_cooked, route_flag);
-            if (pFi->isJrTokaiOnly()) {
+            if (pFi->in_range_toica(*this)) {
                 b_more_low_cost = pFi->reCalcFareForOptiomizeRouteForToiCa(*this);
             } else {
                 b_more_low_cost = pFi->reCalcFareForOptiomizeRoute(*this);
@@ -9581,7 +9581,10 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                         }
                         this->jr_fare = round_up(special_fare); /* 大都市特定区間運賃(東京)(\10単位切り上げ) */
                     } else {
-                        this->jr_fare = special_fare;   /* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
+                        TRACE("specific fare section replace for Osaka or Nagoya urban area specifict:%d, original:%d\n", special_fare, this->jr_fare);
+                        if (special_fare < this->jr_fare) {
+                            this->jr_fare = special_fare;   /* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
+                        }
                     }
                 }
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
@@ -9589,6 +9592,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                 /* JR東海バリアフリー運賃 +10 */
                 if (URB_NAGOYA == URBAN_ID(this->flag)) {
                     this->jr_fare += 10;
+                    TRACE("JR Tokai barrier free fare +10 yen\n");
                 }
             }
             //ASSERT(this->company_fare == 0);    // 会社線は通っていない
@@ -9837,6 +9841,109 @@ std::vector<RouteItem> FARE_INFO::IsHachikoLineHaijima(const std::vector<RouteIt
         out_route_list.clear();
     }
     return out_route_list;
+}
+
+//  Check TOICA area
+//  (大都市近郊区間のようにフラグ追加すればこんなことしなくても良いが、
+//  愛知地区はバリアフリーの範囲で使用しているしするので)
+//  条件：すべてJR東海内の経路(飛騨古川-富山-敦賀-米原-金山-鶴舞 とか非考慮)
+//
+bool FARE_INFO::in_range_toica(const RouteList& route) const
+{
+    int32_t station_id = 0;
+    int32_t station_id1 = 0;
+    int32_t station_id2 = 0;
+    int32_t line_id = 0;
+
+    static const char tsql[] = "select station_id1,"
+                    "        station_id2,"
+                    "        line_id"
+                    " from   t_toica_range"
+                    " where line_id=?1 and kind=0";
+
+    if (enableTokaiStockSelect != 2) { // JR東海TOICA有効
+        TRACE("TOICA not enabled %d\n", __LINE__);
+        return false;
+    }
+    DBO dbo = DBS::getInstance()->compileSql(tsql);
+    vector<RouteItem>::const_iterator pos;
+    const std::vector<RouteItem>& route_list = route.routeList();
+    if (route_list.size() <= 1) {
+        //TRACE("TOICA route size <=1\n");
+        return false;
+    }
+    for (pos = route_list.cbegin(); pos != route_list.cend(); pos++) {
+        if (station_id != 0) {
+            dbo.setParam(1, pos->lineId);
+            if (dbo.moveNext()) {
+                //TRACE("TOICA line %s %s %s\n", LNAME(pos->lineId), SNAME(station_id), SNAME(pos->stationId));
+                station_id1 = dbo.getInt(0);
+                station_id2 = dbo.getInt(1);
+                line_id     = dbo.getInt(2);
+                if (RouteUtil::InStation(pos->stationId, 
+                                        line_id, station_id1, station_id2) < 1) {
+                    if ((pos->stationId != route.arriveStationId())
+                    || !in_range_toica_sub(pos->stationId, route.departureStationId())) {
+                        //TRACE("TOICA out of range arrive %s\n", SNAME(pos->stationId));
+                        return false;   // out of TOICA range
+                    }
+                    ASSERT(pos->stationId == route.arriveStationId());
+                }
+                if (RouteUtil::InStation(station_id, 
+                                        line_id, station_id1, station_id2) < 1) {
+                    if ((route.departureStationId() != station_id)
+                    || !in_range_toica_sub(station_id, route.arriveStationId())) {
+                        //TRACE("TOICA out of range depart %s\n", SNAME(station_id));
+                        return false;   // out of TOICA range
+                    }
+                }
+            } else {
+                return false; // not in TOICA range
+            }
+        }
+        dbo.reset();
+        station_id = pos->stationId;
+    }
+    return true;
+}
+
+// 飛騨古川、高山、下呂 例外駅対応
+bool FARE_INFO::in_range_toica_sub(int32_t t_station_id1, int32_t t_station_id2) const
+{
+    static const char tsql[] = "select kind"
+                    " from   t_toica_range"
+                    " where station_id1=?1 and kind>0";
+    static const char tsql_exc[] = "select station_id1,"
+                    "        station_id2,"
+                    "        line_id"
+                    " from   t_toica_range"
+                    " where id=?1";
+    int32_t kind = 0;
+    int32_t station_id1 = 0;
+    int32_t station_id2 = 0;
+    int32_t line_id = 0;
+    DBO dbo = DBS::getInstance()->compileSql(tsql);
+    //TRACE("TOICA exception check %s %s\n", SNAME(t_station_id1), SNAME(t_station_id2));
+    dbo.setParam(1, t_station_id1);
+    if (dbo.moveNext()) {
+        kind = dbo.getInt(0);
+        ASSERT(0 < kind);
+        DBO dbo_exc = DBS::getInstance()->compileSql(tsql_exc);
+        dbo_exc.setParam(1, kind);
+        if (dbo_exc.moveNext()) {
+            station_id1 = dbo_exc.getInt(0);
+            station_id2 = dbo_exc.getInt(1);
+            line_id     = dbo_exc.getInt(2);
+        } else {
+            ASSERT(FALSE);
+            return false;
+        }
+        //TRACE("TOICA exception station %s line %s station1 %s station2 %s\n",
+        //      SNAME(t_station_id2), LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
+        return (0 < RouteUtil::InStation(t_station_id2, 
+                                line_id, station_id1, station_id2));
+    }
+    return false;
 }
 
 //  JR東海 IC運賃用の最短経路をだす
@@ -10136,6 +10243,7 @@ RouteList FARE_INFO::reRouteForToica(const RouteList& route)
         id = pos->stationId;
         if ((id == STATION_ID(_T("金山(中)")))
         || (id == STATION_ID(_T("岐阜")))
+        || (id == STATION_ID(_T("沼津")))
         || (id == STATION_ID(_T("美濃太田")))
         || (id == STATION_ID(_T("多治見")))) {
             bNeer = true;
