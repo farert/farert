@@ -2462,6 +2462,27 @@ _T("c--other--"),
         "岡山 山陽線 東岡山 赤穂線 相生 山陽線 神戸 東海道線 大阪 大阪環状線 鶴橋 近鉄大阪線・山田線 松阪 紀勢線 x津",
         "茶屋町 宇野線 岡山 山陽線 東岡山 赤穂線 相生 山陽線 神戸 東海道線 大阪 大阪環状線 鶴橋 近鉄大阪線・山田線 松阪 紀勢線 x津",
 
+	"高山 高山線 岐阜 東海道線 金山(中)",
+	"渚 高山線 岐阜 東海道線 金山(中)",
+	"高山 高山線 岐阜 東海道線 金山(中) 中央西線 鶴舞",
+	"渚 高山線 岐阜 東海道線 金山(中) 中央西線 鶴舞",
+	"高山 高山線 美濃太田 太多線 多治見 中央西線 鶴舞",
+	"渚 高山線 美濃太田 太多線 多治見 中央西線 鶴舞",
+	"三島 東海道線 沼津 御殿場線 下曽我",
+	"亀山 関西線 名古屋 東海道線 岐阜 高山線 美濃太田",
+	"亀山 関西線 名古屋 東海道線 金山(中) 中央西線 多治見 太多線 美濃太田",
+	"亀山 関西線 名古屋 東海道線 金山(中) 中央西線 鶴舞",
+	"亀山 関西線 名古屋 東海道線 岐阜 高山線 美濃太田 太多線 可児",
+	"亀山 関西線 名古屋 東海道線 金山(中) 中央西線 多治見 太多線 可児",
+	"関 関西線 名古屋 東海道線 岐阜 高山線 美濃太田",
+	"今宮 関西線 名古屋 東海道線 岐阜 高山線 美濃太田",
+	"津 紀勢線 亀山 関西線 名古屋 東海道線 岐阜 高山線 美濃太田",
+	"飛騨古川 高山線 富山 北陸新幹線 敦賀 北陸線 米原",
+	"飛騨古川 高山線 富山 北陸新幹線 敦賀 北陸線 米原 東海道線 岐阜 高山線 美濃太田",
+	"飛騨古川 高山線 富山 北陸新幹線 敦賀 北陸線 米原 東海道線 金山(中) 中央西線 鶴舞",
+	"下呂 高山線 富山 北陸新幹線 敦賀 北陸線 米原 東海道線 金山(中) 中央西線 鶴舞",
+	"岐阜 高山線 美濃太田 太多線 多治見",
+	"岐阜 東海道線 金山(中) 中央西線 多治見",
 
         // append new test pattern is here TODO @@@
 
@@ -3131,7 +3152,9 @@ void show_time(time_t time)
 int test_exec(void)
 {
     time_t now;
-    time_t end;
+    clock_t end;
+    clock_t start = clock();
+    double elapsed;
 
     time(&now);		// current time
 
@@ -3141,7 +3164,8 @@ int test_exec(void)
 	os = _tfopen(_T("test_result.txt"), _T("w"));
 #endif
 	_ftprintf(os, _T("timestamp: "));
-	show_time(now);
+
+    show_time(now);
 
 //test_temp();		//臨時特設テスト
 //exit(-1)
@@ -3170,10 +3194,11 @@ int test_exec(void)
 	_ftprintf(os, _T("\n#---same kokura hakata shinzai-----------------------------------\n"));
 	test_route(test_route3_tbl);
 
-    time(&end);
-    end -= now;
-	_ftprintf(os, _T("lapse: "));
-	show_time(end);
+
+    end = clock();
+    elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+
+    _ftprintf(os, _T("proces lapse: %.3f sec.\n"), elapsed);
 
 	fclose(os);
 	return 1;

@@ -240,6 +240,18 @@ class Dbreg:
         """)
         ###########################################
         self.con.execute("""
+        create table t_toica_range (
+            id		integer not null,
+            station_id1 integer not null references t_station(rowid),
+            line_id integer not null references t_line(rowid),
+            station_id2 integer not null references t_station(rowid),
+            kind	integer not null default(0),
+
+            primary key (id, station_id1, line_id)
+        );
+        """)
+        ###########################################
+        self.con.execute("""
         create table t_rule70 (
             station_id1 integer not null references t_station(rowid),
             station_id2 integer not null references t_station(rowid),
@@ -521,6 +533,7 @@ class Dbreg:
             'line'			: self.reg_line,
             't_clinfar'		: self.reg_t_clinfar,
             't_rule69'		: self.reg_t_rule69,
+            't_toica_range'	: self.reg_t_toica_range,
             'rule70'		: self.reg_rule70,
             'r70bullet'		: self.reg_r70bullet,
             'rule86'		: self.reg_rule86,
@@ -814,6 +827,30 @@ insert into t_rule69(id, station_id1, station_id2, line_id, ord) values(
  (select rowid from t_line where name=?), ?)""",
          [ident, *same_staion(linitems[1].strip()), *same_staion(linitems[2].strip()), 
               linitems[3], int(linitems[4])])
+
+#------------------------------------------------------------------------------
+    def reg_t_toica_range(self, label, linitems, lin):
+        # t_toica_range
+        ident = int(linitems[0])
+        kind = int(linitems[4])
+        if 0 < kind:
+            self.con.execute("""
+insert into t_toica_range(id, station_id1, line_id, station_id2, kind) values(
+ ?,
+ (select rowid from t_station where name=? and samename=?),
+ -1, -1, ?)""",
+             [ident, *same_staion(linitems[1].strip()), int(linitems[4])])
+        else:
+            self.con.execute("""
+insert into t_toica_range(id, station_id1, line_id, station_id2, kind) values(
+ ?,
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_line where name=?),
+ (select rowid from t_station where name=? and samename=?),
+ ?)""",
+             [ident, *same_staion(linitems[1].strip()), 
+              linitems[2], *same_staion(linitems[3].strip()), 
+                  int(linitems[4])])
 
 #------------------------------------------------------------------------------
     def reg_rule70(self, label, linitems, lin):

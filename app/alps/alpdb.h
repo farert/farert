@@ -872,9 +872,9 @@ public:
 //    bool isEnableTokaiStockSelect() const {
 //        return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
 //    }
-    bool isJrTokaiOnly() const {
-        return enableTokaiStockSelect == 2; // JR東海TOICA有効
-    }
+    bool in_range_toica(const RouteList& route) const;
+    bool in_range_toica_sub(int32_t t_station_id, int32_t t_station_id2) const;
+
     // 地方交通線を含んでいるか？
     bool didHaveLocalLine() const { return !local_only && total_jr_calc_km != total_jr_sales_km; }
     bool isLocalOnly() const { return local_only; }
