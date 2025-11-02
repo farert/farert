@@ -450,41 +450,42 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
-
-//        } else if nil != title.range(of: "最短経路") {
-//            let begin_id : Int = ds.startStationId()
-//            let end_id : Int = ds.lastStationId()
-//            if begin_id == end_id {
-//                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
-//                return
-//            }
-//
-//            self.showIndicate() /* wait active indicator */
-//            self.navigationController?.view.isUserInteractionEnabled = false
-//           DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
- //               //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
-//                self.processDuringIndicatorAnimating(NSNull.self)
-//            })
-//
-/*
-        } else if nil != title.range(of: "回り") {
-            if let route : cRoute = cRoute() {
-                route.sync(ds)
-                let detour_sw = (nil != title.range(of: "遠")) ? true : false
-                let rc = route.setDetour(detour_sw)
-                if 0 <= rc {
-                    ds.sync(route)
-                    self.reCalcFareInfo()
-                    self.tableView.reloadData()
-                    if (detour_sw) {
-                        self.showInfo(key: "osakakan")
-                    }
-                } else {
-                    self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
-                }
-            }
- */
-        /*} else if nil != title.range(of: "株主優待") {
+            
+            //        } else if nil != title.range(of: "最短経路") {
+            //            let begin_id : Int = ds.startStationId()
+            //            let end_id : Int = ds.lastStationId()
+            //            if begin_id == end_id {
+            //                self.ShowAlertView("確認", message: "開始駅=終了駅では最短経路は算出しません.")
+            //                return
+            //            }
+            //
+            //            self.showIndicate() /* wait active indicator */
+            //            self.navigationController?.view.isUserInteractionEnabled = false
+            //           DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
+            //               //NSThread.detachNewThreadSelector(Selector("processDuringIndicatorAnimating:"), toTarget:self, withObject: nil)
+            //                self.processDuringIndicatorAnimating(NSNull.self)
+            //            })
+            //
+            /*
+             } else if nil != title.range(of: "回り") {
+             if let route : cRoute = cRoute() {
+             route.sync(ds)
+             let detour_sw = (nil != title.range(of: "遠")) ? true : false
+             let rc = route.setDetour(detour_sw)
+             if 0 <= rc {
+             ds.sync(route)
+             self.reCalcFareInfo()
+             self.tableView.reloadData()
+             if (detour_sw) {
+             self.showInfo(key: "osakakan")
+             }
+             } else {
+             self.ShowAlertView("エラー", message: "経路が重複するため指定できません")
+             }
+             }
+             */
+        }
+        else if nil != title.range(of: "株主優待") {
             if nil != title.range(of: "しない") {
                 // @"JR東海株主優待券を適用しない";
                 ds.setJrTokaiStockApply(false);
@@ -494,7 +495,6 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
             }
             self.reCalcFareInfo()
             self.tableView.reloadData()
-        */
         } else if nil != title.range(of: "指定した経路") {
             ds.setLong(true);
             self.reCalcFareInfo()
@@ -561,7 +561,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("旅客営業取扱基準規程115条(特定都区市内発着)")
             }
         }
-        /*
+        
         if self.fareInfo.isJRCentralStockEnable {
             // nagative logic
             if self.fareInfo.isJRCentralStock {
@@ -570,6 +570,7 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                 items.append("JR東海株主優待券を適用する")
             }
         }
+        /*
         if self.ds.isOsakakanDetourEnable() {
             // nagative logic
             if self.ds.isOsakakanDetour() {

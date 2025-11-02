@@ -2484,6 +2484,7 @@ _T("c--other--"),
 	"岐阜 高山線 美濃太田 太多線 多治見",
 	"岐阜 東海道線 金山(中) 中央西線 多治見",
 
+    "品川 東海道新幹線 新大阪 山陽新幹線 博多 地下鉄空港線 姪浜 筑肥線 唐津",
         // append new test pattern is here TODO @@@
 
 		_T(""),
@@ -2607,7 +2608,6 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				s = cr_remove(s);
 				_ftprintf(os, _T("///発駅=単駅\n%s\n"), s.c_str());
 			}
-#if 0
 			// JR東海株主優待券使用
 			if (croute.refRouteFlag().jrtokaistock_enable) {
 				croute.refRouteFlag().setJrTokaiStockApply(true);
@@ -2622,7 +2622,6 @@ void test_route(const TCHAR *route_def[], int32_t round = 0)
 				s = cr_remove(s);
 				_ftprintf(os, _T("///JR東海株主優待券未使用\n%s\n"), s.c_str());
 			}
-#endif
 			if (croute.getRouteFlag().isEnableLongRoute()) {
 				// デフォルトは最安になっているので、Optionで経路指定通りへ
 				croute.refRouteFlag().setLongRoute(true);

@@ -408,7 +408,7 @@ public:
     }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
     void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
-//    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; }
+    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; } /* for iOS */
                                                                   /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */
                                                                   /* coreAreaIDByCityId() が影響 */
     void setDisableRule86or87() { rule86or87 |= 0x40; }
@@ -869,9 +869,9 @@ public:
             ((endTerminalId < STATION_ID_AS_CITYNO) ||
              (CITYNO_NAGOYA == (endTerminalId - STATION_ID_AS_CITYNO)));
     }
-//    bool isEnableTokaiStockSelect() const {
-//        return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
-//    }
+    bool isEnableTokaiStockSelect() const {
+        return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
+    }
     bool in_range_toica(const RouteList& route) const;
     bool in_range_toica_sub(int32_t t_station_id, int32_t t_station_id2) const;
 

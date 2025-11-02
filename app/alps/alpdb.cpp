@@ -3132,9 +3132,9 @@ JR東日本 株主優待4： \123,456
     } else if (this->isBeginEndCompanyLine()) {
         sResult += _T("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
     }
-//  if (this->isEnableTokaiStockSelect()) {
-//      sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
-//  }
+    if (this->isEnableTokaiStockSelect()) {
+        sResult += _T("\r\nJR東海株主優待券使用オプション選択可");
+    }
     if (this->getIsBRT_discount()) {
         sResult += _T("\r\nBRT乗継ぎ割引適用");
     }
@@ -5451,6 +5451,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
         /* 会社線 JR東海許可で 東海道新幹線駅 発 */
         if (rRoute_flag.tokai_shinkansen) {
         //  city_no_s = 0;
+            //TRACE("CheckOfRule86: JR東海東海道新幹線発駅特定都区市内解除\n");
         }
     }
 
@@ -5469,10 +5470,13 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
         r |= 0x80000000; // BIT_ON(route_flag, BLF_JRTOKAISTOCK_ENABLE); // for UI
         if ((rRoute_flag.jrtokaistock_applied) && (city_no_e != CITYNO_NAGOYA)) {
             city_no_e = 0;
+            //TRACE("CheckOfRule86: JR東海株主優待券使用 着駅特定都区市内解除\n");
         }
         /* 会社線 JR東海許可で 東海道新幹線駅 着 */
         if (rRoute_flag.tokai_shinkansen) {
         //  city_no_e = 0;
+            TRACE("CheckOfRule86: JR東海東海道新幹線着駅特定都区市内解除\n");
+            // 品川 東海道新幹線 新大阪 山陽新幹線 博多 地下鉄空港線 姪浜 筑肥線 唐津
         }
     }
 
@@ -9329,11 +9333,11 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                 TRACE("could you used stock JR East and Tokai.\n");
                 enableTokaiStockSelect = 3; // JR東海株主優待券使用可
             }
-//          TRACE("Set only the JR Tokai.\n");
-//          this->companymask = (1 << (JR_CENTRAL - 1));
-//          if (pRoute_flag->jrtokaistock_applied) {
-//              pRoute_flag->jrtokaistock_enable = true;
-//          }
+            TRACE("Set only the JR Tokai.\n");
+            this->companymask = (1 << (JR_CENTRAL - 1));
+            if (pRoute_flag->jrtokaistock_applied) {
+                pRoute_flag->jrtokaistock_enable = true;
+            }
         }
     }
     return fare_add;
