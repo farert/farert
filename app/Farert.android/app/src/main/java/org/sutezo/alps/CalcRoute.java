@@ -1078,8 +1078,9 @@ public class CalcRoute extends RouteList {
 									/* 進入して脱出した */
 									/* 路線より最外側の大環状線内(70条適用)駅を得る */
                     stationId_e70 = RetrieveOut70Station(route_item.lineId);
-                    if (stationId_e70 <= 0)
-                    ASSERT (0 < stationId_e70);
+                    if (stationId_e70 <= 0) {
+                        ASSERT(0 < stationId_e70);
+                    }
                     if (stationId_e70 != stationId_o70) {
                         out_route_list.add(new RouteItem(RouteUtil.ID_L_RULE70, (short)stationId_e70, flag));
                     }

@@ -257,10 +257,10 @@ class ResultViewStateHolder : ViewModel() {
         val showStocktokai = uiState.optStocktokai != ResultViewUiState.Option.N_A
         val stocktokaiTitle = when (uiState.optStocktokai) {
             ResultViewUiState.Option.TRUE -> {
-                "JR東海株主優待券を適用"
+                "${context.getString(R.string.result_menu_stocktokai)}${context.getString(R.string.nothing)}" // "JR東海株主優待券を適用"
             }
             ResultViewUiState.Option.FALSE -> {
-                "JR東海株主優待券を適用しない"
+                "${context.getString(R.string.result_menu_stocktokai)}${context.getString(R.string.action)}" // "JR東海株主優待券を適用しない"
             }
             else -> ""
         }
@@ -380,7 +380,8 @@ class ResultViewStateHolder : ViewModel() {
 
     
     private fun handleStocktokaiClick() {
-        val newOpt = if (uiState.stocktokaiMenuTitle == "JR東海株主優待券を適用しない") {
+        val s = "${context.getString(R.string.result_menu_stocktokai)}${context.getString(R.string.action)}" // "JR東海株主優待券を適用"
+        val newOpt = if (uiState.stocktokaiMenuTitle == s) {
             ResultViewUiState.Option.TRUE
         } else {
             ResultViewUiState.Option.FALSE
