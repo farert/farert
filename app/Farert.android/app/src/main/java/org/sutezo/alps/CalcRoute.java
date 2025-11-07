@@ -648,24 +648,84 @@ public class CalcRoute extends RouteList {
     //	@retval 1: change start
     //	@retval 2: change arrived
     //
+    // ヘルパーメソッド: 経路の最終目的地が姫路以遠かをチェック
+    private static boolean isFinalDestinationBeyondHimeji(List<RouteItem> route) {
+        int finalStationId = route.get(route.size() - 1).stationId;
+
+        // 姫路自体もOK（以遠の「以」= equal）
+        if (finalStationId == DbIdOf.INSTANCE.station("姫路")) {
+            return true;
+        }
+
+        // 山陽線または山陽新幹線で姫路より遠方かチェック
+        // 姫路から最終目的地への距離が取得できれば姫路以遠
+        int distSanyo = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"),
+                DbIdOf.INSTANCE.station("姫路"),
+                finalStationId).get(0);
+        if (distSanyo > 0) {
+            return true; // 姫路より遠方の山陽線の駅
+        }
+
+        int distShinkansen = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"),
+                DbIdOf.INSTANCE.station("姫路"),
+                finalStationId).get(0);
+        if (distShinkansen > 0) {
+            return true; // 姫路より遠方の新幹線の駅
+        }
+
+        return false;
+    }
+
+    // ヘルパーメソッド: 発駅が姫路以遠かをチェック（着駅判定用）
+    private static boolean isStartStationBeyondHimeji(List<RouteItem> route) {
+        int startStationId = route.get(0).stationId;
+
+        // 姫路自体もOK
+        if (startStationId == DbIdOf.INSTANCE.station("姫路")) {
+            return true;
+        }
+
+        // 山陽線または山陽新幹線で姫路より遠方かチェック
+        int distSanyo = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"),
+                DbIdOf.INSTANCE.station("姫路"),
+                startStationId).get(0);
+        if (distSanyo > 0) {
+            return true;
+        }
+
+        int distShinkansen = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"),
+                DbIdOf.INSTANCE.station("姫路"),
+                startStationId).get(0);
+        if (distShinkansen > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // ヘルパーメソッド: 経路に姫路が含まれているか、または姫路を通過するかチェック
+    private static boolean passesViaHimeji(List<RouteItem> route) {
+        // 経路に姫路駅が明示的に含まれているか
+        for (RouteItem item : route) {
+            if (item.stationId == DbIdOf.INSTANCE.station("姫路")) {
+                return true;
+            }
+        }
+
+        // 最終目的地が姫路以遠であれば、山陽線/新幹線経由なので姫路を通過とみなす
+        return isFinalDestinationBeyondHimeji(route);
+    }
+
     static int CheckOfRule88j(List<RouteItem> route) {
-        int lastIndex;
-		/*static*/ int chk_distance1;
-		/*static*/ int chk_distance2;
-
-        lastIndex = (int)route.size() - 1;
-
-        //if (!chk_distance1) {	/* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
-        chk_distance1 = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), DbIdOf.INSTANCE.station("姫路")).get(0);
-        chk_distance2 = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), DbIdOf.INSTANCE.station("姫路")).get(0);
-        //}
+        int lastIndex = route.size() - 1;
 
         if (2 <= lastIndex) {
             // 新大阪 発 東海道線 - 山陽線
             if ((route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
                     (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線")) &&
                     (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
-                    (chk_distance1 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), route.get(2).stationId).get(0))) {
+                    isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
+                    passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
                 ASSERT (route.get(1).stationId == DbIdOf.INSTANCE.station("神戸"));
 				/*	新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
@@ -676,7 +736,8 @@ public class CalcRoute extends RouteList {
             else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
                     (route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")) &&
                     (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
-                    (chk_distance1 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸"), route.get(lastIndex - 2).stationId).get(0))) {
+                    isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
+                    passesViaHimeji(route)) {              // 修正: 姫路を経由
 
                 ASSERT (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("神戸"));
 				/*	新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
@@ -688,7 +749,8 @@ public class CalcRoute extends RouteList {
             if ((route.get(0).stationId == DbIdOf.INSTANCE.station("大阪")) &&
                     (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
                     (route.get(1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(2).stationId).get(0))) {
+                    isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
+                    passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
                 ASSERT (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線"));
 
@@ -706,7 +768,8 @@ public class CalcRoute extends RouteList {
             else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("大阪")) &&
                     (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
                     (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(lastIndex - 2).stationId).get(0))) {
+                    isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
+                    passesViaHimeji(route)) {              // 修正: 姫路を経由
 
                 ASSERT ((route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")));
 
@@ -725,7 +788,8 @@ public class CalcRoute extends RouteList {
             // 新大阪 発 山陽新幹線
             if ((route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
                     (route.get(1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(1).stationId).get(0))) {
+                    isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
+                    passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
 				/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
@@ -741,7 +805,8 @@ public class CalcRoute extends RouteList {
             }	// 山陽新幹線 大阪 着
             else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
                     (route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    (chk_distance2 <= RouteUtil.GetDistance(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("新大阪"), route.get(lastIndex - 1).stationId).get(0))) {
+                    isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
+                    passesViaHimeji(route)) {              // 修正: 姫路を経由
 
 				/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
