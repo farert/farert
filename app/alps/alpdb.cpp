@@ -6521,29 +6521,83 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 //
 int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
 {
-    int32_t lastIndex;
-    static int32_t distance_koube_himeji = 0;  // 神戸-姫路
-    static int32_t distance_shinoosaka_himeji = 0; // 新大阪-姫路
+    int32_t lastIndex = (int32_t)route->size() - 1;
 
-    lastIndex = (int32_t)route->size() - 1;
+    // ヘルパー関数: 経路の最終目的地が姫路以遠かをチェック
+    auto isFinalDestinationBeyondHimeji = [](const vector<RouteItem> *rt) -> bool {
+        int32_t finalStationId = rt->back().stationId;
 
-    if (!distance_koube_himeji) {   /* chk_distance: 山陽線 神戸-姫路間営業キロ, 新幹線 新大阪-姫路 */
-        distance_koube_himeji = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
-                                               STATION_ID(_T("神戸")),
-                                               STATION_ID(_T("姫路")))[0];
-        distance_shinoosaka_himeji = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
-                                               STATION_ID(_T("新大阪")),
-                                               STATION_ID(_T("姫路")))[0];
-    }
+        // 姫路自体もOK（以遠の「以」= equal）
+        if (finalStationId == STATION_ID(_T("姫路"))) {
+            return true;
+        }
+
+        // 山陽線または山陽新幹線で姫路より遠方かチェック
+        // 姫路から最終目的地への距離が取得できれば姫路以遠
+        int32_t dist_sanyo = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+                                                     STATION_ID(_T("姫路")),
+                                                     finalStationId)[0];
+        if (dist_sanyo > 0) {
+            return true; // 姫路より遠方の山陽線の駅
+        }
+
+        int32_t dist_shinkansen = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                                         STATION_ID(_T("姫路")),
+                                                         finalStationId)[0];
+        if (dist_shinkansen > 0) {
+            return true; // 姫路より遠方の新幹線の駅
+        }
+
+        return false;
+    };
+
+    // ヘルパー関数: 発駅が姫路以遠かをチェック（着駅判定用）
+    auto isStartStationBeyondHimeji = [](const vector<RouteItem> *rt) -> bool {
+        int32_t startStationId = rt->front().stationId;
+
+        // 姫路自体もOK
+        if (startStationId == STATION_ID(_T("姫路"))) {
+            return true;
+        }
+
+        // 山陽線または山陽新幹線で姫路より遠方かチェック
+        int32_t dist_sanyo = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
+                                                     STATION_ID(_T("姫路")),
+                                                     startStationId)[0];
+        if (dist_sanyo > 0) {
+            return true;
+        }
+
+        int32_t dist_shinkansen = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
+                                                         STATION_ID(_T("姫路")),
+                                                         startStationId)[0];
+        if (dist_shinkansen > 0) {
+            return true;
+        }
+
+        return false;
+    };
+
+    // ヘルパー関数: 経路に姫路が含まれているか、または姫路を通過するかチェック
+    auto passesViaHimeji = [&](const vector<RouteItem> *rt) -> bool {
+        // 経路に姫路駅が明示的に含まれているか
+        for (const auto& item : *rt) {
+            if (item.stationId == STATION_ID(_T("姫路"))) {
+                return true;
+            }
+        }
+
+        // 最終目的地が姫路以遠であれば、山陽線/新幹線経由なので姫路を通過とみなす
+        return isFinalDestinationBeyondHimeji(rt);
+    };
 
     if (2 <= lastIndex) {
             // 新大阪 発 東海道線 - 山陽線
         if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
             (route->at(1).lineId == LINE_ID(_T("東海道線"))) &&
             (route->at(2).lineId == LINE_ID(_T("山陽線"))) &&
-            (distance_koube_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
-                                                     STATION_ID(_T("神戸")),
-                                                     route->at(2).stationId)[0])) {
+            isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
+            passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
             ASSERT(route->at(1).stationId == STATION_ID(_T("神戸")));
             /*  新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
@@ -6554,9 +6608,8 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
         else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
                  (route->back().lineId == LINE_ID(_T("東海道線"))) &&
                  (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽線"))) &&
-                 (distance_koube_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
-                                                          STATION_ID(_T("神戸")),
-                                                          route->at(lastIndex - 2).stationId)[0])) {
+                 isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
+                 passesViaHimeji(route)) {              // 修正: 姫路を経由
 
             ASSERT(route->at(lastIndex - 1).stationId == STATION_ID(_T("神戸")));
             /*  新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
@@ -6569,9 +6622,8 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
         if ((route->front().stationId == STATION_ID(_T("大阪"))) &&
             (route->at(2).lineId == LINE_ID(_T("山陽新幹線"))) &&
             (route->at(1).stationId == STATION_ID(_T("新大阪"))) &&
-            (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
-                                                     STATION_ID(_T("新大阪")),
-                                                     route->at(2).stationId)[0])) {
+            isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
+            passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
             ASSERT(route->at(1).lineId == LINE_ID(_T("東海道線")));
 
@@ -6592,9 +6644,8 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
         else if ((route->back().stationId == STATION_ID(_T("大阪"))) &&
                  (route->at(lastIndex - 1).stationId == STATION_ID(_T("新大阪"))) &&
                  (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-                 (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
-                                                          STATION_ID(_T("新大阪")),
-                                                          route->at(lastIndex - 2).stationId)[0])) {
+                 isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
+                 passesViaHimeji(route)) {              // 修正: 姫路を経由
 
             ASSERT(route->back().lineId == LINE_ID(_T("東海道線")));
 
@@ -6617,9 +6668,8 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
             // 新大阪 発 山陽新幹線
         if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
             (route->at(1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-            (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
-                                                     STATION_ID(_T("新大阪")),
-                                                     route->at(1).stationId)[0])) {
+            isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
+            passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
             /* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
 
@@ -6639,9 +6689,8 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
         }   // 山陽新幹線 大阪 着
         else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
                  (route->back().lineId == LINE_ID(_T("山陽新幹線"))) &&
-                 (distance_shinoosaka_himeji <= RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
-                                                          STATION_ID(_T("新大阪")),
-                                                          route->at(lastIndex - 1).stationId)[0])) {
+                 isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
+                 passesViaHimeji(route)) {              // 修正: 姫路を経由
 
             /* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
 
