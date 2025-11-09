@@ -186,19 +186,10 @@ public class CalcRoute extends RouteList {
             route_flag.rule70 = true;    // applied rule
         }
 
-        // 88を適用したものをroute_list_tmpへ
-        aply88 = CheckOfRule88j(route_list_tmp2);
-        if (0 != aply88) {
-            if ((aply88 & 1) != 0) {
-                System.out.print("Apply to rule88 for start.\n");
-                route_flag.terCityReset();
-                route_flag.ter_begin_oosaka = true;
-            } else if ((aply88 & 2) != 0) {
-                System.out.print("Apply to rule88 for arrive.\n");
-                route_flag.terCityReset();
-                route_flag.ter_fin_oosaka = true;
-            }
-            route_flag.rule88 = true;    // applied rule
+        // 88を適用
+        route_flag.rule88 = CheckOfRule88j(route_list_tmp2);
+        if (route_flag.rule88) {
+            System.out.print("Rule88 applied true.\n");
         }
 
 		/* 特定都区市内発着可否判定 */
@@ -221,10 +212,9 @@ public class CalcRoute extends RouteList {
 		/* route_list_tmp = route_list_tmp2 */
         cpyRouteItems(route_list_tmp2, route_list_tmp);
 
-		/* 変換 -> route_list_tmp:86適用(仮)
-		   88変換したものは対象外(=山陽新幹線 新大阪着時、非表示フラグが消えてしまうのを避ける効果あり) */
+		/* 変換 -> route_list_tmp:86適用(仮) */
         if (route_flag.isEnableRule86or87()) {
-            route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, chk & ~aply88, exit, enter, /*out*/route_list_tmp));
+            route_flag.rule86bullet = (0 < ReRouteRule86j87j(cityId, chk, exit, enter, /*out*/route_list_tmp));
         }
 
         // 88を適用
@@ -703,126 +693,89 @@ public class CalcRoute extends RouteList {
         return false;
     }
 
-    // ヘルパーメソッド: 経路に姫路が含まれているか、または姫路を通過するかチェック
+    // ヘルパーメソッド: 経路が姫路を通過するかチェック（RouteUtil::InStationを使用）
     private static boolean passesViaHimeji(List<RouteItem> route) {
-        // 経路に姫路駅が明示的に含まれているか
-        for (RouteItem item : route) {
-            if (item.stationId == DbIdOf.INSTANCE.station("姫路")) {
+        for (int i = 1; i < route.size(); i++) {
+            if (0 < RouteUtil.InStation(DbIdOf.INSTANCE.station("姫路"),
+                    route.get(i).lineId,
+                    route.get(i - 1).stationId,
+                    route.get(i).stationId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean CheckOfRule88j(List<RouteItem> route) {
+        // 姫路を経由していない場合は対象外
+        if (!passesViaHimeji(route)) {
+            return false;
+        }
+
+        // 経路を走査してパターンマッチング
+        for (int i = 0; i < route.size(); i++) {
+            // Pattern 1: ~ 山陽新幹線 新大阪 東海道線 大阪 ~ (上り)
+            if (i + 1 < route.size() &&
+                    route.get(i).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
+                    route.get(i).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("大阪") &&
+                    isStartStationBeyondHimeji(route)) {
+                return true;
+            }
+
+            // Pattern 2: ~ 大阪 東海道線 新大阪 山陽新幹線 ~ (下り)
+            if (i + 1 < route.size() &&
+                    route.get(i).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                    route.get(i).stationId == DbIdOf.INSTANCE.station("大阪") &&
+                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
+                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                    isFinalDestinationBeyondHimeji(route)) {
+                return true;
+            }
+
+            // Pattern 3: ~ 山陽線 神戸 東海道線 大阪 ~ (上り)
+            if (i + 1 < route.size() &&
+                    route.get(i).lineId == DbIdOf.INSTANCE.line("山陽線") &&
+                    route.get(i).stationId == DbIdOf.INSTANCE.station("神戸") &&
+                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("大阪") &&
+                    isStartStationBeyondHimeji(route)) {
+                return true;
+            }
+
+            // Pattern 4: ~ 大阪 東海道線 神戸 山陽線 ~ (下り)
+            if (i + 1 < route.size() &&
+                    route.get(i).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                    route.get(i).stationId == DbIdOf.INSTANCE.station("大阪") &&
+                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("山陽線") &&
+                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("神戸") &&
+                    isFinalDestinationBeyondHimeji(route)) {
+                return true;
+            }
+
+            // Pattern 5: 新大阪 東海道線 神戸 山陽線 ~ (下り)
+            if (i + 2 < route.size() &&
+                    route.get(i).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("神戸") &&
+                    route.get(i + 2).lineId == DbIdOf.INSTANCE.line("山陽線") &&
+                    isFinalDestinationBeyondHimeji(route)) {
+                return true;
+            }
+
+            // Pattern 6: ~ 山陽線 神戸 東海道線 新大阪 (上り)
+            if (i + 2 < route.size() &&
+                    route.get(i).lineId == DbIdOf.INSTANCE.line("山陽線") &&
+                    route.get(i).stationId == DbIdOf.INSTANCE.station("神戸") &&
+                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                    isStartStationBeyondHimeji(route)) {
                 return true;
             }
         }
 
-        // 最終目的地が姫路以遠であれば、山陽線/新幹線経由なので姫路を通過とみなす
-        return isFinalDestinationBeyondHimeji(route);
-    }
-
-    static int CheckOfRule88j(List<RouteItem> route) {
-        int lastIndex = route.size() - 1;
-
-        if (2 <= lastIndex) {
-            // 新大阪 発 東海道線 - 山陽線
-            if ((route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線")) &&
-                    (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
-                    isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
-                    passesViaHimeji(route)) {                  // 修正: 姫路を経由
-
-                ASSERT (route.get(1).stationId == DbIdOf.INSTANCE.station("神戸"));
-				/*	新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
-                route.get(0).let(new RouteItem(0, DbIdOf.INSTANCE.station("大阪")));	// 新大阪->大阪
-
-                return 1;
-            }	// 新大阪 着 山陽線 - 東海道線
-            else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    (route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")) &&
-                    (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽線")) &&
-                    isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
-                    passesViaHimeji(route)) {              // 修正: 姫路を経由
-
-                ASSERT (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("神戸"));
-				/*	新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
-                route.get(route.size() - 1).let(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("大阪")));	// 新大阪->大阪
-
-                return 2;
-            }
-            // 大阪 発 新大阪 経由 山陽新幹線
-            if ((route.get(0).stationId == DbIdOf.INSTANCE.station("大阪")) &&
-                    (route.get(2).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    (route.get(1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
-                    passesViaHimeji(route)) {                  // 修正: 姫路を経由
-
-                ASSERT (route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線"));
-
-				/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
-
-                route.get(1).let(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("神戸")));
-                route.get(1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
-
-                // at(2)						// 山陽線-西明石
-                route.add(2, new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("西明石")));
-                route.get(2).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
-
-                return 1;
-            }	// 山陽新幹線 新大阪 経由 大阪 着
-            else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("大阪")) &&
-                    (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    (route.get(lastIndex - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
-                    passesViaHimeji(route)) {              // 修正: 姫路を経由
-
-                ASSERT ((route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線")));
-
-				/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
-
-                route.get(lastIndex - 1).let(new RouteItem(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("西明石")));	// 新大阪->西明石
-                route.get(lastIndex - 1).flag |= RouteUtil.FLG_HIDE_STATION;
-                route.get(lastIndex).flag |= RouteUtil.FLG_HIDE_LINE;	// 東海道線 非表示
-                route.add(lastIndex, new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸")));
-                route.get(lastIndex).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
-
-                return 2;
-            }
-        }
-        if (1 <= lastIndex) {
-            // 新大阪 発 山陽新幹線
-            if ((route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    (route.get(1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
-                    passesViaHimeji(route)) {                  // 修正: 姫路を経由
-
-				/* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
-
-                route.get(0).let(new RouteItem(0, DbIdOf.INSTANCE.station("大阪")));
-                route.add(1, new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("西明石")));
-                route.get(1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
-
-                route.add(1, new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("神戸")));
-                route.get(1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
-
-                return 1;
-
-            }	// 山陽新幹線 大阪 着
-            else if ((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪")) &&
-                    (route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) &&
-                    isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
-                    passesViaHimeji(route)) {              // 修正: 姫路を経由
-
-				/* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
-
-                route.get(route.size() - 1).let(new RouteItem(DbIdOf.INSTANCE.line("山陽新幹線"), DbIdOf.INSTANCE.station("西明石")));	// 新大阪->西明石
-                route.get(route.size() - 1).flag |= RouteUtil.FLG_HIDE_STATION;
-
-                route.add(new RouteItem(DbIdOf.INSTANCE.line("山陽線"), DbIdOf.INSTANCE.station("神戸")));	// add 山陽線-神戸
-                route.get(route.size() - 1).flag |= (RouteUtil.FLG_HIDE_LINE | RouteUtil.FLG_HIDE_STATION);
-
-                route.add(new RouteItem(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("大阪")));	// add 東海道線-大阪
-                route.get(route.size() - 1).flag |= RouteUtil.FLG_HIDE_LINE;
-
-                return 2;
-            }
-        }
-        return 0;
+        return false;
     }
 
 

@@ -163,11 +163,15 @@ public class RouteUtil {
 
     final static int FLG_HIDE_LINE	= (1<<19);
     final static int FLG_HIDE_STATION	= (1<<18);
+    final static int FLG_RULE88	= (1<<14);        // 規則88条適用
     static boolean IS_FLG_HIDE_LINE(int lflg)	{
         return (0!=(lflg&FLG_HIDE_LINE));		// 路線非表示
     }
     static boolean IS_FLG_HIDE_STATION(int lflg) {
         return (0!=(lflg&FLG_HIDE_STATION));	// 駅非表示
+    }
+    static boolean IS_FLG_RULE88(int lflg) {
+        return (0!=(lflg&FLG_RULE88));	        // 規則88条適用
     }
 
 

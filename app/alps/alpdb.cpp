@@ -3302,7 +3302,6 @@ int32_t FARE_INFO::CenterStationIdFromCityId(int32_t cityId)
             CITYNO_SENDAI,
             CITYNO_SAPPORO,
             CITYNO_YAMATE,
-            CITYNO_SHINOOSAKA,
         };
     const LPCTSTR centerName[] = {
         _T("東京"),
@@ -3495,14 +3494,6 @@ int32_t CalcRoute::coreAreaIDByCityId(int32_t startEndFlg) const
                 ASSERT(FALSE);
             }
         }
-    }
-    if (route_flag.rule88) {
-        if (((startEndFlg == CSTART) && route_flag.ter_begin_oosaka) ||
-                   ((startEndFlg == CEND)   && route_flag.ter_fin_oosaka)) {
-            return CITYNO_SHINOOSAKA;   /* 大阪・新大阪 */
-        }
-        // else
-        // thru
     }
     return 0;
 }
@@ -6057,7 +6048,6 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
     uint32_t chk;        /* 86 applied flag */
     uint32_t rtky;       /* 87 applied flag */
     uint32_t flg;
-    int32_t aply88;
     vector<int32_t> km_raw;
 
     route_flag.terCityReset();
@@ -6079,19 +6069,6 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
         route_flag.rule70 = true;      // applied rule
     }
 
-    // 88を適用したものをroute_list_tmpへ
-    aply88 = CalcRoute::CheckOfRule88j(&route_list_tmp2);
-    if (0 != aply88) {
-        if ((aply88 & 1) != 0) {
-            TRACE("Apply to rule88 for start.\n");
-            route_flag.ter_begin_oosaka = true;
-        } else if ((aply88 & 2) != 0) {
-            TRACE("Apply to rule88 for arrive.\n");
-            route_flag.ter_fin_oosaka = true;
-        }
-        route_flag.rule88 = true;          // applied rule
-    }
-
     /* 特定都区市内発着可否判定 */
     chk = CalcRoute::CheckOfRule86(route_list_tmp2, route_flag, &exit, &enter, &cityId);
     TRACE("RuleSpecific:chk 0x%0x, %d -> %d\n", chk, IDENT1(cityId), IDENT2(cityId));
@@ -6106,6 +6083,9 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
     if ((chk == 4) || (chk == 0)) {  /* 全駅特定都区市内駅 or 発着とも特定都区市内駅でない場合 */
         /* 未変換 */
         TRACE("no applied for rule86/87\n");
+        // 88を適用したものをroute_list_tmpへ
+        route_flag.rule88 = CalcRoute::CheckOfRule88j(route_list_tmp2);
+        TRACE("Rule88 applied %s.\n", route_flag.rule88 ? "true" : "false");
         route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
         return;         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
@@ -6118,34 +6098,16 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
     /* 変換 -> route_list_tmp:86適用(仮)
        88変換したものは対象外(=山陽新幹線 新大阪着時、非表示フラグが消えてしまうのを避ける効果あり) */
     if (route_flag.isEnableRule86or87()) {
-        route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, chk & ~aply88, exit, enter, &route_list_tmp));
+        route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, chk, exit, enter, &route_list_tmp));
     }
-
-    // 88を適用(新大阪発は大阪発に補正)
-    /*aply88 = */CalcRoute::CheckOfRule88j(&route_list_tmp);
-#if 0
-    if (0 != aply88) {
-        if ((aply88 & 1) != 0) {
-            TRACE("Apply to rule88(2) for start.\n");
-            route_flag &= ~LF_TER_CITY_MASK;
-            BIT_ON(route_flag, BLF_TER_BEGIN_OOSAKA);
-        } else if ((aply88 & 2) != 0) {
-            TRACE("Apply to rule88(2) for arrive.\n");
-            route_flag &= ~LF_TER_CITY_MASK;
-            BIT_ON(route_flag, BLF_TER_FIN_OOSAKA);
-        }
-        BIT_ON(route_flag, BLF_RULE_EN);    // applied rule
-    }
-#endif
-
 
     // 69を適用したものをroute_list_tmp3へ
     n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);    /* 69条適用(route_list_tmp->route_list_tmp3) */
     TRACE("Rule 69(2) applied %dtimes.\n", n);
 
-    /* route_list_tmp   70-88-69-86適用
-     * route_list_tmp2  70-88-69適用
-     * route_list_tmp3  70-88-69-86-69適用
+    /* route_list_tmp   70-69-86適用
+     * route_list_tmp2  70-69適用
+     * route_list_tmp3  70-69-86-69適用
      */
     /* compute of sales_km by route_list_cooked */
     km_raw = CalcRoute::Get_route_distance(route_flag, route_list_tmp3);
@@ -6402,6 +6364,10 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
         ;
     }
     /* 86-87非適用 */
+    // 88を適用したものをroute_list_tmpへ
+    route_flag.rule88 = CalcRoute::CheckOfRule88j(route_list_tmp2);
+    TRACE("Rule88 applied %s.\n", route_flag.rule88 ? "true" : "false");
+
     // route_list_cooked = route_list_tmp2
     route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
     return;
@@ -6519,14 +6485,11 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 //  @retval 1: change start
 //  @retval 2: change arrived
 //
-int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
+bool CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
 {
-    int32_t lastIndex = (int32_t)route->size() - 1;
-
     // ヘルパー関数: 経路の最終目的地が姫路以遠かをチェック
-    auto isFinalDestinationBeyondHimeji = [](const vector<RouteItem> *rt) -> bool {
-        int32_t finalStationId = rt->back().stationId;
-
+    auto isFinalDestinationBeyondHimeji = [](const vector<RouteItem> &rt) -> bool {
+        int32_t finalStationId = rt.back().stationId;
         // 姫路自体もOK（以遠の「以」= equal）
         if (finalStationId == STATION_ID(_T("姫路"))) {
             return true;
@@ -6537,13 +6500,14 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
         int32_t dist_sanyo = RouteUtil::GetDistance(LINE_ID(_T("山陽線")),
                                                      STATION_ID(_T("姫路")),
                                                      finalStationId)[0];
+TRACE("YYYYYYYYYYYYY: %d\n", dist_sanyo);
         if (dist_sanyo > 0) {
             return true; // 姫路より遠方の山陽線の駅
         }
-
         int32_t dist_shinkansen = RouteUtil::GetDistance(LINE_ID(_T("山陽新幹線")),
                                                          STATION_ID(_T("姫路")),
                                                          finalStationId)[0];
+TRACE("ZZZZZZZZZZZZZ: %d\n", dist_shinkansen);
         if (dist_shinkansen > 0) {
             return true; // 姫路より遠方の新幹線の駅
         }
@@ -6552,8 +6516,8 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
     };
 
     // ヘルパー関数: 発駅が姫路以遠かをチェック（着駅判定用）
-    auto isStartStationBeyondHimeji = [](const vector<RouteItem> *rt) -> bool {
-        int32_t startStationId = rt->front().stationId;
+    auto isStartStationBeyondHimeji = [](const vector<RouteItem> &rt) -> bool {
+        int32_t startStationId = rt.front().stationId;
 
         // 姫路自体もOK
         if (startStationId == STATION_ID(_T("姫路"))) {
@@ -6578,138 +6542,116 @@ int32_t CalcRoute::CheckOfRule88j(vector<RouteItem> *route)
         return false;
     };
 
-    // ヘルパー関数: 経路に姫路が含まれているか、または姫路を通過するかチェック
-    auto passesViaHimeji = [&](const vector<RouteItem> *rt) -> bool {
-        // 経路に姫路駅が明示的に含まれているか
-        for (const auto& item : *rt) {
-            if (item.stationId == STATION_ID(_T("姫路"))) {
+    // 経路に姫路が含まれているかチェック（RouteUtil::InStationを使用）
+    auto passesViaHimeji = [](const vector<RouteItem>& rt) -> bool {
+        for (size_t i = 1; i < rt.size(); i++) {
+            if (0 < RouteUtil::InStation(STATION_ID(_T("姫路")),
+                                          rt.at(i).lineId,
+                                          rt.at(i-1).stationId,
+                                          rt.at(i).stationId)) {
                 return true;
             }
         }
-
-        // 最終目的地が姫路以遠であれば、山陽線/新幹線経由なので姫路を通過とみなす
-        return isFinalDestinationBeyondHimeji(rt);
+        return false;
     };
 
-    if (2 <= lastIndex) {
-            // 新大阪 発 東海道線 - 山陽線
-        if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
-            (route->at(1).lineId == LINE_ID(_T("東海道線"))) &&
-            (route->at(2).lineId == LINE_ID(_T("山陽線"))) &&
-            isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
-            passesViaHimeji(route)) {                  // 修正: 姫路を経由
+    // 姫路を経由していない場合は対象外
+    if (!passesViaHimeji(route)) {
+TRACE(_T("Rule88: Does not pass via Himeji\n"));
+        return false;
+    }
+TRACE(_T("Rule88: Checking patterns...\n"));
 
-            ASSERT(route->at(1).stationId == STATION_ID(_T("神戸")));
-            /*  新大阪発東海道線-山陽線-姫路以遠なら発駅を新大阪->大阪へ */
-            route->front() = RouteItem(0, STATION_ID(_T("大阪")));  // 新大阪->大阪
+    // 経路全体をスキャンして、パターンを探してフラグを立てる
+    // 注：発着駅は変更しないため、常に0を返す
+    for (size_t i = 0; i < route.size(); i++) {
+        // パターン1: ~ 山陽新幹線 新大阪 東海道線 大阪 ~（上り）
+        if (i + 1 < route.size() &&
+            route.at(i).lineId == LINE_ID(_T("山陽新幹線")) &&
+            route.at(i).stationId == STATION_ID(_T("新大阪")) &&
+            route.at(i + 1).lineId == LINE_ID(_T("東海道線")) &&
+            route.at(i + 1).stationId == STATION_ID(_T("大阪")) &&
+            isStartStationBeyondHimeji(route)) {
 
-            return 1;
-        }   // 新大阪 着 山陽線 - 東海道線
-        else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
-                 (route->back().lineId == LINE_ID(_T("東海道線"))) &&
-                 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽線"))) &&
-                 isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
-                 passesViaHimeji(route)) {              // 修正: 姫路を経由
+            /* 山陽新幹線 姫路以遠～新大阪-東海道線-大阪の場合、フラグを立てる */
+TRACE(_T("Rule88: Pattern 1 matched (Sanyo Shinkansen -> Shin-Osaka -> Tokaido Line -> Osaka)\n"));
 
-            ASSERT(route->at(lastIndex - 1).stationId == STATION_ID(_T("神戸")));
-            /*  新大阪着東海道線-山陽線-姫路以遠なら着駅を新大阪->大阪へ */
-            route->back() = RouteItem(LINE_ID(_T("東海道線")),
-                                      STATION_ID(_T("大阪")));  // 新大阪->大阪
-
-            return 2;
+            return true;
         }
-            // 大阪 発 新大阪 経由 山陽新幹線
-        if ((route->front().stationId == STATION_ID(_T("大阪"))) &&
-            (route->at(2).lineId == LINE_ID(_T("山陽新幹線"))) &&
-            (route->at(1).stationId == STATION_ID(_T("新大阪"))) &&
-            isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
-            passesViaHimeji(route)) {                  // 修正: 姫路を経由
 
-            ASSERT(route->at(1).lineId == LINE_ID(_T("東海道線")));
+        // パターン2: ~ 大阪 東海道線 新大阪 山陽新幹線 ~（下り）
+        if (i + 2 < route.size() &&
+            route.at(i).stationId == STATION_ID(_T("大阪")) &&
+            route.at(i + 1).lineId == LINE_ID(_T("東海道線")) &&
+            route.at(i + 1).stationId == STATION_ID(_T("新大阪")) &&
+            route.at(i + 2).lineId == LINE_ID(_T("山陽新幹線")) &&
+            isFinalDestinationBeyondHimeji(route)) {
 
-            /* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
+            /* 大阪-東海道線-新大阪-山陽新幹線 姫路以遠の場合、フラグを立てる */
+TRACE(_T("Rule88: Pattern 2 matched (Osaka -> Tokaido Line -> Shin-Osaka -> Sanyo Shinkansen)\n"));
 
-            route->at(1) = RouteItem(LINE_ID(_T("東海道線")),
-                                     STATION_ID(_T("神戸")));
-            route->at(1).flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
+            return true;
+        }
 
-            vector<RouteItem>::iterator ite = route->begin();
-            ite += 2;   // at(2)                        // 山陽線-西明石
-            ite = route->insert(ite, RouteItem(LINE_ID(_T("山陽線")),
-                                               STATION_ID(_T("西明石"))));
-            ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
+        // パターン3: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線）
+        if (i + 1 < route.size() &&
+            route.at(i).lineId == LINE_ID(_T("山陽線")) &&
+            route.at(i).stationId == STATION_ID(_T("神戸")) &&
+            route.at(i + 1).lineId == LINE_ID(_T("東海道線")) &&
+            route.at(i + 1).stationId == STATION_ID(_T("新大阪")) &&
+            isStartStationBeyondHimeji(route)) {
 
-            return 1;
-        }   // 山陽新幹線 新大阪 経由 大阪 着
-        else if ((route->back().stationId == STATION_ID(_T("大阪"))) &&
-                 (route->at(lastIndex - 1).stationId == STATION_ID(_T("新大阪"))) &&
-                 (route->at(lastIndex - 1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-                 isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
-                 passesViaHimeji(route)) {              // 修正: 姫路を経由
+            /* 山陽線 姫路以遠～神戸-東海道線-新大阪の場合、フラグを立てる */
+TRACE(_T("Rule88: Pattern 3 matched (Sanyo Line -> Kobe -> Tokaido Line -> Shin-Osaka)\n"));
 
-            ASSERT(route->back().lineId == LINE_ID(_T("東海道線")));
+            return true;
+        }
 
-            /* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
+        // パターン4: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線）
+        if (i + 2 < route.size() &&
+            route.at(i).stationId == STATION_ID(_T("新大阪")) &&
+            route.at(i + 1).lineId == LINE_ID(_T("東海道線")) &&
+            route.at(i + 1).stationId == STATION_ID(_T("神戸")) &&
+            route.at(i + 2).lineId == LINE_ID(_T("山陽線")) &&
+            isFinalDestinationBeyondHimeji(route)) {
 
-            route->at(lastIndex - 1) = RouteItem(LINE_ID(_T("山陽新幹線")),
-                                                 STATION_ID(_T("西明石"))); // 新大阪->西明石
-            route->at(lastIndex - 1).flag |= FLG_HIDE_STATION;
-            route->at(lastIndex).flag |= FLG_HIDE_LINE; // 東海道線 非表示
-            vector<RouteItem>::iterator ite = route->end();
-            ite--;
-            ite = route->insert(ite, RouteItem(LINE_ID(_T("山陽線")),
-                                               STATION_ID(_T("神戸"))));
-            ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
+            /* 新大阪-東海道線-神戸-山陽線 姫路以遠の場合、フラグを立てる */
+TRACE(_T("Rule88: Pattern 4 matched (Shin-Osaka -> Tokaido Line -> Kobe -> Sanyo Line)\n"));
 
-            return 2;
+            return true;
+        }
+
+        // パターン5: ~ 山陽新幹線 新大阪 ~（大阪が続かない場合、上り）
+        if (i + 1 < route.size() &&
+            route.at(i).lineId == LINE_ID(_T("山陽新幹線")) &&
+            route.at(i).stationId == STATION_ID(_T("新大阪")) &&
+            isStartStationBeyondHimeji(route) &&
+            !(i + 1 < route.size() &&
+              route.at(i + 1).lineId == LINE_ID(_T("東海道線")) &&
+              route.at(i + 1).stationId == STATION_ID(_T("大阪")))) {
+
+            /* 山陽新幹線 姫路以遠～新大阪の場合、フラグを立てる */
+TRACE(_T("Rule88: Pattern 5 matched (Sanyo Shinkansen -> Shin-Osaka, no Osaka follows)\n"));
+
+            return true;
+        }
+
+        // パターン6: ~ 新大阪 山陽新幹線 ~（手前に大阪が無い場合、下り）
+        if (i + 1 < route.size() &&
+            route.at(i).stationId == STATION_ID(_T("新大阪")) &&
+            route.at(i + 1).lineId == LINE_ID(_T("山陽新幹線")) &&
+            isFinalDestinationBeyondHimeji(route) &&
+            !(i > 0 &&
+              route.at(i - 1).stationId == STATION_ID(_T("大阪")) &&
+              route.at(i).lineId == LINE_ID(_T("東海道線")))) {
+
+            /* 新大阪-山陽新幹線 姫路以遠の場合、フラグを立てる */
+TRACE(_T("Rule88: Pattern 6 matched (Shin-Osaka -> Sanyo Shinkansen, no Osaka before)\n"));
+
+            return true;
         }
     }
-    if (1 <= lastIndex) {
-            // 新大阪 発 山陽新幹線
-        if ((route->front().stationId == STATION_ID(_T("新大阪"))) &&
-            (route->at(1).lineId == LINE_ID(_T("山陽新幹線"))) &&
-            isFinalDestinationBeyondHimeji(route) &&  // 修正: 最終目的地が姫路以遠
-            passesViaHimeji(route)) {                  // 修正: 姫路を経由
-
-            /* 大阪発-東海道線上り-新大阪-山陽新幹線 姫路以遠の場合、大阪発-東海道線-山陽線 西明石経由に付け替える */
-
-            vector<RouteItem>::iterator ite = route->begin();
-            *ite = RouteItem(0, STATION_ID(_T("大阪")));
-            ite++;
-            ite = route->insert(ite, RouteItem(LINE_ID(_T("山陽線")),
-                                               STATION_ID(_T("西明石"))));
-            ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
-
-            ite = route->insert(ite, RouteItem(LINE_ID(_T("東海道線")),
-                                               STATION_ID(_T("神戸"))));
-            ite->flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
-
-            return 1;
-
-        }   // 山陽新幹線 大阪 着
-        else if ((route->back().stationId == STATION_ID(_T("新大阪"))) &&
-                 (route->back().lineId == LINE_ID(_T("山陽新幹線"))) &&
-                 isStartStationBeyondHimeji(route) &&  // 修正: 発駅が姫路以遠
-                 passesViaHimeji(route)) {              // 修正: 姫路を経由
-
-            /* 山陽新幹線 姫路以遠～新大阪乗換東海道線-大阪着の場合、最後の東海道線-大阪 を西明石 山陽線、東海道線に付け替える */
-
-            route->back() = RouteItem(LINE_ID(_T("山陽新幹線")),
-                                      STATION_ID(_T("西明石")));    // 新大阪->西明石
-            route->back().flag |= FLG_HIDE_STATION;
-
-            route->push_back(RouteItem(LINE_ID(_T("山陽線")),
-                                       STATION_ID(_T("神戸"))));    // add 山陽線-神戸
-            route->back().flag |= (FLG_HIDE_LINE | FLG_HIDE_STATION);
-
-            route->push_back(RouteItem(LINE_ID(_T("東海道線")),
-                                       STATION_ID(_T("大阪"))));    // add 東海道線-大阪
-            route->back().flag |= FLG_HIDE_LINE;
-
-            return 2;
-        }
-    }
-    return 0;
+    return false;
 }
 
 
@@ -9317,6 +9259,7 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                 }
 
                 this->sales_km += d.at(0);          // total 営業キロ(会社線含む、有効日数計算用)
+
                 if (IS_COMPANY_LINE(ite->lineId)) { /* 会社線 */
                     station_id_0 = aggregate_fare_company(this->sales_km == d.at(0),
                                                             *pRoute_flag,
@@ -9581,6 +9524,16 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
         this->base_calc_km += FARE_INFO::CheckOfRule89j(routeList);
     }
 
+    if (pRoute_flag->rule88) {
+        // Rule88: Subtract Osaka-Shin-Osaka distance
+        int32_t osaka_shinosaka_km = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
+                                                            STATION_ID(_T("大阪")),
+                                                            STATION_ID(_T("新大阪")))[0];
+        TRACE(_T("Rule88: Subtracting Osaka-Shin-Osaka distance: %d km\n"), osaka_shinosaka_km);
+        this->sales_km -= osaka_shinosaka_km;
+        this->base_sales_km -= osaka_shinosaka_km;
+        this->base_calc_km -= osaka_shinosaka_km;
+    }
     /* 運賃計算 */
     calc_brt_fare(routeList);
 
