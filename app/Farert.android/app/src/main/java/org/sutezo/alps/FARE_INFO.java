@@ -1225,15 +1225,12 @@ public class FARE_INFO {
             this.base_calc_km += CheckOfRule89j(routeList);
         }
 
-        /* Rule88: 大阪-新大阪間の距離を減算 */
-        if (route_flag_.rule88) {
-            int osaka_shinosaka_km = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("東海道線"),
-                    DbIdOf.INSTANCE.station("大阪"),
-                    DbIdOf.INSTANCE.station("新大阪")).get(0);
-            System.out.printf("Rule88: Subtracting Osaka-Shin-Osaka distance: %d km\n", osaka_shinosaka_km);
-            this.sales_km -= osaka_shinosaka_km;
-            this.base_sales_km -= osaka_shinosaka_km;
-            this.base_calc_km -= osaka_shinosaka_km;
+        /* Rule88: 距離を減算 (0, 38, 76) */
+        if (!route_flag_.no_rule && (route_flag_.rule88 != 0)) {
+            System.out.printf("Rule88: Subtracting distance: %d km\n", route_flag_.rule88);
+            this.sales_km -= route_flag_.rule88;
+            this.base_sales_km -= route_flag_.rule88;
+            this.base_calc_km -= route_flag_.rule88;
         }
 
         /* 運賃計算 */

@@ -276,7 +276,7 @@ public:
     BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
                             //         bit2: term, bit3: end([山])
                             // bit6:1= disable
-    bool rule88;
+    int32_t rule88;         // Rule88適用時の減算距離 (0, 38, 76)
     bool rule69;
     bool rule70;
     bool special_fare_enable;
@@ -349,7 +349,7 @@ public:
         rule115 = 0;
         rule70bullet = false;
         rule86bullet = false;
-        rule88 = false;
+        rule88 = 0;
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
@@ -1322,7 +1322,7 @@ public:
     int32_t  coreAreaIDByCityId(int32_t startEndFlg) const;
 private:
     void   checkIsJRTokaiOnly(void);
-    static bool  CheckOfRule88j(const vector<RouteItem> &route);
+    static int32_t  CheckOfRule88j(const vector<RouteItem> &route);
 public:
     static vector<int32_t>  Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route);
 private:
