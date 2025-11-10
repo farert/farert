@@ -186,12 +186,6 @@ public class CalcRoute extends RouteList {
             route_flag.rule70 = true;    // applied rule
         }
 
-        // 88を適用
-        route_flag.rule88 = CheckOfRule88j(route_list_tmp2);
-        if (route_flag.rule88 != 0) {
-            System.out.printf("Rule88 applied: subtract %d km.\n", route_flag.rule88);
-        }
-
 		/* 特定都区市内発着可否判定 */
         chk = CheckOfRule86(route_list_tmp2.toArray(new RouteItem[0]), route_flag, exit, enter, cityId);
         System.out.printf("RuleSpecific:chk 0x%x, %d -> %d\n", chk, cityId[0], cityId[1]);
@@ -653,7 +647,22 @@ public class CalcRoute extends RouteList {
             return 0;
         }
 
-        // 経路を走査してパターンマッチング
+        // Pattern 5: ~ 山陽新幹線 新大阪 ~（上り、片道）
+        // 条件: 終点が新大阪で、山陽新幹線で到着
+        if (route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) {
+            return osakaShinosaka;  // 片道
+        }
+
+        // Pattern 6: ~ 新大阪 山陽新幹線 ~（下り、片道）
+        // 条件: 起点が新大阪で、山陽新幹線で出発
+        if (route.size() >= 2 &&
+                route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                route.get(1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) {
+            return osakaShinosaka;  // 片道
+        }
+
+        // 経路を走査してパターン1-4をマッチング
         for (int i = 0; i < route.size(); i++) {
             // Pattern 1: ~ 山陽新幹線 新大阪 東海道線 大阪 ~ (上り、往復)
             if (i + 1 < route.size() &&
@@ -690,28 +699,7 @@ public class CalcRoute extends RouteList {
                     route.get(i + 2).lineId == DbIdOf.INSTANCE.line("山陽線")) {
                 return osakaShinosaka;  // 片道
             }
-
-            // Pattern 5: ~ 山陽新幹線 新大阪 ~（大阪が続かない場合、上り、片道）
-            if (i + 1 < route.size() &&
-                    route.get(i).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
-                    route.get(i).stationId == DbIdOf.INSTANCE.station("新大阪") &&
-                    !(i + 1 < route.size() &&
-                      route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
-                      route.get(i + 1).stationId == DbIdOf.INSTANCE.station("大阪"))) {
-                return osakaShinosaka;  // 片道
-            }
-
-            // Pattern 6: ~ 新大阪 山陽新幹線 ~（手前に大阪が無い場合、下り、片道）
-            if (i + 1 < route.size() &&
-                    route.get(i).stationId == DbIdOf.INSTANCE.station("新大阪") &&
-                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
-                    !(i > 0 &&
-                      route.get(i - 1).stationId == DbIdOf.INSTANCE.station("大阪") &&
-                      route.get(i).lineId == DbIdOf.INSTANCE.line("東海道線"))) {
-                return osakaShinosaka;  // 片道
-            }
         }
-
         return 0;
     }
 

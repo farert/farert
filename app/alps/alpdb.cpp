@@ -6488,9 +6488,8 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
 {
     // 大阪-新大阪間の距離を取得
-    static int32_t osaka_shinosaka_km_ = 0;
-
     auto osaka_shinosaka_km = []() -> int32_t {
+        static int32_t osaka_shinosaka_km_ = 0;
         if (osaka_shinosaka_km_ == 0) {
             osaka_shinosaka_km_ = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
                                                          STATION_ID(_T("大阪")),
@@ -6501,28 +6500,47 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
 
     // 経路に姫路が含まれているかチェック（RouteUtil::InStationを使用）
     auto passesViaHimeji = [](const vector<RouteItem>& rt) -> bool {
-        for (size_t i = 1; i < rt.size(); i++) {
-            if (0 < RouteUtil::InStation(STATION_ID(_T("姫路")),
-                                          rt.at(i).lineId,
-                                          rt.at(i-1).stationId,
-                                          rt.at(i).stationId)) {
+        int station_id = 0;
+        for (auto it = rt.cbegin(); it != rt.cend(); it++) {
+            if ((station_id != 0) && (0 < RouteUtil::InStation(STATION_ID(_T("姫路")),
+                                          it->lineId,
+                                          station_id,
+                                          it->stationId))) {
                 return true;
             }
+            station_id = it->stationId;
         }
         return false;
     };
 
     // 姫路を経由していない場合は対象外
     if (!passesViaHimeji(route)) {
-TRACE(_T("Rule88: Does not pass via Himeji\n"));
+        TRACE(_T("Rule88: Does not pass via Himeji\n"));
         return 0;
     }
-TRACE(_T("Rule88: Checking patterns...\n"));
 
-    // 経路全体をスキャンして、パターンを探してフラグを立てる
-    // 注：発着駅は変更しないため、常に0を返す
+    // パターン5: ~ 山陽新幹線 新大阪 ~（上り、片道）
+    // 条件: 終点が新大阪で、山陽新幹線で到着
+    if (route.back().stationId == STATION_ID(_T("新大阪")) &&
+        route.back().lineId == LINE_ID(_T("山陽新幹線"))) {
+        /* 山陽新幹線 姫路以遠～新大阪の場合、片道 */
+        TRACE(_T("Rule88: Pattern 5 matched (Sanyo Shinkansen -> Shin-Osaka, no Osaka follows) - One way\n"));
+        return osaka_shinosaka_km();  // 片道
+    }
+
+    // パターン6: 新大阪 山陽新幹線 ~（下り、片道）
+    // 条件: 起点が新大阪で、山陽新幹線で出発
+    if (route.size() >= 2 &&
+        route.front().stationId == STATION_ID(_T("新大阪")) &&
+        route[1].lineId == LINE_ID(_T("山陽新幹線"))) {
+        /* 新大阪-山陽新幹線 姫路以遠の場合、片道 */
+        TRACE(_T("Rule88: Pattern 6 matched (Shin-Osaka -> Sanyo Shinkansen, no Osaka before) - One way\n"));
+        return osaka_shinosaka_km();  // 片道
+    }
+
+    // 経路全体をスキャンして、パターン1-4を探す
     for (auto it = route.cbegin(); it != route.cend(); ++it) {
-        // パターン1: ~ 山陽新幹線 新大阪 東海道線 大阪 ~（上り、往復）
+        // パターン1: ~ 山陽新幹線 新大阪 東海道線 大阪（上り、往復）
         if (it + 1 != route.cend() &&
             it->lineId == LINE_ID(_T("山陽新幹線")) &&
             it->stationId == STATION_ID(_T("新大阪")) &&
@@ -6530,7 +6548,7 @@ TRACE(_T("Rule88: Checking patterns...\n"));
             (it + 1)->stationId == STATION_ID(_T("大阪"))) {
 
             /* 山陽新幹線 姫路以遠～新大阪-東海道線-大阪の場合、往復 */
-TRACE(_T("Rule88: Pattern 1 matched (Sanyo Shinkansen -> Shin-Osaka -> Tokaido Line -> Osaka) - Round trip\n"));
+            TRACE(_T("Rule88: Pattern 1 matched (Sanyo Shinkansen -> Shin-Osaka -> Tokaido Line -> Osaka) - Round trip\n"));
 
             return osaka_shinosaka_km() * 2;  // 往復
         }
@@ -6543,7 +6561,7 @@ TRACE(_T("Rule88: Pattern 1 matched (Sanyo Shinkansen -> Shin-Osaka -> Tokaido L
             (it + 2)->lineId == LINE_ID(_T("山陽新幹線"))) {
 
             /* 大阪-東海道線-新大阪-山陽新幹線 姫路以遠の場合、往復 */
-TRACE(_T("Rule88: Pattern 2 matched (Osaka -> Tokaido Line -> Shin-Osaka -> Sanyo Shinkansen) - Round trip\n"));
+            TRACE(_T("Rule88: Pattern 2 matched (Osaka -> Tokaido Line -> Shin-Osaka -> Sanyo Shinkansen) - Round trip\n"));
 
             return osaka_shinosaka_km() * 2;  // 往復
         }
@@ -6556,7 +6574,7 @@ TRACE(_T("Rule88: Pattern 2 matched (Osaka -> Tokaido Line -> Shin-Osaka -> Sany
             (it + 1)->stationId == STATION_ID(_T("新大阪"))) {
 
             /* 山陽線 姫路以遠～神戸-東海道線-新大阪の場合、片道 */
-TRACE(_T("Rule88: Pattern 3 matched (Sanyo Line -> Kobe -> Tokaido Line -> Shin-Osaka) - One way\n"));
+            TRACE(_T("Rule88: Pattern 3 matched (Sanyo Line -> Kobe -> Tokaido Line -> Shin-Osaka) - One way\n"));
 
             return osaka_shinosaka_km();  // 片道
         }
@@ -6569,35 +6587,7 @@ TRACE(_T("Rule88: Pattern 3 matched (Sanyo Line -> Kobe -> Tokaido Line -> Shin-
             (it + 2)->lineId == LINE_ID(_T("山陽線"))) {
 
             /* 新大阪-東海道線-神戸-山陽線 姫路以遠の場合、片道 */
-TRACE(_T("Rule88: Pattern 4 matched (Shin-Osaka -> Tokaido Line -> Kobe -> Sanyo Line) - One way\n"));
-
-            return osaka_shinosaka_km();  // 片道
-        }
-
-        // パターン5: ~ 山陽新幹線 新大阪 ~（大阪が続かない場合、上り、片道）
-        if (it + 1 != route.cend() &&
-            it->lineId == LINE_ID(_T("山陽新幹線")) &&
-            it->stationId == STATION_ID(_T("新大阪")) &&
-            !(it + 1 != route.cend() &&
-              (it + 1)->lineId == LINE_ID(_T("東海道線")) &&
-              (it + 1)->stationId == STATION_ID(_T("大阪")))) {
-
-            /* 山陽新幹線 姫路以遠～新大阪の場合、片道 */
-TRACE(_T("Rule88: Pattern 5 matched (Sanyo Shinkansen -> Shin-Osaka, no Osaka follows) - One way\n"));
-
-            return osaka_shinosaka_km();  // 片道
-        }
-
-        // パターン6: ~ 新大阪 山陽新幹線 ~（手前に大阪が無い場合、下り、片道）
-        if (it + 1 != route.cend() &&
-            it->stationId == STATION_ID(_T("新大阪")) &&
-            (it + 1)->lineId == LINE_ID(_T("山陽新幹線")) &&
-            !(it != route.cbegin() &&
-              (it - 1)->stationId == STATION_ID(_T("大阪")) &&
-              it->lineId == LINE_ID(_T("東海道線")))) {
-
-            /* 新大阪-山陽新幹線 姫路以遠の場合、片道 */
-TRACE(_T("Rule88: Pattern 6 matched (Shin-Osaka -> Sanyo Shinkansen, no Osaka before) - One way\n"));
+            TRACE(_T("Rule88: Pattern 4 matched (Shin-Osaka -> Tokaido Line -> Kobe -> Sanyo Line) - One way\n"));
 
             return osaka_shinosaka_km();  // 片道
         }
