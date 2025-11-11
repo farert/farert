@@ -844,7 +844,7 @@ int g_tax; /* main.m */
     result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine();
     result.isResultCompanyMultipassed = fi.isMultiCompanyLine();
 
-    //result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
+    result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect();
 
 
     /* begin/end terminal */
@@ -894,8 +894,8 @@ int g_tax; /* main.m */
     result.isRuleAppliedEnable = obj_calcroute->getRouteFlag().rule_en();
     result.isRuleApplied = !obj_calcroute->getRouteFlag().no_rule;
 
-    //result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
-    //result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
+    result.isJRCentralStockEnable = obj_calcroute->getRouteFlag().jrtokaistock_enable;
+    result.isJRCentralStock = obj_calcroute->getRouteFlag().jrtokaistock_applied;
 
     result.isEnableLongRoute = obj_calcroute->getRouteFlag().isEnableLongRoute();
     result.isLongRoute = obj_calcroute->getRouteFlag().isLongRoute();
@@ -998,9 +998,9 @@ int g_tax; /* main.m */
         /* 2017.3 以降 ここに来ることはない */
         [resultMessage addObject:[NSString stringWithUTF8String:"複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります."]];
     }
-    //if (result.isEnableTokaiStockSelect) {
-    //    [resultMessage addObject:[NSString stringWithUTF8String:"JR東海株主優待券使用オプション選択可"]];
-    //}
+    if (result.isEnableTokaiStockSelect) {
+        [resultMessage addObject:[NSString stringWithUTF8String:"JR東海株主優待券使用オプション選択可"]];
+    }
     if (result.isBRTdiscount) {
         [resultMessage addObject:[NSString stringWithUTF8String:"BRT乗り継ぎ割引適用"]];
     }
@@ -1094,10 +1094,10 @@ int g_tax; /* main.m */
     obj_calcroute->refRouteFlag().setSpecificTermRule115(enabled);
 }
 
-//- (void)setJrTokaiStockApply:(BOOL)enabled
-//{
-//    return obj_calcroute->refRouteFlag().setJrTokaiStockApply(enabled);
-//}
+- (void)setJrTokaiStockApply:(BOOL)enabled
+{
+    return obj_calcroute->refRouteFlag().setJrTokaiStockApply(enabled);
+}
 
 - (void)setStartAsCity
 {

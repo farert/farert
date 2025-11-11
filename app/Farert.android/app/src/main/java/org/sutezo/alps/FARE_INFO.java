@@ -649,11 +649,11 @@ public class FARE_INFO {
                     System.out.print("could you used stock JR East and Tokai.\n");
                     enableTokaiStockSelect = 3;	// JR東海株主優待券使用可
                 }
-    //			System.out.print("Set only the JR Tokai.\n");
-    //          this.companymask = (1 << (JR_CENTRAL - 1));
-    //          if (routeFlag_.jrtokaistock_applied) {
-    //              routeFlag_.jrtokaistock_enable = true;
-    //          }
+    		System.out.print("Set only the JR Tokai.\n");
+                this.companymask = (1 << (JR_CENTRAL - 1));
+                if (routeFlag_.jrtokaistock_applied) {
+                    routeFlag_.jrtokaistock_enable = true;
+                }
             }
         }
         return fare_add;
@@ -1114,9 +1114,9 @@ public class FARE_INFO {
         } else if (this.isBeginEndCompanyLine()) {
             buffer.append("\r\n会社線通過連絡運輸ではないためJR窓口で乗車券は発券されません.");
         }
-//        if (this.isEnableTokaiStockSelect()) {
-//            buffer.append("\r\nJR東海株主優待券使用オプション選択可");
-//        }
+        if (this.isEnableTokaiStockSelect()) {
+            buffer.append("\r\nJR東海株主優待券使用オプション選択可");
+        }
         if (this.isBRT_discount()) {
             buffer.append("\r\nBRT乗継ぎ割引適用");
         }
@@ -1506,9 +1506,9 @@ public class FARE_INFO {
               (RouteUtil.CITYNO_NAGOYA == (endTerminalId - RouteUtil.STATION_ID_AS_CITYNO)));
  	}
 
-//    boolean isEnableTokaiStockSelect() {
-//        return 1 == enableTokaiStockSelect;  // JR東海株主有効(品川から新幹線とか)
-//    }
+    boolean isEnableTokaiStockSelect() {
+         return 1 == enableTokaiStockSelect;  // JR東海株主有効(品川から新幹線とか)
+    }
 
     boolean isJrTokaiOnly() {
         return enableTokaiStockSelect == 2; // JR東海TOICA有効
