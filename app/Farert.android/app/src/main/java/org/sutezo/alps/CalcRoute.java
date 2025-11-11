@@ -662,7 +662,27 @@ public class CalcRoute extends RouteList {
             return osakaShinosaka;  // 片道
         }
 
-        // 経路を走査してパターン1-4をマッチング
+        // Pattern 3: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線、片道）
+        // 条件: 終点が新大阪で、東海道線で到着、その前が神戸から山陽線
+        if (route.size() >= 2 &&
+                route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                route.get(route.size() - 2).stationId == DbIdOf.INSTANCE.station("神戸") &&
+                route.get(route.size() - 2).lineId == DbIdOf.INSTANCE.line("山陽線")) {
+            return osakaShinosaka;  // 片道
+        }
+
+        // Pattern 4: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線、片道）
+        // 条件: 起点が新大阪で、東海道線で神戸へ、その後山陽線
+        if (route.size() >= 3 &&
+                route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪") &&
+                route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
+                route.get(1).stationId == DbIdOf.INSTANCE.station("神戸") &&
+                route.get(2).lineId == DbIdOf.INSTANCE.line("山陽線")) {
+            return osakaShinosaka;  // 片道
+        }
+
+        // 経路を走査してパターン1-2をマッチング
         for (int i = 0; i < route.size(); i++) {
             // Pattern 1: ~ 山陽新幹線 新大阪 東海道線 大阪 ~ (上り、往復)
             if (i + 1 < route.size() &&
@@ -680,24 +700,6 @@ public class CalcRoute extends RouteList {
                     route.get(i + 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
                     route.get(i + 1).stationId == DbIdOf.INSTANCE.station("新大阪")) {
                 return osakaShinosaka * 2;  // 往復
-            }
-
-            // Pattern 3: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線、片道）
-            if (i + 1 < route.size() &&
-                    route.get(i).lineId == DbIdOf.INSTANCE.line("山陽線") &&
-                    route.get(i).stationId == DbIdOf.INSTANCE.station("神戸") &&
-                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
-                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("新大阪")) {
-                return osakaShinosaka;  // 片道
-            }
-
-            // Pattern 4: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線、片道）
-            if (i + 2 < route.size() &&
-                    route.get(i).stationId == DbIdOf.INSTANCE.station("新大阪") &&
-                    route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
-                    route.get(i + 1).stationId == DbIdOf.INSTANCE.station("神戸") &&
-                    route.get(i + 2).lineId == DbIdOf.INSTANCE.line("山陽線")) {
-                return osakaShinosaka;  // 片道
             }
         }
         return 0;
