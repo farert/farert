@@ -16,7 +16,7 @@ public class RouteFlag {
     // bit7 - 大高-杉本町とかで、[名][阪]をどっちに適用するか
     boolean meihan_city_flag = false;	    //7 ON: APPLIED_START / OFF:APPLIED_TERMINAL(User->System)
 
-    boolean rule88;
+    int rule88;         // Rule88適用時の減算距離 (0, 38, 76)
     boolean rule69;
     boolean rule70;
     boolean special_fare_enable;
@@ -129,7 +129,7 @@ public class RouteFlag {
         rule115 = 0;
         rule70bullet = false;
         rule86bullet = false;
-        rule88 = false;
+        rule88 = 0;
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
@@ -196,7 +196,7 @@ public class RouteFlag {
     public boolean rule_en() {
         return isEnableRule86() ||
                 isEnableRule87() ||
-                rule88 ||
+                (rule88 != 0) ||
                 rule69 ||
                 rule70 ||
                 special_fare_enable ||
@@ -237,7 +237,7 @@ public class RouteFlag {
     boolean isAvailableRule86or87()  { return !disable_rule86or87 && (isEnableRule86() || isEnableRule87()); }
     boolean isAvailableRule86()  { return !disable_rule86or87 && isEnableRule86(); }
     boolean isAvailableRule87()  { return !disable_rule86or87 && isEnableRule87(); }
-    boolean isAvailableRule88() { return rule88; }
+    boolean isAvailableRule88() { return rule88 != 0; }
     boolean isAvailableRule70() { return rule70; }
     boolean isAvailableRule69() { return rule69; }
     boolean isAvailableRule115() { return 0 < rule115; }
@@ -305,7 +305,7 @@ public class RouteFlag {
     void optionFlagReset() {
         special_fare_enable = false;
         meihan_city_enable = false;
-        rule88 = false;
+        rule88 = 0;
         rule69 = false;
         rule70 = false;
         rule70bullet = false;

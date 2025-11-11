@@ -276,7 +276,7 @@ public:
     BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
                             //         bit2: term, bit3: end([山])
                             // bit6:1= disable
-    bool rule88;
+    int32_t rule88;         // Rule88適用時の減算距離 (0, 38, 76)
     bool rule69;
     bool rule70;
     bool special_fare_enable;
@@ -293,8 +293,6 @@ public:
     bool jctsp_route_change;    //6 分岐特例(add内部使用)
 
     // bit 11-20 発着 都区市内 適用
-    bool ter_begin_oosaka;      //21 大阪・新大阪
-    bool ter_fin_oosaka ;      //22
 
     // 会社線
     bool compncheck     ;      //23 会社線通過チェック有効
@@ -332,8 +330,6 @@ public:
         trackmarkctl = false;           //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
         jctsp_route_change = false; //6 分岐特例(add内部使用)
 
-        ter_begin_oosaka    = false;      //21 大阪・新大阪
-        ter_fin_oosaka      = false;      //22
         compncheck          = false;      //23 会社線通過チェック有効
         compnpass           = false;      //24 通過連絡運輸
         compnda             = false;      //25 通過連絡運輸不正フラグ
@@ -353,7 +349,7 @@ public:
         rule115 = 0;
         rule70bullet = false;
         rule86bullet = false;
-        rule88 = false;
+        rule88 = 0;
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
@@ -482,8 +478,6 @@ public:
 
     void terCityReset() {
         rule86or87 &= 0x40;
-        ter_begin_oosaka    = false;      //21 大阪・新大阪
-        ter_fin_oosaka      = false;      //22
     }
     void optionFlagReset() {
         special_fare_enable = false;
@@ -496,9 +490,7 @@ public:
     }
     bool isTerCity() const {
         return
-        (rule86or87 & 0x3f) ||
-        ter_begin_oosaka    ||      //21 大阪・新大阪
-        ter_fin_oosaka      ;      //22
+        (rule86or87 & 0x3f);
     }
 
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
@@ -1330,7 +1322,7 @@ public:
     int32_t  coreAreaIDByCityId(int32_t startEndFlg) const;
 private:
     void   checkIsJRTokaiOnly(void);
-    static int32_t  CheckOfRule88j(vector<RouteItem> *route);
+    static int32_t  CheckOfRule88j(const vector<RouteItem> &route);
 public:
     static vector<int32_t>  Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route);
 private:

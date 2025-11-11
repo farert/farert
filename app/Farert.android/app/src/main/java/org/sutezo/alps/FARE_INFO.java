@@ -600,6 +600,17 @@ public class FARE_INFO {
                         if (this.aggregate_fare_jr(RouteUtil.IS_BRT_LINE(ri.lineId), company_id1, company_id2, dex) < 0) {
                             return -1;    // error >>>>>>>>>>>>>>>>>>>>>>>>>>>
                         }
+
+                        // Rule88: Subtract Osaka-Shin-Osaka distance
+                        if (RouteUtil.IS_FLG_RULE88(ri.flag)) {
+                            int osaka_shinosaka_km = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("東海道線"),
+                                    DbIdOf.INSTANCE.station("大阪"),
+                                    DbIdOf.INSTANCE.station("新大阪")).get(0);
+                            System.out.printf("Rule88: Subtracting Osaka-Shin-Osaka distance: %d km\n", osaka_shinosaka_km);
+                            this.sales_km -= osaka_shinosaka_km;
+                            this.base_sales_km -= osaka_shinosaka_km;
+                            this.base_calc_km -= osaka_shinosaka_km;
+                        }
                     }
                     if ((this.flag & RouteUtil.FLAG_FARECALC_INITIAL) == 0) { // b15が0の場合最初なので駅1のフラグも反映
                         // 保持bit(既にflagのbitのみにはcheckIsBulletInUrbanOnSpecificTerm()でセットしているから)=いまはないので0
@@ -1212,6 +1223,30 @@ public class FARE_INFO {
         /* 旅客営業規則89条適用 */
         if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
             this.base_calc_km += CheckOfRule89j(routeList);
+        }
+
+        /* Rule88: 距離を減算 */
+        if (!route_flag_.no_rule && (route_flag_.rule88 != 0)) {
+            // 大阪-新大阪間の距離を取得
+            int osakaShinosaka = RouteUtil.GetDistance(
+                    DbIdOf.INSTANCE.line("東海道線"),
+                    DbIdOf.INSTANCE.station("大阪"),
+                    DbIdOf.INSTANCE.station("新大阪")
+            ).get(0);
+
+            int kmSubtract;
+            switch (route_flag_.rule88) {
+                case 1: case 2:
+                    kmSubtract = osakaShinosaka * 2; break;
+                case 3: case 4: case 5: case 6: case 7:
+                    kmSubtract = osakaShinosaka; break;
+                default:
+                    kmSubtract = 0;
+            }
+            System.out.printf("Rule88: Subtracting distance: %d km\n", kmSubtract);
+            this.sales_km -= kmSubtract;
+            this.base_sales_km -= kmSubtract;
+            this.base_calc_km -= kmSubtract;
         }
 
         /* 運賃計算 */
