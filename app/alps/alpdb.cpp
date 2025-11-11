@@ -6079,13 +6079,15 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
         route_flag.jrtokaistock_enable = false; // for UI
     }
     chk &= ~(1 << 31);
+
+    // 88を適用したものをroute_list_tmpへ
+    route_flag.rule88 = CalcRoute::CheckOfRule88j(route_list_tmp2);
+    TRACE("Rule88 applied: type %d km.\n", route_flag.rule88);
+
     /* 86, 87適用可能性None？ */
     if ((chk == 4) || (chk == 0)) {  /* 全駅特定都区市内駅 or 発着とも特定都区市内駅でない場合 */
         /* 未変換 */
         TRACE("no applied for rule86/87\n");
-        // 88を適用したものをroute_list_tmpへ
-        route_flag.rule88 = CalcRoute::CheckOfRule88j(route_list_tmp2);
-        TRACE("Rule88 applied: subtract %d km.\n", route_flag.rule88);
         route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
         return;         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
@@ -6138,6 +6140,16 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
         }
         TRACE("applied for rule86(%d)\n", chk & 0x03);
 
+        if ((((chk & 0x01) != 0) && (CITYNO_OOSAKA == IDENT1(cityId))
+         && (((route_flag.rule88 == 1))
+          || (route_flag.rule88 == 5)))
+         || (((chk & 0x02) != 0) && (CITYNO_OOSAKA == IDENT2(cityId))
+        && (((route_flag.rule88 == 2))
+         || (route_flag.rule88 == 6)))) {
+            route_flag.rule88 = 7;
+        } else {
+            route_flag.rule88 = 0;
+        }
         // route_list_cooked = route_list_tmp3
         route_list_cooked.assign(route_list_tmp3.cbegin(), route_list_tmp3.cend());
 
@@ -6364,10 +6376,6 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
         ;
     }
     /* 86-87非適用 */
-    // 88を適用したものをroute_list_tmpへ
-    route_flag.rule88 = CalcRoute::CheckOfRule88j(route_list_tmp2);
-    TRACE("Rule88 applied: subtract %d km.\n", route_flag.rule88);
-
     // route_list_cooked = route_list_tmp2
     route_list_cooked.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
     return;
@@ -6482,22 +6490,10 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
 //  @param [in/out] route    route
 //
 //  @retval 0: no-convert
-//  @retval 1: change start
-//  @retval 2: change arrived
+//  @retval 1~6: match pattern
 //
 int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
 {
-    // 大阪-新大阪間の距離を取得
-    auto osaka_shinosaka_km = []() -> int32_t {
-        static int32_t osaka_shinosaka_km_ = 0;
-        if (osaka_shinosaka_km_ == 0) {
-            osaka_shinosaka_km_ = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
-                                                         STATION_ID(_T("大阪")),
-                                                         STATION_ID(_T("新大阪")))[0];
-        }
-        return osaka_shinosaka_km_;
-    };
-
     // 経路に姫路が含まれているかチェック（RouteUtil::InStationを使用）
     auto passesViaHimeji = [](const vector<RouteItem>& rt) -> bool {
         int station_id = 0;
@@ -6519,26 +6515,26 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
         return 0;
     }
 
-    // パターン5: ~ 山陽新幹線 新大阪 ~（上り、片道）
+    // パターン6: ~ 山陽新幹線 新大阪 ~（上り、片道）
     // 条件: 終点が新大阪で、山陽新幹線で到着
     if (route.back().stationId == STATION_ID(_T("新大阪")) &&
         route.back().lineId == LINE_ID(_T("山陽新幹線"))) {
         /* 山陽新幹線 姫路以遠～新大阪の場合、片道 */
         TRACE(_T("Rule88: Pattern 5 matched (Sanyo Shinkansen -> Shin-Osaka, no Osaka follows) - One way\n"));
-        return osaka_shinosaka_km();  // 片道
+        return 6;
     }
 
-    // パターン6: 新大阪 山陽新幹線 ~（下り、片道）
+    // パターン5: 新大阪 山陽新幹線 ~（下り、片道）
     // 条件: 起点が新大阪で、山陽新幹線で出発
     if (route.size() >= 2 &&
         route.front().stationId == STATION_ID(_T("新大阪")) &&
         route[1].lineId == LINE_ID(_T("山陽新幹線"))) {
         /* 新大阪-山陽新幹線 姫路以遠の場合、片道 */
         TRACE(_T("Rule88: Pattern 6 matched (Shin-Osaka -> Sanyo Shinkansen, no Osaka before) - One way\n"));
-        return osaka_shinosaka_km();  // 片道
+        return 5;
     }
 
-    // パターン3: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線、片道）
+    // パターン4: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線、片道）
     // 条件: 終点が新大阪で、東海道線で到着、その前が神戸から山陽線
     if (route.size() >= 2 &&
         route.back().stationId == STATION_ID(_T("新大阪")) &&
@@ -6547,10 +6543,10 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
         route[route.size() - 2].lineId == LINE_ID(_T("山陽線"))) {
         /* 山陽線 姫路以遠～神戸-東海道線-新大阪の場合、片道 */
         TRACE(_T("Rule88: Pattern 3 matched (Sanyo Line -> Kobe -> Tokaido Line -> Shin-Osaka) - One way\n"));
-        return osaka_shinosaka_km();  // 片道
+        return 4;
     }
 
-    // パターン4: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線、片道）
+    // パターン3: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線、片道）
     // 条件: 起点が新大阪で、東海道線で神戸へ、その後山陽線
     if (route.size() >= 3 &&
         route.front().stationId == STATION_ID(_T("新大阪")) &&
@@ -6559,12 +6555,12 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
         route[2].lineId == LINE_ID(_T("山陽線"))) {
         /* 新大阪-東海道線-神戸-山陽線 姫路以遠の場合、片道 */
         TRACE(_T("Rule88: Pattern 4 matched (Shin-Osaka -> Tokaido Line -> Kobe -> Sanyo Line) - One way\n"));
-        return osaka_shinosaka_km();  // 片道
+        return 3;
     }
 
     // 経路全体をスキャンして、パターン1-2を探す
     for (auto it = route.cbegin(); it != route.cend(); ++it) {
-        // パターン1: ~ 山陽新幹線 新大阪 東海道線 大阪（上り、往復）
+        // パターン2: ~ 山陽新幹線 新大阪 東海道線 大阪（上り、往復）
         if (it + 1 != route.cend() &&
             it->lineId == LINE_ID(_T("山陽新幹線")) &&
             it->stationId == STATION_ID(_T("新大阪")) &&
@@ -6574,10 +6570,10 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
             /* 山陽新幹線 姫路以遠～新大阪-東海道線-大阪の場合、往復 */
             TRACE(_T("Rule88: Pattern 1 matched (Sanyo Shinkansen -> Shin-Osaka -> Tokaido Line -> Osaka) - Round trip\n"));
 
-            return osaka_shinosaka_km() * 2;  // 往復
+            return 2;
         }
 
-        // パターン2: ~ 大阪 東海道線 新大阪 山陽新幹線 ~（下り、往復）
+        // パターン1: ~ 大阪 東海道線 新大阪 山陽新幹線 ~（下り、往復）
         if (it + 2 != route.cend() &&
             it->stationId == STATION_ID(_T("大阪")) &&
             (it + 1)->lineId == LINE_ID(_T("東海道線")) &&
@@ -6587,7 +6583,7 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
             /* 大阪-東海道線-新大阪-山陽新幹線 姫路以遠の場合、往復 */
             TRACE(_T("Rule88: Pattern 2 matched (Osaka -> Tokaido Line -> Shin-Osaka -> Sanyo Shinkansen) - Round trip\n"));
 
-            return osaka_shinosaka_km() * 2;  // 往復
+            return 1;
         }
     }
     return 0;
@@ -9465,12 +9461,32 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 
     if (!pRoute_flag->no_rule && (pRoute_flag->rule88 != 0)) {
         // Rule88: Subtract distance (0, 38, or 76)
-        TRACE(_T("Rule88: Subtracting distance: %d km\n"), pRoute_flag->rule88);
+        // 大阪-新大阪間の距離を取得
+        auto osaka_shinosaka_km = []() -> int32_t {
+            static int32_t osaka_shinosaka_km_ = 0;
+            if (osaka_shinosaka_km_ == 0) {
+                osaka_shinosaka_km_ = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
+                                                            STATION_ID(_T("大阪")),
+                                                            STATION_ID(_T("新大阪")))[0];
+            }
+            return osaka_shinosaka_km_;
+        };
+        int kmSubtract;
+        switch (pRoute_flag->rule88) {
+        case 1: case 2:
+            kmSubtract = osaka_shinosaka_km() * 2; break;
+        case 3: case 4: case 5: case 6: case 7:
+            kmSubtract = osaka_shinosaka_km(); break;
+        default:
+            kmSubtract = 0;
+        }
+        TRACE(_T("Rule88: Subtracting distance: %d km\n"), kmSubtract);
         TRACE(_T("Rule88: Before subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
               this->sales_km, this->base_sales_km, this->base_calc_km);
-        this->sales_km -= pRoute_flag->rule88;
-        this->base_sales_km -= pRoute_flag->rule88;
-        this->base_calc_km -= pRoute_flag->rule88;
+
+        this->sales_km -= kmSubtract;
+        this->base_sales_km -= kmSubtract;
+        this->base_calc_km -= kmSubtract;
         TRACE(_T("Rule88: After subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
               this->sales_km, this->base_sales_km, this->base_calc_km);
     }

@@ -1225,12 +1225,28 @@ public class FARE_INFO {
             this.base_calc_km += CheckOfRule89j(routeList);
         }
 
-        /* Rule88: 距離を減算 (0, 38, 76) */
+        /* Rule88: 距離を減算 */
         if (!route_flag_.no_rule && (route_flag_.rule88 != 0)) {
-            System.out.printf("Rule88: Subtracting distance: %d km\n", route_flag_.rule88);
-            this.sales_km -= route_flag_.rule88;
-            this.base_sales_km -= route_flag_.rule88;
-            this.base_calc_km -= route_flag_.rule88;
+            // 大阪-新大阪間の距離を取得
+            int osakaShinosaka = RouteUtil.GetDistance(
+                    DbIdOf.INSTANCE.line("東海道線"),
+                    DbIdOf.INSTANCE.station("大阪"),
+                    DbIdOf.INSTANCE.station("新大阪")
+            ).get(0);
+
+            int kmSubtract;
+            switch (route_flag_.rule88) {
+                case 1: case 2:
+                    kmSubtract = osakaShinosaka * 2; break;
+                case 3: case 4: case 5: case 6: case 7:
+                    kmSubtract = osakaShinosaka; break;
+                default:
+                    kmSubtract = 0;
+            }
+            System.out.printf("Rule88: Subtracting distance: %d km\n", kmSubtract);
+            this.sales_km -= kmSubtract;
+            this.base_sales_km -= kmSubtract;
+            this.base_calc_km -= kmSubtract;
         }
 
         /* 運賃計算 */

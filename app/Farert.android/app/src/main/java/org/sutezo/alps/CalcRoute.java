@@ -193,13 +193,14 @@ public class CalcRoute extends RouteList {
         route_flag.jrtokaistock_enable = RouteUtil.BIT_CHK(chk, 31); // for UI
     	chk &= ~(1 << 31);
 
+        // 88を適用したものをroute_list_tmpへ
+        route_flag.rule88 = CheckOfRule88j(route_list_tmp2);
+        System.out.printf("Rule88 applied: type %d km.\n", route_flag.rule88);
+
 		/* 86, 87適用可能性None？ */
         if ((chk == 4) || (chk == 0)) {  /* 全駅特定都区市内駅 or 発着とも特定都区市内駅でない場合 */
 			/* 未変換 */
             System.out.print("no applied for rule86/87\n");
-            // 88を適用したものをroute_list_tmpへ
-            route_flag.rule88 = CheckOfRule88j(route_list_tmp2);
-            System.out.printf("Rule88 applied: subtract %d km.\n", route_flag.rule88);
             cpyRouteItems(route_list_tmp2, route_list_cooked);
             return;			// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
@@ -250,6 +251,17 @@ public class CalcRoute extends RouteList {
                     break;
             }
             System.out.printf("applied for rule86(%d)\n", chk & 0x03);
+
+            if ((((chk & 0x01) != 0) && (RouteUtil.CITYNO_OOSAKA == cityId[0])
+             && (((route_flag.rule88 == 1))
+              || (route_flag.rule88 == 5)))
+             || (((chk & 0x02) != 0) && (RouteUtil.CITYNO_OOSAKA == cityId[1])
+            && (((route_flag.rule88 == 2))
+             || (route_flag.rule88 == 6)))) {
+                route_flag.rule88 = 7;
+            } else {
+                route_flag.rule88 = 0;
+            }
 
             // route_list_cooked = route_list_tmp3
             cpyRouteItems(route_list_tmp3, route_list_cooked);
@@ -474,10 +486,6 @@ public class CalcRoute extends RouteList {
             //;
         //}
 		/* 86-87非適用 */
-        // 88を適用したものをroute_list_tmpへ
-        route_flag.rule88 = CheckOfRule88j(route_list_tmp2);
-        System.out.printf("Rule88 applied: subtract %d km.\n", route_flag.rule88);
-
         // route_list_cooked = route_list_tmp2
         cpyRouteItems(route_list_tmp2, route_list_cooked);
     }
@@ -619,7 +627,8 @@ public class CalcRoute extends RouteList {
     //
     //	@param [in] route    route
     //
-    //	@retval 0, 38, 76: 減算距離（0km, 3.8km, 7.6km）
+    //	@retval 0: no-convert
+    //	@retval 1~6: match pattern
     //
     // ヘルパーメソッド: 経路が姫路を通過するかチェック（RouteUtil::InStationを使用）
     private static boolean passesViaHimeji(List<RouteItem> route) {
@@ -635,71 +644,64 @@ public class CalcRoute extends RouteList {
     }
 
     static int CheckOfRule88j(List<RouteItem> route) {
-        // 大阪-新大阪間の距離を取得
-        int osakaShinosaka = RouteUtil.GetDistance(
-                DbIdOf.INSTANCE.line("東海道線"),
-                DbIdOf.INSTANCE.station("大阪"),
-                DbIdOf.INSTANCE.station("新大阪")
-        ).get(0);
-
         // 姫路を経由していない場合は対象外
         if (!passesViaHimeji(route)) {
             return 0;
         }
 
-        // Pattern 5: ~ 山陽新幹線 新大阪 ~（上り、片道）
+        // パターン6: ~ 山陽新幹線 新大阪 ~（上り、片道）
         // 条件: 終点が新大阪で、山陽新幹線で到着
         if (route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪") &&
                 route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) {
-            return osakaShinosaka;  // 片道
+            return 6;
         }
 
-        // Pattern 6: ~ 新大阪 山陽新幹線 ~（下り、片道）
+        // パターン5: 新大阪 山陽新幹線 ~（下り、片道）
         // 条件: 起点が新大阪で、山陽新幹線で出発
         if (route.size() >= 2 &&
                 route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪") &&
                 route.get(1).lineId == DbIdOf.INSTANCE.line("山陽新幹線")) {
-            return osakaShinosaka;  // 片道
+            return 5;
         }
 
-        // Pattern 3: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線、片道）
+        // パターン4: ~ 山陽線 神戸 東海道線 新大阪 ~（上り在来線、片道）
         // 条件: 終点が新大阪で、東海道線で到着、その前が神戸から山陽線
         if (route.size() >= 2 &&
                 route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("新大阪") &&
                 route.get(route.size() - 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
                 route.get(route.size() - 2).stationId == DbIdOf.INSTANCE.station("神戸") &&
                 route.get(route.size() - 2).lineId == DbIdOf.INSTANCE.line("山陽線")) {
-            return osakaShinosaka;  // 片道
+            return 4;
         }
 
-        // Pattern 4: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線、片道）
+        // パターン3: ~ 新大阪 東海道線 神戸 山陽線 ~（下り在来線、片道）
         // 条件: 起点が新大阪で、東海道線で神戸へ、その後山陽線
         if (route.size() >= 3 &&
                 route.get(0).stationId == DbIdOf.INSTANCE.station("新大阪") &&
                 route.get(1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
                 route.get(1).stationId == DbIdOf.INSTANCE.station("神戸") &&
                 route.get(2).lineId == DbIdOf.INSTANCE.line("山陽線")) {
-            return osakaShinosaka;  // 片道
+            return 3;
         }
 
         // 経路を走査してパターン1-2をマッチング
         for (int i = 0; i < route.size(); i++) {
-            // Pattern 1: ~ 山陽新幹線 新大阪 東海道線 大阪 ~ (上り、往復)
+            // パターン2: ~ 山陽新幹線 新大阪 東海道線 大阪（上り、往復）
             if (i + 1 < route.size() &&
                     route.get(i).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
                     route.get(i).stationId == DbIdOf.INSTANCE.station("新大阪") &&
                     route.get(i + 1).lineId == DbIdOf.INSTANCE.line("東海道線") &&
                     route.get(i + 1).stationId == DbIdOf.INSTANCE.station("大阪")) {
-                return osakaShinosaka * 2;  // 往復
+                return 2;
             }
 
-            // Pattern 2: ~ 大阪 東海道線 新大阪 山陽新幹線 ~ (下り、往復)
+            // パターン1: ~ 大阪 東海道線 新大阪 山陽新幹線 ~（下り、往復）
             if (i + 1 < route.size() &&
                     route.get(i).lineId == DbIdOf.INSTANCE.line("東海道線") &&
                     route.get(i).stationId == DbIdOf.INSTANCE.station("大阪") &&
                     route.get(i + 1).lineId == DbIdOf.INSTANCE.line("山陽新幹線") &&
                     route.get(i + 1).stationId == DbIdOf.INSTANCE.station("新大阪")) {
-                return osakaShinosaka * 2;  // 往復
+                return 1;
             }
         }
         return 0;
