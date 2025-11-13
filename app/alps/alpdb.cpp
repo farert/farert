@@ -1992,8 +1992,9 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 
     /* 発駅 */
     lflg1 = RouteUtil::AttrOfStationOnLineLine(line_id, stationId1);
-    if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
-        ASSERT(FALSE);  // normally don't come here.
+    if (BIT_CHK2(lflg1, BSRNOTYET_NA, BSRSHINKJCT)) {
+        // ASSERT(FALSE);  // normally don't come here.
+        TRACE(_T("iregal parameter by stationId1 notfound in line_id.\n"));
         return -2;      /* 不正経路(line_idにstationId1は存在しない) */
     }
 
@@ -2010,7 +2011,8 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
     ASSERT(BIT_CHK(lflg1, BSRJCTHORD) || route_list_raw.at(num - 1).stationId == stationId1);
 
     lflg2 = RouteUtil::AttrOfStationOnLineLine(line_id, stationId2);
-    if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
+    if (BIT_CHK2(lflg2, BSRNOTYET_NA, BSRSHINKJCT)) {
+        TRACE(_T("iregal parameter by stationId2 notfound in line_id.\n"));
         return -2;      /* 不正経路(line_idにstationId2は存在しない) */
     }
 

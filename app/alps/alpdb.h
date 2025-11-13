@@ -92,7 +92,8 @@ typedef uint32_t SPECIFICFLAG;
                                 // 規43−2や、分岐特例途中の中途半端な経路の時ON
                                 // 会社線通過連絡運輸で発着駅のみのチェックである場合もON（と同時に、COMPNTERMINALもON）
 #define BSRJCTSP_B      29      // [w]分岐特例B
-#define BSRSHINZAIREV   28     // [w]新幹線、在在来線折り返し
+#define BSRSHINZAIREV   28      // [w]新幹線、在在来線折り返し
+#define BSRSHINKJCT     17      // [w]新幹線の在来船分岐駅(草津とか)
 
 #define BSR69TERM       24      // [r]  // not used
 #define BSR69CONT       23      // [r]
