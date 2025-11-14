@@ -199,8 +199,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,15
- PRODUCTVERSION 25,9,0,0
+ FILEVERSION 2,1,0,16
+ PRODUCTVERSION 25,11,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -217,12 +217,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sutezo"
             VALUE "FileDescription", "farert"
-            VALUE "FileVersion", "2.1.0.15"
+            VALUE "FileVersion", "2.1.0.16"
             VALUE "InternalName", "alps_mfc.exe"
             VALUE "LegalCopyright", "2014-2025 (C)Sutezo.  All rights reserved."
             VALUE "OriginalFilename", "farert"
             VALUE "ProductName", "JR運賃計算"
-            VALUE "ProductVersion", "25.09"
+            VALUE "ProductVersion", "25.11.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -403,6 +403,7 @@ BEGIN
         MENUITEM "大阪環状線遠回り",                    IDR_MENU_ARROUND_OSAKAKAN
         MENUITEM "旅客営業取扱基準規程115条(特定都区市内発着)",    IDR_MENU_RULE115
         MENUITEM "指定した経路で運賃計算",                 IDR_MENU_NEERORFAR
+        MENUITEM "JR東海株主優待券使用",                 IDR_MENU_JRTOKAI_STOCK
         MENUITEM "特定を適用",                       IDR_MENU_SPECIFIC_APPLY
     END
 END
