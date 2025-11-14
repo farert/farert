@@ -9025,7 +9025,7 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
             if (!(pRoute_flag->isAvailableRule86or87()
                   && (cityId != 0) && (cityId_c != 0)
                   && (cityId == cityId_c)) &&
-                IsBulletInUrban(ite->lineId, station_id1, ite->stationId, pRoute_flag->rule88)) {
+                IsBulletInUrban(ite->lineId, station_id1, ite->stationId, pRoute_flag->rule88 != 0)) {
                 TRACE("Use bullet line.\n");
                 enabled = true; // ONの場合大都市近郊区間特例無効(新幹線乗車している)
                 break;

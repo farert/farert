@@ -841,7 +841,7 @@ public class FARE_INFO {
                 cityId_c = MASK_CITYNO(ite.flag);
                 if (!(route_flag.isAvailableRule86or87()
                         && (cityId != 0) && (cityId_c != 0) && (cityId == cityId_c)) &&
-                        IsBulletInUrban(ite.lineId, station_id1, ite.stationId, route_flag.rule88)) {
+                        IsBulletInUrban(ite.lineId, station_id1, ite.stationId, route_flag.rule88 != 0)) {
                     System.out.print("Use bullet line.\n");
                     enabled = true; // ONの場合大都市近郊区間特例無効(新幹線乗車している)
                     break;
@@ -1299,7 +1299,10 @@ public class FARE_INFO {
                             }
                             this.jr_fare = RouteUtil.round_up(special_fare);    /* 大都市特定区間運賃(東京)(\10単位切り上げ) */
                         } else {
-                            this.jr_fare = special_fare;    /* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
+                            System.out.printf("specific fare section replace for Osaka or Nagoya urban area specifict:%d, original:%d\n", special_fare, this.jr_fare);
+                            if (special_fare < this.jr_fare) {
+                                this.jr_fare = special_fare;    /* 大都市特定区間運賃(大阪、名古屋), 本四備讃線ローカル */
+                            }
                         }
                     }
                     route_flag_.special_fare_enable = true; // 私鉄競合区間特別運賃適用
@@ -1379,6 +1382,7 @@ public class FARE_INFO {
             id = pos.stationId;
             if ((id == DbIdOf.INSTANCE.station("金山(中)"))
             || (id == DbIdOf.INSTANCE.station("岐阜"))
+            || (id == DbIdOf.INSTANCE.station("沼津"))
             || (id == DbIdOf.INSTANCE.station("美濃太田"))
             || (id == DbIdOf.INSTANCE.station("多治見"))) {
                 bNeer = true;
@@ -1545,9 +1549,6 @@ public class FARE_INFO {
          return 1 == enableTokaiStockSelect;  // JR東海株主有効(品川から新幹線とか)
     }
 
-    boolean isJrTokaiOnly() {
-        return enableTokaiStockSelect == 2; // JR東海TOICA有効
-    }
     // 地方交通線を含んでいるか？
     boolean didHaveLocalLine() { return !local_only && total_jr_calc_km != total_jr_sales_km; }
     boolean isLocalOnly() { return local_only; }
@@ -3389,7 +3390,110 @@ public class FARE_INFO {
         return out_route_list;
     }
 
+    //  Check TOICA area
+    //  (大都市近郊区間のようにフラグ追加すればこんなことしなくても良いが、
+    //  愛知地区はバリアフリーの範囲で使用しているしするので)
+    //  条件：すべてJR東海内の経路(飛騨古川-富山-敦賀-米原-金山-鶴舞 とか非考慮)
+    //
+    public boolean in_range_toica(final RouteList route) {
+        int station_id = 0;
+        int station_id1 = 0;
+        int station_id2 = 0;
+        int line_id = 0;
 
+        String tsql = "select station_id1," +
+                      "        station_id2," +
+                      "        line_id" +
+                      " from   t_toica_range" +
+                      " where line_id=? and kind=0";
+
+        if (enableTokaiStockSelect != 2) { // JR東海TOICA有効
+            return false;
+        }
+        final List<RouteItem> route_list = route.routeList();
+        if (route_list.size() <= 1) {
+            //TRACE("TOICA route size <=1\n");
+            return false;
+        }
+        for (RouteItem pos : route_list) {
+            if (station_id != 0) {
+                Cursor cursor = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(pos.lineId)});
+                if (cursor.moveToFirst()) {
+                    //TRACE("TOICA line %s %s %s\n", LNAME(pos.lineId), SNAME(station_id), SNAME(pos.stationId));
+                    station_id1 = cursor.getInt(0);
+                    station_id2 = cursor.getInt(1);
+                    line_id     = cursor.getInt(2);
+                    if (RouteUtil.InStation(pos.stationId,
+                                            line_id, station_id1, station_id2) < 1) {
+                        if ((pos.stationId != route.arriveStationId())
+                        || !in_range_toica_sub(pos.stationId, route.departureStationId())) {
+                            //TRACE("TOICA out of range arrive %s\n", SNAME(pos.stationId));
+                            cursor.close();
+                            return false;   // out of TOICA range
+                        }
+                        ASSERT(pos.stationId == route.arriveStationId());
+                    }
+                    if (RouteUtil.InStation(station_id,
+                                            line_id, station_id1, station_id2) < 1) {
+                        if ((route.departureStationId() != station_id)
+                        || !in_range_toica_sub(station_id, route.arriveStationId())) {
+                            //TRACE("TOICA out of range depart %s\n", SNAME(station_id));
+                            cursor.close();
+                            return false;   // out of TOICA range
+                        }
+                    }
+                    cursor.close();
+                } else {
+                    cursor.close();
+                    return false; // not in TOICA range
+                }
+            }
+            station_id = pos.stationId;
+        }
+        return true;
+    }
+
+    // 飛騨古川、高山、下呂 例外駅対応
+    boolean in_range_toica_sub(int t_station_id1, int t_station_id2) {
+        String tsql = "select kind" +
+                      " from   t_toica_range" +
+                      " where station_id1=? and kind>0";
+        String tsql_exc = "select station_id1," +
+                          "        station_id2," +
+                          "        line_id" +
+                          " from   t_toica_range" +
+                          " where id=?";
+        int kind = 0;
+        int station_id1 = 0;
+        int station_id2 = 0;
+        int line_id = 0;
+        Cursor cursor = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(t_station_id1)});
+        //TRACE("TOICA exception check %s %s\n", SNAME(t_station_id1), SNAME(t_station_id2));
+        if (cursor.moveToFirst()) {
+            kind = cursor.getInt(0);
+            ASSERT(0 < kind);
+            cursor.close();
+            Cursor cursor_exc = RouteDB.db().rawQuery(tsql_exc, new String[]{String.valueOf(kind)});
+            if (cursor_exc.moveToFirst()) {
+                station_id1 = cursor_exc.getInt(0);
+                station_id2 = cursor_exc.getInt(1);
+                line_id     = cursor_exc.getInt(2);
+                cursor_exc.close();
+            } else {
+                ASSERT(false);
+                cursor_exc.close();
+                return false;
+            }
+            //TRACE("TOICA exception station %s line %s station1 %s station2 %s\n",
+            //      SNAME(t_station_id2), LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
+            return (0 < RouteUtil.InStation(t_station_id2,
+                                    line_id, station_id1, station_id2));
+        }
+        cursor.close();
+        return false;
+    }
+
+    
     //  JR東海 IC運賃用の最短経路をだす
     //
     //
