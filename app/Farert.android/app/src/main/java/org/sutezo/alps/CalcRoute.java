@@ -164,7 +164,6 @@ public class CalcRoute extends RouteList {
         int chk;        /* 86 applied flag */
         int rtky;       /* 87 applied flag */
         int flg;
-        int aply88;
 
         route_flag.terCityReset();
         route_flag.optionFlagReset();
@@ -219,9 +218,9 @@ public class CalcRoute extends RouteList {
         n = ReRouteRule69j(route_list_tmp, route_list_tmp3);	/* 69条適用(route_list_tmp->route_list_tmp3) */
         System.out.printf("Rule 69(2) applied %dtimes.\n", n);
 
-		/* route_list_tmp	70-88-69-86適用
-		 * route_list_tmp2	70-88-69適用
-		 * route_list_tmp3	70-88-69-86-69適用
+		/* route_list_tmp	70-69-86適用
+		 * route_list_tmp2	70-69適用
+		 * route_list_tmp3	70-69-86-69適用
 		 */
 		/* compute of sales_km by route_list_cooked */
         KM km = Get_route_distance(route_flag, route_list_tmp3);
@@ -518,7 +517,7 @@ public class CalcRoute extends RouteList {
             if (fare_info.calc_fare(route_flag, route_list_cooked)) {
                 boolean b_more_low_cost;
                 fare_info.setRoute(this.route_list_cooked, route_flag);
-                if (fare_info.isJrTokaiOnly()) {
+                if (fare_info.in_range_toica(this)) {
                     b_more_low_cost = fare_info.reCalcFareForOptiomizeRouteForToiCa(this);
                 } else {
                     b_more_low_cost = fare_info.reCalcFareForOptiomizeRoute(this);
@@ -605,14 +604,6 @@ public class CalcRoute extends RouteList {
                 }
             }
         }
-        if (route_flag.rule88) {
-    		if (((startEndFlg == CSTART) && route_flag.ter_begin_oosaka) ||
-    				   ((startEndFlg == CEND)   && route_flag.ter_fin_oosaka)) {
-    			return RouteUtil.CITYNO_SHINOOSAKA;	/* 大阪・新大阪 */
-    		}
-            // else
-            // thru
-        }
         return 0;
     }
 
@@ -643,7 +634,7 @@ public class CalcRoute extends RouteList {
         return false;
     }
 
-    static int CheckOfRule88j(List<RouteItem> route) {
+    static int CheckOfRule88j(final List<RouteItem> route) {
         // 姫路を経由していない場合は対象外
         if (!passesViaHimeji(route)) {
             return 0;
