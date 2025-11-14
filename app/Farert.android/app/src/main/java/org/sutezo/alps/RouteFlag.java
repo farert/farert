@@ -38,24 +38,19 @@ public class RouteFlag {
     boolean ter_fin_city		= false;      //14
     boolean ter_begin_yamate	= false;      //15/ [山]
     boolean ter_fin_yamate		= false;      //16
-    boolean ter_begin_oosaka	= false;      //21 大阪・新大阪
-    boolean ter_fin_oosaka		= false;      //22
+
     void terCityReset() {
         ter_begin_city		= false;      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
         ter_fin_city		= false;      //14
         ter_begin_yamate	= false;      //15/ [山]
         ter_fin_yamate		= false;      //16
-         ter_begin_oosaka	= false;      //21 大阪・新大阪
-        ter_fin_oosaka		= false;      //22
     }
     boolean isTerCity() {
         return
                 ter_begin_city		||      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
                 ter_fin_city		||      //14
                 ter_begin_yamate	||      //15/ [山]
-                ter_fin_yamate		||      //16
-                ter_begin_oosaka	||      //21 大阪・新大阪
-                ter_fin_oosaka		;      //22
+                ter_fin_yamate;             //16
     }
     boolean isEnableRule86() {
         return ter_begin_city		||      //13 [区][浜][名][京][阪][神][広][九][福][仙][札]
@@ -111,8 +106,6 @@ public class RouteFlag {
         ter_fin_city		= false;      //14
         ter_begin_yamate	= false;      //15/ [山]
         ter_fin_yamate		= false;      //16
-        ter_begin_oosaka	= false;      //21 大阪・新大阪
-        ter_fin_oosaka		= false;      //22
         compncheck		    = false;      //23 会社線通過チェック有効
         compnpass			= false;      //24 通過連絡運輸
         compnda			= false;      //25 通過連絡運輸不正フラグ
@@ -178,8 +171,6 @@ public class RouteFlag {
         ter_fin_city = o.ter_fin_city;
         ter_begin_yamate = o.ter_begin_yamate;
         ter_fin_yamate = o.ter_fin_yamate;
-        ter_begin_oosaka = o.ter_begin_oosaka;
-        ter_fin_oosaka = o.ter_fin_oosaka;
         compncheck = o.compncheck;
         compnpass = o.compnpass;
         compnda = o.compnda;
