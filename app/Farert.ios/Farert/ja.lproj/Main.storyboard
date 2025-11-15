@@ -271,19 +271,16 @@
                                 <action selector="reverseAction:" destination="LPq-03-SdQ" id="uoi-Ih-UfQ"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem style="plain" systemItem="flexibleSpace" id="soN-vK-4bV"/>
                         <barButtonItem image="chknote" id="sl8-3G-gJ2">
                             <connections>
                                 <action selector="checkAction:" destination="LPq-03-SdQ" id="wwD-CZ-Sm2"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem width="42" style="plain" systemItem="fixedSpace" id="Oti-Gn-Qbf"/>
                         <barButtonItem systemItem="organize" id="8DM-J3-hT5">
                             <connections>
                                 <segue destination="GVl-Dw-D5G" kind="presentation" identifier="routeManagerSegue" modalPresentationStyle="fullScreen" id="bug-cn-EYA"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem width="42" style="plain" systemItem="fixedSpace" id="MdL-3O-Y2F"/>
                         <barButtonItem image="settingsbutton" id="hCB-gp-QOV">
                             <connections>
                                 <segue destination="NYM-OE-5qt" kind="presentation" identifier="settingsSegue" modalPresentationStyle="fullScreen" modalTransitionStyle="crossDissolve" id="XaC-tL-uLj"/>
@@ -1955,7 +1952,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="t4d-a5-LDz"/>
-        <segue reference="Z9l-gl-8bY"/>
+        <segue reference="2qt-Na-sRD"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="chknote" width="22" height="22"/>
