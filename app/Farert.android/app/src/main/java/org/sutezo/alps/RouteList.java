@@ -55,6 +55,7 @@ public class RouteList {
                                             // 会社線通過連絡運輸で発着駅のみのチェックである場合もON（と同時に、COMPNTERMINALもON）
     final static int BSRJCTSP_B	= 29;		// [w]分岐特例B
     final static int BSRSHINZAIREV	= 28;		// [w]新幹線-在来線折り返し
+    final static int BSRSHINKJCT = 17;      // [w]新幹線の在来船分岐駅(草津とか)
 
     final static int BSR69TERM	= 24;    // [r] not used
     final static int BSR69CONT	= 23;    // [r]
@@ -101,15 +102,15 @@ public class RouteList {
                         build_route.add(ri.lineId, ri.stationId);
                     } else {
                         build_route.add(ri.stationId);
+                        // copy of flag
+		        if (source_route.route_flag.osakakan_detour) {
+		            build_route.setDetour(true);
+			}
                     }
                 }
             }
             // copy of route
             route_list_raw = dupRouteItems(build_route.route_list_raw, count);
-            // copy of flag
-            if (source_route.route_flag.osakakan_detour) {
-                build_route.setDetour(true);
-            }
             route_flag = build_route.route_flag;
         }
     }

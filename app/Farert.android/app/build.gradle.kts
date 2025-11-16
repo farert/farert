@@ -20,8 +20,8 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 37
-        versionName = "25.09"
+        versionCode = 38
+        versionName = "25.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -52,9 +52,7 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
+
     lint {
         baseline = file("lint-baseline.xml")
     }
@@ -63,6 +61,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    buildToolsVersion = "35.0.0"
     androidComponents {
         onVariants { variant ->
             variant.packaging.dex.useLegacyPackaging = false

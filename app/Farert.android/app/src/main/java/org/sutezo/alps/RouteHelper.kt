@@ -286,7 +286,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
     result.isResultCompanyBeginEnd = fi.isBeginEndCompanyLine
     result.isResultCompanyMultipassed = fi.isMultiCompanyLine
 
-    //result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect()
+    result.isEnableTokaiStockSelect = fi.isEnableTokaiStockSelect()
 
     /* begin/end terminal */
     result.beginStationId = fi.getBeginTerminalId()

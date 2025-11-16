@@ -87,6 +87,56 @@ class SelectLineTableViewController: UITableViewController {
         
         return cell;
     }
+    
+    // macOS用：セクションヘッダーの高さを調整
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        #if targetEnvironment(macCatalyst)
+        return 60  // macOSでは高めに設定（デフォルト22の約3倍）
+        #else
+        return 28  // iOS/iPadOS
+        #endif
+    }
+
+    // macOS用：セクションヘッダーに上部マージンを追加
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        if #available(iOS 13.0, *) {
+            headerView.backgroundColor = .systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
+        
+        let label = UILabel()
+        label.text = self.tableView(tableView, titleForHeaderInSection: section)
+        label.font = UIFont.preferredFont(forTextStyle: .headline)
+        if #available(iOS 13.0, *) {
+            label.textColor = .secondaryLabel
+        } else {
+            // Fallback on earlier versions
+        }
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        headerView.addSubview(label)
+        
+        #if targetEnvironment(macCatalyst)
+        // macOS用：上部に大きめの余白を追加
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 30), // 上部に30pt余白
+            label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -6)
+        ])
+        #else
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 6),
+            label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -6)
+        ])
+        #endif
+        
+        return headerView
+    }
 
     /*
     // Override to support conditional editing of the table view.

@@ -92,7 +92,8 @@ typedef uint32_t SPECIFICFLAG;
                                 // 規43−2や、分岐特例途中の中途半端な経路の時ON
                                 // 会社線通過連絡運輸で発着駅のみのチェックである場合もON（と同時に、COMPNTERMINALもON）
 #define BSRJCTSP_B      29      // [w]分岐特例B
-#define BSRSHINZAIREV   28     // [w]新幹線、在在来線折り返し
+#define BSRSHINZAIREV   28      // [w]新幹線、在在来線折り返し
+#define BSRSHINKJCT     17      // [w]新幹線の在来船分岐駅(草津とか)
 
 #define BSR69TERM       24      // [r]  // not used
 #define BSR69CONT       23      // [r]
@@ -276,7 +277,7 @@ public:
     BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
                             //         bit2: term, bit3: end([山])
                             // bit6:1= disable
-    bool rule88;
+    int32_t rule88;         // Rule88適用時の減算距離 (0, 38, 76)
     bool rule69;
     bool rule70;
     bool special_fare_enable;
@@ -293,8 +294,6 @@ public:
     bool jctsp_route_change;    //6 分岐特例(add内部使用)
 
     // bit 11-20 発着 都区市内 適用
-    bool ter_begin_oosaka;      //21 大阪・新大阪
-    bool ter_fin_oosaka ;      //22
 
     // 会社線
     bool compncheck     ;      //23 会社線通過チェック有効
@@ -332,8 +331,6 @@ public:
         trackmarkctl = false;           //5 次にremoveTailでlastItemの通過マスクをOffする(typeOでもPでもないので)
         jctsp_route_change = false; //6 分岐特例(add内部使用)
 
-        ter_begin_oosaka    = false;      //21 大阪・新大阪
-        ter_fin_oosaka      = false;      //22
         compncheck          = false;      //23 会社線通過チェック有効
         compnpass           = false;      //24 通過連絡運輸
         compnda             = false;      //25 通過連絡運輸不正フラグ
@@ -353,7 +350,7 @@ public:
         rule115 = 0;
         rule70bullet = false;
         rule86bullet = false;
-        rule88 = false;
+        rule88 = 0;
         rule69 = false;
         rule70 = false;
         special_fare_enable = false;
@@ -408,7 +405,7 @@ public:
     }
     void setStartAsCity() { ASSERT(meihan_city_enable); meihan_city_flag = true;    /* 着駅=単駅、発駅市内駅 */ }
     void setArriveAsCity()  { ASSERT(meihan_city_enable); meihan_city_flag = false; /* 発駅=単駅、着駅市内駅 */ }
-//    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; }
+    void setJrTokaiStockApply(bool flag) { jrtokaistock_applied = flag; } /* for iOS */
                                                                   /* clearRule()潰すと、株主有効が使えないので、こう(上)してみた */
                                                                   /* coreAreaIDByCityId() が影響 */
     void setDisableRule86or87() { rule86or87 |= 0x40; }
@@ -482,8 +479,6 @@ public:
 
     void terCityReset() {
         rule86or87 &= 0x40;
-        ter_begin_oosaka    = false;      //21 大阪・新大阪
-        ter_fin_oosaka      = false;      //22
     }
     void optionFlagReset() {
         special_fare_enable = false;
@@ -496,9 +491,7 @@ public:
     }
     bool isTerCity() const {
         return
-        (rule86or87 & 0x3f) ||
-        ter_begin_oosaka    ||      //21 大阪・新大阪
-        ter_fin_oosaka      ;      //22
+        (rule86or87 & 0x3f);
     }
 
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
@@ -869,12 +862,12 @@ public:
             ((endTerminalId < STATION_ID_AS_CITYNO) ||
              (CITYNO_NAGOYA == (endTerminalId - STATION_ID_AS_CITYNO)));
     }
-//    bool isEnableTokaiStockSelect() const {
-//        return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
-//    }
-    bool isJrTokaiOnly() const {
-        return enableTokaiStockSelect == 2; // JR東海TOICA有効
+    bool isEnableTokaiStockSelect() const {
+        return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
     }
+    bool in_range_toica(const RouteList& route) const;
+    bool in_range_toica_sub(int32_t t_station_id, int32_t t_station_id2) const;
+
     // 地方交通線を含んでいるか？
     bool didHaveLocalLine() const { return !local_only && total_jr_calc_km != total_jr_sales_km; }
     bool isLocalOnly() const { return local_only; }
@@ -1330,7 +1323,7 @@ public:
     int32_t  coreAreaIDByCityId(int32_t startEndFlg) const;
 private:
     void   checkIsJRTokaiOnly(void);
-    static int32_t  CheckOfRule88j(vector<RouteItem> *route);
+    static int32_t  CheckOfRule88j(const vector<RouteItem> &route);
 public:
     static vector<int32_t>  Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route);
 private:
