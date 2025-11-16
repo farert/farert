@@ -133,14 +133,49 @@ class TerminalSelectTableViewController: CSTableViewController {
             }
             return cell
         }
+        // ★ 新規追加：通常のヘッダーの場合、macOS用にマージンを追加 ★
+        #if targetEnvironment(macCatalyst)
+        if let headerText = self.tableView(tableView, titleForHeaderInSection: section) {
+            let headerView = UIView()
+            headerView.backgroundColor = .systemBackground
+            
+            let label = UILabel()
+            label.text = headerText
+            label.font = UIFont.preferredFont(forTextStyle: .headline)
+            label.textColor = .secondaryLabel
+            label.translatesAutoresizingMaskIntoConstraints = false
+            
+            headerView.addSubview(label)
+            
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+                label.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+                label.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 30),
+                label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -6)
+            ])
+            
+            return headerView
+        }
+        #endif
         return nil
     }
 
     override func  tableView(_ tableView : UITableView, heightForHeaderInSection section : Int) -> CGFloat {
         if (!searchController.isActive || searchController.searchBar.text == "") &&
             (scopeBar.selectedSegmentIndex == SEGIDX_HISTORY) && (section == 0) && (self.historyTerms.count <= 0) {
-                return HEADER_HEIGHT
+#if targetEnvironment(macCatalyst)
+return 60  // macOSでは高めに設定（デフォルト22の約3倍）
+#else
+            return HEADER_HEIGHT
+#endif
         }
+        // ★ 新規追加：通常のヘッダーの高さ ★
+        #if targetEnvironment(macCatalyst)
+        if self.tableView(tableView, titleForHeaderInSection: section) != nil {
+            return 60  // macOSでは高めに設定
+        }
+        #endif
+
         return UITableView.automaticDimension;
     }
 
