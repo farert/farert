@@ -9,6 +9,7 @@
 
 std::string open_database();
 void close_database();
+std::string database_info();
 
 class az_route : public Route {
 public:
@@ -24,7 +25,7 @@ public:
     std::string arriveval_station_name() const { return RouteUtil::StationName(RouteList::arriveStationId()); }    
 
     // Changed from std::string& to std::string for WASM binding compatibility
-    int build_route(std::string route_str) { return setup_route(route_str.c_str());}
+    std::string build_route(const std::string& route_str);
     std::string route_script() { return RouteList::route_script(); }
 
     void remove_all() { Route::removeAll(); }

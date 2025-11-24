@@ -3567,7 +3567,7 @@ int32_t Route::reverse()
  *  @retval 1 success
  *  @retval 0 success
  */
-int32_t Route::setup_route(LPCTSTR route_str)
+int32_t Route::setup_route(LPCTSTR route_str, char* error_ptr /* = NULL*/, size_t error_ptr_size /* = 0 */, int* column_no /* = 0 */)
 {
     const static TCHAR* token = _T(", |/\t");
     TCHAR* p;
@@ -3577,6 +3577,7 @@ int32_t Route::setup_route(LPCTSTR route_str)
     int32_t rc = 1;
     int32_t len;
     TCHAR* ctx = NULL;
+    int32_t column = 0;
     bool backup_notsamekokurahakatashinzai = route_flag.notsamekokurahakatashinzai;
 
     removeAll();
@@ -3635,10 +3636,24 @@ ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
             lineId = 0;
             stationId1 = stationId2;
         }
+        ++column;
+    }
+
+    route_flag.notsamekokurahakatashinzai = backup_notsamekokurahakatashinzai;
+
+    if ((p != NULL) && (error_ptr != NULL)) {
+        /* error occurred */
+        _tcscpy_s(error_ptr, error_ptr_size, p);
+    }
+    if ((p == NULL) && (error_ptr != NULL) && (0 < error_ptr_size)) {
+        /* normal end */
+        error_ptr[0] = _T('\0');
     }
     delete [] rstr;
 
-    route_flag.notsamekokurahakatashinzai = backup_notsamekokurahakatashinzai;
+    if (column_no != NULL) {
+        *column_no = column;
+    }
     return rc;
 }
 

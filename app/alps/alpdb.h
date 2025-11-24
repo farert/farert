@@ -1151,7 +1151,7 @@ public:
     virtual ~Route();
 
     void    assign(const RouteList& source_route, int32_t count = -1);
-    int32_t setup_route(LPCTSTR route_str);
+    int32_t setup_route(LPCTSTR route_str, char* error_ptr = NULL, size_t error_ptr_size = 0, int32_t* column_no = 0);
 
 protected:
     bool    chk_jctsb_b(int32_t kind, int32_t num);

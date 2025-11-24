@@ -3,7 +3,7 @@
 #include <sstream>
 #include <azusa.h>
 
-int g_tax = 10; // Default 10% tax rate (can be changed at runtime)
+// int g_tax = 10; // Default 10% tax rate (can be changed at runtime)
 
 // open database
 // return JSON string with DB info
@@ -34,6 +34,19 @@ void close_database()
 {
     DBS::getInstance()->close();
 }
+
+std::string database_info()
+{
+    DBsys dbsys;
+
+    if (RouteUtil::DbVer(&dbsys)) {
+        return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
+         + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
+    } else {
+        return "{ \"result\": false, \"reson\": \"failued to open database.\" }";
+    }
+}
+
 
 // fare info object to JSON
 std::string az_route::get_fare_info_object_json() {
@@ -555,6 +568,7 @@ std::string fare_ui::search_station_by_keyword(std::string key)
 		while (dbo.moveNext()) {
             stations.push_back(dbo.getText(0));
         }
+        oss << "{";
         oss << json_encoder::begin_array("stations");
         for (std::string& line : stations) {
             if (0 < num++) {
@@ -565,6 +579,7 @@ std::string fare_ui::search_station_by_keyword(std::string key)
             }
         }
         oss << json_encoder::end_array();
+        oss << "}";
         return oss.str();
     }
     return "";
@@ -691,5 +706,28 @@ std::string dev::execute_sql(const std::string& sql)
     }
 
     oss << "],\"rowCount\":" << rowNum << "}";
+    return oss.str();
+}
+
+/* build route from string
+
+ { 
+   "failItem": "金山",
+   "offset": 4,
+   "rc": -2
+ }
+*/
+std::string az_route::build_route(const std::string& route_str)
+{
+    std::ostringstream oss;
+    char error_buf[256] = {0};
+    int offset = 0;
+
+    int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
+    oss << "{ \"rc\": " << rc << ", ";
+    oss << json_encoder::pair("failItem", std::string(error_buf)) << ", ";
+    oss << json_encoder::pair("offset", offset);
+    oss << " }";
+
     return oss.str();
 }
