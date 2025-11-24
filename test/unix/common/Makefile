@@ -15,7 +15,7 @@ vpath %cpp ../common
 
 
 OBJS = $(patsubst %.c,%.o,$(wildcard ./*.c)) $(patsubst %.cpp,%.o,$(wildcard ./*.cpp)) $(patsubst %.cpp,%.o,$(wildcard ../common/*.cpp)) ../common/test_exec.o \
-       db.o sqlite3.o azusa.o alpdb.o testmain.o
+       db.o sqlite3.o alpdb.o testmain.o
 
 test : 
 
