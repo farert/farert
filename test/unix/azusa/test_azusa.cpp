@@ -360,6 +360,78 @@ int main() {
     TEST_RESULT("武蔵小杉→品川の運賃", fare_musako_shinagawa.substr(0, 200) + "...");
 
     // ========================================
+    // 11.6. build_route() スペース区切り + route_script() + assign() 照合テスト
+    // ========================================
+    TEST_SECTION("11.6. build_route()スペース区切り + route_script() + assign()照合");
+
+    // 1. add_route() で基準経路を作成
+    az_route reference_route;
+    reference_route.add_start_route("武蔵小杉");
+    reference_route.add_route("南武線", "府中本町");
+    reference_route.add_route("武蔵野線", "西船橋");
+    reference_route.add_route("総武線", "東京");
+    reference_route.add_route("東海道新幹線", "品川");
+
+    std::string ref_script = reference_route.route_script();
+    TEST_RESULT("【基準】add_route()の経路", ref_script);
+
+    // 2. build_route() でスペース区切り文字列から構築
+    az_route space_separated_route;
+    std::string space_route_str = "武蔵小杉 南武線 府中本町 武蔵野線 西船橋 総武線 東京 東海道新幹線 品川";
+    std::string space_build_result = space_separated_route.build_route(space_route_str);
+    TEST_RESULT("build_route(スペース区切り)結果", space_build_result);
+
+    std::string space_script = space_separated_route.route_script();
+    TEST_RESULT("build_route(スペース区切り)の経路", space_script);
+
+    // 3. route_script() の照合
+    if (ref_script == space_script) {
+        TEST_RESULT("route_script()照合結果", "✓ 一致");
+    } else {
+        TEST_RESULT("route_script()照合結果", "✗ 不一致");
+        TEST_RESULT("  基準", ref_script);
+        TEST_RESULT("  スペース区切り", space_script);
+    }
+
+    // 4. assign() で経路をコピーして照合
+    az_route assigned_route;
+    assigned_route.assign(reference_route, reference_route.get_route_count());
+
+    std::string assigned_script = assigned_route.route_script();
+    TEST_RESULT("assign()後の経路", assigned_script);
+
+    if (ref_script == assigned_script) {
+        TEST_RESULT("assign()照合結果", "✓ 一致");
+    } else {
+        TEST_RESULT("assign()照合結果", "✗ 不一致");
+    }
+
+    // 5. 3つの方法すべてのroute_script()が一致するか確認
+    if (ref_script == space_script && ref_script == assigned_script) {
+        TEST_RESULT("【総合】全方法の照合結果", "✓ 完全一致（add_route/build_route/assign すべて同じ）");
+    } else {
+        TEST_RESULT("【総合】全方法の照合結果", "✗ 不一致あり");
+    }
+
+    // 6. 運賃情報JSONも照合
+    std::string ref_fare_json = reference_route.get_fare_info_object_json();
+    std::string space_fare_json = space_separated_route.get_fare_info_object_json();
+    std::string assigned_fare_json = assigned_route.get_fare_info_object_json();
+
+    bool all_json_match = (ref_fare_json == space_fare_json) && (ref_fare_json == assigned_fare_json);
+    if (all_json_match) {
+        TEST_RESULT("【運賃JSON】全方法の照合結果", "✓ 完全一致");
+    } else {
+        TEST_RESULT("【運賃JSON】全方法の照合結果", "✗ 不一致あり");
+        if (ref_fare_json != space_fare_json) {
+            TEST_RESULT("  add vs build", "不一致");
+        }
+        if (ref_fare_json != assigned_fare_json) {
+            TEST_RESULT("  add vs assign", "不一致");
+        }
+    }
+
+    // ========================================
     // 12. az_route - Rule88 適用例（新大阪-姫路）
     // ========================================
     TEST_SECTION("12. Rule88 適用テスト（新大阪→姫路）");
