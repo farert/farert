@@ -230,6 +230,66 @@ int main() {
     }
 
     // ========================================
+    // 9.5. az_route - assign() テスト
+    // ========================================
+    TEST_SECTION("9.5. az_route - assign() で経路をコピー");
+
+    // 元の経路を作成（東京→品川→横浜）
+    az_route source_route;
+    source_route.add_start_route("東京");
+    source_route.add_route("東海道線", "品川");
+    source_route.add_route("東海道線", "横浜");
+
+    TEST_INT("元の経路数", source_route.get_route_count());
+    TEST_RESULT("元の出発駅", source_route.departure_station_name());
+    TEST_RESULT("元の到着駅", source_route.arriveval_station_name());
+    TEST_RESULT("元の経路スクリプト", source_route.route_script());
+
+    // 新しい経路オブジェクトに assign() でコピー
+    az_route dest_route;
+    dest_route.assign(source_route, source_route.get_route_count());
+
+    TEST_INT("コピー後の経路数", dest_route.get_route_count());
+    TEST_RESULT("コピー後の出発駅", dest_route.departure_station_name());
+    TEST_RESULT("コピー後の到着駅", dest_route.arriveval_station_name());
+    TEST_RESULT("コピー後の経路スクリプト", dest_route.route_script());
+
+    // コピーされた経路の運賃計算も確認
+    std::string copied_fare = dest_route.show_fare();
+    TEST_RESULT("コピーした経路の運賃", copied_fare.substr(0, 150) + "...");
+
+    // ========================================
+    // 9.6. az_route - assign(route, 3) テスト（部分コピー）
+    // ========================================
+    TEST_SECTION("9.6. az_route - assign(route, 3) で経路の一部をコピー");
+
+    // 長い経路を作成（東京→新青森→大館→好摩→目時）
+    az_route long_route;
+    long_route.add_start_route("東京");
+    long_route.add_route("東北新幹線", "新青森");
+    long_route.add_route("奥羽線", "大館");
+    long_route.add_route("花輪線", "好摩");
+    long_route.add_route("IGRいわて銀河", "目時");
+
+    TEST_INT("元の経路数（長い経路）", long_route.get_route_count());
+    TEST_RESULT("元の出発駅", long_route.departure_station_name());
+    TEST_RESULT("元の到着駅", long_route.arriveval_station_name());
+    TEST_RESULT("元の経路スクリプト", long_route.route_script());
+
+    // 最初の3駅分だけコピー（東京、新青森、大館）
+    az_route partial_route;
+    partial_route.assign(long_route, 3);
+
+    TEST_INT("部分コピー後の経路数", partial_route.get_route_count());
+    TEST_RESULT("部分コピー後の出発駅", partial_route.departure_station_name());
+    TEST_RESULT("部分コピー後の到着駅", partial_route.arriveval_station_name());
+    TEST_RESULT("部分コピー後の経路スクリプト", partial_route.route_script());
+
+    // 部分コピーされた経路の運賃計算も確認
+    std::string partial_fare = partial_route.show_fare();
+    TEST_RESULT("部分コピーした経路の運賃", partial_fare.substr(0, 200) + "...");
+
+    // ========================================
     // 10. az_route - 自動経路検索
     // ========================================
     TEST_SECTION("10. az_route - 自動経路検索");
@@ -256,6 +316,49 @@ int main() {
     build_result = route3.build_route("加島,JR東西線,京橋,大阪環状線,大阪c,東海道線,神戸,山陽線,西明石,山陽新幹線,厚狭");
     TEST_RESULT("build_route(route_str)", build_result);
     TEST_RESULT("構築後の経路", route3.route_script());
+
+    // ========================================
+    // 11.5. add_route() と build_route() の同等性テスト（簡単な経路）
+    // ========================================
+    TEST_SECTION("11.5. add_route() と build_route() の運賃情報同等性テスト");
+
+    // 方法1: add_start_route() + add_route() で構築
+    // 経路: 武蔵小杉 → 府中本町 → 西船橋 → 東京 → 品川
+    az_route route_by_add;
+    route_by_add.add_start_route("武蔵小杉");
+    route_by_add.add_route("南武線", "府中本町");
+    route_by_add.add_route("武蔵野線", "西船橋");
+    route_by_add.add_route("総武線", "東京");
+    route_by_add.add_route("東海道新幹線", "品川");
+
+    TEST_INT("add_route()で構築した経路数", route_by_add.get_route_count());
+    TEST_RESULT("add_route()で構築した経路", route_by_add.route_script());
+
+    // 方法2: build_route() で構築
+    az_route route_by_build;
+    std::string simple_route = "武蔵小杉,南武線,府中本町,武蔵野線,西船橋,総武線,東京,東海道新幹線,品川";
+    std::string build_result2 = route_by_build.build_route(simple_route);
+    TEST_RESULT("build_route()の結果", build_result2);
+    TEST_INT("build_route()で構築した経路数", route_by_build.get_route_count());
+    TEST_RESULT("build_route()で構築した経路", route_by_build.route_script());
+
+    // 両方の方法で構築した経路の運賃情報JSONを取得
+    std::string fare_json_by_add = route_by_add.get_fare_info_object_json();
+    std::string fare_json_by_build = route_by_build.get_fare_info_object_json();
+
+    // 比較結果を表示
+    if (fare_json_by_add == fare_json_by_build) {
+        TEST_RESULT("運賃情報JSON比較結果", "✓ 一致（両方の方法で同じ結果）");
+    } else {
+        TEST_RESULT("運賃情報JSON比較結果", "✗ 不一致（異なる結果）");
+        TEST_RESULT("add_route()のJSON", fare_json_by_add.substr(0, 300) + "...");
+        TEST_RESULT("build_route()のJSON", fare_json_by_build.substr(0, 300) + "...");
+    }
+
+    // 参考: 運賃表示も確認
+    std::string fare_musako_shinagawa = route_by_add.show_fare();
+    TEST_RESULT("武蔵小杉→品川の運賃", fare_musako_shinagawa.substr(0, 200) + "...");
+
     // ========================================
     // 12. az_route - Rule88 適用例（新大阪-姫路）
     // ========================================

@@ -32,7 +32,7 @@ public:
     void remove_tail() { Route::removeTail(); }
     int reverse() { return Route::reverse(); }
 
-    void assign(const RouteList& source_route, int count); // Use for result details page and try auto route.
+    void assign(const RouteList& source_route, int count) { Route::assign(source_route, count); } // Use for result details page and try auto route.
 
     int type_of_passed_line(int offset) { return Route::typeOfPassedLine(offset); }  // use for auto route
     int set_detour(bool enabled) { return Route::setDetour(enabled); }

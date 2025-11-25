@@ -81,13 +81,26 @@ source start.sh
 - `remove_tail()` - 最後の経路の削除
 - `reverse()` - 経路の逆転
 - `type_of_passed_line()` - 通過路線タイプの取得
+- `assign()` - 別の RouteList から経路データをコピー
 - `remove_all()` - すべての経路の削除
+
+### 9.5. az_route::assign() による経路コピー
+- `assign(const RouteList& source_route, int count)` - 別のルートオブジェクトから経路をコピー
+  - 結果詳細ページや自動経路試行時に使用
+  - 元の経路を保持したまま、別のルートオブジェクトに経路データをコピーできる
 
 ### 10. az_route::自動経路検索
 - `auto_route()` - 自動経路検索（新幹線使用/不使用の指定可能）
 
 ### 11. az_route::経路文字列からの構築
 - `build_route()` - 経路文字列からの経路構築
+
+### 11.5. add_route() と build_route() の同等性テスト
+- 同じ経路を2つの異なる方法で構築し、運賃情報JSONが完全に一致することを確認
+- 方法1: `add_start_route()` + `add_route()` で段階的に構築
+- 方法2: `build_route()` でカンマ区切り文字列から一括構築
+- テスト経路: 武蔵小杉 → 府中本町 → 西船橋 → 東京 → 品川
+- `get_fare_info_object_json()` の出力が完全に一致することを検証
 
 ### 12-13. 実践例
 - Rule88適用テスト（新大阪→姫路）
