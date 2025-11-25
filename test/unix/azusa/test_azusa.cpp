@@ -64,10 +64,6 @@ int main() {
     std::string companies = fare_ui::get_companys();
     TEST_RESULT("get_companys()", companies);
 
-    // 2-3. 都道府県IDと会社ID取得
-    TEST_INT("get_prefect_id('東京都')", fare_ui::get_prefect_id("東京都"));
-    TEST_INT("get_company_id('JR東日本')", fare_ui::get_company_id("JR東日本"));
-
     // ========================================
     // 3. fare_ui - 路線データ取得
     // ========================================

@@ -97,9 +97,6 @@ namespace fare_ui {
 
     // 駅名のかなを得る
     std::string get_kana_by_station(const std::string& station_name);
-
-    int get_prefect_id(std::string prefecture);
-    int get_company_id(std::string company);
 }
 
 // Developer tools namespace

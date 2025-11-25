@@ -40,6 +40,10 @@ Copyright (C) 2025 Sutezo (sutezo666@gmail.com)
 
 // int g_tax = 10; // Default 10% tax rate (can be changed at runtime)
 
+static int get_prefect_id(std::string prefecture);
+static int get_company_id(std::string company);
+
+
 // open database
 // return JSON string with DB info
 std::string open_database()
@@ -478,7 +482,7 @@ std::string fare_ui::get_companys()
 // line-selection-screen
 
 // 都道府県IDを返す
-int fare_ui::get_prefect_id(std::string prefecture)
+static int get_prefect_id(std::string prefecture)
 {
     static const char tsql[] = "select rowid from t_prefect where name=?";
     DBO dbo = DBS::getInstance()->compileSql(tsql);
@@ -492,7 +496,7 @@ int fare_ui::get_prefect_id(std::string prefecture)
 }
 
 // JRグループの会社IDを返す
-int fare_ui::get_company_id(std::string company)
+static int get_company_id(std::string company)
 {
     static const char tsql[] = "select rowid from t_company where name=?";
     DBO dbo = DBS::getInstance()->compileSql(tsql);
