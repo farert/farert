@@ -3,6 +3,41 @@
 #include <sstream>
 #include <azusa.h>
 
+#if 0
+
+'Farert'
+Copyright (C) 2025 Sutezo (sutezo666@gmail.com)
+
+   'Farert' is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    'Farert' is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with 'Farert'.  If not, see <http://www.gnu.org/licenses/>.
+
+/*
+このプログラムはフリーソフトウェアです。あなたはこれを、フリーソフトウェ
+ア財団によって発行された GNU 一般公衆利用許諾契約書(バージョン3か、希
+望によってはそれ以降のバージョンのうちどれか)の定める条件の下で再頒布
+または改変することができます。
+
+このプログラムは有用であることを願って頒布されますが、*全くの無保証*
+です。商業可能性の保証や特定の目的への適合性は、言外に示されたものも含
+め全く存在しません。詳しくはGNU 一般公衆利用許諾契約書をご覧ください。
+
+あなたはこのプログラムと共に、GNU 一般公衆利用許諾契約書の複製物を一部
+受け取ったはずです。もし受け取っていなければ、フリーソフトウェア財団ま
+で請求してください
+*/
+
+#endif
+
 // int g_tax = 10; // Default 10% tax rate (can be changed at runtime)
 
 // open database
@@ -35,6 +70,7 @@ void close_database()
     DBS::getInstance()->close();
 }
 
+// DB Information
 std::string database_info()
 {
     DBsys dbsys;
@@ -47,8 +83,22 @@ std::string database_info()
     }
 }
 
+// 運賃計算結果出力 for Shared export
+//
+std::string az_route::show_fare()
+{
+    FARE_INFO fi;
+    CalcRoute crt(*this);
 
-// fare info object to JSON
+    crt.calcFare(&fi);
+    std::string result = fi.showFare(crt.getRouteFlag());
+    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+
+    return result;
+}
+
+// 運賃計算結果出力 for JSON Object
+// 
 std::string az_route::get_fare_info_object_json() {
     FARE_INFO fi;
     std::ostringstream message;
@@ -262,19 +312,38 @@ std::string az_route::get_fare_info_object_json() {
 // add start station
 int az_route::add_start_route(std::string station)
 {
-    return add(RouteUtil::GetStationId(station.c_str()));
+    int32_t station_id = RouteUtil::GetStationId(station.c_str());
+
+    if (0 < station_id) {
+        return add(station_id);
+    } else {
+        return -200;
+    }
 }
 
 // add end station
 int az_route::add_route(std::string line, std::string station)
 {
-    return add(RouteUtil::GetLineId(line.c_str()), RouteUtil::GetStationId(station.c_str()));
+    int line_id = RouteUtil::GetLineId(line.c_str());
+    int station_id = RouteUtil::GetStationId(station.c_str());
+    if (line_id <= 0) {
+        return -300;
+    }
+    if (station_id <= 0) {
+        return -200;
+    }
+    return add(line_id, station_id);
 }
 
 // auto route from current to destinationStation
 int az_route::auto_route(int useBulletTrain, std::string destinationStation)
 {
-    return changeNeerest(useBulletTrain, RouteUtil::GetStationId(destinationStation.c_str()));
+    int station_id = RouteUtil::GetStationId(destinationStation.c_str());
+
+    if (station_id <= 0) {
+        return -200;
+    }
+    return changeNeerest(useBulletTrain, station_id);
 }
 
 // get routes as JSON array
@@ -308,6 +377,36 @@ std::string az_route::get_route_record(int index)
         + " }";
 }
 
+/* build route from string
+    for Import route
+ { 
+   "failItem": "金山",
+   "offset": 4,
+   "rc": -2
+ }
+*/
+std::string az_route::build_route(const std::string& route_str)
+{
+    std::ostringstream oss;
+    char error_buf[256] = {0};
+    int offset = 0;
+
+    int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
+    oss << "{" << json_encoder::pair("rc", rc) << ",";
+    oss << json_encoder::pair("failItem", std::string(error_buf)) << ",";
+    oss << json_encoder::pair("offset", offset);
+    oss << "}";
+
+    return oss.str();
+}
+
+//  Output Routes
+//  for Export route
+std::string az_route::route_script()
+{
+    return RouteList::route_script(); 
+}
+
 ///////////////////////
 
     // 都道府県の列挙
@@ -328,7 +427,7 @@ std::string fare_ui::get_prefects()
                 prefects.push_back(dbo.getText(0));
             }
         }
-        oss << json_encoder::begin_array("prefectures");
+        oss << "{" << json_encoder::begin_array("prefectures");
         for (std::string& pref : prefects) {
             if (0 < num++) {
                 oss << ",";
@@ -337,7 +436,7 @@ std::string fare_ui::get_prefects()
                 oss << "\"" << pref << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "{}";
@@ -361,7 +460,7 @@ std::string fare_ui::get_companys()
                 companies.push_back(dbo.getText(0));
             }
 		}
-        oss << json_encoder::begin_array("companies");
+        oss << "{" << json_encoder::begin_array("companies");
         for (std::string& company : companies) {
             if (0 < num++) {
                 oss << ",";
@@ -370,7 +469,7 @@ std::string fare_ui::get_companys()
                 oss << "\"" << company << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
 	}
     return "{}";
@@ -412,14 +511,14 @@ std::string fare_ui::get_lines_by_prefect(std::string prefecture)
     std::vector<std::string> lines;
     int num = 0;
 
-    DBO dbo = RouteUtil::Enum_lines_from_company_prefect(get_company_id(prefecture.c_str()));
+    DBO dbo = RouteUtil::Enum_lines_from_company_prefect(get_prefect_id(prefecture.c_str()));
 
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             lines.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("lines");
+        oss << "{" << json_encoder::begin_array("lines");
         for (std::string& line : lines) {
             if (0 < num++) {
                 oss << ",";
@@ -428,7 +527,7 @@ std::string fare_ui::get_lines_by_prefect(std::string prefecture)
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -444,10 +543,10 @@ std::string fare_ui::get_lines_by_company(std::string jrgroup)
 
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             lines.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("lines");
+        oss << "{" << json_encoder::begin_array("lines");
         for (std::string& line : lines) {
             if (0 < num++) {
                 oss << ",";
@@ -456,7 +555,7 @@ std::string fare_ui::get_lines_by_company(std::string jrgroup)
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -472,10 +571,10 @@ std::string fare_ui::get_lines_by_station(std::string station)
 
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             lines.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("lines");
+        oss << "{" << json_encoder::begin_array("lines");
         for (std::string& line : lines) {
             if (0 < num++) {
                 oss << ",";
@@ -484,7 +583,7 @@ std::string fare_ui::get_lines_by_station(std::string station)
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -502,10 +601,10 @@ std::string fare_ui::get_stations_by_company_and_line(std::string jrgroup, std::
                                RouteUtil::GetLineId(line_name.c_str()));
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             stations.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("stations");
+        oss << "{" << json_encoder::begin_array("stations");
         for (std::string& line : stations) {
             if (0 < num++) {
                 oss << ",";
@@ -514,7 +613,7 @@ std::string fare_ui::get_stations_by_company_and_line(std::string jrgroup, std::
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -528,14 +627,14 @@ std::string fare_ui::get_stations_by_prefecture_and_line(std::string prefecture,
     int num = 0;
 
     DBO dbo = RouteUtil::Enum_station_located_in_prefect_or_company_and_line(
-                get_company_id(prefecture.c_str()), 
+                get_prefect_id(prefecture.c_str()), 
                                RouteUtil::GetLineId(line_name.c_str()));
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             stations.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("stations");
+        oss << "{" << json_encoder::begin_array("stations");
         for (std::string& line : stations) {
             if (0 < num++) {
                 oss << ",";
@@ -544,7 +643,7 @@ std::string fare_ui::get_stations_by_prefecture_and_line(std::string prefecture,
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -565,11 +664,10 @@ std::string fare_ui::search_station_by_keyword(std::string key)
     DBO dbo = RouteUtil::Enum_station_match(key.c_str());
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             stations.push_back(dbo.getText(0));
         }
-        oss << "{";
-        oss << json_encoder::begin_array("stations");
+        oss << "{" << json_encoder::begin_array("stations");
         for (std::string& line : stations) {
             if (0 < num++) {
                 oss << ",";
@@ -578,8 +676,7 @@ std::string fare_ui::search_station_by_keyword(std::string key)
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
-        oss << "}";
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -595,10 +692,10 @@ std::string fare_ui::get_branch_stations_by_line(std::string line_name, std::str
                                                  RouteUtil::GetStationId(station_name.c_str()));
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             stations.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("stations");
+        oss << "{" << json_encoder::begin_array("stations");
         for (std::string& line : stations) {
             if (0 < num++) {
                 oss << ",";
@@ -607,7 +704,7 @@ std::string fare_ui::get_branch_stations_by_line(std::string line_name, std::str
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -622,10 +719,10 @@ std::string fare_ui::get_stations_by_line(std::string line_name)
     DBO dbo = RouteUtil::Enum_station_of_lineId(RouteUtil::GetLineId(line_name.c_str()));
     if (dbo.isvalid()) {
         std::ostringstream oss;
-		while (dbo.moveNext()) {
+        while (dbo.moveNext()) {
             stations.push_back(dbo.getText(0));
         }
-        oss << json_encoder::begin_array("stations");
+        oss << "{" << json_encoder::begin_array("stations");
         for (std::string& line : stations) {
             if (0 < num++) {
                 oss << ",";
@@ -634,7 +731,7 @@ std::string fare_ui::get_stations_by_line(std::string line_name)
                 oss << "\"" << line << "\"";
             }
         }
-        oss << json_encoder::end_array();
+        oss << json_encoder::end_array() << "}";
         return oss.str();
     }
     return "";
@@ -709,25 +806,3 @@ std::string dev::execute_sql(const std::string& sql)
     return oss.str();
 }
 
-/* build route from string
-
- { 
-   "failItem": "金山",
-   "offset": 4,
-   "rc": -2
- }
-*/
-std::string az_route::build_route(const std::string& route_str)
-{
-    std::ostringstream oss;
-    char error_buf[256] = {0};
-    int offset = 0;
-
-    int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
-    oss << "{ \"rc\": " << rc << ", ";
-    oss << json_encoder::pair("failItem", std::string(error_buf)) << ", ";
-    oss << json_encoder::pair("offset", offset);
-    oss << " }";
-
-    return oss.str();
-}

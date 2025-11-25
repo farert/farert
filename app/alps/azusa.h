@@ -24,10 +24,6 @@ public:
     std::string departure_station_name() const { return RouteUtil::StationName(RouteList::departureStationId()); }
     std::string arriveval_station_name() const { return RouteUtil::StationName(RouteList::arriveStationId()); }    
 
-    // Changed from std::string& to std::string for WASM binding compatibility
-    std::string build_route(const std::string& route_str);
-    std::string route_script() { return RouteList::route_script(); }
-
     void remove_all() { Route::removeAll(); }
     void remove_tail() { Route::removeTail(); }
     int reverse() { return Route::reverse(); }
@@ -38,14 +34,6 @@ public:
     int set_detour(bool enabled) { return Route::setDetour(enabled); }
     void set_no_rule(bool no_rule) { route_flag.setNoRule(no_rule); }
 
-    std::string show_fare() {
-        FARE_INFO fi;
-        CalcRoute crt(*this);
-        crt.calcFare(&fi);
-        std::string result = fi.showFare(crt.getRouteFlag());
-        result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
-        return result;
-    }
 
     // route_flag
     void set_long_route(bool flag) { route_flag.setLongRoute(flag); }
@@ -60,7 +48,13 @@ public:
     bool is_osakakan_detour() const { return route_flag.osakakan_detour; }   
     void set_not_same_kokura_hakata_shin_zai(bool enabled) { Route::setNotSameKokuraHakataShinZai(enabled); }
 
-    std::string get_fare_info_object_json();
+    // 運賃計算結果出力
+    std::string show_fare(); // for Shared export
+    std::string get_fare_info_object_json(); // for JSON object
+
+    // Changed from std::string& to std::string for WASM binding compatibility
+    std::string build_route(const std::string& route_str);
+    std::string route_script();
 
     // 内部配列を JSON にシリアライズして返す
     std::string get_routes_json();
