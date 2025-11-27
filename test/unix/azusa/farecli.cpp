@@ -84,91 +84,63 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return tokens;
 }
 
-// 経路文字列から経路を構築（build_route使用）
-bool build_route_from_string(az_route& route, const std::string& route_str, bool json_mode) {
-    std::string result = route.build_route(route_str);
-
-    // build_route は JSON を返す: { "rc": 0, "failItem": "", "offset": 0 }
-    // rc が 0 なら成功
-    if (result.find("\"rc\": 0") == std::string::npos) {
-        std::cerr << "Error: Failed to build route from string: " << route_str << std::endl;
-        std::cerr << "Result: " << result << std::endl;
-        return false;
-    }
-
-    // 結果表示
-    if (json_mode) {
-        std::cout << route.get_fare_info_object_json() << std::endl;
-    } else {
-        std::cout << route.show_fare() << std::endl;
-    }
-
-    return true;
-}
-
 // トークンリストから経路を構築（add_start_route/add_route使用）
 bool build_route_from_tokens(az_route& route, const std::vector<std::string>& tokens, bool json_mode) {
+    int result = -999;
+    std::string station;
+    std::string line;
+
     if (tokens.empty()) {
         std::cerr << "Error: No tokens provided" << std::endl;
         return false;
     }
 
-    // 最初の駅を追加
-    int result = route.add_start_route(tokens[0]);
-    if (result < 0) {
-        std::cerr << "Error: Failed to add start station: " << tokens[0] << std::endl;
-        return false;
-    }
+    route.removeAll();
 
     // 残りの路線と駅を追加（路線、駅のペア）
-    for (size_t i = 1; i + 1 < tokens.size(); i += 2) {
-        result = route.add_route(tokens[i], tokens[i + 1]);
-        if (result < 0) {
-            std::cerr << "Error: Failed to add route: " << tokens[i] << " -> " << tokens[i + 1] << std::endl;
-            return false;
+    for (auto it = tokens.cbegin() ; it != tokens.cend(); it++) {
+        if (0 == route.get_route_count()) {
+            // 最初の駅を追加
+            result = route.add_start_route(*it);
+            if (result < 0) {
+                station = *it;
+                break;
+            }
+        } else if (std::next(it) != tokens.cend()) {
+            result = route.add_route(*it, *std::next(it));
+            if (result < 0) {
+                line = *it;
+                station = *std::next(it);
+                break;
+            }
+            ++it;
+        } else {
+            // 自動経路検索（新幹線使用: 1）
+            result = route.auto_route(1, *it);
+            if (result < 0) {
+                station = *it;
+                break;
+            }
         }
     }
-
     // 結果表示
-    if (json_mode) {
-        std::cout << route.get_fare_info_object_json() << std::endl;
+    if (0 <= result) {
+        if (json_mode) {
+            std::cout << route.get_fare_info_object_json() << std::endl;
+        } else {
+            std::cout << route.show_fare() << std::endl;
+        }
     } else {
-        std::cout << route.show_fare() << std::endl;
+        if (json_mode) {
+            std::cout << "{" << json_encoder::pair("line", line) << json_encoder::pair("staion", station) << std::endl;
+        } else {
+            std::cout << "Fail: " << result << std::endl;
+            std::cout << "      " << line << "-" << station << std::endl;
+        }
     }
-
-    return true;
+    return 0 <= result;
 }
 
-// 自動経路検索（偶数個のトークン）
-bool auto_route_search(az_route& route, const std::vector<std::string>& tokens, bool json_mode) {
-    if (tokens.size() != 2) {
-        std::cerr << "Error: Auto route search requires exactly 2 stations" << std::endl;
-        return false;
-    }
-
-    // 出発駅を追加
-    int result = route.add_start_route(tokens[0]);
-    if (result < 0) {
-        std::cerr << "Error: Failed to add start station: " << tokens[0] << std::endl;
-        return false;
-    }
-
-    // 自動経路検索（新幹線使用: 1）
-    result = route.auto_route(1, tokens[1]);
-    if (result < 0) {
-        std::cerr << "Error: Failed to auto route to: " << tokens[1] << std::endl;
-        return false;
-    }
-
-    // 結果表示
-    if (json_mode) {
-        std::cout << route.get_fare_info_object_json() << std::endl;
-    } else {
-        std::cout << route.show_fare() << std::endl;
-    }
-
-    return true;
-}
 
 // ファイルから経路を処理
 bool process_file(const char* filename, bool json_mode) {
@@ -215,17 +187,8 @@ bool process_file(const char* filename, bool json_mode) {
             continue;
         }
 
-        // トークン数に応じて処理
-        if (tokens.size() % 2 == 0) {
-            // 偶数個: 自動経路検索
-            if (!auto_route_search(route, tokens, json_mode)) {
-                success = false;
-            }
-        } else {
-            // 奇数個: 手動経路構築
-            if (!build_route_from_tokens(route, tokens, json_mode)) {
-                success = false;
-            }
+        if (!build_route_from_tokens(route, tokens, json_mode)) {
+            success = false;
         }
     }
 
@@ -233,7 +196,8 @@ bool process_file(const char* filename, bool json_mode) {
     return success;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
     bool json_mode = false;
     char* filename = nullptr;
     int opt;
@@ -284,35 +248,16 @@ int main(int argc, char** argv) {
         if (argc - optind == 1 && strchr(argv[optind], ',') != nullptr) {
             // カンマで分割してトークンリストに変換
             std::vector<std::string> tokens = split(argv[optind], ',');
-
-            // トークン数に応じて処理
-            if (tokens.size() % 2 == 0) {
-                // 偶数個: 自動経路検索
-                success = auto_route_search(route, tokens, json_mode);
-            } else {
-                // 奇数個: 手動経路構築
-                success = build_route_from_tokens(route, tokens, json_mode);
-            }
-        }
-        // 引数が偶数個の場合は自動経路検索
-        else if ((argc - optind) % 2 == 0) {
-            std::vector<std::string> tokens;
-            for (int i = optind; i < argc; i++) {
-                tokens.push_back(argv[i]);
-            }
-            success = auto_route_search(route, tokens, json_mode);
-        }
-        // 引数が奇数個の場合は手動経路構築
-        else {
+            success = build_route_from_tokens(route, tokens, json_mode);
+        } else {
             std::vector<std::string> tokens;
             for (int i = optind; i < argc; i++) {
                 tokens.push_back(argv[i]);
             }
             success = build_route_from_tokens(route, tokens, json_mode);
         }
-    }
-    // 引数なしの場合
-    else {
+    } else {
+        // 引数なしの場合
         std::cerr << "Error: No arguments provided" << std::endl;
         usage(argv[0]);
         close_database();
