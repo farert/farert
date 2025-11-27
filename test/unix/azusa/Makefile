@@ -6,8 +6,8 @@ vpath %.c ../../../app/win_mfc/fjr_mfc/lib/db ../../../app/alps
 vpath %.cpp ../../../app/win_mfc/fjr_mfc/lib/db ../../../app/alps ../common
 
 CXX = g++
-#CXXFLAGS = -Wall -std=c++20 -D_NO_LOG -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/alps
-CXXFLAGS = -Wall -std=c++11 -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/alps
+CXXFLAGS = -Wall -std=c++11 -D_NO_LOG -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/alps
+#CXXFLAGS = -Wall -std=c++11 -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/alps
 LDLIBS = -lpthread -ldl
 
 all: farecli test_azusa
