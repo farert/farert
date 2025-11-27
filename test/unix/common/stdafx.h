@@ -13,13 +13,13 @@
 #if defined _CONSOLE_TEST
 #define ASSERT(cond) if (!(cond)) {  \
     char dummy; \
-    fprintf(stderr, "\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n\nPress enter key to continue.", \
+    fprintf(stdout, "\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n\nPress enter key to continue.", \
     __FILE__, __LINE__); \
     scanf("%c", &dummy); \
-    fprintf(stderr, "\n\n"); }
+    fprintf(stdout, "\n\n"); }
 #else
 #define ASSERT(cond) if (!(cond)) { \
-    fprintf(stderr, "\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", \
+    fprintf(stdout, "\n\n\n!!!!!!!!!!!!!!Assertion error!!!!!!!!!!!!!!!!!!!!!!!%s:%d!!!!!!!!!!!!!!!!!! \n\n\n", \
     __FILE__, __LINE__); \
     for (;;); }
 #endif
@@ -37,7 +37,8 @@
 
 typedef char* LPTSTR;
 
-#define TRACE printf
+extern void TRACE(const char* fmt, ...);
+//#define TRACE printf
 #define _T
 
 #ifndef FALSE

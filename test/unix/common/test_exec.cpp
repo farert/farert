@@ -5,7 +5,7 @@
 #if defined _DEBUG || !defined _WINDOWS || defined TEST
 
 
-FILE *os = stderr;
+FILE *os = stdout;
 
 #define TID(s)	RouteUtil::GetStationId(_T(#s))
 #define LID(s)	RouteUtil::GetLineId(_T(#s))
@@ -2796,7 +2796,7 @@ void test_autoroute(const TCHAR *route_def[], int option = 0)
 		route.removeAll();
 		STRCPY(4096, buffer, route_def[i]);
 		rc = route.setup_route(buffer);
-		printf("setup_route() rc=%d\n", rc);
+		TRACE("setup_route() rc=%d\n", rc);
 		ASSERT(0 <= rc);
 
 		switch (route_def[i + 1][0]) {
@@ -3038,7 +3038,7 @@ int test_setup_route(TCHAR* buffer, Route& route)
 			stationId2 = RouteUtil::GetStationId(p);
 			ASSERT(0 < stationId2);
 			rc = route.add(lineId, /*stationId1,*/ stationId2);
-			_ftprintf(stdout, _T("add() status=%d\n"), rc);
+			TRACE(_T("add() status=%d\n"), rc);
 			if (-1 == fail) {
 				/* OK */
 				ASSERT(1 <= rc);
