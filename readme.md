@@ -41,10 +41,11 @@
 ### POSIX(CLI)
 
 ```
-$ cd test/unix/all
+$ cd test/unix/azusa
 $ make
-$ source start.sh
-$ ./farert <駅1> <路線1> <駅2> ...
+$ source ../all/start.sh
+$ ./farecli <駅1> <路線1> <駅2> ...
+
 ```
 
 ### How to edit and make database
