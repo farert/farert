@@ -130,7 +130,7 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("isResultCompanyMultipassed", fi.isMultiCompanyLine()),
         json_encoder::pair("isEnableTokaiStockSelect", fi.isEnableTokaiStockSelect()),
         json_encoder::pair("beginStation", CalcRoute::BeginOrEndStationName(fi.getBeginTerminalId())),
-        json_encoder::pair("endStationId", CalcRoute::BeginOrEndStationName(fi.getEndTerminalId())),
+        json_encoder::pair("endStation", CalcRoute::BeginOrEndStationName(fi.getEndTerminalId())),
         json_encoder::pair("isBeginInCity", FARE_INFO::IsCityId(fi.getBeginTerminalId())),
         json_encoder::pair("isEndInCity", FARE_INFO::IsCityId(fi.getEndTerminalId())),
         /* Rule114 */
