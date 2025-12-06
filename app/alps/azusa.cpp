@@ -489,7 +489,7 @@ static int get_prefect_id(std::string prefecture)
     dbo.setParam(1, prefecture.c_str());
 
     if (dbo.moveNext()) {
-        return dbo.getInt(0) + 0x10000;
+        return dbo.getInt(0) * 0x10000;
     } else {
         return -1;
     }

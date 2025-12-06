@@ -70,8 +70,8 @@ int main() {
     TEST_SECTION("3. fare_ui - 路線データ取得");
 
     // 3-1. 都道府県の路線一覧
-    std::string lines_tokyo = fare_ui::get_lines_by_prefect("東京都");
-    TEST_RESULT("get_lines_by_prefect('東京都')", lines_tokyo.substr(0, 100) + "...");
+    std::string lines_tokyo = fare_ui::get_lines_by_prefect("静岡県");
+    TEST_RESULT("get_lines_by_prefect('静岡県')", lines_tokyo.substr(0, 100) + "...");
 
     // 3-2. JR会社の路線一覧
     std::string lines_jre = fare_ui::get_lines_by_company("JR東日本");
