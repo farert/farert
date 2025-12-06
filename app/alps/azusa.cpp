@@ -427,7 +427,7 @@ std::string fare_ui::get_prefects()
 
         while (dbo.moveNext()) {
             ident = dbo.getInt(1);
-            if (0x10000 < ident) {
+            if (0x10000 <= ident) {
                 prefects.push_back(dbo.getText(0));
             }
         }
