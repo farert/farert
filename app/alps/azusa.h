@@ -147,6 +147,9 @@ namespace json_encoder {
     inline std::string end_array() {
         return "]";
     }
+    inline std::string value(const std::string & value) {
+        return "\"" + value + "\"";
+    }
 }
 
 //////////////////////////////////////////////////////////////

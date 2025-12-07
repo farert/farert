@@ -150,6 +150,7 @@ std::string az_route::get_fare_info_object_json() {
                 if (fareStock <= 0) {
                     break;
                 }
+                oss << "{";
                 if (fi.isRule114()) {
                     oss << json_encoder::pair("rule114StockFare", 
                             fi.getFareStockDiscount(i, dummy, true)
@@ -157,8 +158,9 @@ std::string az_route::get_fare_info_object_json() {
                 }
                 oss << json_encoder::pair("stockDiscountFare",
                         (fareStock + fi.getFareForCompanyline()));
-                oss << json_encoder::pair("stockDiscountTitle", title);
                 oss << ",";
+                oss << json_encoder::pair("stockDiscountTitle", title);
+                oss << "},";
             }
             std::string str = oss.str();
             str.pop_back(); // remove last comma
@@ -184,8 +186,13 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("fareForBRT", fi.getFareForBRT()),
         json_encoder::pair("isBRTdiscount", fi.getIsBRT_discount()),
         json_encoder::pair("roundTripFareWithCompanyLine", fi.roundTripFareWithCompanyLine().fare),
-        fi.isRule114() ? json_encoder::pair("roundTripFareWithCompanyLinePriorRule114", fi.roundTripFareWithCompanyLinePriorRule114()) : "",
-        json_encoder::pair("fareForIC", fi.getFareForIC()),
+        [&]() -> std::string {
+            if (fi.isRule114()) {
+                return json_encoder::pair("roundTripFareWithCompanyLinePriorRule114", fi.roundTripFareWithCompanyLinePriorRule114())
+                + json_encoder::pair("fareForIC", fi.getFareForIC());
+            }
+            return json_encoder::pair("fareForIC", fi.getFareForIC());
+        }(),
         [&]() -> std::string {
             std::ostringstream oss;
             int fare = fi.getAcademicDiscountFare();
@@ -225,74 +232,75 @@ std::string az_route::get_fare_info_object_json() {
                 } else if (!route_flag.isEnableRule115()
                         || !route_flag.isRule115specificTerm()) {
                     if (route_flag.isLongRoute()) {
-                        oss << "近郊区間内ですので最短経路の運賃で利用可能です";
+                        oss << json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です");
                     } else {
-                        oss << "近郊区間内ですので最安運賃の経路で計算";
+                        oss << json_encoder::value("近郊区間内ですので最安運賃の経路で計算");
                     }
                 }
 
                 // 大回り指定では115適用はみない
                 if (route_flag.isEnableRule115() && !route_flag.isEnableLongRoute()) {
                     if (route_flag.isRule115specificTerm()) {
-                        oss << "「単駅最安」で単駅発着が選択可能です";
+                        oss << json_encoder::value("「単駅最安」で単駅発着が選択可能です");
                     } else {
-                        oss << "「特定都区市内発着」で特定都区市内発着が選択可能です";
+                        oss << json_encoder::value("「特定都区市内発着」で特定都区市内発着が選択可能です");
                     }
                 }
             }
 
             // 私鉄競合特例運賃(大都市近郊区間)
             if (route_flag.special_fare_enable) {
-                oss << "特定区間割引運賃適用";
+                oss << json_encoder::value("特定区間割引運賃適用");
             }
 
             if (fi.isBeginEndCompanyLine()) {
-                oss << "会社線発着のため一枚の乗車券として発行されない場合があります.";
+                oss << json_encoder::value("会社線発着のため一枚の乗車券として発行されない場合があります.");
             }
             if (fi.isMultiCompanyLine()) {
                 /* 2017.3 以降 ここに来ることはない */
-                oss << "複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.";
+                oss << json_encoder::value("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.");
             }
             if (fi.isEnableTokaiStockSelect()) {
-                oss << "JR東海株主優待券使用オプション選択可";
+                oss << json_encoder::value("JR東海株主優待券使用オプション選択可");
             }
             if (fi.getIsBRT_discount()) {
-                oss << "BRT乗り継ぎ割引適用";
+                oss << json_encoder::value("BRT乗り継ぎ割引適用");
             }
 
             if (route_flag.no_rule && route_flag.special_fare_enable) {
-                oss << "特定区間割引運賃を適用していません";
+                oss << json_encoder::value("特定区間割引運賃を適用していません");
             }
             if (route_flag.no_rule && route_flag.isAvailableRule86()) {
-                oss << "旅客営業規則第86条を適用していません";
+                oss << json_encoder::value("旅客営業規則第86条を適用していません");
             }
             if (route_flag.no_rule && route_flag.isAvailableRule87()) {
-                oss << "旅客営業規則第87条を適用していません";
+                oss << json_encoder::value("旅客営業規則第87条を適用していません");
             }
             if (route_flag.no_rule && route_flag.isAvailableRule88()) {
-                oss << "旅客営業規則第88条を適用していません";
+                oss << json_encoder::value("旅客営業規則第88条を適用していません");
             }
             if (route_flag.no_rule && route_flag.isAvailableRule69()) {
-                oss << "旅客営業規則第69条を適用していません";
+                oss << json_encoder::value("旅客営業規則第69条を適用していません");
             }
             if (route_flag.no_rule && route_flag.isAvailableRule70()) {
-                oss << "旅客営業規則第70条を適用していません";
+                oss << json_encoder::value("旅客営業規則第70条を適用していません");
             }
             if (route_flag.no_rule && route_flag.isAvailableRule115()) {
-                oss << "旅客営業取扱基準規程第115条を適用していません";
+                oss << json_encoder::value("旅客営業取扱基準規程第115条を適用していません");
             }
             if (route_flag.isAvailableRule16_5()) {
-                oss << "この乗車券はJRで発券されません. 東京メトロでのみ発券されます";
+                oss << json_encoder::value("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
             }
             if (fi.isRule114()) {
-                oss << "旅客営業取扱基準規程第114条適用営業キロ計算駅:" << [&]() -> std::string {
+                oss << json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:") << 
+                [&]() -> std::string {
                     std::ostringstream oss;
-                    oss << fi.getRule114apply_terminal_station();
+                    oss << json_encoder::value(fi.getRule114apply_terminal_station());
                     return oss.str();
                 }();
             }
             if (route_flag.compnterm) {
-                oss << "この経路の会社線通過連絡は許可されていません.";
+                oss << json_encoder::value("この経路の会社線通過連絡は許可されていません.");
             }
             oss << json_encoder::end_array();
             return oss.str();
