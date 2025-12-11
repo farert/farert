@@ -1,5 +1,17 @@
 # Farert 経路運賃営業キロ計算アプリ
 
+## Quick Try
+
+```
+git clone https://github.com/farert/farert.git
+cd farert
+git checkout azusa
+cd test/unix/azusa
+make
+source ../all/start.sh
+./farecli 東京 東海道新幹線 新大阪 山陽新幹線 博多
+```
+
 ## なんなのか
 - https://farert.blogspot.com/p/main.html
 
