@@ -18,7 +18,7 @@ FarertプロジェクトのC++コードのカバレッジをgcovとlcovで測定
 ### 基本的な測定手順
 ```bash
 # 1. 環境変数を設定
-export farertDB=../../../app/win_mfc/fjr_mfc/alps_mfc/res/jrdbnewest.db
+export farertDB=../../../app/win_mfc/fjr_mfc/alps_mfc/res/jrdbNewest.db
 
 # 2. gcovカバレッジ測定
 make coverage

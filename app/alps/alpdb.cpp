@@ -3323,7 +3323,7 @@ int32_t FARE_INFO::CenterStationIdFromCityId(int32_t cityId)
     uint32_t n;
 
     for (n = 0; n < NumOf(cityIds); n++) {
-        if (cityIds[n] == cityId) {
+        if (cityIds[n] == static_cast<uint32_t>(cityId)) {
             return STATION_ID(centerName[n]);
         }
     }
@@ -7127,7 +7127,7 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
 #endif
         route_work.pop_back();
         for (int i = 0; i < (int)route_list_replace.size(); i++) {
-            if (i < (route_list_replace.size() - 1)) {
+            if (i < static_cast<int>(route_list_replace.size() - 1)) {
                 route_work.push_back(RouteItem(route_list_replace.at(i).lineId,
                                                route_list_replace.at(i + 1).stationId));
             } else {
@@ -7148,7 +7148,7 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
 #endif
         /* 始発駅を置き換える */
         route_work.front().stationId = arrive_station_id;
-        for (int i = 1; i < route_list_replace.size(); i++) {
+        for (int i = 1; i < static_cast<int>(route_list_replace.size()); i++) {
             route_work.insert(route_work.begin(), route_work.front());
             route_work.at(1).stationId = route_list_replace.at(i).stationId;
             route_work.at(1).lineId = route_list_replace.at(i).lineId;
@@ -7285,7 +7285,7 @@ void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sal
             for (vector<int32_t>::const_iterator ite = lines.cbegin(); ite != lines.cend(); ite++ ) {
                 int32_t jct_line_id = *ite;
                 TRACE(_T("found junction:%s(%s)\n"), LNAME(jct_line_id), SNAME(last_station_id));
-                if (base_line_id != jct_line_id) {
+                if (base_line_id != static_cast<uint32_t>(jct_line_id)) {
                     route_list_replace.push_back(RouteItem(base_line_id, base_station_id)); // 1st station will not used.
                     get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
                     get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);

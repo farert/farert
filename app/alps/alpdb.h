@@ -1170,11 +1170,42 @@ private:
         bool    _err;
         RouteFlag _route_flag;  // add() - removeTail() work
         RoutePass(const RoutePass& rp) // copy constructor
-                     { memcpy(this, &rp, sizeof(*this)); }
+            : _source_jct_mask(rp._source_jct_mask),
+              _line_id(rp._line_id),
+              _station_id1(rp._station_id1),
+              _station_id2(rp._station_id2),
+              _start_station_id(rp._start_station_id),
+              _num(rp._num),
+              _err(rp._err),
+              _route_flag(rp._route_flag)
+        {
+            memcpy(_jct_mask, rp._jct_mask, JCTMASKSIZE);
+        }
         void clear() { memset(_jct_mask, 0, JCTMASKSIZE); _err = 0; }
         void update(const RoutePass& rp)
-                     { memcpy(this, &rp, sizeof(*this)); }
-        RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
+        {
+            memcpy(_jct_mask, rp._jct_mask, JCTMASKSIZE);
+            _source_jct_mask = rp._source_jct_mask;
+            _line_id = rp._line_id;
+            _station_id1 = rp._station_id1;
+            _station_id2 = rp._station_id2;
+            _start_station_id = rp._start_station_id;
+            _num = rp._num;
+            _err = rp._err;
+            _route_flag = rp._route_flag;
+        }
+        RoutePass() // default constructor
+            : _source_jct_mask(nullptr),
+              _line_id(0),
+              _station_id1(0),
+              _station_id2(0),
+              _start_station_id(0),
+              _num(0),
+              _err(false),
+              _route_flag()
+        {
+            memset(_jct_mask, 0, JCTMASKSIZE);
+        }
     public:
         RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id = 0);
         ~RoutePass() {  }
