@@ -1,5 +1,5 @@
-
-// alps_mfc.h : PROJECT_NAME ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ÌƒƒCƒ“ ƒwƒbƒ_[ ƒtƒ@ƒCƒ‹‚Å‚·B
+ï»¿
+// alps_mfc.h : PROJECT_NAME ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ¡ã‚¤ãƒ³ ãƒ˜ãƒƒãƒ€ãƒ¼ ãƒ•ã‚¡ã‚¤ãƒ«ã§ã™ã€‚
 //
 /*!	@file alps_mfc.h application main.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -8,10 +8,10 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error "PCH ‚É‘Î‚µ‚Ä‚±‚Ìƒtƒ@ƒCƒ‹‚ðƒCƒ“ƒNƒ‹[ƒh‚·‚é‘O‚É 'stdafx.h' ‚ðƒCƒ“ƒNƒ‹[ƒh‚µ‚Ä‚­‚¾‚³‚¢"
+	#error "PCH ã«å¯¾ã—ã¦ã“ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ã™ã‚‹å‰ã« 'stdafx.h' ã‚’ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ã—ã¦ãã ã•ã„"
 #endif
 
-#include "resource.h"		// ƒƒCƒ“ ƒVƒ“ƒ{ƒ‹
+#include "resource.h"		// ãƒ¡ã‚¤ãƒ³ ã‚·ãƒ³ãƒœãƒ«
 
 /*   DB define
  *	../../jr_db_reg.py
@@ -24,7 +24,7 @@ extern int g_tax;	// global
 
 
 // Calps_mfcApp:
-// ‚±‚ÌƒNƒ‰ƒX‚ÌŽÀ‘•‚É‚Â‚¢‚Ä‚ÍAalps_mfc.cpp ‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+// ã“ã®ã‚¯ãƒ©ã‚¹ã®å®Ÿè£…ã«ã¤ã„ã¦ã¯ã€alps_mfc.cpp ã‚’å‚ç…§ã—ã¦ãã ã•ã„ã€‚
 //
 
 class Calps_mfcApp : public CWinApp
@@ -32,11 +32,11 @@ class Calps_mfcApp : public CWinApp
 public:
 	Calps_mfcApp();
 
-// ƒI[ƒo[ƒ‰ƒCƒh
+// ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰
 public:
 	virtual BOOL InitInstance();
 
-// ŽÀ‘•
+// å®Ÿè£…
 
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,5 +1,5 @@
-
-// alps_mfcDlg.cpp : À‘•ƒtƒ@ƒCƒ‹
+ï»¿
+// alps_mfcDlg.cpp : å®Ÿè£…ãƒ•ã‚¡ã‚¤ãƒ«
 //
 //	Copyright(c) sutezo9@me.com 2012 allright reserved.
 //	This source code is GPL license.
@@ -21,25 +21,25 @@
 using namespace std;
 #include <vector>
 
-// ƒ‹[ƒg‘I‘ğ[Š®—¹]‚©?
+// ãƒ«ãƒ¼ãƒˆé¸æŠ[å®Œäº†]ã‹?
 //#define isComplete()	(1 < m_route.routeList().size())
 
 
 
-// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Ìƒo[ƒWƒ‡ƒ“î•ñ‚Ég‚í‚ê‚é CAboutDlg ƒ_ƒCƒAƒƒO
+// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±ã«ä½¿ã‚ã‚Œã‚‹ CAboutDlg ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-// ƒ_ƒCƒAƒƒO ƒf[ƒ^
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚° ãƒ‡ãƒ¼ã‚¿
 	enum { IDD = IDD_ABOUTBOX };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ƒTƒ|[ƒg
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ã‚µãƒãƒ¼ãƒˆ
 
-// À‘•
+// å®Ÿè£…
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
@@ -60,7 +60,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// Calps_mfcDlg ƒ_ƒCƒAƒƒO
+// Calps_mfcDlg ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 
 
 
@@ -103,15 +103,15 @@ BEGIN_MESSAGE_MAP(Calps_mfcDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// Calps_mfcDlg ƒƒbƒZ[ƒW ƒnƒ“ƒhƒ‰[
+// Calps_mfcDlg ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ ãƒãƒ³ãƒ‰ãƒ©ãƒ¼
 
 BOOL Calps_mfcDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// "ƒo[ƒWƒ‡ƒ“î•ñ..." ƒƒjƒ…[‚ğƒVƒXƒeƒ€ ƒƒjƒ…[‚É’Ç‰Á‚µ‚Ü‚·B
+	// "ãƒãƒ¼ã‚¸ãƒ§ãƒ³æƒ…å ±..." ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’ã‚·ã‚¹ãƒ†ãƒ  ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã«è¿½åŠ ã—ã¾ã™ã€‚
 
-	// IDM_ABOUTBOX ‚ÍAƒVƒXƒeƒ€ ƒRƒ}ƒ“ƒh‚Ì”ÍˆÍ“à‚É‚È‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñB
+	// IDM_ABOUTBOX ã¯ã€ã‚·ã‚¹ãƒ†ãƒ  ã‚³ãƒãƒ³ãƒ‰ã®ç¯„å›²å†…ã«ãªã‘ã‚Œã°ãªã‚Šã¾ã›ã‚“ã€‚
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -133,17 +133,17 @@ BOOL Calps_mfcDlg::OnInitDialog()
 	m_fareOptionMenuButton.m_hMenu = m_menu.GetSubMenu(0)->GetSafeHmenu();
 
 
-	// ‚±‚Ìƒ_ƒCƒAƒƒO‚ÌƒAƒCƒRƒ“‚ğİ’è‚µ‚Ü‚·BƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ÌƒƒCƒ“ ƒEƒBƒ“ƒhƒE‚ªƒ_ƒCƒAƒƒO‚Å‚È‚¢ê‡A
-	//  Framework ‚ÍA‚±‚Ìİ’è‚ğ©“®“I‚És‚¢‚Ü‚·B
-	SetIcon(m_hIcon, TRUE);			// ‘å‚«‚¢ƒAƒCƒRƒ“‚Ìİ’è
-	SetIcon(m_hIcon, FALSE);		// ¬‚³‚¢ƒAƒCƒRƒ“‚Ìİ’è
+	// ã“ã®ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®ã‚¢ã‚¤ã‚³ãƒ³ã‚’è¨­å®šã—ã¾ã™ã€‚ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ¡ã‚¤ãƒ³ ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ãªã„å ´åˆã€
+	//  Framework ã¯ã€ã“ã®è¨­å®šã‚’è‡ªå‹•çš„ã«è¡Œã„ã¾ã™ã€‚
+	SetIcon(m_hIcon, TRUE);			// å¤§ãã„ã‚¢ã‚¤ã‚³ãƒ³ã®è¨­å®š
+	SetIcon(m_hIcon, FALSE);		// å°ã•ã„ã‚¢ã‚¤ã‚³ãƒ³ã®è¨­å®š
 
 	//--
 	DBsys dbsys;
 	RouteUtil::DbVer(&dbsys);
 	CString s;
 
-	s.Format(_T(" - DB ver[%s(Á”ïÅ%d%%):%sGMT]"), dbsys.name, g_tax, dbsys.createdate);
+	s.Format(_T(" - DB ver[%s(æ¶ˆè²»ç¨%d%%):%sGMT]"), dbsys.name, g_tax, dbsys.createdate);
 	CString ss;
 	GetWindowText(ss);
 	SetWindowText(ss + s);
@@ -155,22 +155,22 @@ BOOL Calps_mfcDlg::OnInitDialog()
 	pLSel = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 	CRect rc;
 	pLSel->GetWindowRect(rc);
-	pLSel->InsertColumn(0, _T("˜Hü"), LVCFMT_LEFT, rc.Width() / 5  * 3, 0);
-	pLSel->InsertColumn(1, _T("æŠ·‰w"), LVCFMT_LEFT, rc.Width() / 5 * 2, 0);
+	pLSel->InsertColumn(0, _T("è·¯ç·š"), LVCFMT_LEFT, rc.Width() / 5  * 3, 0);
+	pLSel->InsertColumn(1, _T("ä¹—æ›é§…"), LVCFMT_LEFT, rc.Width() / 5 * 2, 0);
 
-	ResetContent();	// ”­‰wA’…‰wAŒo˜H => ‘SÁ‹ IDC_BUTTON_ALL_CLEAR [X] Button pushed.
+	ResetContent();	// ç™ºé§…ã€ç€é§…ã€çµŒè·¯ => å…¨æ¶ˆå» IDC_BUTTON_ALL_CLEAR [X] Button pushed.
 
 	alert_message(STARTUP);
 
 //////////////////////////////////////#####################
 #ifdef _DEBUG
-//	test_exec();	// ’P‘ÌƒeƒXƒg‚ğÀs(Œ‹‰Ê‚Ítest_result.txt)
+//	test_exec();	// å˜ä½“ãƒ†ã‚¹ãƒˆã‚’å®Ÿè¡Œ(çµæœã¯test_result.txt)
 #endif
 //////////////////////////////////////#####################
 
 	DragAcceptFiles();
 
-	return TRUE;  // ƒtƒH[ƒJƒX‚ğƒRƒ“ƒgƒ[ƒ‹‚Éİ’è‚µ‚½ê‡‚ğœ‚«ATRUE ‚ğ•Ô‚µ‚Ü‚·B
+	return TRUE;  // ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚’ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã«è¨­å®šã—ãŸå ´åˆã‚’é™¤ãã€TRUE ã‚’è¿”ã—ã¾ã™ã€‚
 }
 
 void Calps_mfcDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -186,19 +186,19 @@ void Calps_mfcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// ƒ_ƒCƒAƒƒO‚ÉÅ¬‰»ƒ{ƒ^ƒ“‚ğ’Ç‰Á‚·‚éê‡AƒAƒCƒRƒ“‚ğ•`‰æ‚·‚é‚½‚ß‚Ì
-//  ‰º‚ÌƒR[ƒh‚ª•K—v‚Å‚·BƒhƒLƒ…ƒƒ“ƒg/ƒrƒ…[ ƒ‚ƒfƒ‹‚ğg‚¤ MFC ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Ìê‡A
-//  ‚±‚ê‚ÍAFramework ‚É‚æ‚Á‚Ä©“®“I‚Éİ’è‚³‚ê‚Ü‚·B
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã«æœ€å°åŒ–ãƒœã‚¿ãƒ³ã‚’è¿½åŠ ã™ã‚‹å ´åˆã€ã‚¢ã‚¤ã‚³ãƒ³ã‚’æç”»ã™ã‚‹ãŸã‚ã®
+//  ä¸‹ã®ã‚³ãƒ¼ãƒ‰ãŒå¿…è¦ã§ã™ã€‚ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ/ãƒ“ãƒ¥ãƒ¼ ãƒ¢ãƒ‡ãƒ«ã‚’ä½¿ã† MFC ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®å ´åˆã€
+//  ã“ã‚Œã¯ã€Framework ã«ã‚ˆã£ã¦è‡ªå‹•çš„ã«è¨­å®šã•ã‚Œã¾ã™ã€‚
 
 void Calps_mfcDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // •`‰æ‚ÌƒfƒoƒCƒX ƒRƒ“ƒeƒLƒXƒg
+		CPaintDC dc(this); // æç”»ã®ãƒ‡ãƒã‚¤ã‚¹ ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆ
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// ƒNƒ‰ƒCƒAƒ“ƒg‚ÌlŠpŒ`—Ìˆæ“à‚Ì’†‰›
+		// ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã®å››è§’å½¢é ˜åŸŸå†…ã®ä¸­å¤®
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -206,7 +206,7 @@ void Calps_mfcDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// ƒAƒCƒRƒ“‚Ì•`‰æ
+		// ã‚¢ã‚¤ã‚³ãƒ³ã®æç”»
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -215,15 +215,15 @@ void Calps_mfcDlg::OnPaint()
 	}
 }
 
-// ƒ†[ƒU[‚ªÅ¬‰»‚µ‚½ƒEƒBƒ“ƒhƒE‚ğƒhƒ‰ƒbƒO‚µ‚Ä‚¢‚é‚Æ‚«‚É•\¦‚·‚éƒJ[ƒ\ƒ‹‚ğæ“¾‚·‚é‚½‚ß‚ÉA
-//  ƒVƒXƒeƒ€‚ª‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚Ü‚·B
+// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒæœ€å°åŒ–ã—ãŸã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ãƒ‰ãƒ©ãƒƒã‚°ã—ã¦ã„ã‚‹ã¨ãã«è¡¨ç¤ºã™ã‚‹ã‚«ãƒ¼ã‚½ãƒ«ã‚’å–å¾—ã™ã‚‹ãŸã‚ã«ã€
+//  ã‚·ã‚¹ãƒ†ãƒ ãŒã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ã¾ã™ã€‚
 HCURSOR Calps_mfcDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 
-//	Dialog‚È‚Ì‚ÅEnter‚âESC‚ÅƒEƒBƒ“ƒhƒE‚ª•Â‚¶‚È‚¢‚æ‚¤‚É‚·‚é‚½‚ß.
+//	Dialogãªã®ã§Enterã‚„ESCã§ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒé–‰ã˜ãªã„ã‚ˆã†ã«ã™ã‚‹ãŸã‚.
 //
 BOOL Calps_mfcDlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -240,7 +240,7 @@ BOOL Calps_mfcDlg::PreTranslateMessage(MSG* pMsg)
 }
 
 
-// ”­‰ww’è
+// ç™ºé§…æŒ‡å®š
 //	IDC_BUTTON_STARTSEL [...] button pushed
 //
 void Calps_mfcDlg::OnBnClickedButtonStartsel()
@@ -251,26 +251,26 @@ void Calps_mfcDlg::OnBnClickedButtonStartsel()
 	if (IDOK == dlg.DoModal()) {
 		startStationId = dlg.getStationId();
 		if (startStationId != m_route.departureStationId()) {
-			// Šù‘I‘ğƒ‹[ƒg‚Ì”jŠüŠm”F
+			// æ—¢é¸æŠãƒ«ãƒ¼ãƒˆã®ç ´æ£„ç¢ºèª
 			if (0 < reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE))->GetItemCount()) {
 				if (IDYES != CancelRouteQuery()) {
 					return;
 				}
-				ResetContent();	// ”­‰wA’…‰wAŒo˜H => ‘SÁ‹ IDC_BUTTON_ALL_CLEAR [X] Button pushed.
+				ResetContent();	// ç™ºé§…ã€ç€é§…ã€çµŒè·¯ => å…¨æ¶ˆå» IDC_BUTTON_ALL_CLEAR [X] Button pushed.
 			}
-			m_curStationId = startStationId;		// ”­‰wId
+			m_curStationId = startStationId;		// ç™ºé§…Id
 			m_route.add(startStationId);
-			GetDlgItem(IDC_EDIT_START)->SetWindowText(dlg.getStationName());	// ”­‰w•\¦
-			setupForLinelistByStation(m_curStationId);				// ”­‰w‚ÌŠ‘®˜Hüˆê——‚Ì•\¦
-			GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(TRUE);	// ‰w/˜Hü ‘I‘ğƒŠƒXƒg‘I‘ğ‰Â
+			GetDlgItem(IDC_EDIT_START)->SetWindowText(dlg.getStationName());	// ç™ºé§…è¡¨ç¤º
+			setupForLinelistByStation(m_curStationId);				// ç™ºé§…ã®æ‰€å±è·¯ç·šä¸€è¦§ã®è¡¨ç¤º
+			GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(TRUE);	// é§…/è·¯ç·š é¸æŠãƒªã‚¹ãƒˆé¸æŠå¯
 			GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(TRUE);			// [+] button
-			GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(TRUE);	/* Enable [AutoRoute]ƒ{ƒ^ƒ“ */
-		}// •s•ÏX‚È‚ç‚È‚É‚à‚µ‚È‚¢
+			GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(TRUE);	/* Enable [AutoRoute]ãƒœã‚¿ãƒ³ */
+		}// ä¸å¤‰æ›´ãªã‚‰ãªã«ã‚‚ã—ãªã„
 	}
 }
 
 
-// u˜Hüv^u•ªŠò‰wv^u’…‰wv‚Ì‘I‘ğ
+// ã€Œè·¯ç·šã€ï¼ã€Œåˆ†å²é§…ã€ï¼ã€Œç€é§…ã€ã®é¸æŠ
 //	IDC_BUTTON_SEL [+] button pushed.
 //
 void Calps_mfcDlg::OnBnClickedButtonSel()
@@ -297,18 +297,18 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 	}
 
 	if ((pLSel->GetItemText(selIdx, 0))[0] == _T('-')) {
-		SetDlgItemText(IDC_EDIT_STAT, _T("’¼‘OæÔ˜Hü‚Íw’è‚Å‚«‚Ü‚¹‚ñ.–ß‚Á‚ÄæŠ·‰w‚ğÄ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢."));
+		SetDlgItemText(IDC_EDIT_STAT, _T("ç›´å‰ä¹—è»Šè·¯ç·šã¯æŒ‡å®šã§ãã¾ã›ã‚“.æˆ»ã£ã¦ä¹—æ›é§…ã‚’å†é¸æŠã—ã¦ãã ã•ã„."));
 		return;
 	}
 
-	nRoute	 = pLRoute->GetItemCount();			// Œo˜HƒŠƒXƒg”
-	selTitle = pLSel->GetItemText(selIdx, 0);	// ‘I‘ğ ‰w^ü –¼
-	selId    = pLSel->GetItemData(selIdx);		//        ‚ÌId
+	nRoute	 = pLRoute->GetItemCount();			// çµŒè·¯ãƒªã‚¹ãƒˆæ•°
+	selTitle = pLSel->GetItemText(selIdx, 0);	// é¸æŠ é§…ï¼ç·š å
+	selId    = pLSel->GetItemData(selIdx);		//        ã®Id
 
 	ASSERT(0 < selId);
 
 	if (m_selMode == SEL_LINE) {
-		// add route list ˜HüId
+		// add route list è·¯ç·šId
         CString str;
         str.Format(_T("%d) %s"), static_cast<int>(nRoute + 1), static_cast<LPCTSTR>(selTitle));
         pLRoute->SetItemText(pLRoute->InsertItem(LVIF_TEXT | LVIF_PARAM, nRoute, str, 0, 0, 0, MAKEPAIR(selId, 0)), 1, _T(""));
@@ -323,18 +323,18 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		setupForStationlistByLine(selId, m_curStationId, m_route.departureStationId());
 	}
 	else {
-		// add route list ‰wId
+		// add route list é§…Id
 
 		m_route.setNotSameKokuraHakataShinZai(
 			(MF_CHECKED & m_menu.GetMenuState(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_BYCOMMAND))
 				? true : false);
 
-		/* Œo˜H’Ç‰Á */// last line
+		/* çµŒè·¯è¿½åŠ  */// last line
 		curLineId = IDENT1(pLRoute->GetItemData(nRoute - 1));	//(stationId is not yet strage in HIWORD)
 		TRACE(_T("[route.add(%s-%s)\n"), RouteUtil::LineName(curLineId).c_str(), RouteUtil::StationName(selId).c_str());
 		int rslt = m_route.add(curLineId, /*m_curStationId,*/selId);
 		if (m_route.isModified()) {
-			if (0 < UpdateRouteList()) {		// Œo˜H•\¦XV
+			if (0 < UpdateRouteList()) {		// çµŒè·¯è¡¨ç¤ºæ›´æ–°
 				curLineId = m_route.routeList().back().lineId;
 				selId = m_route.routeList().back().stationId;
 			}
@@ -344,9 +344,9 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 			}
 		}
 		else if ((rslt == 0) || (rslt == 1) || (rslt == 4)) {
-			pLRoute->SetItemText(nRoute - 1, 1, selTitle);					// Œo˜HF•ªŠò‰w•\¦
-			pLRoute->SetItemData(nRoute - 1, MAKEPAIR(curLineId, selId));	//Œo˜HF•ªŠò‰wIDİ’è
-																			// ƒJƒ‰ƒ€•’²®
+			pLRoute->SetItemText(nRoute - 1, 1, selTitle);					// çµŒè·¯ï¼šåˆ†å²é§…è¡¨ç¤º
+			pLRoute->SetItemData(nRoute - 1, MAKEPAIR(curLineId, selId));	//çµŒè·¯ï¼šåˆ†å²é§…IDè¨­å®š
+																			// ã‚«ãƒ©ãƒ å¹…èª¿æ•´
 			wc = pLRoute->GetColumnWidth(1);
 			wn = pLRoute->GetStringWidth(selTitle) + 16;
 			if (wc < wn) {
@@ -356,13 +356,13 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		if (rslt < 0) {
 			switch (rslt) {
 			case -1:
-				SetDlgItemText(IDC_EDIT_STAT, _T("Œo˜H‚ªd•¡‚µ‚Ä‚¢‚Ü‚·."));
+				SetDlgItemText(IDC_EDIT_STAT, _T("çµŒè·¯ãŒé‡è¤‡ã—ã¦ã„ã¾ã™."));
 				break;
 			case -4:
-				SetDlgItemText(IDC_EDIT_STAT, _T("‹–‰Â‚³‚ê‚È‚¢‰ïĞü’Ê‰ß˜A—‰^—A‚Å‚·."));
+				SetDlgItemText(IDC_EDIT_STAT, _T("è¨±å¯ã•ã‚Œãªã„ä¼šç¤¾ç·šé€šéé€£çµ¡é‹è¼¸ã§ã™."));
 				break;
 			default:
-				ASSERT(FALSE);	/* -1 ˆÈŠO‚ÍƒoƒO(DBƒGƒ‰[‚©Aˆø”•s³) */
+				ASSERT(FALSE);	/* -1 ä»¥å¤–ã¯ãƒã‚°(DBã‚¨ãƒ©ãƒ¼ã‹ã€å¼•æ•°ä¸æ­£) */
 				AfxMessageBox(_T("Fatal error occured."));
 				ResetContent();
 				return;
@@ -371,7 +371,7 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 		}
 
 		if (5 == rslt) {
-			SetDlgItemText(IDC_EDIT_STAT, _T("Œo˜H‚Í•Ğ“¹ğŒ‚É’B‚µ‚Ä‚¢‚Ü‚·."));
+			SetDlgItemText(IDC_EDIT_STAT, _T("çµŒè·¯ã¯ç‰‡é“æ¡ä»¶ã«é”ã—ã¦ã„ã¾ã™."));
 			return;	/* already finished */
 		}
 		if ((0 != rslt) && (1 != rslt) && (4 != rslt)) {	/* fin */
@@ -383,34 +383,34 @@ void Calps_mfcDlg::OnBnClickedButtonSel()
 
 		setupForLinelistByStation(selId, curLineId);
 
-		/* ‰^’À•\¦ */
+		/* é‹è³ƒè¡¨ç¤º */
 		showFare();
 		m_curStationId = selId;
 		m_selMode = SEL_LINE;	/* for [-] button */
 		ASSERT(m_curStationId == (m_route.routeList().cend() - 1)->stationId);
-		GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// ’…‰w•\¦
+		GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// ç€é§…è¡¨ç¤º
 
 		if (0 == rslt) {
-			SetDlgItemText(IDC_EDIT_STAT, _T("Œo˜H‚ª•Ğ“¹ğŒ‚É’B‚µ‚Ü‚µ‚½."));
-			MessageBox(_T("Œo˜H‚ª•Ğ“¹ğŒ‚É’B‚µ‚Ü‚µ‚½."), _T("Œo˜HI’["),
+			SetDlgItemText(IDC_EDIT_STAT, _T("çµŒè·¯ãŒç‰‡é“æ¡ä»¶ã«é”ã—ã¾ã—ãŸ."));
+			MessageBox(_T("çµŒè·¯ãŒç‰‡é“æ¡ä»¶ã«é”ã—ã¾ã—ãŸ."), _T("çµŒè·¯çµ‚ç«¯"),
 				MB_OK | MB_ICONINFORMATION);
 		}
 		else if (4 == rslt) {
-			SetDlgItemText(IDC_EDIT_STAT, _T("‰ïĞü‚ğŠÜ‚ŞŒo˜H‚Í‚±‚êˆÈãw’è‚Å‚«‚Ü‚¹‚ñ."));
+			SetDlgItemText(IDC_EDIT_STAT, _T("ä¼šç¤¾ç·šã‚’å«ã‚€çµŒè·¯ã¯ã“ã‚Œä»¥ä¸ŠæŒ‡å®šã§ãã¾ã›ã‚“."));
 		}
 	}
 }
 
 //	List double click
-//	IDC_LIST_LINESTATIONS [(˜Hü^•ªŠò‰w^’…‰w)] ListCtrl Double clicked.
+//	IDC_LIST_LINESTATIONS [(è·¯ç·šï¼åˆ†å²é§…ï¼ç€é§…)] ListCtrl Double clicked.
 //
 void Calps_mfcDlg::OnNMDblclkListStations(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	OnBnClickedButtonSel();	// u˜Hüv/u•ªŠò‰wv/u’…‰wv‚Ì‘I‘ğ(IDC_BUTTON_SEL[+]button pushed)
+	OnBnClickedButtonSel();	// ã€Œè·¯ç·šã€/ã€Œåˆ†å²é§…ã€/ã€Œç€é§…ã€ã®é¸æŠ(IDC_BUTTON_SEL[+]button pushed)
 }
 
-//	•ªŠò‰w‘I‘ğ Radio Button
-//	IDC_RADIO_BRANCH_SEL [•ªŠò‰w] Radio Button pushed.
+//	åˆ†å²é§…é¸æŠ Radio Button
+//	IDC_RADIO_BRANCH_SEL [åˆ†å²é§…] Radio Button pushed.
 //
 void Calps_mfcDlg::OnBnClickedRadioBranchSel()
 {
@@ -443,15 +443,15 @@ void Calps_mfcDlg::OnBnClickedRadioBranchSel()
 	}
 }
 
-//	I’…‰ww’è Radio button
-//	IDC_RADIO_STATION_SEL [’…‰w] Radio Button pushed.
+//	çµ‚ç€é§…æŒ‡å®š Radio button
+//	IDC_RADIO_STATION_SEL [ç€é§…] Radio Button pushed.
 //
 void Calps_mfcDlg::OnBnClickedRadioTerminalSel()
 {
-	OnBnClickedRadioBranchSel();	// IDC_RADIO_BRANCH_SEL [•ªŠò‰w] Radio Button pushed.
+	OnBnClickedRadioBranchSel();	// IDC_RADIO_BRANCH_SEL [åˆ†å²é§…] Radio Button pushed.
 }
 
-// delete button(Œo˜H‚Ì––”ö‚ğƒLƒƒƒ“ƒZƒ‹)
+// delete button(çµŒè·¯ã®æœ«å°¾ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«)
 //	IDC_BUTTON_BS [-] button pushed.
 //
 //	enable: IDC_LIST_LINESTATIONS item added for IDC_BUTTON_SEL click or IDC_LIST_LINESTATIONS double click
@@ -471,14 +471,14 @@ void Calps_mfcDlg::OnBnClickedButtonBs()
 	}
 
 	if (m_selMode == SEL_LINE) {
-		/* ˜HüƒŠƒXƒg•\¦’† */
+		/* è·¯ç·šãƒªã‚¹ãƒˆè¡¨ç¤ºä¸­ */
 		ASSERT(2 <= m_route.routeList().size());
 		ASSERT(m_curStationId == IDENT2(pLRoute->GetItemData(numList - 1)));
 
-		if (2 <= numList) {			/* RouteƒŠƒXƒg‚É•ªŠò‰w‚Í2sˆÈã? */
-			m_curStationId = IDENT2(pLRoute->GetItemData(numList - 2)); // ÅIs‚Ì•ªŠò‰w
+		if (2 <= numList) {			/* Routeãƒªã‚¹ãƒˆã«åˆ†å²é§…ã¯2è¡Œä»¥ä¸Š? */
+			m_curStationId = IDENT2(pLRoute->GetItemData(numList - 2)); // æœ€çµ‚è¡Œã®åˆ†å²é§…
 		} else {
-			m_curStationId = m_route.departureStationId();		// ”­‰w
+			m_curStationId = m_route.departureStationId();		// ç™ºé§…
 		}
 		m_selMode = SEL_JUNCTION;
 		m_route.removeTail();
@@ -489,16 +489,16 @@ void Calps_mfcDlg::OnBnClickedButtonBs()
 		pLRoute->SetItemText(numList - 1, 1, _T(""));
 		pLRoute->SetItemData(numList - 1, MAKEPAIR(curLineId, 0));
 
-		/* ‰^’À•\¦ */
+		/* é‹è³ƒè¡¨ç¤º */
 		showFare();
 		if (m_route.routeList().size() <= 1) {
-			GetDlgItem(IDC_EDIT_END)->SetWindowText(_T(""));	// ’…‰w•\¦
+			GetDlgItem(IDC_EDIT_END)->SetWindowText(_T(""));	// ç€é§…è¡¨ç¤º
 		}
 		else {
-			GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// ’…‰w•\¦
+			GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// ç€é§…è¡¨ç¤º
 		}
 	} else {	/* SEL_JUNCTION or SEL_TERMINATE */
-		/* •ªŠò‰w^’…‰wƒŠƒXƒg•\¦’† */
+		/* åˆ†å²é§…ï¼ç€é§…ãƒªã‚¹ãƒˆè¡¨ç¤ºä¸­ */
 		m_selMode = SEL_LINE;
 
 		if (2 <= numList) {
@@ -514,7 +514,7 @@ void Calps_mfcDlg::OnBnClickedButtonBs()
 	}
 }
 
-//	”­‰wA’…‰wAŒo˜H => ‘SÁ‹
+//	ç™ºé§…ã€ç€é§…ã€çµŒè·¯ => å…¨æ¶ˆå»
 //	IDC_BUTTON_ALL_CLEAR [X] Button pushed.
 //
 void Calps_mfcDlg::OnBnClickedButtonAllClear()
@@ -528,8 +528,8 @@ void Calps_mfcDlg::OnBnClickedButtonAllClear()
 }
 
 
-//	IDC_BUTTON_AUTOROUTE [Å’ZŒo˜H] button pushed
-//	’…‰w‚ğw’è‚µ‚ÄÅ’ZŒo˜H‚ğZo
+//	IDC_BUTTON_AUTOROUTE [æœ€çŸ­çµŒè·¯] button pushed
+//	ç€é§…ã‚’æŒ‡å®šã—ã¦æœ€çŸ­çµŒè·¯ã‚’ç®—å‡º
 //
 void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 {
@@ -537,8 +537,8 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 	int endStationId;
 
 	if (m_route.departureStationId() <= 0) {
-		MessageBox(_T("ŠJn‰wAI—¹‰w‚ğw’è‚µ‚È‚¢‚ÆÅ’ZŒo˜H‚ÍZo‚µ‚Ü‚¹‚ñ."),
-										_T("Šm”F"), MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(_T("é–‹å§‹é§…ã€çµ‚äº†é§…ã‚’æŒ‡å®šã—ãªã„ã¨æœ€çŸ­çµŒè·¯ã¯ç®—å‡ºã—ã¾ã›ã‚“."),
+										_T("ç¢ºèª"), MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 
@@ -551,17 +551,17 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 
 	ASSERT(0 < endStationId);
 
-	// ŠJn‰w=I’…‰w‚Í–Ó’°ü‚Å‚È‚¢‚±‚Æ‚ğŠm”F
+	// é–‹å§‹é§…=çµ‚ç€é§…ã¯ç›²è…¸ç·šã§ãªã„ã“ã¨ã‚’ç¢ºèª
 	if (endStationId == m_route.departureStationId()) {
 		if (RouteUtil::NumOfNeerNode(endStationId) <= 1) {
-			CantSameStartAndEnd();	// "w’è‚µ‚½”­‰w’…‰w‚ÌŒo˜H‚Íw’è•s‰Â”\‚Å‚·"
+			CantSameStartAndEnd();	// "æŒ‡å®šã—ãŸç™ºé§…ï¼ç€é§…ã®çµŒè·¯ã¯æŒ‡å®šä¸å¯èƒ½ã§ã™"
 			return;
 		}
 	}
 
 	if (m_route.routeList().back().stationId == endStationId) {
-		MessageBox(_T("ŠJn‰w=I—¹‰w‚Å‚ÍÅ’ZŒo˜H‚ÍZo‚µ‚Ü‚¹‚ñ."),
-										_T("Šm”F"), MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(_T("é–‹å§‹é§…=çµ‚äº†é§…ã§ã¯æœ€çŸ­çµŒè·¯ã¯ç®—å‡ºã—ã¾ã›ã‚“."),
+										_T("ç¢ºèª"), MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 
@@ -569,12 +569,12 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 	Route test_route(route);
 	(void)test_route.changeNeerest(3, endStationId);
 	int pass_route = test_route.typeOfPassedLine(m_route.routeList().size());
-	// 0 alloff(İ—ˆü‚Ì‚İ‚È‚Ì‚Å‘I‘ğˆ‚È‚µ)
-	// 1 ‰ïĞüOFF(VŠ²ü‚Í‚ ‚é‚ª‰ïĞü‚Í‚È‚¢)
-	// 2 VŠ²üOFF(‰ïĞü‚Í‚ ‚é‚ªVŠ²ü‚Í‚È‚¢)
-	// 3 ‚»‚Ì‚Ü‚Ü(VŠ²ü‚à‰ïĞü‚à‚ ‚é)(OFF‚É‚µ‚È‚¢)
+	// 0 alloff(åœ¨æ¥ç·šã®ã¿ãªã®ã§é¸æŠè‚¢ãªã—)
+	// 1 ä¼šç¤¾ç·šOFF(æ–°å¹¹ç·šã¯ã‚ã‚‹ãŒä¼šç¤¾ç·šã¯ãªã„)
+	// 2 æ–°å¹¹ç·šOFF(ä¼šç¤¾ç·šã¯ã‚ã‚‹ãŒæ–°å¹¹ç·šã¯ãªã„)
+	// 3 ãã®ã¾ã¾(æ–°å¹¹ç·šã‚‚ä¼šç¤¾ç·šã‚‚ã‚ã‚‹)(OFFã«ã—ãªã„)
 	CQueryNeerest queryDlg(pass_route, m_selAutorouteOption, this);
-	queryDlg.target.Format(_T("%s‚Ü‚Å‚ÌÅ’ZŒo˜H"), RouteUtil::StationNameEx(endStationId).c_str());
+	queryDlg.target.Format(_T("%sã¾ã§ã®æœ€çŸ­çµŒè·¯"), RouteUtil::StationNameEx(endStationId).c_str());
 	if ((pass_route == 0) || (IDOK == queryDlg.DoModal())) {
 		m_selAutorouteOption = queryDlg.choice();
 		rc = m_route.changeNeerest((pass_route == 0) ? 0 : m_selAutorouteOption, endStationId);
@@ -582,12 +582,12 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 			if (m_route.isModified()) {
 				UpdateRouteList();
 			}
-			SetDlgItemText(IDC_EDIT_STAT, _T("Œo˜H‚Í•Ğ“¹ğŒ‚É’B‚µ‚Ä‚¢‚Ü‚·."));
+			SetDlgItemText(IDC_EDIT_STAT, _T("çµŒè·¯ã¯ç‰‡é“æ¡ä»¶ã«é”ã—ã¦ã„ã¾ã™."));
 			return;	/* already finished */
 		}
 		else if (rc == 4) { /* already routed */
-			SetDlgItemText(IDC_EDIT_STAT, _T("ŠJn‰w‚Ö–ß‚é‚É‚Í‚à‚¤­‚µŒo˜H‚ğw’è‚µ‚Ä‚©‚ç‚É‚µ‚Ä‚­‚¾‚³‚¢"));
-			m_route.assign(route);	/* such as ‘ãX–Ø V‘å‹v•Û -> ‘ãX–Ø */
+			SetDlgItemText(IDC_EDIT_STAT, _T("é–‹å§‹é§…ã¸æˆ»ã‚‹ã«ã¯ã‚‚ã†å°‘ã—çµŒè·¯ã‚’æŒ‡å®šã—ã¦ã‹ã‚‰ã«ã—ã¦ãã ã•ã„"));
+			m_route.assign(route);	/* such as ä»£ã€…æœ¨ æ–°å¤§ä¹…ä¿ -> ä»£ã€…æœ¨ */
 			return;
 		}
 		if (0 < rc) {
@@ -603,14 +603,14 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 			}
 		}
 		else if (-100 < rc) {
-			MessageBox(_T("Œo˜H‚ªd•¡‚µ‚Ä‚¢‚é‚½‚ßZo‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½."),
-				_T("©“®ƒ‹[ƒg"), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(_T("çµŒè·¯ãŒé‡è¤‡ã—ã¦ã„ã‚‹ãŸã‚ç®—å‡ºã§ãã¾ã›ã‚“ã§ã—ãŸ."),
+				_T("è‡ªå‹•ãƒ«ãƒ¼ãƒˆ"), MB_OK | MB_ICONEXCLAMATION);
 			m_route.assign(route);
 			UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		}
 		else { /* < -1000 */
-			MessageBox(_T("Zo‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½."),
-				_T("Šm”F"), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(_T("ç®—å‡ºã§ãã¾ã›ã‚“ã§ã—ãŸ."),
+				_T("ç¢ºèª"), MB_OK | MB_ICONEXCLAMATION);
 			m_route.assign(route);
 			UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 		}
@@ -618,10 +618,10 @@ void Calps_mfcDlg::OnBnClickedButtonAutoroute()
 }
 
 //	ListView<IDC_LIST_LINESTATIONS>
-//	‰w‚ÌŠ‘®˜Hüˆê——‚ğ•\¦
+//	é§…ã®æ‰€å±è·¯ç·šä¸€è¦§ã‚’è¡¨ç¤º
 //
-//	@param [in]				stationId		‰w
-//	@param [in][optional]	curLineId	‘I‘ğ•s‰Â˜Hü(’¼‘OæÔ˜Hü)
+//	@param [in]				stationId		é§…
+//	@param [in][optional]	curLineId	é¸æŠä¸å¯è·¯ç·š(ç›´å‰ä¹—è»Šè·¯ç·š)
 //
 void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 */)
 {
@@ -631,7 +631,7 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 
 	pLSel->DeleteAllItems();			// all record clear
 
-	// •ªŠò‰w<->I’…‰w ‘I‘ğ
+	// åˆ†å²é§…<->çµ‚ç€é§… é¸æŠ
 	GetDlgItem(IDC_RADIO_BRANCH_SEL)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_RADIO_TERMINAL_SEL)->ShowWindow(SW_HIDE);
 
@@ -641,14 +641,14 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 	pLSel->GetClientRect(rc);
 
 	column.mask = LVCF_TEXT | LVCF_WIDTH;
-	column.pszText = _T("˜Hü");		// List title
+	column.pszText = _T("è·¯ç·š");		// List title
 	column.cx = rc.Width();
 	pLSel->SetColumn(0, &column);
 	column.pszText = _T("");
 	column.cx = 10;
 	pLSel->SetColumn(1, &column);
 
-	// ‰w‚ÌŠ‘®˜Hü‚ğƒŠƒXƒg
+	// é§…ã®æ‰€å±è·¯ç·šã‚’ãƒªã‚¹ãƒˆ
 	DBO dbo = RouteUtil::Enum_line_of_stationId(stationId);
 	if (!dbo.isvalid()) {
 		ASSERT(FALSE);
@@ -658,7 +658,7 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 		CString lineName;
 		int lineId = dbo.getInt(1);
 
-		/* ‘O‰ñ‘I‘ğ˜Hü‚Í‘I‘ğ•s‰Â(s“ª‚É"-") */
+		/* å‰å›é¸æŠè·¯ç·šã¯é¸æŠä¸å¯(è¡Œé ­ã«"-") */
 		lineName.Format(_T("%s%s"), (lineId == curLineId) ? _T("- ") : _T(""), dbo.getText(0).c_str());
 
 		pLSel->SetItemText(
@@ -667,16 +667,16 @@ void Calps_mfcDlg::setupForLinelistByStation(int stationId, int curLineId /* =0 
 				1, _T(""));
 	}
 	ASSERT(1 <= idx);
-	SetDlgItemText(IDC_EDIT_STAT, _T("˜Hü‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢."));
-	SetDlgItemText(IDC_STATIC_LIST_SEL, _T("˜Hü‘I‘ğ"));
+	SetDlgItemText(IDC_EDIT_STAT, _T("è·¯ç·šã‚’é¸æŠã—ã¦ãã ã•ã„."));
+	SetDlgItemText(IDC_STATIC_LIST_SEL, _T("è·¯ç·šé¸æŠ"));
 }
 
 //	ListView<IDC_LIST_LINESTATIONS>
-//	˜Hü“à‚Ì•ªŠò‰w^‘S‰wˆê——‚ğ•\¦
+//	è·¯ç·šå†…ã®åˆ†å²é§…ï¼å…¨é§…ä¸€è¦§ã‚’è¡¨ç¤º
 //
-//	@param [in]	lineId			˜Hü
-//	@param [in]	curStationId	‘I‘ğ•s‰Â‰w
-//	@param [in]	startStationId	ŠJn‰w(‘I‘ğ‰Â)
+//	@param [in]	lineId			è·¯ç·š
+//	@param [in]	curStationId	é¸æŠä¸å¯é§…
+//	@param [in]	startStationId	é–‹å§‹é§…(é¸æŠå¯)
 //
 void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int startStationId)
 {
@@ -698,18 +698,18 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int s
 
 	if (m_selMode == SEL_JUNCTION) {
 		CheckRadioButton(IDC_RADIO_BRANCH_SEL, IDC_RADIO_TERMINAL_SEL, IDC_RADIO_BRANCH_SEL);
-		column.pszText = _T("•ªŠò‰w");
-		SetDlgItemText(IDC_EDIT_STAT, _T("æŠ·‰w‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢."));
-		SetDlgItemText(IDC_STATIC_LIST_SEL, _T("æŠ·‰w‘I‘ğ"));
+		column.pszText = _T("åˆ†å²é§…");
+		SetDlgItemText(IDC_EDIT_STAT, _T("ä¹—æ›é§…ã‚’é¸æŠã—ã¦ãã ã•ã„."));
+		SetDlgItemText(IDC_STATIC_LIST_SEL, _T("ä¹—æ›é§…é¸æŠ"));
 	} else {
 		CheckRadioButton(IDC_RADIO_BRANCH_SEL, IDC_RADIO_TERMINAL_SEL, IDC_RADIO_TERMINAL_SEL);
-		column.pszText = _T("‰w");
-		SetDlgItemText(IDC_EDIT_STAT, _T("’…‰w‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢."));
-		SetDlgItemText(IDC_STATIC_LIST_SEL, _T("’…‰w‘I‘ğ"));
+		column.pszText = _T("é§…");
+		SetDlgItemText(IDC_EDIT_STAT, _T("ç€é§…ã‚’é¸æŠã—ã¦ãã ã•ã„."));
+		SetDlgItemText(IDC_STATIC_LIST_SEL, _T("ç€é§…é¸æŠ"));
 	}
 	pLSel->SetColumn(0, &column);
 
-	column.pszText = _T("•ªŠò˜Hü");
+	column.pszText = _T("åˆ†å²è·¯ç·š");
 	pLSel->SetColumn(1, &column);
 
 	DBO dbo;
@@ -726,7 +726,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int s
 		return;
 	}
 
-	int width1, width2;		// ƒJƒ‰ƒ€•ŒvZ—p•Ï”
+	int width1, width2;		// ã‚«ãƒ©ãƒ å¹…è¨ˆç®—ç”¨å¤‰æ•°
 	width1 = width2 = 0;
 
 	for (idx = 0; dbo.moveNext(); idx++) {
@@ -737,8 +737,8 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int s
 			(stationId == curStationId) ? _T("- ") : (stationId == startStationId) ? _T("> ") : _T(""), dbo.getText(0).c_str());
 
 		CString jctLines;
-		if (0 != dbo.getInt(2)) { /* •ªŠò‰w */
-			// •ªŠò‰w‚Ìæ‚è“ü‚ê˜Hü‚ğ'/'‚Å‹æØ‚è—ñ‹“‚µ‚½•¶š—ñ‚ğì¬
+		if (0 != dbo.getInt(2)) { /* åˆ†å²é§… */
+			// åˆ†å²é§…ã®ä¹—ã‚Šå…¥ã‚Œè·¯ç·šã‚’'/'ã§åŒºåˆ‡ã‚Šåˆ—æŒ™ã—ãŸæ–‡å­—åˆ—ã‚’ä½œæˆ
 			DBO dbo_lines = RouteUtil::Enum_line_of_stationId(stationId);
 			if (!dbo_lines.isvalid()) {
 				ASSERT(FALSE);
@@ -758,7 +758,7 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int s
 							idx, stationName, 0, 0, 0, stationId),
 			1, jctLines);
 
-		// ƒJƒ‰ƒ€•ŒvZ
+		// ã‚«ãƒ©ãƒ å¹…è¨ˆç®—
 		int w1 = pLSel->GetStringWidth(stationName);
 		int w2 = pLSel->GetStringWidth(jctLines);
 		if (width1 < w1) {
@@ -772,24 +772,24 @@ void Calps_mfcDlg::setupForStationlistByLine(int lineId, int curStationId, int s
 	pLSel->SetColumnWidth(1, width2 + 16);
 }
 
-//	ƒ‹[ƒg‘I‘ğƒLƒƒƒ“ƒZƒ‹(ƒ‹[ƒg”jŠüj–â‚¢‡‚í‚¹
+//	ãƒ«ãƒ¼ãƒˆé¸æŠã‚­ãƒ£ãƒ³ã‚»ãƒ«(ãƒ«ãƒ¼ãƒˆç ´æ£„ï¼‰å•ã„åˆã‚ã›
 //
 UINT Calps_mfcDlg::CancelRouteQuery()
 {
-	return MessageBox(_T("Œo˜H‘I‘ğ’†‚Å‚·‚ª‚·‚×‚ÄƒLƒƒƒ“ƒZƒ‹‚µ‚Ä‚à‚æ‚ë‚µ‚¢‚Å‚·‚©H"),
-										_T("‘I‘ğŒo˜H”jŠüŠm”F"), MB_YESNO | MB_ICONQUESTION);
+	return MessageBox(_T("çµŒè·¯é¸æŠä¸­ã§ã™ãŒã™ã¹ã¦ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã—ã¦ã‚‚ã‚ˆã‚ã—ã„ã§ã™ã‹ï¼Ÿ"),
+										_T("é¸æŠçµŒè·¯ç ´æ£„ç¢ºèª"), MB_YESNO | MB_ICONQUESTION);
 }
 
-// "w’è‚µ‚½”­‰w’…‰w‚ÌŒo˜H‚Íw’è•s‰Â”\‚Å‚·"
+// "æŒ‡å®šã—ãŸç™ºé§…ï¼ç€é§…ã®çµŒè·¯ã¯æŒ‡å®šä¸å¯èƒ½ã§ã™"
 //
 void Calps_mfcDlg::CantSameStartAndEnd()
 {
-	MessageBox(_T("w’è‚µ‚½”­‰w’…‰w‚ÌŒo˜H‚Íw’è•s‰Â”\‚Å‚·"), _T("w’è•s‰Â”­’…‰w"), MB_ICONEXCLAMATION);
+	MessageBox(_T("æŒ‡å®šã—ãŸç™ºé§…ï¼ç€é§…ã®çµŒè·¯ã¯æŒ‡å®šä¸å¯èƒ½ã§ã™"), _T("æŒ‡å®šä¸å¯ç™ºç€é§…"), MB_ICONEXCLAMATION);
 }
 
 
-//	•\¦ƒNƒŠƒA
-//	(‰æ–Ê•\¦‚Ì‰Šú‰»)
+//	è¡¨ç¤ºã‚¯ãƒªã‚¢
+//	(ç”»é¢è¡¨ç¤ºã®åˆæœŸåŒ–)
 //
 void Calps_mfcDlg::ResetContent()
 {
@@ -805,7 +805,7 @@ void Calps_mfcDlg::ResetContent()
 
 	column.mask = LVCF_TEXT | LVCF_WIDTH;
 
-	column.pszText = _T("˜Hü");
+	column.pszText = _T("è·¯ç·š");
 	column.cx = 80;
 	pLSel->SetColumn(0, &column);
 
@@ -817,11 +817,11 @@ void Calps_mfcDlg::ResetContent()
 
 	reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE))->DeleteAllItems();
 
-	GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(FALSE);	// ‰w/˜Hü ‘I‘ğƒŠƒXƒg
+	GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(FALSE);	// é§…/è·¯ç·š é¸æŠãƒªã‚¹ãƒˆ
 	GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(FALSE);		// [+]button
 
 	GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);
-	GetDlgItem(IDC_EDIT_STAT)->SetWindowText(_T("”­‰w‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢."));
+	GetDlgItem(IDC_EDIT_STAT)->SetWindowText(_T("ç™ºé§…é¸æŠã—ã¦ãã ã•ã„."));
 
 	GetDlgItem(IDC_EDIT_START)->SetWindowText(_T(""));
 	GetDlgItem(IDC_EDIT_END)->SetWindowText(_T(""));
@@ -833,9 +833,9 @@ void Calps_mfcDlg::ResetContent()
 
 	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
-	GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ƒ{ƒ^ƒ“ */
-	GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(FALSE);/* Disable [AutoRoute]ƒ{ƒ^ƒ“ */
-	GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ƒ{ƒ^ƒ“ */
+	GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ãƒœã‚¿ãƒ³ */
+	GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(FALSE);/* Disable [AutoRoute]ãƒœã‚¿ãƒ³ */
+	GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ãƒœã‚¿ãƒ³ */
 
 	//m_fareOptionMenuButton.DrawMenuBar();
 
@@ -843,95 +843,95 @@ void Calps_mfcDlg::ResetContent()
 }
 
 
-//	ƒƒjƒ…[ƒŠƒZƒbƒg
+//	ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãƒªã‚»ãƒƒãƒˆ
 //
 void Calps_mfcDlg::resetMenu(bool en_route)
 {
-	/* [“Á—á“K—p] */
+	/* [ç‰¹ä¾‹é©ç”¨] */
 	m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
 	m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
 
-	/* [Š”å—D‘ÒŒ”g—p] */
+	/* [æ ªä¸»å„ªå¾…åˆ¸ä½¿ç”¨] */
 	m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
 	m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
 
-	/* [–¼ãOption] */
-	m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, _T("’…‰w‚ğ’P‰w‚Éw’è"));
+	/* [åé˜ªOption] */
+	m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR, _T("ç€é§…ã‚’å˜é§…ã«æŒ‡å®š"));
 	m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 
-	/* [‘åãŠÂóü‰“‰ñ‚è] */
-	m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, _T("‘åãŠÂóü‰“‰ñ‚è"));
+	/* [å¤§é˜ªç’°çŠ¶ç·šé å›ã‚Š] */
+	m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN, _T("å¤§é˜ªç’°çŠ¶ç·šé å›ã‚Š"));
 	m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
 
-	/* [”‘½¬‘qVŠ²ü‚ğ•Êüˆµ‚¢] */
+	/* [åšå¤šå°å€‰æ–°å¹¹ç·šã‚’åˆ¥ç·šæ‰±ã„] */
 	m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_UNCHECKED);
 	// always enable
 	m_menu.EnableMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_BYCOMMAND | MF_ENABLED);
 
-	/* [—·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(“Á’è“s‹æs“à”­’…)] */
-	m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115, _T("—·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(“Á’è“s‹æs“à”­’…)"));
+	/* [æ—…å®¢å–¶æ¥­å–æ‰±åŸºæº–è¦ç¨‹115æ¡(ç‰¹å®šéƒ½åŒºå¸‚å†…ç™ºç€)] */
+	m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115, _T("æ—…å®¢å–¶æ¥­å–æ‰±åŸºæº–è¦ç¨‹115æ¡(ç‰¹å®šéƒ½åŒºå¸‚å†…ç™ºç€)"));
 	m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_GRAYED);
 
-	/* [w’è‚µ‚½Œo˜H‚Å‰^’ÀŒvZ] */
-	m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR, _T("w’è‚µ‚½Œo˜H‚Å‰^’ÀŒvZ"));
+	/* [æŒ‡å®šã—ãŸçµŒè·¯ã§é‹è³ƒè¨ˆç®—] */
+	m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR, _T("æŒ‡å®šã—ãŸçµŒè·¯ã§é‹è³ƒè¨ˆç®—"));
 	m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_GRAYED);
 
 	if (en_route) {
-		//	[”‘½-¬‘q VŠ²üİ—ˆü•Êüˆµ‚¢]ƒ`ƒFƒbƒNƒ{ƒ^ƒ“
+		//	[åšå¤š-å°å€‰ æ–°å¹¹ç·šåœ¨æ¥ç·šåˆ¥ç·šæ‰±ã„]ãƒã‚§ãƒƒã‚¯ãƒœã‚¿ãƒ³
 		m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME,
 			m_route.isNotSameKokuraHakataShinZai() ? MF_CHECKED : MF_UNCHECKED);
 		// always enable
 			
-		// [”½“]]
+		// [åè»¢]
 		if (!m_route.isAvailableReverse()) {
 			/* not enough route */
-			GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ƒ{ƒ^ƒ“ */
-			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED); /* [“Á—á“K—p]Uncheckó‘Ô */
-			GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ƒ{ƒ^ƒ“ */
+			GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(FALSE);/* Disable [Reverse]ãƒœã‚¿ãƒ³ */
+			m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED); /* [ç‰¹ä¾‹é©ç”¨]UncheckçŠ¶æ…‹ */
+			GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(FALSE);/* Disable [Neerest]ãƒœã‚¿ãƒ³ */
 		}
 		else {
-			GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(m_route.isRoundTrip()); /* Enable [Reverse]ƒ{ƒ^ƒ“ */
-			GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(TRUE);/* Disable [Neerest]ƒ{ƒ^ƒ“ */
+			GetDlgItem(IDC_BUTTON_REVERSE)->EnableWindow(m_route.isRoundTrip()); /* Enable [Reverse]ãƒœã‚¿ãƒ³ */
+			GetDlgItem(IDC_BUTTON_NEEREST)->EnableWindow(TRUE);/* Disable [Neerest]ãƒœã‚¿ãƒ³ */
 		}
 
-		// “Á—á“K—p
+		// ç‰¹ä¾‹é©ç”¨
 		if (m_route.getRouteFlag().rule_en()) {
 			m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_ENABLED);
 			if (m_route.getRouteFlag().no_rule) {
-				// “Á—á”ñ“K—p
+				// ç‰¹ä¾‹éé©ç”¨
 				m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_UNCHECKED);
 				m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 			}
 			else {
-				// “Á—á“K—p
+				// ç‰¹ä¾‹é©ç”¨
 				m_menu.CheckMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_CHECKED);
 
 
-				// ‘å‚ ‘åã ™–{’¬ ’…‰wE”­‰w‚ğ’P‰w‚Éw’è
+				// å¤§é«˜ å¤§é˜ª æ‰æœ¬ç”º ç€é§…ãƒ»ç™ºé§…ã‚’å˜é§…ã«æŒ‡å®š
 				if (!m_route.getRouteFlag().isMeihanCityEnable()) {
 					m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 				}
-				else {	// u”­‰w‚ğ’P‰w‚Éw’èv
+				else {	// ã€Œç™ºé§…ã‚’å˜é§…ã«æŒ‡å®šã€
 					if (m_route.getRouteFlag().isStartAsCity()) {
 						m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR,
-							_T("”­‰w‚ğ’P‰w‚Éw’è"));
+							_T("ç™ºé§…ã‚’å˜é§…ã«æŒ‡å®š"));
 						m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
 					}
-					else {// u’…‰w‚ğ’P‰w‚Éw’èv
+					else {// ã€Œç€é§…ã‚’å˜é§…ã«æŒ‡å®šã€
 						m_menu.ModifyMenu(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_STRING, IDR_MENU_TERM_AGGR,
-							_T("’…‰w‚ğ’P‰w‚Éw’è"));
+							_T("ç€é§…ã‚’å˜é§…ã«æŒ‡å®š"));
 						m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_ENABLED);
 					}
 				}
 			}
 		}
 		else {
-			// “Á—á –³ŠÖŒW
+			// ç‰¹ä¾‹ ç„¡é–¢ä¿‚
 			m_menu.EnableMenuItem(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND | MF_GRAYED);
 			m_menu.EnableMenuItem(IDR_MENU_TERM_AGGR, MF_BYCOMMAND | MF_GRAYED);
 		}
 
-		// JR“ŒŠCŠ”å—D‘ÒŒ”g—p
+		// JRæ±æµ·æ ªä¸»å„ªå¾…åˆ¸ä½¿ç”¨
 		if (m_route.getRouteFlag().jrtokaistock_enable) {
 			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_ENABLED);
 			if (m_route.getRouteFlag().jrtokaistock_applied) {
@@ -942,12 +942,12 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 			}
 		}
 		else {
-			// JR“ŒŠCŠ”å—D‘ÒŒ”g—p ‘I‘ğˆ‚È‚µ(–³ŠÖŒW)
+			// JRæ±æµ·æ ªä¸»å„ªå¾…åˆ¸ä½¿ç”¨ é¸æŠè‚¢ãªã—(ç„¡é–¢ä¿‚)
 			m_menu.CheckMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_UNCHECKED);
 			m_menu.EnableMenuItem(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND | MF_GRAYED);
 		}
 
-		// ‘åãŠÂóü “à‰ñ‚è^ŠO‰ñ‚è
+		// å¤§é˜ªç’°çŠ¶ç·š å†…å›ã‚Šï¼å¤–å›ã‚Š
 		if (!m_route.getRouteFlag().is_osakakan_1pass()) {
 			m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_GRAYED);
 		}
@@ -955,10 +955,10 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 			m_menu.EnableMenuItem(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_ENABLED);
 			m_menu.ModifyMenu(IDR_MENU_ARROUND_OSAKAKAN, MF_BYCOMMAND | MF_STRING, IDR_MENU_ARROUND_OSAKAKAN,
 				m_route.getRouteFlag().osakakan_detour ?
-				_T("‘åãŠÂóü‹ß‰ñ‚è") : _T("‘åãŠÂóü‰“‰ñ‚è"));
+				_T("å¤§é˜ªç’°çŠ¶ç·šè¿‘å›ã‚Š") : _T("å¤§é˜ªç’°çŠ¶ç·šé å›ã‚Š"));
 		}
 
-		// —·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(“Á’è“s‹æs“à”­’…)
+		// æ—…å®¢å–¶æ¥­å–æ‰±åŸºæº–è¦ç¨‹115æ¡(ç‰¹å®šéƒ½åŒºå¸‚å†…ç™ºç€)
 		if (!m_route.getRouteFlag().isEnableRule115()) {
 			m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_GRAYED);
 		}
@@ -966,11 +966,11 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 			m_menu.EnableMenuItem(IDR_MENU_RULE115, MF_BYCOMMAND | MF_ENABLED);
 			m_menu.ModifyMenu(IDR_MENU_RULE115, MF_BYCOMMAND | MF_STRING, IDR_MENU_RULE115,
 				m_route.getRouteFlag().isRule115specificTerm() ?
-				_T("—·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(’P‰wÅˆÀ)") :
-				_T("—·‹q‰c‹ÆæˆµŠî€‹K’ö115ğ(“Á’è“s‹æs“à”­’…)"));
+				_T("æ—…å®¢å–¶æ¥­å–æ‰±åŸºæº–è¦ç¨‹115æ¡(å˜é§…æœ€å®‰)") :
+				_T("æ—…å®¢å–¶æ¥­å–æ‰±åŸºæº–è¦ç¨‹115æ¡(ç‰¹å®šéƒ½åŒºå¸‚å†…ç™ºç€)"));
 		}
 
-		// w’è‚µ‚½Œo˜H‚Å‰^’ÀŒvZ
+		// æŒ‡å®šã—ãŸçµŒè·¯ã§é‹è³ƒè¨ˆç®—
 		if (!m_route.getRouteFlag().isEnableLongRoute()) {
 			m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_GRAYED);
 		}
@@ -978,14 +978,14 @@ void Calps_mfcDlg::resetMenu(bool en_route)
 			m_menu.EnableMenuItem(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_ENABLED);
 			m_menu.ModifyMenu(IDR_MENU_NEERORFAR, MF_BYCOMMAND | MF_STRING, IDR_MENU_NEERORFAR,
 				m_route.getRouteFlag().isLongRoute() ?
-				_T("ÅˆÀŒo˜H‚Å‰^’ÀŒvZ") : _T("w’è‚µ‚½Œo˜H‚Å‰^’ÀŒvZ"));
+				_T("æœ€å®‰çµŒè·¯ã§é‹è³ƒè¨ˆç®—") : _T("æŒ‡å®šã—ãŸçµŒè·¯ã§é‹è³ƒè¨ˆç®—"));
 		}
 	}
 }
 
 
-//	[ƒŠƒo[ƒX]Pushƒ{ƒ^ƒ“
-//	Œo˜H‚ğ‹t“]‚·‚é
+//	[ãƒªãƒãƒ¼ã‚¹]Pushãƒœã‚¿ãƒ³
+//	çµŒè·¯ã‚’é€†è»¢ã™ã‚‹
 //
 void Calps_mfcDlg::OnBnClickedButtonReverse()
 {
@@ -1000,19 +1000,19 @@ void Calps_mfcDlg::OnBnClickedButtonReverse()
 	rc = m_route.reverse();
 
 	if (0 <= rc) {
-		GetDlgItem(IDC_EDIT_START)->SetWindowText(RouteUtil::StationName(m_route.departureStationId()).c_str());	// ”­‰w•\¦
+		GetDlgItem(IDC_EDIT_START)->SetWindowText(RouteUtil::StationName(m_route.departureStationId()).c_str());	// ç™ºé§…è¡¨ç¤º
 		UpdateRouteList();
 		if (rc == 0 || rc == 5) {
-			SetDlgItemText(IDC_EDIT_STAT, _T("Œo˜H‚Í•Ğ“¹ğŒ‚É’B‚µ‚Ä‚¢‚Ü‚·."));
+			SetDlgItemText(IDC_EDIT_STAT, _T("çµŒè·¯ã¯ç‰‡é“æ¡ä»¶ã«é”ã—ã¦ã„ã¾ã™."));
 		}
 	} else if (rc < 0) {
-		AfxMessageBox(_T("Œo˜H‚ªd•¡‚µ‚Ä‚¢‚Ü‚·"));
+		AfxMessageBox(_T("çµŒè·¯ãŒé‡è¤‡ã—ã¦ã„ã¾ã™"));
 	}
 }
 
 //	(deleted)
-//	[Å’ZŒo˜H]
-//	‚·‚Å‚É”­‰wA’…‰w‚ªw’è‚µ‚Ä‚ ‚éŒo˜H‚ğÅ’ZŒo˜H‚ÅÄ\¬‚·‚é
+//	[æœ€çŸ­çµŒè·¯]
+//	ã™ã§ã«ç™ºé§…ã€ç€é§…ãŒæŒ‡å®šã—ã¦ã‚ã‚‹çµŒè·¯ã‚’æœ€çŸ­çµŒè·¯ã§å†æ§‹æˆã™ã‚‹
 //
 void Calps_mfcDlg::OnBnClickedButtonNeerest()
 {
@@ -1023,8 +1023,8 @@ void Calps_mfcDlg::OnBnClickedButtonNeerest()
 	}
 
 	if (m_route.departureStationId() == m_route.arriveStationId()) {
-		MessageBox(_T("ŠJn‰w=I—¹‰w‚Å‚ÍÅ’ZŒo˜H‚ÍZo‚µ‚Ü‚¹‚ñ."),
-			_T("Šm”F"), MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(_T("é–‹å§‹é§…=çµ‚äº†é§…ã§ã¯æœ€çŸ­çµŒè·¯ã¯ç®—å‡ºã—ã¾ã›ã‚“."),
+			_T("ç¢ºèª"), MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
 
@@ -1034,7 +1034,7 @@ void Calps_mfcDlg::OnBnClickedButtonNeerest()
 	ASSERT(rc == 1);
 	rc = route.changeNeerest(0, m_route.arriveStationId());
 	if ((rc == 5) || (rc == 0) || (rc == 4)) {
-		SetDlgItemText(IDC_EDIT_STAT, _T("Œo˜H‚Í•Ğ“¹ğŒ‚É’B‚µ‚Ä‚¢‚Ü‚·."));
+		SetDlgItemText(IDC_EDIT_STAT, _T("çµŒè·¯ã¯ç‰‡é“æ¡ä»¶ã«é”ã—ã¦ã„ã¾ã™."));
 		if (m_route.isModified()) {
 			UpdateRouteList();
 		}
@@ -1051,20 +1051,20 @@ void Calps_mfcDlg::OnBnClickedButtonNeerest()
 			ASSERT(FALSE);
 		}
 	} else if (-100 < rc) {
-		MessageBox(_T("Œo˜H‚ªd•¡‚µ‚Ä‚¢‚é‚½‚ßZo‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½."),
-				   _T("©“®ƒ‹[ƒg"), MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(_T("çµŒè·¯ãŒé‡è¤‡ã—ã¦ã„ã‚‹ãŸã‚ç®—å‡ºã§ãã¾ã›ã‚“ã§ã—ãŸ."),
+				   _T("è‡ªå‹•ãƒ«ãƒ¼ãƒˆ"), MB_OK | MB_ICONEXCLAMATION);
 		m_route.assign(route_backup);
 		UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 	} else { /* < -1000  or 0(loop end. never) */
-		MessageBox(_T("Zo‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½."),
-				   _T("Šm”F"), MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(_T("ç®—å‡ºã§ãã¾ã›ã‚“ã§ã—ãŸ."),
+				   _T("ç¢ºèª"), MB_OK | MB_ICONEXCLAMATION);
 		m_route.assign(route_backup);
 		UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 	}
 }
 
 
-// [Œo˜H‹L˜^]
+// [çµŒè·¯è¨˜éŒ²]
 //
 void Calps_mfcDlg::OnBnClickedButtonRoutecopy()
 {
@@ -1083,11 +1083,11 @@ void Calps_mfcDlg::OnBnClickedButtonRoutecopy()
 		file.WriteString(s.c_str());
 		m_lastRouteString.assign(s);
 	} else {
-		AfxMessageBox(_T("ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“ƒGƒ‰["));
+		AfxMessageBox(_T("ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³ã‚¨ãƒ©ãƒ¼"));
 	}
 }
 
-//	[Œo˜HŠJ‚­]
+//	[çµŒè·¯é–‹ã]
 //
 void Calps_mfcDlg::OnBnClickedButtonRouteOpen()
 {
@@ -1097,7 +1097,7 @@ void Calps_mfcDlg::OnBnClickedButtonRouteOpen()
 	ShellExecute(NULL, _T("open"), _T("route.txt"), NULL, NULL, SW_SHOW);
 
 	if (hInst <= (HINSTANCE)32) {
-		s.Format(_T("Œo˜H‹L˜^ƒtƒ@ƒCƒ‹‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½. %d"), hInst);
+		s.Format(_T("çµŒè·¯è¨˜éŒ²ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒ—ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸ. %d"), hInst);
 		AfxMessageBox(s);
 
 		if (IDYES == dlg.DoModal()) {
@@ -1106,7 +1106,7 @@ void Calps_mfcDlg::OnBnClickedButtonRouteOpen()
 	}
 }
 
-// [Œo˜H“ü—Í]
+// [çµŒè·¯å…¥åŠ›]
 //
 void Calps_mfcDlg::OnBnClickedButtonRoutein()
 {
@@ -1116,7 +1116,7 @@ void Calps_mfcDlg::OnBnClickedButtonRoutein()
 	}
 }
 
-// [Œ‹‰Ê‹L˜^]
+// [çµæœè¨˜éŒ²]
 //
 void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 {
@@ -1148,12 +1148,12 @@ void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 		file.WriteString(s.c_str());
 		m_lastResultString.assign(result_string);
 	} else {
-		AfxMessageBox(_T("ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“ƒGƒ‰["));
+		AfxMessageBox(_T("ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³ã‚¨ãƒ©ãƒ¼"));
 	}
 }
 
-//	m_route‚Ì“à—e‚ÅIDC_LIST_ROUTE‚ğì¬‚µ‚È‚¨‚·
-//	@return IDC_LIST_ROUTE‚Ìs”‚ğ•Ô‚·
+//	m_routeã®å†…å®¹ã§IDC_LIST_ROUTEã‚’ä½œæˆã—ãªãŠã™
+//	@return IDC_LIST_ROUTEã®è¡Œæ•°ã‚’è¿”ã™
 //
 int Calps_mfcDlg::UpdateRouteList()
 {
@@ -1197,7 +1197,7 @@ int Calps_mfcDlg::UpdateRouteList()
 								MAKEPAIR(lineId, stationId)),
 								1, stationName);
 
-		// ƒJƒ‰ƒ€•ŒvZ
+		// ã‚«ãƒ©ãƒ å¹…è¨ˆç®—
 		int wn0 = pLRoute->GetStringWidth(lineName) + 16;
 		int wn1 = pLRoute->GetStringWidth(stationName) + 16;
 		if (w0 < wn0) {
@@ -1210,7 +1210,7 @@ int Calps_mfcDlg::UpdateRouteList()
 	ASSERT(pLRoute->GetItemCount() == idx);
 
 	if (0 < idx) {
-		// ƒJƒ‰ƒ€•İ’è
+		// ã‚«ãƒ©ãƒ å¹…è¨­å®š
 		if (pLRoute->GetColumnWidth(0) < w0) {
 			pLRoute->SetColumnWidth(0, w0);
 		}
@@ -1220,15 +1220,15 @@ int Calps_mfcDlg::UpdateRouteList()
 
 		// UI mode set
 		m_selMode = SEL_LINE;				/* for [-] button */
-		setupForLinelistByStation(stationId, lineId);	// ’…‰w‚ÌŠ‘®˜Hü
+		setupForLinelistByStation(stationId, lineId);	// ç€é§…ã®æ‰€å±è·¯ç·š
 
 		m_curStationId = stationId;
 
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(TRUE);			// Enable [-] button
 
-		/* ‰^’À•\¦ */
+		/* é‹è³ƒè¡¨ç¤º */
 		showFare();
-		GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// ’…‰w•\¦
+		GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// ç€é§…è¡¨ç¤º
 	} else {
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
 	}
@@ -1239,9 +1239,9 @@ int Calps_mfcDlg::UpdateRouteList()
 
 
 /*	Dialog drag and drop
- *  ƒtƒ@ƒCƒ‹‚ğD&D‚·‚é‚±‚Æ‚ÅŒo˜H‚ğ’Ç‰Á‚·‚é‹@”\
- *	ƒtƒ@ƒCƒ‹‚Í’PˆêƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚Ì‚İ‚Å1s–Ú1s‚Ì‚İ“Ç‚İ‚ñ‚Åİ’è
- *	1s‚Ì‚İ‚Å, ',', ' ', '|', '/', (tab)‚È‚Ç‚Ì‹æØ‚è‚Å"‰wA˜HüA•ªŠò‰wA˜HüA..."‚Ì•À‚Ñ
+ *  ãƒ•ã‚¡ã‚¤ãƒ«ã‚’D&Dã™ã‚‹ã“ã¨ã§çµŒè·¯ã‚’è¿½åŠ ã™ã‚‹æ©Ÿèƒ½
+ *	ãƒ•ã‚¡ã‚¤ãƒ«ã¯å˜ä¸€ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿ã§1è¡Œç›®1è¡Œã®ã¿èª­ã¿è¾¼ã‚“ã§è¨­å®š
+ *	1è¡Œã®ã¿ã§, ',', ' ', '|', '/', (tab)ãªã©ã®åŒºåˆ‡ã‚Šã§"é§…ã€è·¯ç·šã€åˆ†å²é§…ã€è·¯ç·šã€..."ã®ä¸¦ã³
  *
  */
 void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
@@ -1264,20 +1264,20 @@ void Calps_mfcDlg::OnDropFiles(HDROP hDropInfo)
 }
 
 
-/*	‰^’À•\¦
+/*	é‹è³ƒè¡¨ç¤º
  *
  */
 void Calps_mfcDlg::showFare(bool bResetOption/* = true */)
 {
 	if (bResetOption) {
-		//	[“Á—á“K—p]ƒ`ƒFƒbƒNƒ{ƒ^ƒ“
-		//	[JR“ŒŠCŠ”å—D‘ÒŒ”g—p]ƒ`ƒFƒbƒNƒ{ƒ^ƒ“
-		//	[”­‰w‚ğ’P‰w‚Éw’è^’…‰w‚ğ’P‰w‚Éw’è]
+		//	[ç‰¹ä¾‹é©ç”¨]ãƒã‚§ãƒƒã‚¯ãƒœã‚¿ãƒ³
+		//	[JRæ±æµ·æ ªä¸»å„ªå¾…åˆ¸ä½¿ç”¨]ãƒã‚§ãƒƒã‚¯ãƒœã‚¿ãƒ³
+		//	[ç™ºé§…ã‚’å˜é§…ã«æŒ‡å®šï¼ç€é§…ã‚’å˜é§…ã«æŒ‡å®š]
 		// default settings
 		m_route.setNoRule(false);
 		m_route.refRouteFlag().setJrTokaiStockApply(false);
 	}
-	/*	‰^’À•\¦ğŒƒtƒ‰ƒOæ“¾ */
+	/*	é‹è³ƒè¡¨ç¤ºæ¡ä»¶ãƒ•ãƒ©ã‚°å–å¾— */
 	CalcRoute croute(m_route);
 	FARE_INFO fi;
 	croute.calcFare(&fi);
@@ -1300,14 +1300,14 @@ void Calps_mfcDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 	//CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(GetDlgItem(IDC_LIST_ROUTE));
 
-	//test_exec();	// ’P‘ÌƒeƒXƒg‚ğÀs(Œ‹‰Ê‚Ítest_result.txt)
+	//test_exec();	// å˜ä½“ãƒ†ã‚¹ãƒˆã‚’å®Ÿè¡Œ(çµæœã¯test_result.txt)
 	//numList = UpdateRouteList();	/* IDC_LIST_ROUTE update view */
 
 	//m_curStationId = IDENT2(pLRoute->GetItemData(numList - 1));	// last station
 	//m_selMode = SEL_LINE;				/* for [-] button */
 	//int curLineId = IDENT1(pLRoute->GetItemData(numList - 1));	// last line
 	//ASSERT(0 < curLineId);
-	//setupForLinelistByStation(m_curStationId, curLineId);	// ’…‰w‚ÌŠ‘®˜Hü
+	//setupForLinelistByStation(m_curStationId, curLineId);	// ç€é§…ã®æ‰€å±è·¯ç·š
 
 	if (0 < m_route.routeList().size()) {
 
@@ -1338,7 +1338,7 @@ TRACE(_T("\n"));
 }
 
 
-// •¶š—ñ‚Åw’è‚µ‚½Œo˜H‚ğİ’è‚·‚é
+// æ–‡å­—åˆ—ã§æŒ‡å®šã—ãŸçµŒè·¯ã‚’è¨­å®šã™ã‚‹
 //
 int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 {
@@ -1348,41 +1348,41 @@ int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 
 	rc = m_route.setup_route(route_str);
 
-	GetDlgItem(IDC_EDIT_START)->SetWindowText(RouteUtil::StationName(m_route.departureStationId()).c_str());	// ”­‰w•\¦
+	GetDlgItem(IDC_EDIT_START)->SetWindowText(RouteUtil::StationName(m_route.departureStationId()).c_str());	// ç™ºé§…è¡¨ç¤º
 
 	switch (rc) {
 	case -200:
-		AfxMessageBox(_T("‰w–¼•s³‚ªŠÜ‚Ü‚ê‚Ä‚¢‚Ü‚·"));
+		AfxMessageBox(_T("é§…åä¸æ­£ãŒå«ã¾ã‚Œã¦ã„ã¾ã™"));
 		break;
 	case -300:
-		AfxMessageBox(_T("ü–¼•s³‚ªŠÜ‚Ü‚ê‚Ä‚¢‚Ü‚·"));
+		AfxMessageBox(_T("ç·šåä¸æ­£ãŒå«ã¾ã‚Œã¦ã„ã¾ã™"));
 		break;
 	case -100:
-		AfxMessageBox(_T("’v–½“IƒGƒ‰["));
+		AfxMessageBox(_T("è‡´å‘½çš„ã‚¨ãƒ©ãƒ¼"));
 		break;
 	case -1:
-		AfxMessageBox(_T("Œo˜H‚ªd•¡‚µ‚Ä‚¢‚Ü‚·"));
+		AfxMessageBox(_T("çµŒè·¯ãŒé‡è¤‡ã—ã¦ã„ã¾ã™"));
 		break;
 	case -2:
-		AfxMessageBox(_T("•s³‚ÈŒo˜Hw’è‚Å‚·"));
+		AfxMessageBox(_T("ä¸æ­£ãªçµŒè·¯æŒ‡å®šã§ã™"));
 		break;
 	case -4:
-		AfxMessageBox(_T("‹–‰Â‚³‚ê‚Ä‚¢‚È‚¢‰ïĞü’Ê‰ß‚Å‚·"));
+		AfxMessageBox(_T("è¨±å¯ã•ã‚Œã¦ã„ãªã„ä¼šç¤¾ç·šé€šéã§ã™"));
 		break;
-	case 4:	/* ‰ïĞü’Ê‰ßI’[ */
+	case 4:	/* ä¼šç¤¾ç·šé€šéçµ‚ç«¯ */
 	case 0:
 	case 1:
 		/* success */
 		break;
 	default:
-		AfxMessageBox(_T("•s–¾‚ÈƒGƒ‰["));
+		AfxMessageBox(_T("ä¸æ˜ãªã‚¨ãƒ©ãƒ¼"));
 		break;
 	}
 	if (0 <= rc) {
 		UpdateRouteList();
-		GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(TRUE);	// ‰w/˜Hü ‘I‘ğƒŠƒXƒg‘I‘ğ‰Â
+		GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(TRUE);	// é§…/è·¯ç·š é¸æŠãƒªã‚¹ãƒˆé¸æŠå¯
 		GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(TRUE);			// [+] button
-		GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(TRUE);	/* Enable [AutoRoute]ƒ{ƒ^ƒ“ */
+		GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(TRUE);	/* Enable [AutoRoute]ãƒœã‚¿ãƒ³ */
 	}
 	else {
 		ResetContent();
@@ -1390,7 +1390,7 @@ int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 	return 0;
 }
 
-//	[Œ‹‰Ê‚ğŠJ‚­]
+//	[çµæœã‚’é–‹ã]
 //
 void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 {
@@ -1400,7 +1400,7 @@ void Calps_mfcDlg::OnBnClickedButtonRsltopen()
 		ShellExecute(NULL, _T("open"), _T("result.txt"), NULL, NULL, SW_SHOW);
 
 	if (hInst <= (HINSTANCE)32) {
-		s.Format(_T("Œ‹‰Ê‹L˜^ƒtƒ@ƒCƒ‹‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½. %d"), hInst);
+		s.Format(_T("çµæœè¨˜éŒ²ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒ—ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸ. %d"), hInst);
 		AfxMessageBox(s);
 
 		if (IDYES == dlg.DoModal()) {
@@ -1417,7 +1417,7 @@ void CAboutDlg::OnNMClickSyslink1(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
-//	[ŒvZƒIƒvƒVƒ‡ƒ“...] MenuBarButton
+//	[è¨ˆç®—ã‚ªãƒ—ã‚·ãƒ§ãƒ³...] MenuBarButton
 //
 void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 {
@@ -1426,7 +1426,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 
 	switch (m_fareOptionMenuButton.m_nMenuResult) {
 	case IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME:
-		//	[”‘½-¬‘q VŠ²üİ—ˆü•Êüˆµ‚¢]ƒ`ƒFƒbƒNƒ{ƒ^ƒ“
+		//	[åšå¤š-å°å€‰ æ–°å¹¹ç·šåœ¨æ¥ç·šåˆ¥ç·šæ‰±ã„]ãƒã‚§ãƒƒã‚¯ãƒœã‚¿ãƒ³
 		state = m_menu.GetMenuState(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_BYCOMMAND);
 		if (MF_CHECKED & state) {
 			m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_UNCHECKED);
@@ -1435,50 +1435,50 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 		else {
 			m_menu.CheckMenuItem(IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME, MF_CHECKED);
 			m_route.setNotSameKokuraHakataShinZai(true);
-			MessageBox(_T("”‘½-¬‘q VŠ²üİ—ˆü•Êüˆµ‚¢‚ğ‘I‘ğ‚µ‚Ü‚µ‚½\r\nŠY“–Œo˜H‚Í‘I‘ğ‚µ‚È‚¨‚·•K—v‚ª‚ ‚è‚Ü‚·"), _T("ŒvZƒIƒvƒVƒ‡ƒ“"), MB_ICONINFORMATION);
+			MessageBox(_T("åšå¤š-å°å€‰ æ–°å¹¹ç·šåœ¨æ¥ç·šåˆ¥ç·šæ‰±ã„ã‚’é¸æŠã—ã¾ã—ãŸ\r\nè©²å½“çµŒè·¯ã¯é¸æŠã—ãªãŠã™å¿…è¦ãŒã‚ã‚Šã¾ã™"), _T("è¨ˆç®—ã‚ªãƒ—ã‚·ãƒ§ãƒ³"), MB_ICONINFORMATION);
 		}
 		break;
 
 	case IDR_MENU_ARROUND_OSAKAKAN:
-		//	[‘åãŠÂóü‰“‰ñ‚è^‘åãŠÂóü‹ß‰ñ‚è]
+		//	[å¤§é˜ªç’°çŠ¶ç·šé å›ã‚Šï¼å¤§é˜ªç’°çŠ¶ç·šè¿‘å›ã‚Š]
 		m_menu.GetMenuStringW(IDR_MENU_ARROUND_OSAKAKAN, menuTitle, MF_BYCOMMAND);
 		{
-			/* ‘åãŠÂóü1‰ñ‚¾‚¯’Ê‚Á‚Ä‚¢‚é? */
+			/* å¤§é˜ªç’°çŠ¶ç·š1å›ã ã‘é€šã£ã¦ã„ã‚‹? */
 			int rc;
 
 			if (m_route.getRouteFlag().is_osakakan_1pass()) {
 #if 0
-				if (0 <= menuTitle.Find(_T("‰“"))) {
+				if (0 <= menuTitle.Find(_T("é "))) {
 					alert_message(OSAKAKAN);
 				}
 #endif
-				ASSERT((m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("‹ß"))))
-					|| (!m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("‰“")))));
+				ASSERT((m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("è¿‘"))))
+					|| (!m_route.getRouteFlag().osakakan_detour && (0 <= menuTitle.Find(_T("é ")))));
 
-				// ‹ß‰ñ‚è‚É‰Ÿ‚³‚ê‚½‚ç‰“‰ñ‚è(FAREOPT_OSAKAKAN_DETOUR)‚É :
-				// ‰“‰ñ‚è‚É‰Ÿ‚³‚ê‚½‚ç‹ß‰ñ‚è(0:FAREOPT_OSAKAKAN_SHORTCUT)‚É
+				// è¿‘å›ã‚Šæ™‚ã«æŠ¼ã•ã‚ŒãŸã‚‰é å›ã‚Š(FAREOPT_OSAKAKAN_DETOUR)ã« :
+				// é å›ã‚Šæ™‚ã«æŠ¼ã•ã‚ŒãŸã‚‰è¿‘å›ã‚Š(0:FAREOPT_OSAKAKAN_SHORTCUT)ã«
 				rc = m_route.setDetour(m_route.getRouteFlag().osakakan_detour ? 
 					false : true);
 				if (1 == rc) {
 					showFare(false);
-					// opt‚Í‹t“]‚·‚é
-					// ‚Ü‚½‚Í–³Œø‚Æ‚È‚è‚±‚Ìƒ{ƒ^ƒ“‚Í‰Ÿ‚¹‚È‚­‚È‚é
+					// optã¯é€†è»¢ã™ã‚‹
+					// ã¾ãŸã¯ç„¡åŠ¹ã¨ãªã‚Šã“ã®ãƒœã‚¿ãƒ³ã¯æŠ¼ã›ãªããªã‚‹
 				}
 				else if (rc != 0) {
-					AfxMessageBox(_T("Œo˜H‚ªd•¡‚µ‚Ä‚¢‚Ü‚·"));
+					AfxMessageBox(_T("çµŒè·¯ãŒé‡è¤‡ã—ã¦ã„ã¾ã™"));
 				}
 				else {
 					// rc == 0
 					int selId = m_route.routeList().back().stationId;
 
-					MessageBox(_T("Œo˜H‚ª•Ğ“¹ğŒ‚É’B‚µ‚Ü‚µ‚½. "), _T("Œo˜HI’["), 
+					MessageBox(_T("çµŒè·¯ãŒç‰‡é“æ¡ä»¶ã«é”ã—ã¾ã—ãŸ. "), _T("çµŒè·¯çµ‚ç«¯"), 
 						MB_ICONQUESTION);
 
 					CListCtrl* pLRoute = reinterpret_cast<CListCtrl*>(
 						GetDlgItem(IDC_LIST_ROUTE));
 					int numList = pLRoute->GetItemCount();
 
-					// 2‰ñ–Ú‚ÍŠù‚É‹ó—“‚Æ‚È‚Á‚Ä‚¢‚é‚Ì‚ÅB
+					// 2å›ç›®ã¯æ—¢ã«ç©ºæ¬„ã¨ãªã£ã¦ã„ã‚‹ã®ã§ã€‚
 					//ASSERT(selId == IDENT2(pLRoute->GetItemData(numList - 1)));	// last station
 					ASSERT(m_route.routeList().back().lineId 
 						== IDENT1(pLRoute->GetItemData(numList - 1)));	// last line
@@ -1491,14 +1491,14 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 				}
 			}
 			else {
-				/* showFare()‚ÌŒã‚Å‚¨‚±‚È‚Á‚Ä‚¢‚é‚½‚ß•’Ê‚Í•s—v(ˆÀ‘Sô)*/
+				/* showFare()ã®å¾Œã§ãŠã“ãªã£ã¦ã„ã‚‹ãŸã‚æ™®é€šã¯ä¸è¦(å®‰å…¨ç­–)*/
 				//!		GetDlgItem(IDC_BUTTON_OSAKAKAN)->EnableWindow(FALSE);
 			}
 		}
 		break;
 
 	case IDR_MENU_SPECIFIC_APPLY:
-		//	[“Á—á“K—p]ƒ`ƒFƒbƒNƒ{ƒ^ƒ“
+		//	[ç‰¹ä¾‹é©ç”¨]ãƒã‚§ãƒƒã‚¯ãƒœã‚¿ãƒ³
 		state = m_menu.GetMenuState(IDR_MENU_SPECIFIC_APPLY, MF_BYCOMMAND);
 		if (MF_CHECKED & state) {
 			alert_message(NORULE);
@@ -1514,8 +1514,8 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 
 	case IDR_MENU_TERM_AGGR:
 		m_menu.GetMenuStringW(IDR_MENU_TERM_AGGR, menuTitle, MF_BYCOMMAND);
-		//	[”­‰w‚ğ’P‰w‚Éw’è^’…‰w‚ğ’P‰w‚Éw’è]
-		if (0 <= menuTitle.Find(_T("”­")))
+		//	[ç™ºé§…ã‚’å˜é§…ã«æŒ‡å®šï¼ç€é§…ã‚’å˜é§…ã«æŒ‡å®š]
+		if (0 <= menuTitle.Find(_T("ç™º")))
 		{
 			ASSERT(!m_route.getRouteFlag().isArriveAsCity());
 			m_route.refRouteFlag().setArriveAsCity();
@@ -1528,7 +1528,7 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 		break;
 
 	case IDR_MENU_JRTOKAI_STOCK:
-		//	[JR“ŒŠCŠ”å—D‘ÒŒ”g—p]ƒ`ƒFƒbƒNƒ{ƒ^ƒ“
+		//	[JRæ±æµ·æ ªä¸»å„ªå¾…åˆ¸ä½¿ç”¨]ãƒã‚§ãƒƒã‚¯ãƒœã‚¿ãƒ³
 		state = m_menu.GetMenuState(IDR_MENU_JRTOKAI_STOCK, MF_BYCOMMAND);
 
 		if (MF_CHECKED & state) {
@@ -1544,10 +1544,10 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 
 	case IDR_MENU_NEERORFAR:
 		m_menu.GetMenuStringW(IDR_MENU_NEERORFAR, menuTitle, MF_BYCOMMAND);
-		if (0 <= menuTitle.Find(_T("w’è‚µ‚½Œo˜H"))) {
+		if (0 <= menuTitle.Find(_T("æŒ‡å®šã—ãŸçµŒè·¯"))) {
 			m_route.refRouteFlag().setLongRoute(true);
 		} else {
-			// ’P‰wÅˆÀ
+			// å˜é§…æœ€å®‰
 			m_route.refRouteFlag().setLongRoute(false);
 		}
 		showFare(false);
@@ -1555,11 +1555,11 @@ void Calps_mfcDlg::OnBnClickedMfcmenubuttonFareopt()
 
 	case IDR_MENU_RULE115:
 		m_menu.GetMenuStringW(IDR_MENU_RULE115, menuTitle, MF_BYCOMMAND);
-		// ’P‰wÅˆÀ / “Á’è“s‹æs“à”­’…
-		if (0 <= menuTitle.Find(_T("’P‰wÅˆÀ"))) {
+		// å˜é§…æœ€å®‰ / ç‰¹å®šéƒ½åŒºå¸‚å†…ç™ºç€
+		if (0 <= menuTitle.Find(_T("å˜é§…æœ€å®‰"))) {
 			m_route.refRouteFlag().setSpecificTermRule115(false);
 		} else {
-			// “Á’è“s‹æs“à”­’…
+			// ç‰¹å®šéƒ½åŒºå¸‚å†…ç™ºç€
 			m_route.refRouteFlag().setSpecificTermRule115(true);
 		}
 		showFare(false);

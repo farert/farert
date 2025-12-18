@@ -1,4 +1,4 @@
-// RouteInputDlg.cpp : À‘•ƒtƒ@ƒCƒ‹
+ï»¿// RouteInputDlg.cpp : å®Ÿè£…ãƒ•ã‚¡ã‚¤ãƒ«
 //
 
 #include "stdafx.h"
@@ -7,7 +7,7 @@
 #include "afxdialogex.h"
 
 
-// CRouteInputDlg ƒ_ƒCƒAƒƒO
+// CRouteInputDlg ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 
 IMPLEMENT_DYNAMIC(CRouteInputDlg, CDialogEx)
 
@@ -35,7 +35,7 @@ BEGIN_MESSAGE_MAP(CRouteInputDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CRouteInputDlg ƒƒbƒZ[ƒW ƒnƒ“ƒhƒ‰[
+// CRouteInputDlg ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ ãƒãƒ³ãƒ‰ãƒ©ãƒ¼
 
 
 BOOL CRouteInputDlg::OnInitDialog()
@@ -45,7 +45,7 @@ BOOL CRouteInputDlg::OnInitDialog()
 	GetDlgItem(IDC_EDIT_ROUTE)->SetFocus();
 
 	return FALSE;  // return TRUE unless you set the focus to a control
-	// —áŠO : OCX ƒvƒƒpƒeƒB ƒy[ƒW‚Í•K‚¸ FALSE ‚ğ•Ô‚µ‚Ü‚·B
+	// ä¾‹å¤– : OCX ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ ãƒšãƒ¼ã‚¸ã¯å¿…ãš FALSE ã‚’è¿”ã—ã¾ã™ã€‚
 }
 
 

@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -17,7 +17,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// ���{�� (���{) resources
+// 日本語 (日本) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
@@ -53,8 +53,8 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)\r\n"
     "LANGUAGE 17, 1\r\n"
-    "#include ""res\\alps_mfc.rc2""  // Microsoft Visual C++ �ȊO�ŕҏW���ꂽ���\�[�X\r\n"
-    "#include ""l.JPN\\afxres.rc""      // �W���R���|�[�l���g\r\n"
+    "#include ""res\\alps_mfc.rc2""  // Microsoft Visual C++ 以外で編集されたリソース\r\n"
+    "#include ""l.JPN\\afxres.rc""      // 標準コンポーネント\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -79,117 +79,117 @@ IDR_MAINFRAME           ICON                    "res\\alps_mfc.ico"
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 229, 79
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "�o�[�W������� JR�^���v�Z�L"
+CAPTION "バージョン情報 JR運賃計算キ"
 FONT 9, "MS UI Gothic", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
-    LTEXT           "JR�^���v�Z�L, 25.09",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "JR運賃計算キ, 25.09",IDC_STATIC,42,14,114,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2014-2025 Sutezo.",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,172,58,50,14,WS_GROUP
-    CONTROL         "<a href=""http://farert.blogspot.jp\n"">�z�[���y�[�W</a>",IDC_SYSLINK1,
+    CONTROL         "<a href=""http://farert.blogspot.jp\n"">ホームページ</a>",IDC_SYSLINK1,
                     "SysLink",WS_TABSTOP,42,37,60,14
 END
 
 IDD_ALPS_MFC_DIALOG DIALOGEX 0, 0, 308, 342
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "JR�^���v�Z"
+CAPTION "JR運賃計算"
 FONT 11, "MS UI Gothic", 700, 0, 0x80
 BEGIN
-    LTEXT           "���w",IDC_STATIC,7,9,16,8
+    LTEXT           "発駅",IDC_STATIC,7,9,16,8
     EDITTEXT        IDC_EDIT_START,26,7,80,14,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "�c",IDC_BUTTON_STARTSEL,107,6,15,16
+    PUSHBUTTON      "…",IDC_BUTTON_STARTSEL,107,6,15,16
     PUSHBUTTON      "X",IDC_BUTTON_ALL_CLEAR,123,6,15,16
-    LTEXT           "���w",IDC_STATIC,7,23,16,8
+    LTEXT           "着駅",IDC_STATIC,7,23,16,8
     EDITTEXT        IDC_EDIT_END,26,23,80,14,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "�ŒZ...",IDC_BUTTON_AUTOROUTE,107,22,31,16
-    LTEXT           "�o�H",IDC_STATIC,7,39,15,8
+    PUSHBUTTON      "最短...",IDC_BUTTON_AUTOROUTE,107,22,31,16
+    LTEXT           "経路",IDC_STATIC,7,39,15,8
     CONTROL         "",IDC_LIST_ROUTE,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER,7,49,130,116
     PUSHBUTTON      "+",IDC_BUTTON_SEL,138,61,15,16
     PUSHBUTTON      "-",IDC_BUTTON_BS,138,150,15,16
-    LTEXT           "�w�I��",IDC_STATIC_LIST_SEL,157,19,46,11
+    LTEXT           "駅選択",IDC_STATIC_LIST_SEL,157,19,46,11
     CONTROL         "",IDC_LIST_LINESTATIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,154,32,147,134
-    CONTROL         "����w",IDC_RADIO_BRANCH_SEL,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,223,21,38,10
-    CONTROL         "�I���w",IDC_RADIO_TERMINAL_SEL,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,262,21,38,10
+    CONTROL         "分岐駅",IDC_RADIO_BRANCH_SEL,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,223,21,38,10
+    CONTROL         "終着駅",IDC_RADIO_TERMINAL_SEL,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,262,21,38,10
     EDITTEXT        IDC_EDIT_STAT,7,305,294,16,ES_AUTOHSCROLL | ES_READONLY,WS_EX_STATICEDGE
-    PUSHBUTTON      "���o�[�X",IDC_BUTTON_REVERSE,7,322,37,18
-    CONTROL         "�v�Z�I�v�V����...",IDC_MFCMENUBUTTON_FAREOPT,"MfcMenuButton",WS_TABSTOP,46,322,62,18
-    CTEXT           "�o�H",IDC_STATIC,174,321,69,8
-    PUSHBUTTON      "�ێ�",IDC_BUTTON_ROUTECOPY,172,330,25,10,BS_MULTILINE
-    PUSHBUTTON      "�J��",IDC_BUTTON_ROUTE_OPEN,198,330,21,10
-    PUSHBUTTON      "�w��...",IDC_BUTTON_ROUTEIN,220,330,26,10
-    CTEXT           "����",IDC_STATIC,248,321,53,8
-    PUSHBUTTON      "�ێ�",IDC_BUTTON_RESULTCOPY,248,330,26,10,BS_MULTILINE
-    PUSHBUTTON      "�J��",IDC_BUTTON_RSLTOPEN,275,330,26,10
+    PUSHBUTTON      "リバース",IDC_BUTTON_REVERSE,7,322,37,18
+    CONTROL         "計算オプション...",IDC_MFCMENUBUTTON_FAREOPT,"MfcMenuButton",WS_TABSTOP,46,322,62,18
+    CTEXT           "経路",IDC_STATIC,174,321,69,8
+    PUSHBUTTON      "保持",IDC_BUTTON_ROUTECOPY,172,330,25,10,BS_MULTILINE
+    PUSHBUTTON      "開く",IDC_BUTTON_ROUTE_OPEN,198,330,21,10
+    PUSHBUTTON      "指定...",IDC_BUTTON_ROUTEIN,220,330,26,10
+    CTEXT           "結果",IDC_STATIC,248,321,53,8
+    PUSHBUTTON      "保持",IDC_BUTTON_RESULTCOPY,248,330,26,10,BS_MULTILINE
+    PUSHBUTTON      "開く",IDC_BUTTON_RSLTOPEN,275,330,26,10
     EDITTEXT        IDC_EDIT_RESULT,7,169,294,137,ES_MULTILINE | ES_READONLY | WS_VSCROLL
     LTEXT           "",IDC_STATIC_BAR,7,166,294,3,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "�ŒZ�o�H",IDC_BUTTON_NEEREST,111,322,51,18,NOT WS_VISIBLE
+    PUSHBUTTON      "最短経路",IDC_BUTTON_NEEREST,111,322,51,18,NOT WS_VISIBLE
 END
 
 IDD_DIALOG_TERM_SEL DIALOGEX 0, 0, 232, 171
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "�����w�w��"
+CAPTION "発着駅指定"
 FONT 14, "MS UI Gothic", 700, 0, 0x80
 BEGIN
-    LTEXT           "���w�w��",IDC_STATIC_TITLE,9,9,36,8
+    LTEXT           "発駅指定",IDC_STATIC_TITLE,9,9,36,8
     COMBOBOX        IDC_COMBO_STATION,47,7,95,160,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      ">>",IDC_BUTTON_STATION_SEL,143,7,21,14
     EDITTEXT        IDC_EDIT_LINE,47,22,178,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "�H��",IDC_STATIC,17,24,16,8
-    LTEXT           "��ЁE�s���{��",IDC_STATIC,11,38,53,9
+    LTEXT           "路線",IDC_STATIC,17,24,16,8
+    LTEXT           "会社・都道府県",IDC_STATIC,11,38,53,9
     LISTBOX         IDC_LIST_COMPANY,10,47,56,102,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "�H��",IDC_STATIC,74,38,17,8
+    LTEXT           "路線",IDC_STATIC,74,38,17,8
     LISTBOX         IDC_LIST_LINES,68,47,80,102,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "���",IDC_STATIC,130,37,20,8
+    LTEXT           "候補",IDC_STATIC,130,37,20,8
     LISTBOX         IDC_LIST_TERMINALS,152,36,73,114,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "�I��",IDOK,107,153,50,14
-    PUSHBUTTON      "����",IDCANCEL,160,153,50,14
+    DEFPUSHBUTTON   "選択",IDOK,107,153,50,14
+    PUSHBUTTON      "閉じる",IDCANCEL,160,153,50,14
 END
 
 IDD_ROUTE_INPUT DIALOGEX 0, 0, 316, 110
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "�o�H����"
+CAPTION "経路入力"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,83,50,20,BS_FLAT
-    PUSHBUTTON      "�L�����Z��",IDCANCEL,259,83,50,20,BS_FLAT
+    PUSHBUTTON      "キャンセル",IDCANCEL,259,83,50,20,BS_FLAT
     EDITTEXT        IDC_EDIT_ROUTE,7,7,302,73,ES_MULTILINE | WS_VSCROLL
-    PUSHBUTTON      "�G�N�X�v���[��",IDC_BUTTON_EXPLORER,7,84,50,19,BS_FLAT
+    PUSHBUTTON      "エクスプローラ",IDC_BUTTON_EXPLORER,7,84,50,19,BS_FLAT
 END
 
 IDD_SETTINGS DIALOGEX 0, 0, 142, 98
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "�ݒ�"
+CAPTION "設定"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,27,72,50,14
-    PUSHBUTTON      "�L�����Z��",IDCANCEL,81,72,50,14
-    GROUPBOX        "�f�[�^�\�[�X(&S)",IDC_STATIC,7,7,123,63
-    CONTROL         "����łR����",IDC_RADIO_TAX3,"Button",BS_AUTORADIOBUTTON,17,21,85,10
-    CONTROL         "2014�N�x��",IDC_RADIO_2014,"Button",BS_AUTORADIOBUTTON,17,34,85,10
-    CONTROL         "�ŐV��",IDC_RADIO_CURRENT,"Button",BS_AUTORADIOBUTTON,17,47,85,10
+    PUSHBUTTON      "キャンセル",IDCANCEL,81,72,50,14
+    GROUPBOX        "データソース(&S)",IDC_STATIC,7,7,123,63
+    CONTROL         "消費税３％版",IDC_RADIO_TAX3,"Button",BS_AUTORADIOBUTTON,17,21,85,10
+    CONTROL         "2014年度版",IDC_RADIO_2014,"Button",BS_AUTORADIOBUTTON,17,34,85,10
+    CONTROL         "最新版",IDC_RADIO_CURRENT,"Button",BS_AUTORADIOBUTTON,17,47,85,10
 END
 
 IDD_QUERYNEEREST DIALOGEX 0, 0, 185, 113
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "�ŒZ�o�H"
+CAPTION "最短経路"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,8,94,81,14
-    PUSHBUTTON      "�L�����Z��",IDCANCEL,97,94,81,14
-    LTEXT           "�X�^�e�B�b�N",IDC_STATIC_TITLE,8,5,169,8
-    CONTROL         "�V�������g��",IDC_CHK_SHINKANSEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,51,59,10
-    CONTROL         "��А����g��",IDC_CHK_COMPANY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,68,59,10
+    PUSHBUTTON      "キャンセル",IDCANCEL,97,94,81,14
+    LTEXT           "スタティック",IDC_STATIC_TITLE,8,5,169,8
+    CONTROL         "新幹線を使う",IDC_CHK_SHINKANSEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,51,59,10
+    CONTROL         "会社線を使う",IDC_CHK_COMPANY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,68,59,10
 END
 
 IDD_INFOMSG DIALOGEX 0, 0, 217, 73
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "���ē�"
+CAPTION "ご案内"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,159,52,50,14
-    CONTROL         "����A���̃��b�Z�[�W��\�����Ȃ�",IDC_CHKNOMSG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,121,10
-    LTEXT           "�����K�p�ɐݒ肷��ƁA�^���v�Z�K����K�p�����A���ʂ̌o�H�ł͔����E�w�����邱�Ƃ��ł��܂���B\n�{�@�\�͎w��o�H�̉c�ƃL����m�邽�߂����̂��̂ł�",IDC_STATIC_TITLE,7,7,203,29
+    CONTROL         "今後、このメッセージを表示しない",IDC_CHKNOMSG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,121,10
+    LTEXT           "特例非適用に設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです",IDC_STATIC_TITLE,7,7,203,29
 END
 
 
@@ -221,7 +221,7 @@ BEGIN
             VALUE "InternalName", "alps_mfc.exe"
             VALUE "LegalCopyright", "2014-2025 (C)Sutezo.  All rights reserved."
             VALUE "OriginalFilename", "farert"
-            VALUE "ProductName", "JR�^���v�Z"
+            VALUE "ProductName", "JR運賃計算"
             VALUE "ProductVersion", "25.11.0.0"
         END
     END
@@ -398,13 +398,13 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "dummy"
     BEGIN
-        MENUITEM "����-���q �V�����ݗ����ʐ�����",            IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME
-        MENUITEM "���w��P�w��",                      IDR_MENU_TERM_AGGR
-        MENUITEM "����������",                    IDR_MENU_ARROUND_OSAKAKAN
-        MENUITEM "���q�c�Ǝ戵��K��115��(����s��s������)",    IDR_MENU_RULE115
-        MENUITEM "�w�肵���o�H�ŉ^���v�Z",                 IDR_MENU_NEERORFAR
-        MENUITEM "JR���C����D�Ҍ��g�p",                 IDR_MENU_JRTOKAI_STOCK
-        MENUITEM "�����K�p",                       IDR_MENU_SPECIFIC_APPLY
+        MENUITEM "博多-小倉 新幹線在来線別線扱い",            IDR_MENU_KOKURA_HAKATA_BULLET_NOTSAME
+        MENUITEM "発駅を単駅に",                      IDR_MENU_TERM_AGGR
+        MENUITEM "大阪環状線遠回り",                    IDR_MENU_ARROUND_OSAKAKAN
+        MENUITEM "旅客営業取扱基準規程115条(特定都区市内発着)",    IDR_MENU_RULE115
+        MENUITEM "指定した経路で運賃計算",                 IDR_MENU_NEERORFAR
+        MENUITEM "JR東海株主優待券使用",                 IDR_MENU_JRTOKAI_STOCK
+        MENUITEM "特定を適用",                       IDR_MENU_SPECIFIC_APPLY
     END
 END
 
@@ -416,13 +416,13 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUTBOX            "�o�[�W�������(&A)..."
-    IDS_STARTUP             "�{�A�v���ŕ\������錋�ʂ͕K���������m�ȏ��ł͂Ȃ����Ƃ����肦�܂��B���ۂ̗��s�ł̔�p�Ƃ͈قȂ邱�Ƃ����蓾�邱�Ƃ��������̏ゲ���p��������"
-    IDS_ALERTOSAKAKAN       "����������ɐݒ�́A�^���v�Z�K����K�p�����A���ʂ̌o�H�ł͔����E�w�����邱�Ƃ��ł��܂���B\n�{�@�\�͎w��o�H�̉c�ƃL����m�邽�߂����̂��̂ł�"
-    IDS_ALERTNORULE         "�����K�p�ɐݒ肷��ƁA�^���v�Z�K����K�p�����A���ʂ̌o�H�ł͔����E�w�����邱�Ƃ��ł��܂���B\n�{�@�\�͎w��o�H�̉c�ƃL����m�邽�߂����̂��̂ł�"
+    IDS_ABOUTBOX            "バージョン情報(&A)..."
+    IDS_STARTUP             "本アプリで表示される結果は必ずしも正確な情報ではないことがありえます。実際の旅行での費用とは異なることがあり得ることをご理解の上ご利用ください"
+    IDS_ALERTOSAKAKAN       "大阪環状線遠回りに設定は、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです"
+    IDS_ALERTNORULE         "特例非適用に設定すると、運賃計算規則を適用せず、結果の経路では発券・購入することができません。\n本機能は指定経路の営業キロを知るためだけのものです"
 END
 
-#endif    // ���{�� (���{) resources
+#endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -439,8 +439,8 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 LANGUAGE 17, 1
-#include "res\alps_mfc.rc2"  // Microsoft Visual C++ �ȊO�ŕҏW���ꂽ���\�[�X
-#include "l.JPN\afxres.rc"      // �W���R���|�[�l���g
+#include "res\alps_mfc.rc2"  // Microsoft Visual C++ 以外で編集されたリソース
+#include "l.JPN\afxres.rc"      // 標準コンポーネント
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

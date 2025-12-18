@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 
 
-// CTermSel ƒ_ƒCƒAƒƒO
+// CTermSel ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 
 /*!	@file CTermSel diaglog.
  *	Copyright(c) sutezo9@me.com 2012.
@@ -13,14 +13,14 @@ class CTermSel : public CDialogEx
 	DECLARE_DYNAMIC(CTermSel)
 
 public:
-	CTermSel(bool bTerm, CWnd* pParent = NULL);   // •W€ƒRƒ“ƒXƒgƒ‰ƒNƒ^[
+	CTermSel(bool bTerm, CWnd* pParent = NULL);   // æ¨™æº–ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ãƒ¼
 	virtual ~CTermSel();
 
-// ƒ_ƒCƒAƒƒO ƒf[ƒ^
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚° ãƒ‡ãƒ¼ã‚¿
 	enum { IDD = IDD_DIALOG_TERM_SEL };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ƒTƒ|[ƒg
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ã‚µãƒãƒ¼ãƒˆ
 	bool m_bTerm;
 
 	int	m_stationId;

@@ -5,7 +5,6 @@
 ```
 git clone https://github.com/farert/farert.git
 cd farert
-git checkout azusa
 cd test/unix/azusa
 make
 source ../all/start.sh

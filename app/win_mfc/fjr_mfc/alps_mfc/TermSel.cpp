@@ -1,4 +1,4 @@
-// TermSel.cpp : À‘•ƒtƒ@ƒCƒ‹
+ï»¿// TermSel.cpp : å®Ÿè£…ãƒ•ã‚¡ã‚¤ãƒ«
 //
 
 #include "stdafx.h"
@@ -22,7 +22,7 @@ CTermSel::CTermSel(bool bTerm, CWnd* pParent /*=NULL*/)
 
 CTermSel::~CTermSel()
 {
-	DBS::cache_cleanup();	/* SQL Cache‚ğƒNƒŠƒA‚·‚é */
+	DBS::cache_cleanup();	/* SQL Cacheã‚’ã‚¯ãƒªã‚¢ã™ã‚‹ */
 }
 
 void CTermSel::DoDataExchange(CDataExchange* pDX)
@@ -53,26 +53,26 @@ END_MESSAGE_MAP()
 
 #if 0
 	test
-		1. IDC_COMBO_STATION •sŠ®‘S‰w–¼“ü—ÍiŠ¿šj ¨ Enter
-		   1-1 IDC_LIST_TERMINALS No Match ¨ Enter | OK Button -> –³‹‚³‚ê‚é‚±‚Æ
-		   1-2 IDC_LIST_TERMINALS 1Œ‡’v ¨ Enter | OK Button ¨ ‘I‘ğŠ®—¹‚³‚ê‚é‚±‚Æ
-		   1-3 IDC_LIST_TERMINALS NŒ‡’v ¨ Enter | OK Button ¨ –³‹‚³‚ê‚é‚±‚Æ
-		   1-3 IDC_LIST_TERMINALS NŒ‡’v ¨ ‘I‘ğ ¨ Enter | OK Button ¨ ‘I‘ğŠ®—¹‚³‚ê‚é‚±‚Æ
-		2. IDC_COMBO_STATION •sŠ®‘S‰w–¼“ü—ÍiJRj ¨ Enter
-		3. IDC_COMBO_STATION •sŠ®‘S‰w–¼“ü—Í(‚Ğ‚ç‚ª‚Èj ¨ Enter
-		4. IDC_COMBO_STATION •sŠ®‘S‰w–¼“ü—Í(Š¿š“¯–¼‰w‚ğ‚Ğ‚ç‚ª‚È“ü—Íj ¨ Enter
-		5. IDC_COMBO_STATION •sŠ®‘S‰w–¼“ü—Í(‚Ğ‚ç‚ª‚È“¯–¼‰wj ¨ Enter
-		6. IDC_COMBO_STATION Š®‘S‰w–¼“ü—Í(‚Ğ‚ç‚ª‚Èj ¨ Enter
-		7. IDC_COMBO_STATION Š®‘S‰w–¼“ü—Í(Š¿šj ¨ Enter
-		8. IDC_COMBO_STATION •sŠ®‘S‰w–¼“ü—Í(‚Ğ‚ç‚ª‚Èj ¨ Enter ¨ •¡”‰wƒ}ƒbƒ` ¨ 
-			8-1 IDC_LIST_TERMINALS ‘I‘ğDouble Click
-			8-2 IDC_LIST_TERMINALS ‘I‘ğ Enter
-			8-3 IDC_LIST_TERMINALS •¡”‘I‘ğ•s‰Â‚Å‚ ‚é‚±‚Æ
+		1. IDC_COMBO_STATION ä¸å®Œå…¨é§…åå…¥åŠ›ï¼ˆæ¼¢å­—ï¼‰ â†’ Enter
+		   1-1 IDC_LIST_TERMINALS No Match â†’ Enter | OK Button -> ç„¡è¦–ã•ã‚Œã‚‹ã“ã¨
+		   1-2 IDC_LIST_TERMINALS 1ä»¶åˆè‡´ â†’ Enter | OK Button â†’ é¸æŠå®Œäº†ã•ã‚Œã‚‹ã“ã¨
+		   1-3 IDC_LIST_TERMINALS Nä»¶åˆè‡´ â†’ Enter | OK Button â†’ ç„¡è¦–ã•ã‚Œã‚‹ã“ã¨
+		   1-3 IDC_LIST_TERMINALS Nä»¶åˆè‡´ â†’ é¸æŠ â†’ Enter | OK Button â†’ é¸æŠå®Œäº†ã•ã‚Œã‚‹ã“ã¨
+		2. IDC_COMBO_STATION ä¸å®Œå…¨é§…åå…¥åŠ›ï¼ˆJRï¼‰ â†’ Enter
+		3. IDC_COMBO_STATION ä¸å®Œå…¨é§…åå…¥åŠ›(ã²ã‚‰ãŒãªï¼‰ â†’ Enter
+		4. IDC_COMBO_STATION ä¸å®Œå…¨é§…åå…¥åŠ›(æ¼¢å­—åŒåé§…ã‚’ã²ã‚‰ãŒãªå…¥åŠ›ï¼‰ â†’ Enter
+		5. IDC_COMBO_STATION ä¸å®Œå…¨é§…åå…¥åŠ›(ã²ã‚‰ãŒãªåŒåé§…ï¼‰ â†’ Enter
+		6. IDC_COMBO_STATION å®Œå…¨é§…åå…¥åŠ›(ã²ã‚‰ãŒãªï¼‰ â†’ Enter
+		7. IDC_COMBO_STATION å®Œå…¨é§…åå…¥åŠ›(æ¼¢å­—ï¼‰ â†’ Enter
+		8. IDC_COMBO_STATION ä¸å®Œå…¨é§…åå…¥åŠ›(ã²ã‚‰ãŒãªï¼‰ â†’ Enter â†’ è¤‡æ•°é§…ãƒãƒƒãƒ â†’ 
+			8-1 IDC_LIST_TERMINALS é¸æŠDouble Click
+			8-2 IDC_LIST_TERMINALS é¸æŠ Enter
+			8-3 IDC_LIST_TERMINALS è¤‡æ•°é¸æŠä¸å¯ã§ã‚ã‚‹ã“ã¨
 			8-4 IDC_LIST_TERMINALS 
 		9. IDC_LIST_COMPANY sel -> IDC_LIST_LINES sel -> IDC_LIST_TERMINALS
 #endif
 
-// CTermSel ƒƒbƒZ[ƒW ƒnƒ“ƒhƒ‰[
+// CTermSel ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ ãƒãƒ³ãƒ‰ãƒ©ãƒ¼
 
 
 BOOL CTermSel::OnInitDialog()
@@ -82,9 +82,9 @@ BOOL CTermSel::OnInitDialog()
 	setlocale(LC_ALL, "");
 
 	if (m_bTerm) {
-		SetDlgItemText(IDC_STATIC_TITLE, _T("’…‰ww’è"));
+		SetDlgItemText(IDC_STATIC_TITLE, _T("ç€é§…æŒ‡å®š"));
 	} else {
-		SetDlgItemText(IDC_STATIC_TITLE, _T("”­‰ww’è"));
+		SetDlgItemText(IDC_STATIC_TITLE, _T("ç™ºé§…æŒ‡å®š"));
 	}
 
 	CListBox* pL = (CListBox*)GetDlgItem(IDC_LIST_COMPANY);
@@ -104,13 +104,13 @@ BOOL CTermSel::OnInitDialog()
 	SetTimer(101, 1000, NULL);
 	return FALSE;
 	//return TRUE;  // return TRUE unless you set the focus to a control
-	// —áŠO : OCX ƒvƒƒpƒeƒB ƒy[ƒW‚Í•K‚¸ FALSE ‚ğ•Ô‚µ‚Ü‚·B
+	// ä¾‹å¤– : OCX ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ ãƒšãƒ¼ã‚¸ã¯å¿…ãš FALSE ã‚’è¿”ã—ã¾ã™ã€‚
 }
 
 
 //	Start/End Station select filter. '>>' button. 
 //	IDC_BUTTON_STATION_SEL
-//	‰wŒó•â—ñ‹“•\¦ƒ{ƒ^ƒ“
+//	é§…å€™è£œåˆ—æŒ™è¡¨ç¤ºãƒœã‚¿ãƒ³
 //
 void CTermSel::OnBnClickedButtonStationSel()
 {
@@ -122,7 +122,7 @@ void CTermSel::OnBnClickedButtonStationSel()
 	
 	CListBox* pL = reinterpret_cast<CListBox*>(GetDlgItem(IDC_LIST_TERMINALS));
 
-		// ‰wŒó•âƒŠƒXƒg‚Ì—ñ‹“(‚Ğ‚ç‚ª‚ÈA•”•ªˆê’vj
+		// é§…å€™è£œãƒªã‚¹ãƒˆã®åˆ—æŒ™(ã²ã‚‰ãŒãªã€éƒ¨åˆ†ä¸€è‡´ï¼‰
 	DBO dbo = RouteUtil::Enum_station_match(sStation);
 	if (!dbo.isvalid()) {
 		return; 
@@ -133,13 +133,13 @@ void CTermSel::OnBnClickedButtonStationSel()
 	pL->ResetContent();
 	sStation = _T("");
 
-		// ‰wŒó•âƒŠƒXƒg‚Ì—ñ‹“(‚Ğ‚ç‚ª‚ÈA•”•ªˆê’vj
+		// é§…å€™è£œãƒªã‚¹ãƒˆã®åˆ—æŒ™(ã²ã‚‰ãŒãªã€éƒ¨åˆ†ä¸€è‡´ï¼‰
 	for (nItem = 0; dbo.moveNext(); nItem++) {
 		sStation = dbo.getText(0).c_str();
 		itemId = dbo.getInt(1);
 		CString samename = dbo.getText(2).c_str();
 
-		if (!samename.IsEmpty()) { // “¯–¼‰w?
+		if (!samename.IsEmpty()) { // åŒåé§…?
 			sStation += samename;
 			CString prefect(RouteUtil::GetPrefectByStationId(itemId).c_str());
 			if (!prefect.IsEmpty()) {
@@ -325,7 +325,7 @@ void CTermSel::OnLbnDblclkListCompany()
 //	Double click to Lines list
 //	IDC_LIST_LINES
 //	[>>] line -> station
-//	‰ïĞor“s“¹•{Œ§ + ˜Hü‚É‘®‚·‚é‰w‚ğ—ñ‹“
+//	ä¼šç¤¾oréƒ½é“åºœçœŒ + è·¯ç·šã«å±ã™ã‚‹é§…ã‚’åˆ—æŒ™
 //
 void CTermSel::OnLbnDblclkListLines()
 {
@@ -396,7 +396,7 @@ void CTermSel::OnLbnDblclkListTerminals()
 //
 void CTermSel::OnBnClickedOk()
 {
-	if (0 < m_stationId) {	// ‘I‘ğÏ‚İ‚È‚çOK Close
+	if (0 < m_stationId) {	// é¸æŠæ¸ˆã¿ãªã‚‰OK Close
 		saveHistory();
 		CDialogEx::OnOK();
 		return;
@@ -412,7 +412,7 @@ void CTermSel::OnBnClickedOk()
 		OnLbnDblclkListTerminals();
 	} else {
 		if (!sStation.IsEmpty()) {
-			// “ü—Í•¶š‚ª‚ ‚éê‡Œó•âƒŠƒXƒg
+			// å…¥åŠ›æ–‡å­—ãŒã‚ã‚‹å ´åˆå€™è£œãƒªã‚¹ãƒˆ
 			OnBnClickedButtonStationSel();
 		} else {
 		// DONOTHING
@@ -452,7 +452,7 @@ void CTermSel::ClearData()
 	m_pszStation = _T("");
 }
 
-//	‰w‚ÌŠ‘®˜Hü‚ğ•\¦
+//	é§…ã®æ‰€å±è·¯ç·šã‚’è¡¨ç¤º
 //	
 void CTermSel::SetTerminalLineLabel(int stationId)
 {
@@ -499,7 +499,7 @@ void CTermSel::loadHistory()
 	}
 	catch (CFileException* e)
 	{	e->Delete();
-		TRACE("—š—ğƒtƒ@ƒCƒ‹‚ªŠJ‚¯‚Ü‚¹‚ñ: %d\n", e->m_lOsError);
+		TRACE("å±¥æ­´ãƒ•ã‚¡ã‚¤ãƒ«ãŒé–‹ã‘ã¾ã›ã‚“: %d\n", e->m_lOsError);
 	}
 }
 
@@ -514,7 +514,7 @@ void CTermSel::saveHistory()
 	}
 	catch (CFileException* e)
 	{	e->Delete();
-		TRACE("—š—ğƒtƒ@ƒCƒ‹‚Ö‘‚İ‚Å‚«‚Ü‚¹‚ñ: %d\n", e->m_lOsError);
+		TRACE("å±¥æ­´ãƒ•ã‚¡ã‚¤ãƒ«ã¸æ›¸è¾¼ã¿ã§ãã¾ã›ã‚“: %d\n", e->m_lOsError);
 	}
 }
 
@@ -525,7 +525,7 @@ void CTermSel::saveHistory()
 
 //void CTermSel::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 //{
-//	// TODO: ‚±‚±‚ÉƒƒbƒZ[ƒW ƒnƒ“ƒhƒ‰[ ƒR[ƒh‚ğ’Ç‰Á‚·‚é‚©AŠù’è‚Ìˆ—‚ğŒÄ‚Ño‚µ‚Ü‚·B
+//	// TODO: ã“ã“ã«ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ ãƒãƒ³ãƒ‰ãƒ©ãƒ¼ ã‚³ãƒ¼ãƒ‰ã‚’è¿½åŠ ã™ã‚‹ã‹ã€æ—¢å®šã®å‡¦ç†ã‚’å‘¼ã³å‡ºã—ã¾ã™ã€‚
 //	TRACE("OnChar %u, %u\n", nChar, nFlags);
 //	CDialogEx::OnChar(nChar, nRepCnt, nFlags);
 //}
