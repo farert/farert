@@ -506,11 +506,11 @@ public:
 
 class RouteItem
 {
-    RouteItem() {}
+    RouteItem(){}
 public:
-    IDENT lineId;
-    IDENT stationId;
-    SPECIFICFLAG flag;
+    IDENT lineId = 0;
+    IDENT stationId = 0;
+    SPECIFICFLAG flag = 0;
 //    unsigned int salesKm;        /* =0 is uninitialized. add by iPhone */
 //    unsigned int fare;           /* =0 is uninitialized. add by iPhone */
     RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_);
@@ -628,11 +628,11 @@ class Rule114Info {
     Fare fare_114;
     int32_t apply_terminal_station;
 public:
-    Rule114Info() {}
+    Rule114Info(): apply_terminal_station(0) {}
     Rule114Info(const Rule114Info& other) {
         set(other);
     }
-    Rule114Info(const Fare& fare_, int32_t station_id_) {
+    Rule114Info(const Fare& fare_, int32_t station_id_) : apply_terminal_station(station_id_) {
         fare_114.set(fare_);
         apply_terminal_station = station_id_;
     }
@@ -1151,7 +1151,7 @@ public:
     virtual ~Route();
 
     void    assign(const RouteList& source_route, int32_t count = -1);
-    int32_t setup_route(LPCTSTR route_str, char* error_ptr = NULL, size_t error_ptr_size = 0, int32_t* column_no = 0);
+    int32_t setup_route(LPCTSTR route_str, LPTSTR error_ptr = NULL, size_t error_ptr_size = 0, int32_t* column_no = 0);
 
 protected:
     bool    chk_jctsb_b(int32_t kind, int32_t num);
@@ -1385,12 +1385,12 @@ private:
         vector<RouteItem> route_list_replace;
         map<uint32_t, uint32_t> collectCheckedJunction;
         RouteFlag route_flag;
-        bool is_start_city;  /* true : start is city otherwise arrive is city */
-        bool is100km;        /* true : rule87 otherwise rule86 */
-        int32_t deep_count;
-        int32_t locost_fare;
+        bool is_start_city = false;  /* true : start is city otherwise arrive is city */
+        bool is100km = false;        /* true : rule87 otherwise rule86 */
+        int32_t deep_count = 0;
+        int32_t locost_fare = 0;
         static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
-        int32_t sales_km_special;
+        int32_t sales_km_special = 0;
     public:
         Fare fare;
         int32_t  apply_terminal_station;

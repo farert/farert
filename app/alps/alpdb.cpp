@@ -3438,9 +3438,7 @@ tstring CalcRoute::BeginOrEndStationName(int32_t ident)
 //
 tstring RouteUtil::CoreAreaCenterName(int32_t id)
 {
-    TCHAR name[MAX_COREAREA_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
         "select name from t_coreareac where rowid=?");
@@ -3451,7 +3449,7 @@ tstring RouteUtil::CoreAreaCenterName(int32_t id)
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, NumOf(name), ctx.getText(0).c_str());
+            name = ctx.getText(0).c_str();
         }
     }
     return name;
@@ -3567,7 +3565,7 @@ int32_t Route::reverse()
  *  @retval 1 success
  *  @retval 0 success
  */
-int32_t Route::setup_route(LPCTSTR route_str, char* error_ptr /* = NULL*/, size_t error_ptr_size /* = 0 */, int* column_no /* = 0 */)
+int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size_t error_ptr_size /* = 0 */, int* column_no /* = 0 */)
 {
     const static TCHAR* token = _T(", |/\t");
     TCHAR* p;
@@ -4159,9 +4157,7 @@ int32_t Route::Id2jctId(int32_t stationId)
 //
 tstring Route::JctName(int32_t jctId)
 {
-    TCHAR name[MAX_STATION_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
         "select name from t_jct j left join t_station t on j.station_id=t.rowid where id=?");
@@ -4170,7 +4166,7 @@ tstring Route::JctName(int32_t jctId)
         ctx.setParam(1, jctId);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, MAX_STATION_CHR, ctx.getText(0).c_str());
+            name = ctx.getText(0);
         }
     }
     return name;
@@ -4181,9 +4177,7 @@ tstring Route::JctName(int32_t jctId)
 //
 tstring RouteUtil::StationName(int32_t id)
 {
-    TCHAR name[MAX_STATION_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
         "select name from t_station where rowid=?");
@@ -4192,7 +4186,7 @@ tstring RouteUtil::StationName(int32_t id)
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, NumOf(name), ctx.getText(0).c_str());
+            name = ctx.getText(0);
         }
     }
     return name;
@@ -4203,9 +4197,7 @@ tstring RouteUtil::StationName(int32_t id)
 //
 tstring RouteUtil::StationNameEx(int32_t id)
 {
-    TCHAR name[MAX_STATION_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
         "select name,samename from t_station where rowid=?");
@@ -4214,8 +4206,7 @@ tstring RouteUtil::StationNameEx(int32_t id)
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, NumOf(name), ctx.getText(0).c_str());
-            _tcscat_s(name, NumOf(name), ctx.getText(1).c_str());
+            name = ctx.getText(0) + ctx.getText(1);
         }
     }
     return name;
@@ -4226,9 +4217,7 @@ tstring RouteUtil::StationNameEx(int32_t id)
 //
 tstring RouteUtil::LineName(int32_t id)
 {
-    TCHAR name[MAX_STATION_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
         "select name from t_line where rowid=?");
@@ -4237,7 +4226,7 @@ tstring RouteUtil::LineName(int32_t id)
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, NumOf(name), ctx.getText(0).c_str());
+            name = ctx.getText(0);
         }
     }
     return name;
@@ -4410,9 +4399,7 @@ int32_t RouteUtil::GetLineId(LPCTSTR lineName)
 //
 tstring RouteUtil::PrefectName(int32_t id)
 {
-    TCHAR name[MAX_PREFECT_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
                                              "select name from t_prefect where rowid=?");
@@ -4424,7 +4411,7 @@ tstring RouteUtil::PrefectName(int32_t id)
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, NumOf(name), ctx.getText(0).c_str());
+            name = ctx.getText(0);
         }
     }
     return name;
@@ -4435,9 +4422,7 @@ tstring RouteUtil::PrefectName(int32_t id)
 //
 tstring RouteUtil::CompanyName(int32_t id)
 {
-    TCHAR name[MAX_PREFECT_CHR];
-
-    memset(name, 0, sizeof(name));
+    tstring name;
 
     DBO ctx = DBS::getInstance()->compileSql(
                                              "select name from t_company where rowid=?");
@@ -4445,7 +4430,7 @@ tstring RouteUtil::CompanyName(int32_t id)
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
-            _tcscpy_s(name, NumOf(name), ctx.getText(0).c_str());
+            name = ctx.getText(0);
         }
     }
     return name;
@@ -6675,7 +6660,7 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
     }
 }
 
-CalcRoute::CRule114::CRule114()
+CalcRoute::CRule114::CRule114():apply_terminal_station(0)
 {
     normal_fare = 0;
 }
