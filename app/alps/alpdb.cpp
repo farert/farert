@@ -6580,11 +6580,11 @@ int32_t CalcRoute::CheckOfRule88j(const vector<RouteItem>& route)
         }
 
         // パターン1: ~ 大阪 東海道線 新大阪 山陽新幹線 ~（下り、往復）
-        if (it + 2 != route.cend() &&
-            it->stationId == STATION_ID(_T("大阪")) &&
-            (it + 1)->lineId == LINE_ID(_T("東海道線")) &&
-            (it + 1)->stationId == STATION_ID(_T("新大阪")) &&
-            (it + 2)->lineId == LINE_ID(_T("山陽新幹線"))) {
+        if (((it + 1) != route.cend()) && ((it + 2) != route.cend()) &&
+            (it->stationId == STATION_ID(_T("大阪"))) &&
+            ((it + 1)->lineId == LINE_ID(_T("東海道線"))) &&
+            ((it + 1)->stationId == STATION_ID(_T("新大阪"))) &&
+            ((it + 2)->lineId == LINE_ID(_T("山陽新幹線")))) {
 
             /* 大阪-東海道線-新大阪-山陽新幹線 姫路以遠の場合、往復 */
             TRACE(_T("Rule88: Pattern 2 matched (Osaka -> Tokaido Line -> Shin-Osaka -> Sanyo Shinkansen) - Round trip\n"));
