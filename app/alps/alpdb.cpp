@@ -2875,7 +2875,7 @@ tstring FARE_INFO::showFare(const RouteFlag& refRouteFlag)
     const static TCHAR msgPossibleLowcost[] = _T("近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n");
     const static TCHAR msgAppliedLowcost[] = _T("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n");
 
-    if (!refRouteFlag.no_rule && !refRouteFlag.osakakan_detour &&
+    if (!refRouteFlag.no_rule /* && !refRouteFlag.osakakan_detour */ &&
         this->isUrbanArea() && !refRouteFlag.isUseBullet() 
         && !refRouteFlag.isIncludeCompanyLine()) {
         if (this->getBeginTerminalId() == this->getEndTerminalId()) {
@@ -3141,7 +3141,7 @@ JR東日本 株主優待4： \123,456
         sResult += _T("\r\nBRT乗継ぎ割引適用");
     }
 
-    if (!refRouteFlag.no_rule && !refRouteFlag.osakakan_detour &&
+    if (!refRouteFlag.no_rule /* && !refRouteFlag.osakakan_detour */ &&
         refRouteFlag.special_fare_enable) {
         sResult += _T("\r\n特定区間割引運賃適用");
     }
@@ -3226,7 +3226,7 @@ ASSERT((BIT_CHK(fare_info.result_flag, BRF_COMAPANY_END) && route_flag.compnend)
 
 
     /* 86, 87, 69, 70条 114条適用かチェック */
-    if (!route_flag.no_rule && !route_flag.osakakan_detour) {
+    if (!route_flag.no_rule /*&& !route_flag.osakakan_detour*/) {
         // これをここに置かないと86.87＋近郊でNG
         checkOfRuleSpecificCoreLine(true);  // route_list_raw -> route_list_cooked
             /* 規則適用 */
@@ -3381,7 +3381,7 @@ int32_t CalcRoute::beginStationId()
 {
     int32_t stid;
 
-    if (route_flag.no_rule || route_flag.osakakan_detour) {
+    if (route_flag.no_rule /*|| route_flag.osakakan_detour*/) {
         return route_list_raw.front().stationId;
     }
     else {
@@ -3405,7 +3405,7 @@ int32_t CalcRoute::endStationId()
 {
     int32_t stid;
 
-    if (route_flag.no_rule || route_flag.osakakan_detour) {
+    if (route_flag.no_rule /*|| route_flag.osakakan_detour*/) {
         return route_list_raw.back().stationId;
 
     } else {
@@ -9451,7 +9451,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
     }
     
     /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
-    if (!pRoute_flag->no_rule && !pRoute_flag->osakakan_detour) {
+    if (!pRoute_flag->no_rule /*&& !pRoute_flag->osakakan_detour*/) {
         adjust_km = FARE_INFO::CheckAndApplyRule43_2j(routeList);
         this->sales_km          -= adjust_km * 2;
         this->base_sales_km     -= adjust_km;
@@ -9461,7 +9461,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
     }
 
     /* 旅客営業規則89条適用 */
-    if (!pRoute_flag->no_rule && !pRoute_flag->osakakan_detour) {
+    if (!pRoute_flag->no_rule /*&& !pRoute_flag->osakakan_detour*/) {
         this->base_calc_km += FARE_INFO::CheckOfRule89j(routeList);
     }
 
@@ -9526,7 +9526,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
             special_fare = FARE_INFO::SpecificFareLine(routeList.front().stationId, routeList.back().stationId, 1);
             if (0 < special_fare) {
                 TRACE("specific fare section replace for Metro or Shikoku-Big-bridge\n");
-                if (!pRoute_flag->no_rule && !pRoute_flag->osakakan_detour) {
+                if (!pRoute_flag->no_rule /* && !pRoute_flag->osakakan_detour */) {
                     // 品川-青森-横浜 なども適用されてはいけないので,近郊区間内なら適用するように。
                     // 品川-横浜などの特別区間は近郊区間内の場合遠回り指定でも特別運賃を表示
                     // 名古屋は近郊区間でないので距離(尾頭橋-岡崎 37.7km 名古屋-岡崎 40.1km)50km以下として条件に含める
