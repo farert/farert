@@ -1155,7 +1155,7 @@ void Calps_mfcDlg::OnBnClickedButtonResultcopy()
 //	m_routeの内容でIDC_LIST_ROUTEを作成しなおす
 //	@return IDC_LIST_ROUTEの行数を返す
 //
-int Calps_mfcDlg::UpdateRouteList()
+int Calps_mfcDlg::UpdateRouteList(bool bShowFareFlag/* = true */)
 {
 	int idx;
 	int w0;
@@ -1227,7 +1227,7 @@ int Calps_mfcDlg::UpdateRouteList()
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(TRUE);			// Enable [-] button
 
 		/* 運賃表示 */
-		showFare();
+		showFare(bShowFareFlag);
 		GetDlgItem(IDC_EDIT_END)->SetWindowText(RouteUtil::StationName((m_route.routeList().cend() - 1)->stationId).c_str());	// 着駅表示
 	} else {
 		GetDlgItem(IDC_BUTTON_BS)->EnableWindow(FALSE);		// Disnable [-] button
@@ -1343,25 +1343,32 @@ TRACE(_T("\n"));
 int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 {
 	int rc;
+    int column_no;
+    CString msg;
 
 	ResetContent();
+    CString errorRouteStr;
 
-	rc = m_route.setup_route(route_str);
-
+	rc = m_route.setup_route(route_str, errorRouteStr.GetBuffer(256), 256, &column_no);
+    errorRouteStr.ReleaseBuffer();
+    column_no++; // 0-origin to 1-origin
 	GetDlgItem(IDC_EDIT_START)->SetWindowText(RouteUtil::StationName(m_route.departureStationId()).c_str());	// 発駅表示
 
 	switch (rc) {
 	case -200:
-		AfxMessageBox(_T("駅名不正が含まれています"));
+        msg.Format(_T("駅名不正が含まれています: %s, %d"), errorRouteStr, column_no);
+		AfxMessageBox(msg);
 		break;
 	case -300:
-		AfxMessageBox(_T("線名不正が含まれています"));
+        msg.Format(_T("線名不正が含まれています: %s, %d"), errorRouteStr, column_no);
+		AfxMessageBox(msg);
 		break;
 	case -100:
 		AfxMessageBox(_T("致命的エラー"));
 		break;
 	case -1:
-		AfxMessageBox(_T("経路が重複しています"));
+        msg.Format(_T("経路が重複しています: %s, %d"), errorRouteStr, column_no);
+		AfxMessageBox(msg);
 		break;
 	case -2:
 		AfxMessageBox(_T("不正な経路指定です"));
@@ -1379,7 +1386,7 @@ int Calps_mfcDlg::parseAndSetupRoute(LPCTSTR route_str)
 		break;
 	}
 	if (0 <= rc) {
-		UpdateRouteList();
+		UpdateRouteList(false);
 		GetDlgItem(IDC_LIST_LINESTATIONS)->EnableWindow(TRUE);	// 駅/路線 選択リスト選択可
 		GetDlgItem(IDC_BUTTON_SEL)->EnableWindow(TRUE);			// [+] button
 		GetDlgItem(IDC_BUTTON_AUTOROUTE)->EnableWindow(TRUE);	/* Enable [AutoRoute]ボタン */

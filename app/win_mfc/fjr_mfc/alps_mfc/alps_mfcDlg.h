@@ -45,7 +45,7 @@ protected:
 	enum SELMODE { SEL_LINE, SEL_JUNCTION, SEL_TERMINATE };
 	void setupForLinelistByStation(int stationId, int curLineId = 0);
 	void setupForStationlistByLine(int lineId, int curStationId, int startStationId);
-	int UpdateRouteList();
+	int UpdateRouteList(bool bShowFareFlag = true);
 	//int ModifyRouteList();
 	UINT CancelRouteQuery();
 	void CantSameStartAndEnd();
