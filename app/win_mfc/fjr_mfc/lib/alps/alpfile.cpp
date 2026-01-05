@@ -1,4 +1,4 @@
-#include "stdafx.h"
+Ôªø#include "stdafx.h"
 #include "alpfile.h"
 
 const LPCTSTR FILE_HISTORY = _T("history.txt");
@@ -37,7 +37,7 @@ bool HistoryFile::save(LPCTSTR szStation)
 	}
 
 #if HISTORY_SEPARATE_MEMORY
-	CString type(b_kind ? _T("íÖ") : _T("î≠"));
+	CString type(b_kind ? _T("ÁùÄ") : _T("Áô∫"));
 #endif
 	if (file.Open(FILE_HISTORY, CFile::modeReadWrite | CFile::modeNoTruncate)) {
 		while (file.ReadString(record)) {
@@ -84,7 +84,7 @@ bool HistoryFile::first()
 LPCTSTR HistoryFile::next()
 {
 #if HISTORY_SEPARATE_MEMORY
-	CString type(b_kind ? _T("íÖ") : _T("î≠"));
+	CString type(b_kind ? _T("ÁùÄ") : _T("Áô∫"));
 #endif
 	if ((file.m_hFile != CFile::hFileNull) && file.ReadString(record)) {
 		int pos;
