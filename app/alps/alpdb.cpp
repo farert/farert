@@ -2232,9 +2232,8 @@ ASSERT(first_station_id1 == stationId1);
                 if ((2 <= num) && (jctspdt.jctSpStationId == route_list_raw.at(num - 2).stationId)) {
                     if (route_list_raw.at(num - 2).lineId == line_id) {
                         TRACE(_T("JCT: A-C-1 error\n"));
-                        // あき亀山 可部線 広島 可部線 x七軒茶屋
+                      
                         return -1;
-                        // else 塩尻 中央東線 中央西線 多治見 => 塩尻 中央西線 多治見
                     }
                     removeTail();
                     TRACE(_T("JCT: A-C\n"));        // 3, 4, 8, 9, g,h
