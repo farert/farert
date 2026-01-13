@@ -30,16 +30,17 @@ void close_log()
    fh_log = NULL;
 }
 
-char g_logname[] = "trace.log";
+static char s_logname[] = "trace.log";
 
 void TRACE(const char* fmt, ...)
 {
 #if defined ALPS_LOG
 	if (!fh_log) {
 #if	defined _WINDOWS
-	    fopen_s(&fh_log, g_logname, "w");
+	    fopen_s(&fh_log, s_logname, "w");
 #else
-	    fh_log = _tfopen(g_logname, _T("w"));
+	    // fh_log = _tfopen(s_logname, _T("w"));
+	    fh_log = stderr;
 #endif
 	    atexit(close_log);
         }

@@ -578,11 +578,12 @@ class Dbreg:
     #
     def reg_line(self, label, linitems, lin):
     # 路線
-            # 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg
+            # 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg, 8:都道府県
         if 0 <= linitems[COL_COMPANY].find("branch"):
             self.branch.append([linitems[COL_LINE].strip(), linitems[COL_STATION].strip(), linitems[COL_STATION_KANA].strip(),
                            linitems[COL_SALES_KM].strip(), linitems[COL_CALC_KM].strip(), linitems[COL_SAME_STATION].strip(),
-                           linitems[COL_JUNCTION].strip(), 0 if linitems[COL_JUNCTION].strip() == '' else (1 << 15)])
+                           linitems[COL_JUNCTION].strip(), 0 if linitems[COL_JUNCTION].strip() == '' else (1 << 15), 
+                           linitems[COL_PREFECT].strip()])
             return			# 分岐特例はあとで
 
         if linitems[COL_STATION].strip().startswith("-"):
@@ -1074,8 +1075,9 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
         # 分岐特例
         for bitem in self.branch:
             #		self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip、
-            #					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg])
-            # 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg
+            #					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg,
+            #                       linitems[0].strip()])
+            # 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg,
 
             if bitem[6]:
                 bline2 = bitem[6][:bitem[6].find('/')]					### 分岐駅まで2路線以上(日田彦山線‐小倉の例)
@@ -1093,11 +1095,11 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
             else:
                 self.con.execute("""
                 insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1) values(
-                1,
+                ?,
                 (select rowid from t_line where name=?),
                 (select rowid from t_station where name=? and samename=?))
                 """,
-                [bitem[4], *same_staion(bitem[2])])
+                [bitem[8] == 'x' and 1 or 6, bitem[4], *same_staion(bitem[2])])
 
             self.con.execute("""insert into t_lines values(
             (select rowid from t_line where name=?),

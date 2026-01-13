@@ -106,6 +106,7 @@ typedef uint32_t SPECIFICFLAG;
 #define JCTSP_B_NISHIKOKURA     3
 #define JCTSP_B_YOSHIZUKA       4
 #define JCTSP_B_NAGAOKA         5
+#define JCTSP_B_RULE160_4       6
 
 #define LID_BRT        0x4000
 #define BRTMASK(id)    (~LID_BRT & (id))
