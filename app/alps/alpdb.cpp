@@ -2096,7 +2096,7 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
                                          route_list_raw.at(num - 1).stationId)))) &&
             (JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(route_list_raw.at(num - 1).lineId,
                                                          route_list_raw.at(num - 1).stationId, &jctspdt))) {
-            if (stationId2 == jctspdt.jctSpStationId2) { /* 宮内止まり？ */
+            if (stationId2 == jctspdt.jctSpSubStationId_c2) { /* 宮内止まり？ */
                 TRACE("JSBH004\n");
                 TRACE("add_abort\n");
                 return -1;
@@ -2105,11 +2105,11 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
                 // 新幹線 長岡-浦佐をOff
                 routePassOff(route_list_raw.at(num - 1).lineId,
                              route_list_raw.at(num - 1).stationId,
-                             jctspdt.jctSpStationId);
+                             jctspdt.jctSpSubStationId_c);
                 route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
-                                                       jctspdt.jctSpStationId);
+                                                       jctspdt.jctSpSubStationId_c);
                     // 上越線-宮内追加
-                rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId2, ADD_BULLET_NC);      //****************
+                rc = add(jctspdt.jctSpMainLineId_b, jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC);      //****************
                 route_flag.jctsp_route_change = true;   /* route modified */
                 if (rc != ADDRC_OK) {
                     TRACE(_T("junction special (JSBS001) error.\n"));
@@ -2117,7 +2117,7 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
                     return rc;          // >>>>>>>>>>>>>>>>>>>>>
                 }
                 num++;
-                stationId1 = jctspdt.jctSpStationId2; // 宮内
+                stationId1 = jctspdt.jctSpSubStationId_c2; // 宮内
                 // line_id : 信越線
                 // stationId2 : 宮内～長岡
             }
@@ -2200,10 +2200,10 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
 #ifdef _DEBUG
 ASSERT(original_line_id == line_id);
 #endif
-            type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+            type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt); // update jctSpMainLineId_b(b), jctSpStation(c)
             ASSERT(0 < type);
             TRACE("JCT: detect step-horiz:%u\n", type);
-            if (jctspdt.jctSpStationId2 != 0) {
+            if (jctspdt.jctSpSubStationId_c2 != 0) {
                 BIT_OFF(lflg1, BSRJCTSP);               // 別に要らないけど
                 break;
             }
@@ -2213,23 +2213,23 @@ ASSERT(original_line_id == line_id);
 #endif
 ASSERT(first_station_id1 == stationId1);
         // retrieve from a, d to b, c
-        type = Route::RetrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+        type = Route::RetrieveJunctionSpecific(line_id, stationId1, &jctspdt); // update jctSpMainLineId_b(b), jctSpStation(c)
         ASSERT(0 < type);
         TRACE("JCT: detect step:%u\n", type);
-        if (stationId2 != jctspdt.jctSpStationId) {
-            if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
+        if (stationId2 != jctspdt.jctSpSubStationId_c) {
+            if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId_b) {
                 ASSERT(stationId1 == route_list_raw.at(num - 1).stationId);
-                if (0 < RouteUtil::InStation(jctspdt.jctSpStationId,
+                if (0 < RouteUtil::InStation(jctspdt.jctSpSubStationId_c,
                                          route_list_raw.at(num - 1).lineId,
                                          route_list_raw.at(num - 2).stationId,
                                          stationId1)) {
                     TRACE("JCT: C-1\n");
-                    routePassOff(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, stationId1);  // C-1
+                    routePassOff(jctspdt.jctSpMainLineId_b, jctspdt.jctSpSubStationId_c, stationId1);  // C-1
                 } else { // A-1
                     TRACE("JCT: A-1\n");
                     is_no_station_id1_first_jct = 1;
                 }
-                if ((2 <= num) && (jctspdt.jctSpStationId == route_list_raw.at(num - 2).stationId)) {
+                if ((2 <= num) && (jctspdt.jctSpSubStationId_c == route_list_raw.at(num - 2).stationId)) {
                     if (route_list_raw.at(num - 2).lineId == line_id) {
                         TRACE(_T("JCT: A-C-1 error\n"));
                       
@@ -2241,12 +2241,12 @@ ASSERT(first_station_id1 == stationId1);
                 } else {
                     TRACE("JCT: b#21072801D\n");
                     route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
-                                                           jctspdt.jctSpStationId);
+                                                           jctspdt.jctSpSubStationId_c);
                     is_no_station_id1_first_jct++;
                 }
-                if (jctspdt.jctSpStationId2 != 0) {     // 分岐特例路線2
+                if (jctspdt.jctSpSubStationId_c2 != 0) {     // 分岐特例路線2
                     TRACE("JCT: step_(2)detect\n");
-                    rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, ADD_BULLET_NC); //**************
+                    rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC); //**************
                     ASSERT(rc == ADDRC_OK);
                     num++;
                     if (rc != ADDRC_OK) {           // safety
@@ -2255,44 +2255,44 @@ ASSERT(first_station_id1 == stationId1);
                         TRACE(_T("add_abort\n"));
                         return -1;
                     }
-                    if (stationId2 == jctspdt.jctSpStationId2) {
+                    if (stationId2 == jctspdt.jctSpSubStationId_c2) {
                         TRACE(_T("KF1,2)\n"));
-                        line_id = jctspdt.jctSpMainLineId2;
+                        line_id = jctspdt.jctSpMainLineId_b2;
                         replace_flg = true;
                     }
-                    stationId1 = jctspdt.jctSpStationId2;
+                    stationId1 = jctspdt.jctSpSubStationId_c2;
                 } else {
                     if ((is_no_station_id1_first_jct == 2) && !STATION_IS_JUNCTION_F(lflg1)) {
-                        TRACE(_T("is_no_station_id1_first_jct is on: is_no_station_id1_first_jct=%d, is_junction %d, %s <- %s\n"), is_no_station_id1_first_jct, STATION_IS_JUNCTION_F(lflg1), SNAME(stationId1), SNAME(jctspdt.jctSpStationId));
+                        TRACE(_T("is_no_station_id1_first_jct is on: is_no_station_id1_first_jct=%d, is_junction %d, %s <- %s\n"), is_no_station_id1_first_jct, STATION_IS_JUNCTION_F(lflg1), SNAME(stationId1), SNAME(jctspdt.jctSpSubStationId_c));
                         is_no_station_id1_first_jct = 555;
                     }
-                    stationId1 = jctspdt.jctSpStationId;
+                    stationId1 = jctspdt.jctSpSubStationId_c;
                 }
             } else {
                 ASSERT(first_station_id1 == stationId1);
 
                 if ((num < 2) ||
-                !Route::IsAbreastShinkansen(jctspdt.jctSpMainLineId,
+                !Route::IsAbreastShinkansen(jctspdt.jctSpMainLineId_b,
                                             route_list_raw.at(num - 1).lineId,
                                             stationId1,
                                             route_list_raw.at(num - 2).stationId)
-                || (jctspdt.jctSpStationId == STATION_ID(_T("西小倉"))) // KC-2
-                || (jctspdt.jctSpStationId == STATION_ID(_T("吉塚"))) // KC-2
-                || (RouteUtil::InStation(jctspdt.jctSpStationId,
+                || (jctspdt.jctSpSubStationId_c == STATION_ID(_T("西小倉"))) // KC-2
+                || (jctspdt.jctSpSubStationId_c == STATION_ID(_T("吉塚"))) // KC-2
+                || (RouteUtil::InStation(jctspdt.jctSpSubStationId_c,
                                      route_list_raw.at(num - 1).lineId,
                                      route_list_raw.at(num - 2).stationId,
                                      stationId1) <= 0)) {
                     // A-0, I, A-2
                     TRACE("JCT: A-0, I, A-2\n");    //***************
 
-                    if ((jctspdt.jctSpStationId == STATION_ID(_T("西小倉"))) // KC-2
-                       || (jctspdt.jctSpStationId == STATION_ID(_T("吉塚")))) { // KC-2
-                        routePassOff(jctspdt.jctSpMainLineId,
-                                     stationId1, jctspdt.jctSpStationId);
+                    if ((jctspdt.jctSpSubStationId_c == STATION_ID(_T("西小倉"))) // KC-2
+                       || (jctspdt.jctSpSubStationId_c == STATION_ID(_T("吉塚")))) { // KC-2
+                        routePassOff(jctspdt.jctSpMainLineId_b,
+                                     stationId1, jctspdt.jctSpSubStationId_c);
                         TRACE("JCT: KC-2\n");
                     }
-                    rc = add(jctspdt.jctSpMainLineId,
-                             /*route_list_raw.at(num - 1).stationId,*/ jctspdt.jctSpStationId,
+                    rc = add(jctspdt.jctSpMainLineId_b,
+                             /*route_list_raw.at(num - 1).stationId,*/ jctspdt.jctSpSubStationId_c,
                              ADD_BULLET_NC);
                     ASSERT(rc == ADDRC_OK);
                     num++;
@@ -2302,8 +2302,8 @@ ASSERT(first_station_id1 == stationId1);
                         TRACE(_T("add_abort\n"));
                         return -1;                  //>>>>>>>>>>>>>>>>>>>>>>>>>>
                     }
-                    if (jctspdt.jctSpStationId2 != 0) {     // 分岐特例路線2
-                        rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, ADD_BULLET_NC); //**************
+                    if (jctspdt.jctSpSubStationId_c2 != 0) {     // 分岐特例路線2
+                        rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC); //**************
                         num++;
                         ASSERT(rc == ADDRC_OK);
                         if (rc != ADDRC_OK) {           // safety
@@ -2312,27 +2312,27 @@ ASSERT(first_station_id1 == stationId1);
                             TRACE(_T("add_abort\n"));
                             return -1;              //>>>>>>>>>>>>>>>>>>>>>>>>>>
                         }
-                        if (stationId2 == jctspdt.jctSpStationId2) {
+                        if (stationId2 == jctspdt.jctSpSubStationId_c2) {
                             TRACE(_T("KF0,3,4)\n"));
-                            line_id = jctspdt.jctSpMainLineId2;
+                            line_id = jctspdt.jctSpMainLineId_b2;
                             replace_flg = true;
                         }
-                        stationId1 = jctspdt.jctSpStationId2;
+                        stationId1 = jctspdt.jctSpSubStationId_c2;
                     } else {
-                        stationId1 = jctspdt.jctSpStationId;
+                        stationId1 = jctspdt.jctSpSubStationId_c;
                     }
                 } else {
                     ASSERT(first_station_id1 == stationId1);
                     // C-2
                     TRACE("JCT: C-2\n");
                     ASSERT(IS_SHINKANSEN_LINE(route_list_raw.at(num - 1).lineId));
-                    routePassOff(jctspdt.jctSpMainLineId,
-                                 jctspdt.jctSpStationId, stationId1);
+                    routePassOff(jctspdt.jctSpMainLineId_b,
+                                 jctspdt.jctSpSubStationId_c, stationId1);
                     i = RouteUtil::NextShinkansenTransferTermInRange(route_list_raw.at(num - 1).lineId, stationId1, route_list_raw.at(num - 2).stationId);
                     if (i <= 0) {   // 隣駅がない場合
                         TRACE("JCT: C-2(none next station on bullet line)\n");
                         // 新幹線の発駅には並行在来線(路線b)に所属しているか?
-                        if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId,
+                        if (0 == Route::InStationOnLine(jctspdt.jctSpMainLineId_b,
                                                         route_list_raw.at(num - 2).stationId)) {
                             route_flag.jctsp_route_change = true;   /* route modified */
                             TRACE(_T("next station is not found in shinkansen.\n"));
@@ -2340,33 +2340,33 @@ ASSERT(first_station_id1 == stationId1);
                             return -1;          // >>>>>>>>>>>>>>>>>>>
                         } else {
                             removeTail();
-                            rc = add(jctspdt.jctSpMainLineId,
-                                     jctspdt.jctSpStationId, ADD_BULLET_NC);    //**************
+                            rc = add(jctspdt.jctSpMainLineId_b,
+                                     jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);    //**************
                             ASSERT(rc == ADDRC_OK);
-                            stationId1 = jctspdt.jctSpStationId;
+                            stationId1 = jctspdt.jctSpSubStationId_c;
                         }
                     } else {
                         route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId, i);
-                        route_list_raw.push_back(RouteItem(jctspdt.jctSpMainLineId,
-                                                           jctspdt.jctSpStationId));
-                        stationId1 = jctspdt.jctSpStationId;
+                        route_list_raw.push_back(RouteItem(jctspdt.jctSpMainLineId_b,
+                                                           jctspdt.jctSpSubStationId_c));
+                        stationId1 = jctspdt.jctSpSubStationId_c;
                     }
                 }
             }
             route_flag.jctsp_route_change = true;   /* route modified */
         } else {
-            // E, G     (stationId2 == jctspdt.jctSpStationId)
+            // E, G     (stationId2 == jctspdt.jctSpSubStationId_c)
             TRACE("JCT: E, G\n");
-            if (jctspdt.jctSpStationId2 != 0) {
+            if (jctspdt.jctSpSubStationId_c2 != 0) {
                 TRACE("JCT: KE0-4\n");
                 BIT_OFF(lflg2, BSRJCTSP);
             }
-            line_id = jctspdt.jctSpMainLineId;
+            line_id = jctspdt.jctSpMainLineId_b;
             ASSERT(first_station_id1 == stationId1);
 
             if ((2 <= num) &&
 //          !BIT_CHK(RouteUtil::AttrOfStationOnLineLine(line_id, stationId2), BSRJCTSP_B) &&
-            (0 < RouteUtil::InStation(stationId2, jctspdt.jctSpMainLineId,
+            (0 < RouteUtil::InStation(stationId2, jctspdt.jctSpMainLineId_b,
             route_list_raw.at(num - 2).stationId, stationId1))) {
                 TRACE(_T("E-3:duplicate route error.\n"));
                 TRACE(_T("add_abort\n"));
@@ -2377,7 +2377,7 @@ ASSERT(first_station_id1 == stationId1);
                 //
                 TRACE("jct-b nisi-kokura-stop/yoshizuka-stop\n");
             }
-            if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
+            if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId_b) {
                 // E-3 , B-0, 5, 6, b, c, d, e
                 // E-0, E-1, E-1a, 6, b, c, d, e
                 TRACE("JCT: E-3, B0,5,6,b,c,d,e, E-0,E-1,E-1a,6,b,c,d,e\n");
@@ -2392,7 +2392,7 @@ ASSERT(first_station_id1 == stationId1);
     }
     if (BIT_CHK(lflg2, BSRJCTSP)) {
         // 水平型
-            // a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
+            // a(line_id), d(stationId2) -> b(jctSpMainLineId_b), c(jctSpSubStationId_c)
 #ifdef _DEBUG
 ASSERT(original_line_id == line_id);
 //ASSERT(first_station_id1 == stationId2);
@@ -2400,13 +2400,13 @@ ASSERT(original_line_id == line_id);
         type = Route::RetrieveJunctionSpecific(line_id, stationId2, &jctspdt);
         ASSERT(0 < type);
         TRACE("JCT:%u\n", type);
-        if (stationId1 == jctspdt.jctSpStationId) {
+        if (stationId1 == jctspdt.jctSpSubStationId_c) {
             // E10-, F, H
             TRACE("JCT: E10-, F, H/KI0-4\n");
-            line_id = jctspdt.jctSpMainLineId;  // a -> b
-            if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) {
+            line_id = jctspdt.jctSpMainLineId_b;  // a -> b
+            if (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId_b) {
                 if ((2 <= num) &&
-                (0 < RouteUtil::InStation(stationId2, jctspdt.jctSpMainLineId,
+                (0 < RouteUtil::InStation(stationId2, jctspdt.jctSpMainLineId_b,
                 route_list_raw.at(num - 2).stationId, stationId1))) {
                     TRACE(_T("E11:duplicate route error.\n"));
                     TRACE(_T("add_abort\n"));
@@ -2419,9 +2419,9 @@ ASSERT(original_line_id == line_id);
             }
         } else {
             // J, B, D
-            if ((jctspdt.jctSpStationId2 != 0) && (stationId1 == jctspdt.jctSpStationId2)) {    // 分岐特例路線2
+            if ((jctspdt.jctSpSubStationId_c2 != 0) && (stationId1 == jctspdt.jctSpSubStationId_c2)) {    // 分岐特例路線2
                 TRACE("JCT: KJ0-4(J, B, D)\n");
-                rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);      //**************
+                rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);      //**************
                 num++;
                 if (rc != ADDRC_OK) {
                     route_flag.jctsp_route_change = true;   /* route modified */
@@ -2430,13 +2430,13 @@ ASSERT(original_line_id == line_id);
                     return rc;          // >>>>>>>>>>>>>>>>>>>>>
                 }
             } else {
-                if (jctspdt.jctSpStationId2 != 0) { // 分岐特例路線2
+                if (jctspdt.jctSpSubStationId_c2 != 0) { // 分岐特例路線2
                     TRACE(_T("JCT: KH0-4(J, B, D) add(日田彦山線, 城野c')\n"));
-                    rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId2, ADD_BULLET_NC);  //**************
+                    rc = add(line_id, /*stationId1,*/ jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC);  //**************
                     num++;
                     if (rc == ADDRC_OK) {
                         TRACE(_T("JCT: add(日豊線b', 西小倉c)\n"));
-                        rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);  //**************
+                        rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);  //**************
                         num++;
                     }
                     if (rc != ADDRC_OK) {
@@ -2447,7 +2447,7 @@ ASSERT(original_line_id == line_id);
                     }
                 } else {
                     TRACE("JCT: J, B, D\n");
-                    rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, ADD_BULLET_NC);   //**************
+                    rc = add(line_id, /*stationId1,*/ jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);   //**************
                     num++;
                     if (rc != ADDRC_OK) {
                         route_flag.jctsp_route_change = true;   /* route modified */
@@ -2462,8 +2462,8 @@ ASSERT(original_line_id == line_id);
                 }
             }
             // b#14021202 BIT_ON(jct_flg_on, BSRJCTHORD);
-            line_id = jctspdt.jctSpMainLineId;
-            stationId1 = jctspdt.jctSpStationId;
+            line_id = jctspdt.jctSpMainLineId_b;
+            stationId1 = jctspdt.jctSpSubStationId_c;
         }
         route_flag.jctsp_route_change = true;   /* route modified */
         is_no_station_id1_first_jct = 0;
@@ -2482,7 +2482,7 @@ ASSERT(original_line_id == line_id);
                                             route_list_raw.at(num - 1).stationId,
                                             stationId2))) {
                 /* 宮内発 */
-                if (route_list_raw.at(num - 2).stationId == jctspdt.jctSpStationId2) {
+                if (route_list_raw.at(num - 2).stationId == jctspdt.jctSpSubStationId_c2) {
                     TRACE(_T("junction special 2(JSBS004) error.\n"));
                     TRACE(_T("add_abort\n"));
                     return -1;          // >>>>>>>>>>>>>>>>>>>>>
@@ -2492,17 +2492,17 @@ ASSERT(original_line_id == line_id);
 
                 // 長岡->宮内へ置換
                 route_list_raw.at(num - 1) = RouteItem(route_list_raw.at(num - 1).lineId,
-                                                       jctspdt.jctSpStationId2);
+                                                       jctspdt.jctSpSubStationId_c2);
 
                 // 上越線 宮内→浦佐
-                rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, ADD_BULLET_NC);       //****************
+                rc = add(jctspdt.jctSpMainLineId_b, jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);       //****************
                 route_flag.jctsp_route_change = true;   /* route modified */
                 if (ADDRC_OK != rc) {
                     TRACE(_T("junction special 2(JSBH001) error.\n"));
                     TRACE(_T("add_abort\n"));
                     return rc;          // >>>>>>>>>>>>>>>>>>>>>
                 }
-                stationId1 = jctspdt.jctSpStationId;
+                stationId1 = jctspdt.jctSpSubStationId_c;
                 num += 1;
             }
         }
@@ -2641,9 +2641,9 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
     /* 追加か置換か */
     if (replace_flg) {
         ASSERT(0 < type);   // enable jctspdt
-        ASSERT((line_id == jctspdt.jctSpMainLineId) || (line_id == jctspdt.jctSpMainLineId2));
-        ASSERT((route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId) ||
-               (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId2));
+        ASSERT((line_id == jctspdt.jctSpMainLineId_b) || (line_id == jctspdt.jctSpMainLineId_b2));
+        ASSERT((route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId_b) ||
+               (route_list_raw.at(num - 1).lineId == jctspdt.jctSpMainLineId_b2));
         route_list_raw.pop_back();
         --num;
     }
@@ -4502,8 +4502,14 @@ int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStati
 //  "select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2"
 //  " from t_jctspcl where id=("
 //  "   select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)";
-    "select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2" \
-    " from t_jctspcl where id=(" \
+    "select type,"
+    "       jctsp_line_idb1, "
+    "       jctsp_station_idc1,"
+    "       jctsp_line_idb2,"
+    "       jctsp_station_idc2,"
+    "       jctsp_line_ida,"
+    "       jctsp_station_idb" 
+    " from t_jctspcl where id=("
     "   select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
     int32_t type = 0;
 
@@ -4515,16 +4521,16 @@ int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStati
         dbo.setParam(2, transferStationId);
         if (dbo.moveNext()) {
             type = dbo.getInt(0);
-            jctspdt->jctSpMainLineId = dbo.getInt(1);
-            jctspdt->jctSpStationId = dbo.getInt(2);
-            jctspdt->jctSpMainLineId2 = dbo.getInt(3);
-            jctspdt->jctSpStationId2 = dbo.getInt(4);
+            jctspdt->jctSpMainLineId_b = dbo.getInt(1);
+            jctspdt->jctSpSubStationId_c = dbo.getInt(2);
+            jctspdt->jctSpMainLineId_b2 = dbo.getInt(3);
+            jctspdt->jctSpSubStationId_c2 = dbo.getInt(4);
+            jctspdt->jctSpBranchLineId_a = dbo.getInt(5);
+            jctspdt->jctSpMainStationId_d = dbo.getInt(6);
         }
     }
-    ASSERT(((jctspdt->jctSpMainLineId2 == 0) && (jctspdt->jctSpStationId2 == 0)) ||
-           ((jctspdt->jctSpMainLineId2 != 0) && (jctspdt->jctSpStationId2 != 0)));
-    if (jctspdt->jctSpStationId2 == 0) {    // safety
-        jctspdt->jctSpMainLineId2 = 0;
+    if (jctspdt->jctSpSubStationId_c2 == 0) {    // safety
+        jctspdt->jctSpMainLineId_b2 = 0;
     }
     return type;
 }
@@ -4533,8 +4539,8 @@ int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStati
 //
 //  @param [in]  jctLineId         a 分岐路線
 //  @param [in]  transferStationId d 乗換駅
-//  @param [out] jctSpMainLineId   b 本線
-//  @param [out] jctSpStationId    c 分岐駅
+//  @param [out] jctSpMainLineId_b   b 本線
+//  @param [out] jctSpSubStationId_c    c 分岐駅
 //
 //  @return type 0: usual, 1-3:type B
 //
@@ -9042,6 +9048,36 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
     pRoute_flag->bullet_line = enabled;
 }
 
+
+//  type 3 の分岐特例テーブルを取得
+//  @retval JCTSP_DATA[] all records.
+//
+vector<JCTSP_DATA> FARE_INFO::EnumJunctionFareSpecific()
+{
+    vector<JCTSP_DATA> records;
+    const char tsql[] =
+    "select "
+    "       jctsp_line_idb1, "
+    "       jctsp_station_idc1,"
+    "       jctsp_line_ida,"
+    "       jctsp_station_idb" 
+    " from t_jctspcl where type=3";
+
+    DBO dbo = DBS::getInstance()->compileSql(tsql);
+    if (dbo.isvalid()) {
+        while (dbo.moveNext()) {
+            JCTSP_DATA rec;
+            rec.jctSpMainLineId_b = dbo.getInt(0);
+            rec.jctSpSubStationId_c = dbo.getInt(1);
+            rec.jctSpBranchLineId_a = dbo.getInt(2);
+            rec.jctSpMainStationId_d = dbo.getInt(3);
+            rec.jctSpMainLineId_b2 = 0;
+            rec.jctSpSubStationId_c2 = 0;
+            records.push_back(rec);
+        }
+    }
+    return records;
+}
 
 
 

@@ -374,10 +374,12 @@ class Dbreg:
         create table t_jctspcl(
             id integer primary key autoincrement,
             type integer not null,
-            jctsp_line_id1 integer not null,
-            jctsp_station_id1 integer not null,
-            jctsp_line_id2 integer not null default(0),
-            jctsp_station_id2 integer not null default(0)
+            jctsp_line_idb1 integer not null, -- b
+            jctsp_station_idc1 integer not null, -- c
+            jctsp_line_idb2 integecr not null default(0), -- b2
+            jctsp_station_idc2 integer not null default(0), -- c2
+            jctsp_line_ida integer not null default(0), -- a
+            jctsp_station_idb integer not null default(0) -- d
         );
         """)
         ###########################################
@@ -578,13 +580,13 @@ class Dbreg:
     #
     def reg_line(self, label, linitems, lin):
     # 路線
-            # 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg, 8:都道府県
+            # 0:路線[2]、1:駅[4]、2:分岐駅[5]、3:営業キロ[6]、4:分岐路線[7]、5:同名駅[9], 6:分岐路線2/分岐駅2[8], 7:lflg[8], 8:都道府県[0]
         if 0 <= linitems[COL_COMPANY].find("branch"):
             self.branch.append([linitems[COL_LINE].strip(), linitems[COL_STATION].strip(), linitems[COL_STATION_KANA].strip(),
                            linitems[COL_SALES_KM].strip(), linitems[COL_CALC_KM].strip(), linitems[COL_SAME_STATION].strip(),
                            linitems[COL_JUNCTION].strip(), 0 if linitems[COL_JUNCTION].strip() == '' else (1 << 15), 
                            linitems[COL_PREFECT].strip()])
-            return			# 分岐特例はあとで
+            return			# 分岐特例はあとで -> reg_last_line()
 
         if linitems[COL_STATION].strip().startswith("-"):
             return
@@ -733,7 +735,7 @@ class Dbreg:
                 raise ValueError
 
             self.con.execute("""
-            insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
+            insert into t_jctspcl(type, jctsp_line_idb1, jctsp_station_idc1, jctsp_line_idb2, jctsp_station_idc2) values(
             ?1,
             (select case when (select rowid from t_line where name=?2) is null then 0
             else              (select rowid from t_line where name=?2) end),
@@ -1074,32 +1076,41 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
     def reg_last_line(self):
         # 分岐特例
         for bitem in self.branch:
-            #		self.branch.append([linitems[2].strip(), linitems[3].strip(), linitems[4].strip、
-            #					   linitems[5].strip(), linitems[6].strip(), linitems[8].strip(), linitems[7].strip(), lflg,
-            #                       linitems[0].strip()])
-            # 0:路線、1:駅、2:分岐駅、3:営業キロ、4:分岐路線、5:同名駅, 6:分岐路線2/分岐駅2, 7:lflg,
+
+            # 0:路線[2]、1:駅[4]、2:分岐駅[5]、3:営業キロ[6]、4:分岐路線[7]、5:同名駅[9], 6:分岐路線2/分岐駅2[8], 7:lflg[8], 8:都道府県[0]
+
+            type = bitem[8] == 'x' and 1 or 6 # prefect
+            line_b = bitem[4]    # 分岐路線
+            station_c = bitem[2] # 分岐駅
+            line_a = bitem[0]  # 路線
+            station_d = bitem[1] + bitem[5] # 駅+同名駅
 
             if bitem[6]:
                 bline2 = bitem[6][:bitem[6].find('/')]					### 分岐駅まで2路線以上(日田彦山線‐小倉の例)
                 bstation2t = bitem[6][bitem[6].find('/') + 1:]
 
                 self.con.execute("""
-                insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2) values(
+                insert into t_jctspcl(type, jctsp_line_idb1, jctsp_station_idc1, jctsp_line_idb2, jctsp_station_idc2,
+                                 jctsp_line_ida, jctsp_station_idb) values(
                 2,
+                (select rowid from t_line where name=?),
+                (select rowid from t_station where name=? and samename=?),
                 (select rowid from t_line where name=?),
                 (select rowid from t_station where name=? and samename=?),
                 (select rowid from t_line where name=?),
                 (select rowid from t_station where name=? and samename=?))
                 """,
-                [bitem[4], *same_staion(bitem[2]), bline2, *same_staion(bstation2t)])
+                [line_b, *same_staion(station_c), bline2, *same_staion(bstation2t), line_a, *same_staion(station_d)])
             else:
                 self.con.execute("""
-                insert into t_jctspcl(type, jctsp_line_id1, jctsp_station_id1) values(
+                insert into t_jctspcl(type, jctsp_line_idb1, jctsp_station_idc1, jctsp_line_ida, jctsp_station_idb) values(
                 ?,
+                (select rowid from t_line where name=?),
+                (select rowid from t_station where name=? and samename=?),
                 (select rowid from t_line where name=?),
                 (select rowid from t_station where name=? and samename=?))
                 """,
-                [bitem[8] == 'x' and 1 or 6, bitem[4], *same_staion(bitem[2])])
+                [type, line_b, *same_staion(station_c), line_a, *same_staion(station_d)])
 
             self.con.execute("""insert into t_lines values(
             (select rowid from t_line where name=?),

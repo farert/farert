@@ -655,6 +655,16 @@ public:
     int32_t fare() const { return fare_114.fare; }
 };
 
+typedef struct
+{
+    int32_t     jctSpMainLineId_b;        // 分岐特例:本線(b)
+    int32_t     jctSpSubStationId_c;         // 分岐特例:分岐駅(c)
+    int32_t     jctSpMainLineId_b2;       // 分岐特例:本線(b)
+    int32_t     jctSpSubStationId_c2;        // 分岐特例:分岐駅(c)
+    int32_t     jctSpBranchLineId_a;      // 分岐特例:支線(a)
+    int32_t     jctSpMainStationId_d;         // 分岐特例:本駅(d)
+} JCTSP_DATA;
+
 class Route;
 
 class FARE_INFO {
@@ -738,6 +748,7 @@ private:
     int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList);
     int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
     static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
+    static vector<JCTSP_DATA> EnumJunctionFareSpecific();
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
@@ -1050,14 +1061,6 @@ public:
     int32_t id_of_station(tstring name);
     int32_t id_of_line(tstring name);
 };
-
-typedef struct
-{
-    int32_t     jctSpMainLineId;        // 分岐特例:本線(b)
-    int32_t     jctSpStationId;         // 分岐特例:分岐駅(c)
-    int32_t     jctSpMainLineId2;       // 分岐特例:本線(b)
-    int32_t     jctSpStationId2;        // 分岐特例:分岐駅(c)
-} JCTSP_DATA;
 
 // 経路マスクビットパターンマスク
 #define JctMaskOn(bit, jctid)   bit[(jctid) / 8] |= (1 << ((jctid) % 8))
