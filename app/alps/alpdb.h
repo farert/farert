@@ -286,6 +286,7 @@ public:
     bool rule70bullet;
     bool rule86bullet;
     bool rule16_5;
+    bool rule160_4;
 
     bool bullet_line;           // 新幹線乗車している
     bool bJrTokaiOnly;
@@ -356,6 +357,7 @@ public:
         rule70 = false;
         special_fare_enable = false;
         rule16_5 = false;
+        rule160_4 = false;
 
         bullet_line = false;
         bJrTokaiOnly = false;
@@ -375,6 +377,7 @@ public:
     bool rule_en() {
         return (0x3f & rule86or87) ||
                rule88 ||
+               rule160_4 ||
                rule69 ||
                rule70 ||
                special_fare_enable ||
@@ -416,6 +419,7 @@ public:
     bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
     bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
     bool isAvailableRule88() const { return rule88; }
+    bool isAvailableRule160_4() const { return rule160_4; }
     bool isAvailableRule70() const { return rule70; }
     bool isAvailableRule69() const { return rule69; }
     bool isAvailableRule115() const { return 0 < rule115; }
@@ -485,6 +489,7 @@ public:
         special_fare_enable = false;
         meihan_city_enable = false;
         rule88 = false;
+        rule160_4 = false;
         rule69 = false;
         rule70 = false;
         rule70bullet = false;
@@ -655,15 +660,36 @@ public:
     int32_t fare() const { return fare_114.fare; }
 };
 
-typedef struct
+class JCTSP_DATA
 {
+public:
+    JCTSP_DATA() {
+        jctSpMainLineId_b = 0;
+        jctSpSubStationId_c = 0;
+        jctSpMainLineId_b2 = 0;
+        jctSpSubStationId_c2 = 0;
+        jctSpBranchLineId_a = 0;
+        jctSpMainStationId_d = 0;
+        jctDir = 0;
+    }
     int32_t     jctSpMainLineId_b;        // 分岐特例:本線(b)
     int32_t     jctSpSubStationId_c;         // 分岐特例:分岐駅(c)
     int32_t     jctSpMainLineId_b2;       // 分岐特例:本線(b)
     int32_t     jctSpSubStationId_c2;        // 分岐特例:分岐駅(c)
     int32_t     jctSpBranchLineId_a;      // 分岐特例:支線(a)
     int32_t     jctSpMainStationId_d;         // 分岐特例:本駅(d)
-} JCTSP_DATA;
+    int8_t      jctDir;                     // Type=6 only LINE_DIR
+    JCTSP_DATA& operator=(const JCTSP_DATA& right) {
+        jctSpMainLineId_b = right.jctSpMainLineId_b;
+        jctSpSubStationId_c = right.jctSpSubStationId_c;
+        jctSpMainLineId_b2 = right.jctSpMainLineId_b2;
+        jctSpSubStationId_c2 = right.jctSpSubStationId_c2;
+        jctSpBranchLineId_a = right.jctSpBranchLineId_a;
+        jctSpMainStationId_d = right.jctSpMainStationId_d;
+        jctDir = right.jctDir;
+        return *this;
+    }
+};
 
 class Route;
 
@@ -748,7 +774,8 @@ private:
     int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList);
     int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
     static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
-    static vector<JCTSP_DATA> EnumJunctionFareSpecific();
+    static vector<JCTSP_DATA> GetJunctfionFareSpecifices();
+    static int32_t Check_jctspcl_fare(const vector<RouteItem>& routeList);
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,

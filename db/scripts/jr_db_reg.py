@@ -379,7 +379,8 @@ class Dbreg:
             jctsp_line_idb2 integecr not null default(0), -- b2
             jctsp_station_idc2 integer not null default(0), -- c2
             jctsp_line_ida integer not null default(0), -- a
-            jctsp_station_idb integer not null default(0) -- d
+            jctsp_station_idd integer not null default(0), -- d
+            dir integer not null default(0) -- 上り(2)/下り(1)
         );
         """)
         ###########################################
@@ -1091,7 +1092,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
 
                 self.con.execute("""
                 insert into t_jctspcl(type, jctsp_line_idb1, jctsp_station_idc1, jctsp_line_idb2, jctsp_station_idc2,
-                                 jctsp_line_ida, jctsp_station_idb) values(
+                                 jctsp_line_ida, jctsp_station_idd) values(
                 2,
                 (select rowid from t_line where name=?),
                 (select rowid from t_station where name=? and samename=?),
@@ -1103,7 +1104,7 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
                 [line_b, *same_staion(station_c), bline2, *same_staion(bstation2t), line_a, *same_staion(station_d)])
             else:
                 self.con.execute("""
-                insert into t_jctspcl(type, jctsp_line_idb1, jctsp_station_idc1, jctsp_line_ida, jctsp_station_idb) values(
+                insert into t_jctspcl(type, jctsp_line_idb1, jctsp_station_idc1, jctsp_line_ida, jctsp_station_idd) values(
                 ?,
                 (select rowid from t_line where name=?),
                 (select rowid from t_station where name=? and samename=?),
@@ -1121,6 +1122,23 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
             [bitem[0], bitem[1], bitem[5], bitem[3], bitem[7]])
             # b31=special_t_lines ※ lflgはb31=1なのと、b31=1の場合はb15のみ使用される
             # 0xffffff00=4294967040
+
+        # 分岐特例 type=3(営業キロ減算)
+        # 路線b の、駅c から 駅d が上り(1)か下り(2)か
+        cur_spcl = self.con.cursor()
+        cur_spcl_dir = self.con.cursor()
+        cur_spcl.execute("select id, jctsp_line_idb1, jctsp_station_idc1, jctsp_station_idd from t_jctspcl where type=6")
+        for rec in cur_spcl:
+            cur_spcl_dir.execute("""
+            select case when
+               ((select sales_km from t_lines where line_id=?1 and station_id=?2) - 
+                (select sales_km from t_lines where line_id=?1 and station_id=?3)) <= 0
+             then 1 else 2 end;
+            """, [rec[1], rec[2], rec[3]])
+            dir = cur_spcl_dir.fetchone()[0]
+            self.con.execute("""
+                update t_jctspcl set dir=? where id=?
+                             """, [dir, rec[0]])
 
         # 分岐フラグ(lflg.b15=純粋な分岐駅(Excel8列の乗換路線欄空欄でもxでもない駅), sflg.b12=分岐特例も含めた分岐駅)
         # lflg.b15の方は既に設定済み、sflg.b12は仮値として複数路線に所属するが分岐駅としたくない駅(新今宮)はonに設定されているのでここでoffする

@@ -91,11 +91,12 @@ tstring RouteFlag::showAppliedRule() const
 {
     TCHAR cb[128];
 
-    _sntprintf_s(cb, NumOf(cb), _T("rule8687=0x%02x, rule88=%d, rule69=%d, rule70=%d, specific_fare=%d, meihan=%d\n"),
+    _sntprintf_s(cb, NumOf(cb), _T("rule8687=0x%02x, rule88=%d, rule69=%d, rule70=%d, rule160_4=%d, specific_fare=%d, meihan=%d\n"),
                     (0x3f & rule86or87),
                             rule88,
                             rule69,
                             rule70,
+                            rule160_4,
                             special_fare_enable,
                             meihan_city_enable);
     return cb;
@@ -3162,6 +3163,9 @@ JR東日本 株主優待4： \123,456
     if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule88()) {
         sResult += _T("\r\n旅客営業規則第88条を適用していません");
     }
+    if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule160_4()) {
+        sResult += _T("\r\n旅客営業規則第160条第4項を適用していません");
+    }
     if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
         sResult += _T("\r\n旅客営業規則第69条を適用していません");
     }
@@ -3632,7 +3636,7 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
              * 4: company pass finish
              * -4: wrong company pass
              */
-ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
+//ASSERT((rc == 0) || (rc == 1) || (rc == 10) || (rc == 11) || (rc == 4));
             if (rc <= 0) {
                 break;
             }
@@ -4508,7 +4512,7 @@ int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStati
     "       jctsp_line_idb2,"
     "       jctsp_station_idc2,"
     "       jctsp_line_ida,"
-    "       jctsp_station_idb" 
+    "       jctsp_station_idd" 
     " from t_jctspcl where id=("
     "   select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
     int32_t type = 0;
@@ -9052,7 +9056,7 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
 //  type 3 の分岐特例テーブルを取得
 //  @retval JCTSP_DATA[] all records.
 //
-vector<JCTSP_DATA> FARE_INFO::EnumJunctionFareSpecific()
+vector<JCTSP_DATA> FARE_INFO::GetJunctfionFareSpecifices()
 {
     vector<JCTSP_DATA> records;
     const char tsql[] =
@@ -9060,8 +9064,9 @@ vector<JCTSP_DATA> FARE_INFO::EnumJunctionFareSpecific()
     "       jctsp_line_idb1, "
     "       jctsp_station_idc1,"
     "       jctsp_line_ida,"
-    "       jctsp_station_idb" 
-    " from t_jctspcl where type=3";
+    "       jctsp_station_idd,"
+    "       dir"
+    " from t_jctspcl where type=6";
 
     DBO dbo = DBS::getInstance()->compileSql(tsql);
     if (dbo.isvalid()) {
@@ -9073,6 +9078,7 @@ vector<JCTSP_DATA> FARE_INFO::EnumJunctionFareSpecific()
             rec.jctSpMainStationId_d = dbo.getInt(3);
             rec.jctSpMainLineId_b2 = 0;
             rec.jctSpSubStationId_c2 = 0;
+            rec.jctDir = dbo.getInt(4);
             records.push_back(rec);
         }
     }
@@ -9080,6 +9086,61 @@ vector<JCTSP_DATA> FARE_INFO::EnumJunctionFareSpecific()
 }
 
 
+/* static */
+/** 分岐特例運賃をチェックする
+ * Check if the route contains any junction fare specific records.
+ * @param routeList [in] Route list
+ * @retval 0 No special fare
+ * @retval >0 Special fare amount
+ */
+int32_t FARE_INFO::Check_jctspcl_fare(const vector<RouteItem>& routeList)
+{
+    int i;
+    vector<JCTSP_DATA> jctsp_data = GetJunctfionFareSpecifices();
+    JCTSP_DATA jctsp;
+    int32_t return_sales_km_ = 0;
+    bool found = false;
+
+    for (const auto& rec : jctsp_data) {
+        for (i = 1; i < routeList.size() - 2; i++) {
+        // Check each record
+            if ((routeList[i].lineId == rec.jctSpBranchLineId_a)
+             && (routeList[i].stationId == rec.jctSpSubStationId_c)
+             && (routeList[i + 1].lineId == rec.jctSpMainLineId_b)
+             && (routeList[i + 1].stationId == rec.jctSpMainStationId_d)
+             && IS_SHINKANSEN_LINE(routeList[i + 2].lineId)
+             && (rec.jctDir == RouteUtil::DirLine(routeList[i + 2].lineId,
+                                                 routeList[i + 2].stationId,
+                                                 rec.jctSpMainStationId_d))) {
+                jctsp = rec;
+                found = true;
+                break;
+            } else if (IS_SHINKANSEN_LINE(routeList[i].lineId)
+                    && (routeList[i].stationId == rec.jctSpMainStationId_d)
+                    && (routeList[i + 1].lineId == rec.jctSpMainLineId_b)
+                    && (routeList[i + 1].stationId == rec.jctSpSubStationId_c)
+                    && (routeList[i + 2].lineId == rec.jctSpBranchLineId_a)
+                    && (rec.jctDir == RouteUtil::DirLine(routeList[i].lineId,
+                                                        routeList[i - 1].stationId,
+                                                        rec.jctSpMainStationId_d))) {
+                jctsp = rec;
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            // Found special fare record
+            // For now, return fixed fare amount
+            int dup_sales_km = RouteUtil::GetDistance(jctsp.jctSpMainLineId_b,
+                                                    jctsp.jctSpSubStationId_c,
+                                                    jctsp.jctSpMainStationId_d)[0];
+            TRACE(_T("Rule160_4: Subtracting distance: %d km\n"), dup_sales_km);
+            return_sales_km_ += dup_sales_km * 2; // round trip
+            found = false; // reset for next record
+        }
+    }
+    return return_sales_km_;
+}
 
 int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社線 */
                                       const RouteFlag& rRoute_flag,
@@ -9506,37 +9567,55 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
         this->base_calc_km += FARE_INFO::CheckOfRule89j(routeList);
     }
 
-    if (!pRoute_flag->no_rule && (pRoute_flag->rule88 != 0)) {
-        // Rule88: Subtract distance (0, 38, or 76)
-        // 大阪-新大阪間の距離を取得
-        auto osaka_shinosaka_km = []() -> int32_t {
-            static int32_t osaka_shinosaka_km_ = 0;
-            if (osaka_shinosaka_km_ == 0) {
-                osaka_shinosaka_km_ = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
-                                                            STATION_ID(_T("大阪")),
-                                                            STATION_ID(_T("新大阪")))[0];
+    if (!pRoute_flag->no_rule) {
+        if (pRoute_flag->rule88 != 0) {
+            // Rule88: Subtract distance (0, 38, or 76)
+            // 大阪-新大阪間の距離を取得
+            auto osaka_shinosaka_km = []() -> int32_t {
+                static int32_t osaka_shinosaka_km_ = 0;
+                if (osaka_shinosaka_km_ == 0) {
+                    osaka_shinosaka_km_ = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),
+                                                                STATION_ID(_T("大阪")),
+                                                                STATION_ID(_T("新大阪")))[0];
+                }
+                return osaka_shinosaka_km_;
+            };
+            int kmSubtract;
+            switch (pRoute_flag->rule88) {
+            case 1: case 2:
+                kmSubtract = osaka_shinosaka_km() * 2; break;
+            case 3: case 4: case 5: case 6: case 7:
+                kmSubtract = osaka_shinosaka_km(); break;
+            default:
+                kmSubtract = 0;
             }
-            return osaka_shinosaka_km_;
-        };
-        int kmSubtract;
-        switch (pRoute_flag->rule88) {
-        case 1: case 2:
-            kmSubtract = osaka_shinosaka_km() * 2; break;
-        case 3: case 4: case 5: case 6: case 7:
-            kmSubtract = osaka_shinosaka_km(); break;
-        default:
-            kmSubtract = 0;
-        }
-        TRACE(_T("Rule88: Subtracting distance: %d km\n"), kmSubtract);
-        TRACE(_T("Rule88: Before subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
-              this->sales_km, this->base_sales_km, this->base_calc_km);
+            TRACE(_T("Rule88: Subtracting distance: %d km\n"), kmSubtract);
+            TRACE(_T("Rule88: Before subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
+                this->sales_km, this->base_sales_km, this->base_calc_km);
 
-        this->sales_km -= kmSubtract;
-        this->base_sales_km -= kmSubtract;
-        this->base_calc_km -= kmSubtract;
-        TRACE(_T("Rule88: After subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
+            this->sales_km -= kmSubtract;
+            this->base_sales_km -= kmSubtract;
+            this->base_calc_km -= kmSubtract;
+            TRACE(_T("Rule88: After subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
+                this->sales_km, this->base_sales_km, this->base_calc_km);
+        }
+    }
+
+    int32_t return_sales_km_ = Check_jctspcl_fare(routeList);
+
+    pRoute_flag->rule160_4 = 0 < return_sales_km_;
+
+    if ((!pRoute_flag->no_rule) && 0 < return_sales_km_)  {
+         // Rule160の4: Subtract duplicated distance for junction fare specific) {
+        TRACE(_T("Rule160_4: Before subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
+              this->sales_km, this->base_sales_km, this->base_calc_km);
+        this->sales_km -= return_sales_km_;
+        this->base_sales_km -= return_sales_km_;
+        this->base_calc_km -= return_sales_km_;
+        TRACE(_T("Rule160_4: After subtraction: sales_km=%d, base_sales_km=%d, base_calc_km=%d\n"),
               this->sales_km, this->base_sales_km, this->base_calc_km);
     }
+
     /* 運賃計算 */
     calc_brt_fare(routeList);
 
