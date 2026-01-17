@@ -279,6 +279,9 @@ std::string az_route::get_fare_info_object_json() {
             if (route_flag.no_rule && route_flag.isAvailableRule88()) {
                 oss << json_encoder::value("旅客営業規則第88条を適用していません");
             }
+            if (route_flag.no_rule && route_flag.isAvailableRule160_4()) {
+                oss << json_encoder::value("旅客営業規則第160条第4項を適用していません");
+            }
             if (route_flag.no_rule && route_flag.isAvailableRule69()) {
                 oss << json_encoder::value("旅客営業規則第69条を適用していません");
             }
