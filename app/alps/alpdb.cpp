@@ -3550,7 +3550,12 @@ int32_t Route::reverse()
             add(station_id);
             for (rev_pos++; rev_pos != route_list_rev.crend(); rev_pos++) {
                 int r = add(rev_pos->lineId, /*station_id,*/ rev_pos->stationId, 1<<8);
-                ASSERT(0 <= r);
+                // ASSERT(0 <= r);
+                if (r < 0) {
+                    /* should not happen */
+                    TRACE(_T("fatal error in reverse restore\n"));
+                    return -1;
+                }
                 station_id = rev_pos->stationId;
             }
             TRACE(_T("cancel reverse route\n"));
@@ -9095,14 +9100,17 @@ vector<JCTSP_DATA> FARE_INFO::GetJunctfionFareSpecifices()
  */
 int32_t FARE_INFO::Check_jctspcl_fare(const vector<RouteItem>& routeList)
 {
-    int i;
+    if (routeList.size() < 3) {
+        return 0;
+    }
+
     vector<JCTSP_DATA> jctsp_data = GetJunctfionFareSpecifices();
     JCTSP_DATA jctsp;
     int32_t return_sales_km_ = 0;
     bool found = false;
 
     for (const auto& rec : jctsp_data) {
-        for (i = 1; i < routeList.size() - 2; i++) {
+        for (size_t i = 1; i + 2 < routeList.size(); ++i) {
         // Check each record
             if ((routeList[i].lineId == rec.jctSpBranchLineId_a)
              && (routeList[i].stationId == rec.jctSpSubStationId_c)
@@ -9131,16 +9139,20 @@ int32_t FARE_INFO::Check_jctspcl_fare(const vector<RouteItem>& routeList)
         if (found) {
             // Found special fare record
             // For now, return fixed fare amount
-            int dup_sales_km = RouteUtil::GetDistance(jctsp.jctSpMainLineId_b,
-                                                    jctsp.jctSpSubStationId_c,
-                                                    jctsp.jctSpMainStationId_d)[0];
-            TRACE(_T("Rule160_4: Subtracting distance: %d km\n"), dup_sales_km);
-            return_sales_km_ += dup_sales_km * 2; // round trip
+            auto dist = RouteUtil::GetDistance(jctsp.jctSpMainLineId_b,
+                                               jctsp.jctSpSubStationId_c,
+                                               jctsp.jctSpMainStationId_d);
+            if (!dist.empty()) {
+                int dup_sales_km = dist[0];
+                TRACE(_T("Rule160_4: Subtracting distance: %d km\n"), dup_sales_km);
+                return_sales_km_ += dup_sales_km * 2; // round trip
+            }
             found = false; // reset for next record
         }
     }
     return return_sales_km_;
 }
+
 
 int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社線 */
                                       const RouteFlag& rRoute_flag,
