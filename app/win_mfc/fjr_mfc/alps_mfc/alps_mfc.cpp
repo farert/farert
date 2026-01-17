@@ -1,5 +1,6 @@
 
-// alps_mfc.cpp : �A�v���P�[�V�����̃N���X������`���܂��B
+// alps_mfc.cpp : アプリケーションのクラス動作を定義します。
+// alps_mfc.cpp : アプリケーションのクラス動作を定義します。
 //
 
 #include "stdafx.h"
@@ -26,36 +27,47 @@ END_MESSAGE_MAP()
 
 int g_tax;	// global
 
-// Calps_mfcApp �R���X�g���N�V����
+// Calps_mfcApp コンストラクション
+// Calps_mfcApp コンストラクション
 
 Calps_mfcApp::Calps_mfcApp()
 {
-	// �ċN���}�l�[�W���[���T�|�[�g���܂�
+	// 再起動マネージャーをサポートします
+	// 再起動マネージャーをサポートします
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
-	// TODO: ���̈ʒu�ɍ\�z�p�R�[�h��ǉ����Ă��������B
-	// ������ InitInstance ���̏d�v�ȏ��������������ׂċL�q���Ă��������B
+	// TODO: この位置に構築用コードを追加してください。
+	// ここに InitInstance 中の重要な初期化処理をすべて記述してください。
+	// TODO: この位置に構築用コードを追加してください。
+	// ここに InitInstance 中の重要な初期化処理をすべて記述してください。
 }
 
 
-// �B��� Calps_mfcApp �I�u�W�F�N�g�ł��B
+// 唯一の Calps_mfcApp オブジェクトです。
+// 唯一の Calps_mfcApp オブジェクトです。
 
 Calps_mfcApp theApp;
 
 
-// Calps_mfcApp ������
+// Calps_mfcApp 初期化
+// Calps_mfcApp 初期化
 
 BOOL Calps_mfcApp::InitInstance()
 {
 	_tsetlocale(LC_ALL, _T(""));	// tstring
 
-	// �A�v���P�[�V���� �}�j�t�F�X�g�� visual �X�^�C����L���ɂ��邽�߂ɁA
-	// ComCtl32.dll Version 6 �ȍ~�̎g�p���w�肷��ꍇ�́A
-	// Windows XP �� InitCommonControlsEx() ���K�v�ł��B�����Ȃ���΁A�E�B���h�E�쐬�͂��ׂĎ��s���܂��B
+	// アプリケーション マニフェストが visual スタイルを有効にするために、
+	// ComCtl32.dll Version 6 以降の使用を指定する場合は、
+	// Windows XP に InitCommonControlsEx() が必要です。さもなければ、ウィンドウ作成はすべて失敗します。
+	// アプリケーション マニフェストが visual スタイルを有効にするために、
+	// ComCtl32.dll Version 6 以降の使用を指定する場合は、
+	// Windows XP に InitCommonControlsEx() が必要です。さもなければ、ウィンドウ作成はすべて失敗します。
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-	// �A�v���P�[�V�����Ŏg�p���邷�ׂẴR���� �R���g���[�� �N���X���܂߂�ɂ́A
-	// �����ݒ肵�܂��B
+	// アプリケーションで使用するすべてのコモン コントロール クラスを含めるには、
+	// これを設定します。
+	// アプリケーションで使用するすべてのコモン コントロール クラスを含めるには、
+	// これを設定します。
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
@@ -109,21 +121,32 @@ BOOL Calps_mfcApp::InitInstance()
 
 	AfxEnableControlContainer();
 
-	// MFC �R���g���[���Ńe�[�}��L���ɂ��邽�߂ɁA"Windows �l�C�e�B�u" �̃r�W���A�� �}�l�[�W���[���A�N�e�B�u��
+	// MFC コントロールでテーマを有効にするために、"Windows ネイティブ" のビジュアル マネージャーをアクティブ化
+	// MFC コントロールでテーマを有効にするために、"Windows ネイティブ" のビジュアル マネージャーをアクティブ化
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
-	// �_�C�A���O�ɃV�F�� �c���[ �r���[�܂��̓V�F�� ���X�g �r���[ �R���g���[����
-	// �܂܂�Ă���ꍇ�ɃV�F�� �}�l�[�W���[���쐬���܂��B
+	// ダイアログにシェル ツリー ビューまたはシェル リスト ビュー コントロールが
+	// 含まれている場合にシェル マネージャーを作成します。
+	// ダイアログにシェル ツリー ビューまたはシェル リスト ビュー コントロールが
+	// 含まれている場合にシェル マネージャーを作成します。
 	//CShellManager *pShellManager = new CShellManager;
 
-	// �W��������
-	// �����̋@�\���g�킸�ɍŏI�I�Ȏ��s�\�t�@�C����
-	// �T�C�Y���k���������ꍇ�́A�ȉ�����s�v�ȏ�����
-	// ���[�`�����폜���Ă��������B
-	// �ݒ肪�i�[����Ă��郌�W�X�g�� �L�[��ύX���܂��B
-	// TODO: ��Ж��܂��͑g�D���Ȃǂ̓K�؂ȕ������
-	// ���̕������ύX���Ă��������B
-	// SetRegistryKey(_T("�A�v���P�[�V���� �E�B�U�[�h�Ő������ꂽ���[�J�� �A�v���P�[�V����"));
+	// 標準初期化
+	// これらの機能を使わずに最終的な実行可能ファイルの
+	// サイズを縮小したい場合は、以下から不要な初期化
+	// ルーチンを削除してください。
+	// 設定が格納されているレジストリ キーを変更します。
+	// TODO: 会社名または組織名などの適切な文字列に
+	// この文字列を変更してください。
+	// SetRegistryKey(_T("アプリケーション ウィザードで生成されたローカル アプリケーション"));
+	// 標準初期化
+	// これらの機能を使わずに最終的な実行可能ファイルの
+	// サイズを縮小したい場合は、以下から不要な初期化
+	// ルーチンを削除してください。
+	// 設定が格納されているレジストリ キーを変更します。
+	// TODO: 会社名または組織名などの適切な文字列に
+	// この文字列を変更してください。
+	// SetRegistryKey(_T("アプリケーション ウィザードで生成されたローカル アプリケーション"));
 
 	//setlocale(LC_ALL, "");
 	
@@ -142,7 +165,8 @@ BOOL Calps_mfcApp::InitInstance()
 						UnlockResource(hGlbl);
 
 						// restore(decrypt)
-						// �Í�����߂� Excel��߂�   
+						// 暗号化やめる Excelやめた   
+						// 暗号化やめる Excelやめた   
 						//dwDbEncSize = rd((unsigned char*)np, dwDbEncSize);
 						
 						GetTempPath(MAX_PATH, impdbfn);
@@ -159,7 +183,8 @@ BOOL Calps_mfcApp::InitInstance()
 			}
 		}
 
-		AfxMessageBox(_T("�f�[�^���J���܂���."));
+		AfxMessageBox(_T("データが開けません."));
+		AfxMessageBox(_T("データが開けません."));
 		return FALSE;
 
 	} while (0);
@@ -170,16 +195,21 @@ BOOL Calps_mfcApp::InitInstance()
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
-		// TODO: �_�C�A���O�� <OK> �ŏ����ꂽ���̃R�[�h��
-		//  �L�q���Ă��������B
+		// TODO: ダイアログが <OK> で消された時のコードを
+		//  記述してください。
+		// TODO: ダイアログが <OK> で消された時のコードを
+		//  記述してください。
 	}
 	else if (nResponse == IDCANCEL)
 	{
-		// TODO: �_�C�A���O�� <�L�����Z��> �ŏ����ꂽ���̃R�[�h��
-		//  �L�q���Ă��������B
+		// TODO: ダイアログが <キャンセル> で消された時のコードを
+		//  記述してください。
+		// TODO: ダイアログが <キャンセル> で消された時のコードを
+		//  記述してください。
 	}
 
-	// ��ō쐬���ꂽ�V�F�� �}�l�[�W���[���폜���܂��B
+	// 上で作成されたシェル マネージャーを削除します。
+	// 上で作成されたシェル マネージャーを削除します。
 	//if (pShellManager != NULL)
 	//{
 	//	delete pShellManager;
@@ -188,8 +218,10 @@ BOOL Calps_mfcApp::InitInstance()
 #if !defined(_AFXDLL) && !defined(_AFX_NO_MFC_CONTROLS_IN_DIALOGS)
 	ControlBarCleanUp();
 #endif
-	// �_�C�A���O�͕����܂����B�A�v���P�[�V�����̃��b�Z�[�W �|���v���J�n���Ȃ���
-	//  �A�v���P�[�V�������I�����邽�߂� FALSE ��Ԃ��Ă��������B
+	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
+	//  アプリケーションを終了するために FALSE を返してください。
+	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
+	//  アプリケーションを終了するために FALSE を返してください。
 	return FALSE;
 }
 

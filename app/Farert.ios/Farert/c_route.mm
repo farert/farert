@@ -1024,6 +1024,11 @@ int g_tax; /* main.m */
                                   "旅客営業規則第88条を適用していません"]];
     }
     if (!result.isRuleApplied
+        && obj_calcroute->getRouteFlag().isAvailableRule160_4()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:
+                                  "旅客営業規則第160条第4項を適用していません"]];
+    }
+    if (!result.isRuleApplied
         && obj_calcroute->getRouteFlag().isAvailableRule69()) {
         [resultMessage addObject:[NSString stringWithUTF8String:
                                   "旅客営業規則第69条を適用していません"]];

@@ -18,6 +18,7 @@
 #endif
 
 typedef const char* LPCTSTR;
+typedef char* LPTSTR;
 typedef char* LPSTR;
 typedef char TCHAR;
 

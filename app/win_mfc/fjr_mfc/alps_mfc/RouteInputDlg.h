@@ -1,21 +1,21 @@
-#pragma once
+ï»¿#pragma once
 
 
-// CRouteInputDlg ƒ_ƒCƒAƒƒO
+// CRouteInputDlg ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 
 class CRouteInputDlg : public CDialogEx
 {
 	DECLARE_DYNAMIC(CRouteInputDlg)
 
 public:
-	CRouteInputDlg(CWnd* pParent = NULL);   // •W€ƒRƒ“ƒXƒgƒ‰ƒNƒ^[
+	CRouteInputDlg(CWnd* pParent = NULL);   // æ¨™æº–ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ãƒ¼
 	virtual ~CRouteInputDlg();
 
-// ƒ_ƒCƒAƒƒO ƒf[ƒ^
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚° ãƒ‡ãƒ¼ã‚¿
 	enum { IDD = IDD_ROUTE_INPUT };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ƒTƒ|[ƒg
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ã‚µãƒãƒ¼ãƒˆ
 
 	DECLARE_MESSAGE_MAP()
 public:

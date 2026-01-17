@@ -106,6 +106,7 @@ typedef uint32_t SPECIFICFLAG;
 #define JCTSP_B_NISHIKOKURA     3
 #define JCTSP_B_YOSHIZUKA       4
 #define JCTSP_B_NAGAOKA         5
+#define JCTSP_B_RULE160_4       6
 
 #define LID_BRT        0x4000
 #define BRTMASK(id)    (~LID_BRT & (id))
@@ -277,6 +278,7 @@ public:
     BYTE rule86or87;        // 0: N/A. bit0: term, bit1: end ([区][浜][名][京][阪][神][広][九][福][仙][札])
                             //         bit2: term, bit3: end([山])
                             // bit6:1= disable
+    int32_t rule160_5;      // Rule160-5適用時の減算距離
     int32_t rule88;         // Rule88適用時の減算距離 (0, 38, 76)
     bool rule69;
     bool rule70;
@@ -285,6 +287,7 @@ public:
     bool rule70bullet;
     bool rule86bullet;
     bool rule16_5;
+    bool rule160_4;
 
     bool bullet_line;           // 新幹線乗車している
     bool bJrTokaiOnly;
@@ -355,6 +358,7 @@ public:
         rule70 = false;
         special_fare_enable = false;
         rule16_5 = false;
+        rule160_4 = false;
 
         bullet_line = false;
         bJrTokaiOnly = false;
@@ -374,6 +378,7 @@ public:
     bool rule_en() {
         return (0x3f & rule86or87) ||
                rule88 ||
+               rule160_4 ||
                rule69 ||
                rule70 ||
                special_fare_enable ||
@@ -415,6 +420,7 @@ public:
     bool isAvailableRule86() const { return (rule86or87 & 0x03) != 0; }
     bool isAvailableRule87() const { return (rule86or87 & 0x0c) != 0; }
     bool isAvailableRule88() const { return rule88; }
+    bool isAvailableRule160_4() const { return rule160_4; }
     bool isAvailableRule70() const { return rule70; }
     bool isAvailableRule69() const { return rule69; }
     bool isAvailableRule115() const { return 0 < rule115; }
@@ -484,6 +490,7 @@ public:
         special_fare_enable = false;
         meihan_city_enable = false;
         rule88 = false;
+        rule160_4 = false;
         rule69 = false;
         rule70 = false;
         rule70bullet = false;
@@ -506,11 +513,11 @@ public:
 
 class RouteItem
 {
-    RouteItem() {}
+    RouteItem(){}
 public:
-    IDENT lineId;
-    IDENT stationId;
-    SPECIFICFLAG flag;
+    IDENT lineId = 0;
+    IDENT stationId = 0;
+    SPECIFICFLAG flag = 0;
 //    unsigned int salesKm;        /* =0 is uninitialized. add by iPhone */
 //    unsigned int fare;           /* =0 is uninitialized. add by iPhone */
     RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_);
@@ -628,11 +635,11 @@ class Rule114Info {
     Fare fare_114;
     int32_t apply_terminal_station;
 public:
-    Rule114Info() {}
+    Rule114Info(): apply_terminal_station(0) {}
     Rule114Info(const Rule114Info& other) {
         set(other);
     }
-    Rule114Info(const Fare& fare_, int32_t station_id_) {
+    Rule114Info(const Fare& fare_, int32_t station_id_) : apply_terminal_station(station_id_) {
         fare_114.set(fare_);
         apply_terminal_station = station_id_;
     }
@@ -652,6 +659,37 @@ public:
     int32_t sales_km() const { return fare_114.sales_km; }
     int32_t calc_km() const { return fare_114.calc_km; }
     int32_t fare() const { return fare_114.fare; }
+};
+
+class JCTSP_DATA
+{
+public:
+    JCTSP_DATA() {
+        jctSpMainLineId_b = 0;
+        jctSpSubStationId_c = 0;
+        jctSpMainLineId_b2 = 0;
+        jctSpSubStationId_c2 = 0;
+        jctSpBranchLineId_a = 0;
+        jctSpMainStationId_d = 0;
+        jctDir = 0;
+    }
+    int32_t     jctSpMainLineId_b;        // 分岐特例:本線(b)
+    int32_t     jctSpSubStationId_c;         // 分岐特例:分岐駅(c)
+    int32_t     jctSpMainLineId_b2;       // 分岐特例:本線(b)
+    int32_t     jctSpSubStationId_c2;        // 分岐特例:分岐駅(c)
+    int32_t     jctSpBranchLineId_a;      // 分岐特例:支線(a)
+    int32_t     jctSpMainStationId_d;         // 分岐特例:本駅(d)
+    int8_t      jctDir;                     // Type=6 only LINE_DIR
+    JCTSP_DATA& operator=(const JCTSP_DATA& right) {
+        jctSpMainLineId_b = right.jctSpMainLineId_b;
+        jctSpSubStationId_c = right.jctSpSubStationId_c;
+        jctSpMainLineId_b2 = right.jctSpMainLineId_b2;
+        jctSpSubStationId_c2 = right.jctSpSubStationId_c2;
+        jctSpBranchLineId_a = right.jctSpBranchLineId_a;
+        jctSpMainStationId_d = right.jctSpMainStationId_d;
+        jctDir = right.jctDir;
+        return *this;
+    }
 };
 
 class Route;
@@ -737,6 +775,8 @@ private:
     int32_t aggregate_fare_info(RouteFlag *pRoute_flag, const vector<RouteItem>& routeList);
     int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
     static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
+    static vector<JCTSP_DATA> GetJunctfionFareSpecifices();
+    static int32_t Check_jctspcl_fare(const vector<RouteItem>& routeList);
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
@@ -1050,14 +1090,6 @@ public:
     int32_t id_of_line(tstring name);
 };
 
-typedef struct
-{
-    int32_t     jctSpMainLineId;        // 分岐特例:本線(b)
-    int32_t     jctSpStationId;         // 分岐特例:分岐駅(c)
-    int32_t     jctSpMainLineId2;       // 分岐特例:本線(b)
-    int32_t     jctSpStationId2;        // 分岐特例:分岐駅(c)
-} JCTSP_DATA;
-
 // 経路マスクビットパターンマスク
 #define JctMaskOn(bit, jctid)   bit[(jctid) / 8] |= (1 << ((jctid) % 8))
 #define JctMaskOff(bit, jctid)  bit[(jctid) / 8] &= ~(1 << ((jctid) % 8))
@@ -1151,7 +1183,7 @@ public:
     virtual ~Route();
 
     void    assign(const RouteList& source_route, int32_t count = -1);
-    int32_t setup_route(LPCTSTR route_str);
+    int32_t setup_route(LPCTSTR route_str, LPTSTR error_ptr = NULL, size_t error_ptr_size = 0, int32_t* column_no = 0);
 
 protected:
     bool    chk_jctsb_b(int32_t kind, int32_t num);
@@ -1170,11 +1202,42 @@ private:
         bool    _err;
         RouteFlag _route_flag;  // add() - removeTail() work
         RoutePass(const RoutePass& rp) // copy constructor
-                     { memcpy(this, &rp, sizeof(*this)); }
+            : _source_jct_mask(rp._source_jct_mask),
+              _line_id(rp._line_id),
+              _station_id1(rp._station_id1),
+              _station_id2(rp._station_id2),
+              _start_station_id(rp._start_station_id),
+              _num(rp._num),
+              _err(rp._err),
+              _route_flag(rp._route_flag)
+        {
+            memcpy(_jct_mask, rp._jct_mask, JCTMASKSIZE);
+        }
         void clear() { memset(_jct_mask, 0, JCTMASKSIZE); _err = 0; }
         void update(const RoutePass& rp)
-                     { memcpy(this, &rp, sizeof(*this)); }
-        RoutePass() { memset(this, 0, sizeof(*this)); } // default constructor
+        {
+            memcpy(_jct_mask, rp._jct_mask, JCTMASKSIZE);
+            _source_jct_mask = rp._source_jct_mask;
+            _line_id = rp._line_id;
+            _station_id1 = rp._station_id1;
+            _station_id2 = rp._station_id2;
+            _start_station_id = rp._start_station_id;
+            _num = rp._num;
+            _err = rp._err;
+            _route_flag = rp._route_flag;
+        }
+        RoutePass() // default constructor
+            : _source_jct_mask(nullptr),
+              _line_id(0),
+              _station_id1(0),
+              _station_id2(0),
+              _start_station_id(0),
+              _num(0),
+              _err(false),
+              _route_flag()
+        {
+            memset(_jct_mask, 0, JCTMASKSIZE);
+        }
     public:
         RoutePass(const BYTE* jct_mask, const RouteFlag& rRoute_flag, int32_t line_id, int32_t station_id1, int32_t station_id2, int32_t start_station_id = 0);
         ~RoutePass() {  }
@@ -1323,6 +1386,7 @@ public:
     int32_t  coreAreaIDByCityId(int32_t startEndFlg) const;
 private:
     void   checkIsJRTokaiOnly(void);
+    static int32_t  CheckOfRule160_5(const vector<RouteItem> &route);
     static int32_t  CheckOfRule88j(const vector<RouteItem> &route);
 public:
     static vector<int32_t>  Get_route_distance(const RouteFlag& rRoute_flag, const vector<RouteItem>& route);
@@ -1354,12 +1418,12 @@ private:
         vector<RouteItem> route_list_replace;
         map<uint32_t, uint32_t> collectCheckedJunction;
         RouteFlag route_flag;
-        bool is_start_city;  /* true : start is city otherwise arrive is city */
-        bool is100km;        /* true : rule87 otherwise rule86 */
-        int32_t deep_count;
-        int32_t locost_fare;
+        bool is_start_city = false;  /* true : start is city otherwise arrive is city */
+        bool is100km = false;        /* true : rule87 otherwise rule86 */
+        int32_t deep_count = 0;
+        int32_t locost_fare = 0;
         static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
-        int32_t sales_km_special;
+        int32_t sales_km_special = 0;
     public:
         Fare fare;
         int32_t  apply_terminal_station;

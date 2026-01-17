@@ -2,6 +2,9 @@
 
 // ソース側で使用している TRACEマクロで、文字列に _T()をつけたりつけなか・ｽりしたので
 
+
+// 2025.11 Windows はメンテしてません. macOS、Linux のみです
+
 #if defined _WINDOWS
 void TRACE(const char* fmt, ...)
 {
@@ -18,6 +21,35 @@ void TRACE(const wchar_t* fmt, ...)
 }
 
 #else
+
+FILE* fh_log = NULL;
+
+void close_log()
+{
+   fclose(fh_log);
+   fh_log = NULL;
+}
+
+static char s_logname[] = "trace.log";
+
+void TRACE(const char* fmt, ...)
+{
+#if defined ALPS_LOG
+	if (!fh_log) {
+#if	defined _WINDOWS
+	    fopen_s(&fh_log, s_logname, "w");
+#else
+	    // fh_log = _tfopen(s_logname, _T("w"));
+	    fh_log = stderr;
+#endif
+	    atexit(close_log);
+        }
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(fh_log, fmt, ap);
+#endif
+	;
+}
 
 char* strcpy_s(char* dst, int32_t maxlen, const char* src)
 {

@@ -1,4 +1,4 @@
-#include <stdio.h>
+ï»¿#include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -134,7 +134,7 @@ int test_main(int argc, char** argv)
 	
 	isenc = strcmp(*(argv + 1), "enc") == 0;
 	strcpy_s(fname, 260, *(argv + 2));
-	rc = _sopen_s(&rfh, fname, _O_RDONLY|_O_BINARY, _SH_DENYNO, _S_IREAD);	/* _SH_DENYNO ‚ğ0‚É‚·‚é‚Æ”ò‚Ô */
+	rc = _sopen_s(&rfh, fname, _O_RDONLY|_O_BINARY, _SH_DENYNO, _S_IREAD);	/* _SH_DENYNO ã‚’0ã«ã™ã‚‹ã¨é£›ã¶ */
 	if (rc != 0) {
 		printf("Can't read open file %s(err=%u)\n", fname, rc);
 		return -1;
@@ -148,9 +148,9 @@ int test_main(int argc, char** argv)
 
 	strcat_s(fname, 260, isenc ? ".enc" : ".dec");						/* !!!!!! */
 	rc = _sopen_s(&wfh, fname, _O_CREAT| _O_WRONLY | _O_TRUNC |/*_O_EXCL |*/_O_BINARY, _SH_DENYNO, _S_IWRITE);
-					// _O_EXCL and fname‚ ‚é‚Æ‚«_write‚Å”ò‚Ô
-					// d•û‚È‚¢‚Ì‚Åfile‘¶İ‚Í”j‰ó
-					// ‚³‚ç‚É_O_TRUNC ‚ğ•t‰Á‚µ‚È‚¢‚ÆŠù‘¶ƒtƒ@ƒCƒ‹‚Éã‘‚«‚·‚é‚Æ‘O‚Ìƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ª‚Å‚©‚¢‚Æ‚»‚Ì·•ªƒoƒCƒg•ª—]Œv‚É‘‚©‚ê‚é
+					// _O_EXCL and fnameã‚ã‚‹ã¨ã_writeã§é£›ã¶
+					// ä»•æ–¹ãªã„ã®ã§fileå­˜åœ¨æ™‚ã¯ç ´å£Š
+					// ã•ã‚‰ã«_O_TRUNC ã‚’ä»˜åŠ ã—ãªã„ã¨æ—¢å­˜ãƒ•ã‚¡ã‚¤ãƒ«ã«ä¸Šæ›¸ãã™ã‚‹ã¨å‰ã®ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºãŒã§ã‹ã„ã¨ãã®å·®åˆ†ãƒã‚¤ãƒˆåˆ†ä½™è¨ˆã«æ›¸ã‹ã‚Œã‚‹
 					// 
 	if (rc != 0) {
 		printf("Can't write open file %s(err=%u)\n", fname, rc);
