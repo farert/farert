@@ -1,4 +1,5 @@
-﻿
+
+// alps_mfc.cpp : アプリケーションのクラス動作を定義します。
 // alps_mfc.cpp : アプリケーションのクラス動作を定義します。
 //
 
@@ -27,22 +28,28 @@ END_MESSAGE_MAP()
 int g_tax;	// global
 
 // Calps_mfcApp コンストラクション
+// Calps_mfcApp コンストラクション
 
 Calps_mfcApp::Calps_mfcApp()
 {
 	// 再起動マネージャーをサポートします
+	// 再起動マネージャーをサポートします
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
+	// TODO: この位置に構築用コードを追加してください。
+	// ここに InitInstance 中の重要な初期化処理をすべて記述してください。
 	// TODO: この位置に構築用コードを追加してください。
 	// ここに InitInstance 中の重要な初期化処理をすべて記述してください。
 }
 
 
 // 唯一の Calps_mfcApp オブジェクトです。
+// 唯一の Calps_mfcApp オブジェクトです。
 
 Calps_mfcApp theApp;
 
 
+// Calps_mfcApp 初期化
 // Calps_mfcApp 初期化
 
 BOOL Calps_mfcApp::InitInstance()
@@ -52,8 +59,13 @@ BOOL Calps_mfcApp::InitInstance()
 	// アプリケーション マニフェストが visual スタイルを有効にするために、
 	// ComCtl32.dll Version 6 以降の使用を指定する場合は、
 	// Windows XP に InitCommonControlsEx() が必要です。さもなければ、ウィンドウ作成はすべて失敗します。
+	// アプリケーション マニフェストが visual スタイルを有効にするために、
+	// ComCtl32.dll Version 6 以降の使用を指定する場合は、
+	// Windows XP に InitCommonControlsEx() が必要です。さもなければ、ウィンドウ作成はすべて失敗します。
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
+	// アプリケーションで使用するすべてのコモン コントロール クラスを含めるには、
+	// これを設定します。
 	// アプリケーションで使用するすべてのコモン コントロール クラスを含めるには、
 	// これを設定します。
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
@@ -110,12 +122,23 @@ BOOL Calps_mfcApp::InitInstance()
 	AfxEnableControlContainer();
 
 	// MFC コントロールでテーマを有効にするために、"Windows ネイティブ" のビジュアル マネージャーをアクティブ化
+	// MFC コントロールでテーマを有効にするために、"Windows ネイティブ" のビジュアル マネージャーをアクティブ化
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
 	// ダイアログにシェル ツリー ビューまたはシェル リスト ビュー コントロールが
 	// 含まれている場合にシェル マネージャーを作成します。
+	// ダイアログにシェル ツリー ビューまたはシェル リスト ビュー コントロールが
+	// 含まれている場合にシェル マネージャーを作成します。
 	//CShellManager *pShellManager = new CShellManager;
 
+	// 標準初期化
+	// これらの機能を使わずに最終的な実行可能ファイルの
+	// サイズを縮小したい場合は、以下から不要な初期化
+	// ルーチンを削除してください。
+	// 設定が格納されているレジストリ キーを変更します。
+	// TODO: 会社名または組織名などの適切な文字列に
+	// この文字列を変更してください。
+	// SetRegistryKey(_T("アプリケーション ウィザードで生成されたローカル アプリケーション"));
 	// 標準初期化
 	// これらの機能を使わずに最終的な実行可能ファイルの
 	// サイズを縮小したい場合は、以下から不要な初期化
@@ -143,6 +166,7 @@ BOOL Calps_mfcApp::InitInstance()
 
 						// restore(decrypt)
 						// 暗号化やめる Excelやめた   
+						// 暗号化やめる Excelやめた   
 						//dwDbEncSize = rd((unsigned char*)np, dwDbEncSize);
 						
 						GetTempPath(MAX_PATH, impdbfn);
@@ -160,6 +184,7 @@ BOOL Calps_mfcApp::InitInstance()
 		}
 
 		AfxMessageBox(_T("データが開けません."));
+		AfxMessageBox(_T("データが開けません."));
 		return FALSE;
 
 	} while (0);
@@ -172,13 +197,18 @@ BOOL Calps_mfcApp::InitInstance()
 	{
 		// TODO: ダイアログが <OK> で消された時のコードを
 		//  記述してください。
+		// TODO: ダイアログが <OK> で消された時のコードを
+		//  記述してください。
 	}
 	else if (nResponse == IDCANCEL)
 	{
 		// TODO: ダイアログが <キャンセル> で消された時のコードを
 		//  記述してください。
+		// TODO: ダイアログが <キャンセル> で消された時のコードを
+		//  記述してください。
 	}
 
+	// 上で作成されたシェル マネージャーを削除します。
 	// 上で作成されたシェル マネージャーを削除します。
 	//if (pShellManager != NULL)
 	//{
@@ -188,6 +218,8 @@ BOOL Calps_mfcApp::InitInstance()
 #if !defined(_AFXDLL) && !defined(_AFX_NO_MFC_CONTROLS_IN_DIALOGS)
 	ControlBarCleanUp();
 #endif
+	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
+	//  アプリケーションを終了するために FALSE を返してください。
 	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
 	//  アプリケーションを終了するために FALSE を返してください。
 	return FALSE;
