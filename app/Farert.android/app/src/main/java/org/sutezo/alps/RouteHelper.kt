@@ -468,6 +468,9 @@ fun CalcRoute.calcFareInfo() : FareInfo
     if (!result.isRuleApplied && this.route_flag.isAvailableRule88) {
         messages.add("旅客営業規則第88条を適用していません")
     }
+    if (!result.isRuleApplied && this.route_flag.isAvailableRule160_4) {
+        messages.add("旅客営業規則第160条の4・5を適用していません")
+    }
     if (!result.isRuleApplied && this.route_flag.isAvailableRule69) {
         messages.add("旅客営業規則第69条を適用していません")
     }

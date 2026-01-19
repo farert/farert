@@ -102,18 +102,34 @@ public class Route extends RouteList {
 
 
     static class JCTSP_DATA {
-        int jctSpMainLineId;		// 分岐特例:本線(b)
-        int	jctSpStationId;			// 分岐特例:分岐駅(c)
-        int	jctSpMainLineId2;		// 分岐特例:本線(b)
-        int	jctSpStationId2;		// 分岐特例:分岐駅(c)
+        int     jctSpMainLineId_b;        // 分岐特例:本線(b)
+        int     jctSpSubStationId_c;         // 分岐特例:分岐駅(c)
+        int     jctSpMainLineId_b2;       // 分岐特例:本線(b)
+        int     jctSpSubStationId_c2;        // 分岐特例:分岐駅(c)
+        int     jctSpBranchLineId_a;      // 分岐特例:支線(a)
+        int     jctSpMainStationId_d;         // 分岐特例:本駅(d)
+        char    jctDir;                     // Type=6 only LINE_DIR
         JCTSP_DATA() {
             clear();
         }
         void clear() {
-            jctSpMainLineId = 0;		// 分岐特例:本線(b)
-            jctSpStationId = 0;			// 分岐特例:分岐駅(c)
-            jctSpMainLineId2 = 0;		// 分岐特例:本線(b)
-            jctSpStationId2 = 0;		// 分岐特例:分岐駅(c)
+            jctSpMainLineId_b = 0;
+            jctSpSubStationId_c = 0;
+            jctSpMainLineId_b2 = 0;
+            jctSpSubStationId_c2 = 0;
+            jctSpBranchLineId_a = 0;
+            jctSpMainStationId_d = 0;
+            jctDir = 0;
+        }
+        JCTSP_DATA copy(final JCTSP_DATA right) {
+            jctSpMainLineId_b = right.jctSpMainLineId_b;
+            jctSpSubStationId_c = right.jctSpSubStationId_c;
+            jctSpMainLineId_b2 = right.jctSpMainLineId_b2;
+            jctSpSubStationId_c2 = right.jctSpSubStationId_c2;
+            jctSpBranchLineId_a = right.jctSpBranchLineId_a;
+            jctSpMainStationId_d = right.jctSpMainStationId_d;
+            jctDir = right.jctDir;
+            return this;
         }
     }
 
@@ -877,25 +893,32 @@ public class Route extends RouteList {
                 //	"select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2" +
                 //	" from t_jctspcl where id=(" +
                 //	"	select calc_km from t_lines where (lflg&(1<<31))!=0 and line_id=?1 and station_id=?2)"; +
-                "select type,jctsp_line_id1, jctsp_station_id1, jctsp_line_id2, jctsp_station_id2" +
-                        " from t_jctspcl where id=("  +
-                        "	select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
+        "select type," +
+        "       jctsp_line_idb1, " +
+        "       jctsp_station_idc1," +
+        "       jctsp_line_idb2," +
+        "       jctsp_station_idc2," +
+        "       jctsp_line_ida," +
+        "       jctsp_station_idd" +
+        " from t_jctspcl where id=(" +
+        "   select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
+
         int type = 0;
 
         try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(jctLineId),
                 String.valueOf(transferStationId)})) {
             if (dbo.moveToNext()) {
                 type = dbo.getInt(0);
-                jctspdt.jctSpMainLineId = dbo.getInt(1);
-                jctspdt.jctSpStationId = dbo.getInt(2);
-                jctspdt.jctSpMainLineId2 = dbo.getInt(3);
-                jctspdt.jctSpStationId2 = dbo.getInt(4);
+                jctspdt.jctSpMainLineId_b = dbo.getInt(1);
+                jctspdt.jctSpSubStationId_c = dbo.getInt(2);
+                jctspdt.jctSpMainLineId_b2 = dbo.getInt(3);
+                jctspdt.jctSpSubStationId_c2 = dbo.getInt(4);
+                jctspdt.jctSpBranchLineId_a = dbo.getInt(5);
+                jctspdt.jctSpMainStationId_d = dbo.getInt(6);
             }
         }
-        ASSERT (((jctspdt.jctSpMainLineId2 == 0) && (jctspdt.jctSpStationId2 == 0)) ||
-                ((jctspdt.jctSpMainLineId2 != 0) && (jctspdt.jctSpStationId2 != 0)));
-        if (jctspdt.jctSpStationId2 == 0) {	// safety
-            jctspdt.jctSpMainLineId2 = 0;
+        if (jctspdt.jctSpSubStationId_c2 == 0) {    // safety
+            jctspdt.jctSpMainLineId_b2 = 0;
         }
         return type;
     }
@@ -904,8 +927,8 @@ public class Route extends RouteList {
     //
     //	@param [in]  jctLineId         a 分岐路線
     //	@param [in]  transferStationId d 乗換駅
-    //	@param [out] jctSpMainLineId   b 本線
-    //	@param [out] jctSpStationId    c 分岐駅
+    //	@param [out] jctSpMainLineId_b   b 本線
+    //	@param [out] jctSpSubStationId_c    c 分岐駅
     //
     //	@return type 0: usual, 1-3:type B
     //
@@ -1252,7 +1275,7 @@ public class Route extends RouteList {
                                     route_list_raw.get(num - 1).stationId)))) &&
                     (JCTSP_B_NAGAOKA == RetrieveJunctionSpecific(route_list_raw.get(num - 1).lineId,
                             route_list_raw.get(num - 1).stationId, jctspdt))) {
-                if (stationId2 == jctspdt.jctSpStationId2) { /* 宮内止まり？ */
+                if (stationId2 == jctspdt.jctSpSubStationId_c2) { /* 宮内止まり？ */
                     System.out.println("JSBH004");
                     System.out.println("add_abort");
                     return -1;
@@ -1261,11 +1284,11 @@ public class Route extends RouteList {
                     // 新幹線 長岡-浦佐をOff
                     routePassOff(route_list_raw.get(num - 1).lineId,
                             route_list_raw.get(num - 1).stationId,
-                            jctspdt.jctSpStationId);
+                            jctspdt.jctSpSubStationId_c);
                     route_list_raw.get(num - 1).let(new RouteItem(route_list_raw.get(num - 1).lineId,
-                            (short)jctspdt.jctSpStationId));
+                            (short)jctspdt.jctSpSubStationId_c));
                     // 上越線-宮内追加
-                    rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId2, ADD_BULLET_NC);		//****************
+                    rc = add(jctspdt.jctSpMainLineId_b, jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC);		//****************
                     route_flag.jctsp_route_change = true;	/* route modified */
                     if (rc != ADDRC_OK) {
                         System.out.println("junction special (JSBS001) error.");
@@ -1273,7 +1296,7 @@ public class Route extends RouteList {
                         return rc;			// >>>>>>>>>>>>>>>>>>>>>
                     }
                     num++;
-                    stationId1 = jctspdt.jctSpStationId2; // 宮内
+                    stationId1 = jctspdt.jctSpSubStationId_c2; // 宮内
                     // line_id : 信越線
                     // stationId2 : 宮内～長岡
                 }
@@ -1353,10 +1376,10 @@ public class Route extends RouteList {
             if (BIT_CHK(lflg2, BSRJCTSP)) {	// 水平型でもある?
                 // retrieve from a, d to b, c
                 ASSERT (original_line_id == line_id);
-                type = RetrieveJunctionSpecific(line_id, stationId2, jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+                type = RetrieveJunctionSpecific(line_id, stationId2, jctspdt); // update jctSpMainLineId_b(b), jctSpStation(c)
                 ASSERT (0 < type);
                 System.out.printf("JCT: detect step-horiz:%d\n", type);
-                if (jctspdt.jctSpStationId2 != 0) {
+                if (jctspdt.jctSpSubStationId_c2 != 0) {
                     lflg1 = BIT_OFF(lflg1, BSRJCTSP);				// 別に要らないけど
                     break;
                 }
@@ -1365,35 +1388,35 @@ public class Route extends RouteList {
             ASSERT (first_station_id1 == stationId1);
 
             // retrieve from a, d to b, c
-            type = RetrieveJunctionSpecific(line_id, stationId1, jctspdt); // update jctSpMainLineId(b), jctSpStation(c)
+            type = RetrieveJunctionSpecific(line_id, stationId1, jctspdt); // update jctSpMainLineId_b(b), jctSpStation(c)
             ASSERT (0 < type);
             System.out.printf("JCT: detect step:%d\n", type);
-            if (stationId2 != jctspdt.jctSpStationId) {
-                if (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId) {
+            if (stationId2 != jctspdt.jctSpSubStationId_c) {
+                if (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId_b) {
                     ASSERT (stationId1 == route_list_raw.get(num - 1).stationId);
-                    if (0 < InStation(jctspdt.jctSpStationId,
+                    if (0 < InStation(jctspdt.jctSpSubStationId_c,
                             route_list_raw.get(num - 1).lineId,
                             route_list_raw.get(num - 2).stationId,
                             stationId1)) {
                         System.out.println("JCT: C-1");
-                        routePassOff(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, stationId1);	// C-1
+                        routePassOff(jctspdt.jctSpMainLineId_b, jctspdt.jctSpSubStationId_c, stationId1);	// C-1
                     } else { // A-1
                         System.out.println("JCT: A-1");
                         is_no_station_id1_first_jct = 1;
                     }
-                    if ((2 <= num) && (jctspdt.jctSpStationId == route_list_raw.get(num - 2).stationId)) {
+                    if ((2 <= num) && (jctspdt.jctSpSubStationId_c == route_list_raw.get(num - 2).stationId)) {
                         removeTail();
                         System.out.println("JCT: A-C");		// 3, 4, 8, 9, g,h
                         --num;
                     } else {
                         route_list_raw.get(num - 1).let(new RouteItem(route_list_raw.get(num - 1).lineId,
-                                (short)jctspdt.jctSpStationId));
+                                (short)jctspdt.jctSpSubStationId_c));
                         System.out.println("JCT: b#21072801D");
                         is_no_station_id1_first_jct++;
                     }
-                    if (jctspdt.jctSpStationId2 != 0) {		// 分岐特例路線2
+                    if (jctspdt.jctSpSubStationId_c2 != 0) {		// 分岐特例路線2
                         System.out.println("JCT: step_(2)detect");
-                        rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, ADD_BULLET_NC);	//**************
+                        rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC);	//**************
                         ASSERT (rc == ADDRC_OK);
                         num++;
                         if (rc != ADDRC_OK) {			// safety
@@ -1402,43 +1425,43 @@ public class Route extends RouteList {
                             System.out.println("add_abort");
                             return -1;
                         }
-                        if (stationId2 == jctspdt.jctSpStationId2) {
+                        if (stationId2 == jctspdt.jctSpSubStationId_c2) {
                             System.out.println("KF1,2");
-                            line_id = jctspdt.jctSpMainLineId2;
+                            line_id = jctspdt.jctSpMainLineId_b2;
                             replace_flg = true;
                         }
-                        stationId1 = jctspdt.jctSpStationId2;
+                        stationId1 = jctspdt.jctSpSubStationId_c2;
                     } else {
-                        System.out.printf("is_no_station_id1_first_jct is on: is_no_station_id1_first_jct=%d, is_junction %b, %s <- %s\n", is_no_station_id1_first_jct, STATION_IS_JUNCTION_F(lflg1), RouteUtil.StationName(stationId1), RouteUtil.StationName(jctspdt.jctSpStationId));
+                        System.out.printf("is_no_station_id1_first_jct is on: is_no_station_id1_first_jct=%d, is_junction %b, %s <- %s\n", is_no_station_id1_first_jct, STATION_IS_JUNCTION_F(lflg1), RouteUtil.StationName(stationId1), RouteUtil.StationName(jctspdt.jctSpSubStationId_c));
                         if ((is_no_station_id1_first_jct == 2) && !STATION_IS_JUNCTION_F(lflg1)) {
                             is_no_station_id1_first_jct = 555;
                         }
-                        stationId1 = jctspdt.jctSpStationId;
+                        stationId1 = jctspdt.jctSpSubStationId_c;
                     }
                 } else {
                     ASSERT (first_station_id1 == stationId1);
                     if ((num < 2) ||
-                            !IsAbreastShinkansen(jctspdt.jctSpMainLineId,
+                            !IsAbreastShinkansen(jctspdt.jctSpMainLineId_b,
                                     route_list_raw.get(num - 1).lineId,
                                     stationId1,
                                     route_list_raw.get(num - 2).stationId)
-                            || (jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("西小倉")) // KC-2
-                            || (jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("吉塚")) // KC-2
-                            || (InStation(jctspdt.jctSpStationId,
+                            || (jctspdt.jctSpSubStationId_c == DbIdOf.INSTANCE.station("西小倉")) // KC-2
+                            || (jctspdt.jctSpSubStationId_c == DbIdOf.INSTANCE.station("吉塚")) // KC-2
+                            || (InStation(jctspdt.jctSpSubStationId_c,
                             route_list_raw.get(num - 1).lineId,
                             route_list_raw.get(num - 2).stationId,
                             stationId1) <= 0)) {
                         // A-0, I, A-2
                         System.out.println("JCT: A-0, I, A-2");	//***************
 
-                        if ((jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("西小倉")) // KC-2
-                                || (jctspdt.jctSpStationId == DbIdOf.INSTANCE.station("吉塚"))) { // KC-2
-                            routePassOff(jctspdt.jctSpMainLineId,
-                                    stationId1, jctspdt.jctSpStationId);
+                        if ((jctspdt.jctSpSubStationId_c == DbIdOf.INSTANCE.station("西小倉")) // KC-2
+                                || (jctspdt.jctSpSubStationId_c == DbIdOf.INSTANCE.station("吉塚"))) { // KC-2
+                            routePassOff(jctspdt.jctSpMainLineId_b,
+                                    stationId1, jctspdt.jctSpSubStationId_c);
                             System.out.println("JCT: KC-2");
                         }
-                        rc = add(jctspdt.jctSpMainLineId,
-								 /*route_list_raw.get(num - 1).stationId,*/ jctspdt.jctSpStationId,
+                        rc = add(jctspdt.jctSpMainLineId_b,
+								 /*route_list_raw.get(num - 1).stationId,*/ jctspdt.jctSpSubStationId_c,
                                 ADD_BULLET_NC);
                         ASSERT (rc == ADDRC_OK);
                         num++;
@@ -1448,8 +1471,8 @@ public class Route extends RouteList {
                             System.out.println("add_abort");
                             return -1;					//>>>>>>>>>>>>>>>>>>>>>>>>>>
                         }
-                        if (jctspdt.jctSpStationId2 != 0) {		// 分岐特例路線2
-                            rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId2, ADD_BULLET_NC);	//**************
+                        if (jctspdt.jctSpSubStationId_c2 != 0) {		// 分岐特例路線2
+                            rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC);	//**************
                             num++;
                             ASSERT (rc == ADDRC_OK);
                             if (rc != ADDRC_OK) {			// safety
@@ -1458,14 +1481,14 @@ public class Route extends RouteList {
                                 System.out.println("add_abort");
                                 return -1;				//>>>>>>>>>>>>>>>>>>>>>>>>>>
                             }
-                            if (stationId2 == jctspdt.jctSpStationId2) {
+                            if (stationId2 == jctspdt.jctSpSubStationId_c2) {
                                 System.out.println("KF0,3,4");
-                                line_id = jctspdt.jctSpMainLineId2;
+                                line_id = jctspdt.jctSpMainLineId_b2;
                                 replace_flg = true;
                             }
-                            stationId1 = jctspdt.jctSpStationId2;
+                            stationId1 = jctspdt.jctSpSubStationId_c2;
                         } else {
-                            stationId1 = jctspdt.jctSpStationId;
+                            stationId1 = jctspdt.jctSpSubStationId_c;
                         }
                     } else {
                         ASSERT (first_station_id1 == stationId1);
@@ -1473,13 +1496,13 @@ public class Route extends RouteList {
                         // C-2
                         System.out.println("JCT: C-2");
                         ASSERT (IS_SHINKANSEN_LINE(route_list_raw.get(num - 1).lineId));
-                        routePassOff(jctspdt.jctSpMainLineId,
-                                jctspdt.jctSpStationId, stationId1);
+                        routePassOff(jctspdt.jctSpMainLineId_b,
+                                jctspdt.jctSpSubStationId_c, stationId1);
                         i = NextShinkansenTransferTermInRange(route_list_raw.get(num - 1).lineId, stationId1, route_list_raw.get(num - 2).stationId);
                         if (i <= 0) {	// 隣駅がない場合
                             System.out.println("JCT: C-2(none next station on bullet line)");
                             // 新幹線の発駅には並行在来線(路線b)に所属しているか?
-                            if (0 == InStationOnLine(jctspdt.jctSpMainLineId,
+                            if (0 == InStationOnLine(jctspdt.jctSpMainLineId_b,
                                     route_list_raw.get(num - 2).stationId)) {
                                 route_flag.jctsp_route_change = true;	/* route modified */
                                 System.out.println("next station is not found in shinkansen.");
@@ -1487,33 +1510,33 @@ public class Route extends RouteList {
                                 return -1;			// >>>>>>>>>>>>>>>>>>>
                             } else {
                                 removeTail();
-                                rc = add(jctspdt.jctSpMainLineId,
-                                        jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
+                                rc = add(jctspdt.jctSpMainLineId_b,
+                                        jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);	//**************
                                 ASSERT (rc == ADDRC_OK);
-                                stationId1 = jctspdt.jctSpStationId;
+                                stationId1 = jctspdt.jctSpSubStationId_c;
                             }
                         } else {
                             route_list_raw.get(num - 1).let(new RouteItem(route_list_raw.get(num - 1).lineId, (short)i));
-                            route_list_raw.add(new RouteItem((short)jctspdt.jctSpMainLineId,
-                                    (short)jctspdt.jctSpStationId));
-                            stationId1 = jctspdt.jctSpStationId;
+                            route_list_raw.add(new RouteItem((short)jctspdt.jctSpMainLineId_b,
+                                    (short)jctspdt.jctSpSubStationId_c));
+                            stationId1 = jctspdt.jctSpSubStationId_c;
                         }
                     }
                 }
                 route_flag.jctsp_route_change = true;	/* route modified */
             } else {
-                // E, G		(stationId2 == jctspdt.jctSpStationId)
+                // E, G		(stationId2 == jctspdt.jctSpSubStationId_c)
                 System.out.println("JCT: E, G");
-                if (jctspdt.jctSpStationId2 != 0) {
+                if (jctspdt.jctSpSubStationId_c2 != 0) {
                     System.out.println("JCT: KE0-4");
                     lflg2 = BIT_OFF(lflg2, BSRJCTSP);
                 }
-                line_id = jctspdt.jctSpMainLineId;
+                line_id = jctspdt.jctSpMainLineId_b;
                 ASSERT(first_station_id1 == stationId1);
 
                 if ((2 <= num) &&
                         //			!BIT_CHK(AttrOfStationOnLineLine(line_id, stationId2), BSRJCTSP_B) &&
-                        (0 < InStation(stationId2, jctspdt.jctSpMainLineId,
+                        (0 < InStation(stationId2, jctspdt.jctSpMainLineId_b,
                                 route_list_raw.get(num - 2).stationId, stationId1))) {
                     System.out.println("E-3:duplicate route error.");
                     System.out.println("add_abort");
@@ -1524,7 +1547,7 @@ public class Route extends RouteList {
                     //
                     System.out.println("jct-b nisi-kokura-stop/yoshizuka-stop");
                 }
-                if (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId) {
+                if (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId_b) {
                     // E-3 , B-0, 5, 6, b, c, d, e
                     // E-0, E-1, E-1a, 6, b, c, d, e
                     System.out.println("JCT: E-3, B0,5,6,b,c,d,e, E-0,E-1,E-1a,6,b,c,d,e");
@@ -1539,20 +1562,20 @@ public class Route extends RouteList {
         }
         if (BIT_CHK(lflg2, BSRJCTSP)) {
             // 水平型
-            // a(line_id), d(stationId2) -> b(jctSpMainLineId), c(jctSpStationId)
+            // a(line_id), d(stationId2) -> b(jctSpMainLineId_b), c(jctSpSubStationId_c)
             ASSERT (original_line_id == line_id);
             //ASSERT (first_station_id1 == stationId2);
 
             type = RetrieveJunctionSpecific(line_id, stationId2, jctspdt);
             ASSERT (0 < type);
             System.out.printf("JCT:%d\n", type);
-            if (stationId1 == jctspdt.jctSpStationId) {
+            if (stationId1 == jctspdt.jctSpSubStationId_c) {
                 // E10-, F, H
                 System.out.println("JCT: E10-, F, H/KI0-4");
-                line_id = jctspdt.jctSpMainLineId;	// a -> b
-                if (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId) {
+                line_id = jctspdt.jctSpMainLineId_b;	// a -> b
+                if (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId_b) {
                     if ((2 <= num) &&
-                            (0 < InStation(stationId2, jctspdt.jctSpMainLineId,
+                            (0 < InStation(stationId2, jctspdt.jctSpMainLineId_b,
                                     route_list_raw.get(num - 2).stationId, stationId1))) {
                         System.out.println("E11:duplicate route error.");
                         System.out.println("add_abort");
@@ -1565,9 +1588,9 @@ public class Route extends RouteList {
                 }
             } else {
                 // J, B, D
-                if ((jctspdt.jctSpStationId2 != 0) && (stationId1 == jctspdt.jctSpStationId2)) {	// 分岐特例路線2
+                if ((jctspdt.jctSpSubStationId_c2 != 0) && (stationId1 == jctspdt.jctSpSubStationId_c2)) {	// 分岐特例路線2
                     System.out.println("JCT: KJ0-4(J, B, D)");
-                    rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);		//**************
+                    rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);		//**************
                     num++;
                     if (rc != ADDRC_OK) {
                         route_flag.jctsp_route_change = true;	/* route modified */
@@ -1576,13 +1599,13 @@ public class Route extends RouteList {
                         return rc;			// >>>>>>>>>>>>>>>>>>>>>
                     }
                 } else {
-                    if (jctspdt.jctSpStationId2 != 0) {	// 分岐特例路線2
+                    if (jctspdt.jctSpSubStationId_c2 != 0) {	// 分岐特例路線2
                         System.out.println("JCT: KH0-4(J, B, D) add(日田彦山線, 城野c')");
-                        rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId2, ADD_BULLET_NC);	//**************
+                        rc = add(line_id, /*stationId1,*/ jctspdt.jctSpSubStationId_c2, ADD_BULLET_NC);	//**************
                         num++;
                         if (rc == ADDRC_OK) {
                             System.out.println("JCT: add(日豊線b', 西小倉c)");
-                            rc = add(jctspdt.jctSpMainLineId2, jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
+                            rc = add(jctspdt.jctSpMainLineId_b2, jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);	//**************
                             num++;
                         }
                         if (rc != ADDRC_OK) {
@@ -1593,7 +1616,7 @@ public class Route extends RouteList {
                         }
                     } else {
                         System.out.println("JCT: J, B, D");
-                        rc = add(line_id, /*stationId1,*/ jctspdt.jctSpStationId, ADD_BULLET_NC);	//**************
+                        rc = add(line_id, /*stationId1,*/ jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);	//**************
                         num++;
                         if (rc != ADDRC_OK) {
                             route_flag.jctsp_route_change = true;	/* route modified */
@@ -1608,8 +1631,8 @@ public class Route extends RouteList {
                     }
                 }
                 // b#14021202 route_flag = BIT_ON(jct_flg_on, BSRJCTHORD);
-                line_id = jctspdt.jctSpMainLineId;
-                stationId1 = jctspdt.jctSpStationId;
+                line_id = jctspdt.jctSpMainLineId_b;
+                stationId1 = jctspdt.jctSpSubStationId_c;
             }
             route_flag.jctsp_route_change = true;	/* route modified */
             is_no_station_id1_first_jct = 0;
@@ -1628,7 +1651,7 @@ public class Route extends RouteList {
                                 route_list_raw.get(num - 1).stationId,
                                 stationId2))) {
 					/* 宮内発 */
-                    if (route_list_raw.get(num - 2).stationId == jctspdt.jctSpStationId2) {
+                    if (route_list_raw.get(num - 2).stationId == jctspdt.jctSpSubStationId_c2) {
                         System.out.println("junction special 2(JSBS004) error.");
                         System.out.println("add_abort");
                         return -1;			// >>>>>>>>>>>>>>>>>>>>>
@@ -1638,17 +1661,17 @@ public class Route extends RouteList {
 
                     // 長岡->宮内へ置換
                     route_list_raw.get(num - 1).let(new RouteItem(route_list_raw.get(num - 1).lineId,
-                            (short)jctspdt.jctSpStationId2));
+                            (short)jctspdt.jctSpSubStationId_c2));
 
                     // 上越線 宮内→浦佐
-                    rc = add(jctspdt.jctSpMainLineId, jctspdt.jctSpStationId, ADD_BULLET_NC);		//****************
+                    rc = add(jctspdt.jctSpMainLineId_b, jctspdt.jctSpSubStationId_c, ADD_BULLET_NC);		//****************
                     route_flag.jctsp_route_change = true;	/* route modified */
                     if (ADDRC_OK != rc) {
                         System.out.println("junction special 2(JSBH001) error.");
                         System.out.println("add_abort");
                         return rc;			// >>>>>>>>>>>>>>>>>>>>>
                     }
-                    stationId1 = jctspdt.jctSpStationId;
+                    stationId1 = jctspdt.jctSpSubStationId_c;
                     num += 1;
                 }
             }
@@ -1786,9 +1809,9 @@ public class Route extends RouteList {
 		/* 追加か置換か */
         if (replace_flg) {
             ASSERT (0 < type);	// enable jctspdt
-            ASSERT ((line_id == jctspdt.jctSpMainLineId) || (line_id == jctspdt.jctSpMainLineId2));
-            ASSERT ((route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId) ||
-                    (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId2));
+            ASSERT ((line_id == jctspdt.jctSpMainLineId_b) || (line_id == jctspdt.jctSpMainLineId_b2));
+            ASSERT ((route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId_b) ||
+                    (route_list_raw.get(num - 1).lineId == jctspdt.jctSpMainLineId_b2));
             route_list_raw.remove(route_list_raw.size() - 1);
             --num;
         }
@@ -2007,7 +2030,9 @@ public class Route extends RouteList {
                         while (ite.hasPrevious()) {
                             ri = ite.previous();
                             int r = add(ri.lineId, /*station_id,*/ ri.stationId, 1<<8);
-                            ASSERT (0 <= r);
+                            if (r < 0) {
+                                return -1;
+                            }
                         }
                     } else {
                         ASSERT(false);

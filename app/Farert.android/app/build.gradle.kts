@@ -20,8 +20,8 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 38
-        versionName = "25.11"
+        versionCode = 39
+        versionName = "26.01"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
