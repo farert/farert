@@ -68,6 +68,7 @@ public class RouteList {
     final static int JCTSP_B_NISHIKOKURA = 3;
     final static int JCTSP_B_YOSHIZUKA = 4;
     final static int JCTSP_B_NAGAOKA = 5;
+    final static int JCTSP_B_RULE160_4 = 6;
 
     // route_flag
 

@@ -6106,9 +6106,6 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
     }
     chk &= ~(1 << 31);
 
-    route_flag.rule160_5 = CalcRoute::CheckOfRule160_5(route_list_tmp2);
-    TRACE("Rule160-5 applied: %d\n", route_flag.rule160_5);
-
     // 88を適用したものをroute_list_tmpへ
     route_flag.rule88 = CalcRoute::CheckOfRule88j(route_list_tmp2);
     TRACE("Rule88 applied: type %d km.\n", route_flag.rule88);
@@ -6507,17 +6504,6 @@ int32_t FARE_INFO::CheckAndApplyRule43_2j(const vector<RouteItem> &route)
     }
     return 0;
 }
-
-//static:
-//  旅客営業取扱基準規定160条の5（新幹線特定区間）
-//  @param [in] route    route
-//  @retval 0: no-applied
-//  @retval 1~n: applied subtract sales_km (one-way)
-int32_t CalcRoute::CheckOfRule160_5(const vector<RouteItem>& route)
-{
-    return 0;
-}
-
 
 //static:
 //  88条のチェックと変換
