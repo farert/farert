@@ -853,6 +853,98 @@ public class FARE_INFO {
         route_flag.bullet_line = enabled;
     }
 
+    //  type 3 の分岐特例テーブルを取得
+//  @retval JCTSP_DATA[] all records.
+//
+    static List<Route.JCTSP_DATA> GetJunctfionFareSpecifices()
+    {
+        List<Route.JCTSP_DATA> records = new ArrayList<>();
+        String tsql =
+            "select "
+        +   "       jctsp_line_idb1, "
+        +   "       jctsp_station_idc1,"
+        +   "       jctsp_line_ida,"
+        +   "       jctsp_station_idd,"
+        +   "       dir"
+        +   " from t_jctspcl where type=6";
+
+        try (Cursor cursor = RouteDB.db().rawQuery(tsql, null)) {
+            while (cursor.moveToNext()) {
+                Route.JCTSP_DATA rec = new Route.JCTSP_DATA();
+                rec.jctSpMainLineId_b = cursor.getInt(0);
+                rec.jctSpSubStationId_c = cursor.getInt(1);
+                rec.jctSpBranchLineId_a = cursor.getInt(2);
+                rec.jctSpMainStationId_d = cursor.getInt(3);
+                rec.jctSpMainLineId_b2 = 0;
+                rec.jctSpSubStationId_c2 = 0;
+                rec.jctDir = (char) cursor.getInt(4);
+                records.add(rec);
+            }
+            cursor.close();
+        }
+        return records;
+    }
+
+
+    /* static */
+    /** 分岐特例運賃をチェックする
+     * Check if the route contains any junction fare specific records.
+     * routeList: Route list
+     * return: 0 No special fare, >0 Special fare amount
+     */
+    static int Check_jctspcl_fare(final List<RouteItem> routeList)
+    {
+        if (routeList.size() < 3) {
+            return 0;
+        }
+
+        List<Route.JCTSP_DATA> jctsp_data = GetJunctfionFareSpecifices();
+        Route.JCTSP_DATA jctsp = null;
+        int return_sales_km_ = 0;
+        boolean found = false;
+
+        for (Route.JCTSP_DATA rec : jctsp_data) {
+            for (int i = 1; i + 2 < routeList.size(); ++i) {
+                // Check each record
+                if ((routeList.get(i).lineId == rec.jctSpBranchLineId_a)
+                        && (routeList.get(i).stationId == rec.jctSpSubStationId_c)
+                        && (routeList.get(i + 1).lineId == rec.jctSpMainLineId_b)
+                        && (routeList.get(i + 1).stationId == rec.jctSpMainStationId_d)
+                        && IS_SHINKANSEN_LINE(routeList.get(i + 2).lineId)
+                        && (rec.jctDir == RouteUtil.DirLine(routeList.get(i + 2).lineId,
+                                                            routeList.get(i + 2).stationId,
+                                                            rec.jctSpMainStationId_d).ordinal())) {
+                    jctsp = rec;
+                    found = true;
+                    break;
+                } else if (IS_SHINKANSEN_LINE(routeList.get(i).lineId)
+                        && (routeList.get(i).stationId == rec.jctSpMainStationId_d)
+                        && (routeList.get(i + 1).lineId == rec.jctSpMainLineId_b)
+                        && (routeList.get(i + 1).stationId == rec.jctSpSubStationId_c)
+                        && (routeList.get(i + 2).lineId == rec.jctSpBranchLineId_a)
+                        && (rec.jctDir == RouteUtil.DirLine(routeList.get(i).lineId,
+                                                            routeList.get(i - 1).stationId,
+                                                            rec.jctSpMainStationId_d).ordinal())) {
+                    jctsp = rec;
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                // Found special fare record
+                // For now, return fixed fare amount
+                List<Integer> dist = RouteUtil.GetDistance(jctsp.jctSpMainLineId_b,
+                                                            jctsp.jctSpSubStationId_c,
+                                                            jctsp.jctSpMainStationId_d);
+                if (!dist.isEmpty()) {
+                    int dup_sales_km = dist.get(0);
+                    return_sales_km_ += dup_sales_km * 2; // round trip
+                }
+                found = false; // reset for next record
+            }
+        }
+        return return_sales_km_;
+    }
 
     void setTerminal(int begin_station_id, int end_station_id) {
         beginTerminalId = begin_station_id;
@@ -893,7 +985,7 @@ public class FARE_INFO {
         final String msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)\r\n";
         final String msgAppliedLowcost = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)\r\n";
 
-        if (!argRouteFlag.no_rule && !argRouteFlag.osakakan_detour
+        if (!argRouteFlag.no_rule /* && !argRouteFlag.osakakan_detour */
                 && this.isUrbanArea() && !argRouteFlag.isUseBullet()
                 && !argRouteFlag.isIncludeCompanyLine()) {
             if (this.getBeginTerminalId() == this.getEndTerminalId()) {
@@ -1131,7 +1223,7 @@ public class FARE_INFO {
         if (this.isBRT_discount()) {
             buffer.append("\r\nBRT乗継ぎ割引適用");
         }
-        if (!argRouteFlag.no_rule && !argRouteFlag.osakakan_detour
+        if (!argRouteFlag.no_rule /* && !argRouteFlag.osakakan_detour */
                 && argRouteFlag.special_fare_enable) {
             // 電車特定運賃区間(私鉄競合のアレ)
             buffer.append("\r\n特定区間割引運賃適用");
@@ -1147,6 +1239,9 @@ public class FARE_INFO {
         }
         if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule88()) {
             buffer.append("\r\n旅客営業規則第88条を適用していません");
+        }
+        if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule160_4()) {
+            buffer.append("\r\n旅客営業規則第160条の4・5を適用していません");
         }
         if (argRouteFlag.no_rule && argRouteFlag.isAvailableRule69()) {
             buffer.append("\r\n旅客営業規則第69条を適用していません");
@@ -1211,7 +1306,7 @@ public class FARE_INFO {
         }
 
         /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
-        if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
+        if (!route_flag_.no_rule /*&& !route_flag_.osakakan_detour*/) {
             adjust_km = CheckAndApplyRule43_2j(routeList.toArray(new RouteItem[0]));
             this.sales_km			-= adjust_km * 2;
             this.base_sales_km		-= adjust_km;
@@ -1221,7 +1316,7 @@ public class FARE_INFO {
         }
 
         /* 旅客営業規則89条適用 */
-        if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
+        if (!route_flag_.no_rule /*&& !route_flag_.osakakan_detour*/) {
             this.base_calc_km += CheckOfRule89j(routeList);
         }
 
@@ -1247,6 +1342,16 @@ public class FARE_INFO {
             this.sales_km -= kmSubtract;
             this.base_sales_km -= kmSubtract;
             this.base_calc_km -= kmSubtract;
+        }
+        int return_sales_km_ = Check_jctspcl_fare(routeList);
+
+        route_flag_.rule160_4 = 0 < return_sales_km_;
+
+        if ((!route_flag_.no_rule) && 0 < return_sales_km_)  {
+            // Rule160の4: Subtract duplicated distance for junction fare specific
+            this.sales_km -= return_sales_km_;
+            this.base_sales_km -= return_sales_km_;
+            this.base_calc_km -= return_sales_km_;
         }
 
         /* 運賃計算 */
@@ -1279,7 +1384,7 @@ public class FARE_INFO {
     			special_fare = SpecificFareLine(routeList.get(0).stationId, routeList.get(routeList.size() - 1).stationId, 1);
     			if (0 < special_fare) {
                     System.out.print("specific fare section replace for Metro or Shikoku-Big-bridge\n");
-                    if (!route_flag_.no_rule && !route_flag_.osakakan_detour) {
+                    if (!route_flag_.no_rule /*&& !route_flag_.osakakan_detour*/) {
                         // 品川-青森-横浜 なども適用されてはいけないので,近郊区間内なら適用するように。
                         // 品川-横浜などの特別区間は近郊区間内の場合遠回り指定でも特別運賃を表示
                         // 名古屋は近郊区間でないので距離(尾頭橋-岡崎 37.7km 名古屋-岡崎 40.1km)50km以下として条件に含める

@@ -16,8 +16,6 @@ import android.database.Cursor;
 
 // import org.sutezo.farert.BuildConfig; // Removed - BuildConfig not available
 
-import org.sutezo.farert.BuildConfig;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,7 +61,7 @@ import java.util.Map;
 
 
 public class CalcRoute extends RouteList {
-
+    private static final boolean DEBUG = false;
     private final List<RouteItem> route_list_cooked = new ArrayList<>(0);
 
     List<RouteItem> routeList() { return route_list_cooked; }
@@ -96,7 +94,7 @@ public class CalcRoute extends RouteList {
     public int beginStationId() {
         int stid;
 
-        if (route_flag.no_rule || route_flag.osakakan_detour) {
+        if (route_flag.no_rule /*|| route_flag.osakakan_detour*/) {
             return route_list_raw.get(0).stationId;
         } else {
             stid = coreAreaIDByCityId(CSTART);
@@ -117,7 +115,7 @@ public class CalcRoute extends RouteList {
     public int endStationId() {
         int stid;
 
-        if (route_flag.no_rule || route_flag.osakakan_detour) {
+        if (route_flag.no_rule /*|| route_flag.osakakan_detour*/) {
             return route_list_raw.get(route_list_raw.size() - 1).stationId;
 
         } else {
@@ -507,7 +505,7 @@ public class CalcRoute extends RouteList {
     		fare_info.setInComplete();	// この経路の片道乗車券は購入できません."));
     		return -2;
     	}
-    	if (!route_flag.no_rule && !route_flag.osakakan_detour) {
+    	if (!route_flag.no_rule /*&& !route_flag.osakakan_detour*/) {
     		/* 規則適用 */
     		/* 86, 87, 69, 70条 114条適用かチェック */
     		checkOfRuleSpecificCoreLine(true);	// route_list_raw -> route_list_cooked
@@ -2241,7 +2239,7 @@ public class CalcRoute extends RouteList {
 
             if (is_start_city) {			/* 発駅が特定都区市内 */
                 /* 最終着駅を置き換える */
-                if (BuildConfig.DEBUG) {
+                if (DEBUG) {
                     System.out.printf("@@@ Down %d\n",route_list_replace.size());
                     for (int i = 0; i < route_work.size(); i++ ) {
                         System.out.printf("  D(%d)route[%s-%s]\n", i, RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
@@ -2262,7 +2260,7 @@ public class CalcRoute extends RouteList {
                 }
                 route_work.add(new RouteItem(base_line_id, arrive_station_id));
             } else {	/* 着駅が特定都区市内 */
-                if (BuildConfig.DEBUG) {
+                if (DEBUG) {
                     System.out.printf("@@@ Up %d\n",route_list_replace.size());
                     for (int i = 0; i < route_work.size(); i++ ) {
                         System.out.printf("  U(%d)route[%s-%s]\n", i, RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
@@ -2284,7 +2282,7 @@ public class CalcRoute extends RouteList {
                 route_work.get(1).stationId = (short) base_station_id;
                 route_work.get(1).lineId = (short)base_line_id;
             }
-            if (BuildConfig.DEBUG) {
+            if (DEBUG) {
                 for (int i = 0; i < route_work.size(); i++ ) {
                     System.out.printf("  >>[%s-%s]\n", RouteUtil.LineName(route_work.get(i).lineId), RouteUtil.StationName(route_work.get(i).stationId));
                 }
