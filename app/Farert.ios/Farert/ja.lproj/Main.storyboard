@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2S1-Sy-Prq">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2S1-Sy-Prq">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -1319,7 +1319,7 @@
                                     <segue destination="uFg-Jm-poi" kind="unwind" identifier="versionInfoExitSegue" unwindAction="closeModal:" id="ASW-rH-acd"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright(c) Sutezo 2014-2025" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zOt-sa-bMK">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright(c) Sutezo 2014-2026" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zOt-sa-bMK">
                                 <rect key="frame" x="91" y="784" width="232" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <nil key="textColor"/>
@@ -1616,54 +1616,10 @@
                         <color key="sectionIndexColor" systemColor="labelColor"/>
                         <color key="sectionIndexBackgroundColor" systemColor="systemBackgroundColor"/>
                         <sections>
-                            <tableViewSection headerTitle="Section-1" id="XMG-jt-Axf">
-                                <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="155" id="ndg-JR-BHF">
-                                        <rect key="frame" x="0.0" y="50.5" width="414" height="155"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ndg-JR-BHF" id="HMf-RW-yoB">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="155"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="6" preferredMaxLayoutWidth="343" translatesAutoresizingMaskIntoConstraints="NO" id="HwB-uD-9rR">
-                                                    <rect key="frame" x="7" y="45" width="400" height="72"/>
-                                                    <string key="text">駅、路線、運賃データを過去データで見ることもできます。通常は最新版を指定してください
-また保持している経路は保存時のデータソース専用となりデータソースを切り替えると無効となり表示しませんが保存時のデータソースに戻すと元どおりになります</string>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="fill" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="f5l-4U-U80">
-                                                    <rect key="frame" x="7" y="7" width="400" height="32"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                    <segments>
-                                                        <segment title="税5%"/>
-                                                        <segment title="2014"/>
-                                                        <segment title="2015"/>
-                                                        <segment title="2017"/>
-                                                        <segment title="最新8%"/>
-                                                        <segment title="最新10%"/>
-                                                    </segments>
-                                                </segmentedControl>
-                                            </subviews>
-                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                            <constraints>
-                                                <constraint firstItem="f5l-4U-U80" firstAttribute="top" secondItem="HMf-RW-yoB" secondAttribute="top" constant="7" id="6LH-Tv-B4q"/>
-                                                <constraint firstItem="HwB-uD-9rR" firstAttribute="top" secondItem="f5l-4U-U80" secondAttribute="bottom" constant="7" id="FTv-Ql-gsk"/>
-                                                <constraint firstAttribute="trailing" secondItem="f5l-4U-U80" secondAttribute="trailing" constant="7" id="IJU-yt-tHg"/>
-                                                <constraint firstItem="HwB-uD-9rR" firstAttribute="top" secondItem="f5l-4U-U80" secondAttribute="bottom" constant="7" id="QJ8-Yp-XZ3"/>
-                                                <constraint firstItem="f5l-4U-U80" firstAttribute="leading" secondItem="HMf-RW-yoB" secondAttribute="leading" constant="7" id="YFg-GC-Akt"/>
-                                                <constraint firstItem="HwB-uD-9rR" firstAttribute="leading" secondItem="HMf-RW-yoB" secondAttribute="leading" constant="7" id="mxs-e2-vx2"/>
-                                                <constraint firstAttribute="trailing" secondItem="HwB-uD-9rR" secondAttribute="trailing" constant="7" id="tOb-A5-2wJ"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                    </tableViewCell>
-                                </cells>
-                            </tableViewSection>
                             <tableViewSection headerTitle="Section-2" id="LxC-xe-Jnn">
                                 <cells>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="92" id="6Zz-dd-0b8">
-                                        <rect key="frame" x="0.0" y="284.5" width="414" height="92"/>
+                                        <rect key="frame" x="0.0" y="50.5" width="414" height="92"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6Zz-dd-0b8" id="2ie-oh-aoW">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="92"/>
@@ -1705,7 +1661,7 @@
                             <tableViewSection headerTitle="Section-3" id="juJ-b9-GZN">
                                 <cells>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="54" id="y05-6d-QLz">
-                                        <rect key="frame" x="0.0" y="455.5" width="414" height="54"/>
+                                        <rect key="frame" x="0.0" y="221.5" width="414" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="y05-6d-QLz" id="HvT-zk-Pko">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="54"/>
@@ -1756,7 +1712,6 @@
                     </navigationItem>
                     <connections>
                         <outlet property="btnResetInfoMessage" destination="R2W-3h-d0L" id="Zus-Yf-zib"/>
-                        <outlet property="sgmDataVer" destination="f5l-4U-U80" id="qQP-FI-OV2"/>
                         <outlet property="swShinkansenKokuraHakataOther" destination="5Kx-Rx-7D0" id="8nc-UK-lyz"/>
                     </connections>
                 </tableViewController>

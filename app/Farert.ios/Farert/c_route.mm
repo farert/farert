@@ -46,17 +46,20 @@ int g_tax; /* main.m */
 }
 
 #pragma mark - Management of database
-
+/* defunct
 + (BOOL)OpenDatabase
 {
     return [self OpenDatabase:[self GetDatabaseId]];
 }
 
 + (BOOL)OpenDatabase:(enum DB)ident
+
+ */
++ (BOOL)OpenDatabase
 {
     NSString* dbname;
     NSString* dbpath;
-
+/*
     switch (ident) {
         case DB_2014:
             g_tax = 8;          // %
@@ -84,6 +87,9 @@ int g_tax; /* main.m */
             dbname = @"jrdbnewest";
             break;
     }
+ */
+    g_tax = 10; /*defunct**/
+    dbname = @"jrdbnewest"; /*defunct**/
     dbpath = [[NSBundle mainBundle] pathForResource:dbname ofType:@"db"];
     return DBS::getInstance()->open([dbpath UTF8String]); // C++
 }
@@ -93,6 +99,7 @@ int g_tax; /* main.m */
     return DBS::getInstance()->close();
 }
 
+/* defunct
 // Save databse index
 + (void)SaveToDatabaseId:(NSInteger)dbid
 {
@@ -101,13 +108,12 @@ int g_tax; /* main.m */
 
 + (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync
 {
-    /* Store */
+    // Store
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:dbid] forKey:@"JrDatabaseId"];
     if (sync) {
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
 }
-
 // Retrieve database index
 + (enum DB)GetDatabaseId
 {
@@ -115,7 +121,7 @@ int g_tax; /* main.m */
     [[NSUserDefaults standardUserDefaults] integerForKey:@"JrDatabaseId"];
     return DB(dbid);
 }
-
+*/
 
 #pragma mark - alpdb utils
 

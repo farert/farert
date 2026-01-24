@@ -160,10 +160,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
 
                 } else {
                     UserDefaults.standard.set(verno, forKey: "hasLaunched")        //!!!!!1810
-                    cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
+                    //cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                     UserDefaults.standard.synchronize();
                     cRouteUtil.closeDatabase()
-                    cRouteUtil.openDatabase(DB(rawValue: DB._MAX_ID.rawValue)!)
+                    cRouteUtil.openDatabase()
                 }
             } else {
                 // 初回起動時
@@ -183,10 +183,10 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                     av.show()
                 }
                 UserDefaults.standard.set(verno, forKey: "hasLaunched")
-                cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
+                //defunct. cRouteUtil.save(toDatabaseId: DB._MAX_ID.rawValue, sync: false)
                 UserDefaults.standard.synchronize();
                 cRouteUtil.closeDatabase()
-                cRouteUtil.openDatabase(DB(rawValue: DB._MAX_ID.rawValue)!)
+                cRouteUtil.openDatabase(/* defunct. DB(rawValue: DB._MAX_ID.rawValue)!*/)
             }
         }
 
@@ -668,6 +668,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
         if segue.identifier == "settingsSegue" {
             // from 設定
             let view : SettingsTableViewController = segue.source as! SettingsTableViewController
+/* defunct
             if (0 < view.selectDbId) {  // is change DB
                 // データベースが変更されたら経路を再セットアップするように、保存経路ビューの経路選択と同様な動作に。
                 viewContextMode = .ROUTESETUP_VIEW;
@@ -680,6 +681,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 lvd.reload(true)
                 self.setViewTitle()
             }
+*/
             ds.setNotSameKokuraHakataShinZai(view.isSameShinkanzanKokuraHakataOther)
             /* settingsのあとでは「while a presentation or dismiss is in progress!」警告が表示される */
         } else if (segue.identifier == "versionInfoExitSegue") {
@@ -1023,7 +1025,7 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
             } else {
                 title = s
             }
-
+/* defunct
             var cur_db_idx = cRouteUtil.getDatabaseId().rawValue
             if ((cur_db_idx < DB._MIN_ID.rawValue) || (DB._MAX_ID.rawValue < cur_db_idx)) {
                 cur_db_idx = DB._MAX_ID.rawValue
@@ -1041,8 +1043,9 @@ class MainTableViewController: UITableViewController, UIActionSheetDelegate, Tab
                 }
                 self.navigationItem.title = "\(title) - \(dbname)"
             } else {
-                self.navigationItem.title = title
-            }
+*/
+            self.navigationItem.title = title
+//            }
         }
     }
     

@@ -184,7 +184,7 @@ public class Routefolder {
         self._totalSalesKm = salesKm_sum
     }
     
-    private func filePath(dbIndex: Int) -> String {
+    private func filePath(/*dbIndex: Int*/) -> String {
         guard let docUrl = FileManager.default.urls(for:.documentDirectory,
                                                     in:.userDomainMask).first
         else {
@@ -192,13 +192,15 @@ public class Routefolder {
         }
         
         var filename : String
+/* defunct
         if 0 <= dbIndex {
             filename = "routeholder"
             + String(dbIndex)
             + ".txt"
         } else {
+*/
             filename = "routeholder.txt"
-        }
+//        }
         return docUrl.appendingPathComponent(filename).path
     }
 
@@ -218,8 +220,8 @@ public class Routefolder {
     func save() {
         //print(filePath)
         let dbName = headerDbName()
-        let dbIndex = cRouteUtil.getDatabaseId().rawValue
-        if let os = OutputStream(toFileAtPath: filePath(dbIndex: dbIndex), append: false) {
+/* defunct        let dbIndex = cRouteUtil.getDatabaseId().rawValue */
+        if let os = OutputStream(toFileAtPath: filePath(/*dbIndex: dbIndex*/), append: false) {
             os.open()
             let strDbVer = "DBVer|" + dbName + "\n"
             os.write(strDbVer, maxLength: strDbVer.count)
@@ -249,18 +251,21 @@ public class Routefolder {
     func load(_ doCalc : Bool? = nil) {
         var doSave = false
         let dbName = headerDbName()
-        let dbIndex = cRouteUtil.getDatabaseId().rawValue
-
+//defunct        let dbIndex = cRouteUtil.getDatabaseId().rawValue
+        
         var text : String
         do {
-            text = try String(contentsOf:
-                                URL(fileURLWithPath: filePath(dbIndex: dbIndex)),
-                              encoding: String.Encoding.utf8)
+//            text = try String(contentsOf:
+//                                URL(fileURLWithPath: filePath(dbIndex: dbIndex)),
+//                              encoding: String.Encoding.utf8)
+              text = try String(contentsOf:
+                                URL(fileURLWithPath: filePath(/*dbIndex: 0*/)),
+                                    encoding: String.Encoding.utf8)
         } catch {
             // old version
             do {
                 text = try String(contentsOf:
-                                URL(fileURLWithPath: filePath(dbIndex: -1)),
+                                URL(fileURLWithPath: filePath(/*dbIndex: -1*/)),
                               encoding: String.Encoding.utf8)
             } catch {
                 // Failed to read file
