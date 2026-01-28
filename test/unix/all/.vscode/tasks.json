@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build (make DEBUG=1 farert)",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-lc", "make clean && make DEBUG=1 farert"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": { "kind": "build", "isDefault": true }
+    }
+  ]
+}

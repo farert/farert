@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug farert (LLDB)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/farert",
+      "args": ["城端", "城端線", "高岡", "氷見線", "氷見" ],
+      "env" : {
+	"farertDB" : "${workspaceFolder}/../../../db/jrdbNewest.db"
+      },
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build (make DEBUG=1 farert)"
+    }
+  ]
+}
