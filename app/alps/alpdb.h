@@ -175,6 +175,7 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define JR_WEST     4
 #define JR_KYUSYU   5
 #define JR_SHIKOKU  6
+#define NUM_JR_COMPANY 6
 #define JR_GROUP_MASK   ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0))
 #define IS_JR_MAJOR_COMPANY(c)  ((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c))
 
@@ -699,20 +700,10 @@ public:
 private:
     int32_t sales_km;           //*** 有効日数計算用(会社線含む)
 
-    int32_t base_sales_km;      //*** JR本州3社
-    int32_t base_calc_km;       //***
-
-    int32_t kyusyu_sales_km;    //***
-    int32_t kyusyu_calc_km;     //***
-
-    int32_t hokkaido_sales_km;
-    int32_t hokkaido_calc_km;
-
-    int32_t shikoku_sales_km;
-    int32_t shikoku_calc_km;
-
+    int32_t jr_sales_km[NUM_JR_COMPANY][2];    //*** JR会社別 営業キロ、計算キロ
     bool local_only;                /* True: 地方交通線のみ (0 < base_sales_km時のみ有効)*/
     bool local_only_as_hokkaido;    /* True: 北海道路線地方交通線のみ(0 < hokkaidou_sales_km時のみ有効) */
+
     //幹線のみ
     // (base_sales_km == base_calc_km) && (kyusyu_sales_km == kyusyu_calc_km) &&
     // (hokkaido_sales_km == hokkaido_calc_km) && (shikoku_sales_km == shikoku_calc_km)
@@ -725,11 +716,10 @@ private:
     int32_t company_fare_child;         /* 会社線小児運賃 */
 
     int32_t brt_fare;                   // BRT 運賃
-    int32_t brt_sales_km;               // BRT 営業キロ
-    int32_t brt_calc_km;                // BRT 計算キロ
 #define BRT_DISCOUNT_FARE 100
     int32_t brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
-
+    int32_t brt_sales_km;               // BRT 営業キロ
+    int32_t brt_calc_km;                // BRT 計算キロ
 private:
     int32_t flag;                       //***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
     int32_t jr_fare;                    //***
@@ -775,7 +765,7 @@ private:
     int32_t aggregate_fare_jr(bool isbrt, int32_t company_id1, int32_t company_id2, const vector<int32_t>& distance);
     static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
     static vector<JCTSP_DATA> GetJunctfionFareSpecifices();
-    static int32_t Check_jctspcl_fare(const vector<RouteItem>& routeList);
+    static vector<PAIRIDENT> Check_jctspcl_fare(const vector<RouteItem>& routeList);
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
@@ -802,19 +792,10 @@ public:
     void reset() {              //***
         companymask = 0;
         sales_km = 0;
-
-        base_sales_km = 0;
-        base_calc_km = 0;
-
-        kyusyu_sales_km = 0;
-        kyusyu_calc_km = 0;
-
-        hokkaido_sales_km = 0;
-        hokkaido_calc_km = 0;
-
-        shikoku_sales_km = 0;
-        shikoku_calc_km = 0;
-
+        for (int i = 0; i < NUM_JR_COMPANY + 1; i++) {
+            jr_sales_km[i][0] = 0;
+            jr_sales_km[i][1] = 0;
+        }
         local_only = false;
         local_only_as_hokkaido = false;
 
@@ -909,7 +890,6 @@ public:
 
     // 地方交通線を含んでいるか？
     bool didHaveLocalLine() const { return !local_only && total_jr_calc_km != total_jr_sales_km; }
-    bool isLocalOnly() const { return local_only; }
 
     FareResult  roundTripFareWithCompanyLine() const;
     int32_t     roundTripFareWithCompanyLinePriorRule114() const;
@@ -1142,7 +1122,7 @@ private:
 protected:
 public:
     static int32_t  DirOsakaKanLine(int32_t station_id_a, int32_t station_id_b);
-    static int32_t  CompanyIdFromStation(int32_t station_id);
+    static PAIRIDENT CompanyIdFromStation(int32_t station_id);
 
     static vector<int32_t>  GetDistance(int32_t line_id, int32_t station_id1, int32_t station_id2);
     static vector<int32_t>  GetDistance(const RouteFlag&  oskkflg, int32_t line_id, int32_t station_id1, int32_t station_id2);

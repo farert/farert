@@ -1,4 +1,4 @@
-CFLAGS = -Wall -D_DEBUG -D_CONSOLE_TEST -g -DALPS_LOG
+CFLAGS = -Wall -D_DEBUG -D_CONSOLE_TEST -g -DALPS_LOG -O0
 
 ifeq ($(EXP), 1)
 vpath %cpp exp
