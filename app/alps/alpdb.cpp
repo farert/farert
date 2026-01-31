@@ -10314,10 +10314,17 @@ void FARE_INFO::retr_fare(bool useBullet)
     _total_jr_sales_km_wo_brt = total_jr_km(0);
     _total_jr_calc_km_wo_brt = total_jr_km(1);
 
-    TRACE("retr_fare: _total_jr_sales_km_wo_brt=%d (base=%d, east=%d, kyusyu=%d, hokkaido=%d, shikoku=%d)\n",
+    TRACE("retr_fare: _total_jr_sales_km_wo_brt=%d\t(base(c+w)=%d, east=%d, central=%d, west=%d,kyusyu=%d, hokkaido=%d, shikoku=%d)\n",
           _total_jr_sales_km_wo_brt, 
-          this->jr_sales_km[JR_CENTRAL - 1][0] + this->jr_sales_km[JR_WEST - 1][0], this->jr_sales_km[JR_EAST - 1][0],
+          this->jr_sales_km[JR_CENTRAL - 1][0] + this->jr_sales_km[JR_WEST - 1][0], 
+          this->jr_sales_km[JR_EAST - 1][0], this->jr_sales_km[JR_CENTRAL - 1][0], this->jr_sales_km[JR_WEST - 1][0],
           this->jr_sales_km[JR_KYUSYU - 1][0], this->jr_sales_km[JR_HOKKAIDO - 1][0], this->jr_sales_km[JR_SHIKOKU - 1][0]);
+
+    TRACE("retr_fare: _total_jr_calc_km_wo_brt=%d\t(calc(c+w)=%d, east=%d, central=%d, west=%d,kyusyu=%d, hokkaido=%d, shikoku=%d)\n",
+          _total_jr_calc_km_wo_brt, 
+          this->jr_sales_km[JR_CENTRAL - 1][1] + this->jr_sales_km[JR_WEST - 1][1], 
+          this->jr_sales_km[JR_EAST - 1][1], this->jr_sales_km[JR_CENTRAL - 1][1], this->jr_sales_km[JR_WEST - 1][1],
+          this->jr_sales_km[JR_KYUSYU - 1][1], this->jr_sales_km[JR_HOKKAIDO - 1][1], this->jr_sales_km[JR_SHIKOKU - 1][1]);
 
     // brt
     if (0 < this->brt_sales_km) {

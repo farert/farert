@@ -644,7 +644,6 @@ class Dbreg:
                     stationId = tmp
 
                 #print("####{0}, {1}###".format(stationId, lineId));
-                # bit16-13	境界駅=高崎
                 if lineId == "":
                     self.cur.execute('select rowid from t_hzline where line_id=(select 65536*rowid from t_station where name=?)', [stationId])
                     row = self.cur.fetchone()
