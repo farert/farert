@@ -9764,7 +9764,7 @@ void FARE_INFO::setTOICACalcRoute(const vector<RouteItem>& routeList,
 }
 
 
-/*
+/* Not used.
           XXXX          XXXX
     xxxx  xxxx    xxxx  xxxx
     xxxx  拝島     xxxx  八王子
@@ -9855,6 +9855,43 @@ bool FARE_INFO::in_range_toica(const RouteList& route) const
                     " from   t_toica_range"
                     " where line_id=?1 and kind=0";
 
+    // 飛騨古川、高山、下呂 例外駅対応
+    auto in_range_toica_sub = [](int32_t t_station_id1, int32_t t_station_id2) -> bool {
+        static const char tsql[] = "select kind"
+                        " from   t_toica_range"
+                        " where station_id1=?1 and kind>0";
+        static const char tsql_exc[] = "select station_id1,"
+                        "        station_id2,"
+                        "        line_id"
+                        " from   t_toica_range"
+                        " where id=?1";
+        int32_t kind = 0;
+        int32_t station_id1 = 0;
+        int32_t station_id2 = 0;
+        int32_t line_id = 0;
+        DBO dbo = DBS::getInstance()->compileSql(tsql);
+        //TRACE("TOICA exception check %s %s\n", SNAME(t_station_id1), SNAME(t_station_id2));
+        dbo.setParam(1, t_station_id1);
+        if (dbo.moveNext()) {
+            kind = dbo.getInt(0);
+            ASSERT(0 < kind);
+            DBO dbo_exc = DBS::getInstance()->compileSql(tsql_exc);
+            dbo_exc.setParam(1, kind);
+            if (dbo_exc.moveNext()) {
+                station_id1 = dbo_exc.getInt(0);
+                station_id2 = dbo_exc.getInt(1);
+                line_id     = dbo_exc.getInt(2);
+            } else {
+                ASSERT(FALSE);
+                return false;
+            }
+            //TRACE("TOICA exception station %s line %s station1 %s station2 %s\n",
+            //      SNAME(t_station_id2), LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
+            return (0 < RouteUtil::InStation(t_station_id2, 
+                                    line_id, station_id1, station_id2));
+        }
+        return false;
+    };
     if (enableTokaiStockSelect != 2) { // JR東海TOICA有効
         TRACE("TOICA not enabled %d\n", __LINE__);
         return false;
@@ -9899,45 +9936,6 @@ bool FARE_INFO::in_range_toica(const RouteList& route) const
         station_id = pos->stationId;
     }
     return true;
-}
-
-// 飛騨古川、高山、下呂 例外駅対応
-bool FARE_INFO::in_range_toica_sub(int32_t t_station_id1, int32_t t_station_id2) const
-{
-    static const char tsql[] = "select kind"
-                    " from   t_toica_range"
-                    " where station_id1=?1 and kind>0";
-    static const char tsql_exc[] = "select station_id1,"
-                    "        station_id2,"
-                    "        line_id"
-                    " from   t_toica_range"
-                    " where id=?1";
-    int32_t kind = 0;
-    int32_t station_id1 = 0;
-    int32_t station_id2 = 0;
-    int32_t line_id = 0;
-    DBO dbo = DBS::getInstance()->compileSql(tsql);
-    //TRACE("TOICA exception check %s %s\n", SNAME(t_station_id1), SNAME(t_station_id2));
-    dbo.setParam(1, t_station_id1);
-    if (dbo.moveNext()) {
-        kind = dbo.getInt(0);
-        ASSERT(0 < kind);
-        DBO dbo_exc = DBS::getInstance()->compileSql(tsql_exc);
-        dbo_exc.setParam(1, kind);
-        if (dbo_exc.moveNext()) {
-            station_id1 = dbo_exc.getInt(0);
-            station_id2 = dbo_exc.getInt(1);
-            line_id     = dbo_exc.getInt(2);
-        } else {
-            ASSERT(FALSE);
-            return false;
-        }
-        //TRACE("TOICA exception station %s line %s station1 %s station2 %s\n",
-        //      SNAME(t_station_id2), LNAME(line_id), SNAME(station_id1), SNAME(station_id2));
-        return (0 < RouteUtil::InStation(t_station_id2, 
-                                line_id, station_id1, station_id2));
-    }
-    return false;
 }
 
 //  JR東海 IC運賃用の最短経路をだす
@@ -10024,7 +10022,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         }
         ASSERT(stid != 0 && edid != 0);
 
-        if (!fare_info_specific_short.reCalcFareForOptiomizeRoute(&specificRoute_List,
+        if (!fare_info_specific_short.reCalcFareForCloseToRoute(&specificRoute_List,
                                                                    stid, edid,
                                                                    &specificRouteFlag)) {
             ASSERT(FALSE);
@@ -10061,7 +10059,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     if (decision != 20) {
         ASSERT(decision == 0 || decision == 15);
         short_route_flag.setDisableRule86or87();
-        if (!fare_info_shorts.reCalcFareForOptiomizeRoute(&shortRoute_List,
+        if (!fare_info_shorts.reCalcFareForCloseToRoute(&shortRoute_List,
                                                            route_original.departureStationId(),
                                                            route_original.arriveStationId(),
                                                            &short_route_flag)) {
@@ -10105,7 +10103,7 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 //                            と拝島問題
         if (fare_info_shorts.didHaveLocalLine()
             && (decision == 0) /* 86or87 適用絡みはやらん (decision == 15 or 20) */
-            && fare_info_nolocal_short.reCalcFareForOptiomizeRoute(&route_nolocal_short,
+            && fare_info_nolocal_short.reCalcFareForCloseToRoute(&route_nolocal_short,
                                                                route_original.departureStationId(),
                                                                route_original.arriveStationId(),
                                                                &short_route_flag,
@@ -10176,7 +10174,7 @@ TRACE("reCalc(urban): decision=%d, this=%s->%s(%d)(%dyen),\n                    
 
 //  最短経路を算出して運賃計算する
 //
-bool FARE_INFO::reCalcFareForOptiomizeRoute(std::vector<RouteItem> *pShortRoute_list,
+bool FARE_INFO::reCalcFareForCloseToRoute(std::vector<RouteItem> *pShortRoute_list,
                                             int32_t start_station_id,
                                             int32_t end_station_id,
                                             RouteFlag* pShort_route_flag,

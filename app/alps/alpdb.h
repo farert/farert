@@ -771,7 +771,7 @@ private:
                               int32_t station_id_0,
                               int32_t station_id,
                               int32_t station_id1);
-    bool reCalcFareForOptiomizeRoute(vector<RouteItem>* pShortRouteList,
+    bool reCalcFareForCloseToRoute(vector<RouteItem>* pShortRouteList,
                                      int32_t start_station_id,
                                      int32_t end_station_id,
                                      RouteFlag* pShort_route_flag,
@@ -886,7 +886,6 @@ public:
         return enableTokaiStockSelect == 1; // JR東海株主有効(品川から新幹線とか)
     }
     bool in_range_toica(const RouteList& route) const;
-    bool in_range_toica_sub(int32_t t_station_id, int32_t t_station_id2) const;
 
     // 地方交通線を含んでいるか？
     bool didHaveLocalLine() const { return !local_only && total_jr_calc_km != total_jr_sales_km; }
