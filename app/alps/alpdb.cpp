@@ -5972,6 +5972,7 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
     } else {
         out_route_list->assign(work_route_list.cbegin(), work_route_list.cend());
     }
+    TRACE("ReRouteRule86/87: bullet_use=%d\n", bullet_use);
     return bullet_use;
 }
 
