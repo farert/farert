@@ -1370,14 +1370,14 @@ public:
 private:
     static int32_t  ReRouteRule69j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
            int32_t  reRouteRule70j(const vector<RouteItem>& in_route_list, vector<RouteItem>* out_route_list);
-           bool     isBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70);
+    static bool     IsBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70);
     static bool     Query_a69list(int32_t line_id, int32_t station_id1, int32_t station_id2, vector<PAIRIDENT>* results, bool continue_flag);
     static bool     Query_rule69t(const vector<RouteItem>& in_route_list, const RouteItem& cur, int32_t ident, vector<vector<PAIRIDENT>>* results);
     static uint32_t CheckOfRule86(const vector<RouteItem>& in_route_list, const RouteFlag& rRoute_flag, Station* exit, Station* entr, PAIRIDENT* cityId_pair);
     static uint32_t CheckOfRule87(const vector<RouteItem>& in_route_list);
     static int32_t  ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Station& exit, const Station& enter, vector<RouteItem>* out_route_list);
     static uint8_t  InRouteUrban(const vector<RouteItem>& route_list);
-    static int32_t  RetrieveOut70Station(int32_t line_id);
+    static int32_t  RetrieveOut70Station(int32_t line_id, int32_t station_id);
     static int32_t  InCityStation(int32_t cityno, int32_t lineId, int32_t stationId1, int32_t stationId2);
     static vector<Station>  SpecificCoreAreaFirstTransferStationBy(int32_t lineId, int32_t cityId);
     static int32_t  Retrieve_SpecificCoreStation(int32_t cityId);

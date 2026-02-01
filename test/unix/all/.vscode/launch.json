@@ -6,7 +6,7 @@
       "type": "lldb",
       "request": "launch",
       "program": "${workspaceFolder}/farert",
-      "args": ["JR俊徳道", "おおさか東線", "久宝寺", "関西線", "亀山", "紀勢線", "串本"],
+      "args": ["三島", "東海道新幹線", "品川", "東海道線", "東京", "中央東線", "吉祥寺"],
       "env" : {
 	"farertDB" : "${workspaceFolder}/../../../db/jrdbNewest.db"
       },

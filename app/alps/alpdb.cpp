@@ -1481,12 +1481,14 @@ int32_t Route::RoutePass::InStationOnOsakaKanjyou(int32_t dir, int32_t start_sta
 //static
 //  70条進入路線、脱出路線から進入、脱出境界駅と営業キロ、路線IDを返す
 //
+//  @param [in] is_in_70   大環状線進入(true)／脱出路線(false)
 //  @param [in] line_id    大環状線進入／脱出路線
+//  @param [in] station_id 大環状線進入／脱出 駅
 //  @return 一番外側の大環状線内(70条適用)駅
 //
 //  @note 東京都区内なので、営業キロMAX固定(下り即ち東京から一番遠い70条適用駅)とする
 //
-int32_t CalcRoute::RetrieveOut70Station(int32_t line_id)
+int32_t CalcRoute::RetrieveOut70Station(int32_t line_id, int32_t station_id)
 {
     static const char tsql[] =
 "select station_id from t_lines where line_id=?1 and "
@@ -1509,6 +1511,12 @@ int32_t CalcRoute::RetrieveOut70Station(int32_t line_id)
 "   (t1.lflg&65535)=?1 and"
 "   (t2.lflg&65535)=?2";
 #endif
+    /* 2026.3. JR-East fare & rule update */
+    if ((line_id == LINE_ID(_T("東海道新幹線")))
+     && (station_id == STATION_ID(_T("東京")))) {
+        return station_id;
+    }
+
     DBO dbo = DBS::getInstance()->compileSql(tsql);
     if (dbo.isvalid()) {
         dbo.setParam(1, line_id);
@@ -4801,7 +4809,7 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
                 }
                 stage = 2;                  /* 2: on */ /* 外から進入した */
                                 /* 路線より最外側の大環状線内(70条適用)駅を得る */
-                stationId_o70 = CalcRoute::RetrieveOut70Station(route_item->lineId);
+                stationId_o70 = CalcRoute::RetrieveOut70Station(route_item->lineId, route_item->stationId);
                 ASSERT(0 < stationId_o70);
                 station_id1 = ri.stationId;         /* 新幹線判定用 */
                 ri.stationId = stationId_o70;
@@ -4818,7 +4826,7 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
                 stage = 3;                  /* 3: off: !70 -> 70 -> !70 (applied) */
                                 /* 進入して脱出した */
                                 /* 路線より最外側の大環状線内(70条適用)駅を得る */
-                stationId_e70 = CalcRoute::RetrieveOut70Station(route_item->lineId);
+                stationId_e70 = CalcRoute::RetrieveOut70Station(route_item->lineId, station_id1);
                 ASSERT(0 < stationId_e70);
                 if (stationId_e70 != stationId_o70) {
                     out_route_list->push_back(RouteItem(ID_L_RULE70, stationId_e70, flag));
@@ -4863,7 +4871,7 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
             int32_t station_id1 = IDENT1(*it);
             int32_t station_id2 = IDENT2(*it);
                                     // ex.   品川           東京  　　　  品川             赤羽
-            if (isBulletInRouteOfRule70(station_id1, station_id2, stationId_o70, stationId_e70)) {
+            if (IsBulletInRouteOfRule70(station_id1, station_id2, stationId_o70, stationId_e70)) {
                 TRACE("Ride of Shinkansen in route 70.\n");
                 route_flag.rule70bullet = true;
             }
@@ -4900,7 +4908,7 @@ int32_t CalcRoute::reRouteRule70j(const vector<RouteItem>& in_route_list, vector
 // @retval true テーブルあり(有効: 70経路内での新幹線乗車)
 //  @note used member variable is route_flag at isBulletInRouteOfRule70()
 //
-bool CalcRoute::isBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70)
+bool CalcRoute::IsBulletInRouteOfRule70(int32_t station_id1, int32_t station_id2, int32_t stationId_o70, int32_t stationId_e70)
 {
     static const char tsql[] =
     "select count(*) from t_r70bullet "
@@ -8800,9 +8808,11 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
             else if (line_id == LINE_ID(_T("北海道新幹線"))) {
                 result[4] = MAKEPAIR(JR_HOKKAIDO, JR_HOKKAIDO);
             }
-            else if ((line_id == LINE_ID(_T("東海道新幹線"))) &&
-                     ((company_id1 == company_id2) && (company_id1 != JR_CENTRAL))) {
+            else if (line_id == LINE_ID(_T("東海道新幹線"))) {
+//            else if ((line_id == LINE_ID(_T("東海道新幹線"))) &&
+//                     ((company_id1 == company_id2) && (company_id1 != JR_CENTRAL))) {
                 /*
+                    JR東管内の東海道新幹線
                     東 西 -> あとで救われる
                     東 海
                     海 東
@@ -8813,7 +8823,8 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
                     西 海
                     海 西
                 */
-                result[4] = MAKEPAIR(company_id1, JR_CENTRAL);
+//              result[4] = MAKEPAIR(company_id1, JR_CENTRAL);
+                result[4] = MAKEPAIR(JR_CENTRAL, JR_CENTRAL);
             }
             else {
  TRACE("company_id1=%d, sub_company_id1=%d, company_id2=%d, sub_company_id2=%d\n", company_id1, sub_company_id1, company_id2, sub_company_id2);
