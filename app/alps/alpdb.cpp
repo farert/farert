@@ -5885,22 +5885,22 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
             && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
                 bullet_station = firstTransferStation.back();
                 firstTransferStation.pop_back();
-                if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
+                for (i = 0; (i + 1) < out_route_list->size(); i++) {
+                    if ((coreStationId == out_route_list->at(i).stationId)
+                    && (bullet_station.stationId == out_route_list->at(i + 1).stationId)
+                    && (bullet_station.lineId == out_route_list->at(i + 1).lineId)) {
+                        break;
+                    }
+                }
+                if (!((i + 1) < out_route_list->size())) {
+                    /* 新幹線はなし */
                     bullet_station.clear();
-                    bullet_use = true; /* 大都市近郊区間 無効 */
                 } else {
-                    for (i = 0; (i + 1) < out_route_list->size(); i++) {
-                        if ((coreStationId == out_route_list->at(i).stationId)
-                        && (bullet_station.stationId == out_route_list->at(i + 1).stationId)
-                        && (bullet_station.lineId == out_route_list->at(i + 1).lineId)) {
-                            break;
-                        }
-                    }
-                    if (!((i + 1) < out_route_list->size())) {
+                    if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
+                        /* 東海道新幹線 は、2026.3.13 改訂 */
                         bullet_station.clear();
-                    } else {
-                        bullet_use = true;
                     }
+                    bullet_use = true; /* 大都市近郊区間 無効 */
                 }
             }
             sta_ite = firstTransferStation.crbegin();
@@ -5973,22 +5973,22 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
             && ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
                 bullet_station = firstTransferStation.back();
                 firstTransferStation.pop_back();
-                if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
+                for (i = 0; (i + 1) < work_route_list.size(); i++) {
+                    if ((bullet_station.stationId == work_route_list.at(i).stationId)
+                    && (coreStationId == work_route_list.at(i + 1).stationId)
+                    && (bullet_station.lineId == work_route_list.at(i + 1).lineId)) {
+                        break;
+                    }
+                }
+                if (!((i + 1) < work_route_list.size())) {
+                    /* 新幹線はなし */
                     bullet_station.clear();
-                    bullet_use = true; /* 大都市近郊区間 無効 */
                 } else {
-                    for (i = 0; (i + 1) < work_route_list.size(); i++) {
-                        if ((bullet_station.stationId == work_route_list.at(i).stationId)
-                        && (coreStationId == work_route_list.at(i + 1).stationId)
-                        && (bullet_station.lineId == work_route_list.at(i + 1).lineId)) {
-                            break;
-                        }
-                    }
-                    if (!((i + 1) < work_route_list.size())) {
+                    if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
+                        /* 東海道新幹線 は、2026.3.13 改訂 */
                         bullet_station.clear();
-                    } else {
-                        bullet_use = true;
                     }
+                    bullet_use = true; /* 大都市近郊区間 無効 */
                 }
             }
             if (enter.lineId == sta_ite->lineId) {
@@ -9361,11 +9361,14 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                     this->companymask |= (1 << (JR_EAST - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
                     TRACE("JR-EAST was added to companymask alongside JR-TOKAI.\n");
                 }
-//                if (pRoute_flag->rule86bullet && (this->companymask == (1 << (JR_EAST - 1)))) {
-//                    this->companymask |= (1 << (JR_CENTRAL - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
-//                    TRACE("JR-CENTRAL was added to companymask alongside JR-EAST.\n");
-//                }
-
+#if 0 // 有効にすると東北新幹線でもJR東株優がOFFになってしまう
+                if (pRoute_flag->rule86bullet 
+                    && pRoute_flag->bullet_line 
+                    && (this->companymask == (1 << (JR_EAST - 1)))) {
+                    this->companymask |= (1 << (JR_CENTRAL - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
+                    TRACE("JR-CENTRAL was added to companymask alongside JR-EAST.\n");
+                }
+#endif
                 this->sales_km += d.at(0);          // total 営業キロ(会社線含む、有効日数計算用)
 
                 if (IS_COMPANY_LINE(ite->lineId)) { /* 会社線 */
@@ -10048,6 +10051,14 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
     int8_t decision = 0;   // this or via_tachikawa or short
 
     // 大都市近郊区間内ではない、or 新幹線乗車している or 同一駅(単駅ベースで)発着 なら対象外
+    TRACE("begin reCalcFareForOptiomizeRoute.urban=%d, bullet=%d,%d,%d, specific 8687term=%d isIncComp=%d\n", 
+         isUrbanArea(), 
+         route_original.getRouteFlag().bullet_line,
+         route_original.getRouteFlag().rule70bullet,
+         route_original.getRouteFlag().rule86bullet,
+         route_original.getRouteFlag().rule86or87,
+         route_original.getRouteFlag().isIncludeCompanyLine());
+
     if ( !isUrbanArea() || route_original.getRouteFlag().isUseBullet()
          || route_original.getRouteFlag().isIncludeCompanyLine()
          || (route_original.departureStationId() == route_original.arriveStationId())) {
@@ -10055,7 +10066,6 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
         TRACE("No reCalcFareForOptiomizeRoute.\n");
         return false;
     }
-    TRACE("begin reCalcFareForOptiomizeRoute.urban=%d, bullet=%d, specific term=%d\n", isUrbanArea(), route_original.getRouteFlag().isUseBullet(), route_original.getRouteFlag().rule86or87);
 
     /* 大都市近郊区間 */
 
