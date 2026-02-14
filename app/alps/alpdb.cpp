@@ -5881,20 +5881,26 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
 
             /* Check 上野-東京 or 品川-東京 新幹線 */
             if ((IDENT1(cityId) == CITYNO_TOKYO)
-            && ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
+            && ((firstTransferStation.size() == 2) 
+            && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
                 bullet_station = firstTransferStation.back();
                 firstTransferStation.pop_back();
-                for (i = 0; (i + 1) < out_route_list->size(); i++) {
-                    if ((coreStationId == out_route_list->at(i).stationId)
-                    && (bullet_station.stationId == out_route_list->at(i + 1).stationId)
-                    && (bullet_station.lineId == out_route_list->at(i + 1).lineId)) {
-                        break;
-                    }
-                }
-                if (!((i + 1) < out_route_list->size())) {
+                if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
                     bullet_station.clear();
+                    bullet_use = true; /* 大都市近郊区間 無効 */
                 } else {
-                    bullet_use = true;
+                    for (i = 0; (i + 1) < out_route_list->size(); i++) {
+                        if ((coreStationId == out_route_list->at(i).stationId)
+                        && (bullet_station.stationId == out_route_list->at(i + 1).stationId)
+                        && (bullet_station.lineId == out_route_list->at(i + 1).lineId)) {
+                            break;
+                        }
+                    }
+                    if (!((i + 1) < out_route_list->size())) {
+                        bullet_station.clear();
+                    } else {
+                        bullet_use = true;
+                    }
                 }
             }
             sta_ite = firstTransferStation.crbegin();
@@ -5967,17 +5973,22 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
             && ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
                 bullet_station = firstTransferStation.back();
                 firstTransferStation.pop_back();
-                for (i = 0; (i + 1) < work_route_list.size(); i++) {
-                    if ((bullet_station.stationId == work_route_list.at(i).stationId)
-                    && (coreStationId == work_route_list.at(i + 1).stationId)
-                    && (bullet_station.lineId == work_route_list.at(i + 1).lineId)) {
-                        break;
-                    }
-                }
-                if (!((i + 1) < work_route_list.size())) {
+                if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
                     bullet_station.clear();
+                    bullet_use = true; /* 大都市近郊区間 無効 */
                 } else {
-                    bullet_use = true;
+                    for (i = 0; (i + 1) < work_route_list.size(); i++) {
+                        if ((bullet_station.stationId == work_route_list.at(i).stationId)
+                        && (coreStationId == work_route_list.at(i + 1).stationId)
+                        && (bullet_station.lineId == work_route_list.at(i + 1).lineId)) {
+                            break;
+                        }
+                    }
+                    if (!((i + 1) < work_route_list.size())) {
+                        bullet_station.clear();
+                    } else {
+                        bullet_use = true;
+                    }
                 }
             }
             if (enter.lineId == sta_ite->lineId) {
@@ -9350,10 +9361,10 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                     this->companymask |= (1 << (JR_EAST - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
                     TRACE("JR-EAST was added to companymask alongside JR-TOKAI.\n");
                 }
-                if (pRoute_flag->rule86bullet && (this->companymask == (1 << (JR_EAST - 1)))) {
-                    this->companymask |= (1 << (JR_CENTRAL - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
-                    TRACE("JR-CENTRAL was added to companymask alongside JR-EAST.\n");
-                }
+//                if (pRoute_flag->rule86bullet && (this->companymask == (1 << (JR_EAST - 1)))) {
+//                    this->companymask |= (1 << (JR_CENTRAL - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
+//                    TRACE("JR-CENTRAL was added to companymask alongside JR-EAST.\n");
+//                }
 
                 this->sales_km += d.at(0);          // total 営業キロ(会社線含む、有効日数計算用)
 
