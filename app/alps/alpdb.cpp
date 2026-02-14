@@ -5859,15 +5859,14 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
     int32_t coreStationId;
     bool skip;
     int32_t line_id;
-    int32_t station_id;
     vector<RouteItem>::const_iterator itr;
     vector<RouteItem> work_route_list;
     vector<Station> firstTransferStation;
     int32_t c;   // work counter
     int32_t n;   // work counter
+    int32_t i;
     int32_t bullet_use = 0;
-    Station bullet_pass_entr;
-    Station bullet_pass_exit;
+    Station bullet_station;
 
     if ((mode & 1) != 0) {
         /* 発駅-脱出: exit 有効*/       /* ex) [[東北線、日暮里]] = (常磐線, [区]) */
@@ -5877,19 +5876,42 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
             work_route_list.assign(out_route_list->cbegin(), out_route_list->cend());
         } else {
             vector<Station>::const_reverse_iterator sta_ite;
-            if ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId)) {
-                bullet_pass_exit = firstTransferStation.at(1);
-                firstTransferStation.pop_back();
-            }
             coreStationId = CalcRoute::Retrieve_SpecificCoreStation(IDENT1(cityId));
+            ASSERT(0 < coreStationId);
+
+            /* Check 上野-東京 or 品川-東京 新幹線 */
+            if ((IDENT1(cityId) == CITYNO_TOKYO)
+            && ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
+                bullet_station = firstTransferStation.back();
+                firstTransferStation.pop_back();
+                for (i = 0; (i + 1) < out_route_list->size(); i++) {
+                    if ((coreStationId == out_route_list->at(i).stationId)
+                    && (bullet_station.stationId == out_route_list->at(i + 1).stationId)
+                    && (bullet_station.lineId == out_route_list->at(i + 1).lineId)) {
+                        break;
+                    }
+                }
+                if (!((i + 1) < out_route_list->size())) {
+                    bullet_station.clear();
+                } else {
+                    bullet_use = true;
+                }
+            }
             sta_ite = firstTransferStation.crbegin();
             TRACE("ReRouteRule8687 exit.line=%s db.exit line=%s\n", RouteUtil::LineName(exit.lineId).c_str(), RouteUtil::LineName(sta_ite->lineId).c_str());
             if (exit.lineId == sta_ite->lineId) {
                 work_route_list.push_back(RouteItem(0, sta_ite->stationId));    /* 発駅:都区市内代表駅 */
+                if (bullet_station.is_available()) {
+                    /* 上野-東京 or 品川-東京 新幹線 */
+                    work_route_list.push_back(RouteItem(bullet_station.lineId, bullet_station.stationId));
+                }
                 // ASSERT(sta_ite->stationId == CalcRoute::Retrieve_SpecificCoreStation(IDENT(cityId))); (新横浜とか新神戸があるので)
             } else {
-                ASSERT(0 < coreStationId);
                 work_route_list.push_back(RouteItem(0, coreStationId));         /* 発駅:都区市内代表駅 */
+                if (bullet_station.is_available()) {
+                    /* 上野-東京 or 品川-東京 新幹線 */
+                    work_route_list.push_back(RouteItem(bullet_station.lineId, bullet_station.stationId));
+                }
                 while (sta_ite != firstTransferStation.crend()) {
                     work_route_list.push_back(RouteItem(sta_ite->lineId, sta_ite->stationId));
                     ++sta_ite;
@@ -5901,14 +5923,7 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
                 if (exit.is_equal(*itr)) {
                     skip = false;
                     work_route_list.push_back(*itr);
-                } else { /* 脱出 路線:駅の前の経路をスキップ*/
-                    if (bullet_pass_exit.is_available() 
-                    && (bullet_pass_exit.lineId == itr->lineId) 
-                    && (bullet_pass_exit.stationId == itr->stationId)) {
-                        bullet_use++;
-                        work_route_list.push_back(*itr);
-                    }
-                }
+                }/* else  脱出 路線:駅の前の経路をスキップ*/
             } else {
                 work_route_list.push_back(*itr);
             }
@@ -5923,48 +5938,56 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
 
     if ((mode & 2) != 0) {
         /* 着駅-進入: entr 有効 */
+        coreStationId = CalcRoute::Retrieve_SpecificCoreStation(IDENT2(cityId));
+        ASSERT(0 < coreStationId);
+
+        itr = work_route_list.cbegin();
+        n = 0;
+        for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
+            if (enter.is_equal(*itr)) {
+                // 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
+                n = c;
+            }
+        }
+        itr = work_route_list.cbegin();
+        for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
+            if ((n == 0) || (c < n)) {
+                out_route_list->push_back(*itr);
+            }
+        }
         firstTransferStation = CalcRoute::SpecificCoreAreaFirstTransferStationBy(enter.lineId, IDENT2(cityId));
         if (firstTransferStation.size() <= 0) {
             // 博多南線で引っかかる ASSERT(FALSE);
             out_route_list->assign(work_route_list.cbegin(), work_route_list.cend());
         } else {
             vector<Station>::const_iterator sta_ite;
-            if ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId)) {
-                bullet_pass_entr = firstTransferStation.at(1);
-                firstTransferStation.pop_back();
-            }
             sta_ite = firstTransferStation.cbegin();
             ASSERT(sta_ite != firstTransferStation.cend());
-            itr = work_route_list.cbegin();
-            n = 0;
-            for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
-                if (enter.is_equal(*itr)) {
-                    // 京都 東海道線 山科 湖西線 近江塩津 北陸線 富山 高山線 岐阜 東海道線 山科で着駅が[京]にならない不具合
-                    n = c;
-                }
-            }
-            coreStationId = CalcRoute::Retrieve_SpecificCoreStation(IDENT2(cityId));
-            ASSERT(0 < coreStationId);
-            itr = work_route_list.cbegin();
-            station_id = 0;
-            for (c = 1; itr != work_route_list.cend(); ++itr, ++c) {
-                if ((n == 0) || (c < n)) {
-                    out_route_list->push_back(*itr);
-                } else {
-                    if (bullet_pass_entr.is_available() && bullet_pass_entr.stationId == itr->stationId) {
-                        station_id = itr->stationId;
-                    } else if ((station_id != 0)
-                        && (bullet_pass_entr.lineId == itr->lineId) && (coreStationId == itr->stationId)) {
-                        bullet_use++;
-                        station_id = 0;
-                        out_route_list->push_back(*itr);
+            if ((IDENT2(cityId) == CITYNO_TOKYO)
+            && ((firstTransferStation.size() == 2) && IS_SHINKANSEN_LINE(firstTransferStation.at(1).lineId))) {
+                bullet_station = firstTransferStation.back();
+                firstTransferStation.pop_back();
+                for (i = 0; (i + 1) < work_route_list.size(); i++) {
+                    if ((bullet_station.stationId == work_route_list.at(i).stationId)
+                    && (coreStationId == work_route_list.at(i + 1).stationId)
+                    && (bullet_station.lineId == work_route_list.at(i + 1).lineId)) {
+                        break;
                     }
                 }
+                if (!((i + 1) < work_route_list.size())) {
+                    bullet_station.clear();
+                } else {
+                    bullet_use = true;
+                }
             }
-    
-            TRACE("ReRouteRule8687 enter.line=%s db.enter line=%s\n", RouteUtil::LineName(enter.lineId).c_str(), RouteUtil::LineName(sta_ite->lineId).c_str());
             if (enter.lineId == sta_ite->lineId) {
-                out_route_list->push_back(RouteItem(sta_ite->lineId, sta_ite->stationId));
+                if (bullet_station.is_available()) {
+                    /* 上野-東京 or 品川-東京 新幹線 */
+                    out_route_list->push_back(RouteItem(sta_ite->lineId, bullet_station.stationId));
+                    out_route_list->push_back(RouteItem(bullet_station.lineId, sta_ite->stationId));
+                } else {
+                    out_route_list->push_back(RouteItem(sta_ite->lineId, sta_ite->stationId));
+                }
                 // ASSERT(sta_ite->stationId == CalcRoute::Retrieve_SpecificCoreStation(IDENT2(cityId))); 新横浜とかあるので
             } else {
                 out_route_list->push_back(RouteItem(enter.lineId, sta_ite->stationId));
@@ -5973,7 +5996,13 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
                     out_route_list->push_back(RouteItem(line_id, sta_ite->stationId));
                     line_id = sta_ite->lineId;
                 }
-                out_route_list->push_back(RouteItem(line_id, coreStationId));
+                if (bullet_station.is_available()) {
+                    /* 上野-東京 or 品川-東京 新幹線 */
+                    out_route_list->push_back(RouteItem(line_id, bullet_station.stationId));
+                    out_route_list->push_back(RouteItem(bullet_station.lineId, coreStationId));
+                } else {
+                    out_route_list->push_back(RouteItem(line_id, coreStationId));
+                }
             }
             TRACE("end station is re-route rule86/87\n");
         }
@@ -8808,9 +8837,12 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
             else if (line_id == LINE_ID(_T("北海道新幹線"))) {
                 result[4] = MAKEPAIR(JR_HOKKAIDO, JR_HOKKAIDO);
             }
+#if 1 /* 2026.3.14 JR-EAST Fare update Rule70 */
             else if (line_id == LINE_ID(_T("東海道新幹線"))) {
-//            else if ((line_id == LINE_ID(_T("東海道新幹線"))) &&
-//                     ((company_id1 == company_id2) && (company_id1 != JR_CENTRAL))) {
+                result[4] = MAKEPAIR(JR_CENTRAL, JR_CENTRAL);
+#else
+            else if ((line_id == LINE_ID(_T("東海道新幹線"))) &&
+                     ((company_id1 == company_id2) && (company_id1 != JR_CENTRAL))) {
                 /*
                     JR東管内の東海道新幹線
                     東 西 -> あとで救われる
@@ -8823,8 +8855,8 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
                     西 海
                     海 西
                 */
-//              result[4] = MAKEPAIR(company_id1, JR_CENTRAL);
-                result[4] = MAKEPAIR(JR_CENTRAL, JR_CENTRAL);
+              result[4] = MAKEPAIR(company_id1, JR_CENTRAL);
+#endif
             }
             else {
  TRACE("company_id1=%d, sub_company_id1=%d, company_id2=%d, sub_company_id2=%d\n", company_id1, sub_company_id1, company_id2, sub_company_id2);
@@ -9314,6 +9346,14 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                       SNAME(ite->stationId));
 
                 this->companymask |= ((1 << (company_id1 - 1)) | ((1 << (company_id2 - 1))));
+                if (pRoute_flag->bullet_line && (this->companymask == (1 << (JR_CENTRAL - 1)))) {
+                    this->companymask |= (1 << (JR_EAST - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
+                    TRACE("JR-EAST was added to companymask alongside JR-TOKAI.\n");
+                }
+                if (pRoute_flag->rule86bullet && (this->companymask == (1 << (JR_EAST - 1)))) {
+                    this->companymask |= (1 << (JR_CENTRAL - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
+                    TRACE("JR-CENTRAL was added to companymask alongside JR-EAST.\n");
+                }
 
                 this->sales_km += d.at(0);          // total 営業キロ(会社線含む、有効日数計算用)
 
@@ -9385,6 +9425,7 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
             }
         }
     }
+    TRACE("companymask=0x%0x\n", companymask);
     return fare_add;
 }
 
