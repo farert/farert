@@ -5850,7 +5850,11 @@ vector<int32_t> CalcRoute::Get_route_distance(const RouteFlag& rRoute_flag, cons
 //  @param [in]     entr            進入路線・駅
 //  @param [in/out] out_route_list  変換元・変換先経路
 //
-//  @return bool 大都市近郊区間無効となる新幹線乗車しているか？
+//  @return int32_t 大都市近郊区間無効となる新幹線乗車しているか？
+//           bit0/4: exit 
+//           bit1/5: entry
+//           bit0/1: 東北新幹線
+//           bit4/5: 東海道新幹線
 //  @remark このあと69条適用が必要(69条適用後でも可)
 //  @remark ルール未適用時はroute_list_cooked = route_list_rawである
 //
@@ -5899,8 +5903,10 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
                     if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
                         /* 東海道新幹線 は、2026.3.13 改訂 */
                         bullet_station.clear();
+                        bullet_use = 0x10; /* 大都市近郊区間 無効 */
+                    } else {
+                        bullet_use = 1; /* 大都市近郊区間 無効 */
                     }
-                    bullet_use = true; /* 大都市近郊区間 無効 */
                 }
             }
             sta_ite = firstTransferStation.crbegin();
@@ -5987,8 +5993,10 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
                     if ((LINE_ID(_T("東海道新幹線")) == bullet_station.lineId)) {
                         /* 東海道新幹線 は、2026.3.13 改訂 */
                         bullet_station.clear();
+                        bullet_use = 0x20; /* 大都市近郊区間 無効 */
+                    } else {
+                        bullet_use = 0x2; /* 大都市近郊区間 無効 */
                     }
-                    bullet_use = true; /* 大都市近郊区間 無効 */
                 }
             }
             if (enter.lineId == sta_ite->lineId) {
@@ -6175,7 +6183,7 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
     /* 変換 -> route_list_tmp:86適用(仮)
        88変換したものは対象外(=山陽新幹線 新大阪着時、非表示フラグが消えてしまうのを避ける効果あり) */
     if (route_flag.isEnableRule86or87()) {
-        route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, chk, exit, enter, &route_list_tmp));
+        route_flag.rule86bullet = CalcRoute::ReRouteRule86j87j(cityId, chk, exit, enter, &route_list_tmp);
     }
 
     // 69を適用したものをroute_list_tmp3へ
@@ -6273,7 +6281,7 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
                 // 要らない。(ReRouteRule86j87j()が第2引数で制御できるので）cityId = MAKEPAIR(0, IDENT2(cityId));
                 /* route_list_tmp = route_list_tmp2 */
                 route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
-                route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, flg, exit, enter, &route_list_tmp));
+                route_flag.rule86bullet = CalcRoute::ReRouteRule86j87j(cityId, flg, exit, enter, &route_list_tmp);
                 // 69を適用したものをroute_list_tmp3へ
                 n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);    /* 69条適用(route_list_tmp->route_list_tmp3) */
                 TRACE("Rule 69(2) applied %dtimes.\n", n);
@@ -6306,7 +6314,7 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
             /* route_list_tmp = route_list_tmp2 */
             route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
             /* 発駅のみ特定都区市内着経路に変換 */
-            route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp));
+            route_flag.rule86bullet = CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
             // 69を適用したものをroute_list_tmp3へ
             n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);    /* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -6323,7 +6331,7 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
             /* route_list_tmp = route_list_tmp2 */
             route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
             /* 着駅のみ特定都区市内着経路に変換仮適用 */
-            route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp));
+            route_flag.rule86bullet = CalcRoute::ReRouteRule86j87j(cityId, 2, exit, enter, &route_list_tmp);
 
             // 69を適用したものをroute_list_tmp3へ
             n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);    /* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -6343,7 +6351,7 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
                     /* route_list_tmp = route_list_tmp2 */
                     route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
                     /* 発駅のみ特定都区市内着経路に変換 */
-                    route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp));
+                    route_flag.rule86bullet = CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
                     // 69を適用したものをroute_list_tmp3へ
                     n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);    /* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -6384,7 +6392,7 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
                 /* route_list_tmp = route_list_tmp2 */
                 route_list_tmp.assign(route_list_tmp2.cbegin(), route_list_tmp2.cend());
                 /* 発駅のみ特定都区市内着経路に変換 */
-                route_flag.rule86bullet = (0 < CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp));
+                route_flag.rule86bullet = CalcRoute::ReRouteRule86j87j(cityId, 1, exit, enter, &route_list_tmp);
 
                 // 69を適用したものをroute_list_tmp3へ
                 n = CalcRoute::ReRouteRule69j(route_list_tmp, &route_list_tmp3);    /* 69条適用(route_list_tmp->route_list_tmp3) */
@@ -9361,14 +9369,14 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                     this->companymask |= (1 << (JR_EAST - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
                     TRACE("JR-EAST was added to companymask alongside JR-TOKAI.\n");
                 }
-#if 0 // 有効にすると東北新幹線でもJR東株優がOFFになってしまう
-                if (pRoute_flag->rule86bullet 
-                    && pRoute_flag->bullet_line 
+
+                // 東京 東海道新幹線 品川 東海道線 熱海 で、東株優有効としない
+                if (((0x30 & pRoute_flag->rule86bullet) != 0)
                     && (this->companymask == (1 << (JR_EAST - 1)))) {
                     this->companymask |= (1 << (JR_CENTRAL - 1)); /* 都区内、東京品川以外からの乗車でJR東海株主優待を防ぐ */
                     TRACE("JR-CENTRAL was added to companymask alongside JR-EAST.\n");
                 }
-#endif
+
                 this->sales_km += d.at(0);          // total 営業キロ(会社線含む、有効日数計算用)
 
                 if (IS_COMPANY_LINE(ite->lineId)) { /* 会社線 */

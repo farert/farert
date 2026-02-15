@@ -285,7 +285,7 @@ public:
     bool special_fare_enable;
     int8_t rule115;
     bool rule70bullet;
-    bool rule86bullet;
+    int32_t rule86bullet;
     bool rule16_5;
     bool rule160_4;
 
@@ -352,7 +352,7 @@ public:
         rule86or87 = 0;
         rule115 = 0;
         rule70bullet = false;
-        rule86bullet = false;
+        rule86bullet = 0;
         rule88 = 0;
         rule69 = false;
         rule70 = false;
@@ -494,7 +494,7 @@ public:
         rule69 = false;
         rule70 = false;
         rule70bullet = false;
-        rule86bullet = false;
+        rule86bullet = 0;
     }
     bool isTerCity() const {
         return
@@ -503,7 +503,7 @@ public:
 
     // 特例非適用ならTrueを返す。route_flag.BLF_NO_RULEのコピー
     //
-    bool isUseBullet() const { return bullet_line || rule70bullet || rule86bullet; }
+    bool isUseBullet() const { return bullet_line || rule70bullet || (0 != rule86bullet); }
 
     // 会社線含んでいる場合Trueを返す
     bool isIncludeCompanyLine() const { return compncheck; }
