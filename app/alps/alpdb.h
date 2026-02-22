@@ -700,7 +700,9 @@ public:
 private:
     int32_t sales_km;           //*** 有効日数計算用(会社線含む)
 
-    int32_t jr_sales_km[NUM_JR_COMPANY][2];    //*** JR会社別 営業キロ、計算キロ
+    using JrSalesKm = int32_t[NUM_JR_COMPANY][2];
+    
+    JrSalesKm jr_sales_km{};       //*** JR会社別 営業キロ、計算キロ
     bool local_only;                /* True: 地方交通線のみ (0 < base_sales_km時のみ有効)*/
     bool local_only_as_hokkaido;    /* True: 北海道路線地方交通線のみ(0 < hokkaidou_sales_km時のみ有効) */
 
@@ -900,9 +902,11 @@ public:
     int32_t     getJRSalesKm() const;
     int32_t     getJRCalcKm() const;
     int32_t     getCompanySalesKm() const;
+    int32_t     getSalesKmForEast() const;
     int32_t     getSalesKmForHokkaido() const;
     int32_t     getSalesKmForShikoku() const;
     int32_t     getSalesKmForKyusyu() const;
+    int32_t     getCalcKmForEast() const;
     int32_t     getCalcKmForHokkaido() const;
     int32_t     getCalcKmForShikoku() const;
     int32_t     getCalcKmForKyusyu() const;
