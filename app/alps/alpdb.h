@@ -969,11 +969,13 @@ private:
     static int32_t      Fare_hokkaido_sub(int32_t km);
     static int32_t      Fare_shikoku(int32_t skm, int32_t ckm);
     static int32_t      Fare_kyusyu(int32_t skm, int32_t ckm);
+    static int32_t      Fare_east_basic(int32_t km);
+    static int32_t      Fare_east_local(int32_t km);
     static int32_t      days_ticket(int32_t sales_km);
     static bool         Fare_company(int32_t station_id1, int32_t station_id2, FARE_INFO::CompanyFare* companyFare);
     static int32_t      Fare_table(const char* tbl, const char* field, int32_t km);
     static int32_t      Fare_table(int32_t dkm, int32_t skm, char c);
-    static int32_t      Fare_table(const char* tbl, char c, int32_t km);
+    static int32_t      Fare_table(const char* tbl, char c, int32_t km, int32_t* c_km);
     static int32_t      CheckSpecificFarePass(int32_t line_id, int32_t station_id1, int32_t station_id2);
     static int32_t      SpecificFareLine(int32_t station_id1, int32_t station_id2, int32_t kind);
            vector<int32_t> getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2);
