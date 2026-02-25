@@ -652,7 +652,7 @@ public class FARE_INFO {
                 }
             }
         }
-        System.out.printf("companymask=0x%0x\n", companymask);
+        System.out.printf("companymask=0x%x\n", companymask);
         return fare_add;
     }
 

@@ -67,18 +67,6 @@ android {
             variant.packaging.dex.useLegacyPackaging = false
         }
     }
-    sourceSets {
-        getByName("test") {
-            // These files are for local CLI test runs and clash with Android Studio's unit test compilation.
-//            java.setExcludes(
-                listOf(
-                    "android/**",
-                    "org/sutezo/farert/**",
-                    "org/sutezo/alps/JavaTestMain.java"
-                )
-        }
-    }
-
     // Disable all baseline profile related tasks
     afterEvaluate {
         tasks.matching { it.name.contains("BaselineProfile", ignoreCase = true) }.configureEach {
@@ -92,6 +80,17 @@ android {
         }
     }
 
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    if (name.contains("UnitTest", ignoreCase = true)) {
+        // Exclude local CLI test helpers from Android Studio unit test compilation.
+        exclude(
+            "**/android/**",
+            "**/org/sutezo/farert/**",
+            "**/org/sutezo/alps/JavaTestMain.java"
+        )
+    }
 }
 
 dependencies {
