@@ -59,6 +59,26 @@ $ ./farecli <駅1> <路線1> <駅2> ...
 
 ```
 
+### Debugging core logic
+
+- VSCode Debug (POSIX)
+
+`test/unix/all` をワークスペースとして開く場合:
+
+```
+$ cd test/unix/all
+$ mkdir -p .vscode
+$ cp dot-vscode_launch.json .vscode/launch.json
+```
+
+- VSCode 拡張: CodeLLDB（`vadimcn.vscode-lldb`）
+- 変更が必要な場合は `.vscode/launch.json` の `args` を編集
+
+
+### Test Java code
+
+- See javatest.md
+
 ### How to edit and make database
 
 - See db/ directory.
@@ -71,4 +91,3 @@ $ ./farecli <駅1> <路線1> <駅2> ...
 ## Author
 
 - Copyright(c) sutezo 2025
-

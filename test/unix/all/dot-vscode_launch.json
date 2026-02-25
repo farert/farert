@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug farert (CodeLLDB)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/farert",
+      "args": ["-exec"],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "env": {
+        "farertDB": "${workspaceFolder}/../../../db/jrdbNewest.db"
+      }
+    }
+  ]
+}
