@@ -81,6 +81,7 @@ public class RouteUtil {
     static final int JR_WEST	= 4;
     static final int JR_KYUSYU	= 5;
     static final int JR_SHIKOKU	= 6;
+    static final int NUM_JR_COMPANY = 6;
     static final int JR_GROUP_MASK  = ((1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0));
     static boolean IS_JR_MAJOR_COMPANY(int c)	{
         return ((JR_EAST == c) || (JR_CENTRAL == c) || (JR_WEST == c));
