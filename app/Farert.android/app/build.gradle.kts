@@ -67,6 +67,17 @@ android {
             variant.packaging.dex.useLegacyPackaging = false
         }
     }
+    sourceSets {
+        getByName("test") {
+            // These files are for local CLI test runs and clash with Android Studio's unit test compilation.
+//            java.setExcludes(
+                listOf(
+                    "android/**",
+                    "org/sutezo/farert/**",
+                    "org/sutezo/alps/JavaTestMain.java"
+                )
+        }
+    }
 
     // Disable all baseline profile related tasks
     afterEvaluate {
