@@ -9,12 +9,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class JavaTestMain {
-    private static final String DB_PATH = "/Users/ntake/priv/farert.repos/farert/db/jrdbNewest.db";
+    private static final String DB_PATH = "db/jrdbNewest.db";
     private static final Path TEST_EXEC_CPP = Paths.get("test/unix/common/test_exec.cpp");
     private static final Path REF_RESULT = Paths.get("test/unix/all/test_result.txt");
     private static final Path OUTPUT_RESULT = Paths.get("app/Farert.android/app/src/test/resources/test_result.txt");
@@ -40,11 +44,11 @@ public class JavaTestMain {
         RouteDB.createFactory(db, 10);
 
         TestData data = TestData.load(TEST_EXEC_CPP);
-        ReferenceOutput ref = ReferenceOutput.load(REF_RESULT);
+        long startNs = System.nanoTime();
 
         try (BufferedWriter writer = Files.newBufferedWriter(OUTPUT_RESULT, StandardCharsets.UTF_8)) {
             Out out = new Out(writer);
-            out.println(ref.timestampLine);
+            out.println(currentTimestampLine());
             out.println("");
 
             out.println("#---route test  -------------------------------------------");
@@ -79,8 +83,7 @@ public class JavaTestMain {
             out.println("#---same kokura hakata shinzai-----------------------------------");
             test_route(out, data.testRoute3, 0);
 
-            out.println("");
-            out.println(ref.processLapseLine);
+            out.println(processLapseLine(startNs));
         } catch (Throwable ex) {
             System.err.println("Failure during: " + currentCase);
             throw ex;
@@ -141,7 +144,7 @@ public class JavaTestMain {
                     out.println("");
                 }
 
-                FARE_INFO fi = new TestFARE_INFO();
+                FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
                 RouteFlag rf = croute.getRouteFlag();
 
@@ -382,7 +385,7 @@ public class JavaTestMain {
                 if (!resopt) {
                     farertAssert.ASSERT(fail == 0);
                 }
-                FARE_INFO fi = new TestFARE_INFO();
+                FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
                 croute.calcFare(fi);
                 String s = normalizeOutput(fi.showFare(croute.getRouteFlag()));
@@ -417,7 +420,7 @@ public class JavaTestMain {
                 if (!resopt) {
                     farertAssert.ASSERT(0 <= fail);
                 }
-                FARE_INFO fi = new TestFARE_INFO();
+                FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
                 croute.getRouteFlag().setNoRule(false);
                 croute.calcFare(fi);
@@ -445,7 +448,7 @@ public class JavaTestMain {
                 if (!resopt) {
                     farertAssert.ASSERT(0 <= fail);
                 }
-                FARE_INFO fi = new TestFARE_INFO();
+                FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
                 croute.getRouteFlag().setNoRule(false);
                 croute.calcFare(fi);
@@ -473,7 +476,7 @@ public class JavaTestMain {
                 if (!resopt) {
                     farertAssert.ASSERT(0 <= fail);
                 }
-                FARE_INFO fi = new TestFARE_INFO();
+                FARE_INFO fi = new FARE_INFO();
                 CalcRoute croute = new CalcRoute(route);
                 croute.getRouteFlag().setNoRule(false);
                 croute.calcFare(fi);
@@ -507,7 +510,7 @@ public class JavaTestMain {
             int rc = test_setup_route(pbuffer, route, out);
             farertAssert.ASSERT(0 <= rc);
 
-            FARE_INFO fi = new TestFARE_INFO();
+            FARE_INFO fi = new FARE_INFO();
             CalcRoute croute = new CalcRoute(route);
             croute.calcFare(fi);
             String s = normalizeOutput(fi.showFare(croute.getRouteFlag()));
@@ -629,7 +632,7 @@ public class JavaTestMain {
                 return;
             }
             out.println(def);
-            FARE_INFO fi = new TestFARE_INFO();
+            FARE_INFO fi = new FARE_INFO();
             CalcRoute croute = new CalcRoute(route);
             croute.calcFare(fi);
             String s = normalizeOutput(fi.showFare(croute.getRouteFlag()));
@@ -723,30 +726,18 @@ public class JavaTestMain {
         }
     }
 
-    private static class ReferenceOutput {
-        final String timestampLine;
-        final String processLapseLine;
+    private static final DateTimeFormatter TIMESTAMP_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.JAPAN)
+                    .withZone(ZoneId.systemDefault());
 
-        private ReferenceOutput(String timestampLine, String processLapseLine) {
-            this.timestampLine = timestampLine;
-            this.processLapseLine = processLapseLine;
-        }
+    private static String currentTimestampLine() {
+        return TIMESTAMP_FORMAT.format(Instant.now());
+    }
 
-        static ReferenceOutput load(Path path) throws IOException {
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-            String timestamp = "";
-            String process = "";
-            if (!lines.isEmpty()) {
-                timestamp = lines.get(0);
-            }
-            for (int i = lines.size() - 1; i >= 0; i--) {
-                if (lines.get(i).startsWith("proces lapse:")) {
-                    process = lines.get(i);
-                    break;
-                }
-            }
-            return new ReferenceOutput(timestamp, process);
-        }
+    private static String processLapseLine(long startNs) {
+        Duration elapsed = Duration.ofNanos(System.nanoTime() - startNs);
+        double seconds = elapsed.toNanos() / 1_000_000_000.0;
+        return String.format(Locale.US, "proces lapse: %.3f sec.", seconds);
     }
 
     private static class TestData {

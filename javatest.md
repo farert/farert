@@ -1,17 +1,23 @@
 
-# Android 版のテストコードを作成
+# Android 版のテストコード
+
+## TL;DR
+- [2) Java のコンパイル](#java-compile)
+- [3) 実行](#java-run)
+- [4) 結果](#java-result)
+
 
 ## ソース
-- ~/farert.repos/farert/app/Farert.android/app/src/main/java/org/sutezo/alps
+- app/Farert.android/app/src/main/java/org/sutezo/alps
 
 ## 参考C＋＋ソース
 
-- ~/farert.repos/farert/app/test/unix/all/Makefile
-- ~/farert.repos/farert/app/test/unix/all/testmain.cpp
-- ~/farert.repos/farert/app/test/unix/common/test_exec.cpp
+- app/test/unix/all/Makefile
+- app/test/unix/all/testmain.cpp
+- app/test/unix/common/test_exec.cpp
 - その他は、Makefile の中身を参照
-- C++でのテストパターンは、 ~/farert.repos/farert/app/test/unix/common/test_exec.cpp にある。
-- C++でのテスト結果出力は、 ~/farert.repos/farert/app/test/unix/all/test_result.txt 
+- C++でのテストパターンは、 app/test/unix/common/test_exec.cpp にある。
+- C++でのテスト結果出力は、 app/test/unix/all/test_result.txt 
 - C++の実行は、 ./farert -exec つまり、testmain.cpp の argv[1]が、'-exec' です。それ以外は実装しなくて結構です
 
 ## TODO
@@ -20,8 +26,8 @@
 ## 注意
 - C++版、Javaソースとも変更しないでください。
 - 変更して良いのは成果物のディレクトリ以下のものだけに限ります。
-- 使用するDBは、~/farert.repos/farert/db/jrdbNewest.db
-- ~/farert.repos/farert/app/test/unix/all/test_result.txt は 最新で正 とみなしてください
+- 使用するDBは、db/jrdbNewest.db
+- app/test/unix/all/test_result.txt は 最新で正 とみなしてください
 - 結果出力は、app/Farert.android/app/src/test/resources/ へ書き出してください.
 
 ## 成果物
@@ -29,7 +35,7 @@
 - java -cp コマンドで起動する。
 - 結果は, C++と同様 test_result.txt を生成する。
 - 結果をC++版とdiffコマンドで比較し、一致していれば完成となる
-- テストソースは、~/farert.repos/farert/app/Farert.android/app/src/test に置く。
+- テストソースは、app/Farert.android/app/src/test に置く。
   
 - C++の test_result.txt と Javaの test_result.txt で diff 比較します。
 - その結果が一致すればテストがパスしたことになります。
@@ -39,11 +45,6 @@
 - `app/Farert.android/app/src/test/java/org/sutezo/alps/JavaTestMain.java`
   - 追加理由: C++ の `test_exec.cpp` と同等のテスト実行を Java で再現し、`-exec` 指定で `test_result.txt` を生成するため。
   - 記述内容: C++ のテスト配列をパース、ルート構築・`FARE_INFO` 実行、結果の整形と書き出し、DB 参照の初期化。
-
-### C++ 互換のテスト用補助
-- `app/Farert.android/app/src/test/java/org/sutezo/alps/TestFARE_INFO.java`
-  - 追加理由: Java 側の `FARE_INFO` 出力を C++ の期待フォーマットに近づけるため。
-  - 記述内容: 会社線・往復割引など C++ と一致させるためのテスト用挙動を上書き。
 
 ### DB 参照ユーティリティ
 - `app/Farert.android/app/src/test/java/org/sutezo/alps/DbIdOf.java`
@@ -142,6 +143,7 @@ curl -L -o app/Farert.android/app/src/test/resources/slf4j-nop.jar \
 - `sqlite-jdbc` は `org.xerial` のアーティファクト。
 - `slf4j` は `org.slf4j` の `slf4j-api` と `slf4j-nop`。
 
+<a id="java-compile"></a>
 ### 2) Java のコンパイル
 ```
 find app/Farert.android/app/src/main/java/org/sutezo/alps app/Farert.android/app/src/test/java -name \
@@ -154,11 +156,13 @@ rg --files -g '*.java' app/Farert.android/app/src/main/java/org/sutezo/alps app/
   ls -l /tmp/farert_test_classes/org/sutezo/alps
 ```
 
+<a id="java-run"></a>
 ### 3) 実行
 ```
 java -cp /tmp/farert_test_classes:app/Farert.android/app/src/test/resources/sqlite-jdbc.jar:app/Farert.android/app/src/test/resources/slf4j-api.jar:app/Farert.android/app/src/test/resources/slf4j-nop.jar org.sutezo.alps.JavaTestMain -exec
 ```
 
+<a id="java-result"></a>
 ### 4) 結果
 - 生成ファイル: `app/Farert.android/app/src/test/resources/test_result.txt`
 - 比較: `diff -u test/unix/all/test_result.txt app/Farert.android/app/src/test/resources/test_result.txt`

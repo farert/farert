@@ -66,18 +66,19 @@ $ ./farecli <駅1> <路線1> <駅2> ...
 `test/unix/all` をワークスペースとして開く場合:
 
 ```
-$ cd test/unix/all
-$ mkdir -p .vscode
-$ cp dot-vscode_launch.json .vscode/launch.json
+cd test/unix/all
+make
+mkdir -p .vscode
+cp dot-vscode_launch.json .vscode/launch.json
+code .
 ```
 
-- VSCode 拡張: CodeLLDB（`vadimcn.vscode-lldb`）
-- 変更が必要な場合は `.vscode/launch.json` の `args` を編集
+- Use VSCode Plugin: CodeLLDB（`vadimcn.vscode-lldb`）
+- Can you edit the `.vscode/launch.json` `args`
 
+### Test code in Java
 
-### Test Java code
-
-- See javatest.md
+- See `./javatest.md`
 
 ### How to edit and make database
 
@@ -90,4 +91,4 @@ $ cp dot-vscode_launch.json .vscode/launch.json
 
 ## Author
 
-- Copyright(c) sutezo 2025
+- Copyright(c) sutezo 2026
