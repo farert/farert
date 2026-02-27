@@ -67,7 +67,6 @@ android {
             variant.packaging.dex.useLegacyPackaging = false
         }
     }
-
     // Disable all baseline profile related tasks
     afterEvaluate {
         tasks.matching { it.name.contains("BaselineProfile", ignoreCase = true) }.configureEach {
@@ -81,6 +80,17 @@ android {
         }
     }
 
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    if (name.contains("UnitTest", ignoreCase = true)) {
+        // Exclude local CLI test helpers from Android Studio unit test compilation.
+        exclude(
+            "**/android/**",
+            "**/org/sutezo/farert/**",
+            "**/org/sutezo/alps/JavaTestMain.java"
+        )
+    }
 }
 
 dependencies {

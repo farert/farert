@@ -29,3 +29,27 @@ Debug/
 *.gcda
 ..bfg-report/
 .serena/
+
+# Local generated/test artifacts
+/app/alps/new/
+/app/alps/old/
+/app/alps/rust/
+/app/win_mfc/fjr_mfc/Release/
+/app/win_mfc/public-released/farert2507/
+/db/jrdbNewest.db.edit
+/test/unix/all/0
+/test/unix/all/before-86.log
+/test/unix/all/farert-*
+/test/unix/all/ll
+/test/unix/all/stderr
+/test/unix/all/t
+/test/unix/all/t1
+/test/unix/all/t2
+/test/unix/all/test_azusa
+/test/unix/all/test_result.txt.db*
+/test/unix/all/tmp-be86.log
+/test/unix/all/trace.log
+/test/unix/all/tt
+/test/unix/azusa/farecli
+/test/unix/azusa/trace.log
+/test/unix/gcov/trace.log

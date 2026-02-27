@@ -44,7 +44,7 @@ nmake /f Makefile.nmk
 
 * データベースは、環境変数 farertDB にパスを指定する。
    例)
-    $ export farertDB=/Users/ntake/exports/devel/farert.repos/db/jrdb2018.db
+    $ export farertDB=../../../db/jrdbNewest.db
 
    (../../db/scripts/jrdb.py と同様)
 　　

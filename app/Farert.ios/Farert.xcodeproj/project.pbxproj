@@ -26,8 +26,6 @@
 		2A2BB0C61AD6974400F7DED2 /* HeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0C01AD6974400F7DED2 /* HeaderTableViewCell.swift */; };
 		2A2BB0C81AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */; };
 		2A2BB0DD1AD6BE8500F7DED2 /* db.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D21AD6BE8500F7DED2 /* db.cpp */; };
-		2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */; };
-		2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */; };
 		2A2BB0E21AD6BE8500F7DED2 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */; };
 		2A2BB0E51AD6BEE900F7DED2 /* DbSys.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0E41AD6BEE900F7DED2 /* DbSys.m */; };
 		2A31EF7D1AEBE99F00EDD426 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A31EF7C1AEBE99F00EDD426 /* MessageUI.framework */; };
@@ -35,7 +33,6 @@
 		2A57119E1EB836F800D593DD /* McPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119D1EB836F800D593DD /* McPicker.swift */; };
 		2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */; };
 		2A5711A21EB8CFA800D593DD /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5711A11EB8CFA800D593DD /* RoundButton.swift */; };
-		2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */ = {isa = PBXBuildFile; fileRef = 2A69CCDE1E736EF1007F478A /* jrdb2017.db */; };
 		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
 		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
 		2A969B322354B2F400B8689F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A969B342354B2F400B8689F /* Localizable.strings */; };
@@ -72,8 +69,6 @@
 		2A2BB0C71AD6975A00F7DED2 /* ArchiveRouteTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveRouteTableViewController.swift; sourceTree = "<group>"; };
 		2A2BB0D21AD6BE8500F7DED2 /* db.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = db.cpp; sourceTree = "<group>"; };
 		2A2BB0D31AD6BE8500F7DED2 /* db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = db.h; sourceTree = "<group>"; };
-		2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2014.db; sourceTree = "<group>"; };
-		2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2015.db; sourceTree = "<group>"; };
 		2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
 		2A2BB0DB1AD6BE8500F7DED2 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		2A2BB0E31AD6BEE900F7DED2 /* DbSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DbSys.h; sourceTree = "<group>"; };
@@ -83,7 +78,6 @@
 		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
 		2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolderTableViewCell.swift; sourceTree = "<group>"; };
 		2A5711A11EB8CFA800D593DD /* RoundButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
-		2A69CCDE1E736EF1007F478A /* jrdb2017.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = jrdb2017.db; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
@@ -184,7 +178,6 @@
 			children = (
 				2A07D79C27FDD547004FA2D2 /* jrdbnewest.db */,
 				2A4CCE261EB556A00083260C /* Routefolder.swift */,
-				2A69CCDE1E736EF1007F478A /* jrdb2017.db */,
 				2ABD92E61E19EEA9002488E0 /* c_route.mm */,
 				2ABD92E81E19F685002488E0 /* c_route.h */,
 				2ACE5A591AF785030026A6CA /* FareInfo.h */,
@@ -196,8 +189,6 @@
 				2A0A0B5B1EE994ED00764EF1 /* alpdb.h */,
 				2A2BB0D21AD6BE8500F7DED2 /* db.cpp */,
 				2A2BB0D31AD6BE8500F7DED2 /* db.h */,
-				2A2BB0D41AD6BE8500F7DED2 /* jrdb2014.db */,
-				2A2BB0D51AD6BE8500F7DED2 /* jrdb2015.db */,
 				2A2BB0DA1AD6BE8500F7DED2 /* stdafx.cpp */,
 				2A2BB0DB1AD6BE8500F7DED2 /* stdafx.h */,
 			);
@@ -256,7 +247,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0700;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2620;
 				ORGANIZATIONNAME = "TAKEDA, Noriyuki";
 				TargetAttributes = {
 					2A2BB07E1AD6966500F7DED2 = {
@@ -294,10 +285,7 @@
 				2A07D79D27FDD547004FA2D2 /* jrdbnewest.db in Resources */,
 				2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */,
 				2A9AF26C2369B86B00262E98 /* LaunchScreen.storyboard in Resources */,
-				2A2BB0DF1AD6BE8500F7DED2 /* jrdb2015.db in Resources */,
 				2A969B322354B2F400B8689F /* Localizable.strings in Resources */,
-				2A69CCDF1E736EF1007F478A /* jrdb2017.db in Resources */,
-				2A2BB0DE1AD6BE8500F7DED2 /* jrdb2014.db in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,6 +407,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "6ef08ebf-2541-401d-8b4d-9b0afdc47a22";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -473,6 +462,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PROVISIONING_PROFILE = "3772ba17-12a7-40db-b454-d76f6427fe81";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
@@ -491,6 +481,8 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 85;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";
@@ -522,6 +514,8 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 85;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Farert/Info.plist";

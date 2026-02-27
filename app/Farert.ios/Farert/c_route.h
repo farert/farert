@@ -24,6 +24,7 @@ typedef void CalcRoute;
 @class FareInfo;
 @class DbSys;
 
+/*
 typedef NS_ENUM(NSInteger, DB) {
     DB_MIN_ID = 10,
     DB_TAX5 = DB_MIN_ID,
@@ -34,6 +35,7 @@ typedef NS_ENUM(NSInteger, DB) {
     DB_2019_10,
     DB_MAX_ID = DB_2019_10,
 };
+*/
 
 #define MAX_HISTORY              20
 #define MAX_ARCHIVE_ROUTE        100
@@ -56,7 +58,7 @@ typedef NS_ENUM(NSInteger, DB) {
 
 + (DbSys*)DatabaseVersion;
 + (BOOL)OpenDatabase;
-+ (BOOL)OpenDatabase:(enum DB)ident;
+//+ (BOOL)OpenDatabase:(enum DB)ident;
 + (void)CloseDatabase;
 
 + (NSString*)fareNumStr:(NSInteger)num;
@@ -102,12 +104,14 @@ typedef NS_ENUM(NSInteger, DB) {
 + (NSString*)scriptFromRouteArray;
 + (NSInteger*)parseScript:(NSString*)route_script;
 
+/*
 // Save databse index
 + (void)SaveToDatabaseId:(NSInteger)dbid;
 + (void)SaveToDatabaseId:(NSInteger)dbid sync:(BOOL) sync;
 
 // Retrieve database index
-+ (enum DB)GetDatabaseId;
+//+ (enum DB)GetDatabaseId;
+*/
 
 + (NSArray*)loadStrageRoute;
 + (BOOL)IsRouteInStrage:(NSString*)routeString;

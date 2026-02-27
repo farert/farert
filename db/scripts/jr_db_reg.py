@@ -291,6 +291,7 @@ class Dbreg:
             ba	integer not null,
             ta	integer not null,
             oa	integer not null,
+            ea	integer not null,
             ya	integer not null,
             h8	integer not null,
             s8	integer not null,
@@ -305,6 +306,7 @@ class Dbreg:
             km	integer primary key,
             ckm	integer not null,
             ea	integer not null,
+            ba	integer not null,
             ha	integer not null,
             e8	integer not null,
             h8	integer not null,
@@ -335,7 +337,8 @@ class Dbreg:
             ka8	integer not null,
             haa	integer not null,
             saa	integer not null,
-            kaa	integer not null
+            kaa	integer not null,
+            eaa	integer not null
             );
         """)
         ###########################################
@@ -343,7 +346,8 @@ class Dbreg:
         create table t_farehla (
             km	integer primary key,
             ha5	integer not null,
-            ha8	integer not null)
+            ha8	integer not null,
+            eaa	integer not null)
         """)
         ###########################################
         self.con.execute("""
@@ -411,6 +415,16 @@ class Dbreg:
 
                 primary key (line_id, station_id1, station_id2)
             );
+        """)
+        ###########################################
+        self.con.execute("""
+        create table t_brt_fare (
+            station_id1 integer not null references t_station(rowid),
+            station_id2 integer not null references t_station(rowid),
+            fare integer not null,
+
+            primary key (station_id1, station_id2)
+        );
         """)
         ###########################################
 
@@ -549,6 +563,7 @@ class Dbreg:
             't_compnpass'	: self.reg_t_compnpass,
             't_compnconc'	: self.reg_t_compnconc,
             't_brtsp'       : self.reg_t_brtsp,
+            't_brt_fare'    : self.reg_brt_fare,
         }
 
         self.num_of_line = 0
@@ -644,7 +659,6 @@ class Dbreg:
                     stationId = tmp
 
                 #print("####{0}, {1}###".format(stationId, lineId));
-                # bit16-13	境界駅=高崎
                 if lineId == "":
                     self.cur.execute('select rowid from t_hzline where line_id=(select 65536*rowid from t_station where name=?)', [stationId])
                     row = self.cur.fetchone()
@@ -900,16 +914,16 @@ insert into t_rule86 values(
 #------------------------------------------------------------------------------
     def reg_t_farebspekm(self, label, linitems, lin):
     # t_farebspekm: 3島会社幹線例外
-        arg_list = pad_list(linitems, 14, '0')
+        arg_list = pad_list(linitems, 15, '0')
         self.con.execute("""
-insert into t_farebspekm(km,h8,s8,k8,h5,s5,k5,ha,sa,ka,ba,ta,oa,ya) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+insert into t_farebspekm(km,h8,s8,k8, h5,s5,k5,ha, sa,ka,ba,ta, oa,ya,ea) values(?,?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?)""",
         list(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
 #------------------------------------------------------------------------------
     def reg_t_farelspekm(self, label, linitems, lin):
     # t_farelspekm:地方交通線例外
-        arg_list = pad_list(linitems, 8, '0')
+        arg_list = pad_list(linitems, 9, '0')
         self.con.execute("""
-insert into t_farelspekm(km,ckm,e8,h8,e5,h5,ea,ha) values(?, ?, ?, ?, ?, ?, ?, ?)""",
+insert into t_farelspekm(km,ckm,e8,h8,e5,h5,ea,ha,ba) values(?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         list(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
 #------------------------------------------------------------------------------
     def reg_t_farels(self, label, linitems, lin):
@@ -923,10 +937,10 @@ insert into t_farels values(?, ?, ?, ?, ?, ?, ?, ?)""",
 #------------------------------------------------------------------------------
     def reg_t_fareadd(self, label, linitems, lin):
     # t_fareadd: 本州3社+3島加算
-        arg_list = pad_list(linitems, 10, '0')
-        self.con.execute("insert into " + label + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        arg_list = pad_list(linitems, 11, '0')
+        self.con.execute("insert into " + label + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         list(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
-        # km, ha5, sa5, ka5, ha8, sa8, ka8, haa, saa, kaa
+        # km, ha5, sa5, ka5, ha8, sa8, ka8, haa, saa, kaa, eaa
 
 #------------------------------------------------------------------------------
     def reg_t_farespp(self, label, linitems, lin):
@@ -977,9 +991,10 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
         # t_farehla : 本州3社+JR北地方交通線会社加算
         # t_farehla5p : 本州3社+JR北地方交通線会社加算(消費税5%版)
 
-        self.con.execute("insert into " + label + " values(?, ?, ?)",
-        [int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')), int(linitems[2].replace(',', ''))])
-        # km, ha5, ha8
+        self.con.execute("insert into " + label + " values(?, ?, ?, ?)",
+        [int(linitems[0].replace(',', '')), int(linitems[1].replace(',', '')),
+         int(linitems[2].replace(',', '')), int(linitems[3].replace(',', ''))])
+        # km, ha5, ha8, ea10
 #------------------------------------------------------------------------------
     def reg_t_compnpass(self, label, linitems, lin):
         # t_compnpass
@@ -1073,6 +1088,22 @@ insert into t_farespp(station_id1, station_id2, fare10p, fare8p, fare5p, kind) v
             )""",
             [*same_staion(linitems[2].strip()), *same_staion(linitems[3].strip()), type, line])
 
+#------------------------------------------------------------------------------
+    def reg_brt_fare(self, label, linitems, lin):
+        # t_brt_fare
+        # BRT運賃
+
+        assert(label == "t_brt_fare")
+
+        # 駅1, 駅2は下りから並べないといけない。
+        self.cur.execute("""
+            insert into t_brt_fare(station_id1, station_id2, fare) values(
+                (select rowid from t_station where name=?1),
+                (select rowid from t_station where name=?2), ?3)
+        """,
+        [*same_staion(linitems[0].strip()), *same_staion(linitems[1].strip()), int(linitems[2]) ])
+
+        
 #------------------------------------------------------------------------------
     def reg_last_line(self):
         # 分岐特例
