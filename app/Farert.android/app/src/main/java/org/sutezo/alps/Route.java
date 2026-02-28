@@ -1174,7 +1174,7 @@ public class Route extends RouteList {
 
         /* 発駅 */
         lflg1 = AttrOfStationOnLineLine(line_id, stationId1);
-        if (BIT_CHK(lflg1, BSRNOTYET_NA)) {
+        if (BIT_CHK2(lflg1, BSRNOTYET_NA, BSRSHINKJCT)) {
             return -2;		/* 不正経路(line_idにstationId1は存在しない) */
         }
 
@@ -1190,7 +1190,7 @@ public class Route extends RouteList {
         ASSERT (BIT_CHK(lflg1, BSRJCTHORD) || route_list_raw.get(num - 1).stationId == stationId1);
 
         lflg2 = AttrOfStationOnLineLine(line_id, stationId2);
-        if (BIT_CHK(lflg2, BSRNOTYET_NA)) {
+        if (BIT_CHK2(lflg2, BSRNOTYET_NA, BSRSHINKJCT)) {
             return -2;		/* 不正経路(line_idにstationId2は存在しない) */
         }
 
@@ -1405,6 +1405,10 @@ public class Route extends RouteList {
                         is_no_station_id1_first_jct = 1;
                     }
                     if ((2 <= num) && (jctspdt.jctSpSubStationId_c == route_list_raw.get(num - 2).stationId)) {
+                        if (route_list_raw.get(num - 2).lineId == line_id) {
+                            System.out.println("JCT: A-C-1 error");
+                            return -1;
+                        }
                         removeTail();
                         System.out.println("JCT: A-C");		// 3, 4, 8, 9, g,h
                         --num;

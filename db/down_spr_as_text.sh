@@ -16,14 +16,16 @@ function usage() {
   exit 1
 }
 
-if [ "$#" -ne 4 ]; then
+#if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 1 ]; then
   usage
 fi
 
-DB1=$1
-DB2=$2
-DB3=$3
-DB4=$4
+#DB1=$1
+#DB2=$2
+#DB3=$3
+#DB4=$4
+DB=$1
 
 # book, url, sheet def.
 ### for public shared ### . SPREADSHEET.copy
@@ -97,8 +99,9 @@ function mktext() {
 }
 
 download_gspread fare2 rule86 rule70_new rule69 clinfar2014 lines2014 clinfar2015 clinfarNewest lines2015 lines2017 linesNewest brt
-mktext ${DB1} lines2014.tmp clinfar2014.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
-mktext ${DB2} lines2015.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
-mktext ${DB3} lines2017.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
-mktext ${DB4} linesNewest.tmp clinfarNewest.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp brt.tmp
+#mktext ${DB1} lines2014.tmp clinfar2014.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
+#mktext ${DB2} lines2015.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
+#mktext ${DB3} lines2017.tmp clinfar2015.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp
+#mktext ${DB4} linesNewest.tmp clinfarNewest.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp brt.tmp
+mktext ${DB} linesNewest.tmp clinfarNewest.tmp rule69.tmp rule70_new.tmp rule86.tmp fare2.tmp brt.tmp
 exit 0
