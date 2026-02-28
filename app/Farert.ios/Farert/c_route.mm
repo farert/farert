@@ -920,6 +920,9 @@ int g_tax; /* main.m */
 
     result.brtSalesKm = fi.getBRTSalesKm();
 
+    result.salesKmForEast = fi.getSalesKmForEast();
+    result.calcKmForEast = fi.getCalcKmForEast();
+
     result.salesKmForShikoku = fi.getSalesKmForShikoku();
     result.calcKmForShikoku = fi.getCalcKmForShikoku();
 
