@@ -163,7 +163,9 @@ std::string az_route::get_fare_info_object_json() {
                 oss << "},";
             }
             std::string str = oss.str();
-            str.pop_back(); // remove last comma
+            if (str.back() == ',') {
+                str.pop_back(); // remove last comma
+            }
             return str + json_encoder::end_array();
         }(),
         json_encoder::pair("isSpecificFare", route_flag.special_fare_enable),
@@ -174,6 +176,8 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("salesKmForHokkaido", fi.getSalesKmForHokkaido()),
         json_encoder::pair("calcKmForHokkaido", fi.getCalcKmForHokkaido()),
         json_encoder::pair("brtSalesKm", fi.getBRTSalesKm()),
+        json_encoder::pair("salesKmForEast", fi.getSalesKmForEast()),
+        json_encoder::pair("calcKmForEast", fi.getCalcKmForEast()),
         json_encoder::pair("salesKmForShikoku", fi.getSalesKmForShikoku()),
         json_encoder::pair("calcKmForShikoku", fi.getCalcKmForShikoku()),
         json_encoder::pair("salesKmForKyusyu", fi.getSalesKmForKyusyu()),
