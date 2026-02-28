@@ -5880,7 +5880,7 @@ int32_t  CalcRoute::ReRouteRule86j87j(PAIRIDENT cityId, int32_t mode, const Stat
     vector<Station> firstTransferStation;
     int32_t c;   // work counter
     int32_t n;   // work counter
-    int32_t i;
+    size_t i;
     int32_t bullet_use = 0;
     Station bullet_station;
 
@@ -9553,8 +9553,8 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 {
     int32_t fare_add;       /* 特別加算区間 */
     int32_t adjust_km;
-    const int SALES_KM = 0;
-    const int CALC_KM = 1;
+    constexpr int SALES_KM = 0;
+    constexpr int CALC_KM = 1;
 
     reset();
 
@@ -9585,7 +9585,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
         if (pRoute_flag->rule88 != 0) {
             // Rule88: Subtract distance (0, 38, or 76)
             // 大阪-新大阪間の距離を取得
-            auto osaka_shinosaka_km = []() -> int32_t {
+            auto osaka_shinosaka_km = [=]() -> int32_t {
                 static int32_t osaka_shinosaka_km_ = 0;
                 if (osaka_shinosaka_km_ == 0) {
                     osaka_shinosaka_km_ = RouteUtil::GetDistance(LINE_ID(_T("東海道線")),

@@ -13,6 +13,9 @@
 # bugfix/xxxxやhotfix/xxxx
 - バグ修正や緊急修正用の一時的なブランチを用途に応じて切る。
 
+# release/yy.mm.v
+
+- リリース準備
 
 main
  |
@@ -20,5 +23,6 @@ develop
  |
  |- feature/xxx
  |- bugfix/zzz
+ |- release/yyy 
  |- :
 

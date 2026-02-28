@@ -357,6 +357,10 @@ fun CalcRoute.calcFareInfo() : FareInfo
     /* 会社線有無はtotalSalesKm != jrSalesKm */
 
     result.companySalesKm = fi.companySalesKm
+
+    result.salesKmForEast = fi.salesKmForEast
+    result.calcKmForEast = fi.calcKmForEast
+
     result.salesKmForHokkaido = fi.salesKmForHokkaido
     result.calcKmForHokkaido = fi.calcKmForHokkaido
 
