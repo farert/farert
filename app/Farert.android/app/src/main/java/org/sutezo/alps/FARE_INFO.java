@@ -944,36 +944,46 @@ public class FARE_INFO {
                         RouteUtil.num_str_km(this.getSalesKmForEast())));
             }
         }
-        if (0 < this.getSalesKmForHokkaido()) {
+        if (0 < this.getSalesKmForEast()) {
+            if ((0 < this.getCalcKmForEast()) &&
+                    (this.getCalcKmForEast() != this.getSalesKmForEast())) {
+                buffer.append(String.format(Locale.JAPANESE, "JR東日本 営業キロ： %-6s km 計算キロ： %s km\r\n",
+                        RouteUtil.num_str_km(this.getSalesKmForEast()),
+                        RouteUtil.num_str_km(this.getCalcKmForEast())));
+            } else {
+                buffer.append(String.format(Locale.JAPANESE, "JR東日本 営業キロ： %-6s km\r\n",
+                        RouteUtil.num_str_km(this.getSalesKmForEast())));
+            }
+        }        if (0 < this.getSalesKmForHokkaido()) {
             if ((0 < this.getCalcKmForHokkaido()) &&
                     (this.getCalcKmForHokkaido() != this.getSalesKmForHokkaido())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR北海道 営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForHokkaido()),
                         RouteUtil.num_str_km(this.getCalcKmForHokkaido())));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR北海道 営業キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForHokkaido())));
             }
         }
         if (0 < this.getSalesKmForShikoku()) {
             if ((0 < this.getCalcKmForShikoku()) &&
                     (this.getSalesKmForShikoku() != this.getCalcKmForShikoku())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km 計算キロ： %s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR四国 営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForShikoku()),
                         RouteUtil.num_str_km(this.getCalcKmForShikoku())));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km \r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR四国 営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(this.getSalesKmForShikoku())));
             }
         }
         if (0 < this.getSalesKmForKyusyu()) {
             if ((0 < this.getCalcKmForKyusyu()) &&
                     (this.getSalesKmForKyusyu() != this.getCalcKmForKyusyu())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR九州 営業キロ： %-6s km  計算キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForKyusyu()),
                         RouteUtil.num_str_km(this.getCalcKmForKyusyu())));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km \r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR九州 営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(this.getSalesKmForKyusyu())));
             }
         }
