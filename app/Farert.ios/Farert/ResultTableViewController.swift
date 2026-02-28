@@ -726,6 +726,18 @@ class ResultTableViewController: UITableViewController, UIActionSheetDelegate, U
                              "subtitle" : (self.fareInfo.companySalesKm != 0) ? "計算キロ(JR)" : "計算キロ"]]
         }
 
+        if self.fareInfo.salesKmForEast != 0 {
+            if self.fareInfo.calcKmForEast == self.fareInfo.salesKmForEast {
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR東日本",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForEast)!)km"]]
+            } else {
+                contentsForKm += [["cell" : "rsKmCell2",
+                                   "title" : "JR東日本",
+                                   "value1" : "\(cRouteUtil.kmNumStr(self.fareInfo.salesKmForEast)!)km",
+                                   "value2" : "\(cRouteUtil.kmNumStr(self.fareInfo.calcKmForEast)!)km"]]
+            }
+        }
         if self.fareInfo.salesKmForHokkaido != 0 {
             if self.fareInfo.calcKmForHokkaido == self.fareInfo.salesKmForHokkaido {
                 contentsForKm += [["cell" : "rsKmCell2",

@@ -34,6 +34,9 @@ class FareInfo {
 /* 会社線有無はtotalSalesKm != jrSalesKm */
 
     var companySalesKm : Int = 0
+    var salesKmForEast : Int = 0
+    var calcKmForEast : Int = 0
+
     var salesKmForHokkaido : Int = 0
     var calcKmForHokkaido : Int = 0
 

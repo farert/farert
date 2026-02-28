@@ -369,6 +369,36 @@ private fun DistanceSection(fareInfo: org.sutezo.alps.FareInfo) {
                 }
             }
 
+            // JR東日本営業キロ表示
+            if (fareInfo.salesKmForEast > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.result_jrcompany_east),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.result_km,
+                            kmNumStr(fareInfo.salesKmForEast)
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (fareInfo.calcKmForEast > 0 && fareInfo.calcKmForEast != fareInfo.salesKmForEast) {
+                        Text(
+                            text = stringResource(
+                                R.string.result_km,
+                                kmNumStr(fareInfo.calcKmForEast)
+                            ),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
             // JR北海道営業キロ表示
             if (fareInfo.salesKmForHokkaido > 0) {
                 Spacer(modifier = Modifier.height(4.dp))

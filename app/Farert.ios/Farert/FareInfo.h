@@ -72,6 +72,9 @@
 
 @property (nonatomic) NSInteger brtSalesKm;
 
+@property (nonatomic) NSInteger salesKmForEast;
+@property (nonatomic) NSInteger calcKmForEast;
+
 @property (nonatomic) NSInteger salesKmForShikoku;
 @property (nonatomic) NSInteger calcKmForShikoku;
 
