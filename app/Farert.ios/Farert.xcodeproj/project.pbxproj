@@ -480,7 +480,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 86;
+				CURRENT_PROJECT_VERSION = 87;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
@@ -491,7 +491,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.03;
+				MARKETING_VERSION = 26.03.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = Farert;
 				PROVISIONING_PROFILE = "";
@@ -513,7 +513,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 86;
+				CURRENT_PROJECT_VERSION = 87;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
@@ -524,7 +524,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.03;
+				MARKETING_VERSION = 26.03.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "経路運賃営業キロ計算アプリ";
 				PROVISIONING_PROFILE = "";

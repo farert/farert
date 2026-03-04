@@ -9614,8 +9614,8 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                 this->sales_km, this->jr_sales_km[JR_WEST - 1][SALES_KM], this->jr_sales_km[JR_WEST - 1][CALC_KM]);
         }
     }
-
-    vector<PAIRIDENT> spcl_fare_and_companies = Check_jctspcl_fare(routeList);
+                                               // 2026.3.14 update remove rule160_5
+    vector<PAIRIDENT> spcl_fare_and_companies; // = Check_jctspcl_fare(routeList);
 
     pRoute_flag->rule160_4 = 0 < spcl_fare_and_companies.size();
 
@@ -9694,6 +9694,11 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                         }
                     }
                 }
+                pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
+            } else if (special_fare < 0) {
+                if (!pRoute_flag->no_rule && (companymask == (1 << (JR_CENTRAL - 1)))) {
+                    this->jr_fare = -special_fare;   // 東京 東海道新幹線 品川
+                } // otherwise JR-East
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
             } else {
                 /* JR東海バリアフリー運賃 +10 */
