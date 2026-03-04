@@ -9696,9 +9696,10 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                 }
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
             } else if (special_fare < 0) {
-                if (companymask == (1 << (JR_CENTRAL - 1))) {
+                if (!pRoute_flag->no_rule && (companymask == (1 << (JR_CENTRAL - 1)))) {
                     this->jr_fare = -special_fare;   // 東京 東海道新幹線 品川
                 } // otherwise JR-East
+                pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
             } else {
                 /* JR東海バリアフリー運賃 +10 */
                 if (URB_NAGOYA == URBAN_ID(this->flag)) {

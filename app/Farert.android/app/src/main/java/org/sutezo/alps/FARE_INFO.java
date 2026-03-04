@@ -1252,20 +1252,23 @@ public class FARE_INFO {
             this.jr_sales_km[JR_WEST - 1][SALES_KM] -= kmSubtract;
             this.jr_sales_km[JR_WEST - 1][CALC_KM] -= kmSubtract;
         }
-        List<int[]> spcl_fare_and_companies = Check_jctspcl_fare(routeList);
 
-        route_flag_.rule160_4 = !spcl_fare_and_companies.isEmpty();
+        // 2026.3.14 update remove rule160_5 >>>
+        //List<int[]> spcl_fare_and_companies;// = Check_jctspcl_fare(routeList);
 
-        if ((!route_flag_.no_rule) && !spcl_fare_and_companies.isEmpty())  {
-            // Rule160の4: Subtract duplicated distance for junction fare specific
-            for (int[] spcl_fare_compn : spcl_fare_and_companies) {
-                int spcl_company_id = spcl_fare_compn[1];
-                int spcl_sales_km = spcl_fare_compn[0];
-                this.sales_km -= spcl_sales_km;
-                this.jr_sales_km[spcl_company_id - 1][SALES_KM] -= spcl_sales_km;
-                this.jr_sales_km[spcl_company_id - 1][CALC_KM] -= spcl_sales_km;
-            }
-        }
+        //route_flag_.rule160_4 = !spcl_fare_and_companies.isEmpty();
+
+        //if ((!route_flag_.no_rule) && !spcl_fare_and_companies.isEmpty())  {
+        //    // Rule160の4: Subtract duplicated distance for junction fare specific
+        //    for (int[] spcl_fare_compn : spcl_fare_and_companies) {
+        //        int spcl_company_id = spcl_fare_compn[1];
+        //        int spcl_sales_km = spcl_fare_compn[0];
+        //        this.sales_km -= spcl_sales_km;
+        //        this.jr_sales_km[spcl_company_id - 1][SALES_KM] -= spcl_sales_km;
+        //        this.jr_sales_km[spcl_company_id - 1][CALC_KM] -= spcl_sales_km;
+        //    }
+        //}
+        // <<<
 
         /* 運賃計算 */
         calc_brt_fare(routeList);
@@ -1327,6 +1330,11 @@ public class FARE_INFO {
                             }
                         }
                     }
+                    route_flag_.special_fare_enable = true; // 私鉄競合区間特別運賃適用
+                } else if (special_fare < 0) {
+                    if (!route_flag_.no_rule && (companymask == (1 << (RouteUtil.JR_CENTRAL - 1)))) {
+                        this.jr_fare = -special_fare;   // 東京 東海道新幹線 品川
+                    } // otherwise JR-East
                     route_flag_.special_fare_enable = true; // 私鉄競合区間特別運賃適用
                 } else {
                     /* JR東海バリアフリー運賃 +10 */
