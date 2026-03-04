@@ -9615,7 +9615,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
         }
     }
 
-    vector<PAIRIDENT> spcl_fare_and_companies = Check_jctspcl_fare(routeList);
+    vector<PAIRIDENT> spcl_fare_and_companies; // = Check_jctspcl_fare(routeList);
 
     pRoute_flag->rule160_4 = 0 < spcl_fare_and_companies.size();
 
