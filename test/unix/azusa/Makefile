@@ -9,7 +9,7 @@ CXX = g++
 CXXFLAGS = -Wall -std=c++11 -I. -I../common -I../../../app/win_mfc/fjr_mfc/lib/db -I../../../app/alps
 LDLIBS = -lpthread -ldl
 
-all: farecli test_azusa
+all: farecli test_azusa fuzzsearch
 
 farecli: $(OBJS) farecli.o
 	$(CXX) -o $@ $^ $(LDLIBS)
@@ -17,9 +17,11 @@ farecli: $(OBJS) farecli.o
 test_azusa: $(OBJS) test_azusa.o
 	$(CXX) -o $@ $^ $(LDLIBS)
 
+fuzzsearch: $(OBJS) fuzzsearch.o
+	$(CXX) -o $@ $^ $(LDLIBS)
+
 test_azusa.o: test_azusa.cpp $(SRCS)
 	clang -c $(CXXFLAGS) -o $@ $<
 
 clean:
-	rm -f *.o farecli test_azusa
-
+	rm -f *.o farecli test_azusa fuzzsearch

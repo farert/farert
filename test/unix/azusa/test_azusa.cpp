@@ -114,6 +114,16 @@ int main() {
     std::string search_result = fare_ui::search_station_by_keyword("新宿");
     TEST_RESULT("search_station_by_keyword('新宿')", search_result);
 
+    // 4-8. 駅のあいまい検索
+    std::string fuzzy_result_ochanomizu = fare_ui::search_station_fuzzy("おち ゃの水", 20);
+    TEST_RESULT("search_station_fuzzy('おち ゃの水',20)", fuzzy_result_ochanomizu);
+
+    std::string fuzzy_result_ryugasaki = fare_ui::search_station_fuzzy("竜が崎", 20);
+    TEST_RESULT("search_station_fuzzy('竜が崎',20)", fuzzy_result_ryugasaki);
+
+    std::string fuzzy_result_yokokawa = fare_ui::search_station_fuzzy("横川(陽)", 20);
+    TEST_RESULT("search_station_fuzzy('横川(陽)',20)", fuzzy_result_yokokawa);
+
     // ========================================
     // 5. az_route - 基本的な経路作成
     // ========================================

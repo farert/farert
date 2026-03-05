@@ -88,6 +88,8 @@ namespace fare_ui {
 
     // 検索
     std::string search_station_by_keyword(std::string key);
+    // あいまい検索
+    std::string search_station_fuzzy(std::string key, int limit = 50);
 
     // 指定した駅も含め路線の分岐駅一覧を返す)
     std::string get_branch_stations_by_line(std::string line_name, std::string station_name);
