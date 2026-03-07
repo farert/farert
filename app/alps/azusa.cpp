@@ -381,19 +381,21 @@ std::string az_route::get_fare_info_object_json() {
     if ((rc != 0) && (rc != -1)) {
         return std::string("{ \"fareResultCode\": -2 }"); // -2: empty or -3: fail
     }
+    const RouteFlag& refRouteFlag = crt.getRouteFlag();
+
     auto fields = {
         json_encoder::pair("fareResultCode",rc == 0 ? 0 : 1), /* 0: success, 1: KOKURA-pending */
-        json_encoder::pair("isMeihanCityStartTerminalEnable", route_flag.isMeihanCityEnable()),
-        json_encoder::pair("isMeihanCityStart", route_flag.isStartAsCity()),
-        json_encoder::pair("isMeihanCityTerminal", route_flag.isArriveAsCity()),
-        json_encoder::pair("isRuleAppliedEnable", route_flag.rule_en()),
-        json_encoder::pair("isRuleApplied", !route_flag.no_rule),
-        json_encoder::pair("isJRCentralStockEnable", route_flag.jrtokaistock_enable),
-        json_encoder::pair("isJRCentralStock", route_flag.jrtokaistock_applied),
-        json_encoder::pair("isEnableLongRoute", route_flag.isEnableLongRoute()),
-        json_encoder::pair("isLongRoute", route_flag.isLongRoute()),
-        json_encoder::pair("isRule115specificTerm", route_flag.isRule115specificTerm()),
-        json_encoder::pair("isEnableRule115", route_flag.isEnableRule115()),
+        json_encoder::pair("isMeihanCityStartTerminalEnable", refRouteFlag.isMeihanCityEnable()),
+        json_encoder::pair("isMeihanCityStart", refRouteFlag.isStartAsCity()),
+        json_encoder::pair("isMeihanCityTerminal", refRouteFlag.isArriveAsCity()),
+        json_encoder::pair("isRuleAppliedEnable", refRouteFlag.rule_en()),
+        json_encoder::pair("isRuleApplied", !refRouteFlag.no_rule),
+        json_encoder::pair("isJRCentralStockEnable", refRouteFlag.jrtokaistock_enable),
+        json_encoder::pair("isJRCentralStock", refRouteFlag.jrtokaistock_applied),
+        json_encoder::pair("isEnableLongRoute", refRouteFlag.isEnableLongRoute()),
+        json_encoder::pair("isLongRoute", refRouteFlag.isLongRoute()),
+        json_encoder::pair("isRule115specificTerm", refRouteFlag.isRule115specificTerm()),
+        json_encoder::pair("isEnableRule115", refRouteFlag.isEnableRule115()),
         json_encoder::pair("isResultCompanyBeginEnd", fi.isBeginEndCompanyLine()),
         json_encoder::pair("isResultCompanyMultipassed", fi.isMultiCompanyLine()),
         json_encoder::pair("isEnableTokaiStockSelect", fi.isEnableTokaiStockSelect()),
@@ -421,8 +423,8 @@ std::string az_route::get_fare_info_object_json() {
                 oss << "{";
                 if (fi.isRule114()) {
                     oss << json_encoder::pair("rule114StockFare", 
-                            fi.getFareStockDiscount(i, dummy, true)
-                        + fi.getFareForCompanyline());
+                            fi.getFareStockDiscount(i, dummy, true));
+                    oss << ",";
                 }
                 oss << json_encoder::pair("stockDiscountFare",
                         (fareStock + fi.getFareForCompanyline()));
@@ -436,7 +438,7 @@ std::string az_route::get_fare_info_object_json() {
             }
             return str + json_encoder::end_array();
         }(),
-        json_encoder::pair("isSpecificFare", route_flag.special_fare_enable),
+        json_encoder::pair("isSpecificFare", refRouteFlag.special_fare_enable),
         json_encoder::pair("totalSalesKm", fi.getTotalSalesKm()),
         json_encoder::pair("jrCalcKm", fi.getJRCalcKm()),
         json_encoder::pair("jrSalesKm", fi.getJRSalesKm()),
@@ -450,7 +452,7 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("calcKmForShikoku", fi.getCalcKmForShikoku()),
         json_encoder::pair("salesKmForKyusyu", fi.getSalesKmForKyusyu()),
         json_encoder::pair("calcKmForKyusyu", fi.getCalcKmForKyusyu()),
-        json_encoder::pair("isRoundtrip", route_flag.isRoundTrip()),
+        json_encoder::pair("isRoundtrip", refRouteFlag.isRoundTrip()),
         json_encoder::pair("isRoundtripDiscount", fi.isRoundTripDiscount()),
         json_encoder::pair("fareForCompanyline", fi.getFareForCompanyline()),
         json_encoder::pair("fare", fi.getFareForDisplay()),
@@ -461,6 +463,7 @@ std::string az_route::get_fare_info_object_json() {
         [&]() -> std::string {
             if (fi.isRule114()) {
                 return json_encoder::pair("roundTripFareWithCompanyLinePriorRule114", fi.roundTripFareWithCompanyLinePriorRule114())
+                + ","
                 + json_encoder::pair("fareForIC", fi.getFareForIC());
             }
             return json_encoder::pair("fareForIC", fi.getFareForIC());
@@ -487,23 +490,23 @@ std::string az_route::get_fare_info_object_json() {
 
         // UI結果オプションメニュー
         json_encoder::pair("isFareOptEnabled", 
-                                 route_flag.rule_en()
-                              || route_flag.jrtokaistock_enable
-                              || route_flag.isEnableRule115()
-                              || route_flag.isEnableLongRoute()
-                              || route_flag.special_fare_enable),
+                                 refRouteFlag.rule_en()
+                              || refRouteFlag.jrtokaistock_enable
+                              || refRouteFlag.isEnableRule115()
+                              || refRouteFlag.isEnableLongRoute()
+                              || refRouteFlag.special_fare_enable),
         [&]() -> std::string {
             std::ostringstream oss;
 
             oss << json_encoder::begin_array("messages");
             
-            if (route_flag.no_rule &&
-                    fi.isUrbanArea() && !route_flag.isUseBullet()) {
+            if (refRouteFlag.no_rule &&
+                    fi.isUrbanArea() && !refRouteFlag.isUseBullet()) {
                 if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                     // messages.add(msgCantMetroTicket)
-                } else if (!route_flag.isEnableRule115()
-                        || !route_flag.isRule115specificTerm()) {
-                    if (route_flag.isLongRoute()) {
+                } else if (!refRouteFlag.isEnableRule115()
+                        || !refRouteFlag.isRule115specificTerm()) {
+                    if (refRouteFlag.isLongRoute()) {
                         oss << json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です");
                     } else {
                         oss << json_encoder::value("近郊区間内ですので最安運賃の経路で計算");
@@ -511,8 +514,8 @@ std::string az_route::get_fare_info_object_json() {
                 }
 
                 // 大回り指定では115適用はみない
-                if (route_flag.isEnableRule115() && !route_flag.isEnableLongRoute()) {
-                    if (route_flag.isRule115specificTerm()) {
+                if (refRouteFlag.isEnableRule115() && !refRouteFlag.isEnableLongRoute()) {
+                    if (refRouteFlag.isRule115specificTerm()) {
                         oss << json_encoder::value("「単駅最安」で単駅発着が選択可能です");
                     } else {
                         oss << json_encoder::value("「特定都区市内発着」で特定都区市内発着が選択可能です");
@@ -521,7 +524,7 @@ std::string az_route::get_fare_info_object_json() {
             }
 
             // 私鉄競合特例運賃(大都市近郊区間)
-            if (route_flag.special_fare_enable) {
+            if (refRouteFlag.special_fare_enable) {
                 oss << json_encoder::value("特定区間割引運賃適用");
             }
 
@@ -539,42 +542,37 @@ std::string az_route::get_fare_info_object_json() {
                 oss << json_encoder::value("BRT乗り継ぎ割引適用");
             }
 
-            if (route_flag.no_rule && route_flag.special_fare_enable) {
+            if (refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
                 oss << json_encoder::value("特定区間割引運賃を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule86()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule86()) {
                 oss << json_encoder::value("旅客営業規則第86条を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule87()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule87()) {
                 oss << json_encoder::value("旅客営業規則第87条を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule88()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule88()) {
                 oss << json_encoder::value("旅客営業規則第88条を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule160_4()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule160_4()) {
                 oss << json_encoder::value("旅客営業規則第160条第4項を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule69()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
                 oss << json_encoder::value("旅客営業規則第69条を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule70()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule70()) {
                 oss << json_encoder::value("旅客営業規則第70条を適用していません");
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule115()) {
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule115()) {
                 oss << json_encoder::value("旅客営業取扱基準規程第115条を適用していません");
             }
-            if (route_flag.isAvailableRule16_5()) {
+            if (refRouteFlag.isAvailableRule16_5()) {
                 oss << json_encoder::value("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
             }
             if (fi.isRule114()) {
-                oss << json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:") << 
-                [&]() -> std::string {
-                    std::ostringstream oss;
-                    oss << json_encoder::value(fi.getRule114apply_terminal_station());
-                    return oss.str();
-                }();
+                oss << json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:" + fi.getRule114apply_terminal_station());
             }
-            if (route_flag.compnterm) {
+            if (refRouteFlag.compnterm) {
                 oss << json_encoder::value("この経路の会社線通過連絡は許可されていません.");
             }
             oss << json_encoder::end_array();
