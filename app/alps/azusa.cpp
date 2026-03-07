@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include <alpdb.h>
 #include <sstream>
+#include <vector>
+#include <unordered_set>
+#include <utility>
 #include <azusa.h>
 
 #if 0
@@ -42,6 +45,271 @@ Copyright (C) 2025 Sutezo (sutezo666@gmail.com)
 
 static int get_prefect_id(std::string prefecture);
 static int get_company_id(std::string company);
+
+namespace {
+struct StationCandidate {
+    std::string name;
+    std::string kana;
+    std::vector<std::string> samename;
+    int score = 99;
+    std::string matchedBy = "name";
+};
+
+static void replace_all(std::string& text, const std::string& from, const std::string& to)
+{
+    if (from.empty()) return;
+    std::size_t start = 0;
+    while ((start = text.find(from, start)) != std::string::npos) {
+        text.replace(start, from.length(), to);
+        start += to.length();
+    }
+}
+
+static std::size_t utf8_char_length(unsigned char lead)
+{
+    if ((lead & 0x80) == 0x00) return 1;
+    if ((lead & 0xE0) == 0xC0) return 2;
+    if ((lead & 0xF0) == 0xE0) return 3;
+    if ((lead & 0xF8) == 0xF0) return 4;
+    return 1;
+}
+
+static std::string extract_kana_only(const std::string& text)
+{
+    std::string out;
+    for (std::size_t i = 0; i < text.size();) {
+        const std::size_t cs = utf8_char_length(static_cast<unsigned char>(text[i]));
+        if (i + cs > text.size()) break;
+        const std::string token = text.substr(i, cs);
+        if (isKanaString(token.c_str())) {
+            out += token;
+        }
+        i += cs;
+    }
+    if (!out.empty()) {
+        conv_to_kana2hira(out);
+    }
+    return out;
+}
+
+static std::string tail_utf8_chars(const std::string& text, std::size_t char_count)
+{
+    if (text.empty() || char_count == 0) return "";
+    std::vector<std::size_t> starts;
+    for (std::size_t i = 0; i < text.size();) {
+        starts.push_back(i);
+        const std::size_t cs = utf8_char_length(static_cast<unsigned char>(text[i]));
+        if (cs == 0) break;
+        i += cs;
+    }
+    if (starts.empty()) return "";
+    const std::size_t begin_index = (starts.size() > char_count) ? starts[starts.size() - char_count] : 0;
+    return text.substr(begin_index);
+}
+
+// 仮実装: UTF-8完全正規化は行わず、主要な表記ゆれのみ吸収する
+static std::string normalize_station_token(std::string text)
+{
+    // 空白・改行
+    replace_all(text, " ", "");
+    replace_all(text, "\t", "");
+    replace_all(text, "\r", "");
+    replace_all(text, "\n", "");
+    replace_all(text, "　", "");
+
+    // 括弧・中点・長音などの記号ゆれ
+    replace_all(text, "（", "(");
+    replace_all(text, "）", ")");
+    replace_all(text, "・", "");
+    replace_all(text, "ｰ", "");
+    replace_all(text, "ー", "");
+    replace_all(text, "-", "");
+    replace_all(text, "−", "");
+
+    // カタカナ/ひらがなの主要ゆれ（仮実装）
+    replace_all(text, "カ", "か");
+    replace_all(text, "ガ", "が");
+    replace_all(text, "ケ", "け");
+    replace_all(text, "ゲ", "げ");
+    replace_all(text, "ツ", "つ");
+    replace_all(text, "ッ", "つ");
+    replace_all(text, "ノ", "の");
+    replace_all(text, "ヂ", "じ");
+    replace_all(text, "ヅ", "ず");
+
+    // かな表記ゆれ
+    replace_all(text, "ぢ", "じ");
+    replace_all(text, "づ", "ず");
+    replace_all(text, "ゔ", "う");
+
+    // 漢字・異体字ゆれ
+    replace_all(text, "ノ", "の");
+    replace_all(text, "之", "の");
+    replace_all(text, "ヶ", "が");
+    replace_all(text, "ケ", "が");
+    replace_all(text, "け", "が");
+    replace_all(text, "龍", "竜");
+    replace_all(text, "總", "総");
+    replace_all(text, "澤", "沢");
+    replace_all(text, "齊", "斉");
+    replace_all(text, "斎", "斉");
+    replace_all(text, "亘", "渡");
+    replace_all(text, "﨑", "崎");
+    replace_all(text, "嵜", "崎");
+    return text;
+}
+
+static std::vector<std::string> split_samename(const std::string& samename)
+{
+    std::vector<std::string> result;
+    if (samename.empty()) return result;
+    std::string normalized = samename;
+    replace_all(normalized, "、", ",");
+    replace_all(normalized, "，", ",");
+    replace_all(normalized, "；", ";");
+    replace_all(normalized, "｜", "|");
+    std::string token;
+    auto push_token = [&]() {
+        if (!token.empty()) {
+            result.push_back(token);
+            token.clear();
+        }
+    };
+    for (std::size_t i = 0; i < normalized.size(); i++) {
+        const char c = normalized[i];
+        if (c == ',' || c == ';' || c == '|') {
+            push_token();
+            continue;
+        }
+        token.push_back(c);
+    }
+    push_token();
+    if (result.empty()) {
+        result.push_back(normalized);
+    }
+    return result;
+}
+
+static void append_keyword_match_candidates(
+    std::vector<StationCandidate>& candidates,
+    const std::string& keyword,
+    int score,
+    const std::string& matchedBy)
+{
+    if (keyword.empty()) return;
+    DBO dbo = RouteUtil::Enum_station_match(keyword.c_str());
+    if (!dbo.isvalid()) return;
+
+    while (dbo.moveNext()) {
+        const std::string name = dbo.getText(0);
+        if (name.empty()) continue;
+        const std::string samename = dbo.getText(2);
+
+        StationCandidate item;
+        item.name = name;
+        item.kana = RouteUtil::GetKanaFromStationId(RouteUtil::GetStationId(name.c_str()));
+        item.samename = split_samename(samename);
+        item.score = score;
+        item.matchedBy = matchedBy;
+        candidates.push_back(item);
+    }
+}
+
+static void append_kana_suffix_candidates(
+    std::vector<StationCandidate>& candidates,
+    const std::string& key,
+    int score,
+    const std::string& matchedBy)
+{
+    const std::string kanaOnly = extract_kana_only(normalize_station_token(key));
+    // 2文字以上のかなが取れるときだけ末尾一致を試す
+    const std::string suffix = tail_utf8_chars(kanaOnly, 2);
+    if (suffix.empty() || suffix == kanaOnly) return;
+
+    static const char tsql[] = "select name,kana,samename from t_station where kana like ? order by kana";
+    DBO dbo = DBS::getInstance()->compileSql(tsql, false);
+    if (!dbo.isvalid()) return;
+
+    const std::string likeParam = "%" + suffix + "%";
+    dbo.setParam(1, likeParam.c_str());
+
+    while (dbo.moveNext()) {
+        const std::string name = dbo.getText(0);
+        if (name.empty()) continue;
+        StationCandidate item;
+        item.name = name;
+        item.kana = dbo.getText(1);
+        item.samename = split_samename(dbo.getText(2));
+        item.score = score;
+        // 「◯ノ巣/◯の巣」の駅を優先（例: 鳩ノ巣）
+        if (name.find("ノ巣") != std::string::npos || name.find("の巣") != std::string::npos) {
+            item.score = std::max(0, score - 1);
+        }
+        item.matchedBy = matchedBy;
+        candidates.push_back(item);
+    }
+}
+
+static int score_station_candidate(
+    const std::string& normalizedKey,
+    const std::string& name,
+    const std::string& kana,
+    const std::vector<std::string>& sameNames,
+    std::string& matchedBy)
+{
+    const std::string normalizedName = normalize_station_token(name);
+    const std::string normalizedKana = normalize_station_token(kana);
+    const std::string kanaOnlyKey = extract_kana_only(normalizedKey);
+    const std::string kanaOnlyStation = extract_kana_only(normalizedKana);
+    if (!normalizedKey.empty()) {
+        if (normalizedName == normalizedKey) {
+            matchedBy = "name";
+            return 0;
+        }
+        if (normalizedName.find(normalizedKey) == 0) {
+            matchedBy = "name";
+            return 1;
+        }
+        if (normalizedName.find(normalizedKey) != std::string::npos) {
+            matchedBy = "name";
+            return 2;
+        }
+        if (!normalizedKana.empty()) {
+            if (normalizedKana.find(normalizedKey) == 0) {
+                matchedBy = "kana";
+                return 3;
+            }
+            if (normalizedKana.find(normalizedKey) != std::string::npos) {
+                matchedBy = "kana";
+                return 4;
+            }
+        }
+        // ひらがな部分のみでの照合（例: おちゃの水 -> おちゃの）
+        if (kanaOnlyKey.size() >= 6 && !kanaOnlyStation.empty()) {
+            if (kanaOnlyStation.find(kanaOnlyKey) == 0) {
+                matchedBy = "kana";
+                return 7;
+            }
+            if (kanaOnlyStation.find(kanaOnlyKey) != std::string::npos) {
+                matchedBy = "kana";
+                return 8;
+            }
+        }
+        for (const auto& alias : sameNames) {
+            const std::string normalizedAlias = normalize_station_token(alias);
+            if (normalizedAlias.find(normalizedKey) == 0) {
+                matchedBy = "samename";
+                return 5;
+            }
+            if (normalizedAlias.find(normalizedKey) != std::string::npos) {
+                matchedBy = "samename";
+                return 6;
+            }
+        }
+    }
+    return 99;
+}
+} // namespace
 
 
 // open database
@@ -701,6 +969,84 @@ std::string fare_ui::search_station_by_keyword(std::string key)
     return "";
 }
 
+// あいまい検索（仮実装）
+std::string fare_ui::search_station_fuzzy(std::string key, int limit)
+{
+    std::vector<StationCandidate> candidates;
+    if (limit <= 0) {
+        limit = 50;
+    } else if (limit > 200) {
+        limit = 200;
+    }
+    const std::string normalizedKey = normalize_station_token(key);
+
+    DBO dbo = DBS::getInstance()->compileSql("select name,kana,samename from t_station");
+    if (!dbo.isvalid()) {
+        return "{\"results\":[]}";
+    }
+
+    while (dbo.moveNext()) {
+        const std::string name = dbo.getText(0);
+        const std::string kana = dbo.getText(1);
+        const std::string samename = dbo.getText(2);
+        const std::vector<std::string> aliases = split_samename(samename);
+
+        std::string matchedBy = "name";
+        const int score = score_station_candidate(normalizedKey, name, kana, aliases, matchedBy);
+        if (score >= 99) {
+            continue;
+        }
+
+        StationCandidate item;
+        item.name = name;
+        item.kana = kana;
+        item.samename = aliases;
+        item.score = score;
+        item.matchedBy = matchedBy;
+        candidates.push_back(item);
+    }
+
+    // 補助: 既存の駅名検索（name/kana prefix）で候補を追加
+    append_keyword_match_candidates(candidates, key, 10, "keyword");
+    if (normalizedKey != key) {
+        append_keyword_match_candidates(candidates, normalizedKey, 11, "keyword");
+    }
+    append_kana_suffix_candidates(candidates, key, 12, "kana_suffix");
+
+    std::sort(candidates.begin(), candidates.end(), [](const StationCandidate& a, const StationCandidate& b) {
+        if (a.score != b.score) return a.score < b.score;
+        return a.name < b.name;
+    });
+
+    std::unordered_set<std::string> seen;
+    std::ostringstream oss;
+    oss << "{" << json_encoder::begin_array("results");
+    int out = 0;
+    for (const auto& candidate : candidates) {
+        if (out >= limit) break;
+        if (candidate.name.empty()) continue;
+        if (!seen.insert(candidate.name).second) continue;
+        if (out++ > 0) {
+            oss << ",";
+        }
+        oss << "{"
+            << json_encoder::pair("name", candidate.name) << ","
+            << json_encoder::pair("kana", candidate.kana) << ","
+            << json_encoder::pair("score", candidate.score) << ","
+            << json_encoder::pair("matchedBy", candidate.matchedBy) << ","
+            << json_encoder::begin_array("samename");
+        for (std::size_t i = 0; i < candidate.samename.size(); i++) {
+            if (i > 0) {
+                oss << ",";
+            }
+            oss << json_encoder::value(candidate.samename[i]);
+        }
+        oss << json_encoder::end_array() << "}";
+    }
+    oss << json_encoder::end_array() << "}";
+    return oss.str();
+}
+
 // 指定した駅も含め路線の分岐駅一覧を返す)
 std::string fare_ui::get_branch_stations_by_line(std::string line_name, std::string station_name)
 {
@@ -824,4 +1170,3 @@ std::string dev::execute_sql(const std::string& sql)
     oss << "],\"rowCount\":" << rowNum << "}";
     return oss.str();
 }
-
