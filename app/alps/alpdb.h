@@ -375,7 +375,7 @@ public:
     void setAnotherRouteFlag(const RouteFlag& other) {
         *this = other;
     }
-    bool rule_en() {
+    bool rule_en() const {
         return (0x3f & rule86or87) ||
                rule88 ||
                rule160_4 ||
