@@ -383,6 +383,18 @@ std::string az_route::get_fare_info_object_json() {
     }
     const RouteFlag& refRouteFlag = crt.getRouteFlag();
 
+    auto jsjoin = [&](const std::vector<std::string>& items) -> std::string {
+        std::ostringstream oss;
+        int i = 0;
+        for (auto& item : items) {
+            if (0 < i) {
+                oss << ",";
+            }
+            oss << item;
+            i++;
+        }
+        return oss.str();
+    };
     auto fields = {
         json_encoder::pair("fareResultCode",rc == 0 ? 0 : 1), /* 0: success, 1: KOKURA-pending */
         json_encoder::pair("isMeihanCityStartTerminalEnable", refRouteFlag.isMeihanCityEnable()),
@@ -497,7 +509,7 @@ std::string az_route::get_fare_info_object_json() {
                               || refRouteFlag.special_fare_enable),
         [&]() -> std::string {
             std::ostringstream oss;
-
+            std::vector<std::string> messages;
             oss << json_encoder::begin_array("messages");
             
             if (refRouteFlag.no_rule &&
@@ -507,74 +519,75 @@ std::string az_route::get_fare_info_object_json() {
                 } else if (!refRouteFlag.isEnableRule115()
                         || !refRouteFlag.isRule115specificTerm()) {
                     if (refRouteFlag.isLongRoute()) {
-                        oss << json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です");
+                        messages.push_back(json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です"));
                     } else {
-                        oss << json_encoder::value("近郊区間内ですので最安運賃の経路で計算");
+                        messages.push_back(json_encoder::value("近郊区間内ですので最安運賃の経路で計算"));
                     }
                 }
 
                 // 大回り指定では115適用はみない
                 if (refRouteFlag.isEnableRule115() && !refRouteFlag.isEnableLongRoute()) {
                     if (refRouteFlag.isRule115specificTerm()) {
-                        oss << json_encoder::value("「単駅最安」で単駅発着が選択可能です");
+                        messages.push_back(json_encoder::value("「単駅最安」で単駅発着が選択可能です"));
                     } else {
-                        oss << json_encoder::value("「特定都区市内発着」で特定都区市内発着が選択可能です");
+                        messages.push_back(json_encoder::value("「特定都区市内発着」で特定都区市内発着が選択可能です"));
                     }
                 }
             }
 
             // 私鉄競合特例運賃(大都市近郊区間)
-            if (refRouteFlag.special_fare_enable) {
-                oss << json_encoder::value("特定区間割引運賃適用");
+            if (!refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
+                messages.push_back(json_encoder::value("特定区間割引運賃適用"));
             }
 
             if (fi.isBeginEndCompanyLine()) {
-                oss << json_encoder::value("会社線発着のため一枚の乗車券として発行されない場合があります.");
+                messages.push_back(json_encoder::value("会社線発着のため一枚の乗車券として発行されない場合があります."));
             }
             if (fi.isMultiCompanyLine()) {
                 /* 2017.3 以降 ここに来ることはない */
-                oss << json_encoder::value("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.");
+                messages.push_back(json_encoder::value("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります."));
             }
             if (fi.isEnableTokaiStockSelect()) {
-                oss << json_encoder::value("JR東海株主優待券使用オプション選択可");
+                messages.push_back(json_encoder::value("JR東海株主優待券使用オプション選択可"));
             }
             if (fi.getIsBRT_discount()) {
-                oss << json_encoder::value("BRT乗り継ぎ割引適用");
+                messages.push_back(json_encoder::value("BRT乗り継ぎ割引適用"));
             }
 
             if (refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
-                oss << json_encoder::value("特定区間割引運賃を適用していません");
+                messages.push_back(json_encoder::value("特定区間割引運賃を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule86()) {
-                oss << json_encoder::value("旅客営業規則第86条を適用していません");
+                messages.push_back(json_encoder::value("旅客営業規則第86条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule87()) {
-                oss << json_encoder::value("旅客営業規則第87条を適用していません");
+                messages.push_back(json_encoder::value("旅客営業規則第87条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule88()) {
-                oss << json_encoder::value("旅客営業規則第88条を適用していません");
+                messages.push_back(json_encoder::value("旅客営業規則第88条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule160_4()) {
-                oss << json_encoder::value("旅客営業規則第160条第4項を適用していません");
+                messages.push_back(json_encoder::value("旅客営業規則第160条第4項を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
-                oss << json_encoder::value("旅客営業規則第69条を適用していません");
+                messages.push_back(json_encoder::value("旅客営業規則第69条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule70()) {
-                oss << json_encoder::value("旅客営業規則第70条を適用していません");
+                messages.push_back(json_encoder::value("旅客営業規則第70条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule115()) {
-                oss << json_encoder::value("旅客営業取扱基準規程第115条を適用していません");
+                messages.push_back(json_encoder::value("旅客営業取扱基準規程第115条を適用していません"));
             }
             if (refRouteFlag.isAvailableRule16_5()) {
-                oss << json_encoder::value("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+                messages.push_back(json_encoder::value("この乗車券はJRで発券されません. 東京メトロでのみ発券されます"));
             }
             if (fi.isRule114()) {
-                oss << json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:" + fi.getRule114apply_terminal_station());
+                messages.push_back(json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:" + fi.getRule114apply_terminal_station()));
             }
             if (refRouteFlag.compnterm) {
-                oss << json_encoder::value("この経路の会社線通過連絡は許可されていません.");
+                messages.push_back(json_encoder::value("この経路の会社線通過連絡は許可されていません."));
             }
+            oss << jsjoin(messages);
             oss << json_encoder::end_array();
             return oss.str();
         }(),
@@ -582,14 +595,7 @@ std::string az_route::get_fare_info_object_json() {
 
     std::ostringstream oss;
     oss << "{";
-    int i = 0;
-    for (auto& field : fields) {
-        if (0 < i) {
-            oss << ",";
-        }
-        oss << field;
-        i++;
-    }
+    oss << jsjoin(fields);
     oss << "}";
     return oss.str();
 }
