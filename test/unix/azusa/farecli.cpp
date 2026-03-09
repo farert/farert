@@ -132,7 +132,11 @@ bool build_route_from_tokens(az_route& route, const std::vector<std::string>& to
         }
     } else {
         if (json_mode) {
-            std::cout << "{" << json_encoder::pair("line", line) << json_encoder::pair("staion", station) << std::endl;
+            std::cout << "{"
+                      << json_encoder::pair("line", line) << ","
+                      << json_encoder::pair("station", station)
+                      << ",\"result\":false}"
+                      << std::endl;
         } else {
             std::cout << "Fail: " << result << std::endl;
             std::cout << "      " << line << "-" << station << std::endl;

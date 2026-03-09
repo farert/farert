@@ -325,14 +325,14 @@ std::string open_database()
 
 	if (!dbpath) {
 		fprintf(stderr, "Should be set environment variable the 'farertDB' for use database.\n");
-		return "{ \"result\": false, \"reson\": \"farertDB environment variable not set.\" }";
+		return "{ \"result\": false, \"reason\": \"farertDB environment variable not set.\" }";
 	}
 #endif
     if (DBS::getInstance()->open(dbpath) && RouteUtil::DbVer(&dbsys)) {
         return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
          + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
     } else {
-        return "{ \"result\": false, \"reson\": \"failued to open database.\" }";
+        return "{ \"result\": false, \"reason\": \"failed to open database.\" }";
     }
 }
 
@@ -351,7 +351,7 @@ std::string database_info()
         return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
          + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
     } else {
-        return "{ \"result\": false, \"reson\": \"failued to open database.\" }";
+        return "{ \"result\": false, \"reason\": \"failed to open database.\" }";
     }
 }
 
@@ -373,8 +373,6 @@ std::string az_route::show_fare()
 // 
 std::string az_route::get_fare_info_object_json() {
     FARE_INFO fi;
-    std::ostringstream message;
-
     CalcRoute crt(*this);
     crt.calcFare(&fi);
     int rc = fi.resultCode();
@@ -655,7 +653,7 @@ std::string az_route::get_routes_json()
             << " }";
     }
     oss << json_encoder::end_array();
-    return "";
+    return oss.str();
 }
 
 // get route record at index
@@ -821,7 +819,7 @@ std::string fare_ui::get_lines_by_prefect(std::string prefecture)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // JRグループの路線一覧を配列で返す
@@ -848,8 +846,8 @@ std::string fare_ui::get_lines_by_company(std::string jrgroup)
         }
         oss << json_encoder::end_array() << "}";
         return oss.str();
-    }
-    return "";
+	}
+    return "{}";
 }
 
 // 駅の所属路線を返す
@@ -877,7 +875,7 @@ std::string fare_ui::get_lines_by_station(std::string station)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 
@@ -907,7 +905,7 @@ std::string fare_ui::get_stations_by_company_and_line(std::string jrgroup, std::
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 
@@ -937,7 +935,7 @@ std::string fare_ui::get_stations_by_prefecture_and_line(std::string prefecture,
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // 駅のある都道府県
@@ -970,7 +968,7 @@ std::string fare_ui::search_station_by_keyword(std::string key)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // あいまい検索（仮実装）
@@ -1076,7 +1074,7 @@ std::string fare_ui::get_branch_stations_by_line(std::string line_name, std::str
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // 路線の全駅一覧を返す
@@ -1103,7 +1101,7 @@ std::string fare_ui::get_stations_by_line(std::string line_name)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // 駅名のかなを得る

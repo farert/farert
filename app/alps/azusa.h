@@ -110,12 +110,50 @@ namespace dev {
 
 namespace json_encoder {
 
+    inline std::string escape_json_string(const std::string& value)
+    {
+        static const char* hex = "0123456789abcdef";
+        std::ostringstream oss;
+        for (unsigned char c : value) {
+            switch (c) {
+            case '"':
+                oss << "\\\"";
+                break;
+            case '\\':
+                oss << "\\\\";
+                break;
+            case '\b':
+                oss << "\\b";
+                break;
+            case '\f':
+                oss << "\\f";
+                break;
+            case '\n':
+                oss << "\\n";
+                break;
+            case '\r':
+                oss << "\\r";
+                break;
+            case '\t':
+                oss << "\\t";
+                break;
+            default:
+                if (c < 0x20) {
+                    oss << "\\u00" << hex[(c >> 4)] << hex[(c & 0x0f)];
+                } else {
+                    oss << static_cast<char>(c);
+                }
+            }
+        }
+        return oss.str();
+    }
+
     // string
     inline std::string pair(const std::string& key, const std::string& value, bool quote = true) {
         std::ostringstream oss;
         oss << "\"" << key << "\":";
         if (quote) {
-            oss << "\"" << value << "\"";
+            oss << "\"" << escape_json_string(value) << "\"";
         } else {
             oss << value;
         }
@@ -150,7 +188,7 @@ namespace json_encoder {
         return "]";
     }
     inline std::string value(const std::string & value) {
-        return "\"" + value + "\"";
+        return "\"" + escape_json_string(value) + "\"";
     }
 }
 
