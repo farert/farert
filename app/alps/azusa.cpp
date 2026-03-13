@@ -154,8 +154,10 @@ static std::string normalize_station_token(std::string text)
     replace_all(text, "齊", "斉");
     replace_all(text, "斎", "斉");
     replace_all(text, "亘", "渡");
+    replace_all(text, "冨", "富");
     replace_all(text, "﨑", "崎");
     replace_all(text, "嵜", "崎");
+    replace_all(text, "溪", "渓");
     return text;
 }
 
