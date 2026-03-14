@@ -8831,6 +8831,7 @@ int32_t     FARE_INFO::getFareForIC() const
  *                          駅2が境界駅なら-1を返す, 境界駅が駅1～駅2間になければ、Noneを返す
  *  @return vector<int32_t> [4] IDENT1(駅1の会社ID) + IDENT2(駅2の会社ID)
  *  @return vector<int32_t> [5] IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く)
+ *  東海道線のみ3社に跨るので注意
 */
 vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
@@ -8929,19 +8930,25 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
                         // 亀山(3)(4)-新宮(4)(3)
                         // 松阪(3)-新宮(4)(3)
                         // 松阪(3)-亀山(3)(4)
+                        // 大阪(4)-熱海(2)(3) -> (4)-(2) 下りは、熱海(3)-大阪(4)となり問題ないのでそのまま
+                        // 将来 海と西が別計算になったら!!注意!!
                         if ((line_id == LINE_ID(_T("紀勢線")))
                         && (((company_id1 == JR_CENTRAL)
                         && (sub_company_id1 == JR_WEST) && (company_id2 == JR_WEST) && (sub_company_id2 == 0))
                         || ((company_id2 == JR_CENTRAL)
                         && (sub_company_id2 == JR_WEST) && (company_id1 == JR_WEST) && (sub_company_id1 == 0)))) {
-                            // do-noghint
-                            TRACE("detect kisyu-sen kameyama-(wakayama-miwasaki)\n");
+                            // do-nothing
+                            TRACE("detect kisei-sen kameyama-(wakayama-miwasaki)\n");
                         } else if (sub_company_id1 == company_id2) {
                             // 猪谷-富山、神戸-門司
                             company_id1 = sub_company_id1;
-                        }
-                        else if (company_id1 == sub_company_id2) {
+                        } else if (company_id1 == sub_company_id2) {
                             company_id2 = sub_company_id2;
+                        } else if ((line_id == LINE_ID(_T("東海道線")))
+                                   && (sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
+                                   && (company_id2 == JR_EAST)) {
+                            company_id2 = sub_company_id2;
+                            ASSERT(company_id2 == JR_CENTRAL); // 要するに熱海なんだけどね
                         }
                     } else {
                         // 本州-離島
