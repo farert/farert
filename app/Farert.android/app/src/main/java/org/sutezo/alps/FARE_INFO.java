@@ -936,17 +936,6 @@ public class FARE_INFO {
         if (0 < this.getSalesKmForEast()) {
             if ((0 < this.getCalcKmForEast()) &&
                     (this.getCalcKmForEast() != this.getSalesKmForEast())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR東日本営業キロ： %-6s km 計算キロ： %s km\r\n",
-                        RouteUtil.num_str_km(this.getSalesKmForEast()),
-                        RouteUtil.num_str_km(this.getCalcKmForEast())));
-            } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR東日本営業キロ： %-6s km\r\n",
-                        RouteUtil.num_str_km(this.getSalesKmForEast())));
-            }
-        }
-        if (0 < this.getSalesKmForEast()) {
-            if ((0 < this.getCalcKmForEast()) &&
-                    (this.getCalcKmForEast() != this.getSalesKmForEast())) {
                 buffer.append(String.format(Locale.JAPANESE, "JR東日本 営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForEast()),
                         RouteUtil.num_str_km(this.getCalcKmForEast())));
@@ -954,36 +943,37 @@ public class FARE_INFO {
                 buffer.append(String.format(Locale.JAPANESE, "JR東日本 営業キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForEast())));
             }
-        }        if (0 < this.getSalesKmForHokkaido()) {
+        }
+        if (0 < this.getSalesKmForHokkaido()) {
             if ((0 < this.getCalcKmForHokkaido()) &&
                     (this.getCalcKmForHokkaido() != this.getSalesKmForHokkaido())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR北海道 営業キロ： %-6s km 計算キロ： %s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForHokkaido()),
                         RouteUtil.num_str_km(this.getCalcKmForHokkaido())));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR北海道 営業キロ： %-6s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR北海道営業キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForHokkaido())));
             }
         }
         if (0 < this.getSalesKmForShikoku()) {
             if ((0 < this.getCalcKmForShikoku()) &&
                     (this.getSalesKmForShikoku() != this.getCalcKmForShikoku())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR四国 営業キロ： %-6s km 計算キロ： %s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km 計算キロ： %s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForShikoku()),
                         RouteUtil.num_str_km(this.getCalcKmForShikoku())));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR四国 営業キロ： %-6s km \r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR四国営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(this.getSalesKmForShikoku())));
             }
         }
         if (0 < this.getSalesKmForKyusyu()) {
             if ((0 < this.getCalcKmForKyusyu()) &&
                     (this.getSalesKmForKyusyu() != this.getCalcKmForKyusyu())) {
-                buffer.append(String.format(Locale.JAPANESE, "JR九州 営業キロ： %-6s km  計算キロ： %-6s km\r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km  計算キロ： %-6s km\r\n",
                         RouteUtil.num_str_km(this.getSalesKmForKyusyu()),
                         RouteUtil.num_str_km(this.getCalcKmForKyusyu())));
             } else {
-                buffer.append(String.format(Locale.JAPANESE, "JR九州 営業キロ： %-6s km \r\n",
+                buffer.append(String.format(Locale.JAPANESE, "JR九州営業キロ： %-6s km \r\n",
                         RouteUtil.num_str_km(this.getSalesKmForKyusyu())));
             }
         }
@@ -3160,19 +3150,66 @@ public class FARE_INFO {
                             // 亀山(3)(4)-新宮(4)(3)
                             // 松阪(3)-新宮(4)(3)
                             // 松阪(3)-亀山(3)(4)
+                            // 大阪(4)-熱海(2)(3) -> (4)-(2) 下りは、熱海(3)-大阪(4)となり問題ないのでそのまま
+                            // 将来 海と西が別計算になったら!!注意!!
                             if ((line_id == DbIdOf.INSTANCE.line("紀勢線"))
                             && (((company_id1 == JR_CENTRAL)
                             && (sub_company_id1 == JR_WEST) && (company_id2 == JR_WEST) && (sub_company_id2 == 0))
                             || ((company_id2 == JR_CENTRAL)
                             && (sub_company_id2 == JR_WEST) && (company_id1 == JR_WEST) && (sub_company_id1 == 0)))) {
-                                // do-noghint
-                                System.out.println("detect kisyu-sen kameyama-(wakayama-miwasaki)");
+                                // do-nothing
+                                System.out.println("detect kisei-sen kameyama-(wakayama-miwasaki)");
 
                             } else if (sub_company_id1 == company_id2) {
     							// 猪谷-富山、神戸-門司
                                 company_id1 = sub_company_id1;
                             } else if (company_id1 == sub_company_id2) {
                                 company_id2 = sub_company_id2;
+                            } else if (line_id == DbIdOf.INSTANCE.line("東海道線")) {
+                                if ((sub_company_id1 != 0) && (sub_company_id1 == sub_company_id2)) {
+                                    company_id1 = sub_company_id1;  /* 米原-熱海, 大阪-米原 */
+                                    company_id2 = sub_company_id2;
+                                } else if ((sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
+                                        && (company_id2 == JR_EAST)) {
+                                    company_id2 = sub_company_id2;
+                                    assert company_id2 == JR_CENTRAL; // 要するに熱海なんだけどね
+                                } else if ((sub_company_id1 != 0) // 熱海-大阪
+                                        && (company_id1 == JR_EAST)) {
+                                    company_id1 = sub_company_id1;
+                                    // 3社跨り（熱海→大阪）の場合、熱海〜米原間の距離をresult[2]に設定
+                                    if ((result[2] == 0) && (company_id2 == JR_WEST)) {
+                                        try (Cursor ctx2 = RouteDB.db().rawQuery(
+                                            "select " +
+                                            "abs((select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+                                            " - (select sales_km from t_lines where line_id=?1 and station_id=?3))," +
+                                            "abs((select calc_km from t_lines where line_id=?1 and station_id=?2)" +
+                                            " - (select calc_km from t_lines where line_id=?1 and station_id=?3))",
+                                            new String[]{String.valueOf(line_id), String.valueOf(station_id1), String.valueOf(DbIdOf.INSTANCE.station("米原"))})) {
+                                            if (ctx2.moveToNext()) {
+                                                result[2] = ctx2.getInt(0);  // 熱海〜米原間の営業キロ
+                                                result[3] = (ctx2.getInt(1) == 0) ? ctx2.getInt(0) : ctx2.getInt(1);
+                                            }
+                                        }
+                                    }
+                                } else if ((sub_company_id1 != 0) // 米原-小田原 (JR西-JR東、米原が境界駅)
+                                        && (company_id1 == JR_WEST) && (company_id2 == JR_EAST)) {
+                                    company_id1 = sub_company_id1; // JR_CENTRAL
+                                    // 3社跨り（米原→小田原）の場合、米原〜熱海間の距離をresult[2]に設定
+                                    if (result[2] == 0) {
+                                        try (Cursor ctx2 = RouteDB.db().rawQuery(
+                                            "select " +
+                                            "abs((select sales_km from t_lines where line_id=?1 and station_id=?2)" +
+                                            " - (select sales_km from t_lines where line_id=?1 and station_id=?3))," +
+                                            "abs((select calc_km from t_lines where line_id=?1 and station_id=?2)" +
+                                            " - (select calc_km from t_lines where line_id=?1 and station_id=?3))",
+                                            new String[]{String.valueOf(line_id), String.valueOf(station_id1), String.valueOf(DbIdOf.INSTANCE.station("熱海"))})) {
+                                            if (ctx2.moveToNext()) {
+                                                result[2] = ctx2.getInt(0);  // 米原〜熱海間の営業キロ
+                                                result[3] = (ctx2.getInt(1) == 0) ? ctx2.getInt(0) : ctx2.getInt(1);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             if ((sub_company_id1 != 0 || sub_company_id2 != 0) &&
