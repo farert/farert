@@ -8944,11 +8944,59 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
                             company_id1 = sub_company_id1;
                         } else if (company_id1 == sub_company_id2) {
                             company_id2 = sub_company_id2;
-                        } else if ((line_id == LINE_ID(_T("東海道線")))
-                                   && (sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
-                                   && (company_id2 == JR_EAST)) {
-                            company_id2 = sub_company_id2;
-                            ASSERT(company_id2 == JR_CENTRAL); // 要するに熱海なんだけどね
+                        } else if (line_id == LINE_ID(_T("東海道線"))) {
+                            if ((sub_company_id1 != 0) && (sub_company_id1 == sub_company_id2)) {
+                                company_id1 = sub_company_id1;  /* 米原-熱海, 大阪-米原 */
+                                company_id2 = sub_company_id2;
+                            } else if ((sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
+                                && (company_id2 == JR_EAST)) {
+                                company_id2 = sub_company_id2;
+                                ASSERT(company_id2 == JR_CENTRAL); // 要するに熱海なんだけどね
+                            } else if ((sub_company_id1 != 0) // 熱海-大阪
+                                && (company_id1 == JR_EAST)) {
+                                company_id1 = sub_company_id1;
+                                // 3社跨り（熱海→大阪）の場合、熱海〜米原間の距離をresult[2]に設定
+                                if ((result[2] == 0) && (company_id2 == JR_WEST)) {
+                                    DBO ctx2 = DBS::getInstance()->compileSql(
+                                        "select "
+                                        "abs((select sales_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select sales_km from t_lines where line_id=?1 and station_id=?3)),"
+                                        "abs((select calc_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select calc_km from t_lines where line_id=?1 and station_id=?3))"
+                                    );
+                                    if (ctx2.isvalid()) {
+                                        ctx2.setParam(1, line_id);
+                                        ctx2.setParam(2, station_id1); // 熱海
+                                        ctx2.setParam(3, STATION_ID(_T("米原")));
+                                        if (ctx2.moveNext()) {
+                                            result[2] = ctx2.getInt(0);  // 熱海〜米原間の営業キロ
+                                            result[3] = (ctx2.getInt(1) == 0) ? ctx2.getInt(0) : ctx2.getInt(1);
+                                        }
+                                    }
+                                }
+                            } else if ((sub_company_id1 != 0) // 米原-小田原 (JR西-JR東、米原が境界駅)
+                                && (company_id1 == JR_WEST) && (company_id2 == JR_EAST)) {
+                                company_id1 = sub_company_id1; // JR_CENTRAL
+                                // 3社跨り（米原→小田原）の場合、米原〜熱海間の距離をresult[2]に設定
+                                if (result[2] == 0) {
+                                    DBO ctx2 = DBS::getInstance()->compileSql(
+                                        "select "
+                                        "abs((select sales_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select sales_km from t_lines where line_id=?1 and station_id=?3)),"
+                                        "abs((select calc_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select calc_km from t_lines where line_id=?1 and station_id=?3))"
+                                    );
+                                    if (ctx2.isvalid()) {
+                                        ctx2.setParam(1, line_id);
+                                        ctx2.setParam(2, station_id1); // 米原
+                                        ctx2.setParam(3, STATION_ID(_T("熱海")));
+                                        if (ctx2.moveNext()) {
+                                            result[2] = ctx2.getInt(0);  // 米原〜熱海間の営業キロ
+                                            result[3] = (ctx2.getInt(1) == 0) ? ctx2.getInt(0) : ctx2.getInt(1);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     } else {
                         // 本州-離島
