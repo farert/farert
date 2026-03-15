@@ -2461,8 +2461,8 @@ public class CalcRoute extends RouteList {
             int station_id2;
             int last_arrive_sales_km;
 
-            /* 経路は乗換なしの単一路線 */
-            if (route_list.size() <= 2) {
+            /* 経路が空または発駅のみ */
+            if (route_list.size() <= 1) {
                 return false;
             }
 
@@ -2494,11 +2494,21 @@ public class CalcRoute extends RouteList {
 
             if ((kind & 1) != 0) {		/* 発駅が特定都区市内 */
                 line_id = route_list.get(route_list.size() - 1).lineId;			// 着 路線 発-着
-                station_id1 = route_list.get(route_list.size() - 2).stationId;
+                if (route_list.size() == 2) {
+                    // 単一路線の場合、発駅が都区市内なので乗換駅はない
+                    station_id1 = route_list.get(route_list.size() - 1).stationId;  // 着駅
+                } else {
+                    station_id1 = route_list.get(route_list.size() - 2).stationId;
+                }
                 station_id2 = route_list.get(route_list.size() - 1).stationId;
             } else if ((kind & 2) != 0) { /* 着駅が特定都区市内 */
                 line_id = route_list.get(1).lineId;								// 発 路線.発-着
-                station_id1 = route_list.get(1).stationId;
+                if (route_list.size() == 2) {
+                    // 単一路線の場合、着駅が都区市内なので乗換駅はない
+                    station_id1 = route_list.get(0).stationId;  // 発駅
+                } else {
+                    station_id1 = route_list.get(1).stationId;
+                }
                 station_id2 = route_list.get(0).stationId;
             } else {
                 ASSERT(false);
@@ -2518,7 +2528,7 @@ public class CalcRoute extends RouteList {
                 return false;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             }
             ASSERT(0 <= aSales_km);
-            ASSERT(0 < last_arrive_sales_km);
+            ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
             if (RouteUtil.LINE_DIR.LDIR_ASC != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
                 /* 上り */
