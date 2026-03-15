@@ -7079,8 +7079,8 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
     vector<int32_t> km_raw;     // 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
     vector<int32_t> km_spe;     // 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
 
-    /* 経路は乗換なしの単一路線 */
-    if (route_list.size() <= 2) {
+    /* 経路が空または発駅のみ */
+    if (route_list.size() <= 1) {
         return false;
     }
 
@@ -7114,11 +7114,21 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
 
     if ((kind & 1) != 0) {      /* 発駅が特定都区市内 */
         line_id = route_list.at(route_list.size() - 1).lineId;          // 着 路線 発-着
-        station_id1 = route_list.at(route_list.size() - 2).stationId;
+        if (route_list.size() == 2) {
+            // 単一路線の場合、発駅が都区市内なので乗換駅はない
+            station_id1 = route_list.at(route_list.size() - 1).stationId;  // 着駅
+        } else {
+            station_id1 = route_list.at(route_list.size() - 2).stationId;
+        }
         station_id2 = route_list.at(route_list.size() - 1).stationId;
     } else if ((kind & 2) != 0) { /* 着駅が特定都区市内 */
         line_id = route_list.at(1).lineId;                              // 発 路線.発-着
-        station_id1 = route_list.at(1).stationId;
+        if (route_list.size() == 2) {
+            // 単一路線の場合、着駅が都区市内なので乗換駅はない
+            station_id1 = route_list.at(0).stationId;  // 発駅
+        } else {
+            station_id1 = route_list.at(1).stationId;
+        }
         station_id2 = route_list.at(0).stationId;
     } else {
         ASSERT(FALSE);
@@ -7138,7 +7148,7 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
         return false;                   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
     ASSERT(0 <= aSales_km);
-    ASSERT(0 < last_arrive_sales_km);
+    ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
     if (RouteUtil::LDIR_ASC != RouteUtil::DirLine(line_id, station_id1, station_id2)) {
         /* 上り */
