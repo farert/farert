@@ -114,6 +114,19 @@ int main() {
     std::string search_result = fare_ui::search_station_by_keyword("新宿");
     TEST_RESULT("search_station_by_keyword('新宿')", search_result);
 
+    // 4-8. 駅のあいまい検索
+    std::string fuzzy_result_ochanomizu = fare_ui::search_station_fuzzy("おち ゃの水", 20);
+    TEST_RESULT("search_station_fuzzy('おち ゃの水',20)", fuzzy_result_ochanomizu);
+
+    std::string fuzzy_result_ryugasaki = fare_ui::search_station_fuzzy("竜が崎", 20);
+    TEST_RESULT("search_station_fuzzy('竜が崎',20)", fuzzy_result_ryugasaki);
+
+    std::string fuzzy_result_yokokawa = fare_ui::search_station_fuzzy("横川(陽)", 20);
+    TEST_RESULT("search_station_fuzzy('横川(陽)',20)", fuzzy_result_yokokawa);
+
+    std::string fuzzy_result_futa = fare_ui::search_station_fuzzy("冨", 20);
+    TEST_RESULT("search_station_fuzzy('冨',20)", fuzzy_result_futa);
+
     // ========================================
     // 5. az_route - 基本的な経路作成
     // ========================================
@@ -425,6 +438,27 @@ int main() {
         if (ref_fare_json != assigned_fare_json) {
             TEST_RESULT("  add vs assign", "不一致");
         }
+    }
+
+    // ========================================
+    // 11.7. build_route() 失敗パターンのテスト
+    // ========================================
+    TEST_SECTION("11.7. build_route() 失敗パターンのテスト");
+
+    // 経路: 蒲田→川崎→立川→八王子→倉賀野→高崎→新前橋→小山→友部→我孫子
+    // この経路は途中でエラーになるはず
+    az_route route_fail;
+    std::string fail_route_str = "蒲田 東海道線 川崎 南武線 立川 中央東線 八王子 八高 倉賀野 高崎線 高崎 上越線 新前橋 両毛線 小山 水戸線 友部 常磐線 我孫子";
+    std::string fail_build_result = route_fail.build_route(fail_route_str);
+    TEST_RESULT("build_route(失敗パターン)結果", fail_build_result);
+
+    // 失敗時の詳細情報を表示
+    // build_route() は {"rc": エラーコード, "failItem": "失敗箇所", "offset": オフセット} を返す
+    TEST_INT("失敗パターンの経路数", route_fail.get_route_count());
+    if (route_fail.get_route_count() > 0) {
+        TEST_RESULT("失敗パターンの出発駅", route_fail.departure_station_name());
+        TEST_RESULT("失敗パターンの到着駅", route_fail.arriveval_station_name());
+        TEST_RESULT("失敗パターンの経路スクリプト", route_fail.route_script());
     }
 
     // ========================================

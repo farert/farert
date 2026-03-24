@@ -20,8 +20,8 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 41
-        versionName = "26.03.01"
+        versionCode = 44
+        versionName = "26.04"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,6 +59,9 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
     buildToolsVersion = "35.0.0"

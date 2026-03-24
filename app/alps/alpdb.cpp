@@ -7079,8 +7079,8 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
     vector<int32_t> km_raw;     // 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
     vector<int32_t> km_spe;     // 86 or 87 適用後 [0]:営業キロ、[1]計算キロ
 
-    /* 経路は乗換なしの単一路線 */
-    if (route_list.size() <= 2) {
+    /* 経路が空または発駅のみ */
+    if (route_list.size() <= 1) {
         return false;
     }
 
@@ -7114,11 +7114,21 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
 
     if ((kind & 1) != 0) {      /* 発駅が特定都区市内 */
         line_id = route_list.at(route_list.size() - 1).lineId;          // 着 路線 発-着
-        station_id1 = route_list.at(route_list.size() - 2).stationId;
+        if (route_list.size() == 2) {
+            // 単一路線の場合、発駅が都区市内なので乗換駅はない
+            station_id1 = route_list.at(route_list.size() - 1).stationId;  // 着駅
+        } else {
+            station_id1 = route_list.at(route_list.size() - 2).stationId;
+        }
         station_id2 = route_list.at(route_list.size() - 1).stationId;
     } else if ((kind & 2) != 0) { /* 着駅が特定都区市内 */
         line_id = route_list.at(1).lineId;                              // 発 路線.発-着
-        station_id1 = route_list.at(1).stationId;
+        if (route_list.size() == 2) {
+            // 単一路線の場合、着駅が都区市内なので乗換駅はない
+            station_id1 = route_list.at(0).stationId;  // 発駅
+        } else {
+            station_id1 = route_list.at(1).stationId;
+        }
         station_id2 = route_list.at(0).stationId;
     } else {
         ASSERT(FALSE);
@@ -7138,7 +7148,7 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
         return false;                   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
     ASSERT(0 <= aSales_km);
-    ASSERT(0 < last_arrive_sales_km);
+    ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
     if (RouteUtil::LDIR_ASC != RouteUtil::DirLine(line_id, station_id1, station_id2)) {
         /* 上り */
@@ -8831,6 +8841,7 @@ int32_t     FARE_INFO::getFareForIC() const
  *                          駅2が境界駅なら-1を返す, 境界駅が駅1～駅2間になければ、Noneを返す
  *  @return vector<int32_t> [4] IDENT1(駅1の会社ID) + IDENT2(駅2の会社ID)
  *  @return vector<int32_t> [5] IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く)
+ *  東海道線のみ3社に跨るので注意
 */
 vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
@@ -8929,19 +8940,73 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
                         // 亀山(3)(4)-新宮(4)(3)
                         // 松阪(3)-新宮(4)(3)
                         // 松阪(3)-亀山(3)(4)
+                        // 大阪(4)-熱海(2)(3) -> (4)-(2) 下りは、熱海(3)-大阪(4)となり問題ないのでそのまま
+                        // 将来 海と西が別計算になったら!!注意!!
                         if ((line_id == LINE_ID(_T("紀勢線")))
                         && (((company_id1 == JR_CENTRAL)
                         && (sub_company_id1 == JR_WEST) && (company_id2 == JR_WEST) && (sub_company_id2 == 0))
                         || ((company_id2 == JR_CENTRAL)
                         && (sub_company_id2 == JR_WEST) && (company_id1 == JR_WEST) && (sub_company_id1 == 0)))) {
-                            // do-noghint
-                            TRACE("detect kisyu-sen kameyama-(wakayama-miwasaki)\n");
+                            // do-nothing
+                            TRACE("detect kisei-sen kameyama-(wakayama-miwasaki)\n");
                         } else if (sub_company_id1 == company_id2) {
                             // 猪谷-富山、神戸-門司
                             company_id1 = sub_company_id1;
-                        }
-                        else if (company_id1 == sub_company_id2) {
+                        } else if (company_id1 == sub_company_id2) {
                             company_id2 = sub_company_id2;
+                        } else if (line_id == LINE_ID(_T("東海道線"))) {
+                            if ((sub_company_id1 != 0) && (sub_company_id1 == sub_company_id2)) {
+                                company_id1 = sub_company_id1;  /* 米原-熱海, 大阪-米原 */
+                                company_id2 = sub_company_id2;
+                            } else if ((sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
+                                && (company_id2 == JR_EAST)) {
+                                company_id2 = sub_company_id2;
+                                ASSERT(company_id2 == JR_CENTRAL); // 要するに熱海なんだけどね
+                            } else if ((sub_company_id1 != 0) // 熱海-大阪
+                                && (company_id1 == JR_EAST)) {
+                                company_id1 = sub_company_id1;
+                                // 3社跨り（熱海→大阪）の場合、熱海〜米原間の距離をresult[2]に設定
+                                if ((result[2] == 0) && (company_id2 == JR_WEST)) {
+                                    DBO ctx2 = DBS::getInstance()->compileSql(
+                                        "select "
+                                        "abs((select sales_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select sales_km from t_lines where line_id=?1 and station_id=?3)),"
+                                        "abs((select calc_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select calc_km from t_lines where line_id=?1 and station_id=?3))"
+                                    );
+                                    if (ctx2.isvalid()) {
+                                        ctx2.setParam(1, line_id);
+                                        ctx2.setParam(2, station_id1); // 熱海
+                                        ctx2.setParam(3, STATION_ID(_T("米原")));
+                                        if (ctx2.moveNext()) {
+                                            result[2] = ctx2.getInt(0);  // 熱海〜米原間の営業キロ
+                                            result[3] = (ctx2.getInt(1) == 0) ? ctx2.getInt(0) : ctx2.getInt(1);
+                                        }
+                                    }
+                                }
+                            } else if ((sub_company_id1 != 0) // 米原-小田原 (JR西-JR東、米原が境界駅)
+                                && (company_id1 == JR_WEST) && (company_id2 == JR_EAST)) {
+                                company_id1 = sub_company_id1; // JR_CENTRAL
+                                // 3社跨り（米原→小田原）の場合、米原〜熱海間の距離をresult[2]に設定
+                                if (result[2] == 0) {
+                                    DBO ctx2 = DBS::getInstance()->compileSql(
+                                        "select "
+                                        "abs((select sales_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select sales_km from t_lines where line_id=?1 and station_id=?3)),"
+                                        "abs((select calc_km from t_lines where line_id=?1 and station_id=?2)"
+                                        " - (select calc_km from t_lines where line_id=?1 and station_id=?3))"
+                                    );
+                                    if (ctx2.isvalid()) {
+                                        ctx2.setParam(1, line_id);
+                                        ctx2.setParam(2, station_id1); // 米原
+                                        ctx2.setParam(3, STATION_ID(_T("熱海")));
+                                        if (ctx2.moveNext()) {
+                                            result[2] = ctx2.getInt(0);  // 米原〜熱海間の営業キロ
+                                            result[3] = (ctx2.getInt(1) == 0) ? ctx2.getInt(0) : ctx2.getInt(1);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     } else {
                         // 本州-離島

@@ -17,7 +17,7 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
     companion object {
         const val DB_NAME = "jrdb.db"
         //val DB_NAME_ASSET = "routeDB/jrdb2017.db"
-        const val DATABASE_VERSION = 33    // 33=2026.3.04
+        const val DATABASE_VERSION = 34    // 34=2026.3.23
         const val DEFAULT_DB_IDX = 5  // "2025"     // !!! DB更新したらDATABASE_VERSION を更新
         private const val MIN_DB_IDX = 0
         private const val MAX_DB_IDX = 5
@@ -47,100 +47,77 @@ class DatabaseOpenHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, 
     /**
      * asset に格納したデータベースをコピーするための空のデータベースを作成する
      */
-     fun createEmptyDataBase(dbidx : Int)  {
+    fun createEmptyDataBase(dbidx : Int)  {
+        if (checkDatabaseExists(dbidx)) return
 
-        if (checkDatabaseExists(dbidx)) {
-            // すでにデータベースは作成されている
+        try {
+            // 親ディレクトリを確実に作成する
+            mDatabasePath.parentFile?.let {
+                if (!it.exists()) it.mkdirs()
+            }
 
-        } else {
-            // このメソッドを呼ぶことで、空のデータベースがアプリのデフォルトシステムパスに作られる
-            readableDatabase
-            close()
+            // 直接アセットからコピー（空のDB作成を待たなくて良い）
+            this.copyDataBaseFromAsset(dbIdx2Name(dbidx))
 
-             try {
-                // asset に格納したデータベースをコピーする
-                this.copyDataBaseFromAsset(dbIdx2Name(dbidx))
-
-                val dbPath = mDatabasePath.absolutePath
-                val checkDb = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE)
-
+            // コピーしたDBを開いてバージョンを設定
+            val dbPath = mDatabasePath.absolutePath
+            // OPEN_READWRITE に一時的に戻す（versionを書き換えるため）
+            SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE).use { checkDb ->
                 checkDb.version = DATABASE_VERSION
                 mDatabaseIndex = dbidx
-                checkDb.close()
-
-            } catch (e: Exception) {
-                throw Error("Error copying database")
             }
+        } catch (e: Exception) {
+            // デバッグ用に e.message を含めると原因がより明確になります
+            throw Error("Error copying database: ${e.message}", e)
         }
     }
-
     /**
      * 再コピーを防止するために、すでにデータベースがあるかどうか判定する
      *
      * @return 存在している場合 {@code true}
      */
-     private fun checkDatabaseExists(dbid : Int) : Boolean {
-
+    private fun checkDatabaseExists(dbid : Int) : Boolean {
         val dbPath = mDatabasePath.absolutePath
+        if (!File(dbPath).exists()) return false
 
-        var checkDb :SQLiteDatabase? = null
         try {
-            checkDb = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
+            SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY).use { checkDb ->
+                if (checkDb.version == DATABASE_VERSION && dbid == mDatabaseIndex) {
+                    return true
+                }
+            }
         } catch (e: SQLiteException) {
-            // データベースはまだ存在していない
+            // 破損やバージョン不一致
         }
 
-        if (checkDb == null) {
-            // データベースはまだ存在していない
-            return false
-        }
-
-        if ((checkDb.version == DATABASE_VERSION) && (dbid == mDatabaseIndex)) {
-            // データベースは存在していて最新
-            checkDb.close()
-            return true
-        }
-
-        // データベースが存在していて最新ではないので削除
-        val f = File(dbPath)
-        f.delete()
+        File(dbPath).delete()
         return false
     }
-
     /**
      * asset に格納したデーだベースをデフォルトのデータベースパスに作成したからのデータベースにコピーする
      */
     private fun copyDataBaseFromAsset(dbvername: String) {
-        if (true) {
-            var bOk = false
-            val zist = ZipInputStream(mContext.assets.open("routeDB/jrdb.dat"))
-            var ent = zist.nextEntry
-            while (ent != null) {
-                if (!ent.isDirectory && ent.name == "jrdb${dbvername}.db") {
-                    val ost = FileOutputStream(mDatabasePath)
-                    zist.copyTo(ost)
+        var bOk = false
+        // use を使うことで確実に close される
+        mContext.assets.open("routeDB/jrdb.dat").use { ais ->
+            ZipInputStream(ais).use { zist ->
+                var ent = zist.nextEntry
+                while (ent != null) {
+                    if (!ent.isDirectory && ent.name == "jrdb${dbvername}.db") {
+                        FileOutputStream(mDatabasePath).use { ost ->
+                            zist.copyTo(ost, bufferSize = 16384)
+                            ost.flush()
+                        }
+                        zist.closeEntry()
+                        bOk = true
+                        break
+                    }
                     zist.closeEntry()
-                    bOk = true
-                    break
+                    ent = zist.nextEntry
                 }
-                zist.closeEntry()
-                ent = zist.nextEntry
             }
-            if (!bOk) {
-                throw Exception()
-            }
-
-        } else {
-            // Open your local db as the input stream
-            val ist = mContext.assets.open("routeDB/${dbvername}.db")
-            // transfer bytes from the inputfile to the
-            // outputfile
-            val ost = FileOutputStream(mDatabasePath)
-            ist.copyTo(ost)
-            ost.close()
-            ost.flush()
-            ist.close()
         }
+        if (!bOk) throw Exception("Target DB file not found in zip")
     }
 
     @Throws(SQLException::class)

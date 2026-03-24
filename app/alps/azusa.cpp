@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include <alpdb.h>
 #include <sstream>
+#include <vector>
+#include <unordered_set>
+#include <utility>
 #include <azusa.h>
 
 #if 0
@@ -43,6 +46,273 @@ Copyright (C) 2025 Sutezo (sutezo666@gmail.com)
 static int get_prefect_id(std::string prefecture);
 static int get_company_id(std::string company);
 
+namespace {
+struct StationCandidate {
+    std::string name;
+    std::string kana;
+    std::vector<std::string> samename;
+    int score = 99;
+    std::string matchedBy = "name";
+};
+
+static void replace_all(std::string& text, const std::string& from, const std::string& to)
+{
+    if (from.empty()) return;
+    std::size_t start = 0;
+    while ((start = text.find(from, start)) != std::string::npos) {
+        text.replace(start, from.length(), to);
+        start += to.length();
+    }
+}
+
+static std::size_t utf8_char_length(unsigned char lead)
+{
+    if ((lead & 0x80) == 0x00) return 1;
+    if ((lead & 0xE0) == 0xC0) return 2;
+    if ((lead & 0xF0) == 0xE0) return 3;
+    if ((lead & 0xF8) == 0xF0) return 4;
+    return 1;
+}
+
+static std::string extract_kana_only(const std::string& text)
+{
+    std::string out;
+    for (std::size_t i = 0; i < text.size();) {
+        const std::size_t cs = utf8_char_length(static_cast<unsigned char>(text[i]));
+        if (i + cs > text.size()) break;
+        const std::string token = text.substr(i, cs);
+        if (isKanaString(token.c_str())) {
+            out += token;
+        }
+        i += cs;
+    }
+    if (!out.empty()) {
+        conv_to_kana2hira(out);
+    }
+    return out;
+}
+
+static std::string tail_utf8_chars(const std::string& text, std::size_t char_count)
+{
+    if (text.empty() || char_count == 0) return "";
+    std::vector<std::size_t> starts;
+    for (std::size_t i = 0; i < text.size();) {
+        starts.push_back(i);
+        const std::size_t cs = utf8_char_length(static_cast<unsigned char>(text[i]));
+        if (cs == 0) break;
+        i += cs;
+    }
+    if (starts.empty()) return "";
+    const std::size_t begin_index = (starts.size() > char_count) ? starts[starts.size() - char_count] : 0;
+    return text.substr(begin_index);
+}
+
+// 仮実装: UTF-8完全正規化は行わず、主要な表記ゆれのみ吸収する
+static std::string normalize_station_token(std::string text)
+{
+    // 空白・改行
+    replace_all(text, " ", "");
+    replace_all(text, "\t", "");
+    replace_all(text, "\r", "");
+    replace_all(text, "\n", "");
+    replace_all(text, "　", "");
+
+    // 括弧・中点・長音などの記号ゆれ
+    replace_all(text, "（", "(");
+    replace_all(text, "）", ")");
+    replace_all(text, "・", "");
+    replace_all(text, "ｰ", "");
+    replace_all(text, "ー", "");
+    replace_all(text, "-", "");
+    replace_all(text, "−", "");
+
+    // カタカナ/ひらがなの主要ゆれ（仮実装）
+    replace_all(text, "カ", "か");
+    replace_all(text, "ガ", "が");
+    replace_all(text, "ケ", "け");
+    replace_all(text, "ゲ", "げ");
+    replace_all(text, "ツ", "つ");
+    replace_all(text, "ッ", "つ");
+    replace_all(text, "ノ", "の");
+    replace_all(text, "ヂ", "じ");
+    replace_all(text, "ヅ", "ず");
+
+    // かな表記ゆれ
+    replace_all(text, "ぢ", "じ");
+    replace_all(text, "づ", "ず");
+    replace_all(text, "ゔ", "う");
+
+    // 漢字・異体字ゆれ
+    replace_all(text, "ノ", "の");
+    replace_all(text, "之", "の");
+    replace_all(text, "ヶ", "が");
+    replace_all(text, "ケ", "が");
+    replace_all(text, "け", "が");
+    replace_all(text, "龍", "竜");
+    replace_all(text, "總", "総");
+    replace_all(text, "澤", "沢");
+    replace_all(text, "齊", "斉");
+    replace_all(text, "斎", "斉");
+    replace_all(text, "亘", "渡");
+    replace_all(text, "冨", "富");
+    replace_all(text, "﨑", "崎");
+    replace_all(text, "嵜", "崎");
+    replace_all(text, "溪", "渓");
+    return text;
+}
+
+static std::vector<std::string> split_samename(const std::string& samename)
+{
+    std::vector<std::string> result;
+    if (samename.empty()) return result;
+    std::string normalized = samename;
+    replace_all(normalized, "、", ",");
+    replace_all(normalized, "，", ",");
+    replace_all(normalized, "；", ";");
+    replace_all(normalized, "｜", "|");
+    std::string token;
+    auto push_token = [&]() {
+        if (!token.empty()) {
+            result.push_back(token);
+            token.clear();
+        }
+    };
+    for (std::size_t i = 0; i < normalized.size(); i++) {
+        const char c = normalized[i];
+        if (c == ',' || c == ';' || c == '|') {
+            push_token();
+            continue;
+        }
+        token.push_back(c);
+    }
+    push_token();
+    if (result.empty()) {
+        result.push_back(normalized);
+    }
+    return result;
+}
+
+static void append_keyword_match_candidates(
+    std::vector<StationCandidate>& candidates,
+    const std::string& keyword,
+    int score,
+    const std::string& matchedBy)
+{
+    if (keyword.empty()) return;
+    DBO dbo = RouteUtil::Enum_station_match(keyword.c_str());
+    if (!dbo.isvalid()) return;
+
+    while (dbo.moveNext()) {
+        const std::string name = dbo.getText(0);
+        if (name.empty()) continue;
+        const std::string samename = dbo.getText(2);
+
+        StationCandidate item;
+        item.name = name;
+        item.kana = RouteUtil::GetKanaFromStationId(RouteUtil::GetStationId(name.c_str()));
+        item.samename = split_samename(samename);
+        item.score = score;
+        item.matchedBy = matchedBy;
+        candidates.push_back(item);
+    }
+}
+
+static void append_kana_suffix_candidates(
+    std::vector<StationCandidate>& candidates,
+    const std::string& key,
+    int score,
+    const std::string& matchedBy)
+{
+    const std::string kanaOnly = extract_kana_only(normalize_station_token(key));
+    // 2文字以上のかなが取れるときだけ末尾一致を試す
+    const std::string suffix = tail_utf8_chars(kanaOnly, 2);
+    if (suffix.empty() || suffix == kanaOnly) return;
+
+    static const char tsql[] = "select name,kana,samename from t_station where kana like ? order by kana";
+    DBO dbo = DBS::getInstance()->compileSql(tsql, false);
+    if (!dbo.isvalid()) return;
+
+    const std::string likeParam = "%" + suffix + "%";
+    dbo.setParam(1, likeParam.c_str());
+
+    while (dbo.moveNext()) {
+        const std::string name = dbo.getText(0);
+        if (name.empty()) continue;
+        StationCandidate item;
+        item.name = name;
+        item.kana = dbo.getText(1);
+        item.samename = split_samename(dbo.getText(2));
+        item.score = score;
+        // 「◯ノ巣/◯の巣」の駅を優先（例: 鳩ノ巣）
+        if (name.find("ノ巣") != std::string::npos || name.find("の巣") != std::string::npos) {
+            item.score = std::max(0, score - 1);
+        }
+        item.matchedBy = matchedBy;
+        candidates.push_back(item);
+    }
+}
+
+static int score_station_candidate(
+    const std::string& normalizedKey,
+    const std::string& name,
+    const std::string& kana,
+    const std::vector<std::string>& sameNames,
+    std::string& matchedBy)
+{
+    const std::string normalizedName = normalize_station_token(name);
+    const std::string normalizedKana = normalize_station_token(kana);
+    const std::string kanaOnlyKey = extract_kana_only(normalizedKey);
+    const std::string kanaOnlyStation = extract_kana_only(normalizedKana);
+    if (!normalizedKey.empty()) {
+        if (normalizedName == normalizedKey) {
+            matchedBy = "name";
+            return 0;
+        }
+        if (normalizedName.find(normalizedKey) == 0) {
+            matchedBy = "name";
+            return 1;
+        }
+        if (normalizedName.find(normalizedKey) != std::string::npos) {
+            matchedBy = "name";
+            return 2;
+        }
+        if (!normalizedKana.empty()) {
+            if (normalizedKana.find(normalizedKey) == 0) {
+                matchedBy = "kana";
+                return 3;
+            }
+            if (normalizedKana.find(normalizedKey) != std::string::npos) {
+                matchedBy = "kana";
+                return 4;
+            }
+        }
+        // ひらがな部分のみでの照合（例: おちゃの水 -> おちゃの）
+        if (kanaOnlyKey.size() >= 6 && !kanaOnlyStation.empty()) {
+            if (kanaOnlyStation.find(kanaOnlyKey) == 0) {
+                matchedBy = "kana";
+                return 7;
+            }
+            if (kanaOnlyStation.find(kanaOnlyKey) != std::string::npos) {
+                matchedBy = "kana";
+                return 8;
+            }
+        }
+        for (const auto& alias : sameNames) {
+            const std::string normalizedAlias = normalize_station_token(alias);
+            if (normalizedAlias.find(normalizedKey) == 0) {
+                matchedBy = "samename";
+                return 5;
+            }
+            if (normalizedAlias.find(normalizedKey) != std::string::npos) {
+                matchedBy = "samename";
+                return 6;
+            }
+        }
+    }
+    return 99;
+}
+} // namespace
+
 
 // open database
 // return JSON string with DB info
@@ -57,14 +327,14 @@ std::string open_database()
 
 	if (!dbpath) {
 		fprintf(stderr, "Should be set environment variable the 'farertDB' for use database.\n");
-		return "{ \"result\": false, \"reson\": \"farertDB environment variable not set.\" }";
+		return "{ \"result\": false, \"reason\": \"farertDB environment variable not set.\" }";
 	}
 #endif
     if (DBS::getInstance()->open(dbpath) && RouteUtil::DbVer(&dbsys)) {
         return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
          + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
     } else {
-        return "{ \"result\": false, \"reson\": \"failued to open database.\" }";
+        return "{ \"result\": false, \"reason\": \"failed to open database.\" }";
     }
 }
 
@@ -83,7 +353,7 @@ std::string database_info()
         return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
          + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
     } else {
-        return "{ \"result\": false, \"reson\": \"failued to open database.\" }";
+        return "{ \"result\": false, \"reason\": \"failed to open database.\" }";
     }
 }
 
@@ -105,27 +375,39 @@ std::string az_route::show_fare()
 // 
 std::string az_route::get_fare_info_object_json() {
     FARE_INFO fi;
-    std::ostringstream message;
-
     CalcRoute crt(*this);
     crt.calcFare(&fi);
     int rc = fi.resultCode();
     if ((rc != 0) && (rc != -1)) {
         return std::string("{ \"fareResultCode\": -2 }"); // -2: empty or -3: fail
     }
+    const RouteFlag& refRouteFlag = crt.getRouteFlag();
+
+    auto jsjoin = [&](const std::vector<std::string>& items) -> std::string {
+        std::ostringstream oss;
+        int i = 0;
+        for (auto& item : items) {
+            if (0 < i) {
+                oss << ",";
+            }
+            oss << item;
+            i++;
+        }
+        return oss.str();
+    };
     auto fields = {
         json_encoder::pair("fareResultCode",rc == 0 ? 0 : 1), /* 0: success, 1: KOKURA-pending */
-        json_encoder::pair("isMeihanCityStartTerminalEnable", route_flag.isMeihanCityEnable()),
-        json_encoder::pair("isMeihanCityStart", route_flag.isStartAsCity()),
-        json_encoder::pair("isMeihanCityTerminal", route_flag.isArriveAsCity()),
-        json_encoder::pair("isRuleAppliedEnable", route_flag.rule_en()),
-        json_encoder::pair("isRuleApplied", !route_flag.no_rule),
-        json_encoder::pair("isJRCentralStockEnable", route_flag.jrtokaistock_enable),
-        json_encoder::pair("isJRCentralStock", route_flag.jrtokaistock_applied),
-        json_encoder::pair("isEnableLongRoute", route_flag.isEnableLongRoute()),
-        json_encoder::pair("isLongRoute", route_flag.isLongRoute()),
-        json_encoder::pair("isRule115specificTerm", route_flag.isRule115specificTerm()),
-        json_encoder::pair("isEnableRule115", route_flag.isEnableRule115()),
+        json_encoder::pair("isMeihanCityStartTerminalEnable", refRouteFlag.isMeihanCityEnable()),
+        json_encoder::pair("isMeihanCityStart", refRouteFlag.isStartAsCity()),
+        json_encoder::pair("isMeihanCityTerminal", refRouteFlag.isArriveAsCity()),
+        json_encoder::pair("isRuleAppliedEnable", refRouteFlag.rule_en()),
+        json_encoder::pair("isRuleApplied", !refRouteFlag.no_rule),
+        json_encoder::pair("isJRCentralStockEnable", refRouteFlag.jrtokaistock_enable),
+        json_encoder::pair("isJRCentralStock", refRouteFlag.jrtokaistock_applied),
+        json_encoder::pair("isEnableLongRoute", refRouteFlag.isEnableLongRoute()),
+        json_encoder::pair("isLongRoute", refRouteFlag.isLongRoute()),
+        json_encoder::pair("isRule115specificTerm", refRouteFlag.isRule115specificTerm()),
+        json_encoder::pair("isEnableRule115", refRouteFlag.isEnableRule115()),
         json_encoder::pair("isResultCompanyBeginEnd", fi.isBeginEndCompanyLine()),
         json_encoder::pair("isResultCompanyMultipassed", fi.isMultiCompanyLine()),
         json_encoder::pair("isEnableTokaiStockSelect", fi.isEnableTokaiStockSelect()),
@@ -153,8 +435,8 @@ std::string az_route::get_fare_info_object_json() {
                 oss << "{";
                 if (fi.isRule114()) {
                     oss << json_encoder::pair("rule114StockFare", 
-                            fi.getFareStockDiscount(i, dummy, true)
-                        + fi.getFareForCompanyline());
+                            fi.getFareStockDiscount(i, dummy, true));
+                    oss << ",";
                 }
                 oss << json_encoder::pair("stockDiscountFare",
                         (fareStock + fi.getFareForCompanyline()));
@@ -168,7 +450,7 @@ std::string az_route::get_fare_info_object_json() {
             }
             return str + json_encoder::end_array();
         }(),
-        json_encoder::pair("isSpecificFare", route_flag.special_fare_enable),
+        json_encoder::pair("isSpecificFare", refRouteFlag.special_fare_enable),
         json_encoder::pair("totalSalesKm", fi.getTotalSalesKm()),
         json_encoder::pair("jrCalcKm", fi.getJRCalcKm()),
         json_encoder::pair("jrSalesKm", fi.getJRSalesKm()),
@@ -182,7 +464,7 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("calcKmForShikoku", fi.getCalcKmForShikoku()),
         json_encoder::pair("salesKmForKyusyu", fi.getSalesKmForKyusyu()),
         json_encoder::pair("calcKmForKyusyu", fi.getCalcKmForKyusyu()),
-        json_encoder::pair("isRoundtrip", route_flag.isRoundTrip()),
+        json_encoder::pair("isRoundtrip", refRouteFlag.isRoundTrip()),
         json_encoder::pair("isRoundtripDiscount", fi.isRoundTripDiscount()),
         json_encoder::pair("fareForCompanyline", fi.getFareForCompanyline()),
         json_encoder::pair("fare", fi.getFareForDisplay()),
@@ -193,6 +475,7 @@ std::string az_route::get_fare_info_object_json() {
         [&]() -> std::string {
             if (fi.isRule114()) {
                 return json_encoder::pair("roundTripFareWithCompanyLinePriorRule114", fi.roundTripFareWithCompanyLinePriorRule114())
+                + ","
                 + json_encoder::pair("fareForIC", fi.getFareForIC());
             }
             return json_encoder::pair("fareForIC", fi.getFareForIC());
@@ -219,96 +502,92 @@ std::string az_route::get_fare_info_object_json() {
 
         // UI結果オプションメニュー
         json_encoder::pair("isFareOptEnabled", 
-                                 route_flag.rule_en()
-                              || route_flag.jrtokaistock_enable
-                              || route_flag.isEnableRule115()
-                              || route_flag.isEnableLongRoute()
-                              || route_flag.special_fare_enable),
+                                 refRouteFlag.rule_en()
+                              || refRouteFlag.jrtokaistock_enable
+                              || refRouteFlag.isEnableRule115()
+                              || refRouteFlag.isEnableLongRoute()
+                              || refRouteFlag.special_fare_enable),
         [&]() -> std::string {
             std::ostringstream oss;
-
+            std::vector<std::string> messages;
             oss << json_encoder::begin_array("messages");
             
-            if (route_flag.no_rule &&
-                    fi.isUrbanArea() && !route_flag.isUseBullet()) {
+            if (refRouteFlag.no_rule &&
+                    fi.isUrbanArea() && !refRouteFlag.isUseBullet()) {
                 if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                     // messages.add(msgCantMetroTicket)
-                } else if (!route_flag.isEnableRule115()
-                        || !route_flag.isRule115specificTerm()) {
-                    if (route_flag.isLongRoute()) {
-                        oss << json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です");
+                } else if (!refRouteFlag.isEnableRule115()
+                        || !refRouteFlag.isRule115specificTerm()) {
+                    if (refRouteFlag.isLongRoute()) {
+                        messages.push_back(json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です"));
                     } else {
-                        oss << json_encoder::value("近郊区間内ですので最安運賃の経路で計算");
+                        messages.push_back(json_encoder::value("近郊区間内ですので最安運賃の経路で計算"));
                     }
                 }
 
                 // 大回り指定では115適用はみない
-                if (route_flag.isEnableRule115() && !route_flag.isEnableLongRoute()) {
-                    if (route_flag.isRule115specificTerm()) {
-                        oss << json_encoder::value("「単駅最安」で単駅発着が選択可能です");
+                if (refRouteFlag.isEnableRule115() && !refRouteFlag.isEnableLongRoute()) {
+                    if (refRouteFlag.isRule115specificTerm()) {
+                        messages.push_back(json_encoder::value("「単駅最安」で単駅発着が選択可能です"));
                     } else {
-                        oss << json_encoder::value("「特定都区市内発着」で特定都区市内発着が選択可能です");
+                        messages.push_back(json_encoder::value("「特定都区市内発着」で特定都区市内発着が選択可能です"));
                     }
                 }
             }
 
             // 私鉄競合特例運賃(大都市近郊区間)
-            if (route_flag.special_fare_enable) {
-                oss << json_encoder::value("特定区間割引運賃適用");
+            if (!refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
+                messages.push_back(json_encoder::value("特定区間割引運賃適用"));
             }
 
             if (fi.isBeginEndCompanyLine()) {
-                oss << json_encoder::value("会社線発着のため一枚の乗車券として発行されない場合があります.");
+                messages.push_back(json_encoder::value("会社線発着のため一枚の乗車券として発行されない場合があります."));
             }
             if (fi.isMultiCompanyLine()) {
                 /* 2017.3 以降 ここに来ることはない */
-                oss << json_encoder::value("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります.");
+                messages.push_back(json_encoder::value("複数の会社線を跨っているため乗車券は通し発券できません. 運賃額も異なります."));
             }
             if (fi.isEnableTokaiStockSelect()) {
-                oss << json_encoder::value("JR東海株主優待券使用オプション選択可");
+                messages.push_back(json_encoder::value("JR東海株主優待券使用オプション選択可"));
             }
             if (fi.getIsBRT_discount()) {
-                oss << json_encoder::value("BRT乗り継ぎ割引適用");
+                messages.push_back(json_encoder::value("BRT乗り継ぎ割引適用"));
             }
 
-            if (route_flag.no_rule && route_flag.special_fare_enable) {
-                oss << json_encoder::value("特定区間割引運賃を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.special_fare_enable) {
+                messages.push_back(json_encoder::value("特定区間割引運賃を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule86()) {
-                oss << json_encoder::value("旅客営業規則第86条を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule86()) {
+                messages.push_back(json_encoder::value("旅客営業規則第86条を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule87()) {
-                oss << json_encoder::value("旅客営業規則第87条を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule87()) {
+                messages.push_back(json_encoder::value("旅客営業規則第87条を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule88()) {
-                oss << json_encoder::value("旅客営業規則第88条を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule88()) {
+                messages.push_back(json_encoder::value("旅客営業規則第88条を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule160_4()) {
-                oss << json_encoder::value("旅客営業規則第160条第4項を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule160_4()) {
+                messages.push_back(json_encoder::value("旅客営業規則第160条第4項を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule69()) {
-                oss << json_encoder::value("旅客営業規則第69条を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
+                messages.push_back(json_encoder::value("旅客営業規則第69条を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule70()) {
-                oss << json_encoder::value("旅客営業規則第70条を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule70()) {
+                messages.push_back(json_encoder::value("旅客営業規則第70条を適用していません"));
             }
-            if (route_flag.no_rule && route_flag.isAvailableRule115()) {
-                oss << json_encoder::value("旅客営業取扱基準規程第115条を適用していません");
+            if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule115()) {
+                messages.push_back(json_encoder::value("旅客営業取扱基準規程第115条を適用していません"));
             }
-            if (route_flag.isAvailableRule16_5()) {
-                oss << json_encoder::value("この乗車券はJRで発券されません. 東京メトロでのみ発券されます");
+            if (refRouteFlag.isAvailableRule16_5()) {
+                messages.push_back(json_encoder::value("この乗車券はJRで発券されません. 東京メトロでのみ発券されます"));
             }
             if (fi.isRule114()) {
-                oss << json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:") << 
-                [&]() -> std::string {
-                    std::ostringstream oss;
-                    oss << json_encoder::value(fi.getRule114apply_terminal_station());
-                    return oss.str();
-                }();
+                messages.push_back(json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:" + fi.getRule114apply_terminal_station()));
             }
-            if (route_flag.compnterm) {
-                oss << json_encoder::value("この経路の会社線通過連絡は許可されていません.");
+            if (refRouteFlag.compnterm) {
+                messages.push_back(json_encoder::value("この経路の会社線通過連絡は許可されていません."));
             }
+            oss << jsjoin(messages);
             oss << json_encoder::end_array();
             return oss.str();
         }(),
@@ -316,14 +595,7 @@ std::string az_route::get_fare_info_object_json() {
 
     std::ostringstream oss;
     oss << "{";
-    int i = 0;
-    for (auto& field : fields) {
-        if (0 < i) {
-            oss << ",";
-        }
-        oss << field;
-        i++;
-    }
+    oss << jsjoin(fields);
     oss << "}";
     return oss.str();
 }
@@ -383,7 +655,7 @@ std::string az_route::get_routes_json()
             << " }";
     }
     oss << json_encoder::end_array();
-    return "";
+    return oss.str();
 }
 
 // get route record at index
@@ -549,7 +821,7 @@ std::string fare_ui::get_lines_by_prefect(std::string prefecture)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // JRグループの路線一覧を配列で返す
@@ -576,8 +848,8 @@ std::string fare_ui::get_lines_by_company(std::string jrgroup)
         }
         oss << json_encoder::end_array() << "}";
         return oss.str();
-    }
-    return "";
+	}
+    return "{}";
 }
 
 // 駅の所属路線を返す
@@ -605,7 +877,7 @@ std::string fare_ui::get_lines_by_station(std::string station)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 
@@ -635,7 +907,7 @@ std::string fare_ui::get_stations_by_company_and_line(std::string jrgroup, std::
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 
@@ -665,7 +937,7 @@ std::string fare_ui::get_stations_by_prefecture_and_line(std::string prefecture,
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // 駅のある都道府県
@@ -698,7 +970,85 @@ std::string fare_ui::search_station_by_keyword(std::string key)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
+}
+
+// あいまい検索（仮実装）
+std::string fare_ui::search_station_fuzzy(std::string key, int limit)
+{
+    std::vector<StationCandidate> candidates;
+    if (limit <= 0) {
+        limit = 50;
+    } else if (limit > 200) {
+        limit = 200;
+    }
+    const std::string normalizedKey = normalize_station_token(key);
+
+    DBO dbo = DBS::getInstance()->compileSql("select name,kana,samename from t_station");
+    if (!dbo.isvalid()) {
+        return "{\"results\":[]}";
+    }
+
+    while (dbo.moveNext()) {
+        const std::string name = dbo.getText(0);
+        const std::string kana = dbo.getText(1);
+        const std::string samename = dbo.getText(2);
+        const std::vector<std::string> aliases = split_samename(samename);
+
+        std::string matchedBy = "name";
+        const int score = score_station_candidate(normalizedKey, name, kana, aliases, matchedBy);
+        if (score >= 99) {
+            continue;
+        }
+
+        StationCandidate item;
+        item.name = name;
+        item.kana = kana;
+        item.samename = aliases;
+        item.score = score;
+        item.matchedBy = matchedBy;
+        candidates.push_back(item);
+    }
+
+    // 補助: 既存の駅名検索（name/kana prefix）で候補を追加
+    append_keyword_match_candidates(candidates, key, 10, "keyword");
+    if (normalizedKey != key) {
+        append_keyword_match_candidates(candidates, normalizedKey, 11, "keyword");
+    }
+    append_kana_suffix_candidates(candidates, key, 12, "kana_suffix");
+
+    std::sort(candidates.begin(), candidates.end(), [](const StationCandidate& a, const StationCandidate& b) {
+        if (a.score != b.score) return a.score < b.score;
+        return a.name < b.name;
+    });
+
+    std::unordered_set<std::string> seen;
+    std::ostringstream oss;
+    oss << "{" << json_encoder::begin_array("results");
+    int out = 0;
+    for (const auto& candidate : candidates) {
+        if (out >= limit) break;
+        if (candidate.name.empty()) continue;
+        if (!seen.insert(candidate.name).second) continue;
+        if (out++ > 0) {
+            oss << ",";
+        }
+        oss << "{"
+            << json_encoder::pair("name", candidate.name) << ","
+            << json_encoder::pair("kana", candidate.kana) << ","
+            << json_encoder::pair("score", candidate.score) << ","
+            << json_encoder::pair("matchedBy", candidate.matchedBy) << ","
+            << json_encoder::begin_array("samename");
+        for (std::size_t i = 0; i < candidate.samename.size(); i++) {
+            if (i > 0) {
+                oss << ",";
+            }
+            oss << json_encoder::value(candidate.samename[i]);
+        }
+        oss << json_encoder::end_array() << "}";
+    }
+    oss << json_encoder::end_array() << "}";
+    return oss.str();
 }
 
 // 指定した駅も含め路線の分岐駅一覧を返す)
@@ -726,7 +1076,7 @@ std::string fare_ui::get_branch_stations_by_line(std::string line_name, std::str
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // 路線の全駅一覧を返す
@@ -753,7 +1103,7 @@ std::string fare_ui::get_stations_by_line(std::string line_name)
         oss << json_encoder::end_array() << "}";
         return oss.str();
     }
-    return "";
+    return "{}";
 }
 
 // 駅名のかなを得る
@@ -824,4 +1174,3 @@ std::string dev::execute_sql(const std::string& sql)
     oss << "],\"rowCount\":" << rowNum << "}";
     return oss.str();
 }
-
