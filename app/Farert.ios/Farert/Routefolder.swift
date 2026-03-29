@@ -226,10 +226,12 @@ public class Routefolder {
             let strDbVer = "DBVer|" + dbName + "\n"
             os.write(strDbVer, maxLength: strDbVer.count)
             for one in routeList {
-                let rs : String
+                var rs = ""
                 if ((one.fare != nil) && (one.salesKm != nil)) {
-                    rs = String(one.indexOfAggregate) + "|" + one.routeList.routeScript()
-                     + "|" + String(one.fare!) + "|" + String(one.salesKm!) + "\n"
+                    if let fare = one.fare, let salesKm = one.salesKm {
+                        rs = "\(one.indexOfAggregate)|\(one.routeList.routeScript() ?? "")|\(fare)|\(salesKm)\n"
+                    }
+
                 } else {
                     rs = String(one.indexOfAggregate) + "|" + one.routeList.routeScript() + "\n"
                 }
