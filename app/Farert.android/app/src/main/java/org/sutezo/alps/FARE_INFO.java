@@ -3161,20 +3161,39 @@ public class FARE_INFO {
                                 System.out.println("detect kisei-sen kameyama-(wakayama-miwasaki)");
 
                             } else if (sub_company_id1 == company_id2) {
-    							// 猪谷-富山、神戸-門司
-                                company_id1 = sub_company_id1;
+                                // 南小谷(2)(4) 大糸線 糸魚川(4)
+                                if (!((line_id == DbIdOf.INSTANCE.line("東海道線"))
+                                        && (station_id1 == DbIdOf.INSTANCE.station("国府津"))
+                                        && (company_id2 == JR_CENTRAL))) {
+                                    company_id1 = sub_company_id1;
+                                }
                             } else if (company_id1 == sub_company_id2) {
-                                company_id2 = sub_company_id2;
+                                if (!((line_id == DbIdOf.INSTANCE.line("東海道線"))
+                                        && (station_id2 == DbIdOf.INSTANCE.station("国府津"))
+                                        && (company_id1 == JR_CENTRAL))) {
+                                    // 着駅が境界駅で発駅と同じ会社だったら着駅＝発駅会社にする
+                                    // 福井(4) 上越新幹線 上越妙高(3)(4)
+                                    // 豊橋(3) 飯田線 辰野(2)(3)
+                                    // 糸魚川(4) 大糸線 南小谷(2)(4)
+                                    // etc
+                                    company_id2 = sub_company_id2;
+                                }
                             } else if (line_id == DbIdOf.INSTANCE.line("東海道線")) {
-                                if ((sub_company_id1 != 0) && (sub_company_id1 == sub_company_id2)) {
+                                if (((sub_company_id1 != 0) && (sub_company_id1 == sub_company_id2))
+                                        && ((station_id1 != DbIdOf.INSTANCE.station("国府津"))
+                                        && (station_id2 != DbIdOf.INSTANCE.station("国府津")))) {
                                     company_id1 = sub_company_id1;  /* 米原-熱海, 大阪-米原 */
                                     company_id2 = sub_company_id2;
-                                } else if ((sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
-                                        && (company_id2 == JR_EAST)) {
+                                } else if (((sub_company_id2 != 0) // 大阪(4)-熱海(2)(3) だとJR東加算されちゃうので
+                                        && (company_id2 == JR_EAST))
+                                        && ((station_id1 != DbIdOf.INSTANCE.station("国府津"))
+                                        && (station_id2 != DbIdOf.INSTANCE.station("国府津")))) {
                                     company_id2 = sub_company_id2;
                                     assert company_id2 == JR_CENTRAL; // 要するに熱海なんだけどね
-                                } else if ((sub_company_id1 != 0) // 熱海-大阪
-                                        && (company_id1 == JR_EAST)) {
+                                } else if (((sub_company_id1 != 0) // 熱海-大阪
+                                        && (company_id1 == JR_EAST))
+                                        && ((station_id1 != DbIdOf.INSTANCE.station("国府津"))
+                                        && (station_id2 != DbIdOf.INSTANCE.station("国府津")))) {
                                     company_id1 = sub_company_id1;
                                     // 3社跨り（熱海→大阪）の場合、熱海〜米原間の距離をresult[2]に設定
                                     if ((result[2] == 0) && (company_id2 == JR_WEST)) {

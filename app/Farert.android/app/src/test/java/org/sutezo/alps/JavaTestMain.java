@@ -9,10 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -22,6 +18,8 @@ public class JavaTestMain {
     private static final Path TEST_EXEC_CPP = Paths.get("test/unix/common/test_exec.cpp");
     private static final Path REF_RESULT = Paths.get("test/unix/all/test_result.txt");
     private static final Path OUTPUT_RESULT = Paths.get("app/Farert.android/app/src/test/resources/test_result.txt");
+    private static String referenceTimestampLine;
+    private static String referenceProcessLapseLine;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1 || !"-exec".equals(args[0])) {
@@ -39,6 +37,7 @@ public class JavaTestMain {
             throw new IllegalStateException("Missing DB: " + DB_PATH);
         }
         Files.createDirectories(OUTPUT_RESULT.getParent());
+        loadReferenceMarkers();
 
         SQLiteDatabase db = SQLiteDatabase.openDatabase(DB_PATH, null, SQLiteDatabase.OPEN_READONLY);
         RouteDB.createFactory(db, 10);
@@ -48,7 +47,7 @@ public class JavaTestMain {
 
         try (BufferedWriter writer = Files.newBufferedWriter(OUTPUT_RESULT, StandardCharsets.UTF_8)) {
             Out out = new Out(writer);
-            out.println(currentTimestampLine());
+            out.println(referenceTimestampLine);
             out.println("");
 
             out.println("#---route test  -------------------------------------------");
@@ -83,7 +82,7 @@ public class JavaTestMain {
             out.println("#---same kokura hakata shinzai-----------------------------------");
             test_route(out, data.testRoute3, 0);
 
-            out.println(processLapseLine(startNs));
+            out.println(referenceProcessLapseLine);
         } catch (Throwable ex) {
             System.err.println("Failure during: " + currentCase);
             throw ex;
@@ -726,18 +725,25 @@ public class JavaTestMain {
         }
     }
 
-    private static final DateTimeFormatter TIMESTAMP_FORMAT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.JAPAN)
-                    .withZone(ZoneId.systemDefault());
-
-    private static String currentTimestampLine() {
-        return TIMESTAMP_FORMAT.format(Instant.now());
-    }
-
-    private static String processLapseLine(long startNs) {
-        Duration elapsed = Duration.ofNanos(System.nanoTime() - startNs);
-        double seconds = elapsed.toNanos() / 1_000_000_000.0;
-        return String.format(Locale.US, "proces lapse: %.3f sec.", seconds);
+    private static void loadReferenceMarkers() throws IOException {
+        if ((referenceTimestampLine != null) && (referenceProcessLapseLine != null)) {
+            return;
+        }
+        List<String> lines = Files.readAllLines(REF_RESULT, StandardCharsets.UTF_8);
+        if (lines.isEmpty()) {
+            throw new IllegalStateException("Empty: " + REF_RESULT);
+        }
+        referenceTimestampLine = lines.get(0);
+        for (int i = lines.size() - 1; i >= 0; i--) {
+            String line = lines.get(i);
+            if (line.startsWith("proces lapse: ")) {
+                referenceProcessLapseLine = line;
+                break;
+            }
+        }
+        if (referenceProcessLapseLine == null) {
+            throw new IllegalStateException("Missing process lapse line: " + REF_RESULT);
+        }
     }
 
     private static class TestData {
