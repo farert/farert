@@ -1847,9 +1847,12 @@ public class CalcRoute extends RouteList {
                     cid_s1 = cid1[0];
                     cid_e2 = cid[1];
                     cid_s2 = cid1[1];
-                    if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1)) ||   /* 塩尻-甲府 */
-                            ((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) ||
-                            ((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL))) {
+                    if (((cid_s1 == cid_e1) && (JR_CENTRAL != cid_e1))  /* 発着 not 海 */
+                            || ((cid_s1 != JR_CENTRAL) && (cid_s2 != JR_CENTRAL)) /* 発 not 海*/
+                            || ((cid_e1 != JR_CENTRAL) && (cid_e2 != JR_CENTRAL)) /* 着 not 海*/
+                            || ((ite.lineId == DbIdOf.INSTANCE.line("東海道線"))
+                            && ((ite.stationId == DbIdOf.INSTANCE.station("国府津"))
+                            || (station_id1 == DbIdOf.INSTANCE.station("国府津"))))) {
                         bJrTokaiOnly = false;
                         break;
                     }
