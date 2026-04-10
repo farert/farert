@@ -7098,7 +7098,7 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
     TRACE("checkOfRule114j: raw = %d, cook = %d (%d)\n", (km_raw.at(0) - km_raw.at(2) - km_raw.at(3)),
                                                           (km_spe.at(0) - km_spe.at(2) - km_spe.at(3)),
         ((km_raw.at(0) - km_raw.at(2) - km_raw.at(3)) - ((km_spe.at(0) - km_spe.at(2) - km_spe.at(3)))));
-    if (((km_raw.at(0) - km_raw.at(2) - km_raw.at(3)) - sales_km_special) < 100) {
+    if (((km_raw.at(0) - km_raw.at(2) - km_raw.at(3)) - sales_km_special) < 10) {
         return false;
     }
     /* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */
