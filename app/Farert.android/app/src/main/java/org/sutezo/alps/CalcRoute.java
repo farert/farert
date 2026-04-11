@@ -2478,7 +2478,7 @@ public class CalcRoute extends RouteList {
             System.out.printf("checkOfRule114j: raw = %d, cook = %d (%d)\n", (km_raw.sales_km - km_raw.brt_km - km_raw.company_km),
                     (km_spe.sales_km - km_spe.brt_km - km_spe.company_km),
                     ((km_raw.sales_km - km_raw.brt_km - km_raw.company_km) - ((km_spe.sales_km - km_spe.brt_km - km_spe.company_km))));
-            if (((km_raw.sales_km - km_raw.brt_km - km_raw.company_km) - sales_km_special) < 100) {
+            if (((km_raw.sales_km - km_raw.brt_km - km_raw.company_km) - sales_km_special) < 10) {
                 return false;
             }
             /* 中心駅～目的地は、180(90) - 200(100)km未満であるのが前提 */

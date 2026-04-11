@@ -192,6 +192,20 @@ static std::vector<std::string> split_samename(const std::string& samename)
     return result;
 }
 
+static std::string make_station_candidate_key(const StationCandidate& candidate)
+{
+    std::ostringstream oss;
+    oss << candidate.name << "\t";
+    for (std::size_t i = 0; i < candidate.samename.size(); i++) {
+        if (i > 0) {
+            oss << "/";
+        }
+        oss << candidate.samename[i];
+    }
+    oss << "\t" << candidate.kana;
+    return oss.str();
+}
+
 static void append_keyword_match_candidates(
     std::vector<StationCandidate>& candidates,
     const std::string& keyword,
@@ -1029,7 +1043,7 @@ std::string fare_ui::search_station_fuzzy(std::string key, int limit)
     for (const auto& candidate : candidates) {
         if (out >= limit) break;
         if (candidate.name.empty()) continue;
-        if (!seen.insert(candidate.name).second) continue;
+        if (!seen.insert(make_station_candidate_key(candidate)).second) continue;
         if (out++ > 0) {
             oss << ",";
         }
