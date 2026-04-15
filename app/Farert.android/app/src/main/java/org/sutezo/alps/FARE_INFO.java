@@ -1589,7 +1589,7 @@ public class FARE_INFO {
         if (!isRule114()) {
             ASSERT (false);
         }
-        fareW = getFareForJR() * 2 + company_fare * 2;
+        fareW = rule114Info.priorFare() * 2 + company_fare * 2;
         return fareW;
     }
 
@@ -1923,7 +1923,7 @@ public class FARE_INFO {
      */
     int		getFareForDisplayPriorRule114() {
         if (isRule114()) {
-            return getFareForCompanyline() + jr_fare;
+            return getFareForCompanyline() + rule114Info.priorFare();
         } else {
             //      ASSERT (false);
             return 0;

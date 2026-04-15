@@ -468,8 +468,62 @@ public class CalcRoute extends RouteList {
         if (isCheckRule114 && (sk <= jsales_km)) {
             /* 114条適用かチェック */
             CalcRoute.CRule114 rule114 = new CalcRoute.CRule114();
+            rule114Info.clear();
             if (rule114.check(route_flag, chk, sk, route_list_tmp2, route_list_tmp4, cityId, enter, exit)) {
-                rule114Info.set(new Rule114Info(rule114.fare, rule114.apply_terminal_station));
+                int priorJrFareDisplay = 0;
+                if (route_list_tmp2.size() >= 2) {
+                    List<RouteItem> routeDirect = new ArrayList<RouteItem>();
+                    cpyRouteItems(route_list_tmp2, routeDirect);
+                    FARE_INFO fiDirectRule114 = new FARE_INFO();
+                    RouteFlag routeFlagDirectRule114 = new RouteFlag();
+                    routeFlagDirectRule114.setAnotherRouteFlag(route_flag);
+
+                    final int firstStation = route_list_tmp2.get(0).stationId;
+                    final int secondStation = route_list_tmp2.get(1).stationId;
+                    final int firstLine = route_list_tmp2.get(1).lineId;
+                    final int lastStation = route_list_tmp2.get(route_list_tmp2.size() - 1).stationId;
+                    final int prevStation = route_list_tmp2.get(route_list_tmp2.size() - 2).stationId;
+                    final int lastLine = route_list_tmp2.get(route_list_tmp2.size() - 1).lineId;
+
+                    boolean hasDirectCandidate = false;
+                    if (0 < RouteUtil.InStation(rule114.apply_terminal_station, lastLine, prevStation, lastStation)) {
+                        routeDirect.get(routeDirect.size() - 1).stationId = (short)rule114.apply_terminal_station;
+                        routeDirect.get(routeDirect.size() - 1).refresh();
+                        hasDirectCandidate = true;
+                    } else if (0 < RouteUtil.InStation(rule114.apply_terminal_station, firstLine, firstStation, secondStation)) {
+                        routeDirect.get(0).stationId = (short)rule114.apply_terminal_station;
+                        routeDirect.get(0).refresh();
+                        hasDirectCandidate = true;
+                    }
+
+                    if (hasDirectCandidate &&
+                            fiDirectRule114.calc_fare(routeFlagDirectRule114, routeDirect)) {
+                        priorJrFareDisplay = fiDirectRule114.getFareForJR();
+                        if (priorJrFareDisplay < rule114.fare.fare) {
+                            rule114.fare.fare = priorJrFareDisplay;
+                            rule114.fare.sales_km = fiDirectRule114.getJRSalesKm();
+                            rule114.fare.calc_km = fiDirectRule114.getJRCalcKm();
+                        }
+                    }
+                }
+
+                FARE_INFO fiPriorRule114 = new FARE_INFO();
+                RouteFlag routeFlagPriorRule114 = new RouteFlag();
+                routeFlagPriorRule114.setAnotherRouteFlag(route_flag);
+                if (!fiPriorRule114.calc_fare(routeFlagPriorRule114, route_list_tmp2)) {
+                    ASSERT(false);
+                } else {
+                    final int priorJrFareRoute = fiPriorRule114.getFareForJR();
+                    if (priorJrFareDisplay == 0) {
+                        priorJrFareDisplay = priorJrFareRoute;
+                    }
+                    if (rule114.fare.fare != priorJrFareDisplay) {
+                        rule114Info.set(new Rule114Info(rule114.fare, rule114.apply_terminal_station,
+                                priorJrFareDisplay));
+                    } else {
+                        rule114Info.clear();
+                    }
+                }
             }
         } //else {
             // do nothing(not 114)
@@ -2069,6 +2123,7 @@ public class CalcRoute extends RouteList {
     class CRule114 {
         List<RouteItem> route_list = new ArrayList<RouteItem>();
         List<RouteItem> route_list_special = new ArrayList<RouteItem>();
+        List<RouteItem> route_list_special_fare = new ArrayList<RouteItem>();
         List<RouteItem> route_list_replace = new ArrayList<RouteItem>();
         Map<Integer, Integer> collectCheckedJunction = new HashMap<Integer, Integer>();
         RouteFlag route_flag = new RouteFlag();
@@ -2136,6 +2191,7 @@ public class CalcRoute extends RouteList {
 
                 // 69を適用したものを route_list_special へ
                 ReRouteRule69j(route_list, route_list_special);	/* 69条適用(route_list->route_list_special) */
+                cpyRouteItems(route_list_special, route_list_special_fare);
                 route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
 
                 cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
@@ -2150,6 +2206,7 @@ public class CalcRoute extends RouteList {
 
                     // 69を適用したものをroute_list_specialへ
                     ReRouteRule69j(route_list, route_list_special);	/* 69条適用(route_list->route_list_special) */
+                    cpyRouteItems(route_list_special, route_list_special_fare);
                     route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
 
                     cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
@@ -2159,6 +2216,7 @@ public class CalcRoute extends RouteList {
             } else {
                 cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
                 cpyRouteItems(rRoute_list_applied_86or87, route_list_special);
+                cpyRouteItems(route_list_special, route_list_special_fare);
 
                 route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
                 route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
@@ -2288,7 +2346,19 @@ public class CalcRoute extends RouteList {
             }
 
             List<RouteItem> route_work = new ArrayList<RouteItem>();	// <- route_list_special
-            cpyRouteItems(route_list_special, route_work);
+            final boolean canUseOriginalSpecialRoute =
+                    route_list_replace.isEmpty() &&
+                    ((is_start_city && !route_list_special_fare.isEmpty() &&
+                            route_list_special_fare.get(route_list_special_fare.size() - 1).lineId == base_line_id) ||
+                     (!is_start_city && route_list_special_fare.size() >= 2 &&
+                            route_list_special_fare.get(1).lineId == base_line_id));
+            if (canUseOriginalSpecialRoute) {
+                cpyRouteItems(route_list_special_fare, route_work);
+            } else {
+                // 114条の延長先運賃探索は、判定時に組み立てた並行在来線変換済み経路と
+                // 同じ座標系で差し替えを行う必要がある。
+                cpyRouteItems(route_list_special, route_work);
+            }
 
             if (is_start_city) {			/* 発駅が特定都区市内 */
                 /* 最終着駅を置き換える */
@@ -2357,7 +2427,9 @@ public class CalcRoute extends RouteList {
                     // ここに来ることはないので（若松-佐伯除く）、114運賃は通常一つ検出できれば以降検索しなくても良い。
                     ASSERT(false);
                 }
-                if ((0 == fare.sales_km) || (fi.getJRSalesKm() < fare.sales_km)) {
+                if ((0 == fare.sales_km) ||
+                        (fi.getJRSalesKm() < fare.sales_km) ||
+                        ((fi.getJRSalesKm() == fare.sales_km) && (fare_applied < fare.fare))) {
                     locost_fare = fare_applied;
                     fare.fare = fare_applied;		/* 先の駅の86,87適用運賃 */
                     fare.sales_km = fi.getJRSalesKm();

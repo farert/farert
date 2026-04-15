@@ -89,9 +89,7 @@ tasks.withType<JavaCompile>().configureEach {
     if (name.contains("UnitTest", ignoreCase = true)) {
         // Exclude local CLI test helpers from Android Studio unit test compilation.
         exclude(
-            "**/android/**",
-            "**/org/sutezo/farert/**",
-            "**/org/sutezo/alps/JavaTestMain.java"
+            "**/org/sutezo/farert/**"
         )
     }
 }
@@ -123,6 +121,9 @@ dependencies {
     
     // Testing
     testImplementation(libs.junit)
+    testImplementation(files("src/test/resources/sqlite-jdbc.jar"))
+    testImplementation(files("src/test/resources/slf4j-api.jar"))
+    testRuntimeOnly(files("src/test/resources/slf4j-nop.jar"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

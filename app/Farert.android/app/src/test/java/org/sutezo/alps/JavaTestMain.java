@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class JavaTestMain {
     private static final String DB_PATH = "db/jrdbNewest.db";
@@ -20,6 +21,11 @@ public class JavaTestMain {
     private static final Path OUTPUT_RESULT = Paths.get("app/Farert.android/app/src/test/resources/test_result.txt");
     private static String referenceTimestampLine;
     private static String referenceProcessLapseLine;
+    private static Path repoRoot;
+    private static Path testExecCppPath;
+    private static Path refResultPath;
+    private static Path outputResultPath;
+    private static Path dbPath;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1 || !"-exec".equals(args[0])) {
@@ -27,25 +33,25 @@ public class JavaTestMain {
             return;
         }
         System.setOut(new QuietPrintStream());
-        if (!Files.exists(TEST_EXEC_CPP)) {
-            throw new IllegalStateException("Missing: " + TEST_EXEC_CPP);
+        initializePaths();
+        if (!Files.exists(testExecCppPath)) {
+            throw new IllegalStateException("Missing: " + testExecCppPath);
         }
-        if (!Files.exists(REF_RESULT)) {
-            throw new IllegalStateException("Missing: " + REF_RESULT);
+        if (!Files.exists(refResultPath)) {
+            throw new IllegalStateException("Missing: " + refResultPath);
         }
-        if (!Files.exists(Paths.get(DB_PATH))) {
-            throw new IllegalStateException("Missing DB: " + DB_PATH);
+        if (!Files.exists(dbPath)) {
+            throw new IllegalStateException("Missing DB: " + dbPath);
         }
-        Files.createDirectories(OUTPUT_RESULT.getParent());
+        Files.createDirectories(outputResultPath.getParent());
         loadReferenceMarkers();
 
-        SQLiteDatabase db = SQLiteDatabase.openDatabase(DB_PATH, null, SQLiteDatabase.OPEN_READONLY);
+        SQLiteDatabase db = SQLiteDatabase.openDatabase(dbPath.toString(), null, SQLiteDatabase.OPEN_READONLY);
         RouteDB.createFactory(db, 10);
 
-        TestData data = TestData.load(TEST_EXEC_CPP);
-        long startNs = System.nanoTime();
+        TestData data = TestData.load(testExecCppPath);
 
-        try (BufferedWriter writer = Files.newBufferedWriter(OUTPUT_RESULT, StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(outputResultPath, StandardCharsets.UTF_8)) {
             Out out = new Out(writer);
             out.println(referenceTimestampLine);
             out.println("");
@@ -89,6 +95,45 @@ public class JavaTestMain {
         } finally {
             db.close();
         }
+        assertMatchesReference();
+    }
+
+    private static void initializePaths() throws IOException {
+        if (repoRoot != null) {
+            return;
+        }
+        Path current = Paths.get("").toAbsolutePath().normalize();
+        while (current != null) {
+            Path candidate = current.resolve(TEST_EXEC_CPP);
+            if (Files.exists(candidate)) {
+                repoRoot = current;
+                testExecCppPath = candidate;
+                refResultPath = current.resolve(REF_RESULT);
+                outputResultPath = current.resolve(OUTPUT_RESULT);
+                dbPath = current.resolve(DB_PATH);
+                return;
+            }
+            current = current.getParent();
+        }
+        throw new IllegalStateException("Could not locate repository root from " + Paths.get("").toAbsolutePath());
+    }
+
+    private static void assertMatchesReference() throws IOException {
+        List<String> expected = Files.readAllLines(refResultPath, StandardCharsets.UTF_8);
+        List<String> actual = Files.readAllLines(outputResultPath, StandardCharsets.UTF_8);
+        if (expected.equals(actual)) {
+            return;
+        }
+
+        int max = Math.min(expected.size(), actual.size());
+        for (int i = 0; i < max; i++) {
+            if (!Objects.equals(expected.get(i), actual.get(i))) {
+                throw new AssertionError("Mismatch at line " + (i + 1)
+                        + "\nexpected: " + expected.get(i)
+                        + "\nactual  : " + actual.get(i));
+            }
+        }
+        throw new AssertionError("Line count mismatch expected=" + expected.size() + " actual=" + actual.size());
     }
 
     private static String currentCase = "";
@@ -729,9 +774,9 @@ public class JavaTestMain {
         if ((referenceTimestampLine != null) && (referenceProcessLapseLine != null)) {
             return;
         }
-        List<String> lines = Files.readAllLines(REF_RESULT, StandardCharsets.UTF_8);
+        List<String> lines = Files.readAllLines(refResultPath, StandardCharsets.UTF_8);
         if (lines.isEmpty()) {
-            throw new IllegalStateException("Empty: " + REF_RESULT);
+            throw new IllegalStateException("Empty: " + refResultPath);
         }
         referenceTimestampLine = lines.get(0);
         for (int i = lines.size() - 1; i >= 0; i--) {
@@ -742,7 +787,7 @@ public class JavaTestMain {
             }
         }
         if (referenceProcessLapseLine == null) {
-            throw new IllegalStateException("Missing process lapse line: " + REF_RESULT);
+            throw new IllegalStateException("Missing process lapse line: " + refResultPath);
         }
     }
 
@@ -775,7 +820,7 @@ public class JavaTestMain {
         }
 
         static TestData load(Path path) throws IOException {
-            String text = Files.readString(path, StandardCharsets.UTF_8);
+            String text = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             text = stripBlockComments(text);
             List<String> lines = List.of(text.split("\n", -1));
 
