@@ -634,14 +634,14 @@ public:
 class Rule114Info {
     Fare fare_114;
     int32_t apply_terminal_station;
-    int32_t prior_jr_fare;
 public:
-    Rule114Info(): apply_terminal_station(0), prior_jr_fare(0) {}
+    Rule114Info(): apply_terminal_station(0) {}
     Rule114Info(const Rule114Info& other) {
         set(other);
     }
-    Rule114Info(const Fare& fare_, int32_t station_id_, int32_t prior_jr_fare_) : apply_terminal_station(station_id_), prior_jr_fare(prior_jr_fare_) {
+    Rule114Info(const Fare& fare_, int32_t station_id_) : apply_terminal_station(station_id_) {
         fare_114.set(fare_);
+        apply_terminal_station = station_id_;
     }
     Rule114Info& operator=(const Rule114Info& right) {
         set(right);
@@ -650,18 +650,15 @@ public:
     void set(const Rule114Info& other) {
         fare_114.set(other.fare_114);
         apply_terminal_station = other.apply_terminal_station;
-        prior_jr_fare = other.prior_jr_fare;
     }
     void clear() {
         fare_114.clear();
         apply_terminal_station = 0;
-        prior_jr_fare = 0;
     }
     int32_t stationId() const { return apply_terminal_station; }
     int32_t sales_km() const { return fare_114.sales_km; }
     int32_t calc_km() const { return fare_114.calc_km; }
     int32_t fare() const { return fare_114.fare; }
-    int32_t priorFare() const { return prior_jr_fare; }
 };
 
 class JCTSP_DATA
@@ -1401,7 +1398,6 @@ private:
     class CRule114 {
         vector<RouteItem> route_list;
         vector<RouteItem> route_list_special;
-        vector<RouteItem> route_list_special_fare;
         vector<RouteItem> route_list_replace;
         map<uint32_t, uint32_t> collectCheckedJunction;
         RouteFlag route_flag;

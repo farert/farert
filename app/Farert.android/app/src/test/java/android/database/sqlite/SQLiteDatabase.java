@@ -1,7 +1,6 @@
 package android.database.sqlite;
 
 import android.database.Cursor;
-import android.database.SimpleCursor;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -55,7 +54,7 @@ public class SQLiteDatabase {
                     }
                     rows.add(row);
                 }
-                return new SimpleCursor(rows);
+                return new Cursor(rows);
             }
         } catch (SQLException e) {
             throw new RuntimeException("sqlite query failed: " + e.getMessage(), e);
