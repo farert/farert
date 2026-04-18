@@ -4542,7 +4542,7 @@ int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStati
     "   select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
     int32_t type = 0;
 
-    memset(jctspdt, 0, sizeof(JCTSP_DATA));
+    memset((void*)jctspdt, 0, sizeof(JCTSP_DATA));
 
     DBO dbo = DBS::getInstance()->compileSql(tsql);
     if (dbo.isvalid()) {

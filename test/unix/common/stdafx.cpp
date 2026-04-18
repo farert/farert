@@ -30,7 +30,7 @@ void close_log()
    fh_log = NULL;
 }
 
-static char s_logname[] = "trace.log";
+[[maybe_unused]] static char s_logname[] = "trace.log";
 
 void TRACE(const char* fmt, ...)
 {
