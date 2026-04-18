@@ -6467,61 +6467,8 @@ void CalcRoute::checkOfRuleSpecificCoreLine(bool isCheckRule114 /* =false */)
     if (isCheckRule114 && (sk <= jsales_km)) {
             /* 114条適用かチェック */
         CalcRoute::CRule114 rule114;
-        rule114Info.clear();
         if (rule114.check(route_flag, chk, sk, route_list_tmp2, route_list_tmp4, cityId, enter, exit)) {
-            int32_t prior_jr_fare_display = 0;
-            if (route_list_tmp2.size() >= 2) {
-                vector<RouteItem> route_direct(route_list_tmp2);
-                FARE_INFO fi_direct_rule114;
-                RouteFlag route_flag_direct_rule114;
-                route_flag_direct_rule114.setAnotherRouteFlag(route_flag);
-
-                const auto first_station = route_list_tmp2.front().stationId;
-                const auto second_station = route_list_tmp2.at(1).stationId;
-                const auto first_line = route_list_tmp2.at(1).lineId;
-                const auto last_station = route_list_tmp2.back().stationId;
-                const auto prev_station = route_list_tmp2.at(route_list_tmp2.size() - 2).stationId;
-                const auto last_line = route_list_tmp2.back().lineId;
-
-                bool has_direct_candidate = false;
-                if (0 < RouteUtil::InStation(rule114.apply_terminal_station, last_line, prev_station, last_station)) {
-                    route_direct.back().stationId = rule114.apply_terminal_station;
-                    route_direct.back().refresh();
-                    has_direct_candidate = true;
-                } else if (0 < RouteUtil::InStation(rule114.apply_terminal_station, first_line, first_station, second_station)) {
-                    route_direct.front().stationId = rule114.apply_terminal_station;
-                    route_direct.front().refresh();
-                    has_direct_candidate = true;
-                }
-
-                if (has_direct_candidate &&
-                    fi_direct_rule114.calc_fare(&route_flag_direct_rule114, route_direct)) {
-                    prior_jr_fare_display = fi_direct_rule114.getFareForJR();
-                    if (prior_jr_fare_display < rule114.fare.fare) {
-                        rule114.fare.fare = prior_jr_fare_display;
-                        rule114.fare.sales_km = fi_direct_rule114.getJRSalesKm();
-                        rule114.fare.calc_km = fi_direct_rule114.getJRCalcKm();
-                    }
-                }
-            }
-
-            FARE_INFO fi_prior_rule114;
-            RouteFlag route_flag_prior_rule114;
-            route_flag_prior_rule114.setAnotherRouteFlag(route_flag);
-            if (!fi_prior_rule114.calc_fare(&route_flag_prior_rule114, route_list_tmp2)) {
-                ASSERT(FALSE);
-            } else {
-                const int32_t prior_jr_fare_route = fi_prior_rule114.getFareForJR();
-                if (prior_jr_fare_display == 0) {
-                    prior_jr_fare_display = prior_jr_fare_route;
-                }
-                if (rule114.fare.fare != prior_jr_fare_display) {
-                    rule114Info.set(Rule114Info(rule114.fare, rule114.apply_terminal_station,
-                                                prior_jr_fare_display));
-                } else {
-                    rule114Info.clear();
-                }
-            }
+            rule114Info.set(Rule114Info(rule114.fare, rule114.apply_terminal_station));
         }
     } else {
         ;
@@ -6825,6 +6772,8 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
                           const vector<RouteItem>& rRoute_list_applied_86or87, 
                           const PAIRIDENT cityId, const Station& enter, const Station& exit)
 {
+    vector<RouteItem> route_work;
+
     this->route_flag.setAnotherRouteFlag(rRouteFlag);
 
     if ((0x03 & chk) == 3) {
@@ -6835,7 +6784,6 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 
         // 69を適用したものをroute_list_special へ
         CalcRoute::ReRouteRule69j(route_list, &route_list_special); /* 69条適用(route_list->route_list_special) */
-        route_list_special_fare.assign(route_list_special.cbegin(), route_list_special.cend());
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
 
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
@@ -6848,7 +6796,6 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 
             // 69を適用したものをroute_list_specialへ
             CalcRoute::ReRouteRule69j(route_list, &route_list_special); /* 69条適用(route_list->route_list_special) */
-            route_list_special_fare.assign(route_list_special.cbegin(), route_list_special.cend());
             CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
 
             route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
@@ -6858,9 +6805,19 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
     } else {
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
         route_list_special.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
-        route_list_special_fare.assign(route_list_special.cbegin(), route_list_special.cend());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
+        CalcRoute::ReRouteRule69j(route_list, &route_work);
+        route_list.assign(route_work.cbegin(), route_work.cend());
+
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+        CalcRoute::ReRouteRule69j(route_list_special, &route_work);
+        route_list_special.assign(route_work.cbegin(), route_work.cend());
+
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
         return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
     }
@@ -6876,6 +6833,7 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 //
 //  @return true if changed.
 //
+//  作並,仙山線,仙台,東北新幹線,那須塩原
 bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 {
     vector<RouteItem>::iterator ite = route->begin();
@@ -6894,7 +6852,12 @@ bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>*
 
     while (ite != route->end()) {
         station_id1n = ite->stationId;
-        if ((station_id1 != 0) && IS_SHINKANSEN_LINE(ite->lineId)) {
+        if ((station_id1 != 0) 
+          && IS_SHINKANSEN_LINE(ite->lineId)
+          && station_id1 != STATION_ID(_T("博多"))
+          && station_id1n != STATION_ID(_T("博多"))
+          && station_id1 != STATION_ID(_T("小倉"))
+          && station_id1n != STATION_ID(_T("小倉"))) {
             zline = RouteUtil::EnumHZLine(ite->lineId, station_id1, station_id1n);
 //TRACE(_T("?%d?%d %d %d"), zline.size(), zline[0], zline[1], zline[2]);
             if (3 <= zline.size()) {
@@ -7255,20 +7218,7 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
     }
 
     vector<RouteItem> route_work;   // <- route_list_special
-    // 延長駅が変換不要な側にあるときは、実運賃計算では変換前の経路を使う。
-    const bool can_use_original_special_route =
-        route_list_replace.empty() &&
-        ((is_start_city && !route_list_special_fare.empty() &&
-          route_list_special_fare.back().lineId == base_line_id) ||
-         (!is_start_city && (route_list_special_fare.size() >= 2) &&
-          route_list_special_fare.at(1).lineId == base_line_id));
-    if (can_use_original_special_route) {
-        route_work.assign(route_list_special_fare.cbegin(), route_list_special_fare.cend());
-    } else {
-        // 114条の延長先運賃探索は、判定時に組み立てた並行在来線変換済み経路と
-        // 同じ座標系で差し替えを行う必要がある。
-        route_work.assign(route_list_special.cbegin(), route_list_special.cend());
-    }
+    route_work.assign(route_list_special.cbegin(), route_list_special.cend());
 
     if (is_start_city) {            /* 発駅が特定都区市内 */
         /* 最終着駅を置き換える */
@@ -7335,9 +7285,7 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
             // ここに来ることはないので（若松-佐伯除く）、114運賃は通常一つ検出できれば以降検索しなくても良い。
             ASSERT(FALSE);
         }
-        if ((0 == fare.sales_km) ||
-            (fi.getJRSalesKm() < fare.sales_km) ||
-            ((fi.getJRSalesKm() == fare.sales_km) && (fare_applied < fare.fare))) {
+        if ((0 == fare.sales_km) || (fi.getJRSalesKm() < fare.sales_km)) {
             locost_fare = fare_applied;
             fare.fare = fare_applied;       /* 先の駅の86,87適用運賃 */
             fare.sales_km = fi.getJRSalesKm();
@@ -8475,7 +8423,7 @@ int32_t     FARE_INFO::roundTripFareWithCompanyLinePriorRule114() const
     if (!isRule114()) {
         ASSERT(FALSE);
     }
-    fareW = rule114Info.priorFare() * 2 + company_fare * 2;
+    fareW = getFareForJR() * 2 + company_fare * 2;
     return fareW;
 }
 
@@ -8657,7 +8605,7 @@ int32_t     FARE_INFO::getFareForDisplay() const
 int32_t     FARE_INFO::getFareForDisplayPriorRule114() const
 {
     if (isRule114()) {
-        return getFareForCompanyline() + rule114Info.priorFare();
+        return getFareForCompanyline() + jr_fare;
     } else {
 //      ASSERT(FALSE);
         return 0;
