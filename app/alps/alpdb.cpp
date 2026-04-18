@@ -6803,8 +6803,12 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
     } else {
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
         route_list_special.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
         return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
     }
@@ -6820,6 +6824,7 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 //
 //  @return true if changed.
 //
+//  作並,仙山線,仙台,東北新幹線,那須塩原
 bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 {
     vector<RouteItem>::iterator ite = route->begin();
@@ -6838,7 +6843,12 @@ bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>*
 
     while (ite != route->end()) {
         station_id1n = ite->stationId;
-        if ((station_id1 != 0) && IS_SHINKANSEN_LINE(ite->lineId)) {
+        if ((station_id1 != 0) 
+          && IS_SHINKANSEN_LINE(ite->lineId)
+          && station_id1 != STATION_ID(_T("博多"))
+          && station_id1n != STATION_ID(_T("博多"))
+          && station_id1 != STATION_ID(_T("小倉"))
+          && station_id1n != STATION_ID(_T("小倉"))) {
             zline = RouteUtil::EnumHZLine(ite->lineId, station_id1, station_id1n);
 //TRACE(_T("?%d?%d %d %d"), zline.size(), zline[0], zline[1], zline[2]);
             if (3 <= zline.size()) {
