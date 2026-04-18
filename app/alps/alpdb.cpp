@@ -6772,6 +6772,8 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
                           const vector<RouteItem>& rRoute_list_applied_86or87, 
                           const PAIRIDENT cityId, const Station& enter, const Station& exit)
 {
+    vector<RouteItem> route_work;
+
     this->route_flag.setAnotherRouteFlag(rRouteFlag);
 
     if ((0x03 & chk) == 3) {
@@ -6805,8 +6807,15 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
         route_list_special.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
         //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
         //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
+        CalcRoute::ReRouteRule69j(route_list, &route_work);
+        route_list.assign(route_work.cbegin(), route_work.cend());
+
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+        CalcRoute::ReRouteRule69j(route_list_special, &route_work);
+        route_list_special.assign(route_work.cbegin(), route_work.cend());
+
         //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
         //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
