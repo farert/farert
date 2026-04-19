@@ -20,8 +20,8 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 46
-        versionName = "26.04.02"
+        versionCode = 47
+        versionName = "26.04.03"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -89,9 +89,8 @@ tasks.withType<JavaCompile>().configureEach {
     if (name.contains("UnitTest", ignoreCase = true)) {
         // Exclude local CLI test helpers from Android Studio unit test compilation.
         exclude(
-            "**/android/**",
             "**/org/sutezo/farert/**",
-            "**/org/sutezo/alps/JavaTestMain.java"
+            "**/android/database/SimpleCursor.java"
         )
     }
 }
@@ -123,6 +122,9 @@ dependencies {
     
     // Testing
     testImplementation(libs.junit)
+    testImplementation(files("src/test/resources/sqlite-jdbc.jar"))
+    testImplementation(files("src/test/resources/slf4j-api.jar"))
+    testRuntimeOnly(files("src/test/resources/slf4j-nop.jar"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

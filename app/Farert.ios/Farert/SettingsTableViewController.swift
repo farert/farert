@@ -24,9 +24,9 @@ class SettingsTableViewController: UITableViewController {
     @IBOutlet weak var btnResetInfoMessage: UIButton!
     
     // MARK: - UI Propery
-    @IBOutlet weak var swShinkansenKokuraHakataOther: UISwitch!
+//    @IBOutlet weak var swShinkansenKokuraHakataOther: UISwitch!
     
-    @IBOutlet weak var sgmDataVer: UISegmentedControl!
+//    @IBOutlet weak var sgmDataVer: UISegmentedControl!
 
     // MARK: Method
     
@@ -56,7 +56,8 @@ class SettingsTableViewController: UITableViewController {
         self.selectDbId = -1;   /* is no select */
         self.sgmDataVer.selectedSegmentIndex = before_dbid_idx - DB._MIN_ID.rawValue;
  */
-        self.swShinkansenKokuraHakataOther.setOn(isSameShinkanzanKokuraHakataOther, animated: false);
+    
+    //    self.swShinkansenKokuraHakataOther.setOn(isSameShinkanzanKokuraHakataOther, animated: false);
         
         var b : Bool = false
         let keys = [ "setting_key_hide_osakakan_detour_info", "setting_key_hide_no_rule_info", "import_guide"]
@@ -98,7 +99,8 @@ class SettingsTableViewController: UITableViewController {
     
     override func tableView(_ tableView : UITableView, titleForHeaderInSection section : Int) -> String? {
         if (section == 0) {
-            return "データソース"
+            return "設定"
+            //return "データソース"
         } else if (section == 1) {
             return "設定"
         } else if (section == 2) {
@@ -186,12 +188,14 @@ class SettingsTableViewController: UITableViewController {
 //                self.selectDbId = -1;   /* no change */
             }
  */
+            /*
             let bKokuraHakataShinzai = self.swShinkansenKokuraHakataOther.isOn
             if (self.isSameShinkanzanKokuraHakataOther != bKokuraHakataShinzai) {
                 self.isSameShinkanzanKokuraHakataOther = bKokuraHakataShinzai
                 let tf = bKokuraHakataShinzai ? "true" : ""
                 cRouteUtil.save(toKey: "kokura_hakata_shinzai", value: tf, sync: true)
             }
+             */
         }
     }
     

@@ -346,7 +346,7 @@ std::string open_database()
 #endif
     if (DBS::getInstance()->open(dbpath) && RouteUtil::DbVer(&dbsys)) {
         return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
-         + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
+         + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\", \"tax\": " + std::to_string(g_tax) + " }"  ;
     } else {
         return "{ \"result\": false, \"reason\": \"failed to open database.\" }";
     }
@@ -365,7 +365,7 @@ std::string database_info()
 
     if (RouteUtil::DbVer(&dbsys)) {
         return "{ \"result\": true, \"dbName\": \"" + std::string(dbsys.name)
-         + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\" }"  ;
+         + "\", \"createdate\": \"" + std::string(dbsys.createdate) + "\", \"tax\": " + std::to_string(g_tax) + " }"  ;
     } else {
         return "{ \"result\": false, \"reason\": \"failed to open database.\" }";
     }

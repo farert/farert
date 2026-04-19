@@ -4542,7 +4542,7 @@ int32_t Route::RetrieveJunctionSpecific(int32_t jctLineId, int32_t transferStati
     "   select lflg&255 from t_lines where (lflg&((1<<31)|(1<<29)))!=0 and line_id=?1 and station_id=?2)";
     int32_t type = 0;
 
-    memset(jctspdt, 0, sizeof(JCTSP_DATA));
+    memset((void*)jctspdt, 0, sizeof(JCTSP_DATA));
 
     DBO dbo = DBS::getInstance()->compileSql(tsql);
     if (dbo.isvalid()) {
@@ -6772,6 +6772,8 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
                           const vector<RouteItem>& rRoute_list_applied_86or87, 
                           const PAIRIDENT cityId, const Station& enter, const Station& exit)
 {
+    vector<RouteItem> route_work;
+
     this->route_flag.setAnotherRouteFlag(rRouteFlag);
 
     if ((0x03 & chk) == 3) {
@@ -6803,8 +6805,19 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
     } else {
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
         route_list_special.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
+        CalcRoute::ReRouteRule69j(route_list, &route_work);
+        route_list.assign(route_work.cbegin(), route_work.cend());
+
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+        CalcRoute::ReRouteRule69j(route_list_special, &route_work);
+        route_list_special.assign(route_work.cbegin(), route_work.cend());
+
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
         return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
     }
@@ -6820,6 +6833,7 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 //
 //  @return true if changed.
 //
+//  作並,仙山線,仙台,東北新幹線,那須塩原
 bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 {
     vector<RouteItem>::iterator ite = route->begin();
@@ -6838,7 +6852,12 @@ bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>*
 
     while (ite != route->end()) {
         station_id1n = ite->stationId;
-        if ((station_id1 != 0) && IS_SHINKANSEN_LINE(ite->lineId)) {
+        if ((station_id1 != 0) 
+          && IS_SHINKANSEN_LINE(ite->lineId)
+          && station_id1 != STATION_ID(_T("博多"))
+          && station_id1n != STATION_ID(_T("博多"))
+          && station_id1 != STATION_ID(_T("小倉"))
+          && station_id1n != STATION_ID(_T("小倉"))) {
             zline = RouteUtil::EnumHZLine(ite->lineId, station_id1, station_id1n);
 //TRACE(_T("?%d?%d %d %d"), zline.size(), zline[0], zline[1], zline[2]);
             if (3 <= zline.size()) {

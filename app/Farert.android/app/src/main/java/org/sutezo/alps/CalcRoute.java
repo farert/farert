@@ -2159,9 +2159,17 @@ public class CalcRoute extends RouteList {
             } else {
                 cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
                 cpyRouteItems(rRoute_list_applied_86or87, route_list_special);
+                List<RouteItem> route_work = new ArrayList<>();
 
                 route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                ReRouteRule69j(route_list, route_work);
+                cpyRouteItems(route_work, route_list);
+
                 route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+                route_work.clear();
+                ReRouteRule69j(route_list_special, route_work);
+                cpyRouteItems(route_work, route_list_special);
+
                 ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
                 return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
             }
@@ -2564,6 +2572,7 @@ public class CalcRoute extends RouteList {
         //	(東北新幹線 仙台 八戸 など)この場合は前段でチェックされるので
         //  ここにくることはない(114条チェック候補から外れるため)。
         //
+        //  作並,仙山線,仙台,東北新幹線,那須塩原
         public List<RouteItem> ConvertShinkansen2ZairaiFor114Judge(List<RouteItem> route) {
             int station_id1 = 0;
             int station_id1n = 0;
@@ -2581,7 +2590,12 @@ public class CalcRoute extends RouteList {
             for (int ite = 0; ite < result_route.size(); ) {
                 station_id1n = result_route.get(ite).stationId;
                 n1:
-                if ((station_id1 != 0) && RouteUtil.IS_SHINKANSEN_LINE(result_route.get(ite).lineId)) {
+                if ((station_id1 != 0)
+                        && RouteUtil.IS_SHINKANSEN_LINE(result_route.get(ite).lineId)
+                        && station_id1 != DbIdOf.INSTANCE.station("博多")
+                        && station_id1n != DbIdOf.INSTANCE.station("博多")
+                        && station_id1 != DbIdOf.INSTANCE.station("小倉")
+                        && station_id1n != DbIdOf.INSTANCE.station("小倉")) {
                     List<Integer> zline = RouteUtil.EnumHZLine(result_route.get(ite).lineId, station_id1, station_id1n);
                     //System.out.printf("?%d?%d %d %d", zline.size(), zline[0], zline[1], zline[2]);
                     if (3 <= zline.size()) {
