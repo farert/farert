@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2S1-Sy-Prq">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2S1-Sy-Prq">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -1616,52 +1616,10 @@
                         <color key="sectionIndexColor" systemColor="labelColor"/>
                         <color key="sectionIndexBackgroundColor" systemColor="systemBackgroundColor"/>
                         <sections>
-                            <tableViewSection headerTitle="Section-2" id="LxC-xe-Jnn">
-                                <cells>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="92" id="6Zz-dd-0b8">
-                                        <rect key="frame" x="0.0" y="50.5" width="414" height="92"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6Zz-dd-0b8" id="2ie-oh-aoW">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="92"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5Kx-Rx-7D0">
-                                                    <rect key="frame" x="11.5" y="32" width="63" height="28"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                </switch>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="小倉-博多間新幹線在来線別線扱い" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="7ap-iv-BpY">
-                                                    <rect key="frame" x="75.5" y="15" width="334.5" height="20.5"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="経路は全て選択しなおしてください。「同一視」(オフ）がデフォルトです。" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="6" preferredMaxLayoutWidth="343" translatesAutoresizingMaskIntoConstraints="NO" id="acd-lM-SgY">
-                                                    <rect key="frame" x="75.5" y="35.5" width="334.5" height="29"/>
-                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                            <constraints>
-                                                <constraint firstItem="7ap-iv-BpY" firstAttribute="leading" secondItem="5Kx-Rx-7D0" secondAttribute="trailing" constant="3" id="MvW-f6-RyT"/>
-                                                <constraint firstItem="7ap-iv-BpY" firstAttribute="top" secondItem="2ie-oh-aoW" secondAttribute="topMargin" id="PDT-JS-o0b"/>
-                                                <constraint firstItem="5Kx-Rx-7D0" firstAttribute="leading" secondItem="2ie-oh-aoW" secondAttribute="leading" constant="11.5" id="X2b-qF-T0c"/>
-                                                <constraint firstAttribute="trailingMargin" secondItem="7ap-iv-BpY" secondAttribute="trailing" constant="-16" id="XQf-mD-ezc"/>
-                                                <constraint firstItem="acd-lM-SgY" firstAttribute="trailing" secondItem="7ap-iv-BpY" secondAttribute="trailing" id="cyN-on-SgV"/>
-                                                <constraint firstItem="acd-lM-SgY" firstAttribute="top" secondItem="7ap-iv-BpY" secondAttribute="bottom" id="g8U-xK-Obm"/>
-                                                <constraint firstItem="5Kx-Rx-7D0" firstAttribute="centerY" secondItem="2ie-oh-aoW" secondAttribute="centerY" id="tCp-0e-Ysk"/>
-                                                <constraint firstItem="acd-lM-SgY" firstAttribute="leading" secondItem="7ap-iv-BpY" secondAttribute="leading" id="y3b-9G-75i"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                    </tableViewCell>
-                                </cells>
-                            </tableViewSection>
                             <tableViewSection headerTitle="Section-3" id="juJ-b9-GZN">
                                 <cells>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="54" id="y05-6d-QLz">
-                                        <rect key="frame" x="0.0" y="221.5" width="414" height="54"/>
+                                        <rect key="frame" x="0.0" y="50.5" width="414" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="y05-6d-QLz" id="HvT-zk-Pko">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="54"/>
@@ -1712,7 +1670,6 @@
                     </navigationItem>
                     <connections>
                         <outlet property="btnResetInfoMessage" destination="R2W-3h-d0L" id="Zus-Yf-zib"/>
-                        <outlet property="swShinkansenKokuraHakataOther" destination="5Kx-Rx-7D0" id="8nc-UK-lyz"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Krt-GT-bMV" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1927,7 +1884,7 @@
             <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="separatorColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.28999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.12" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1936,7 +1893,7 @@
             <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.21960784310000001" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

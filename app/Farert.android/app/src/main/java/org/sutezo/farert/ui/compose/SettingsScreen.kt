@@ -167,6 +167,7 @@ private fun SettingsContent(
         }
         */
         // Kokura-Shinzai Setting
+        /*
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -190,7 +191,7 @@ private fun SettingsContent(
                     }
                 )
             }
-        }
+        }*/
         
         // Info Messages Reset
         Card(

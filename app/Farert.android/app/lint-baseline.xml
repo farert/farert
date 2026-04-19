@@ -2601,6 +2601,7 @@
             column="13"/>
     </issue>
 
+    <!--
     <issue
         id="UnusedResources"
         message="The resource `R.string.setting_title_kokura_shinkansen` appears to be unused"
@@ -2611,7 +2612,7 @@
             line="343"
             column="13"/>
     </issue>
-
+    -->
     <issue
         id="UnusedResources"
         message="The resource `R.string.setting_descr_kokura_shinkansen` appears to be unused"

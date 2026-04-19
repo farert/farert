@@ -20,8 +20,8 @@ android {
         applicationId = "org.sutezo.farert"
         minSdk = 24
         targetSdk = 36
-        versionCode = 46
-        versionName = "26.04.02"
+        versionCode = 47
+        versionName = "26.04.03"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -89,7 +89,8 @@ tasks.withType<JavaCompile>().configureEach {
     if (name.contains("UnitTest", ignoreCase = true)) {
         // Exclude local CLI test helpers from Android Studio unit test compilation.
         exclude(
-            "**/org/sutezo/farert/**"
+            "**/org/sutezo/farert/**",
+            "**/android/database/SimpleCursor.java"
         )
     }
 }
