@@ -14,7 +14,7 @@ android {
         }
     }
     namespace = "org.sutezo.farert"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "org.sutezo.farert"
