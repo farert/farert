@@ -2,8 +2,9 @@
 # Android 版のテストコード
 
 ## TL;DR
-- [2) Java のコンパイル](#java-compile)
-- [3) 実行](#java-run)
+- [1) 自動実行スクリプト](#java-script)
+- [2) 手動コンパイル](#java-compile)
+- [3) 手動実行](#java-run)
 - [4) 結果](#java-result)
 
 
@@ -143,13 +144,38 @@ curl -L -o app/Farert.android/app/src/test/resources/slf4j-nop.jar \
 - `sqlite-jdbc` は `org.xerial` のアーティファクト。
 - `slf4j` は `org.slf4j` の `slf4j-api` と `slf4j-nop`。
 
+<a id="java-script"></a>
+### 1) 自動実行スクリプト
+今後の確認は、原則として以下のスクリプトを使う。
+
+```bash
+./test/run_java_regression.sh
+```
+
+このスクリプトは以下をまとめて行う。
+
+- `org.sutezo.alps` と JVM テスト用スタブを `javac` でコンパイル
+- `org.sutezo.alps.JavaTestMain -exec` を実行
+- `app/Farert.android/app/src/test/resources/test_result.txt` を再生成
+- `test/unix/all/test_result.txt` と `diff -u` で比較
+
+終了コード:
+
+- `0`: Java 版と C++ 版の `test_result.txt` が一致
+- `0` 以外: コンパイル失敗、実行失敗、または `diff` 不一致
+
+補足:
+
+- 現在の CLI 実行フローでは `JavaRouteRegressionTest.java` は JUnit 依存のため plain `javac` ではコンパイル対象に含めない。
+- `SimpleCursor.java` は現行の `Cursor` スタブ定義と整合していないため、このスクリプトでは対象外にしている。
+- どちらも `JavaTestMain -exec` の実行には不要。
+
 <a id="java-compile"></a>
 ### 2) Java のコンパイル
 ```
-find app/Farert.android/app/src/main/java/org/sutezo/alps app/Farert.android/app/src/test/java -name \
-  '*.java' -print0 | xargs -0 javac -encoding UTF-8 -d /tmp/farert_test_classes
-or
-rg --files -g '*.java' app/Farert.android/app/src/main/java/org/sutezo/alps app/Farert.android/app/src/test/java | xargs javac -encoding UTF-8 -d /tmp/farert_test_classes
+rg --files -g '*.java' app/Farert.android/app/src/main/java/org/sutezo/alps app/Farert.android/app/src/test/java \
+  | rg -v 'JavaRouteRegressionTest\.java$|SimpleCursor\.java$' \
+  | xargs javac -encoding UTF-8 -d /tmp/farert_test_classes
 
 
 # 確認
@@ -166,3 +192,4 @@ java -cp /tmp/farert_test_classes:app/Farert.android/app/src/test/resources/sqli
 ### 4) 結果
 - 生成ファイル: `app/Farert.android/app/src/test/resources/test_result.txt`
 - 比較: `diff -u test/unix/all/test_result.txt app/Farert.android/app/src/test/resources/test_result.txt`
+- 日常運用では `./test/run_java_regression.sh` を使うこと
