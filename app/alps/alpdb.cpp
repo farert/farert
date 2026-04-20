@@ -10684,7 +10684,7 @@ void FARE_INFO::retr_fare(bool useBullet)
             _total_jr_fare = FARE_INFO::Fare_kyusyu(_total_jr_sales_km_wo_brt,
                                                 _total_jr_calc_km_wo_brt);
         }
-    } else if ((mask == 4) && (!passed(JR_CENTRAL) && passed(JR_WEST))
+    } else if (companymask == (1 << (JR_WEST - 1))
              && IS_OSMSP(this->flag)) {
         /* 大阪電車特定区間のみ */
         ASSERT(_total_jr_fare == 0); /* 特別加算区間を通っていないはずやねん */
