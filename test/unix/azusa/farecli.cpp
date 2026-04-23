@@ -13,6 +13,10 @@
  *   # 駅名と路線名を個別に指定
  *   ./farecli 東京 東海道線 品川 東海道線 横浜
  *
+ *   # 括弧付きの枝線名・駅名は、自明なら省略指定も可能
+ *   ./farecli 長崎 西九州新幹線 諫早 長崎線 長与
+ *   ./farecli 可部 可部線 横川 山陽線 新下関
+ *
  *   # 自動経路検索（偶数個の引数）
  *   ./farecli 東京 新大阪
  *
@@ -51,6 +55,8 @@ void usage(const char* program_name) {
               << "\n"
               << "  2. 駅名と路線名を個別指定（奇数個）:\n"
               << "     例: ./farecli 東京 東海道線 品川 東海道線 横浜\n"
+              << "         ./farecli 長崎 西九州新幹線 諫早 長崎線 長与\n"
+              << "         ./farecli 可部 可部線 横川 山陽線 新下関\n"
               << "\n"
               << "  3. 自動経路検索（偶数個）:\n"
               << "     例: ./farecli 東京 新大阪\n"
@@ -84,7 +90,7 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return tokens;
 }
 
-// トークンリストから経路を構築（add_start_route/add_route使用）
+// トークンリストから経路を構築（括弧付き正式名の省略入力も add_route 側で吸収する）
 bool build_route_from_tokens(az_route& route, const std::vector<std::string>& tokens, bool json_mode) {
     int result = -999;
     std::string station;
@@ -101,7 +107,11 @@ bool build_route_from_tokens(az_route& route, const std::vector<std::string>& to
     for (auto it = tokens.cbegin() ; it != tokens.cend(); it++) {
         if (0 == route.get_route_count()) {
             // 最初の駅を追加
-            result = route.add_start_route(*it);
+            if (std::next(it) != tokens.cend()) {
+                result = route.add_start_route(*it, *std::next(it));
+            } else {
+                result = route.add_start_route(*it);
+            }
             if (result < 0) {
                 station = *it;
                 break;

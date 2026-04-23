@@ -16,6 +16,7 @@ public:
     // main view
 
     int add_start_route(std::string station);
+    int add_start_route(std::string station, std::string next_line);
     int add_route(std::string line, std::string station);
     int auto_route(int useBulletTrain, std::string destinationStation);
 
