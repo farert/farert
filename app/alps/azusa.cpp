@@ -107,6 +107,48 @@ static std::string tail_utf8_chars(const std::string& text, std::size_t char_cou
     return text.substr(begin_index);
 }
 
+static const char* stock_discount_company_name(int32_t company)
+{
+    switch (company) {
+    case JR_EAST:
+        return "JR東日本";
+    case JR_WEST:
+        return "JR西日本";
+    case JR_CENTRAL:
+        return "JR東海";
+    case JR_KYUSYU:
+        return "JR九州";
+    default:
+        return "";
+    }
+}
+
+static int32_t stock_discount_rate(int32_t company, int32_t index)
+{
+    switch (company) {
+    case JR_EAST:
+        return index == 0 ? 40 : 0;
+    case JR_WEST:
+        return index == 0 ? 50 : 0;
+    case JR_CENTRAL:
+        if (index == 0) return 10;
+        if (index == 1) return 20;
+        return 0;
+    case JR_KYUSYU:
+        return index == 0 ? 50 : 0;
+    default:
+        return 0;
+    }
+}
+
+static const char* stock_discount_kind(int32_t company, int32_t index)
+{
+    if (company == JR_CENTRAL && index == 1) {
+        return "double";
+    }
+    return "single";
+}
+
 // 仮実装: UTF-8完全正規化は行わず、主要な表記ゆれのみ吸収する
 static std::string normalize_station_token(std::string text)
 {
@@ -436,6 +478,7 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("rule114ApplyTerminal", fi.getRule114apply_terminal_station()),
         [&]() -> std::string {
             std::ostringstream oss;
+            const int32_t stockCompany = fi.getStockDiscountCompany();
 
             oss << json_encoder::begin_array("stockDiscounts");
             for (int32_t i = 0; true; i++) {
@@ -456,6 +499,12 @@ std::string az_route::get_fare_info_object_json() {
                         (fareStock + fi.getFareForCompanyline()));
                 oss << ",";
                 oss << json_encoder::pair("stockDiscountTitle", title);
+                oss << ",";
+                oss << json_encoder::pair("company", stock_discount_company_name(stockCompany));
+                oss << ",";
+                oss << json_encoder::pair("discountRate", stock_discount_rate(stockCompany, i));
+                oss << ",";
+                oss << json_encoder::pair("discountKind", stock_discount_kind(stockCompany, i));
                 oss << "},";
             }
             std::string str = oss.str();
