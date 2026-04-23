@@ -160,6 +160,11 @@ namespace json_encoder {
         return oss.str();
     }
 
+    // const char*
+    inline std::string pair(const std::string& key, const char* value) {
+        return pair(key, value ? std::string(value) : std::string(""));
+    }
+
     // bool
     inline std::string pair(const std::string& key, bool value) {
         std::ostringstream oss;
