@@ -352,7 +352,7 @@ static int build_route_from_tokens(az_route& route, const std::vector<std::strin
 
     int result = -999;
     for (std::size_t i = 0; i < tokens.size();) {
-        if (route.get_route_count() == 0) {
+        if (i == 0) {
             if (i + 1 < tokens.size()) {
                 result = route.add_start_route(tokens[i], tokens[i + 1]);
             } else {
@@ -364,10 +364,7 @@ static int build_route_from_tokens(az_route& route, const std::vector<std::strin
                 return result;
             }
             i += 1;
-            continue;
-        }
-
-        if (i + 1 < tokens.size()) {
+        } else if (i + 1 < tokens.size()) {
             result = route.add_route(tokens[i], tokens[i + 1]);
             if (result < 0) {
                 fail_item = tokens[i + 1];
@@ -375,31 +372,30 @@ static int build_route_from_tokens(az_route& route, const std::vector<std::strin
                 return result;
             }
             i += 2;
-            continue;
-        }
-
-        const std::vector<int32_t> station_candidates = resolve_station_candidates_anywhere(tokens[i]);
-        if (station_candidates.empty()) {
-            fail_item = tokens[i];
-            offset = static_cast<int>(i);
-            return -200;
-        }
-
-        result = -200;
-        for (int32_t station_id : station_candidates) {
-            const int rc = try_auto_route_candidate(route, 1, station_id);
-            if (rc >= 0) {
-                result = rc;
-                break;
+        } else {
+            const std::vector<int32_t> station_candidates = resolve_station_candidates_anywhere(tokens[i]);
+            if (station_candidates.empty()) {
+                fail_item = tokens[i];
+                offset = static_cast<int>(i);
+                return -200;
             }
-            result = rc;
+
+            result = -200;
+            for (int32_t station_id : station_candidates) {
+                const int rc = try_auto_route_candidate(route, 1, station_id);
+                if (rc >= 0) {
+                    result = rc;
+                    break;
+                }
+                result = rc;
+            }
+            if (result < 0) {
+                fail_item = tokens[i];
+                offset = static_cast<int>(i);
+                return result;
+            }
+            i += 1;
         }
-        if (result < 0) {
-            fail_item = tokens[i];
-            offset = static_cast<int>(i);
-            return result;
-        }
-        i += 1;
     }
 
     fail_item.clear();
