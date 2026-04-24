@@ -678,7 +678,12 @@ int az_route::add_start_route(std::string station)
 
 int az_route::add_start_route(std::string station, std::string next_line)
 {
-    const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(station, next_line);
+    bool osakakan_detour = false;
+    const std::string line_token = RouteUtil::ExtractRouteLineToken(next_line, &osakakan_detour);
+    if (osakakan_detour) {
+        refRouteFlag().osakakan_detour = true;
+    }
+    const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(station, line_token);
     for (int32_t station_id : station_candidates) {
         az_route snapshot;
         snapshot.assign(*this, this->get_route_count());
@@ -705,9 +710,14 @@ int az_route::add_route(std::string line, std::string station)
         RouteUtil::PushUniqueInt(target_station_candidates, exact_station_id);
     }
 
-    std::vector<int32_t> line_candidates = RouteUtil::ResolveLineCandidatesFromStation(current_station_id, line, target_station_candidates);
+    bool osakakan_detour = false;
+    const std::string line_token = RouteUtil::ExtractRouteLineToken(line, &osakakan_detour);
+    if (osakakan_detour) {
+        refRouteFlag().osakakan_detour = true;
+    }
+    std::vector<int32_t> line_candidates = RouteUtil::ResolveLineCandidatesFromStation(current_station_id, line_token, target_station_candidates);
     if (line_candidates.empty()) {
-        const int32_t exact_line_id = RouteUtil::GetLineId(line.c_str());
+        const int32_t exact_line_id = RouteUtil::GetLineId(line_token.c_str());
         if (exact_line_id <= 0) {
             return -300;
         }

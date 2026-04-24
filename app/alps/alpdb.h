@@ -1115,6 +1115,7 @@ public:
 
     static tstring  NormalizeRouteToken(const tstring& text);
     static tstring  RouteTokenBaseName(const tstring& text);
+    static tstring  ExtractRouteLineToken(const tstring& token, bool* osakakan_detour = NULL);
     static void     PushUniqueInt(vector<int32_t>& values, int32_t value);
     static vector<int32_t> ResolveLineCandidatesFromStation(int32_t current_station_id, const tstring& input_line, const vector<int32_t>& target_station_candidates);
     static vector<int32_t> ResolveStationCandidatesOnLine(int32_t line_id, const tstring& input_station);

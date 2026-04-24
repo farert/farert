@@ -3627,7 +3627,7 @@ tstring RouteUtil::RouteTokenBaseName(const tstring& text)
     return normalized.substr(0, pos);
 }
 
-static tstring setup_route_extract_line_token(const tstring& token, bool* osakakan_detour = NULL)
+tstring RouteUtil::ExtractRouteLineToken(const tstring& token, bool* osakakan_detour)
 {
     if (osakakan_detour != NULL) {
         *osakakan_detour = false;
@@ -3859,7 +3859,7 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
     for (size_t i = 0; i < tokens.size();) {
         if (i == 0) {
             if (i + 1 < tokens.size()) {
-                const tstring next_line = setup_route_extract_line_token(tokens[i + 1]);
+                const tstring next_line = RouteUtil::ExtractRouteLineToken(tokens[i + 1]);
                 const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(tokens[i], next_line);
                 result = -200;
                 for (int32_t station_id : station_candidates) {
@@ -3884,7 +3884,7 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
         } else if (i + 1 < tokens.size()) {
             const int32_t current_station_id = route.routeList().empty() ? 0 : route.routeList().back().stationId;
             bool osakakan_detour = false;
-            const tstring line_token = setup_route_extract_line_token(tokens[i], &osakakan_detour);
+            const tstring line_token = RouteUtil::ExtractRouteLineToken(tokens[i], &osakakan_detour);
             if (osakakan_detour) {
                 route.refRouteFlag().osakakan_detour = true;
             }
