@@ -3604,7 +3604,7 @@ static void setup_route_replace_all(tstring& text, LPCTSTR from, LPCTSTR to)
     }
 }
 
-static tstring setup_route_normalize_input_delimiters(const tstring& source_text)
+static tstring setup_route_normalize_parser_input(const tstring& source_text)
 {
     tstring text = source_text;
     setup_route_replace_all(text, _T("，"), _T(","));
@@ -3614,12 +3614,11 @@ static tstring setup_route_normalize_input_delimiters(const tstring& source_text
 
 tstring RouteUtil::NormalizeRouteToken(const tstring& source_text)
 {
-    tstring text = source_text;
+    tstring text = setup_route_normalize_parser_input(source_text);
     setup_route_replace_all(text, _T(" "), _T(""));
     setup_route_replace_all(text, _T("\t"), _T(""));
     setup_route_replace_all(text, _T("\r"), _T(""));
     setup_route_replace_all(text, _T("\n"), _T(""));
-    setup_route_replace_all(text, _T("　"), _T(""));
     setup_route_replace_all(text, _T("（"), _T("("));
     setup_route_replace_all(text, _T("）"), _T(")"));
     return text;
@@ -3841,7 +3840,7 @@ static vector<tstring> setup_route_tokenize_fallback_input(LPCTSTR route_str)
     const static TCHAR* token = _T(", |/\t\r\n");
     vector<tstring> tokens;
     TCHAR* ctx = NULL;
-    const tstring normalized_route = setup_route_normalize_input_delimiters(route_str);
+    const tstring normalized_route = setup_route_normalize_parser_input(route_str);
     const size_t len = normalized_route.length() + 1;
     TCHAR* mutable_route = new TCHAR[len];
     _tcscpy_s(mutable_route, len, normalized_route.c_str());
@@ -4013,7 +4012,7 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
 
     removeAll();
 
-    const tstring normalized_route = setup_route_normalize_input_delimiters(route_str);
+    const tstring normalized_route = setup_route_normalize_parser_input(route_str);
     len = (int32_t)normalized_route.length() + 1;
     TCHAR *rstr = new TCHAR [len];
     if (rstr == NULL) {
