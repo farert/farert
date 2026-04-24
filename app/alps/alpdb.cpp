@@ -3604,6 +3604,14 @@ static void setup_route_replace_all(tstring& text, LPCTSTR from, LPCTSTR to)
     }
 }
 
+static tstring setup_route_normalize_input_delimiters(const tstring& source_text)
+{
+    tstring text = source_text;
+    setup_route_replace_all(text, _T("，"), _T(","));
+    setup_route_replace_all(text, _T("　"), _T(" "));
+    return text;
+}
+
 tstring RouteUtil::NormalizeRouteToken(const tstring& source_text)
 {
     tstring text = source_text;
@@ -3833,9 +3841,10 @@ static vector<tstring> setup_route_tokenize_fallback_input(LPCTSTR route_str)
     const static TCHAR* token = _T(", |/\t\r\n");
     vector<tstring> tokens;
     TCHAR* ctx = NULL;
-    const size_t len = _tcslen(route_str) + 1;
+    const tstring normalized_route = setup_route_normalize_input_delimiters(route_str);
+    const size_t len = normalized_route.length() + 1;
     TCHAR* mutable_route = new TCHAR[len];
-    _tcscpy_s(mutable_route, len, route_str);
+    _tcscpy_s(mutable_route, len, normalized_route.c_str());
 
     for (TCHAR* p = _tcstok_s(mutable_route, token, &ctx); p; p = _tcstok_s(NULL, token, &ctx)) {
         tokens.push_back(p);
@@ -4004,12 +4013,13 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
 
     removeAll();
 
-    len = (int32_t)_tcslen(route_str) + 1;
+    const tstring normalized_route = setup_route_normalize_input_delimiters(route_str);
+    len = (int32_t)normalized_route.length() + 1;
     TCHAR *rstr = new TCHAR [len];
     if (rstr == NULL) {
         return -1;
     }
-    _tcscpy_s(rstr, len, route_str);
+    _tcscpy_s(rstr, len, normalized_route.c_str());
     len = _tcslen(TITLE_NOTSAMEKOKURAHAKATASHINZAI);
     if (0 == _tcsncmp(rstr, TITLE_NOTSAMEKOKURAHAKATASHINZAI, len)) {
         route_flag.notsamekokurahakatashinzai = true;
