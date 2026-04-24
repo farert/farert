@@ -441,6 +441,31 @@ int main() {
     }
 
     // ========================================
+    // 11.65. build_route() 省略・曖昧・大阪環状線遠回りの回帰テスト
+    // ========================================
+    TEST_SECTION("11.65. build_route() 回帰テスト");
+
+    az_route regression_route_1;
+    std::string regression_result_1 = regression_route_1.build_route("千歳 千歳線 白石 函館線 岩見沢 室蘭線 追分");
+    TEST_RESULT("build_route(千歳→追分)", regression_result_1);
+    TEST_RESULT("千歳→追分の経路", regression_route_1.route_script());
+
+    az_route regression_route_2;
+    std::string regression_result_2 = regression_route_2.build_route("長崎 西九州新幹線 諫早 長崎線 長与");
+    TEST_RESULT("build_route(長崎→長与)", regression_result_2);
+    TEST_RESULT("長崎→長与の経路", regression_route_2.route_script());
+
+    az_route regression_route_3;
+    std::string regression_result_3 = regression_route_3.build_route("大阪 r大阪環状線 京橋");
+    TEST_RESULT("build_route(大阪→京橋 detour)", regression_result_3);
+    TEST_RESULT("大阪→京橋 detour の経路", regression_route_3.route_script());
+
+    az_route regression_route_4;
+    std::string regression_result_4 = regression_route_4.build_route("長崎 西九州新幹線 諫早 長崎線 新鳥栖 九州新幹線 博多 山陽新幹線 新大阪 東海道線 大阪 r大阪環状線 京橋 片町線 木津");
+    TEST_RESULT("build_route(長崎→木津 detour)", regression_result_4);
+    TEST_RESULT("長崎→木津 detour の経路", regression_route_4.route_script());
+
+    // ========================================
     // 11.7. build_route() 失敗パターンのテスト
     // ========================================
     TEST_SECTION("11.7. build_route() 失敗パターンのテスト");
