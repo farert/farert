@@ -3604,8 +3604,9 @@ static void setup_route_replace_all(tstring& text, LPCTSTR from, LPCTSTR to)
     }
 }
 
-static tstring setup_route_normalize_token(tstring text)
+tstring RouteUtil::NormalizeRouteToken(const tstring& source_text)
 {
+    tstring text = source_text;
     setup_route_replace_all(text, _T(" "), _T(""));
     setup_route_replace_all(text, _T("\t"), _T(""));
     setup_route_replace_all(text, _T("\r"), _T(""));
@@ -3616,9 +3617,9 @@ static tstring setup_route_normalize_token(tstring text)
     return text;
 }
 
-static tstring setup_route_token_base_name(const tstring& text)
+tstring RouteUtil::RouteTokenBaseName(const tstring& text)
 {
-    const tstring normalized = setup_route_normalize_token(text);
+    const tstring normalized = RouteUtil::NormalizeRouteToken(text);
     const tstring::size_type pos = normalized.find(_T('('));
     if (pos == tstring::npos) {
         return normalized;
@@ -3645,7 +3646,7 @@ static bool setup_route_contains_int(const vector<int32_t>& values, int32_t valu
     return find(values.cbegin(), values.cend(), value) != values.cend();
 }
 
-static void setup_route_push_unique_int(vector<int32_t>& values, int32_t value)
+void RouteUtil::PushUniqueInt(vector<int32_t>& values, int32_t value)
 {
     if ((value > 0) && !setup_route_contains_int(values, value)) {
         values.push_back(value);
@@ -3668,26 +3669,26 @@ static bool setup_route_line_contains_station(int32_t line_id, int32_t station_i
     return false;
 }
 
-static vector<int32_t> setup_route_resolve_line_candidates_from_station(
+vector<int32_t> RouteUtil::ResolveLineCandidatesFromStation(
     int32_t current_station_id,
     const tstring& input_line,
     const vector<int32_t>& target_station_candidates)
 {
     vector<int32_t> line_ids;
     const int32_t exact_line_id = RouteUtil::GetLineId(input_line.c_str());
-    const tstring normalized_input = setup_route_normalize_token(input_line);
-    const tstring input_base = setup_route_token_base_name(input_line);
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_line);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_line);
 
     if ((exact_line_id > 0) && setup_route_line_contains_station(exact_line_id, current_station_id)) {
-        setup_route_push_unique_int(line_ids, exact_line_id);
+        RouteUtil::PushUniqueInt(line_ids, exact_line_id);
     }
 
     DBO dbo = RouteUtil::Enum_line_of_stationId(current_station_id);
     while (dbo.moveNext()) {
         const tstring line_name = dbo.getText(0);
         const int32_t line_id = dbo.getInt(1);
-        const tstring normalized_line_name = setup_route_normalize_token(line_name);
-        const tstring line_base = setup_route_token_base_name(line_name);
+        const tstring normalized_line_name = RouteUtil::NormalizeRouteToken(line_name);
+        const tstring line_base = RouteUtil::RouteTokenBaseName(line_name);
 
         if ((normalized_line_name != normalized_input) && (line_base != input_base)) {
             continue;
@@ -3706,49 +3707,49 @@ static vector<int32_t> setup_route_resolve_line_candidates_from_station(
             }
         }
 
-        setup_route_push_unique_int(line_ids, line_id);
+        RouteUtil::PushUniqueInt(line_ids, line_id);
     }
 
     return line_ids;
 }
 
-static vector<int32_t> setup_route_resolve_station_candidates_on_line(int32_t line_id, const tstring& input_station)
+vector<int32_t> RouteUtil::ResolveStationCandidatesOnLine(int32_t line_id, const tstring& input_station)
 {
     vector<int32_t> station_ids;
     const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    const tstring normalized_input = setup_route_normalize_token(input_station);
-    const tstring input_base = setup_route_token_base_name(input_station);
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
 
     if (exact_station_id > 0) {
-        setup_route_push_unique_int(station_ids, exact_station_id);
+        RouteUtil::PushUniqueInt(station_ids, exact_station_id);
     }
 
     DBO dbo = RouteUtil::Enum_station_of_lineId(line_id);
     while (dbo.moveNext()) {
         const int32_t station_id = dbo.getInt(1);
         const tstring station_name = RouteUtil::StationNameEx(station_id);
-        const tstring normalized_station_name = setup_route_normalize_token(station_name);
-        const tstring station_base = setup_route_token_base_name(station_name);
+        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
 
         if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
-            setup_route_push_unique_int(station_ids, station_id);
+            RouteUtil::PushUniqueInt(station_ids, station_id);
         }
     }
 
     return station_ids;
 }
 
-static vector<int32_t> setup_route_resolve_station_candidates_for_start(const tstring& input_station, const tstring& next_line)
+vector<int32_t> RouteUtil::ResolveStationCandidatesForStart(const tstring& input_station, const tstring& next_line)
 {
     vector<int32_t> station_ids;
     const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
     if (exact_station_id > 0) {
-        setup_route_push_unique_int(station_ids, exact_station_id);
+        RouteUtil::PushUniqueInt(station_ids, exact_station_id);
     }
 
     const int32_t next_line_id = RouteUtil::GetLineId(next_line.c_str());
-    const tstring normalized_input = setup_route_normalize_token(input_station);
-    const tstring input_base = setup_route_token_base_name(input_station);
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
 
     if (next_line_id <= 0) {
         return station_ids;
@@ -3766,18 +3767,18 @@ static vector<int32_t> setup_route_resolve_station_candidates_for_start(const ts
     while (dbo.moveNext()) {
         const int32_t station_id = dbo.getInt(0);
         const tstring station_name = tstring(dbo.getText(1)) + tstring(dbo.getText(2));
-        const tstring normalized_station_name = setup_route_normalize_token(station_name);
-        const tstring station_base = setup_route_token_base_name(station_name);
+        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
 
         if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
-            setup_route_push_unique_int(station_ids, station_id);
+            RouteUtil::PushUniqueInt(station_ids, station_id);
         }
     }
 
     return station_ids;
 }
 
-static int32_t setup_route_try_add_route_candidate(Route& route, int32_t line_id, int32_t station_id)
+int32_t RouteUtil::TryAddRouteCandidate(Route& route, int32_t line_id, int32_t station_id)
 {
     Route snapshot;
     snapshot.assign(route, static_cast<int32_t>(route.routeList().size()));
@@ -3788,7 +3789,7 @@ static int32_t setup_route_try_add_route_candidate(Route& route, int32_t line_id
     return rc;
 }
 
-static int32_t setup_route_try_auto_route_candidate(Route& route, uint8_t use_bullet_train, int32_t station_id)
+int32_t RouteUtil::TryAutoRouteCandidate(Route& route, uint8_t use_bullet_train, int32_t station_id)
 {
     Route snapshot;
     snapshot.assign(route, static_cast<int32_t>(route.routeList().size()));
@@ -3799,15 +3800,15 @@ static int32_t setup_route_try_auto_route_candidate(Route& route, uint8_t use_bu
     return rc;
 }
 
-static vector<int32_t> setup_route_resolve_station_candidates_anywhere(const tstring& input_station)
+vector<int32_t> RouteUtil::ResolveStationCandidatesAnywhere(const tstring& input_station)
 {
     vector<int32_t> station_ids;
     const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    const tstring normalized_input = setup_route_normalize_token(input_station);
-    const tstring input_base = setup_route_token_base_name(input_station);
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
 
     if (exact_station_id > 0) {
-        setup_route_push_unique_int(station_ids, exact_station_id);
+        RouteUtil::PushUniqueInt(station_ids, exact_station_id);
     }
 
     static const char tsql[] =
@@ -3816,11 +3817,11 @@ static vector<int32_t> setup_route_resolve_station_candidates_anywhere(const tst
     while (dbo.moveNext()) {
         const int32_t station_id = dbo.getInt(0);
         const tstring station_name = tstring(dbo.getText(1)) + tstring(dbo.getText(2));
-        const tstring normalized_station_name = setup_route_normalize_token(station_name);
-        const tstring station_base = setup_route_token_base_name(station_name);
+        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
 
         if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
-            setup_route_push_unique_int(station_ids, station_id);
+            RouteUtil::PushUniqueInt(station_ids, station_id);
         }
     }
 
@@ -3859,7 +3860,7 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
         if (i == 0) {
             if (i + 1 < tokens.size()) {
                 const tstring next_line = setup_route_extract_line_token(tokens[i + 1]);
-                const vector<int32_t> station_candidates = setup_route_resolve_station_candidates_for_start(tokens[i], next_line);
+                const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(tokens[i], next_line);
                 result = -200;
                 for (int32_t station_id : station_candidates) {
                     Route snapshot;
@@ -3896,10 +3897,10 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
 
             vector<int32_t> target_station_candidates;
             if (exact_station_id > 0) {
-                setup_route_push_unique_int(target_station_candidates, exact_station_id);
+                RouteUtil::PushUniqueInt(target_station_candidates, exact_station_id);
             }
 
-            vector<int32_t> line_candidates = setup_route_resolve_line_candidates_from_station(current_station_id, line_token, target_station_candidates);
+            vector<int32_t> line_candidates = RouteUtil::ResolveLineCandidatesFromStation(current_station_id, line_token, target_station_candidates);
             if (line_candidates.empty()) {
                 const int32_t exact_line_id = RouteUtil::GetLineId(line_token.c_str());
                 if (exact_line_id <= 0) {
@@ -3907,14 +3908,14 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
                     offset = static_cast<int32_t>(i);
                     return -300;
                 }
-                setup_route_push_unique_int(line_candidates, exact_line_id);
+                RouteUtil::PushUniqueInt(line_candidates, exact_line_id);
             }
 
             if (exact_station_id <= 0) {
                 for (int32_t line_id : line_candidates) {
-                    const vector<int32_t> station_candidates = setup_route_resolve_station_candidates_on_line(line_id, tokens[i + 1]);
+                    const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, tokens[i + 1]);
                     for (int32_t station_id : station_candidates) {
-                        setup_route_push_unique_int(target_station_candidates, station_id);
+                        RouteUtil::PushUniqueInt(target_station_candidates, station_id);
                     }
                 }
             }
@@ -3927,9 +3928,9 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
 
             result = -200;
             for (int32_t line_id : line_candidates) {
-                const vector<int32_t> station_candidates = setup_route_resolve_station_candidates_on_line(line_id, tokens[i + 1]);
+                const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, tokens[i + 1]);
                 for (int32_t station_id : station_candidates) {
-                    const int32_t rc = setup_route_try_add_route_candidate(route, line_id, station_id);
+                    const int32_t rc = RouteUtil::TryAddRouteCandidate(route, line_id, station_id);
                     if (rc >= 0) {
                         result = rc;
                         break;
@@ -3947,7 +3948,7 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
             }
             i += 2;
         } else {
-            const vector<int32_t> station_candidates = setup_route_resolve_station_candidates_anywhere(tokens[i]);
+            const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesAnywhere(tokens[i]);
             if (station_candidates.empty()) {
                 fail_item = tokens[i];
                 offset = static_cast<int32_t>(i);
@@ -3956,7 +3957,7 @@ static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& toke
 
             result = -200;
             for (int32_t station_id : station_candidates) {
-                const int32_t rc = setup_route_try_auto_route_candidate(route, 1, station_id);
+                const int32_t rc = RouteUtil::TryAutoRouteCandidate(route, 1, station_id);
                 if (rc >= 0) {
                     result = rc;
                     break;

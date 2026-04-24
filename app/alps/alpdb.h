@@ -1086,6 +1086,8 @@ public:
  *
  */
 /* All class method Class */
+class Route;
+
 class RouteUtil
 {
 public:
@@ -1110,6 +1112,16 @@ public:
     static tstring  LineName(int32_t id);
     static tstring  PrefectName(int32_t id);
     static tstring  CompanyName(int32_t id);
+
+    static tstring  NormalizeRouteToken(const tstring& text);
+    static tstring  RouteTokenBaseName(const tstring& text);
+    static void     PushUniqueInt(vector<int32_t>& values, int32_t value);
+    static vector<int32_t> ResolveLineCandidatesFromStation(int32_t current_station_id, const tstring& input_line, const vector<int32_t>& target_station_candidates);
+    static vector<int32_t> ResolveStationCandidatesOnLine(int32_t line_id, const tstring& input_station);
+    static vector<int32_t> ResolveStationCandidatesForStart(const tstring& input_station, const tstring& next_line);
+    static vector<int32_t> ResolveStationCandidatesAnywhere(const tstring& input_station);
+    static int32_t  TryAddRouteCandidate(Route& route, int32_t line_id, int32_t station_id);
+    static int32_t  TryAutoRouteCandidate(Route& route, uint8_t use_bullet_train, int32_t station_id);
 
     static tstring  CoreAreaCenterName(int32_t id);
 
