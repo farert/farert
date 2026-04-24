@@ -465,6 +465,16 @@ int main() {
     TEST_RESULT("build_route(長崎→木津 detour)", regression_result_4);
     TEST_RESULT("長崎→木津 detour の経路", regression_route_4.route_script());
 
+    az_route regression_route_5;
+    std::string regression_result_5 = regression_route_5.build_route("上越妙高 えちごトキめき鉄道（妙高はねうま） 直江津");
+    TEST_RESULT("build_route(上越妙高→直江津 tokimeki)", regression_result_5);
+    TEST_RESULT("上越妙高→直江津 tokimeki の経路", regression_route_5.route_script());
+
+    az_route regression_route_6;
+    std::string regression_result_6 = regression_route_6.build_route("直江津 えちごトキめき鉄道（日本海ひすい） 糸魚川");
+    TEST_RESULT("build_route(直江津→糸魚川 tokimeki)", regression_result_6);
+    TEST_RESULT("直江津→糸魚川 tokimeki の経路", regression_route_6.route_script());
+
     // ========================================
     // 11.7. build_route() 失敗パターンのテスト
     // ========================================
