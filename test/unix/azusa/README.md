@@ -54,7 +54,7 @@ source ../all/start.sh
 ./farecli 東京 東海道線 品川 山手線 新宿 中央東線 甲府 身延線 国母
 ```
 
-この形式では `add_start_route()` と `add_route()` を使用して経路を構築します。
+この形式でも、内部ではトークン列をスペース結合して `az_route::build_route()` に渡し、共通の経路パーサで構築します。
 
 ### 3. 自動経路検索（偶数個）
 
@@ -62,7 +62,7 @@ source ../all/start.sh
 ./farecli 東京 新大阪
 ```
 
-偶数個の引数を指定すると、`auto_route()` を使用して自動的に経路を検索します（新幹線使用）。
+偶数個の引数を指定すると、内部では `az_route::build_route()` を経由し、最後の単独駅を `auto_route()` 相当として解釈します（新幹線使用）。
 
 ### 4. JSON出力
 
@@ -122,8 +122,8 @@ source ../all/start.sh
 ### 2. 奇数個のトークン
 
 引数が奇数個の場合:
-- 最初のトークン: `az_route::add_start_route()` で出発駅を追加
-- 残りのトークン: 2つずつ（路線、駅）のペアとして `az_route::add_route()` で追加
+- トークン列をスペース区切りの経路文字列として `az_route::build_route()` に渡す
+- `setup_route()` 側で、出発駅 + 路線/駅ペアの経路として解釈する
 
 ```bash
 ./farecli 東京 東海道線 品川 山手線 新宿
@@ -134,8 +134,8 @@ source ../all/start.sh
 ### 3. 偶数個のトークン
 
 引数が偶数個の場合:
-- 最初のトークン: `az_route::add_start_route()` で出発駅を追加
-- 最後のトークン: `az_route::auto_route()` で自動経路検索
+- トークン列をスペース区切りの経路文字列として `az_route::build_route()` に渡す
+- `setup_route()` 側で、最後の単独駅を `auto_route()` 相当として解釈する
 
 ```bash
 ./farecli 東京 新大阪
@@ -187,7 +187,7 @@ source ../all/start.sh
 - `close_database()` - データベースのクローズ
 
 ### 経路構築
-- `az_route::build_route(const std::string& route_str)` - 経路文字列からの構築
+- `az_route::build_route(const std::string& route_str)` - 経路文字列からの構築（`farecli` の全入力形式で使用）
 - `az_route::add_start_route(std::string station)` - 出発駅の追加
 - `az_route::add_route(std::string line, std::string station)` - 経路の追加
 - `az_route::auto_route(int useBulletTrain, std::string destinationStation)` - 自動経路検索
