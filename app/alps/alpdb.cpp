@@ -3828,7 +3828,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesAnywhere(const tstring& input
     return station_ids;
 }
 
-static vector<tstring> setup_route_tokenize_route_string(LPCTSTR route_str)
+static vector<tstring> setup_route_tokenize_fallback_input(LPCTSTR route_str)
 {
     const static TCHAR* token = _T(", |/\t\r\n");
     vector<tstring> tokens;
@@ -3845,7 +3845,7 @@ static vector<tstring> setup_route_tokenize_route_string(LPCTSTR route_str)
     return tokens;
 }
 
-static int32_t setup_route_from_tokens(Route& route, const vector<tstring>& tokens, tstring& fail_item, int32_t& offset)
+static int32_t setup_route_parse_fallback_tokens(Route& route, const vector<tstring>& tokens, tstring& fail_item, int32_t& offset)
 {
     if (tokens.empty()) {
         fail_item.clear();
@@ -4066,8 +4066,8 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
     if (rc < 0) {
         tstring fallback_fail_item;
         int32_t fallback_offset = 0;
-        const vector<tstring> fallback_tokens = setup_route_tokenize_route_string(route_body.c_str());
-        const int32_t fallback_rc = setup_route_from_tokens(*this, fallback_tokens, fallback_fail_item, fallback_offset);
+        const vector<tstring> fallback_tokens = setup_route_tokenize_fallback_input(route_body.c_str());
+        const int32_t fallback_rc = setup_route_parse_fallback_tokens(*this, fallback_tokens, fallback_fail_item, fallback_offset);
         if (fallback_rc >= 0) {
             rc = fallback_rc;
             p = NULL;
