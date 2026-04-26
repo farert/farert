@@ -1406,6 +1406,16 @@ private:
         int32_t deep_count = 0;
         int32_t locost_fare = 0;
         static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
+        // 114条判定用に、新幹線区間内で最初に並行在来線が途切れる駅を得る
+        static int32_t RetrieveFirstHardGapStationForRule114(int32_t line_id,
+                                                             int32_t station_id1,
+                                                             int32_t station_id2);
+        // 114条探索で、直前に通った新幹線の並行在来線へ戻る向きの探索を除外する
+        static bool ShouldSkipParallelZairaiDirectionForRule114(int32_t shinkansen_line_id,
+                                                                int32_t shinkansen_station_id,
+                                                                int32_t junction_line_id,
+                                                                int32_t junction_station_id,
+                                                                int32_t cond_km);
         int32_t sales_km_special = 0;
     public:
         Fare fare;
