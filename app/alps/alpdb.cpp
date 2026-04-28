@@ -6805,10 +6805,11 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
     } else {
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
         route_list_special.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
-        TRACE(_T("[114](1) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
-        TRACE(_T("[114](2) %s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+        TRACE(_T("[114](raw-raw) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        TRACE(_T("[114](raw-r86) %s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
 
         CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
+        TRACE(_T("[114](pre r68) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
         CalcRoute::ReRouteRule69j(route_list, &route_work);
         route_list.assign(route_work.cbegin(), route_work.cend());
 
@@ -6816,8 +6817,8 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
         CalcRoute::ReRouteRule69j(route_list_special, &route_work);
         route_list_special.assign(route_work.cbegin(), route_work.cend());
 
-        TRACE(_T("[114](1) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
-        TRACE(_T("[114](2) %s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+        TRACE(_T("[114](cookraw) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        TRACE(_T("[114](cookr86) %s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
         return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
     }
@@ -6853,8 +6854,7 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 //  あき亀山 可部線 広島 山陽新幹線 新下関 山陽線 幡生
 //  では在来線変換しない
 //  指定した新幹線区間 station_id1 -> station_id2 の途中駅を順に見て、t_lines.lflg>>19 の
-//  並行在来線情報が 0 になる最初の駅を返しています。つまり「この先はもう新幹線と1対1で対応する並行在来線として扱
-//  えない」という境界駅を見つけています。見つからなければ 0 を返します。
+//  並行在来線情報が 0 になる最初の駅を返す。
 int32_t CalcRoute::CRule114::RetrieveFirstHardGapStationForRule114(int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
     const static char tsql[] =
@@ -6890,6 +6890,12 @@ int32_t CalcRoute::CRule114::RetrieveFirstHardGapStationForRule114(int32_t line_
     return 0;
 }
 
+// 新幹線 -> 在来線変換
+// 方針：両端で在来線へ変換できるところは変換し、中間はどうでも良い。新幹線のままで良い。
+//     どこまでかは、両端から内側へ向かい、並行在来線が別れるまで
+//     言い換えると、在来線接続駅ではない駅が発見されたらその手前の在来線接続駅まで
+//    （東京からなら品川まで）在来線へ変換する
+//      両端が在来線駅ではない場合または在来線駅
 bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 {
     vector<RouteItem>::iterator ite = route->begin();
@@ -6929,30 +6935,32 @@ bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>*
                  && (0 < RouteUtil::GetHZLine(ite->lineId, station_id1n, station_id1))) {
                     right_boundary_station_id = station_id1n;
                 }
-                TRACE(_T("hard_gap_station_id: %s, left=%s(%s), right=%s(%s)\n"), SNAME(hard_gap_station_id), SNAME(left_boundary_station_id), SNAME(station_id1), SNAME(right_boundary_station_id), SNAME(station_id1n));
+
                 if ((0 < left_boundary_station_id)
-                 && (0 < right_boundary_station_id)
-                 && (left_boundary_station_id != right_boundary_station_id)) {
+                 && (station_id1 != left_boundary_station_id)) {
                     const int32_t original_station_id = station_id1n;
                     const int32_t bullet_line_id = ite->lineId;
 
-                    if (station_id1 != left_boundary_station_id) {
-                        ite->stationId = left_boundary_station_id;
-                        ite->refresh();
-                        station_id1n = left_boundary_station_id;
-                        ++ite;
-                        ite = route->insert(ite, RouteItem(bullet_line_id, original_station_id));
-                        --ite;
-                    } else if (station_id1n != right_boundary_station_id) {
-                        ite->stationId = right_boundary_station_id;
-                        ite->refresh();
-                        station_id1n = right_boundary_station_id;
-                        ++ite;
-                        ite = route->insert(ite, RouteItem(bullet_line_id, original_station_id));
-                        goto n1;
-                    } else {
-                        goto n1;
-                    }
+                    ite->stationId = left_boundary_station_id;
+                    ite->refresh();
+                    station_id1n = left_boundary_station_id;
+                    ++ite;
+                    ite = route->insert(ite, RouteItem(bullet_line_id, original_station_id));
+                    --ite;
+                } else if ((0 < right_boundary_station_id)
+                        && (station_id1n != right_boundary_station_id)) {
+                    const int32_t original_station_id = station_id1n;
+                    const int32_t bullet_line_id = ite->lineId;
+
+                    ite->stationId = right_boundary_station_id;
+                    ite->refresh();
+                    station_id1n = right_boundary_station_id;
+                    ++ite;
+                    ite = route->insert(ite, RouteItem(bullet_line_id, original_station_id));
+                    --ite;
+                    goto n1;
+                } else {
+                    goto n1;
                 }
             }
             zline = RouteUtil::EnumHZLine(ite->lineId, station_id1, station_id1n);
@@ -7380,6 +7388,9 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
         TRACE("    *** update lowcost %d-> %d ***\n", locost_fare, fare_applied);
         if (locost_fare != normal_fare && locost_fare != fare_applied) {
             // ここに来ることはないので（若松-佐伯除く）、114運賃は通常一つ検出できれば以降検索しなくても良い。
+            // あき亀山 可部線 広島 山陽新幹線 新下関
+            // 大阪 東海道線 新大阪 山陽新幹線 岡山
+            //  :
             ASSERT(FALSE);
         }
         if ((0 == fare.sales_km) || (fi.getJRSalesKm() < fare.sales_km)) {
@@ -7416,65 +7427,6 @@ vector<int32_t> CalcRoute::CRule114::ArrayOfLinesOfStationId(int32_t junction_st
         ASSERT(FALSE);
     }
     return results; 
-}
-
-// 114条探索で、直前の新幹線区間と重複する並行在来線方向を除外する
-//
-// @param [in] shinkansen_line_id     直前に通った新幹線路線
-// @param [in] shinkansen_station_id  直前の新幹線区間の相手側駅
-// @param [in] junction_line_id       分岐先路線
-// @param [in] junction_station_id    分岐駅
-// @param [in] cond_km                探索方向付き距離条件
-//
-// @retval true  並行在来線を戻る向きなので探索しない
-// @retval false それ以外
-bool CalcRoute::CRule114::ShouldSkipParallelZairaiDirectionForRule114(int32_t shinkansen_line_id,
-                                                                      int32_t shinkansen_station_id,
-                                                                      int32_t junction_line_id,
-                                                                      int32_t junction_station_id,
-                                                                      int32_t cond_km)
-{
-    int32_t overlap_line_id;
-    int32_t overlap_anchor_station_id;
-    int32_t overlap_dir;
-
-    if (!IS_SHINKANSEN_LINE(shinkansen_line_id)) {
-        return false;
-    }
-    overlap_line_id = RouteUtil::GetHZLine(shinkansen_line_id,
-                                           junction_station_id,
-                                           shinkansen_station_id);
-    if ((overlap_line_id == 0xffff) || (overlap_line_id != junction_line_id)) {
-        return false;
-    }
-
-    overlap_anchor_station_id =
-        RouteUtil::NextShinkansenTransferTermInRange(shinkansen_line_id,
-                                                     junction_station_id,
-                                                     shinkansen_station_id);
-    if ((overlap_anchor_station_id == 0)
-     && (0 < RouteUtil::GetHZLine(shinkansen_line_id,
-                                  junction_station_id,
-                                  shinkansen_station_id))) {
-        overlap_anchor_station_id = shinkansen_station_id;
-    }
-    if ((overlap_anchor_station_id == 0)
-     || BIT_CHK(RouteUtil::AttrOfStationOnLineLine(junction_line_id,
-                                                   overlap_anchor_station_id),
-                BSRNOTYET_NA)) {
-        return false;
-    }
-
-    overlap_dir = RouteUtil::DirLine(junction_line_id,
-                                     junction_station_id,
-                                     overlap_anchor_station_id);
-    if ((cond_km < 0) && (overlap_dir == RouteUtil::LDIR_DESC)) {
-        return true;
-    }
-    if ((0 < cond_km) && (overlap_dir == RouteUtil::LDIR_ASC)) {
-        return true;
-    }
-    return false;
 }
 
 //  指定路線・駅からの101/201km到達地点の駅を得る
@@ -7549,26 +7501,8 @@ void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sal
                 TRACE(_T("found junction:%s(%s)\n"), LNAME(jct_line_id), SNAME(last_station_id));
                 if (base_line_id != static_cast<uint32_t>(jct_line_id)) {
                     route_list_replace.push_back(RouteItem(base_line_id, base_station_id)); // 1st station will not used.
-                    if (!ShouldSkipParallelZairaiDirectionForRule114(base_line_id,
-                                                                     base_station_id,
-                                                                     jct_line_id,
-                                                                     last_station_id,
-                                                                     cond_km)) {
-                        get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
-                    } else {
-                        TRACE(_T("skip duplicated 114 direction via parallel zairai: %s(%s)\n"),
-                              LNAME(jct_line_id), SNAME(last_station_id));
-                    }
-                    if (!ShouldSkipParallelZairaiDirectionForRule114(base_line_id,
-                                                                     base_station_id,
-                                                                     jct_line_id,
-                                                                     last_station_id,
-                                                                     -cond_km)) {
-                        get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
-                    } else {
-                        TRACE(_T("skip duplicated 114 direction via parallel zairai(reverse): %s(%s)\n"),
-                              LNAME(jct_line_id), SNAME(last_station_id));
-                    }
+                    get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
+                    get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
                     route_list_replace.pop_back();
                 }
             }

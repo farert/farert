@@ -1410,12 +1410,6 @@ private:
         static int32_t RetrieveFirstHardGapStationForRule114(int32_t line_id,
                                                              int32_t station_id1,
                                                              int32_t station_id2);
-        // 114条探索で、直前に通った新幹線の並行在来線へ戻る向きの探索を除外する
-        static bool ShouldSkipParallelZairaiDirectionForRule114(int32_t shinkansen_line_id,
-                                                                int32_t shinkansen_station_id,
-                                                                int32_t junction_line_id,
-                                                                int32_t junction_station_id,
-                                                                int32_t cond_km);
         int32_t sales_km_special = 0;
     public:
         Fare fare;
