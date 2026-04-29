@@ -1406,10 +1406,6 @@ private:
         int32_t deep_count = 0;
         int32_t locost_fare = 0;
         static vector<int32_t> ArrayOfLinesOfStationId(int32_t station_id);
-        // 114条判定用に、新幹線区間内で最初に並行在来線が途切れる駅を得る
-        static int32_t RetrieveFirstHardGapStationForRule114(int32_t line_id,
-                                                             int32_t station_id1,
-                                                             int32_t station_id2);
         int32_t sales_km_special = 0;
     public:
         Fare fare;

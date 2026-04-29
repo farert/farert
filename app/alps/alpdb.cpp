@@ -6784,10 +6784,10 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 
         // 69を適用したものをroute_list_special へ
         CalcRoute::ReRouteRule69j(route_list, &route_list_special); /* 69条適用(route_list->route_list_special) */
-        CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+        //CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
 
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
-        CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
+        //CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
                             /* 86,87適用前,   86,87適用後 */
         if (!checkOfRule114j(0x01 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000))) {
             route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
@@ -6796,29 +6796,28 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 
             // 69を適用したものをroute_list_specialへ
             CalcRoute::ReRouteRule69j(route_list, &route_list_special); /* 69条適用(route_list->route_list_special) */
-            CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+            //CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
 
             route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
-            CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
+            //CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
             return checkOfRule114j(0x02 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
         }
     } else {
         route_list.assign(rRoute_list_no_applied_86or87.cbegin(), rRoute_list_no_applied_86or87.cend());
         route_list_special.assign(rRoute_list_applied_86or87.cbegin(), rRoute_list_applied_86or87.cend());
-        TRACE(_T("[114](raw-raw) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
-        TRACE(_T("[114](raw-r86) %s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+        TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
 
-        CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
-        TRACE(_T("[114](pre r68) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        //CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list);
         CalcRoute::ReRouteRule69j(route_list, &route_work);
         route_list.assign(route_work.cbegin(), route_work.cend());
 
-        CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
+        //CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(&route_list_special);
         CalcRoute::ReRouteRule69j(route_list_special, &route_work);
         route_list_special.assign(route_work.cbegin(), route_work.cend());
 
-        TRACE(_T("[114](cookraw) %s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
-        TRACE(_T("[114](cookr86) %s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
+        TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list).c_str());
+        TRACE(_T("%s\n"), RouteUtil::Show_route_for_debug(route_list_special).c_str());
         ASSERT(((0x03 & chk) == 1) || ((0x03 & chk) == 2));
         return checkOfRule114j((chk & 0x03) | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
     }
@@ -6834,68 +6833,7 @@ bool CalcRoute::CRule114::check(const RouteFlag& rRouteFlag, uint32_t chk, uint3
 //
 //  @return true if changed.
 //
-//  新幹線区間中で、最初に並行在来線情報が切れる駅を得る
-//
-//  @param [in] line_id     新幹線路線
-//  @param [in] station_id1 区間始点
-//  @param [in] station_id2 区間終点
-//
-//  @retval 0    なし
-//  @retval not0 並行在来線が途切れる最初の駅
-//
-//  例:
-//    input : 東北新幹線, 仙台, 那須塩原
-//    output: 新白河
-//    -> 那須塩原〜新白河は全区間が東北線との並行区間だが、
-//       新白河〜仙台方向では並行在来線が連続しないため、新白河を返す
-//
 //  作並,仙山線,仙台,東北新幹線,那須塩原
-//  
-//  あき亀山 可部線 広島 山陽新幹線 新下関 山陽線 幡生
-//  では在来線変換しない
-//  指定した新幹線区間 station_id1 -> station_id2 の途中駅を順に見て、t_lines.lflg>>19 の
-//  並行在来線情報が 0 になる最初の駅を返す。
-int32_t CalcRoute::CRule114::RetrieveFirstHardGapStationForRule114(int32_t line_id, int32_t station_id1, int32_t station_id2)
-{
-    const static char tsql[] =
-    "select station_id from t_lines where line_id=?1 and ((lflg>>19)&15)=0 and"
-    " (lflg&((1<<17)|(1<<31)))=0 and"
-    " case when"
-    " (select sales_km from t_lines where line_id=?1 and station_id=?2) <"
-    " (select sales_km from t_lines where line_id=?1 and station_id=?3) then"
-    "   sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
-    "   sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?3)"
-    " else"
-    "   sales_km<(select sales_km from t_lines where line_id=?1 and station_id=?2) and"
-    "   sales_km>(select sales_km from t_lines where line_id=?1 and station_id=?3)"
-    " end"
-    " order by"
-    " case when"
-    " (select sales_km from t_lines where line_id=?1 and station_id=?2) <"
-    " (select sales_km from t_lines where line_id=?1 and station_id=?3)"
-    " then sales_km end asc,"
-    " case when"
-    " (select sales_km from t_lines where line_id=?1 and station_id=?2) >"
-    " (select sales_km from t_lines where line_id=?1 and station_id=?3)"
-    " then sales_km end desc"
-    " limit 1";
-    DBO dbo(DBS::getInstance()->compileSql(tsql));
-
-    dbo.setParam(1, line_id);
-    dbo.setParam(2, station_id1);
-    dbo.setParam(3, station_id2);
-    if (dbo.moveNext()) {
-        return dbo.getInt(0);
-    }
-    return 0;
-}
-
-// 新幹線 -> 在来線変換
-// 方針：両端で在来線へ変換できるところは変換し、中間はどうでも良い。新幹線のままで良い。
-//     どこまでかは、両端から内側へ向かい、並行在来線が別れるまで
-//     言い換えると、在来線接続駅ではない駅が発見されたらその手前の在来線接続駅まで
-//    （東京からなら品川まで）在来線へ変換する
-//      両端が在来線駅ではない場合または在来線駅
 bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route)
 {
     vector<RouteItem>::iterator ite = route->begin();
@@ -6920,49 +6858,6 @@ bool CalcRoute::CRule114::ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>*
           && station_id1n != STATION_ID(_T("博多"))
           && station_id1 != STATION_ID(_T("小倉"))
           && station_id1n != STATION_ID(_T("小倉"))) {
-            int32_t hard_gap_station_id = RetrieveFirstHardGapStationForRule114(ite->lineId, station_id1, station_id1n);
-            if (0 < hard_gap_station_id) {
-                int32_t left_boundary_station_id =
-                        RouteUtil::NextShinkansenTransferTermInRange(ite->lineId, hard_gap_station_id, station_id1);
-                int32_t right_boundary_station_id =
-                        RouteUtil::NextShinkansenTransferTermInRange(ite->lineId, hard_gap_station_id, station_id1n);
-
-                if ((left_boundary_station_id == 0)
-                 && (0 < RouteUtil::GetHZLine(ite->lineId, station_id1, station_id1n))) {
-                    left_boundary_station_id = station_id1;
-                }
-                if ((right_boundary_station_id == 0)
-                 && (0 < RouteUtil::GetHZLine(ite->lineId, station_id1n, station_id1))) {
-                    right_boundary_station_id = station_id1n;
-                }
-
-                if ((0 < left_boundary_station_id)
-                 && (station_id1 != left_boundary_station_id)) {
-                    const int32_t original_station_id = station_id1n;
-                    const int32_t bullet_line_id = ite->lineId;
-
-                    ite->stationId = left_boundary_station_id;
-                    ite->refresh();
-                    station_id1n = left_boundary_station_id;
-                    ++ite;
-                    ite = route->insert(ite, RouteItem(bullet_line_id, original_station_id));
-                    --ite;
-                } else if ((0 < right_boundary_station_id)
-                        && (station_id1n != right_boundary_station_id)) {
-                    const int32_t original_station_id = station_id1n;
-                    const int32_t bullet_line_id = ite->lineId;
-
-                    ite->stationId = right_boundary_station_id;
-                    ite->refresh();
-                    station_id1n = right_boundary_station_id;
-                    ++ite;
-                    ite = route->insert(ite, RouteItem(bullet_line_id, original_station_id));
-                    --ite;
-                    goto n1;
-                } else {
-                    goto n1;
-                }
-            }
             zline = RouteUtil::EnumHZLine(ite->lineId, station_id1, station_id1n);
 //TRACE(_T("?%d?%d %d %d"), zline.size(), zline[0], zline[1], zline[2]);
             if (3 <= zline.size()) {
@@ -7388,9 +7283,6 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
         TRACE("    *** update lowcost %d-> %d ***\n", locost_fare, fare_applied);
         if (locost_fare != normal_fare && locost_fare != fare_applied) {
             // ここに来ることはないので（若松-佐伯除く）、114運賃は通常一つ検出できれば以降検索しなくても良い。
-            // あき亀山 可部線 広島 山陽新幹線 新下関
-            // 大阪 東海道線 新大阪 山陽新幹線 岡山
-            //  :
             ASSERT(FALSE);
         }
         if ((0 == fare.sales_km) || (fi.getJRSalesKm() < fare.sales_km)) {
@@ -7839,7 +7731,8 @@ int Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t s
     if (((RouteUtil::AttrOfStationOnLineLine(local_line, station_id2) >> BSRSHINKTRSALW) & flgbit) != 0) {
         int chk_station = RouteUtil::NextShinkansenTransferTerm(bullet_line, station_id2, opposite_bullet_station);
         TRACE(_T("shinzai: %s -> %s, %s(%d)\n"), SNAME(station_id2), SNAME(opposite_bullet_station), SNAME(chk_station), chk_station);
-        ASSERT(0 < chk_station);
+        //若松 筑豊線 折尾 鹿児島線 西小倉 日豊線 城野 日田彦山線 田川後藤寺 後藤寺線 新飯塚 筑豊線 原田 鹿児島線 鳥栖 長崎線 諫早 西九州新幹線 新大村
+        //ASSERT(0 < chk_station);
         return chk_station;
     } else {
         return -1;
