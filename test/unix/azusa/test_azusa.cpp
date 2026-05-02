@@ -127,6 +127,9 @@ int main() {
     std::string fuzzy_result_futa = fare_ui::search_station_fuzzy("冨", 20);
     TEST_RESULT("search_station_fuzzy('冨',20)", fuzzy_result_futa);
 
+    std::string fuzzy_result_isahaya = fare_ui::search_station_fuzzy("諌早", 20);
+    TEST_RESULT("search_station_fuzzy('諌早',20)", fuzzy_result_isahaya);
+
     // ========================================
     // 5. az_route - 基本的な経路作成
     // ========================================

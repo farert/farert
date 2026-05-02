@@ -201,6 +201,7 @@ static std::string normalize_station_token(std::string text)
     replace_all(text, "﨑", "崎");
     replace_all(text, "嵜", "崎");
     replace_all(text, "溪", "渓");
+    replace_all(text, "諌", "諫");
     return text;
 }
 
@@ -238,14 +239,14 @@ static std::vector<std::string> split_samename(const std::string& samename)
 static std::string make_station_candidate_key(const StationCandidate& candidate)
 {
     std::ostringstream oss;
-    oss << candidate.name << "\t";
+    oss << normalize_station_token(candidate.name) << "\t";
     for (std::size_t i = 0; i < candidate.samename.size(); i++) {
         if (i > 0) {
             oss << "/";
         }
-        oss << candidate.samename[i];
+        oss << normalize_station_token(candidate.samename[i]);
     }
-    oss << "\t" << candidate.kana;
+    oss << "\t" << normalize_station_token(candidate.kana);
     return oss.str();
 }
 
