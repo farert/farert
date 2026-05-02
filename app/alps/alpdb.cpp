@@ -3589,6 +3589,404 @@ int32_t Route::reverse()
 }
 
 
+static void setup_route_replace_all(tstring& text, LPCTSTR from, LPCTSTR to)
+{
+    if ((from == NULL) || (to == NULL) || (*from == _T('\0'))) {
+        return;
+    }
+
+    const tstring src(from);
+    const tstring dst(to);
+    tstring::size_type start = 0;
+    while ((start = text.find(src, start)) != tstring::npos) {
+        text.replace(start, src.length(), dst);
+        start += dst.length();
+    }
+}
+
+static tstring setup_route_normalize_parser_input(const tstring& source_text)
+{
+    tstring text = source_text;
+    setup_route_replace_all(text, _T("，"), _T(","));
+    setup_route_replace_all(text, _T("　"), _T(" "));
+    return text;
+}
+
+tstring RouteUtil::NormalizeRouteToken(const tstring& source_text)
+{
+    tstring text = setup_route_normalize_parser_input(source_text);
+    setup_route_replace_all(text, _T(" "), _T(""));
+    setup_route_replace_all(text, _T("\t"), _T(""));
+    setup_route_replace_all(text, _T("\r"), _T(""));
+    setup_route_replace_all(text, _T("\n"), _T(""));
+    setup_route_replace_all(text, _T("（"), _T("("));
+    setup_route_replace_all(text, _T("）"), _T(")"));
+    return text;
+}
+
+tstring RouteUtil::RouteTokenBaseName(const tstring& text)
+{
+    const tstring normalized = RouteUtil::NormalizeRouteToken(text);
+    const tstring::size_type pos = normalized.find(_T('('));
+    if (pos == tstring::npos) {
+        return normalized;
+    }
+    return normalized.substr(0, pos);
+}
+
+tstring RouteUtil::ExtractRouteLineToken(const tstring& token, bool* osakakan_detour)
+{
+    if (osakakan_detour != NULL) {
+        *osakakan_detour = false;
+    }
+    if (!token.empty() && token[0] == _T('r')) {
+        if (osakakan_detour != NULL) {
+            *osakakan_detour = true;
+        }
+        return token.substr(1);
+    }
+    return token;
+}
+
+static bool setup_route_contains_int(const vector<int32_t>& values, int32_t value)
+{
+    return find(values.cbegin(), values.cend(), value) != values.cend();
+}
+
+void RouteUtil::PushUniqueInt(vector<int32_t>& values, int32_t value)
+{
+    if ((value > 0) && !setup_route_contains_int(values, value)) {
+        values.push_back(value);
+    }
+}
+
+static bool setup_route_line_contains_station(int32_t line_id, int32_t station_id)
+{
+    static const char tsql[] =
+        "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2";
+
+    DBO dbo = DBS::getInstance()->compileSql(tsql);
+    if (dbo.isvalid()) {
+        dbo.setParam(1, line_id);
+        dbo.setParam(2, station_id);
+        if (dbo.moveNext()) {
+            return dbo.getInt(0) > 0;
+        }
+    }
+    return false;
+}
+
+vector<int32_t> RouteUtil::ResolveLineCandidatesFromStation(
+    int32_t current_station_id,
+    const tstring& input_line,
+    const vector<int32_t>& target_station_candidates)
+{
+    vector<int32_t> line_ids;
+    const int32_t exact_line_id = RouteUtil::GetLineId(input_line.c_str());
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_line);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_line);
+
+    if ((exact_line_id > 0) && setup_route_line_contains_station(exact_line_id, current_station_id)) {
+        RouteUtil::PushUniqueInt(line_ids, exact_line_id);
+    }
+
+    DBO dbo = RouteUtil::Enum_line_of_stationId(current_station_id);
+    while (dbo.moveNext()) {
+        const tstring line_name = dbo.getText(0);
+        const int32_t line_id = dbo.getInt(1);
+        const tstring normalized_line_name = RouteUtil::NormalizeRouteToken(line_name);
+        const tstring line_base = RouteUtil::RouteTokenBaseName(line_name);
+
+        if ((normalized_line_name != normalized_input) && (line_base != input_base)) {
+            continue;
+        }
+
+        if (!target_station_candidates.empty()) {
+            bool reachable = false;
+            for (int32_t station_id : target_station_candidates) {
+                if (setup_route_line_contains_station(line_id, station_id)) {
+                    reachable = true;
+                    break;
+                }
+            }
+            if (!reachable) {
+                continue;
+            }
+        }
+
+        RouteUtil::PushUniqueInt(line_ids, line_id);
+    }
+
+    return line_ids;
+}
+
+vector<int32_t> RouteUtil::ResolveStationCandidatesOnLine(int32_t line_id, const tstring& input_station)
+{
+    vector<int32_t> station_ids;
+    const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
+
+    if (exact_station_id > 0) {
+        RouteUtil::PushUniqueInt(station_ids, exact_station_id);
+    }
+
+    DBO dbo = RouteUtil::Enum_station_of_lineId(line_id);
+    while (dbo.moveNext()) {
+        const int32_t station_id = dbo.getInt(1);
+        const tstring station_name = RouteUtil::StationNameEx(station_id);
+        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
+
+        if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
+            RouteUtil::PushUniqueInt(station_ids, station_id);
+        }
+    }
+
+    return station_ids;
+}
+
+vector<int32_t> RouteUtil::ResolveStationCandidatesForStart(const tstring& input_station, const tstring& next_line)
+{
+    vector<int32_t> station_ids;
+    const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
+    if (exact_station_id > 0) {
+        RouteUtil::PushUniqueInt(station_ids, exact_station_id);
+    }
+
+    const int32_t next_line_id = RouteUtil::GetLineId(next_line.c_str());
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
+
+    if (next_line_id <= 0) {
+        return station_ids;
+    }
+
+    static const char tsql[] =
+        "select t.rowid, t.name, t.samename"
+        " from t_lines l"
+        " join t_station t on t.rowid=l.station_id"
+        " where l.line_id=?1 and (l.lflg&((1<<31)|(1<<17)))=0"
+        " order by l.sales_km";
+
+    DBO dbo = DBS::getInstance()->compileSql(tsql);
+    dbo.setParam(1, next_line_id);
+    while (dbo.moveNext()) {
+        const int32_t station_id = dbo.getInt(0);
+        const tstring station_name = tstring(dbo.getText(1)) + tstring(dbo.getText(2));
+        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
+
+        if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
+            RouteUtil::PushUniqueInt(station_ids, station_id);
+        }
+    }
+
+    return station_ids;
+}
+
+int32_t RouteUtil::TryAddRouteCandidate(Route& route, int32_t line_id, int32_t station_id)
+{
+    Route snapshot;
+    snapshot.assign(route, static_cast<int32_t>(route.routeList().size()));
+    const int32_t rc = route.add(line_id, station_id);
+    if (rc < 0) {
+        route.assign(snapshot, static_cast<int32_t>(snapshot.routeList().size()));
+    }
+    return rc;
+}
+
+int32_t RouteUtil::TryAutoRouteCandidate(Route& route, uint8_t use_bullet_train, int32_t station_id)
+{
+    Route snapshot;
+    snapshot.assign(route, static_cast<int32_t>(route.routeList().size()));
+    const int32_t rc = route.changeNeerest(use_bullet_train, station_id);
+    if (rc < 0) {
+        route.assign(snapshot, static_cast<int32_t>(snapshot.routeList().size()));
+    }
+    return rc;
+}
+
+vector<int32_t> RouteUtil::ResolveStationCandidatesAnywhere(const tstring& input_station)
+{
+    vector<int32_t> station_ids;
+    const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
+    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
+
+    if (exact_station_id > 0) {
+        RouteUtil::PushUniqueInt(station_ids, exact_station_id);
+    }
+
+    static const char tsql[] =
+        "select rowid, name, samename from t_station where (sflg&(1<<18))=0";
+    DBO dbo = DBS::getInstance()->compileSql(tsql);
+    while (dbo.moveNext()) {
+        const int32_t station_id = dbo.getInt(0);
+        const tstring station_name = tstring(dbo.getText(1)) + tstring(dbo.getText(2));
+        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
+
+        if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
+            RouteUtil::PushUniqueInt(station_ids, station_id);
+        }
+    }
+
+    return station_ids;
+}
+
+static vector<tstring> setup_route_tokenize_fallback_input(LPCTSTR route_str)
+{
+    const static TCHAR* token = _T(", |/\t\r\n");
+    vector<tstring> tokens;
+    TCHAR* ctx = NULL;
+    const tstring normalized_route = setup_route_normalize_parser_input(route_str);
+    const size_t len = normalized_route.length() + 1;
+    TCHAR* mutable_route = new TCHAR[len];
+    _tcscpy_s(mutable_route, len, normalized_route.c_str());
+
+    for (TCHAR* p = _tcstok_s(mutable_route, token, &ctx); p; p = _tcstok_s(NULL, token, &ctx)) {
+        tokens.push_back(p);
+    }
+
+    delete [] mutable_route;
+    return tokens;
+}
+
+static int32_t setup_route_parse_fallback_tokens(Route& route, const vector<tstring>& tokens, tstring& fail_item, int32_t& offset)
+{
+    if (tokens.empty()) {
+        fail_item.clear();
+        offset = 0;
+        return -1;
+    }
+
+    route.removeAll();
+
+    int32_t result = -999;
+    for (size_t i = 0; i < tokens.size();) {
+        if (i == 0) {
+            if (i + 1 < tokens.size()) {
+                const tstring next_line = RouteUtil::ExtractRouteLineToken(tokens[i + 1]);
+                const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(tokens[i], next_line);
+                result = -200;
+                for (int32_t station_id : station_candidates) {
+                    Route snapshot;
+                    snapshot.assign(route, static_cast<int32_t>(route.routeList().size()));
+                    result = route.add(station_id);
+                    if (result >= 0) {
+                        break;
+                    }
+                    route.assign(snapshot, static_cast<int32_t>(snapshot.routeList().size()));
+                }
+            } else {
+                const int32_t station_id = RouteUtil::GetStationId(tokens[i].c_str());
+                result = (station_id > 0) ? route.add(station_id) : -200;
+            }
+            if (result < 0) {
+                fail_item = tokens[i];
+                offset = static_cast<int32_t>(i);
+                return result;
+            }
+            i += 1;
+        } else if (i + 1 < tokens.size()) {
+            const int32_t current_station_id = route.routeList().empty() ? 0 : route.routeList().back().stationId;
+            bool osakakan_detour = false;
+            const tstring line_token = RouteUtil::ExtractRouteLineToken(tokens[i], &osakakan_detour);
+            if (osakakan_detour) {
+                route.refRouteFlag().osakakan_detour = true;
+            }
+            const int32_t exact_station_id = RouteUtil::GetStationId(tokens[i + 1].c_str());
+            if ((exact_station_id <= 0) && (current_station_id <= 0)) {
+                fail_item = tokens[i + 1];
+                offset = static_cast<int32_t>(i + 1);
+                return -200;
+            }
+
+            vector<int32_t> target_station_candidates;
+            if (exact_station_id > 0) {
+                RouteUtil::PushUniqueInt(target_station_candidates, exact_station_id);
+            }
+
+            vector<int32_t> line_candidates = RouteUtil::ResolveLineCandidatesFromStation(current_station_id, line_token, target_station_candidates);
+            if (line_candidates.empty()) {
+                const int32_t exact_line_id = RouteUtil::GetLineId(line_token.c_str());
+                if (exact_line_id <= 0) {
+                    fail_item = tokens[i];
+                    offset = static_cast<int32_t>(i);
+                    return -300;
+                }
+                RouteUtil::PushUniqueInt(line_candidates, exact_line_id);
+            }
+
+            if (exact_station_id <= 0) {
+                for (int32_t line_id : line_candidates) {
+                    const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, tokens[i + 1]);
+                    for (int32_t station_id : station_candidates) {
+                        RouteUtil::PushUniqueInt(target_station_candidates, station_id);
+                    }
+                }
+            }
+
+            if (target_station_candidates.empty()) {
+                fail_item = tokens[i + 1];
+                offset = static_cast<int32_t>(i + 1);
+                return -200;
+            }
+
+            result = -200;
+            for (int32_t line_id : line_candidates) {
+                const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, tokens[i + 1]);
+                for (int32_t station_id : station_candidates) {
+                    const int32_t rc = RouteUtil::TryAddRouteCandidate(route, line_id, station_id);
+                    if (rc >= 0) {
+                        result = rc;
+                        break;
+                    }
+                    result = rc;
+                }
+                if (result >= 0) {
+                    break;
+                }
+            }
+            if (result < 0) {
+                fail_item = tokens[i + 1];
+                offset = static_cast<int32_t>(i + 1);
+                return result;
+            }
+            i += 2;
+        } else {
+            const vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesAnywhere(tokens[i]);
+            if (station_candidates.empty()) {
+                fail_item = tokens[i];
+                offset = static_cast<int32_t>(i);
+                return -200;
+            }
+
+            result = -200;
+            for (int32_t station_id : station_candidates) {
+                const int32_t rc = RouteUtil::TryAutoRouteCandidate(route, 1, station_id);
+                if (rc >= 0) {
+                    result = rc;
+                    break;
+                }
+                result = rc;
+            }
+            if (result < 0) {
+                fail_item = tokens[i];
+                offset = static_cast<int32_t>(i);
+                return result;
+            }
+            i += 1;
+        }
+    }
+
+    fail_item.clear();
+    offset = 0;
+    return (result >= 0) ? result : 0;
+}
+
+
 /*! @brief ルート作成(文字列からRouteオブジェクトの作成)
  *
  *  @param [in] route_str   カンマなどのデリミタで区切られた文字列("駅、路線、分岐駅、路線、..."）
@@ -3614,12 +4012,13 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
 
     removeAll();
 
-    len = (int32_t)_tcslen(route_str) + 1;
+    const tstring normalized_route = setup_route_normalize_parser_input(route_str);
+    len = (int32_t)normalized_route.length() + 1;
     TCHAR *rstr = new TCHAR [len];
     if (rstr == NULL) {
         return -1;
     }
-    _tcscpy_s(rstr, len, route_str);
+    _tcscpy_s(rstr, len, normalized_route.c_str());
     len = _tcslen(TITLE_NOTSAMEKOKURAHAKATASHINZAI);
     if (0 == _tcsncmp(rstr, TITLE_NOTSAMEKOKURAHAKATASHINZAI, len)) {
         route_flag.notsamekokurahakatashinzai = true;
@@ -3627,6 +4026,8 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
     } else {
         p = rstr;
     }
+
+    const tstring route_body = p;
 
     for (p = _tcstok_s(p, token, &ctx); p; p = _tcstok_s(NULL, token, &ctx)) {
         if (stationId1 == 0) {
@@ -3669,6 +4070,22 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
             stationId1 = stationId2;
         }
         ++column;
+    }
+
+    if (rc < 0) {
+        tstring fallback_fail_item;
+        int32_t fallback_offset = 0;
+        const vector<tstring> fallback_tokens = setup_route_tokenize_fallback_input(route_body.c_str());
+        const int32_t fallback_rc = setup_route_parse_fallback_tokens(*this, fallback_tokens, fallback_fail_item, fallback_offset);
+        if (fallback_rc >= 0) {
+            rc = fallback_rc;
+            p = NULL;
+            column = static_cast<int32_t>(fallback_tokens.size());
+        } else if (!fallback_fail_item.empty()) {
+            rc = fallback_rc;
+            p = const_cast<TCHAR*>(fallback_fail_item.c_str());
+            column = fallback_offset;
+        }
     }
 
     route_flag.notsamekokurahakatashinzai = backup_notsamekokurahakatashinzai;

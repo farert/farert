@@ -108,305 +108,6 @@ static std::string tail_utf8_chars(const std::string& text, std::size_t char_cou
     return text.substr(begin_index);
 }
 
-static std::string normalize_route_token(std::string text)
-{
-    replace_all(text, " ", "");
-    replace_all(text, "\t", "");
-    replace_all(text, "\r", "");
-    replace_all(text, "\n", "");
-    replace_all(text, "　", "");
-    replace_all(text, "（", "(");
-    replace_all(text, "）", ")");
-    return text;
-}
-
-static std::string route_token_base_name(const std::string& text)
-{
-    const std::string normalized = normalize_route_token(text);
-    const std::size_t pos = normalized.find('(');
-    if (pos == std::string::npos) {
-        return normalized;
-    }
-    return normalized.substr(0, pos);
-}
-
-static bool contains_int(const std::vector<int32_t>& values, int32_t value)
-{
-    return std::find(values.cbegin(), values.cend(), value) != values.cend();
-}
-
-static void push_unique_int(std::vector<int32_t>& values, int32_t value)
-{
-    if ((value > 0) && !contains_int(values, value)) {
-        values.push_back(value);
-    }
-}
-
-static bool line_contains_station(int32_t line_id, int32_t station_id)
-{
-    static const char tsql[] =
-        "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2";
-
-    DBO dbo = DBS::getInstance()->compileSql(tsql);
-    if (dbo.isvalid()) {
-        dbo.setParam(1, line_id);
-        dbo.setParam(2, station_id);
-        if (dbo.moveNext()) {
-            return dbo.getInt(0) > 0;
-        }
-    }
-    return false;
-}
-
-static std::vector<int32_t> resolve_line_candidates_from_station(
-    int32_t current_station_id,
-    const std::string& input_line,
-    const std::vector<int32_t>& target_station_candidates)
-{
-    std::vector<int32_t> line_ids;
-    const int32_t exact_line_id = RouteUtil::GetLineId(input_line.c_str());
-    const std::string normalized_input = normalize_route_token(input_line);
-    const std::string input_base = route_token_base_name(input_line);
-
-    if ((exact_line_id > 0) && line_contains_station(exact_line_id, current_station_id)) {
-        push_unique_int(line_ids, exact_line_id);
-    }
-
-    DBO dbo = RouteUtil::Enum_line_of_stationId(current_station_id);
-    while (dbo.moveNext()) {
-        const std::string line_name = dbo.getText(0);
-        const int32_t line_id = dbo.getInt(1);
-        const std::string normalized_line_name = normalize_route_token(line_name);
-        const std::string line_base = route_token_base_name(line_name);
-
-        if ((normalized_line_name != normalized_input) && (line_base != input_base)) {
-            continue;
-        }
-
-        if (!target_station_candidates.empty()) {
-            bool reachable = false;
-            for (int32_t station_id : target_station_candidates) {
-                if (line_contains_station(line_id, station_id)) {
-                    reachable = true;
-                    break;
-                }
-            }
-            if (!reachable) {
-                continue;
-            }
-        }
-
-        push_unique_int(line_ids, line_id);
-    }
-
-    return line_ids;
-}
-
-static std::vector<int32_t> resolve_station_candidates_on_line(int32_t line_id, const std::string& input_station)
-{
-    std::vector<int32_t> station_ids;
-    const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    const std::string normalized_input = normalize_route_token(input_station);
-    const std::string input_base = route_token_base_name(input_station);
-
-    if (exact_station_id > 0) {
-        push_unique_int(station_ids, exact_station_id);
-    }
-
-    DBO dbo = RouteUtil::Enum_station_of_lineId(line_id);
-    while (dbo.moveNext()) {
-        const int32_t station_id = dbo.getInt(1);
-        const std::string station_name = RouteUtil::StationNameEx(station_id);
-        const std::string normalized_station_name = normalize_route_token(station_name);
-        const std::string station_base = route_token_base_name(station_name);
-
-        if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
-            push_unique_int(station_ids, station_id);
-        }
-    }
-
-    return station_ids;
-}
-
-static std::vector<int32_t> resolve_station_candidates_for_start(const std::string& input_station, const std::string& next_line)
-{
-    std::vector<int32_t> station_ids;
-    const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    if (exact_station_id > 0) {
-        push_unique_int(station_ids, exact_station_id);
-    }
-
-    const int32_t next_line_id = RouteUtil::GetLineId(next_line.c_str());
-    const std::string normalized_input = normalize_route_token(input_station);
-    const std::string input_base = route_token_base_name(input_station);
-
-    if (next_line_id <= 0) {
-        return station_ids;
-    }
-
-    static const char tsql[] =
-        "select t.rowid, t.name, t.samename"
-        " from t_lines l"
-        " join t_station t on t.rowid=l.station_id"
-        " where l.line_id=?1 and (l.lflg&((1<<31)|(1<<17)))=0"
-        " order by l.sales_km";
-
-    DBO dbo = DBS::getInstance()->compileSql(tsql);
-    dbo.setParam(1, next_line_id);
-    while (dbo.moveNext()) {
-        const int32_t station_id = dbo.getInt(0);
-        const std::string station_name = std::string(dbo.getText(1)) + std::string(dbo.getText(2));
-        const std::string normalized_station_name = normalize_route_token(station_name);
-        const std::string station_base = route_token_base_name(station_name);
-
-        if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
-            push_unique_int(station_ids, station_id);
-        }
-    }
-
-    return station_ids;
-}
-
-static int try_add_route_candidate(az_route& route, int32_t line_id, int32_t station_id)
-{
-    az_route snapshot;
-    snapshot.assign(route, route.get_route_count());
-    const int rc = route.add(line_id, station_id);
-    if (rc < 0) {
-        route.assign(snapshot, snapshot.get_route_count());
-    }
-    return rc;
-}
-
-static int try_auto_route_candidate(az_route& route, int use_bullet_train, int32_t station_id)
-{
-    az_route snapshot;
-    snapshot.assign(route, route.get_route_count());
-    const int rc = route.changeNeerest(use_bullet_train, station_id);
-    if (rc < 0) {
-        route.assign(snapshot, snapshot.get_route_count());
-    }
-    return rc;
-}
-
-static std::vector<int32_t> resolve_station_candidates_anywhere(const std::string& input_station)
-{
-    std::vector<int32_t> station_ids;
-    const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    const std::string normalized_input = normalize_route_token(input_station);
-    const std::string input_base = route_token_base_name(input_station);
-
-    if (exact_station_id > 0) {
-        push_unique_int(station_ids, exact_station_id);
-    }
-
-    static const char tsql[] =
-        "select rowid, name, samename from t_station where (sflg&(1<<18))=0";
-    DBO dbo = DBS::getInstance()->compileSql(tsql);
-    while (dbo.moveNext()) {
-        const int32_t station_id = dbo.getInt(0);
-        const std::string station_name = std::string(dbo.getText(1)) + std::string(dbo.getText(2));
-        const std::string normalized_station_name = normalize_route_token(station_name);
-        const std::string station_base = route_token_base_name(station_name);
-
-        if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
-            push_unique_int(station_ids, station_id);
-        }
-    }
-
-    return station_ids;
-}
-
-static std::vector<std::string> tokenize_route_string(const std::string& route_str)
-{
-    std::vector<std::string> tokens;
-    std::string token;
-
-    auto flush = [&]() {
-        if (!token.empty()) {
-            tokens.push_back(token);
-            token.clear();
-        }
-    };
-
-    for (char c : route_str) {
-        if (c == ',' || c == ' ' || c == '\t' || c == '\r' || c == '\n') {
-            flush();
-            continue;
-        }
-        token.push_back(c);
-    }
-    flush();
-    return tokens;
-}
-
-static int build_route_from_tokens(az_route& route, const std::vector<std::string>& tokens, std::string& fail_item, int& offset)
-{
-    if (tokens.empty()) {
-        fail_item.clear();
-        offset = 0;
-        return -1;
-    }
-
-    route.remove_all();
-
-    int result = -999;
-    for (std::size_t i = 0; i < tokens.size();) {
-        if (route.get_route_count() == 0) {
-            if (i + 1 < tokens.size()) {
-                result = route.add_start_route(tokens[i], tokens[i + 1]);
-            } else {
-                result = route.add_start_route(tokens[i]);
-            }
-            if (result < 0) {
-                fail_item = tokens[i];
-                offset = static_cast<int>(i);
-                return result;
-            }
-            i += 1;
-            continue;
-        }
-
-        if (i + 1 < tokens.size()) {
-            result = route.add_route(tokens[i], tokens[i + 1]);
-            if (result < 0) {
-                fail_item = tokens[i + 1];
-                offset = static_cast<int>(i + 1);
-                return result;
-            }
-            i += 2;
-            continue;
-        }
-
-        const std::vector<int32_t> station_candidates = resolve_station_candidates_anywhere(tokens[i]);
-        if (station_candidates.empty()) {
-            fail_item = tokens[i];
-            offset = static_cast<int>(i);
-            return -200;
-        }
-
-        result = -200;
-        for (int32_t station_id : station_candidates) {
-            const int rc = try_auto_route_candidate(route, 1, station_id);
-            if (rc >= 0) {
-                result = rc;
-                break;
-            }
-            result = rc;
-        }
-        if (result < 0) {
-            fail_item = tokens[i];
-            offset = static_cast<int>(i);
-            return result;
-        }
-        i += 1;
-    }
-
-    fail_item.clear();
-    offset = 0;
-    return result >= 0 ? result : 0;
-}
-
 static const char* stock_discount_company_name(int32_t company)
 {
     switch (company) {
@@ -500,6 +201,7 @@ static std::string normalize_station_token(std::string text)
     replace_all(text, "﨑", "崎");
     replace_all(text, "嵜", "崎");
     replace_all(text, "溪", "渓");
+    replace_all(text, "諌", "諫");
     return text;
 }
 
@@ -537,14 +239,14 @@ static std::vector<std::string> split_samename(const std::string& samename)
 static std::string make_station_candidate_key(const StationCandidate& candidate)
 {
     std::ostringstream oss;
-    oss << candidate.name << "\t";
+    oss << normalize_station_token(candidate.name) << "\t";
     for (std::size_t i = 0; i < candidate.samename.size(); i++) {
         if (i > 0) {
             oss << "/";
         }
-        oss << candidate.samename[i];
+        oss << normalize_station_token(candidate.samename[i]);
     }
-    oss << "\t" << candidate.kana;
+    oss << "\t" << normalize_station_token(candidate.kana);
     return oss.str();
 }
 
@@ -977,7 +679,12 @@ int az_route::add_start_route(std::string station)
 
 int az_route::add_start_route(std::string station, std::string next_line)
 {
-    const std::vector<int32_t> station_candidates = resolve_station_candidates_for_start(station, next_line);
+    bool osakakan_detour = false;
+    const std::string line_token = RouteUtil::ExtractRouteLineToken(next_line, &osakakan_detour);
+    if (osakakan_detour) {
+        refRouteFlag().osakakan_detour = true;
+    }
+    const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(station, line_token);
     for (int32_t station_id : station_candidates) {
         az_route snapshot;
         snapshot.assign(*this, this->get_route_count());
@@ -1001,23 +708,28 @@ int az_route::add_route(std::string line, std::string station)
 
     std::vector<int32_t> target_station_candidates;
     if (exact_station_id > 0) {
-        push_unique_int(target_station_candidates, exact_station_id);
+        RouteUtil::PushUniqueInt(target_station_candidates, exact_station_id);
     }
 
-    std::vector<int32_t> line_candidates = resolve_line_candidates_from_station(current_station_id, line, target_station_candidates);
+    bool osakakan_detour = false;
+    const std::string line_token = RouteUtil::ExtractRouteLineToken(line, &osakakan_detour);
+    if (osakakan_detour) {
+        refRouteFlag().osakakan_detour = true;
+    }
+    std::vector<int32_t> line_candidates = RouteUtil::ResolveLineCandidatesFromStation(current_station_id, line_token, target_station_candidates);
     if (line_candidates.empty()) {
-        const int32_t exact_line_id = RouteUtil::GetLineId(line.c_str());
+        const int32_t exact_line_id = RouteUtil::GetLineId(line_token.c_str());
         if (exact_line_id <= 0) {
             return -300;
         }
-        push_unique_int(line_candidates, exact_line_id);
+        RouteUtil::PushUniqueInt(line_candidates, exact_line_id);
     }
 
     if (exact_station_id <= 0) {
         for (int32_t line_id : line_candidates) {
-            const std::vector<int32_t> station_candidates = resolve_station_candidates_on_line(line_id, station);
+            const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, station);
             for (int32_t station_id : station_candidates) {
-                push_unique_int(target_station_candidates, station_id);
+                RouteUtil::PushUniqueInt(target_station_candidates, station_id);
             }
         }
     }
@@ -1028,9 +740,9 @@ int az_route::add_route(std::string line, std::string station)
 
     int fallback_rc = -200;
     for (int32_t line_id : line_candidates) {
-        const std::vector<int32_t> station_candidates = resolve_station_candidates_on_line(line_id, station);
+        const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, station);
         for (int32_t station_id : station_candidates) {
-            const int rc = try_add_route_candidate(*this, line_id, station_id);
+            const int rc = RouteUtil::TryAddRouteCandidate(*this, line_id, station_id);
             if (rc >= 0) {
                 return rc;
             }
@@ -1097,20 +809,7 @@ std::string az_route::build_route(const std::string& route_str)
     char error_buf[256] = {0};
     int offset = 0;
 
-    int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
-    if (rc < 0) {
-        std::string fallback_fail_item;
-        int fallback_offset = 0;
-        const int fallback_rc = build_route_from_tokens(*this, tokenize_route_string(route_str), fallback_fail_item, fallback_offset);
-        if (fallback_rc >= 0) {
-            rc = fallback_rc;
-            error_buf[0] = '\0';
-            offset = fallback_offset;
-        } else if (!fallback_fail_item.empty()) {
-            std::snprintf(error_buf, sizeof(error_buf), "%s", fallback_fail_item.c_str());
-            offset = fallback_offset;
-        }
-    }
+    const int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
     oss << "{" << json_encoder::pair("rc", rc) << ",";
     oss << json_encoder::pair("failItem", std::string(error_buf)) << ",";
     oss << json_encoder::pair("offset", offset);
