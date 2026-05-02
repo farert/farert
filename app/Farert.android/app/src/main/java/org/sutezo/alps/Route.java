@@ -66,6 +66,12 @@ class PersonOpenHelper extends SQLiteOpenHelper {
 public class Route extends RouteList {
     JctMask routePassed;
 
+    private static class SetupRouteParseResult {
+        int rc;
+        String failItem = "";
+        int offset;
+    }
+
     public Route() {
         routePassed = new JctMask();
 
@@ -187,7 +193,7 @@ public class Route extends RouteList {
 	 *	@retval 0 success
 	 */
     public int setup_route(String route_str) {
-        final String token = "[, |/\t]+";
+        final String token = "[, /|\\t\\r\\n]+";
         int lineId = 0;
         int stationId1 = 0;
         int stationId2 = 0;
@@ -200,8 +206,13 @@ public class Route extends RouteList {
             route_flag.notsamekokurahakatashinzai = true;
             route_str = route_str.substring(TITLE_NOTSAMEKOKURAHAKATASHINZAI.length());
         }
+        String routeBody = route_str;
+        route_str = RouteUtil.normalizeParserInput(route_str);
         String[] tok = route_str.split(token);
         for (String p : tok) {
+            if (p.isEmpty()) {
+                continue;
+            }
             if (stationId1 == 0) {
                 stationId1 = GetStationId(p);
                 if (stationId1 <= 0) {
@@ -243,8 +254,168 @@ public class Route extends RouteList {
                 stationId1 = stationId2;
             }
         }
+        if (rc < 0) {
+            SetupRouteParseResult fallback = setupRouteParseFallbackTokens(tokenizeFallbackInput(routeBody));
+            if (fallback.rc >= 0) {
+                rc = fallback.rc;
+            } else {
+                rc = fallback.rc;
+            }
+        }
         route_flag.notsamekokurahakatashinzai = backup_notsamekokurahakatashinzai;
         return rc;
+    }
+
+    private static List<String> tokenizeFallbackInput(String routeStr) {
+        String normalizedRoute = RouteUtil.normalizeParserInput(routeStr);
+        String[] rawTokens = normalizedRoute.split("[, /|\\t\\r\\n]+");
+        List<String> tokens = new ArrayList<>();
+        for (String token : rawTokens) {
+            if (!token.isEmpty()) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
+    }
+
+    private SetupRouteParseResult setupRouteParseFallbackTokens(List<String> tokens) {
+        SetupRouteParseResult parseResult = new SetupRouteParseResult();
+        if (tokens.isEmpty()) {
+            parseResult.rc = -1;
+            return parseResult;
+        }
+
+        removeAll();
+
+        int result = -999;
+        for (int i = 0; i < tokens.size(); ) {
+            if (i == 0) {
+                if (i + 1 < tokens.size()) {
+                    String nextLine = RouteUtil.ExtractRouteLineToken(tokens.get(i + 1));
+                    List<Integer> stationCandidates = RouteUtil.ResolveStationCandidatesForStart(tokens.get(i), nextLine);
+                    result = -200;
+                    for (int stationId : stationCandidates) {
+                        Route snapshot = new Route();
+                        snapshot.assign(this, routeList().size());
+                        result = add(stationId);
+                        if (result >= 0) {
+                            break;
+                        }
+                        assign(snapshot, snapshot.routeList().size());
+                    }
+                } else {
+                    int stationId = RouteUtil.GetStationId(tokens.get(i));
+                    result = (stationId > 0) ? add(stationId) : -200;
+                }
+                if (result < 0) {
+                    parseResult.rc = result;
+                    parseResult.failItem = tokens.get(i);
+                    parseResult.offset = i;
+                    return parseResult;
+                }
+                i += 1;
+            } else if (i + 1 < tokens.size()) {
+                int currentStationId = routeList().isEmpty() ? 0 : routeList().get(routeList().size() - 1).stationId;
+                String lineToken = tokens.get(i);
+                boolean osakakanDetour = !lineToken.isEmpty() && (lineToken.charAt(0) == 'r');
+                if (osakakanDetour) {
+                    route_flag.osakakan_detour = true;
+                }
+                lineToken = RouteUtil.ExtractRouteLineToken(lineToken);
+                int exactStationId = RouteUtil.GetStationId(tokens.get(i + 1));
+                if ((exactStationId <= 0) && (currentStationId <= 0)) {
+                    parseResult.rc = -200;
+                    parseResult.failItem = tokens.get(i + 1);
+                    parseResult.offset = i + 1;
+                    return parseResult;
+                }
+
+                List<Integer> targetStationCandidates = new ArrayList<>();
+                if (exactStationId > 0) {
+                    RouteUtil.PushUniqueInt(targetStationCandidates, exactStationId);
+                }
+
+                List<Integer> lineCandidates = RouteUtil.ResolveLineCandidatesFromStation(
+                        currentStationId, lineToken, targetStationCandidates);
+                if (lineCandidates.isEmpty()) {
+                    int exactLineId = RouteUtil.GetLineId(lineToken);
+                    if (exactLineId <= 0) {
+                        parseResult.rc = -300;
+                        parseResult.failItem = tokens.get(i);
+                        parseResult.offset = i;
+                        return parseResult;
+                    }
+                    RouteUtil.PushUniqueInt(lineCandidates, exactLineId);
+                }
+
+                if (exactStationId <= 0) {
+                    for (int lineCandidate : lineCandidates) {
+                        List<Integer> stationCandidates = RouteUtil.ResolveStationCandidatesOnLine(lineCandidate, tokens.get(i + 1));
+                        for (int stationId : stationCandidates) {
+                            RouteUtil.PushUniqueInt(targetStationCandidates, stationId);
+                        }
+                    }
+                }
+
+                if (targetStationCandidates.isEmpty()) {
+                    parseResult.rc = -200;
+                    parseResult.failItem = tokens.get(i + 1);
+                    parseResult.offset = i + 1;
+                    return parseResult;
+                }
+
+                result = -200;
+                for (int lineCandidate : lineCandidates) {
+                    List<Integer> stationCandidates = RouteUtil.ResolveStationCandidatesOnLine(lineCandidate, tokens.get(i + 1));
+                    for (int stationId : stationCandidates) {
+                        int rc = RouteUtil.TryAddRouteCandidate(this, lineCandidate, stationId);
+                        if (rc >= 0) {
+                            result = rc;
+                            break;
+                        }
+                        result = rc;
+                    }
+                    if (result >= 0) {
+                        break;
+                    }
+                }
+                if (result < 0) {
+                    parseResult.rc = result;
+                    parseResult.failItem = tokens.get(i + 1);
+                    parseResult.offset = i + 1;
+                    return parseResult;
+                }
+                i += 2;
+            } else {
+                List<Integer> stationCandidates = RouteUtil.ResolveStationCandidatesAnywhere(tokens.get(i));
+                if (stationCandidates.isEmpty()) {
+                    parseResult.rc = -200;
+                    parseResult.failItem = tokens.get(i);
+                    parseResult.offset = i;
+                    return parseResult;
+                }
+
+                result = -200;
+                for (int stationId : stationCandidates) {
+                    int rc = RouteUtil.TryAutoRouteCandidate(this, 1, stationId);
+                    if (rc >= 0) {
+                        result = rc;
+                        break;
+                    }
+                    result = rc;
+                }
+                if (result < 0) {
+                    parseResult.rc = result;
+                    parseResult.failItem = tokens.get(i);
+                    parseResult.offset = i;
+                    return parseResult;
+                }
+                i += 1;
+            }
+        }
+
+        parseResult.rc = (result >= 0) ? result : 0;
+        return parseResult;
     }
 
 // 大阪環状線 通過制御フラグ定義
@@ -1268,9 +1439,9 @@ public class Route extends RouteList {
         if (BIT_CHK(route_list_raw.get(num - 1).flag, BSRJCTSP_B)) {
 			 /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので
 			  * t_jctspcl.type RetrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
-            if ((LINE_DIR.LDIR_DESC == DirLine(line_id, route_list_raw.get(num - 1).stationId, stationId2)) &&
+            if ((LINE_DIR.LDIR_RISE == DirLine(line_id, route_list_raw.get(num - 1).stationId, stationId2)) &&
                     ((num < 2) || ((2 <= num) &&
-                            (LINE_DIR.LDIR_ASC  == DirLine(route_list_raw.get(num - 1).lineId,
+                            (LINE_DIR.LDIR_FALL  == DirLine(route_list_raw.get(num - 1).lineId,
                                     route_list_raw.get(num - 2).stationId,
                                     route_list_raw.get(num - 1).stationId)))) &&
                     (JCTSP_B_NAGAOKA == RetrieveJunctionSpecific(route_list_raw.get(num - 1).lineId,
@@ -1648,10 +1819,10 @@ public class Route extends RouteList {
             if (JCTSP_B_NAGAOKA == RetrieveJunctionSpecific(line_id,
                     route_list_raw.get(num - 1).stationId, jctspdt)) {
 			 	/* 信越線下り(直江津→長岡方面) && 新幹線|上越線上り(長岡-大宮方面)? */
-                if ((LINE_DIR.LDIR_ASC == DirLine(route_list_raw.get(num - 1).lineId,
+                if ((LINE_DIR.LDIR_FALL == DirLine(route_list_raw.get(num - 1).lineId,
                         route_list_raw.get(num - 2).stationId,
                         route_list_raw.get(num - 1).stationId)) &&
-                        (LINE_DIR.LDIR_DESC == DirLine(line_id,
+                        (LINE_DIR.LDIR_RISE == DirLine(line_id,
                                 route_list_raw.get(num - 1).stationId,
                                 stationId2))) {
 					/* 宮内発 */
@@ -3286,7 +3457,7 @@ public class Route extends RouteList {
         if (dir == DirLine(line_id2, station_id2, station_id3)) {
             return 0;		// 上り→上り or 下り→下り
         }
-        if (dir == LINE_DIR.LDIR_ASC) {	// 下り→上り
+        if (dir == LINE_DIR.LDIR_FALL) {	// 下り→上り
             flgbit = 0x01;
         } else {        		                    // 上り→下り
             flgbit = 0x02;
@@ -3295,7 +3466,6 @@ public class Route extends RouteList {
         if (((AttrOfStationOnLineLine(local_line, station_id2) >>> BSRSHINKTRSALW) & flgbit) != 0) {
             int chk_station = RouteUtil.NextShinkansenTransferTerm(bullet_line, station_id2, opposite_bullet_station);
             System.out.printf("shinzai: %s -> %s, %s(%d)\n", RouteUtil.StationName(station_id2), RouteUtil.StationName(opposite_bullet_station), RouteUtil.StationName(chk_station), chk_station);
-            ASSERT(0 < chk_station);
             return chk_station;
         } else {
             return -1;

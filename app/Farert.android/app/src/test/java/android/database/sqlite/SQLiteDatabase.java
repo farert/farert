@@ -54,7 +54,7 @@ public class SQLiteDatabase {
                     }
                     rows.add(row);
                 }
-                return new Cursor(rows);
+                return new TestCursor(rows);
             }
         } catch (SQLException e) {
             throw new RuntimeException("sqlite query failed: " + e.getMessage(), e);
@@ -107,6 +107,98 @@ public class SQLiteDatabase {
         SqlWithParams(String sql, int[] paramOrder) {
             this.sql = sql;
             this.paramOrder = paramOrder;
+        }
+    }
+
+    private static class TestCursor implements Cursor {
+        private final List<String[]> rows;
+        private int index = -1;
+        private boolean closed = false;
+
+        TestCursor(List<String[]> rows) {
+            this.rows = rows;
+        }
+
+        @Override
+        public boolean moveToNext() {
+            if (closed) {
+                return false;
+            }
+            int next = index + 1;
+            if (next < rows.size()) {
+                index = next;
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean moveToFirst() {
+            if (closed || rows.isEmpty()) {
+                return false;
+            }
+            index = 0;
+            return true;
+        }
+
+        @Override
+        public int getInt(int columnIndex) {
+            String value = value(columnIndex);
+            if ((value == null) || value.isEmpty()) {
+                return 0;
+            }
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException ex) {
+                return (int) Long.parseLong(value);
+            }
+        }
+
+        @Override
+        public short getShort(int columnIndex) {
+            String value = value(columnIndex);
+            if ((value == null) || value.isEmpty()) {
+                return 0;
+            }
+            try {
+                return Short.parseShort(value);
+            } catch (NumberFormatException ex) {
+                return (short) Integer.parseInt(value);
+            }
+        }
+
+        @Override
+        public long getLong(int columnIndex) {
+            String value = value(columnIndex);
+            if ((value == null) || value.isEmpty()) {
+                return 0L;
+            }
+            return Long.parseLong(value);
+        }
+
+        @Override
+        public String getString(int columnIndex) {
+            return value(columnIndex);
+        }
+
+        private String value(int columnIndex) {
+            if ((index < 0) || (index >= rows.size())) {
+                return null;
+            }
+            String[] row = rows.get(index);
+            if ((columnIndex < 0) || (columnIndex >= row.length)) {
+                return null;
+            }
+            String value = row[columnIndex];
+            if ("\\N".equals(value)) {
+                return null;
+            }
+            return value;
+        }
+
+        @Override
+        public void close() {
+            closed = true;
         }
     }
 }
