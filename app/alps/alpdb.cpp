@@ -2098,9 +2098,9 @@ int32_t Route::add(int32_t line_id, int32_t stationId2, int32_t ctlflg)
     if (BIT_CHK(route_list_raw.at(num - 1).flag, BSRJCTSP_B)) {
          /* 信越線上り(宮内・直江津方面) ? (フラグけちってるので
           * t_jctspcl.type Route::RetrieveJunctionSpecific()で吉塚、小倉廻りと区別しなければならない) */
-        if ((RouteUtil::LDIR_DESC == RouteUtil::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2)) &&
+        if ((RouteUtil::LDIR_RISE == RouteUtil::DirLine(line_id, route_list_raw.at(num - 1).stationId, stationId2)) &&
             ((num < 2) || ((2 <= num) &&
-            (RouteUtil::LDIR_ASC  == RouteUtil::DirLine(route_list_raw.at(num - 1).lineId,
+            (RouteUtil::LDIR_FALL  == RouteUtil::DirLine(route_list_raw.at(num - 1).lineId,
                                          route_list_raw.at(num - 2).stationId,
                                          route_list_raw.at(num - 1).stationId)))) &&
             (JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(route_list_raw.at(num - 1).lineId,
@@ -2484,10 +2484,10 @@ ASSERT(original_line_id == line_id);
         if (JCTSP_B_NAGAOKA == Route::RetrieveJunctionSpecific(line_id,
                                                         route_list_raw.at(num - 1).stationId, &jctspdt)) {
             /* 信越線下り(直江津→長岡方面) && 新幹線|上越線上り(長岡-大宮方面)? */
-            if ((RouteUtil::LDIR_ASC == RouteUtil::DirLine(route_list_raw.at(num - 1).lineId,
+            if ((RouteUtil::LDIR_FALL == RouteUtil::DirLine(route_list_raw.at(num - 1).lineId,
                                             route_list_raw.at(num - 2).stationId,
                                             route_list_raw.at(num - 1).stationId)) &&
-                (RouteUtil::LDIR_DESC == RouteUtil::DirLine(line_id,
+                (RouteUtil::LDIR_RISE == RouteUtil::DirLine(line_id,
                                             route_list_raw.at(num - 1).stationId,
                                             stationId2))) {
                 /* 宮内発 */
@@ -3864,7 +3864,7 @@ F/R      O   o O I I I i I   I I O O O   0/1 neer/far
         pass = 1;
     }
 
-    c |= LDIR_ASC == RouteUtil::DirLine(LINE_ID(_T("大阪環状線")), station_id1, station_id2) ? 0x08 : 0;
+    c |= LDIR_FALL == RouteUtil::DirLine(LINE_ID(_T("大阪環状線")), station_id1, station_id2) ? 0x08 : 0;
 TRACE(_T("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n"),
       pass,
       SNAME(station_id1),
@@ -4122,8 +4122,8 @@ void Route::terminate(int32_t stationId)
 //  @param [in] station_id1 発
 //  @param [in] station_id2 至
 //
-//  @retval 1 下り(LDIR_ASC)
-//  @retval 2 上り(LDIR_DESC)
+//  @retval 1 下り(LDIR_FALL)
+//  @retval 2 上り(LDIR_RISE)
 //
 //  @node 同一駅の場合下り(0)を返す
 //
@@ -6714,7 +6714,7 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
     if (((route.front().stationId == STATION_ID(_T("北新地"))) &&
         (route.at(1).stationId == STATION_ID(_T("尼崎")))) &&
         ((lastIndex <= 1) || (route.at(2).lineId != LINE_ID(_T("東海道線"))) ||
-            (RouteUtil::LDIR_ASC == RouteUtil::DirLine(LINE_ID(_T("東海道線")),
+            (RouteUtil::LDIR_FALL == RouteUtil::DirLine(LINE_ID(_T("東海道線")),
                                                        STATION_ID(_T("尼崎")),
                                                        route.at(2).stationId)))) {
         /* 北新地-(JR東西線)-尼崎 の場合、発駅（北新地）は大阪や */
@@ -6733,7 +6733,7 @@ int32_t FARE_INFO::CheckOfRule89j(const vector<RouteItem>& route)
     else if (((route.back().stationId == STATION_ID(_T("北新地"))) &&
              (route.at(lastIndex - 1).stationId == STATION_ID(_T("尼崎")))) &&
              ((lastIndex <= 1) || (route.at(lastIndex - 1).lineId != LINE_ID(_T("東海道線"))) ||
-        (RouteUtil::LDIR_DESC == RouteUtil::DirLine(LINE_ID(_T("東海道線")),
+        (RouteUtil::LDIR_RISE == RouteUtil::DirLine(LINE_ID(_T("東海道線")),
                                                     route.at(lastIndex - 2).stationId,
                                                     STATION_ID(_T("尼崎")))))) {
         //route.back().stationId = STATION_ID(_T("大阪");
@@ -7172,7 +7172,7 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
     ASSERT(0 <= aSales_km);
     ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
-    if (RouteUtil::LDIR_ASC != RouteUtil::DirLine(line_id, station_id1, station_id2)) {
+    if (RouteUtil::LDIR_FALL != RouteUtil::DirLine(line_id, station_id1, station_id2)) {
         /* 上り */
         km = -km;
     }
@@ -7223,7 +7223,7 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
     if (is_start_city) {            /* 発駅が特定都区市内 */
         /* 最終着駅を置き換える */
 #if defined _DEBUG
-        TRACE("@@@ Down %lu\n",route_list_replace.size());
+        TRACE("judgementOfFare Down %lu\n",route_list_replace.size());
         for (int i = 0; i < (int)route_work.size(); i++ ) {
             TRACE("  D(%d)route[%s-%s]\n", i, LNAME(route_work.at(i).lineId), SNAME(route_work.at(i).stationId));
         }
@@ -7244,7 +7244,7 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
         route_work.push_back(RouteItem(base_line_id, arrive_station_id));
     } else {    /* 着駅が特定都区市内 */
 #if defined _DEBUG
-        TRACE("@@@ Up %lu\n",route_list_replace.size());
+        TRACE("judgementOfFare Up %lu\n",route_list_replace.size());
         for (int i = 0; i < (int)route_work.size(); i++ ) {
             TRACE("  U(%d)route[%s-%s]\n", i, LNAME(route_work.at(i).lineId), SNAME(route_work.at(i).stationId));
         }
@@ -7258,14 +7258,76 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
             route_work.insert(route_work.begin(), route_work.front());
             route_work.at(1).stationId = route_list_replace.at(i).stationId;
             route_work.at(1).lineId = route_list_replace.at(i).lineId;
+            TRACE("  Rule114 replace extend: base_station_id:%s %s %s\n", SNAME(base_station_id), SNAME(arrive_station_id), SNAME(route_list_replace.at(0).stationId));
+            // あき亀山 可部線 広島 山陽新幹線 新下関
+            //   Rule114 replace extend: base_station_id:幡生 綾羅木 広島
+            //
+            // 岡山 山陽線 姫路 山陽新幹線 新大阪 東海道線 大阪
+            //   Rule114 replace extend: base_station_id:茶屋町 木見 姫路
+            //
+            // 東淀川,東海道線,笠寺
+            //  Up 3
+            //  Rule114 replace extend: base_station_id:京橋 天満 東淀川
+            //  Rule114 replace extend: base_station_id:京橋 天満 東淀川
+            //
+            //  Rule114 replace extend: base_station_id:京橋 玉造 東淀川
+            //  Rule114 replace extend: base_station_id:京橋 玉造 東淀川
+            //
+            //  Rule114 replace extend: base_station_id:京橋 北新地 東淀川
+            //  Rule114 replace extend: base_station_id:京橋 北新地 東淀川
+            //
+            // Up 2
+            //  Rule114 replace extend: base_station_id:鴫野 鴻池新田 東淀川
+            //
+            // Up 3
+            //  Rule114 replace extend: base_station_id:放出 JR野江 東淀川
+            //  Rule114 replace extend: base_station_id:放出 JR野江 東淀川
+            //
+            //  Rule114 replace extend: base_station_id:放出 JR河内永和 東淀川
+            //  Rule114 replace extend: base_station_id:放出 JR河内永和 東淀川
+            //
+            // Up 2
+            //  Rule114 replace extend: base_station_id:今宮 JR難波 東淀川
+            //
+            // Up 2
+            //  Rule114 replace extend: base_station_id:今宮 新今宮 東淀川
+            //
+            // 春田,関西線,名古屋,東海道線,金山(中),中央西線,塩尻
+            //   Rule114 replace extend: base_station_id:松本 柏矢町 金山
+            //
+            //   Rule114 replace extend: base_station_id:岡谷 信濃川島 金山
+            //
+            //   Rule114 replace extend: base_station_id:辰野 羽場 金山
+            //   Rule114 replace extend: base_station_id:辰野 羽場 金山
         }
-        route_work.insert(route_work.begin(), route_work.front());
-        route_work.at(1).stationId = base_station_id;
-        route_work.at(1).lineId = base_line_id;
+        if (0 < route_list_replace.size()) {
+            route_work.insert(route_work.begin(), route_work.front());
+            route_work.at(1).stationId = base_station_id;
+            route_work.at(1).lineId = base_line_id;
+        }
     }
-#if defined _DEBUG
-    for (int i = 0; i < (int)route_work.size(); i++ ) {
-        TRACE("  >>[%s-%s]\n", LNAME(route_work.at(i).lineId), SNAME(route_work.at(i).stationId));
+    /* 経路の有効性をチェック */
+#if 0 // NG: Rule70 補正されているのでダメ
+// 井原市 芸備線 広島 山陽線 岡山 吉備線 総社 伯備線 清音 の逆経路は適用駅が新倉敷になるのでダメ(qきっぷとなる)
+// 本郷台 根岸線 横浜 東海道線 東神奈川 横浜線 新横浜 東海道新幹線 東京 東北線 高久 は70条なのでダメ
+// 井原市 芸備線 広島 山陽線 小野田 小野田線 居能 宇部線 宇部新川 の逆も新山口なので
+// 井原市 芸備線 広島 山陽線 新山口 宇部線 宇部 山陽線 嘉川 : 岩倉だけど逆は大道になる(ダメではなく結果はOK)
+    Route rtWork;
+    for (vector<RouteItem>::const_iterator ite_make_route = route_work.cbegin(); ite_make_route != route_work.cend(); ite_make_route++) {
+        int rc_work_route;
+        if (rtWork.routeList().size() == 0) {
+            rc_work_route = rtWork.add(ite_make_route->stationId);
+        } else {
+            if (ID_L_RULE70 == ite_make_route->lineId) {
+                break; // インチキ
+            } else {
+                rc_work_route = rtWork.add(ite_make_route->lineId, ite_make_route->stationId);
+            }
+        }
+        if (rc_work_route < 0) {
+            TRACE("Rule114: Candiate point is fail route.\n ");
+            return;     /* Non-avalable route because duplicate */
+        }
     }
 #endif
     /* 86,87適用した最短駅の運賃を得る(上例では甲斐住吉-横浜間) */
@@ -7392,9 +7454,14 @@ void CalcRoute::CRule114::get86or87firstPoint(int32_t cond_km, uint32_t base_sal
                 int32_t jct_line_id = *ite;
                 TRACE(_T("found junction:%s(%s)\n"), LNAME(jct_line_id), SNAME(last_station_id));
                 if (base_line_id != static_cast<uint32_t>(jct_line_id)) {
+                    // base_line_id: bullet, jct_line_id: HZ, cond_km(negative is upper), last_station_id: hzjct
                     route_list_replace.push_back(RouteItem(base_line_id, base_station_id)); // 1st station will not used.
-                    get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
-                    get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
+                    if (CheckTransferShinkansen(base_line_id, jct_line_id, base_station_id, last_station_id, 0 < cond_km ? RouteUtil::LDIR_FALL : RouteUtil::LDIR_RISE)) {
+                        get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
+                    }
+                    if (CheckTransferShinkansen(base_line_id, jct_line_id, base_station_id, last_station_id, 0 < cond_km ? RouteUtil::LDIR_RISE : RouteUtil::LDIR_FALL)) {
+                        get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
+                    }
                     route_list_replace.pop_back();
                 }
             }
@@ -7493,6 +7560,36 @@ int32_t CalcRoute::CRule114::retreive_SpecificCoreAvailablePoint(int32_t cond_km
         return aStationId;
     }
     return 0;
+}
+
+
+//static
+//  114条判定用新幹線乗換可否のチェック
+//  @param [in] line_id1  前路線
+//  @param [in] line_id2  今路線
+//  @param [in] station_id1  前回接続(発)駅
+//  @param [in] station_id2  接続駅
+//  @param [in] direction  下り, 上り
+//
+//  @retval true: 有効というか無効(新幹線・在来線乗り換えではない or 新幹線でもない)
+//  @retval false: 無効(新幹線->在来線乗り換え無効)
+//
+bool CalcRoute::CRule114::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, RouteUtil::LINE_DIR direction)
+{
+///作並,仙山線,仙台,東北新幹線,那須塩原
+///CheckTransferShinkansen: 東北新幹線 東北線 仙台 那須塩原 下り
+///[get86or87firstPoint]: dept2: cond_km=2000, base km=1940, 東北線 那須塩原
+///judgementOfFare(高久, 東北線, 那須塩原)
+
+    TRACE("CheckTransferShinkansen: %s %s %s %s %s\n", LNAME(line_id1), LNAME(line_id2), SNAME(station_id1), SNAME(station_id2), direction == RouteUtil::LINE_DIR::LDIR_FALL ? "下り" : "上り" );
+
+    if (!IS_SHINKANSEN_LINE(line_id1)) {
+        return true;
+    }
+    if (0 == RouteUtil::GetHZLine(line_id1, station_id1, station_id2)) {
+        return true;
+    }
+    return direction == RouteUtil::DirLine(line_id2, station_id1, station_id2);
 }
 
 
@@ -7723,7 +7820,7 @@ int Route::CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t s
     if (dir == RouteUtil::DirLine(line_id2, station_id2, station_id3)) {
         return 0;       // 上り→上り or 下り→下り
     }
-    if (dir == RouteUtil::LDIR_ASC) {   // 下り→上り
+    if (dir == RouteUtil::LDIR_FALL) {   // 下り→上り
         flgbit = 0x01;
     } else {
         flgbit = 0x02;

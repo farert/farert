@@ -1134,8 +1134,8 @@ public:
     static int32_t          GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
     enum LINE_DIR {
-        LDIR_ASC  = 1,      // 下り
-        LDIR_DESC = 2       // 上り
+        LDIR_FALL  = 1,      // 下り
+        LDIR_RISE = 2       // 上り
     };
     static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
@@ -1424,6 +1424,7 @@ private:
             bool checkOfRule114j(int32_t kind);
             static bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
         bool isEnable() { return fare.fare != 0; }
+        static bool CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, RouteUtil::LINE_DIR direction);
     };
 };
 

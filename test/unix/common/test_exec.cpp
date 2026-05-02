@@ -3330,35 +3330,43 @@ int test_exec(void)
 //test_temp();		//臨時特設テスト
 //exit(-1)
 	_ftprintf(os, _T("\n#---route test  -------------------------------------------\n"));
+	TRACE(_T("\n#---route test  -------------------------------------------\n"));
 	test_route(test_route2_tbl);
 
 	_ftprintf(os, _T("\n#---shinkansen  -------------------------------------------\n"));
+	TRACE(_T("\n#---shinkansen  -------------------------------------------\n"));
 	test_shinkanzen();
 
 	_ftprintf(os, _T("\n#---special junction -------------------------------------------\n"));
+	TRACE(_T("\n#---special junction -------------------------------------------\n"));
 	test_jctspecial(jct_spcial_route_tbl);
 
 	_ftprintf(os, _T("\n#---hzl---------------------------------------------------------\n"));
+	TRACE(_T("\n#---hzl---------------------------------------------------------\n"));
 	test_hzl(hzl_route_def);
 	test_hzl2(hzl_def_tbl);
 
 	_ftprintf(os, _T("\n#===auto route==================================================\n"));
+	TRACE(_T("\n#===auto route==================================================\n"));
 	test_autoroute(auto_route_def);
 
 	_ftprintf(os, _T("\n#---specificial route-------------------------------------------\n"));
+	TRACE(_T("\n#---specificial route-------------------------------------------\n"));
 	test_route(test_route_tbl);
 
 	_ftprintf(os, _T("\n#---shinkansen convert-------------------------------------------\n"));
+	TRACE(_T("\n#---shinkansen convert-------------------------------------------\n"));
 	test_shin2zai();
 
 	_ftprintf(os, _T("\n#---same kokura hakata shinzai-----------------------------------\n"));
+	TRACE(_T("\n#---same kokura hakata shinzai-----------------------------------\n"));
 	test_route(test_route3_tbl);
 
 
     end = clock();
     elapsed = (double)(end - start) / CLOCKS_PER_SEC;
 
-    _ftprintf(os, _T("proces lapse: %.3f sec.\n"), elapsed);
+    TRACE(_T("proces lapse: %.3f sec.\n"), elapsed);
 
 	fclose(os);
 	return 1;
