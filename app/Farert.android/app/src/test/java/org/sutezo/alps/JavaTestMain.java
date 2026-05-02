@@ -14,10 +14,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class JavaTestMain {
-    private static final String DB_PATH = "db/jrdbNewest.db";
-    private static final Path TEST_EXEC_CPP = Paths.get("test/unix/common/test_exec.cpp");
-    private static final Path REF_RESULT = Paths.get("test/unix/all/test_result.txt");
-    private static final Path OUTPUT_RESULT = Paths.get("app/Farert.android/app/src/test/resources/test_result.txt");
+    private static final Path ROOT_DIR = locateRootDir();
+    private static final Path DB_PATH = ROOT_DIR.resolve("db/jrdbNewest.db");
+    private static final Path TEST_EXEC_CPP = ROOT_DIR.resolve("test/unix/common/test_exec.cpp");
+    private static final Path REF_RESULT = ROOT_DIR.resolve("test/unix/all/test_result.txt");
+    private static final Path OUTPUT_RESULT = ROOT_DIR.resolve("app/Farert.android/app/src/test/resources/test_result.txt");
     private static String referenceTimestampLine;
     private static String referenceProcessLapseLine;
 
@@ -33,13 +34,13 @@ public class JavaTestMain {
         if (!Files.exists(REF_RESULT)) {
             throw new IllegalStateException("Missing: " + REF_RESULT);
         }
-        if (!Files.exists(Paths.get(DB_PATH))) {
+        if (!Files.exists(DB_PATH)) {
             throw new IllegalStateException("Missing DB: " + DB_PATH);
         }
         Files.createDirectories(OUTPUT_RESULT.getParent());
         loadReferenceMarkers();
 
-        SQLiteDatabase db = SQLiteDatabase.openDatabase(DB_PATH, null, SQLiteDatabase.OPEN_READONLY);
+        SQLiteDatabase db = SQLiteDatabase.openDatabase(DB_PATH.toString(), null, SQLiteDatabase.OPEN_READONLY);
         RouteDB.createFactory(db, 10);
 
         TestData data = TestData.load(TEST_EXEC_CPP);
@@ -82,7 +83,9 @@ public class JavaTestMain {
             out.println("#---same kokura hakata shinzai-----------------------------------");
             test_route(out, data.testRoute3, 0);
 
-            out.println(referenceProcessLapseLine);
+            if (referenceProcessLapseLine != null) {
+                out.println(referenceProcessLapseLine);
+            }
         } catch (Throwable ex) {
             System.err.println("Failure during: " + currentCase);
             throw ex;
@@ -92,6 +95,18 @@ public class JavaTestMain {
     }
 
     private static String currentCase = "";
+
+    private static Path locateRootDir() {
+        Path current = Paths.get("").toAbsolutePath().normalize();
+        while (current != null) {
+            if (Files.exists(current.resolve("test/unix/common/test_exec.cpp"))
+                    && Files.exists(current.resolve("db/jrdbNewest.db"))) {
+                return current;
+            }
+            current = current.getParent();
+        }
+        return Paths.get("").toAbsolutePath().normalize();
+    }
 
     private static void test_route(Out out, List<String> routeDef, int round) {
         String title = "結果";
@@ -740,9 +755,6 @@ public class JavaTestMain {
                 referenceProcessLapseLine = line;
                 break;
             }
-        }
-        if (referenceProcessLapseLine == null) {
-            throw new IllegalStateException("Missing process lapse line: " + REF_RESULT);
         }
     }
 

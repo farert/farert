@@ -3477,7 +3477,7 @@ public class FARE_INFO {
         if (((route.get(0).stationId == DbIdOf.INSTANCE.station("北新地")) &&
                 (route.get(1).stationId == DbIdOf.INSTANCE.station("尼崎"))) &&
                 ((lastIndex <= 1) || (route.get(2).lineId != DbIdOf.INSTANCE.line("東海道線")) ||
-                        (RouteUtil.LINE_DIR.LDIR_ASC == RouteUtil.DirLine(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("尼崎"), route.get(2).stationId)))) {
+                        (RouteUtil.LINE_DIR.LDIR_FALL == RouteUtil.DirLine(DbIdOf.INSTANCE.line("東海道線"), DbIdOf.INSTANCE.station("尼崎"), route.get(2).stationId)))) {
 			/* 北新地-(JR東西線)-尼崎 の場合、発駅（北新地）は大阪や */
             // route.get(0).stationId = DbIdOf.INSTANCE.station("大阪");
             //if (distance == 0) {
@@ -3490,7 +3490,7 @@ public class FARE_INFO {
         else if (((route.get(route.size() - 1).stationId == DbIdOf.INSTANCE.station("北新地")) &&
                 (route.get(lastIndex - 1).stationId == DbIdOf.INSTANCE.station("尼崎"))) &&
                 ((lastIndex <= 1) || (route.get(lastIndex - 1).lineId != DbIdOf.INSTANCE.line("東海道線")) ||
-                        (RouteUtil.LINE_DIR.LDIR_DESC == RouteUtil.DirLine(DbIdOf.INSTANCE.line("東海道線"), route.get(lastIndex - 2).stationId, DbIdOf.INSTANCE.station("尼崎"))))) {
+                        (RouteUtil.LINE_DIR.LDIR_RISE == RouteUtil.DirLine(DbIdOf.INSTANCE.line("東海道線"), route.get(lastIndex - 2).stationId, DbIdOf.INSTANCE.station("尼崎"))))) {
             //route.get(route.size() - 1).stationId = DbIdOf.INSTANCE.station("大阪");
             //if (distance == 0) {
             distance = RouteUtil.GetDistance(DbIdOf.INSTANCE.line("東海道線"),   DbIdOf.INSTANCE.station("大阪"), DbIdOf.INSTANCE.station("尼崎")).get(0) -
