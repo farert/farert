@@ -3609,6 +3609,7 @@ static tstring setup_route_normalize_parser_input(const tstring& source_text)
     tstring text = source_text;
     setup_route_replace_all(text, _T("，"), _T(","));
     setup_route_replace_all(text, _T("　"), _T(" "));
+    setup_route_replace_all(text, _T("\r\n"), _T("\n"));
     return text;
 }
 

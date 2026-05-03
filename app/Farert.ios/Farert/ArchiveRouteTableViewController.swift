@@ -586,7 +586,7 @@ class ArchiveRouteTableViewController: UITableViewController, UIActionSheetDeleg
                                 new_count += 1 // 追加数
                                                // 経路数
                                 free_archive_route -= self.countof(Route: scr_route)
-                                self.routeList.append(scr_route)
+                                self.routeList.append(rt.routeScript())
                             }
                         }
                     }

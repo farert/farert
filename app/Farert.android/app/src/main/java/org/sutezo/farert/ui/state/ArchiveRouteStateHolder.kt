@@ -300,7 +300,7 @@ class ArchiveRouteStateHolder : ViewModel() {
                             } else {
                                 newCount++
                                 freeSpace -= countOfRoute(scrRoute)
-                                routeList.add(scrRoute)
+                                routeList.add(route.route_script())
                             }
                         }
                     }
