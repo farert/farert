@@ -13,6 +13,10 @@
  *   # 駅名と路線名を個別に指定
  *   ./farecli 東京 東海道線 品川 東海道線 横浜
  *
+ *   # 括弧付きの枝線名・駅名は、自明なら省略指定も可能
+ *   ./farecli 長崎 西九州新幹線 諫早 長崎線 長与
+ *   ./farecli 可部 可部線 横川 山陽線 新下関
+ *
  *   # 自動経路検索（偶数個の引数）
  *   ./farecli 東京 新大阪
  *
@@ -51,6 +55,8 @@ void usage(const char* program_name) {
               << "\n"
               << "  2. 駅名と路線名を個別指定（奇数個）:\n"
               << "     例: ./farecli 東京 東海道線 品川 東海道線 横浜\n"
+              << "         ./farecli 長崎 西九州新幹線 諫早 長崎線 長与\n"
+              << "         ./farecli 可部 可部線 横川 山陽線 新下関\n"
               << "\n"
               << "  3. 自動経路検索（偶数個）:\n"
               << "     例: ./farecli 東京 新大阪\n"
@@ -84,65 +90,34 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return tokens;
 }
 
-// トークンリストから経路を構築（add_start_route/add_route使用）
+// トークンリストから経路を構築
 bool build_route_from_tokens(az_route& route, const std::vector<std::string>& tokens, bool json_mode) {
-    int result = -999;
-    std::string station;
-    std::string line;
-
     if (tokens.empty()) {
         std::cerr << "Error: No tokens provided" << std::endl;
         return false;
     }
 
-    route.removeAll();
-
-    // 残りの路線と駅を追加（路線、駅のペア）
-    for (auto it = tokens.cbegin() ; it != tokens.cend(); it++) {
-        if (0 == route.get_route_count()) {
-            // 最初の駅を追加
-            result = route.add_start_route(*it);
-            if (result < 0) {
-                station = *it;
-                break;
-            }
-        } else if (std::next(it) != tokens.cend()) {
-            result = route.add_route(*it, *std::next(it));
-            if (result < 0) {
-                line = *it;
-                station = *std::next(it);
-                break;
-            }
-            ++it;
-        } else {
-            // 自動経路検索（新幹線使用: 1）
-            result = route.auto_route(1, *it);
-            if (result < 0) {
-                station = *it;
-                break;
-            }
+    std::ostringstream route_str;
+    for (std::size_t i = 0; i < tokens.size(); ++i) {
+        if (i > 0) {
+            route_str << ' ';
         }
+        route_str << tokens[i];
     }
-    // 結果表示
-    if (0 <= result) {
+
+    const std::string build_result = route.build_route(route_str.str());
+    const bool success = build_result.find("\"rc\":-") == std::string::npos;
+
+    if (success) {
         if (json_mode) {
             std::cout << route.get_fare_info_object_json() << std::endl;
         } else {
             std::cout << route.show_fare() << std::endl;
         }
     } else {
-        if (json_mode) {
-            std::cout << "{"
-                      << json_encoder::pair("line", line) << ","
-                      << json_encoder::pair("station", station)
-                      << ",\"result\":false}"
-                      << std::endl;
-        } else {
-            std::cout << "Fail: " << result << std::endl;
-            std::cout << "      " << line << "-" << station << std::endl;
-        }
+        std::cout << build_result << std::endl;
     }
-    return 0 <= result;
+    return success;
 }
 
 

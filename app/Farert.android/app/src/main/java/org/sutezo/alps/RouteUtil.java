@@ -319,6 +319,47 @@ public class RouteUtil {
         return String.format(Locale.JAPANESE, "%,d", num);
     }
 
+    static String normalizeParserInput(String sourceText) {
+        if (sourceText == null) {
+            return "";
+        }
+        return sourceText
+                .replace("，", ",")
+                .replace("　", " ");
+    }
+
+    public static String NormalizeRouteToken(String text) {
+        return normalizeParserInput(text)
+                .replace(" ", "")
+                .replace("\t", "")
+                .replace("\r", "")
+                .replace("\n", "")
+                .replace("（", "(")
+                .replace("）", ")");
+    }
+
+    public static String RouteTokenBaseName(String text) {
+        String normalized = NormalizeRouteToken(text);
+        int pos = normalized.indexOf('(');
+        if (pos < 0) {
+            return normalized;
+        }
+        return normalized.substring(0, pos);
+    }
+
+    public static String ExtractRouteLineToken(String token) {
+        if ((token != null) && !token.isEmpty() && (token.charAt(0) == 'r')) {
+            return token.substring(1);
+        }
+        return token;
+    }
+
+    public static void PushUniqueInt(List<Integer> values, int value) {
+        if ((value > 0) && !values.contains(value)) {
+            values.add(value);
+        }
+    }
+
 
      // static
      //	会社&都道府県の列挙
@@ -683,6 +724,175 @@ public class RouteUtil {
          return name;
      }
 
+     private static boolean lineContainsStation(int lineId, int stationId) {
+         final String tsql =
+                 "select count(*) from t_lines where (lflg&((1<<31)|(1<<17)))=0 and line_id=?1 and station_id=?2";
+
+         try (Cursor dbo = RouteDB.db().rawQuery(tsql,
+                 new String[] {String.valueOf(lineId), String.valueOf(stationId)})) {
+             if (dbo.moveToNext()) {
+                 return dbo.getInt(0) > 0;
+             }
+         }
+         return false;
+     }
+
+     public static List<Integer> ResolveLineCandidatesFromStation(
+             int currentStationId,
+             String inputLine,
+             List<Integer> targetStationCandidates) {
+         List<Integer> lineIds = new ArrayList<>();
+         int exactLineId = RouteUtil.GetLineId(inputLine);
+         String normalizedInput = RouteUtil.NormalizeRouteToken(inputLine);
+         String inputBase = RouteUtil.RouteTokenBaseName(inputLine);
+
+         if ((exactLineId > 0) && lineContainsStation(exactLineId, currentStationId)) {
+             RouteUtil.PushUniqueInt(lineIds, exactLineId);
+         }
+
+         try (Cursor dbo = RouteUtil.Enum_line_of_stationId(currentStationId)) {
+             while (dbo.moveToNext()) {
+                 String lineName = dbo.getString(0);
+                 int lineId = dbo.getInt(1);
+                 String normalizedLineName = RouteUtil.NormalizeRouteToken(lineName);
+                 String lineBase = RouteUtil.RouteTokenBaseName(lineName);
+
+                 if (!normalizedLineName.equals(normalizedInput) && !lineBase.equals(inputBase)) {
+                     continue;
+                 }
+
+                 if ((targetStationCandidates != null) && !targetStationCandidates.isEmpty()) {
+                     boolean reachable = false;
+                     for (int stationId : targetStationCandidates) {
+                         if (lineContainsStation(lineId, stationId)) {
+                             reachable = true;
+                             break;
+                         }
+                     }
+                     if (!reachable) {
+                         continue;
+                     }
+                 }
+
+                 RouteUtil.PushUniqueInt(lineIds, lineId);
+             }
+         }
+
+         return lineIds;
+     }
+
+     public static List<Integer> ResolveStationCandidatesOnLine(int lineId, String inputStation) {
+         List<Integer> stationIds = new ArrayList<>();
+         int exactStationId = RouteUtil.GetStationId(inputStation);
+         String normalizedInput = RouteUtil.NormalizeRouteToken(inputStation);
+         String inputBase = RouteUtil.RouteTokenBaseName(inputStation);
+
+         if (exactStationId > 0) {
+             RouteUtil.PushUniqueInt(stationIds, exactStationId);
+         }
+
+         try (Cursor dbo = RouteUtil.Enum_station_of_lineId(lineId)) {
+             while (dbo.moveToNext()) {
+                 int stationId = dbo.getInt(1);
+                 String stationName = RouteUtil.StationNameEx(stationId);
+                 String normalizedStationName = RouteUtil.NormalizeRouteToken(stationName);
+                 String stationBase = RouteUtil.RouteTokenBaseName(stationName);
+
+                 if (normalizedStationName.equals(normalizedInput) || stationBase.equals(inputBase)) {
+                     RouteUtil.PushUniqueInt(stationIds, stationId);
+                 }
+             }
+         }
+
+         return stationIds;
+     }
+
+     public static List<Integer> ResolveStationCandidatesForStart(String inputStation, String nextLine) {
+         List<Integer> stationIds = new ArrayList<>();
+         int exactStationId = RouteUtil.GetStationId(inputStation);
+         if (exactStationId > 0) {
+             RouteUtil.PushUniqueInt(stationIds, exactStationId);
+         }
+
+         int nextLineId = RouteUtil.GetLineId(nextLine);
+         String normalizedInput = RouteUtil.NormalizeRouteToken(inputStation);
+         String inputBase = RouteUtil.RouteTokenBaseName(inputStation);
+
+         if (nextLineId <= 0) {
+             return stationIds;
+         }
+
+         final String tsql =
+                 "select t.rowid, t.name, t.samename" +
+                         " from t_lines l" +
+                         " join t_station t on t.rowid=l.station_id" +
+                         " where l.line_id=?1 and (l.lflg&((1<<31)|(1<<17)))=0" +
+                         " order by l.sales_km";
+
+         try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[] {String.valueOf(nextLineId)})) {
+             while (dbo.moveToNext()) {
+                 int stationId = dbo.getInt(0);
+                 String stationName = dbo.getString(1) + dbo.getString(2);
+                 String normalizedStationName = RouteUtil.NormalizeRouteToken(stationName);
+                 String stationBase = RouteUtil.RouteTokenBaseName(stationName);
+
+                 if (normalizedStationName.equals(normalizedInput) || stationBase.equals(inputBase)) {
+                     RouteUtil.PushUniqueInt(stationIds, stationId);
+                 }
+             }
+         }
+
+         return stationIds;
+     }
+
+     public static List<Integer> ResolveStationCandidatesAnywhere(String inputStation) {
+         List<Integer> stationIds = new ArrayList<>();
+         int exactStationId = RouteUtil.GetStationId(inputStation);
+         String normalizedInput = RouteUtil.NormalizeRouteToken(inputStation);
+         String inputBase = RouteUtil.RouteTokenBaseName(inputStation);
+
+         if (exactStationId > 0) {
+             RouteUtil.PushUniqueInt(stationIds, exactStationId);
+         }
+
+         final String tsql =
+                 "select rowid, name, samename from t_station where (sflg&(1<<18))=0";
+         try (Cursor dbo = RouteDB.db().rawQuery(tsql, null)) {
+             while (dbo.moveToNext()) {
+                 int stationId = dbo.getInt(0);
+                 String stationName = dbo.getString(1) + dbo.getString(2);
+                 String normalizedStationName = RouteUtil.NormalizeRouteToken(stationName);
+                 String stationBase = RouteUtil.RouteTokenBaseName(stationName);
+
+                 if (normalizedStationName.equals(normalizedInput) || stationBase.equals(inputBase)) {
+                     RouteUtil.PushUniqueInt(stationIds, stationId);
+                 }
+             }
+         }
+
+         return stationIds;
+     }
+
+     public static int TryAddRouteCandidate(Route route, int lineId, int stationId) {
+         Route snapshot = new Route();
+         snapshot.assign(route, route.routeList().size());
+         int rc = route.add(lineId, stationId);
+         if (rc < 0) {
+             route.assign(snapshot, snapshot.routeList().size());
+         }
+         return rc;
+     }
+
+     public static int TryAutoRouteCandidate(Route route, int useBulletTrain, int stationId) {
+         Route snapshot = new Route();
+         snapshot.assign(route, route.routeList().size());
+         int rc = route.changeNeerest(useBulletTrain, stationId);
+         if (rc < 0) {
+             route.assign(snapshot, snapshot.routeList().size());
+         }
+         return rc;
+     }
+
      //static
      //	駅ID→駅名
      //
@@ -924,7 +1134,7 @@ public class RouteUtil {
              c |= routeFlag.osakakan_1dir ? 0x04 : 0;
              pass = 1;
          }
-         c |= LINE_DIR.LDIR_ASC == DirLine(DbIdOf.INSTANCE.line("大阪環状線"), station_id1, station_id2) ? 0x08 : 0;
+         c |= LINE_DIR.LDIR_FALL == DirLine(DbIdOf.INSTANCE.line("大阪環状線"), station_id1, station_id2) ? 0x08 : 0;
          System.out.printf("RouteOsakaKanDir:[%d] %s %s %s: %d %d %d %d\n",
                      pass,
                      StationName(station_id1),
@@ -1108,8 +1318,8 @@ public class RouteUtil {
 
      enum LINE_DIR {
          LDIR_NONE,
-         LDIR_ASC,		// 下り
-         LDIR_DESC,		// 上り
+         LDIR_FALL,		// 下り
+         LDIR_RISE,		// 上り
      }
 
      //static
@@ -1119,8 +1329,8 @@ public class RouteUtil {
      //	@param [in] station_id1 発
      //	@param [in] station_id2 至
      //
-     //	@retval 1 下り(LDIR_ASC)
-     //	@retval 2 上り(LDIR_DESC)
+     //	@retval 1 下り(LDIR_FALL)
+     //	@retval 2 上り(LDIR_RISE)
      //
      //  @node 同一駅の場合下り(0)を返す
      //
@@ -1136,10 +1346,10 @@ public class RouteUtil {
                  String.valueOf(station_id1),
                  String.valueOf(station_id2)});
 
-         LINE_DIR rc = LINE_DIR.LDIR_ASC;    /* default is 下り */
+         LINE_DIR rc = LINE_DIR.LDIR_FALL;    /* default is 下り */
          try {
              if (dbo.moveToNext()) {
-                 rc = (1 == dbo.getInt(0)) ? LINE_DIR.LDIR_ASC : LINE_DIR.LDIR_DESC;
+                 rc = (1 == dbo.getInt(0)) ? LINE_DIR.LDIR_FALL : LINE_DIR.LDIR_RISE;
              }
          } finally {
              dbo.close();

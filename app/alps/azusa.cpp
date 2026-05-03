@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <alpdb.h>
+#include <cstdio>
 #include <sstream>
 #include <vector>
 #include <unordered_set>
@@ -107,6 +108,48 @@ static std::string tail_utf8_chars(const std::string& text, std::size_t char_cou
     return text.substr(begin_index);
 }
 
+static const char* stock_discount_company_name(int32_t company)
+{
+    switch (company) {
+    case JR_EAST:
+        return "JR東日本";
+    case JR_WEST:
+        return "JR西日本";
+    case JR_CENTRAL:
+        return "JR東海";
+    case JR_KYUSYU:
+        return "JR九州";
+    default:
+        return "";
+    }
+}
+
+static int32_t stock_discount_rate(int32_t company, int32_t index)
+{
+    switch (company) {
+    case JR_EAST:
+        return index == 0 ? 40 : 0;
+    case JR_WEST:
+        return index == 0 ? 50 : 0;
+    case JR_CENTRAL:
+        if (index == 0) return 10;
+        if (index == 1) return 20;
+        return 0;
+    case JR_KYUSYU:
+        return index == 0 ? 50 : 0;
+    default:
+        return 0;
+    }
+}
+
+static const char* stock_discount_kind(int32_t company, int32_t index)
+{
+    if (company == JR_CENTRAL && index == 1) {
+        return "double";
+    }
+    return "single";
+}
+
 // 仮実装: UTF-8完全正規化は行わず、主要な表記ゆれのみ吸収する
 static std::string normalize_station_token(std::string text)
 {
@@ -158,6 +201,7 @@ static std::string normalize_station_token(std::string text)
     replace_all(text, "﨑", "崎");
     replace_all(text, "嵜", "崎");
     replace_all(text, "溪", "渓");
+    replace_all(text, "諌", "諫");
     return text;
 }
 
@@ -195,14 +239,14 @@ static std::vector<std::string> split_samename(const std::string& samename)
 static std::string make_station_candidate_key(const StationCandidate& candidate)
 {
     std::ostringstream oss;
-    oss << candidate.name << "\t";
+    oss << normalize_station_token(candidate.name) << "\t";
     for (std::size_t i = 0; i < candidate.samename.size(); i++) {
         if (i > 0) {
             oss << "/";
         }
-        oss << candidate.samename[i];
+        oss << normalize_station_token(candidate.samename[i]);
     }
-    oss << "\t" << candidate.kana;
+    oss << "\t" << normalize_station_token(candidate.kana);
     return oss.str();
 }
 
@@ -436,6 +480,7 @@ std::string az_route::get_fare_info_object_json() {
         json_encoder::pair("rule114ApplyTerminal", fi.getRule114apply_terminal_station()),
         [&]() -> std::string {
             std::ostringstream oss;
+            const int32_t stockCompany = fi.getStockDiscountCompany();
 
             oss << json_encoder::begin_array("stockDiscounts");
             for (int32_t i = 0; true; i++) {
@@ -456,6 +501,12 @@ std::string az_route::get_fare_info_object_json() {
                         (fareStock + fi.getFareForCompanyline()));
                 oss << ",";
                 oss << json_encoder::pair("stockDiscountTitle", title);
+                oss << ",";
+                oss << json_encoder::pair("company", stock_discount_company_name(stockCompany));
+                oss << ",";
+                oss << json_encoder::pair("discountRate", stock_discount_rate(stockCompany, i));
+                oss << ",";
+                oss << json_encoder::pair("discountKind", stock_discount_kind(stockCompany, i));
                 oss << "},";
             }
             std::string str = oss.str();
@@ -626,18 +677,80 @@ int az_route::add_start_route(std::string station)
     }
 }
 
+int az_route::add_start_route(std::string station, std::string next_line)
+{
+    bool osakakan_detour = false;
+    const std::string line_token = RouteUtil::ExtractRouteLineToken(next_line, &osakakan_detour);
+    if (osakakan_detour) {
+        refRouteFlag().osakakan_detour = true;
+    }
+    const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesForStart(station, line_token);
+    for (int32_t station_id : station_candidates) {
+        az_route snapshot;
+        snapshot.assign(*this, this->get_route_count());
+        const int rc = add(station_id);
+        if (rc >= 0) {
+            return rc;
+        }
+        assign(snapshot, snapshot.get_route_count());
+    }
+    return -200;
+}
+
 // add end station
 int az_route::add_route(std::string line, std::string station)
 {
-    int line_id = RouteUtil::GetLineId(line.c_str());
-    int station_id = RouteUtil::GetStationId(station.c_str());
-    if (line_id <= 0) {
-        return -300;
-    }
-    if (station_id <= 0) {
+    const int32_t current_station_id = RouteList::routeList().empty() ? 0 : RouteList::routeList().back().stationId;
+    const int32_t exact_station_id = RouteUtil::GetStationId(station.c_str());
+    if (exact_station_id <= 0 && current_station_id <= 0) {
         return -200;
     }
-    return add(line_id, station_id);
+
+    std::vector<int32_t> target_station_candidates;
+    if (exact_station_id > 0) {
+        RouteUtil::PushUniqueInt(target_station_candidates, exact_station_id);
+    }
+
+    bool osakakan_detour = false;
+    const std::string line_token = RouteUtil::ExtractRouteLineToken(line, &osakakan_detour);
+    if (osakakan_detour) {
+        refRouteFlag().osakakan_detour = true;
+    }
+    std::vector<int32_t> line_candidates = RouteUtil::ResolveLineCandidatesFromStation(current_station_id, line_token, target_station_candidates);
+    if (line_candidates.empty()) {
+        const int32_t exact_line_id = RouteUtil::GetLineId(line_token.c_str());
+        if (exact_line_id <= 0) {
+            return -300;
+        }
+        RouteUtil::PushUniqueInt(line_candidates, exact_line_id);
+    }
+
+    if (exact_station_id <= 0) {
+        for (int32_t line_id : line_candidates) {
+            const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, station);
+            for (int32_t station_id : station_candidates) {
+                RouteUtil::PushUniqueInt(target_station_candidates, station_id);
+            }
+        }
+    }
+
+    if (target_station_candidates.empty()) {
+        return -200;
+    }
+
+    int fallback_rc = -200;
+    for (int32_t line_id : line_candidates) {
+        const std::vector<int32_t> station_candidates = RouteUtil::ResolveStationCandidatesOnLine(line_id, station);
+        for (int32_t station_id : station_candidates) {
+            const int rc = RouteUtil::TryAddRouteCandidate(*this, line_id, station_id);
+            if (rc >= 0) {
+                return rc;
+            }
+            fallback_rc = rc;
+        }
+    }
+
+    return fallback_rc;
 }
 
 // auto route from current to destinationStation
@@ -696,7 +809,7 @@ std::string az_route::build_route(const std::string& route_str)
     char error_buf[256] = {0};
     int offset = 0;
 
-    int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
+    const int rc = setup_route(route_str.c_str(), error_buf, sizeof(error_buf), &offset);
     oss << "{" << json_encoder::pair("rc", rc) << ",";
     oss << json_encoder::pair("failItem", std::string(error_buf)) << ",";
     oss << json_encoder::pair("offset", offset);

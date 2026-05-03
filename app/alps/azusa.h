@@ -16,6 +16,7 @@ public:
     // main view
 
     int add_start_route(std::string station);
+    int add_start_route(std::string station, std::string next_line);
     int add_route(std::string line, std::string station);
     int auto_route(int useBulletTrain, std::string destinationStation);
 
@@ -158,6 +159,11 @@ namespace json_encoder {
             oss << value;
         }
         return oss.str();
+    }
+
+    // const char*
+    inline std::string pair(const std::string& key, const char* value) {
+        return pair(key, value ? std::string(value) : std::string(""));
     }
 
     // bool

@@ -2136,10 +2136,10 @@ public class CalcRoute extends RouteList {
 
                 // 69を適用したものを route_list_special へ
                 ReRouteRule69j(route_list, route_list_special);	/* 69条適用(route_list->route_list_special) */
-                route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+                //route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
 
                 cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
-                route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                //route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
                 /* 86,87適用前,   86,87適用後 */
                 if (!checkOfRule114j(0x01 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000))) {
                     /* 着のみ都区市内適用 */
@@ -2150,10 +2150,10 @@ public class CalcRoute extends RouteList {
 
                     // 69を適用したものをroute_list_specialへ
                     ReRouteRule69j(route_list, route_list_special);	/* 69条適用(route_list->route_list_special) */
-                    route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+                    //route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
 
                     cpyRouteItems(rRoute_list_no_applied_86or87, route_list);
-                    route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                    //route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
                     return checkOfRule114j(0x02 | ((sk == RULE114_SALES_KM_86) ? 0 : 0x8000));
                 }
             } else {
@@ -2161,11 +2161,11 @@ public class CalcRoute extends RouteList {
                 cpyRouteItems(rRoute_list_applied_86or87, route_list_special);
                 List<RouteItem> route_work = new ArrayList<>();
 
-                route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
+                //route_list = ConvertShinkansen2ZairaiFor114Judge(route_list);
                 ReRouteRule69j(route_list, route_work);
                 cpyRouteItems(route_work, route_list);
 
-                route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
+                //route_list_special = ConvertShinkansen2ZairaiFor114Judge(route_list_special);
                 route_work.clear();
                 ReRouteRule69j(route_list_special, route_work);
                 cpyRouteItems(route_work, route_list_special);
@@ -2338,10 +2338,12 @@ public class CalcRoute extends RouteList {
                     route_work.get(1).stationId = route_list_replace.get(i).stationId;
                     route_work.get(1).lineId = route_list_replace.get(i).lineId;
                 }
-                route_work.add(0, new RouteItem(route_work.get(0).lineId,
-                                                       route_work.get(0).stationId));
-                route_work.get(1).stationId = (short) base_station_id;
-                route_work.get(1).lineId = (short)base_line_id;
+                if (!route_list_replace.isEmpty()) {
+                    route_work.add(0, new RouteItem(route_work.get(0).lineId,
+                                                           route_work.get(0).stationId));
+                    route_work.get(1).stationId = (short) base_station_id;
+                    route_work.get(1).lineId = (short)base_line_id;
+                }
             }
             if (DEBUG) {
                 for (int i = 0; i < route_work.size(); i++ ) {
@@ -2443,8 +2445,14 @@ public class CalcRoute extends RouteList {
                         System.out.printf("found junction:%s(%s)\n", RouteUtil.LineName(jct_line_id), RouteUtil.StationName(last_station_id));
                         if (base_line_id != jct_line_id) {
                             route_list_replace.add(new RouteItem(base_line_id, base_station_id)); // 1st station will not used.
-                            get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
-                            get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
+                            if (CheckTransferShinkansen(base_line_id, jct_line_id, base_station_id, last_station_id,
+                                    (0 < cond_km) ? RouteUtil.LINE_DIR.LDIR_FALL : RouteUtil.LINE_DIR.LDIR_RISE)) {
+                                get86or87firstPoint(cond_km, offset_sales_km, jct_line_id, last_station_id);
+                            }
+                            if (CheckTransferShinkansen(base_line_id, jct_line_id, base_station_id, last_station_id,
+                                    (0 < cond_km) ? RouteUtil.LINE_DIR.LDIR_RISE : RouteUtil.LINE_DIR.LDIR_FALL)) {
+                                get86or87firstPoint(-cond_km, offset_sales_km, jct_line_id, last_station_id);
+                            }
                             route_list_replace.remove(route_list_replace.size() - 1);
                         }
                     }
@@ -2541,7 +2549,7 @@ public class CalcRoute extends RouteList {
             ASSERT(0 <= aSales_km);
             ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
-            if (RouteUtil.LINE_DIR.LDIR_ASC != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
+            if (RouteUtil.LINE_DIR.LDIR_FALL != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
                 /* 上り */
                 km = -km;
             }
@@ -2563,6 +2571,24 @@ public class CalcRoute extends RouteList {
 
         public boolean isEnable() {
             return fare.fare != 0;
+        }
+
+        public boolean CheckTransferShinkansen(int line_id1, int line_id2, int station_id1, int station_id2,
+                                               RouteUtil.LINE_DIR direction) {
+            System.out.printf("CheckTransferShinkansen: %s %s %s %s %s\n",
+                    RouteUtil.LineName(line_id1),
+                    RouteUtil.LineName(line_id2),
+                    RouteUtil.StationName(station_id1),
+                    RouteUtil.StationName(station_id2),
+                    direction == RouteUtil.LINE_DIR.LDIR_FALL ? "下り" : "上り");
+
+            if (!IS_SHINKANSEN_LINE(line_id1)) {
+                return true;
+            }
+            if (0 == RouteUtil.GetHZLine(line_id1, station_id1, station_id2)) {
+                return true;
+            }
+            return direction == RouteUtil.DirLine(line_id2, station_id1, station_id2);
         }
 
         //static

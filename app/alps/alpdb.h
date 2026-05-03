@@ -1086,6 +1086,8 @@ public:
  *
  */
 /* All class method Class */
+class Route;
+
 class RouteUtil
 {
 public:
@@ -1111,6 +1113,17 @@ public:
     static tstring  PrefectName(int32_t id);
     static tstring  CompanyName(int32_t id);
 
+    static tstring  NormalizeRouteToken(const tstring& text);
+    static tstring  RouteTokenBaseName(const tstring& text);
+    static tstring  ExtractRouteLineToken(const tstring& token, bool* osakakan_detour = NULL);
+    static void     PushUniqueInt(vector<int32_t>& values, int32_t value);
+    static vector<int32_t> ResolveLineCandidatesFromStation(int32_t current_station_id, const tstring& input_line, const vector<int32_t>& target_station_candidates);
+    static vector<int32_t> ResolveStationCandidatesOnLine(int32_t line_id, const tstring& input_station);
+    static vector<int32_t> ResolveStationCandidatesForStart(const tstring& input_station, const tstring& next_line);
+    static vector<int32_t> ResolveStationCandidatesAnywhere(const tstring& input_station);
+    static int32_t  TryAddRouteCandidate(Route& route, int32_t line_id, int32_t station_id);
+    static int32_t  TryAutoRouteCandidate(Route& route, uint8_t use_bullet_train, int32_t station_id);
+
     static tstring  CoreAreaCenterName(int32_t id);
 
     static SPECIFICFLAG AttrOfStationId(int32_t id);
@@ -1134,8 +1147,8 @@ public:
     static int32_t          GetDistanceOfOsakaKanjyouRvrs(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
     enum LINE_DIR {
-        LDIR_ASC  = 1,      // 下り
-        LDIR_DESC = 2       // 上り
+        LDIR_FALL  = 1,      // 下り
+        LDIR_RISE = 2       // 上り
     };
     static int32_t  DirLine(int32_t line_id, int32_t station_id1, int32_t station_id2);
 
@@ -1424,6 +1437,7 @@ private:
             bool checkOfRule114j(int32_t kind);
             static bool ConvertShinkansen2ZairaiFor114Judge(vector<RouteItem>* route);
         bool isEnable() { return fare.fare != 0; }
+        static bool CheckTransferShinkansen(int32_t line_id1, int32_t line_id2, int32_t station_id1, int32_t station_id2, RouteUtil::LINE_DIR direction);
     };
 };
 

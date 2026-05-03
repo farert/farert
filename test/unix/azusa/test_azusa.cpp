@@ -127,6 +127,9 @@ int main() {
     std::string fuzzy_result_futa = fare_ui::search_station_fuzzy("冨", 20);
     TEST_RESULT("search_station_fuzzy('冨',20)", fuzzy_result_futa);
 
+    std::string fuzzy_result_isahaya = fare_ui::search_station_fuzzy("諌早", 20);
+    TEST_RESULT("search_station_fuzzy('諌早',20)", fuzzy_result_isahaya);
+
     // ========================================
     // 5. az_route - 基本的な経路作成
     // ========================================
@@ -439,6 +442,51 @@ int main() {
             TEST_RESULT("  add vs assign", "不一致");
         }
     }
+
+    // ========================================
+    // 11.65. build_route() 省略・曖昧・大阪環状線遠回りの回帰テスト
+    // ========================================
+    TEST_SECTION("11.65. build_route() 回帰テスト");
+
+    az_route regression_route_1;
+    std::string regression_result_1 = regression_route_1.build_route("千歳 千歳線 白石 函館線 岩見沢 室蘭線 追分");
+    TEST_RESULT("build_route(千歳→追分)", regression_result_1);
+    TEST_RESULT("千歳→追分の経路", regression_route_1.route_script());
+
+    az_route regression_route_2;
+    std::string regression_result_2 = regression_route_2.build_route("長崎 西九州新幹線 諫早 長崎線 長与");
+    TEST_RESULT("build_route(長崎→長与)", regression_result_2);
+    TEST_RESULT("長崎→長与の経路", regression_route_2.route_script());
+
+    az_route regression_route_3;
+    std::string regression_result_3 = regression_route_3.build_route("大阪 r大阪環状線 京橋");
+    TEST_RESULT("build_route(大阪→京橋 detour)", regression_result_3);
+    TEST_RESULT("大阪→京橋 detour の経路", regression_route_3.route_script());
+
+    az_route regression_route_4;
+    std::string regression_result_4 = regression_route_4.build_route("長崎 西九州新幹線 諫早 長崎線 新鳥栖 九州新幹線 博多 山陽新幹線 新大阪 東海道線 大阪 r大阪環状線 京橋 片町線 木津");
+    TEST_RESULT("build_route(長崎→木津 detour)", regression_result_4);
+    TEST_RESULT("長崎→木津 detour の経路", regression_route_4.route_script());
+
+    az_route regression_route_5;
+    std::string regression_result_5 = regression_route_5.build_route("上越妙高 えちごトキめき鉄道（妙高はねうま） 直江津");
+    TEST_RESULT("build_route(上越妙高→直江津 tokimeki)", regression_result_5);
+    TEST_RESULT("上越妙高→直江津 tokimeki の経路", regression_route_5.route_script());
+
+    az_route regression_route_6;
+    std::string regression_result_6 = regression_route_6.build_route("直江津 えちごトキめき鉄道（日本海ひすい） 糸魚川");
+    TEST_RESULT("build_route(直江津→糸魚川 tokimeki)", regression_result_6);
+    TEST_RESULT("直江津→糸魚川 tokimeki の経路", regression_route_6.route_script());
+
+    az_route regression_route_7;
+    std::string regression_result_7 = regression_route_7.build_route("上越妙高　えちごトキめき鉄道（妙高はねうま）　直江津");
+    TEST_RESULT("build_route(上越妙高→直江津 full-width spaces)", regression_result_7);
+    TEST_RESULT("上越妙高→直江津 full-width spaces の経路", regression_route_7.route_script());
+
+    az_route regression_route_8;
+    std::string regression_result_8 = regression_route_8.build_route("上越妙高，えちごトキめき鉄道（妙高はねうま），直江津");
+    TEST_RESULT("build_route(上越妙高→直江津 full-width commas)", regression_result_8);
+    TEST_RESULT("上越妙高→直江津 full-width commas の経路", regression_route_8.route_script());
 
     // ========================================
     // 11.7. build_route() 失敗パターンのテスト
