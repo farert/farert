@@ -631,6 +631,8 @@ public class JavaTestMain {
                 RouteUtil.GetLineId("上越新幹線"),
                 RouteUtil.GetStationId("高崎"),
                 RouteUtil.GetStationId("熊谷")));
+        farertAssert.ASSERT(RouteUtil.GetStationId("武蔵溝ノ口") == RouteUtil.GetStationId("武蔵溝の口"));
+        farertAssert.ASSERT(RouteUtil.GetStationId("御茶ノ水") == RouteUtil.GetStationId("お茶の水"));
     }
 
     private static void test_shin2zai(Out out, List<String> testShin2Zai) {

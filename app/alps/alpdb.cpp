@@ -3625,6 +3625,45 @@ tstring RouteUtil::NormalizeRouteToken(const tstring& source_text)
     return text;
 }
 
+tstring RouteUtil::NormalizeStationToken(const tstring& source_text)
+{
+    tstring text = RouteUtil::NormalizeRouteToken(source_text);
+    setup_route_replace_all(text, _T("・"), _T(""));
+    setup_route_replace_all(text, _T("ｰ"), _T(""));
+    setup_route_replace_all(text, _T("ー"), _T(""));
+    setup_route_replace_all(text, _T("-"), _T(""));
+    setup_route_replace_all(text, _T("−"), _T(""));
+    setup_route_replace_all(text, _T("カ"), _T("か"));
+    setup_route_replace_all(text, _T("ガ"), _T("が"));
+    setup_route_replace_all(text, _T("ケ"), _T("け"));
+    setup_route_replace_all(text, _T("ゲ"), _T("げ"));
+    setup_route_replace_all(text, _T("ツ"), _T("つ"));
+    setup_route_replace_all(text, _T("ッ"), _T("つ"));
+    setup_route_replace_all(text, _T("ヂ"), _T("じ"));
+    setup_route_replace_all(text, _T("ヅ"), _T("ず"));
+    setup_route_replace_all(text, _T("ぢ"), _T("じ"));
+    setup_route_replace_all(text, _T("づ"), _T("ず"));
+    setup_route_replace_all(text, _T("ゔ"), _T("う"));
+    setup_route_replace_all(text, _T("御茶"), _T("お茶"));
+    setup_route_replace_all(text, _T("ノ"), _T("の"));
+    setup_route_replace_all(text, _T("之"), _T("の"));
+    setup_route_replace_all(text, _T("ヶ"), _T("が"));
+    setup_route_replace_all(text, _T("ケ"), _T("が"));
+    setup_route_replace_all(text, _T("け"), _T("が"));
+    setup_route_replace_all(text, _T("龍"), _T("竜"));
+    setup_route_replace_all(text, _T("總"), _T("総"));
+    setup_route_replace_all(text, _T("澤"), _T("沢"));
+    setup_route_replace_all(text, _T("齊"), _T("斉"));
+    setup_route_replace_all(text, _T("斎"), _T("斉"));
+    setup_route_replace_all(text, _T("亘"), _T("渡"));
+    setup_route_replace_all(text, _T("冨"), _T("富"));
+    setup_route_replace_all(text, _T("﨑"), _T("崎"));
+    setup_route_replace_all(text, _T("嵜"), _T("崎"));
+    setup_route_replace_all(text, _T("溪"), _T("渓"));
+    setup_route_replace_all(text, _T("諌"), _T("諫"));
+    return text;
+}
+
 tstring RouteUtil::RouteTokenBaseName(const tstring& text)
 {
     const tstring normalized = RouteUtil::NormalizeRouteToken(text);
@@ -3725,7 +3764,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesOnLine(int32_t line_id, const
 {
     vector<int32_t> station_ids;
     const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring normalized_input = RouteUtil::NormalizeStationToken(input_station);
     const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
 
     if (exact_station_id > 0) {
@@ -3736,7 +3775,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesOnLine(int32_t line_id, const
     while (dbo.moveNext()) {
         const int32_t station_id = dbo.getInt(1);
         const tstring station_name = RouteUtil::StationNameEx(station_id);
-        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring normalized_station_name = RouteUtil::NormalizeStationToken(station_name);
         const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
 
         if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
@@ -3756,7 +3795,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesForStart(const tstring& input
     }
 
     const int32_t next_line_id = RouteUtil::GetLineId(next_line.c_str());
-    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring normalized_input = RouteUtil::NormalizeStationToken(input_station);
     const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
 
     if (next_line_id <= 0) {
@@ -3775,7 +3814,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesForStart(const tstring& input
     while (dbo.moveNext()) {
         const int32_t station_id = dbo.getInt(0);
         const tstring station_name = tstring(dbo.getText(1)) + tstring(dbo.getText(2));
-        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring normalized_station_name = RouteUtil::NormalizeStationToken(station_name);
         const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
 
         if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
@@ -3812,7 +3851,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesAnywhere(const tstring& input
 {
     vector<int32_t> station_ids;
     const int32_t exact_station_id = RouteUtil::GetStationId(input_station.c_str());
-    const tstring normalized_input = RouteUtil::NormalizeRouteToken(input_station);
+    const tstring normalized_input = RouteUtil::NormalizeStationToken(input_station);
     const tstring input_base = RouteUtil::RouteTokenBaseName(input_station);
 
     if (exact_station_id > 0) {
@@ -3825,7 +3864,7 @@ vector<int32_t> RouteUtil::ResolveStationCandidatesAnywhere(const tstring& input
     while (dbo.moveNext()) {
         const int32_t station_id = dbo.getInt(0);
         const tstring station_name = tstring(dbo.getText(1)) + tstring(dbo.getText(2));
-        const tstring normalized_station_name = RouteUtil::NormalizeRouteToken(station_name);
+        const tstring normalized_station_name = RouteUtil::NormalizeStationToken(station_name);
         const tstring station_base = RouteUtil::RouteTokenBaseName(station_name);
 
         if ((normalized_station_name == normalized_input) || (station_base == input_base)) {
@@ -4807,6 +4846,7 @@ int32_t Route::LineIdFromStationId2(int32_t station_id1, int32_t station_id2)
 int32_t RouteUtil::GetStationId(LPCTSTR station)
 {
     const char tsql[] = "select rowid from t_station where (sflg&(1<<18))=0 and name=?1 and samename=?2";
+    const char tsql_fallback[] = "select rowid, name, samename from t_station where (sflg&(1<<18))=0";
 
     tstring sameName;
     tstring stationName(station);
@@ -4823,6 +4863,18 @@ int32_t RouteUtil::GetStationId(LPCTSTR station)
         dbo.setParam(2, sameName.c_str());
         if (dbo.moveNext()) {
             return dbo.getInt(0);
+        }
+    }
+
+    const tstring normalizedStationName = RouteUtil::NormalizeStationToken(stationName);
+    const tstring normalizedSameName = RouteUtil::NormalizeStationToken(sameName);
+    dbo = DBS::getInstance()->compileSql(tsql_fallback);
+    if (dbo.isvalid()) {
+        while (dbo.moveNext()) {
+            if ((RouteUtil::NormalizeStationToken(dbo.getText(1)) == normalizedStationName)
+                && (RouteUtil::NormalizeStationToken(dbo.getText(2)) == normalizedSameName)) {
+                return dbo.getInt(0);
+            }
         }
     }
     return 0;
