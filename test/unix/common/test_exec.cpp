@@ -3218,6 +3218,7 @@ void test_shinkanzen()
 	ASSERT(Route::IsAbreastShinkansen(LID(高崎線), LID(上越新幹線), TID(高崎), TID(熊谷)));
 	ASSERT(TID(武蔵溝ノ口) == RouteUtil::GetStationId(_T("武蔵溝の口")));
 	ASSERT(TID(御茶ノ水) == RouteUtil::GetStationId(_T("お茶の水")));
+	ASSERT(TID(五条) == RouteUtil::GetStationId(_T("五條")));
 }
 
 /////////////////////////////////////////////////

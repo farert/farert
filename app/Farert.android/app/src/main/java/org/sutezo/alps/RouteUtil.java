@@ -359,6 +359,7 @@ public class RouteUtil {
                 .replace("御茶", "お茶")
                 .replace("ノ", "の")
                 .replace("之", "の")
+                .replace("條", "条")
                 .replace("ヶ", "が")
                 .replace("ケ", "が")
                 .replace("け", "が")

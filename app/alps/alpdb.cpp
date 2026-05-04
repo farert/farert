@@ -3647,6 +3647,7 @@ tstring RouteUtil::NormalizeStationToken(const tstring& source_text)
     setup_route_replace_all(text, _T("御茶"), _T("お茶"));
     setup_route_replace_all(text, _T("ノ"), _T("の"));
     setup_route_replace_all(text, _T("之"), _T("の"));
+    setup_route_replace_all(text, _T("條"), _T("条"));
     setup_route_replace_all(text, _T("ヶ"), _T("が"));
     setup_route_replace_all(text, _T("ケ"), _T("が"));
     setup_route_replace_all(text, _T("け"), _T("が"));
