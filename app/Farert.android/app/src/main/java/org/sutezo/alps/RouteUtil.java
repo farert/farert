@@ -338,6 +338,44 @@ public class RouteUtil {
                 .replace("）", ")");
     }
 
+    public static String NormalizeStationToken(String text) {
+        return NormalizeRouteToken(text)
+                .replace("・", "")
+                .replace("ｰ", "")
+                .replace("ー", "")
+                .replace("-", "")
+                .replace("−", "")
+                .replace("カ", "か")
+                .replace("ガ", "が")
+                .replace("ケ", "け")
+                .replace("ゲ", "げ")
+                .replace("ツ", "つ")
+                .replace("ッ", "つ")
+                .replace("ヂ", "じ")
+                .replace("ヅ", "ず")
+                .replace("ぢ", "じ")
+                .replace("づ", "ず")
+                .replace("ゔ", "う")
+                .replace("御茶", "お茶")
+                .replace("ノ", "の")
+                .replace("之", "の")
+                .replace("條", "条")
+                .replace("ヶ", "が")
+                .replace("ケ", "が")
+                .replace("け", "が")
+                .replace("龍", "竜")
+                .replace("總", "総")
+                .replace("澤", "沢")
+                .replace("齊", "斉")
+                .replace("斎", "斉")
+                .replace("亘", "渡")
+                .replace("冨", "富")
+                .replace("﨑", "崎")
+                .replace("嵜", "崎")
+                .replace("溪", "渓")
+                .replace("諌", "諫");
+    }
+
     public static String RouteTokenBaseName(String text) {
         String normalized = NormalizeRouteToken(text);
         int pos = normalized.indexOf('(');
@@ -598,6 +636,7 @@ public class RouteUtil {
      //
      public static int GetStationId(String station)	{
          final String tsql = "select rowid from t_station where (sflg&(1<<18))=0 and name=?1 and samename=?2";
+         final String tsqlFallback = "select rowid, name, samename from t_station where (sflg&(1<<18))=0";
 
          String sameName;
          String stationName = station;
@@ -618,6 +657,20 @@ public class RouteUtil {
              }
          } finally {
              dbo.close();
+         }
+         if (rc > 0) {
+             return rc;
+         }
+
+         String normalizedStationName = NormalizeStationToken(stationName);
+         String normalizedSameName = NormalizeStationToken(sameName);
+         try (Cursor fallback = RouteDB.db().rawQuery(tsqlFallback, null)) {
+             while (fallback.moveToNext()) {
+                 if (NormalizeStationToken(fallback.getString(1)).equals(normalizedStationName)
+                         && NormalizeStationToken(fallback.getString(2)).equals(normalizedSameName)) {
+                     return fallback.getInt(0);
+                 }
+             }
          }
          return rc;
      }
@@ -784,7 +837,7 @@ public class RouteUtil {
      public static List<Integer> ResolveStationCandidatesOnLine(int lineId, String inputStation) {
          List<Integer> stationIds = new ArrayList<>();
          int exactStationId = RouteUtil.GetStationId(inputStation);
-         String normalizedInput = RouteUtil.NormalizeRouteToken(inputStation);
+         String normalizedInput = RouteUtil.NormalizeStationToken(inputStation);
          String inputBase = RouteUtil.RouteTokenBaseName(inputStation);
 
          if (exactStationId > 0) {
@@ -795,7 +848,7 @@ public class RouteUtil {
              while (dbo.moveToNext()) {
                  int stationId = dbo.getInt(1);
                  String stationName = RouteUtil.StationNameEx(stationId);
-                 String normalizedStationName = RouteUtil.NormalizeRouteToken(stationName);
+                 String normalizedStationName = RouteUtil.NormalizeStationToken(stationName);
                  String stationBase = RouteUtil.RouteTokenBaseName(stationName);
 
                  if (normalizedStationName.equals(normalizedInput) || stationBase.equals(inputBase)) {
@@ -815,7 +868,7 @@ public class RouteUtil {
          }
 
          int nextLineId = RouteUtil.GetLineId(nextLine);
-         String normalizedInput = RouteUtil.NormalizeRouteToken(inputStation);
+         String normalizedInput = RouteUtil.NormalizeStationToken(inputStation);
          String inputBase = RouteUtil.RouteTokenBaseName(inputStation);
 
          if (nextLineId <= 0) {
@@ -833,7 +886,7 @@ public class RouteUtil {
              while (dbo.moveToNext()) {
                  int stationId = dbo.getInt(0);
                  String stationName = dbo.getString(1) + dbo.getString(2);
-                 String normalizedStationName = RouteUtil.NormalizeRouteToken(stationName);
+                 String normalizedStationName = RouteUtil.NormalizeStationToken(stationName);
                  String stationBase = RouteUtil.RouteTokenBaseName(stationName);
 
                  if (normalizedStationName.equals(normalizedInput) || stationBase.equals(inputBase)) {
@@ -848,7 +901,7 @@ public class RouteUtil {
      public static List<Integer> ResolveStationCandidatesAnywhere(String inputStation) {
          List<Integer> stationIds = new ArrayList<>();
          int exactStationId = RouteUtil.GetStationId(inputStation);
-         String normalizedInput = RouteUtil.NormalizeRouteToken(inputStation);
+         String normalizedInput = RouteUtil.NormalizeStationToken(inputStation);
          String inputBase = RouteUtil.RouteTokenBaseName(inputStation);
 
          if (exactStationId > 0) {
@@ -861,7 +914,7 @@ public class RouteUtil {
              while (dbo.moveToNext()) {
                  int stationId = dbo.getInt(0);
                  String stationName = dbo.getString(1) + dbo.getString(2);
-                 String normalizedStationName = RouteUtil.NormalizeRouteToken(stationName);
+                 String normalizedStationName = RouteUtil.NormalizeStationToken(stationName);
                  String stationBase = RouteUtil.RouteTokenBaseName(stationName);
 
                  if (normalizedStationName.equals(normalizedInput) || stationBase.equals(inputBase)) {

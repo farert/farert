@@ -153,56 +153,7 @@ static const char* stock_discount_kind(int32_t company, int32_t index)
 // 仮実装: UTF-8完全正規化は行わず、主要な表記ゆれのみ吸収する
 static std::string normalize_station_token(std::string text)
 {
-    // 空白・改行
-    replace_all(text, " ", "");
-    replace_all(text, "\t", "");
-    replace_all(text, "\r", "");
-    replace_all(text, "\n", "");
-    replace_all(text, "　", "");
-
-    // 括弧・中点・長音などの記号ゆれ
-    replace_all(text, "（", "(");
-    replace_all(text, "）", ")");
-    replace_all(text, "・", "");
-    replace_all(text, "ｰ", "");
-    replace_all(text, "ー", "");
-    replace_all(text, "-", "");
-    replace_all(text, "−", "");
-
-    // カタカナ/ひらがなの主要ゆれ（仮実装）
-    replace_all(text, "カ", "か");
-    replace_all(text, "ガ", "が");
-    replace_all(text, "ケ", "け");
-    replace_all(text, "ゲ", "げ");
-    replace_all(text, "ツ", "つ");
-    replace_all(text, "ッ", "つ");
-    replace_all(text, "ノ", "の");
-    replace_all(text, "ヂ", "じ");
-    replace_all(text, "ヅ", "ず");
-
-    // かな表記ゆれ
-    replace_all(text, "ぢ", "じ");
-    replace_all(text, "づ", "ず");
-    replace_all(text, "ゔ", "う");
-
-    // 漢字・異体字ゆれ
-    replace_all(text, "ノ", "の");
-    replace_all(text, "之", "の");
-    replace_all(text, "ヶ", "が");
-    replace_all(text, "ケ", "が");
-    replace_all(text, "け", "が");
-    replace_all(text, "龍", "竜");
-    replace_all(text, "總", "総");
-    replace_all(text, "澤", "沢");
-    replace_all(text, "齊", "斉");
-    replace_all(text, "斎", "斉");
-    replace_all(text, "亘", "渡");
-    replace_all(text, "冨", "富");
-    replace_all(text, "﨑", "崎");
-    replace_all(text, "嵜", "崎");
-    replace_all(text, "溪", "渓");
-    replace_all(text, "諌", "諫");
-    return text;
+    return RouteUtil::NormalizeStationToken(text);
 }
 
 static std::vector<std::string> split_samename(const std::string& samename)

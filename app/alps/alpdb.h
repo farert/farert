@@ -1114,6 +1114,7 @@ public:
     static tstring  CompanyName(int32_t id);
 
     static tstring  NormalizeRouteToken(const tstring& text);
+    static tstring  NormalizeStationToken(const tstring& text);
     static tstring  RouteTokenBaseName(const tstring& text);
     static tstring  ExtractRouteLineToken(const tstring& token, bool* osakakan_detour = NULL);
     static void     PushUniqueInt(vector<int32_t>& values, int32_t value);
