@@ -1675,7 +1675,6 @@
                                                     <state key="normal" title="バックアップ"/>
                                                     <connections>
                                                         <action selector="actBtnBackupTouched:" destination="wdT-gd-c3P" eventType="touchUpInside" id="FPQ-LY-Ya9"/>
-                                                        <action selector="actBtnResetInfoMessageTouched:" destination="wdT-gd-c3P" eventType="touchDown" id="HSn-Dg-oyx"/>
                                                     </connections>
                                                 </button>
                                             </subviews>
@@ -1710,7 +1709,6 @@
                                                     <rect key="frame" x="30.5" y="25" width="353.5" height="4"/>
                                                     <state key="normal" title="リストア"/>
                                                     <connections>
-                                                        <action selector="actBtnResetInfoMessageTouched:" destination="wdT-gd-c3P" eventType="touchDown" id="T9P-9X-NUh"/>
                                                         <action selector="actBtnRestoreTouched:" destination="wdT-gd-c3P" eventType="touchUpInside" id="1E7-ne-egr"/>
                                                     </connections>
                                                 </button>

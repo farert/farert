@@ -320,6 +320,20 @@ static bool WriteTextLines(LPCTSTR filename, const vector<CString>& lines, bool 
     return true;
 }
 
+static bool ReplaceTextLines(LPCTSTR filename, LPCTSTR tmpFilename, const vector<CString>& lines, bool blankLine)
+{
+    DeleteFile(tmpFilename);
+    if (!WriteTextLines(tmpFilename, lines, blankLine)) {
+        DeleteFile(tmpFilename);
+        return false;
+    }
+    if (!MoveFileEx(tmpFilename, filename, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+        DeleteFile(tmpFilename);
+        return false;
+    }
+    return true;
+}
+
 static CString JsonStringArray(const vector<CString>& values, int indent)
 {
     CString result(_T("["));
@@ -1534,23 +1548,33 @@ void Calps_mfcDlg::restoreFromJson()
     }
 
     vector<CString> validRoutes = ValidRouteScripts(savedRoutes);
+    currentRoute.Trim();
+    if (!currentRoute.IsEmpty()) {
+        Route route;
+        if (route.setup_route(currentRoute) < 0) {
+            AfxMessageBox(_T("現在経路データを復元できませんでした."), MB_OK | MB_ICONSTOP);
+            return;
+        }
+    }
+    vector<CString> oldRoutes = ReadTextLines(_T("route.txt"));
+    vector<CString> oldHistory = ReadTextLines(_T("history.txt"));
     if (IDYES != AfxMessageBox(
         _T("現在の route.txt と history.txt をバックアップ内容で置き換えます。よろしいですか？"),
         MB_YESNO | MB_ICONQUESTION)) {
         return;
     }
 
-    if (!WriteTextLines(_T("route.txt"), validRoutes, true)) {
+    if (!ReplaceTextLines(_T("route.txt"), _T("route.txt.tmp"), validRoutes, true)) {
         AfxMessageBox(_T("route.txt の保存に失敗しました."), MB_OK | MB_ICONSTOP);
         return;
     }
-    if (!WriteTextLines(_T("history.txt"), stationHistory, false)) {
+    if (!ReplaceTextLines(_T("history.txt"), _T("history.txt.tmp"), stationHistory, false)) {
+        ReplaceTextLines(_T("route.txt"), _T("route.txt.tmp"), oldRoutes, true);
         AfxMessageBox(_T("history.txt の保存に失敗しました."), MB_OK | MB_ICONSTOP);
         return;
     }
 
     bool currentRouteRestored = false;
-    currentRoute.Trim();
     if (!currentRoute.IsEmpty()) {
         currentRouteRestored = (0 <= parseAndSetupRoute(currentRoute));
     }

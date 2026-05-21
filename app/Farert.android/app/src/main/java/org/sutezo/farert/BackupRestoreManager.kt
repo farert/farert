@@ -4,10 +4,10 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import org.sutezo.alps.MAX_ARCHIVE_ROUTE
+import org.sutezo.alps.MAX_HOLDER
 import org.sutezo.alps.MAX_HISTORY
 import org.sutezo.alps.Route
 import org.sutezo.alps.readParams
-import org.sutezo.alps.saveParam
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,18 +45,38 @@ object BackupRestoreManager {
 
         val storage = root.getJSONObject("storage")
         val app = context.applicationContext as? FarertApp
-
-        val currentRouteRestored = restoreCurrentRoute(app, storage.optString("currentRoute", ""))
-        val savedRoutes = restoreSavedRoutes(context, storage.optJSONArray("savedRoutes"))
-        val holderRoutes = restoreTicketHolder(context, app, storage.optJSONArray("ticketHolder"))
-        val history = restoreStationHistory(context, storage.optJSONArray("stationHistory"))
-
-        return RestoreResult(
-            currentRouteRestored = currentRouteRestored,
-            savedRoutes = savedRoutes,
-            ticketHolderRoutes = holderRoutes,
-            stationHistory = history
+        val snapshot = RestoreSnapshot(
+            currentRoute = app?.ds?.route_script().orEmpty(),
+            savedRoutes = readParams(context, KEY_ARCHIVE_ROUTE),
+            ticketHolder = (app?.routefolder ?: Routefolder()).backupItems(context),
+            stationHistory = readParams(context, KEY_HISTORY)
         )
+
+        val currentRoute = validRouteScriptOrEmpty(storage.optString("currentRoute", ""))
+        val savedRoutes = validRouteScripts(storage.optJSONArray("savedRoutes"), MAX_ARCHIVE_ROUTE)
+        val holderItems = validTicketHolderItems(storage.optJSONArray("ticketHolder"))
+        val history = validStationHistory(storage.optJSONArray("stationHistory"))
+
+        try {
+            if (!saveStringList(context, KEY_ARCHIVE_ROUTE, savedRoutes)) {
+                throw IllegalStateException("保存経路を書き込めませんでした")
+            }
+            val holderRoutes = restoreTicketHolder(context, app, holderItems)
+            if (!saveStringList(context, KEY_HISTORY, history)) {
+                throw IllegalStateException("履歴を書き込めませんでした")
+            }
+            val currentRouteRestored = restoreCurrentRoute(app, currentRoute)
+
+            return RestoreResult(
+                currentRouteRestored = currentRouteRestored,
+                savedRoutes = savedRoutes.size,
+                ticketHolderRoutes = holderRoutes,
+                stationHistory = history.size
+            )
+        } catch (e: Exception) {
+            rollback(context, app, snapshot)
+            throw e
+        }
     }
 
     private fun ticketHolderJson(context: Context, app: FarertApp?): JSONArray {
@@ -79,33 +99,20 @@ object BackupRestoreManager {
         if (app == null || script.isEmpty()) {
             return false
         }
-        val route = Route()
-        if (route.setup_route(script) < 0) {
-            return false
-        }
         app.ds.removeAll()
         return app.ds.setup_route(script) >= 0
     }
 
-    private fun restoreSavedRoutes(context: Context, routes: JSONArray?): Int {
-        val restored = validRouteScripts(routes, MAX_ARCHIVE_ROUTE)
-        saveParam(context, KEY_ARCHIVE_ROUTE, restored)
-        return restored.size
-    }
-
-    private fun restoreTicketHolder(context: Context, app: FarertApp?, items: JSONArray?): Int {
-        val holderItems = mutableListOf<Pair<String, String>>()
-        if (items != null) {
-            for (i in 0 until items.length()) {
-                val item = items.optJSONObject(i) ?: continue
-                holderItems.add(Pair(item.optString("routeScript"), item.optString("fareType")))
-            }
-        }
+    private fun restoreTicketHolder(
+        context: Context,
+        app: FarertApp?,
+        holderItems: List<Pair<String, String>>
+    ): Int {
         val folder = app?.routefolder ?: Routefolder()
         return folder.restoreBackupItems(context, holderItems)
     }
 
-    private fun restoreStationHistory(context: Context, history: JSONArray?): Int {
+    private fun validStationHistory(history: JSONArray?): List<String> {
         val restored = mutableListOf<String>()
         if (history != null) {
             for (i in 0 until history.length()) {
@@ -118,8 +125,7 @@ object BackupRestoreManager {
                 }
             }
         }
-        saveParam(context, KEY_HISTORY, restored)
-        return restored.size
+        return restored
     }
 
     private fun validRouteScripts(routes: JSONArray?, max: Int): List<String> {
@@ -142,6 +148,46 @@ object BackupRestoreManager {
         return restored
     }
 
+    private fun validTicketHolderItems(items: JSONArray?): List<Pair<String, String>> {
+        val holderItems = mutableListOf<Pair<String, String>>()
+        if (items != null) {
+            for (i in 0 until items.length()) {
+                val item = items.optJSONObject(i) ?: continue
+                val routeScript = validRouteScriptOrEmpty(item.optString("routeScript"))
+                if (routeScript.isNotEmpty()) {
+                    holderItems.add(Pair(routeScript, item.optString("fareType")))
+                }
+                if (MAX_HOLDER <= holderItems.size) {
+                    break
+                }
+            }
+        }
+        return holderItems
+    }
+
+    private fun validRouteScriptOrEmpty(routeScript: String): String {
+        val script = routeScript.trim()
+        if (script.isEmpty()) {
+            return ""
+        }
+        val route = Route()
+        return if (route.setup_route(script) >= 0) route.route_script() else ""
+    }
+
+    private fun rollback(context: Context, app: FarertApp?, snapshot: RestoreSnapshot) {
+        saveStringList(context, KEY_ARCHIVE_ROUTE, snapshot.savedRoutes)
+        restoreTicketHolder(context, app, snapshot.ticketHolder)
+        saveStringList(context, KEY_HISTORY, snapshot.stationHistory)
+        restoreCurrentRoute(app, snapshot.currentRoute)
+    }
+
+    private fun saveStringList(context: Context, key: String, values: List<String>): Boolean {
+        val sharedPref = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        return sharedPref.edit()
+            .putString(key, JSONArray(values).toString())
+            .commit()
+    }
+
     private fun exportedAt(): String {
         val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
         formatter.timeZone = TimeZone.getTimeZone("UTC")
@@ -153,5 +199,12 @@ object BackupRestoreManager {
         val savedRoutes: Int,
         val ticketHolderRoutes: Int,
         val stationHistory: Int
+    )
+
+    private data class RestoreSnapshot(
+        val currentRoute: String,
+        val savedRoutes: List<String>,
+        val ticketHolder: List<Pair<String, String>>,
+        val stationHistory: List<String>
     )
 }

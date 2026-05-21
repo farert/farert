@@ -27,6 +27,12 @@ private struct BackupTicketHolder: Codable {
     let fareType: String
 }
 
+private struct RestoreSnapshot {
+    let savedRoutes: [String]
+    let ticketHolder: [(routeScript: String, fareType: String)]
+    let stationHistory: [String]
+}
+
 class SettingsTableViewController: UITableViewController {
 
     // MARK: - Public property
@@ -37,7 +43,6 @@ class SettingsTableViewController: UITableViewController {
     
     var isSameShinkanzanKokuraHakataOther : Bool = false;
     
-    var isSaved = false
     @IBOutlet weak var btnResetInfoMessage: UIButton!
     @IBOutlet weak var btnBackup: UIButton!
     @IBOutlet weak var btnRestore: UIButton!
@@ -57,6 +62,7 @@ class SettingsTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         super.viewDidLoad()
+        tableView.allowsSelection = true
         
         // Uncomment the following line to preserve selection between presentations.
         // self.clearsSelectionOnViewWillAppear = NO;
@@ -89,10 +95,8 @@ class SettingsTableViewController: UITableViewController {
         if b {
             // どっちか1つでも抑制されてたら復活できるようにボタン有効
             btnResetInfoMessage.isEnabled = true
-            isSaved = false
         } else {
             btnResetInfoMessage.isEnabled = false
-            isSaved = true
         }
     }
 
@@ -177,14 +181,11 @@ class SettingsTableViewController: UITableViewController {
     // MARK: - Navigation
 
     @IBAction func actBtnResetInfoMessageTouched(_ sender: UIButton) {
-        if !isSaved {
-            let keys = [ "setting_key_hide_osakakan_detour_info", "setting_key_hide_no_rule_info", "import_guide"]
-            for (_, k) in keys.enumerated() {
-                cRouteUtil.save(toKey: k, value: "", sync: true)
-            }
-            isSaved = true
-            sender.isEnabled = false
+        let keys = [ "setting_key_hide_osakakan_detour_info", "setting_key_hide_no_rule_info", "import_guide"]
+        for (_, k) in keys.enumerated() {
+            cRouteUtil.save(toKey: k, value: "", sync: true)
         }
+        sender.isEnabled = false
     }
     
     @IBAction func actBtnBackupTouched(_ sender: UIButton) {
@@ -209,7 +210,16 @@ class SettingsTableViewController: UITableViewController {
         })
         present(alert, animated: true)
     }
-    
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        if indexPath.section == 1 && indexPath.row == 0 {
+            actBtnBackupTouched(btnBackup)
+        } else if indexPath.section == 1 && indexPath.row == 1 {
+            actBtnRestoreTouched(btnRestore)
+        }
+    }
+
     private func makeBackupJson() throws -> String {
         let holder = Routefolder()
         let ticketHolder = holder.backupItems().enumerated().map { index, item in
@@ -251,19 +261,32 @@ class SettingsTableViewController: UITableViewController {
             guard document.version == "1.0" else {
                 throw NSError(domain: "FarertBackup", code: 2, userInfo: [NSLocalizedDescriptionKey: "未対応のバックアップバージョンです"])
             }
-            let savedRoutes = restoreSavedRoutes(document.storage.savedRoutes)
-            let ticketHolder = restoreTicketHolder(document.storage.ticketHolder)
-            let history = restoreStationHistory(document.storage.stationHistory)
+            let savedRoutes = validSavedRoutes(document.storage.savedRoutes)
+            let ticketHolder = validTicketHolder(document.storage.ticketHolder)
+            let history = validStationHistory(document.storage.stationHistory)
+            let snapshot = RestoreSnapshot(
+                savedRoutes: cRouteUtil.loadStrageRoute() as? [String] ?? [],
+                ticketHolder: Routefolder().backupItems(),
+                stationHistory: cRouteUtil.readFromTerminalHistory() as? [String] ?? []
+            )
+            do {
+                restoreSavedRoutes(savedRoutes)
+                restoreTicketHolder(ticketHolder)
+                restoreStationHistory(history)
+            } catch {
+                rollbackRestore(snapshot)
+                throw error
+            }
             showAlert(
                 title: "リストア",
-                message: "リストアしました: 保存経路 \(savedRoutes)件、きっぷホルダ \(ticketHolder)件、履歴 \(history)件"
+                message: "リストアしました: 保存経路 \(savedRoutes.count)件、きっぷホルダ \(ticketHolder.count)件、履歴 \(history.count)件"
             )
         } catch {
             showAlert(title: "リストア失敗", message: error.localizedDescription)
         }
     }
 
-    private func restoreSavedRoutes(_ routes: [String]) -> Int {
+    private func validSavedRoutes(_ routes: [String]) -> [String] {
         var restored: [String] = []
         for script in routes {
             let trimmed = script.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -278,19 +301,26 @@ class SettingsTableViewController: UITableViewController {
                 break
             }
         }
-        cRouteUtil.save(toRouteArray: restored)
-        return restored.count
+        return restored
     }
 
-    private func restoreTicketHolder(_ items: [BackupTicketHolder]) -> Int {
-        let holder = Routefolder()
+    private func validTicketHolder(_ items: [BackupTicketHolder]) -> [(routeScript: String, fareType: String)] {
         let orderedItems = items.sorted { $0.order < $1.order }
-        return holder.restoreBackupItems(
-            orderedItems.map { (routeScript: $0.routeScript, fareType: $0.fareType) }
-        )
+        var restored: [(routeScript: String, fareType: String)] = []
+        for item in orderedItems {
+            guard restored.count < Int(MAX_HOLDER) else {
+                break
+            }
+            let trimmed = item.routeScript.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let route = cRoute(), route.setupRoute(trimmed) >= 0 else {
+                continue
+            }
+            restored.append((routeScript: route.routeScript() ?? trimmed, fareType: item.fareType))
+        }
+        return restored
     }
 
-    private func restoreStationHistory(_ history: [String]) -> Int {
+    private func validStationHistory(_ history: [String]) -> [String] {
         var restored: [String] = []
         for station in history {
             let trimmed = station.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -302,8 +332,25 @@ class SettingsTableViewController: UITableViewController {
                 break
             }
         }
-        cRouteUtil.saveToTerminalHistory(with: restored)
-        return restored.count
+        return restored
+    }
+
+    private func restoreSavedRoutes(_ routes: [String]) throws {
+        cRouteUtil.save(toRouteArray: routes)
+    }
+
+    private func restoreTicketHolder(_ items: [(routeScript: String, fareType: String)]) throws {
+        _ = Routefolder().restoreBackupItems(items)
+    }
+
+    private func restoreStationHistory(_ history: [String]) throws {
+        cRouteUtil.saveToTerminalHistory(with: history)
+    }
+
+    private func rollbackRestore(_ snapshot: RestoreSnapshot) {
+        cRouteUtil.save(toRouteArray: snapshot.savedRoutes)
+        _ = Routefolder().restoreBackupItems(snapshot.ticketHolder)
+        cRouteUtil.saveToTerminalHistory(with: snapshot.stationHistory)
     }
 
     private func showAlert(title: String, message: String) {
