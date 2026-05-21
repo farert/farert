@@ -1,8 +1,8 @@
 package org.sutezo.farert.ui.compose
 
-import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.material3.MenuAnchorType
@@ -59,11 +59,15 @@ fun SettingsScreen(
         }
     }
 
-    uiState.clipboardText?.let { text ->
+    uiState.shareText?.let { text ->
         LaunchedEffect(text) {
-            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("Farert backup", text))
-            stateHolder.handleEvent(SettingsUiEvent.ClearClipboardText)
+            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/json"
+                putExtra(Intent.EXTRA_SUBJECT, "Farert backup")
+                putExtra(Intent.EXTRA_TEXT, text)
+            }
+            context.startActivity(Intent.createChooser(sendIntent, "バックアップを共有"))
+            stateHolder.handleEvent(SettingsUiEvent.ClearShareText)
         }
     }
     
@@ -278,7 +282,7 @@ private fun SettingsContent(
                 )
 
                 Text(
-                    text = "発着駅履歴、保存経路、きっぷホルダを共通 JSON としてクリップボード経由で保存・復元します",
+                    text = "発着駅履歴、保存経路、きっぷホルダを共通 JSON として共有・復元します",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -290,11 +294,11 @@ private fun SettingsContent(
                 ) {
                     Button(
                         onClick = {
-                            stateHolder.handleEvent(SettingsUiEvent.BackupToClipboard)
+                            stateHolder.handleEvent(SettingsUiEvent.BackupToShare)
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                        Icon(Icons.Default.Share, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("バックアップ")
                     }

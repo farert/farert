@@ -191,8 +191,7 @@ class SettingsTableViewController: UITableViewController {
     @IBAction func actBtnBackupTouched(_ sender: UIButton) {
         do {
             let backup = try makeBackupJson()
-            UIPasteboard.general.string = backup
-            showAlert(title: "バックアップ", message: "バックアップ JSON をクリップボードへコピーしました")
+            shareBackup(backup, from: sender)
         } catch {
             showAlert(title: "バックアップ失敗", message: error.localizedDescription)
         }
@@ -248,6 +247,14 @@ class SettingsTableViewController: UITableViewController {
             throw NSError(domain: "FarertBackup", code: 1, userInfo: [NSLocalizedDescriptionKey: "JSON の作成に失敗しました"])
         }
         return json
+    }
+
+    private func shareBackup(_ backup: String, from sender: UIButton) {
+        let activityController = UIActivityViewController(activityItems: [backup], applicationActivities: nil)
+        activityController.setValue("Farert backup", forKey: "subject")
+        activityController.popoverPresentationController?.sourceView = sender
+        activityController.popoverPresentationController?.sourceRect = sender.bounds
+        present(activityController, animated: true)
     }
 
     private func restoreFromPasteboard() {

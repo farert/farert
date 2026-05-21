@@ -9,7 +9,7 @@ data class SettingsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val message: String? = null,
-    val clipboardText: String? = null
+    val shareText: String? = null
 ) {
     // Helper to check if settings have changed
     fun hasChanges(originalDbIndex: Int, originalKokuraShinzai: Boolean): Boolean {

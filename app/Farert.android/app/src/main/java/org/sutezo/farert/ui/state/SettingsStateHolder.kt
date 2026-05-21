@@ -45,8 +45,8 @@ class SettingsStateHolder : ViewModel() {
                 resetInfoMessages()
             }
 
-            is SettingsUiEvent.BackupToClipboard -> {
-                backupToClipboard()
+            is SettingsUiEvent.BackupToShare -> {
+                backupToShare()
             }
 
             is SettingsUiEvent.RestoreFromClipboard -> {
@@ -65,8 +65,8 @@ class SettingsStateHolder : ViewModel() {
                 uiState = uiState.copy(message = null)
             }
 
-            is SettingsUiEvent.ClearClipboardText -> {
-                uiState = uiState.copy(clipboardText = null)
+            is SettingsUiEvent.ClearShareText -> {
+                uiState = uiState.copy(shareText = null)
             }
         }
     }
@@ -131,12 +131,11 @@ class SettingsStateHolder : ViewModel() {
         uiState = uiState.copy(canResetInfoMessages = false)
     }
 
-    private fun backupToClipboard() {
+    private fun backupToShare() {
         try {
             val json = BackupRestoreManager.exportJson(context)
             uiState = uiState.copy(
-                clipboardText = json,
-                message = "バックアップ JSON をクリップボードへコピーしました",
+                shareText = json,
                 error = null
             )
         } catch (e: Exception) {
