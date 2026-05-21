@@ -39,6 +39,7 @@ fun SettingsScreen(
     val uiState = stateHolder.uiState
     val snackbarHostState = remember { SnackbarHostState() }
     var showRestoreDialog by remember { mutableStateOf(false) }
+    var restoreJsonText by remember { mutableStateOf("") }
     
     // Initialize state
     LaunchedEffect(Unit) {
@@ -104,18 +105,27 @@ fun SettingsScreen(
                     .padding(paddingValues),
                 uiState = uiState,
                 stateHolder = stateHolder,
-                onShowRestoreDialog = { showRestoreDialog = true }
+                onShowRestoreDialog = {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                    if (stateHolder.canRestoreFromClipboard(text)) {
+                        restoreJsonText = text
+                        showRestoreDialog = true
+                    }
+                }
             )
         }
     }
 
     if (showRestoreDialog) {
         RestoreConfirmDialog(
-            onDismiss = { showRestoreDialog = false },
+            onDismiss = {
+                restoreJsonText = ""
+                showRestoreDialog = false
+            },
             onRestore = {
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
-                stateHolder.handleEvent(SettingsUiEvent.RestoreFromClipboard(text))
+                stateHolder.handleEvent(SettingsUiEvent.RestoreFromClipboard(restoreJsonText))
+                restoreJsonText = ""
                 showRestoreDialog = false
             }
         )

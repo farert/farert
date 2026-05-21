@@ -37,12 +37,26 @@ object BackupRestoreManager {
             .toString(2)
     }
 
-    fun restoreJson(context: Context, jsonText: String): RestoreResult {
-        val root = JSONObject(jsonText)
+    fun validateJson(jsonText: String) {
+        if (jsonText.isBlank()) {
+            throw IllegalArgumentException("クリップボードにバックアップ JSON がありません")
+        }
+        val root = try {
+            JSONObject(jsonText)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("クリップボードの内容は JSON として読み込めません")
+        }
         if (root.optString("version") != VERSION) {
             throw IllegalArgumentException("未対応のバックアップバージョンです")
         }
+        if (!root.has("storage") || root.optJSONObject("storage") == null) {
+            throw IllegalArgumentException("Farert のバックアップ JSON ではありません")
+        }
+    }
 
+    fun restoreJson(context: Context, jsonText: String): RestoreResult {
+        validateJson(jsonText)
+        val root = JSONObject(jsonText)
         val storage = root.getJSONObject("storage")
         val app = context.applicationContext as? FarertApp
         val snapshot = RestoreSnapshot(

@@ -154,6 +154,16 @@ class SettingsStateHolder : ViewModel() {
             uiState = uiState.copy(error = "リストアに失敗しました: ${e.message}")
         }
     }
+
+    fun canRestoreFromClipboard(jsonText: String): Boolean {
+        return try {
+            BackupRestoreManager.validateJson(jsonText)
+            true
+        } catch (e: Exception) {
+            uiState = uiState.copy(error = "リストアできません: ${e.message}")
+            false
+        }
+    }
     
     fun saveSettings(): Boolean {
         var hasChanges = false

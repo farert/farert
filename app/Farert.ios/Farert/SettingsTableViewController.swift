@@ -42,6 +42,7 @@ class SettingsTableViewController: UITableViewController {
 //    var before_dbid_idx : Int = DB._MAX_ID.rawValue
     
     var isSameShinkanzanKokuraHakataOther : Bool = false;
+    private var restoreJsonText: String?
     
     @IBOutlet weak var btnResetInfoMessage: UIButton!
     @IBOutlet weak var btnBackup: UIButton!
@@ -198,12 +199,25 @@ class SettingsTableViewController: UITableViewController {
     }
 
     @IBAction func actBtnRestoreTouched(_ sender: UIButton) {
+        guard let text = UIPasteboard.general.string else {
+            showAlert(title: "リストアできません", message: "クリップボードにバックアップ JSON がありません")
+            return
+        }
+        do {
+            _ = try validateBackupDocument(text)
+            restoreJsonText = text
+        } catch {
+            showAlert(title: "リストアできません", message: error.localizedDescription)
+            return
+        }
         let alert = UIAlertController(
             title: "リストア",
             message: "クリップボードのバックアップ JSON で現在の発着駅履歴、保存経路、きっぷホルダを置き換えます。",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel) { [weak self] _ in
+            self?.restoreJsonText = nil
+        })
         alert.addAction(UIAlertAction(title: "リストア", style: .destructive) { [weak self] _ in
             self?.restoreFromPasteboard()
         })
@@ -257,17 +271,31 @@ class SettingsTableViewController: UITableViewController {
         present(activityController, animated: true)
     }
 
+    private func validateBackupDocument(_ text: String) throws -> BackupDocument {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let data = text.data(using: .utf8) else {
+            throw NSError(domain: "FarertBackup", code: 1, userInfo: [NSLocalizedDescriptionKey: "クリップボードにバックアップ JSON がありません"])
+        }
+        do {
+            let document = try JSONDecoder().decode(BackupDocument.self, from: data)
+            guard document.version == "1.0" else {
+                throw NSError(domain: "FarertBackup", code: 2, userInfo: [NSLocalizedDescriptionKey: "未対応のバックアップバージョンです"])
+            }
+            return document
+        } catch let error as NSError where error.domain == "FarertBackup" {
+            throw error
+        } catch {
+            throw NSError(domain: "FarertBackup", code: 3, userInfo: [NSLocalizedDescriptionKey: "クリップボードの内容は Farert のバックアップ JSON として読み込めません"])
+        }
+    }
+
     private func restoreFromPasteboard() {
-        guard let text = UIPasteboard.general.string, let data = text.data(using: .utf8) else {
+        guard let text = restoreJsonText ?? UIPasteboard.general.string else {
             showAlert(title: "リストア失敗", message: "クリップボードにバックアップ JSON がありません")
             return
         }
         do {
-            let decoder = JSONDecoder()
-            let document = try decoder.decode(BackupDocument.self, from: data)
-            guard document.version == "1.0" else {
-                throw NSError(domain: "FarertBackup", code: 2, userInfo: [NSLocalizedDescriptionKey: "未対応のバックアップバージョンです"])
-            }
+            let document = try validateBackupDocument(text)
             let savedRoutes = validSavedRoutes(document.storage.savedRoutes)
             let ticketHolder = validTicketHolder(document.storage.ticketHolder)
             let history = validStationHistory(document.storage.stationHistory)
@@ -288,6 +316,7 @@ class SettingsTableViewController: UITableViewController {
                 title: "リストア",
                 message: "リストアしました: 保存経路 \(savedRoutes.count)件、きっぷホルダ \(ticketHolder.count)件、履歴 \(history.count)件"
             )
+            restoreJsonText = nil
         } catch {
             showAlert(title: "リストア失敗", message: error.localizedDescription)
         }
