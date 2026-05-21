@@ -20,9 +20,343 @@
 
 using namespace std;
 #include <vector>
+#include <time.h>
 
 // ルート選択[完了]か?
 //#define isComplete()	(1 < m_route.routeList().size())
+
+#define IDM_BACKUPBOX 0x0020
+#define IDM_RESTOREBOX 0x0030
+
+static CString JsonEscape(const CString& src)
+{
+    CString out;
+    for (int i = 0; i < src.GetLength(); i++) {
+        TCHAR ch = src[i];
+        switch (ch) {
+        case _T('\\'):
+            out += _T("\\\\");
+            break;
+        case _T('"'):
+            out += _T("\\\"");
+            break;
+        case _T('\b'):
+            out += _T("\\b");
+            break;
+        case _T('\f'):
+            out += _T("\\f");
+            break;
+        case _T('\n'):
+            out += _T("\\n");
+            break;
+        case _T('\r'):
+            out += _T("\\r");
+            break;
+        case _T('\t'):
+            out += _T("\\t");
+            break;
+        default:
+            if (ch < 0x20) {
+                CString esc;
+                esc.Format(_T("\\u%04x"), ch);
+                out += esc;
+            } else {
+                out += ch;
+            }
+            break;
+        }
+    }
+    return out;
+}
+
+static CString JsonString(const CString& src)
+{
+    return _T("\"") + JsonEscape(src) + _T("\"");
+}
+
+static void SkipJsonSpaces(const CString& src, int& pos)
+{
+    while (pos < src.GetLength()) {
+        TCHAR ch = src[pos];
+        if ((ch != _T(' ')) && (ch != _T('\t')) && (ch != _T('\r')) && (ch != _T('\n'))) {
+            break;
+        }
+        pos++;
+    }
+}
+
+static int HexValue(TCHAR ch)
+{
+    if ((_T('0') <= ch) && (ch <= _T('9'))) {
+        return ch - _T('0');
+    }
+    if ((_T('a') <= ch) && (ch <= _T('f'))) {
+        return ch - _T('a') + 10;
+    }
+    if ((_T('A') <= ch) && (ch <= _T('F'))) {
+        return ch - _T('A') + 10;
+    }
+    return -1;
+}
+
+static bool ParseJsonString(const CString& src, int& pos, CString& value)
+{
+    SkipJsonSpaces(src, pos);
+    if ((src.GetLength() <= pos) || (src[pos] != _T('"'))) {
+        return false;
+    }
+    pos++;
+    value.Empty();
+    while (pos < src.GetLength()) {
+        TCHAR ch = src[pos++];
+        if (ch == _T('"')) {
+            return true;
+        }
+        if (ch != _T('\\')) {
+            value += ch;
+            continue;
+        }
+        if (src.GetLength() <= pos) {
+            return false;
+        }
+        TCHAR esc = src[pos++];
+        switch (esc) {
+        case _T('"'):
+        case _T('\\'):
+        case _T('/'):
+            value += esc;
+            break;
+        case _T('b'):
+            value += _T('\b');
+            break;
+        case _T('f'):
+            value += _T('\f');
+            break;
+        case _T('n'):
+            value += _T('\n');
+            break;
+        case _T('r'):
+            value += _T('\r');
+            break;
+        case _T('t'):
+            value += _T('\t');
+            break;
+        case _T('u'):
+        {
+            int code = 0;
+            for (int i = 0; i < 4; i++) {
+                if (src.GetLength() <= pos) {
+                    return false;
+                }
+                int hex = HexValue(src[pos++]);
+                if (hex < 0) {
+                    return false;
+                }
+                code = (code << 4) | hex;
+            }
+            value += static_cast<TCHAR>(code);
+            break;
+        }
+        default:
+            return false;
+        }
+    }
+    return false;
+}
+
+static int FindJsonValue(const CString& src, LPCTSTR key)
+{
+    CString pattern;
+    pattern.Format(_T("\"%s\""), key);
+    int pos = src.Find(pattern);
+    if (pos < 0) {
+        return -1;
+    }
+    pos += pattern.GetLength();
+    SkipJsonSpaces(src, pos);
+    if ((src.GetLength() <= pos) || (src[pos] != _T(':'))) {
+        return -1;
+    }
+    pos++;
+    SkipJsonSpaces(src, pos);
+    return pos;
+}
+
+static bool ExtractJsonStringField(const CString& src, LPCTSTR key, CString& value)
+{
+    int pos = FindJsonValue(src, key);
+    if (pos < 0) {
+        return false;
+    }
+    if (src.Mid(pos, 4) == _T("null")) {
+        value.Empty();
+        return true;
+    }
+    return ParseJsonString(src, pos, value);
+}
+
+static bool ExtractJsonStringArray(const CString& src, LPCTSTR key, vector<CString>& values)
+{
+    int pos = FindJsonValue(src, key);
+    if ((pos < 0) || (src.GetLength() <= pos) || (src[pos] != _T('['))) {
+        return false;
+    }
+    pos++;
+    values.clear();
+    while (pos < src.GetLength()) {
+        SkipJsonSpaces(src, pos);
+        if ((pos < src.GetLength()) && (src[pos] == _T(']'))) {
+            pos++;
+            return true;
+        }
+        CString value;
+        if (!ParseJsonString(src, pos, value)) {
+            return false;
+        }
+        values.push_back(value);
+        SkipJsonSpaces(src, pos);
+        if ((pos < src.GetLength()) && (src[pos] == _T(','))) {
+            pos++;
+            continue;
+        }
+        if ((pos < src.GetLength()) && (src[pos] == _T(']'))) {
+            pos++;
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+static CString CurrentUtcIsoString()
+{
+    __time64_t now;
+    _time64(&now);
+    tm utc;
+    _gmtime64_s(&utc, &now);
+    CString value;
+    value.Format(
+        _T("%04d-%02d-%02dT%02d:%02d:%02d.000Z"),
+        utc.tm_year + 1900,
+        utc.tm_mon + 1,
+        utc.tm_mday,
+        utc.tm_hour,
+        utc.tm_min,
+        utc.tm_sec);
+    return value;
+}
+
+static bool WriteUtf8File(LPCTSTR filename, const CString& text)
+{
+    CFile file;
+    if (!file.Open(filename, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary)) {
+        return false;
+    }
+    CW2A utf8(text, CP_UTF8);
+    file.Write(static_cast<LPCSTR>(utf8), static_cast<UINT>(strlen(static_cast<LPCSTR>(utf8))));
+    return true;
+}
+
+static bool ReadUtf8File(LPCTSTR filename, CString& text)
+{
+    CFile file;
+    if (!file.Open(filename, CFile::modeRead | CFile::typeBinary)) {
+        return false;
+    }
+    ULONGLONG length = file.GetLength();
+    if (length <= 0) {
+        text.Empty();
+        return true;
+    }
+    vector<char> buffer(static_cast<size_t>(length) + 1);
+    file.Read(buffer.data(), static_cast<UINT>(length));
+    buffer[static_cast<size_t>(length)] = '\0';
+    const char* data = buffer.data();
+    int size = static_cast<int>(length);
+    if ((3 <= size) &&
+        (static_cast<unsigned char>(data[0]) == 0xef) &&
+        (static_cast<unsigned char>(data[1]) == 0xbb) &&
+        (static_cast<unsigned char>(data[2]) == 0xbf)) {
+        data += 3;
+        size -= 3;
+    }
+    int wideSize = MultiByteToWideChar(CP_UTF8, 0, data, size, NULL, 0);
+    if (wideSize <= 0) {
+        return false;
+    }
+    LPWSTR out = text.GetBuffer(wideSize);
+    MultiByteToWideChar(CP_UTF8, 0, data, size, out, wideSize);
+    text.ReleaseBuffer(wideSize);
+    return true;
+}
+
+static vector<CString> ReadTextLines(LPCTSTR filename)
+{
+    vector<CString> lines;
+    CStdioFile file;
+    if (!file.Open(filename, CFile::modeRead | CFile::typeText)) {
+        return lines;
+    }
+    CString line;
+    while (file.ReadString(line)) {
+        line.Trim();
+        if (!line.IsEmpty()) {
+            lines.push_back(line);
+        }
+    }
+    return lines;
+}
+
+static bool WriteTextLines(LPCTSTR filename, const vector<CString>& lines, bool blankLine)
+{
+    CStdioFile file;
+    if (!file.Open(filename, CFile::modeCreate | CFile::modeWrite | CFile::typeText)) {
+        return false;
+    }
+    for (size_t i = 0; i < lines.size(); i++) {
+        file.WriteString(lines[i]);
+        file.WriteString(blankLine ? _T("\n\n") : _T("\n"));
+    }
+    return true;
+}
+
+static CString JsonStringArray(const vector<CString>& values, int indent)
+{
+    CString result(_T("["));
+    if (!values.empty()) {
+        result += _T("\r\n");
+        CString pad(_T(' '), indent);
+        for (size_t i = 0; i < values.size(); i++) {
+            result += pad;
+            result += JsonString(values[i]);
+            if (i + 1 < values.size()) {
+                result += _T(",");
+            }
+            result += _T("\r\n");
+        }
+        CString closePad(_T(' '), indent - 2);
+        result += closePad;
+    }
+    result += _T("]");
+    return result;
+}
+
+static vector<CString> ValidRouteScripts(const vector<CString>& scripts)
+{
+    vector<CString> routes;
+    for (size_t i = 0; i < scripts.size(); i++) {
+        CString script(scripts[i]);
+        script.Trim();
+        if (script.IsEmpty()) {
+            continue;
+        }
+        Route route;
+        if (0 <= route.setup_route(script)) {
+            routes.push_back(route.route_script().c_str());
+        }
+    }
+    return routes;
+}
 
 
 
@@ -125,6 +459,9 @@ BOOL Calps_mfcDlg::OnInitDialog()
         if (!strAboutMenu.IsEmpty())
         {
             pSysMenu->AppendMenu(MF_SEPARATOR);
+            pSysMenu->AppendMenu(MF_STRING, IDM_BACKUPBOX, _T("バックアップ(&B)..."));
+            pSysMenu->AppendMenu(MF_STRING, IDM_RESTOREBOX, _T("リストア(&R)..."));
+            pSysMenu->AppendMenu(MF_SEPARATOR);
             pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
         }
     }
@@ -175,7 +512,15 @@ BOOL Calps_mfcDlg::OnInitDialog()
 
 void Calps_mfcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
-    if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+    if ((nID & 0xFFF0) == IDM_BACKUPBOX)
+    {
+        backupToJson();
+    }
+    else if ((nID & 0xFFF0) == IDM_RESTOREBOX)
+    {
+        restoreFromJson();
+    }
+    else if ((nID & 0xFFF0) == IDM_ABOUTBOX)
     {
         CAboutDlg dlgAbout;
         dlgAbout.DoModal();
@@ -1104,6 +1449,119 @@ void Calps_mfcDlg::OnBnClickedButtonRouteOpen()
             ShellExecute(NULL, _T("open"), dlg.GetFileName(), NULL, NULL, SW_SHOW);
         }
     }
+}
+
+// 共通バックアップ JSON をカレントディレクトリへ保存する
+//
+void Calps_mfcDlg::backupToJson()
+{
+    vector<CString> savedRoutes = ValidRouteScripts(ReadTextLines(_T("route.txt")));
+    vector<CString> stationHistory = ReadTextLines(_T("history.txt"));
+    CString currentRoute(m_route.route_script().c_str());
+
+    CString json;
+    json += _T("{\r\n");
+    json += _T("  \"version\": \"1.0\",\r\n");
+    json += _T("  \"exportedAt\": ");
+    json += JsonString(CurrentUtcIsoString());
+    json += _T(",\r\n");
+    json += _T("  \"storage\": {\r\n");
+    json += _T("    \"currentRoute\": ");
+    json += JsonString(currentRoute);
+    json += _T(",\r\n");
+    json += _T("    \"savedRoutes\": ");
+    json += JsonStringArray(savedRoutes, 6);
+    json += _T(",\r\n");
+    json += _T("    \"ticketHolder\": [],\r\n");
+    json += _T("    \"stationHistory\": ");
+    json += JsonStringArray(stationHistory, 6);
+    json += _T("\r\n");
+    json += _T("  }\r\n");
+    json += _T("}\r\n");
+
+    const LPCTSTR filename = _T("farert-backup.json");
+    if (!WriteUtf8File(filename, json)) {
+        AfxMessageBox(_T("バックアップファイルの保存に失敗しました."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+
+    CString message;
+    message.Format(
+        _T("バックアップを %s に保存しました.\n保存経路 %d件、履歴 %d件"),
+        filename,
+        static_cast<int>(savedRoutes.size()),
+        static_cast<int>(stationHistory.size()));
+    AfxMessageBox(message, MB_OK | MB_ICONINFORMATION);
+}
+
+// 共通バックアップ JSON から Windows の履歴・保存経路を復元する
+//
+void Calps_mfcDlg::restoreFromJson()
+{
+    CFileDialog dlg(
+        TRUE,
+        _T("json"),
+        _T("farert-backup.json"),
+        OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+        _T("JSON files (*.json)|*.json|All files (*.*)|*.*||"));
+    if (IDOK != dlg.DoModal()) {
+        return;
+    }
+
+    CString json;
+    if (!ReadUtf8File(dlg.GetPathName(), json)) {
+        AfxMessageBox(_T("バックアップファイルを UTF-8 JSON として読み込めませんでした."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+
+    CString version;
+    if (!ExtractJsonStringField(json, _T("version"), version) || (version != _T("1.0"))) {
+        AfxMessageBox(_T("未対応のバックアップバージョンです."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+
+    vector<CString> savedRoutes;
+    vector<CString> stationHistory;
+    CString currentRoute;
+    ExtractJsonStringField(json, _T("currentRoute"), currentRoute);
+    if (!ExtractJsonStringArray(json, _T("savedRoutes"), savedRoutes)) {
+        AfxMessageBox(_T("保存経路データを読み込めませんでした."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+    if (!ExtractJsonStringArray(json, _T("stationHistory"), stationHistory)) {
+        AfxMessageBox(_T("履歴データを読み込めませんでした."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+
+    vector<CString> validRoutes = ValidRouteScripts(savedRoutes);
+    if (IDYES != AfxMessageBox(
+        _T("現在の route.txt と history.txt をバックアップ内容で置き換えます。よろしいですか？"),
+        MB_YESNO | MB_ICONQUESTION)) {
+        return;
+    }
+
+    if (!WriteTextLines(_T("route.txt"), validRoutes, true)) {
+        AfxMessageBox(_T("route.txt の保存に失敗しました."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+    if (!WriteTextLines(_T("history.txt"), stationHistory, false)) {
+        AfxMessageBox(_T("history.txt の保存に失敗しました."), MB_OK | MB_ICONSTOP);
+        return;
+    }
+
+    bool currentRouteRestored = false;
+    currentRoute.Trim();
+    if (!currentRoute.IsEmpty()) {
+        currentRouteRestored = (0 <= parseAndSetupRoute(currentRoute));
+    }
+
+    CString message;
+    message.Format(
+        _T("リストアしました.\n保存経路 %d件、履歴 %d件%s"),
+        static_cast<int>(validRoutes.size()),
+        static_cast<int>(stationHistory.size()),
+        currentRouteRestored ? _T("、現在経路 1件") : _T(""));
+    AfxMessageBox(message, MB_OK | MB_ICONINFORMATION);
 }
 
 // [経路入力]
