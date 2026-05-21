@@ -7,7 +7,9 @@ data class SettingsUiState(
     val canResetInfoMessages: Boolean = false,
     
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val message: String? = null,
+    val clipboardText: String? = null
 ) {
     // Helper to check if settings have changed
     fun hasChanges(originalDbIndex: Int, originalKokuraShinzai: Boolean): Boolean {

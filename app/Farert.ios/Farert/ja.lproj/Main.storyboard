@@ -1655,6 +1655,82 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="sectionBackupRestore" id="j9y-Da-Uxx">
+                                <cells>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="54" id="8nd-lO-0Qh">
+                                        <rect key="frame" x="0.0" y="183.5" width="414" height="54"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="8nd-lO-0Qh" id="rzo-o1-lUk">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="54"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9cc-9J-Glo">
+                                                    <rect key="frame" x="0.0" y="0.0" width="20.5" height="54"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" systemColor="linkColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ex0-y1-ELP">
+                                                    <rect key="frame" x="30.5" y="25" width="353.5" height="4"/>
+                                                    <state key="normal" title="バックアップ"/>
+                                                    <connections>
+                                                        <action selector="actBtnBackupTouched:" destination="wdT-gd-c3P" eventType="touchUpInside" id="FPQ-LY-Ya9"/>
+                                                        <action selector="actBtnResetInfoMessageTouched:" destination="wdT-gd-c3P" eventType="touchDown" id="HSn-Dg-oyx"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <constraints>
+                                                <constraint firstItem="9cc-9J-Glo" firstAttribute="height" secondItem="rzo-o1-lUk" secondAttribute="height" id="9bR-27-dg7"/>
+                                                <constraint firstItem="Ex0-y1-ELP" firstAttribute="leading" secondItem="9cc-9J-Glo" secondAttribute="trailing" constant="10" id="Anj-mG-06f"/>
+                                                <constraint firstItem="9cc-9J-Glo" firstAttribute="leading" secondItem="rzo-o1-lUk" secondAttribute="leading" id="F9V-IU-9VS"/>
+                                                <constraint firstItem="9cc-9J-Glo" firstAttribute="top" secondItem="rzo-o1-lUk" secondAttribute="top" id="S3j-nt-P5z"/>
+                                                <constraint firstItem="Ex0-y1-ELP" firstAttribute="top" secondItem="rzo-o1-lUk" secondAttribute="topMargin" constant="10" id="TtC-1B-IKo"/>
+                                                <constraint firstItem="9cc-9J-Glo" firstAttribute="width" secondItem="rzo-o1-lUk" secondAttribute="width" multiplier="0.05" id="Zeb-Ea-WJ0"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="Ex0-y1-ELP" secondAttribute="trailing" constant="10" id="tSB-Fb-yg2"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="Ex0-y1-ELP" secondAttribute="bottom" constant="10" id="wgi-ju-C8Q"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    </tableViewCell>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="54" id="ZPE-xo-vac">
+                                        <rect key="frame" x="0.0" y="237.5" width="414" height="54"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ZPE-xo-vac" id="JbQ-7r-WYK">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="54"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2EO-lA-MjP">
+                                                    <rect key="frame" x="0.0" y="0.0" width="20.5" height="54"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" systemColor="linkColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bgi-Q9-ghR">
+                                                    <rect key="frame" x="30.5" y="25" width="353.5" height="4"/>
+                                                    <state key="normal" title="リストア"/>
+                                                    <connections>
+                                                        <action selector="actBtnResetInfoMessageTouched:" destination="wdT-gd-c3P" eventType="touchDown" id="T9P-9X-NUh"/>
+                                                        <action selector="actBtnRestoreTouched:" destination="wdT-gd-c3P" eventType="touchUpInside" id="1E7-ne-egr"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            <constraints>
+                                                <constraint firstItem="bgi-Q9-ghR" firstAttribute="top" secondItem="JbQ-7r-WYK" secondAttribute="topMargin" constant="10" id="04J-oW-lLx"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="bgi-Q9-ghR" secondAttribute="trailing" constant="10" id="2wj-mP-j9J"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="bgi-Q9-ghR" secondAttribute="bottom" constant="10" id="Hgs-C4-AoD"/>
+                                                <constraint firstItem="2EO-lA-MjP" firstAttribute="leading" secondItem="JbQ-7r-WYK" secondAttribute="leading" id="TP1-dk-7eW"/>
+                                                <constraint firstItem="2EO-lA-MjP" firstAttribute="top" secondItem="JbQ-7r-WYK" secondAttribute="top" id="YsY-Iw-0Ce"/>
+                                                <constraint firstItem="bgi-Q9-ghR" firstAttribute="leading" secondItem="2EO-lA-MjP" secondAttribute="trailing" constant="10" id="hYl-nx-r9Y"/>
+                                                <constraint firstItem="2EO-lA-MjP" firstAttribute="width" secondItem="JbQ-7r-WYK" secondAttribute="width" multiplier="0.05" id="i2F-gd-9pw"/>
+                                                <constraint firstItem="2EO-lA-MjP" firstAttribute="height" secondItem="JbQ-7r-WYK" secondAttribute="height" id="jld-4I-eCi"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="wdT-gd-c3P" id="ErQ-ZS-M3p"/>
@@ -1669,7 +1745,9 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="btnBackup" destination="Ex0-y1-ELP" id="VEB-Gg-4nm"/>
                         <outlet property="btnResetInfoMessage" destination="R2W-3h-d0L" id="Zus-Yf-zib"/>
+                        <outlet property="btnRestore" destination="bgi-Q9-ghR" id="u8i-gn-pZe"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Krt-GT-bMV" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1878,22 +1956,22 @@
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="linkColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="secondaryLabelColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="separatorColor">
-            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.12" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.12" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemGrayColor">
-            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.21960784310000001" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.2196078431372549" blue="0.23529411764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

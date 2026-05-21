@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.sutezo.alps.readParam
 import org.sutezo.alps.saveParam
+import org.sutezo.farert.BackupRestoreManager
 import org.sutezo.farert.DatabaseOpenHelper
 import org.sutezo.farert.FarertApp
 
@@ -43,6 +44,14 @@ class SettingsStateHolder : ViewModel() {
             is SettingsUiEvent.ResetInfoMessages -> {
                 resetInfoMessages()
             }
+
+            is SettingsUiEvent.BackupToClipboard -> {
+                backupToClipboard()
+            }
+
+            is SettingsUiEvent.RestoreFromClipboard -> {
+                restoreFromClipboard(event.jsonText)
+            }
             
             is SettingsUiEvent.SaveSettings -> {
                 saveSettings()
@@ -50,6 +59,14 @@ class SettingsStateHolder : ViewModel() {
             
             is SettingsUiEvent.ClearError -> {
                 uiState = uiState.copy(error = null)
+            }
+
+            is SettingsUiEvent.ClearMessage -> {
+                uiState = uiState.copy(message = null)
+            }
+
+            is SettingsUiEvent.ClearClipboardText -> {
+                uiState = uiState.copy(clipboardText = null)
             }
         }
     }
@@ -112,6 +129,31 @@ class SettingsStateHolder : ViewModel() {
         }
         
         uiState = uiState.copy(canResetInfoMessages = false)
+    }
+
+    private fun backupToClipboard() {
+        try {
+            val json = BackupRestoreManager.exportJson(context)
+            uiState = uiState.copy(
+                clipboardText = json,
+                message = "バックアップ JSON をクリップボードへコピーしました",
+                error = null
+            )
+        } catch (e: Exception) {
+            uiState = uiState.copy(error = e.message)
+        }
+    }
+
+    private fun restoreFromClipboard(jsonText: String) {
+        try {
+            val result = BackupRestoreManager.restoreJson(context, jsonText)
+            uiState = uiState.copy(
+                message = "リストアしました: 保存経路 ${result.savedRoutes}件、きっぷホルダ ${result.ticketHolderRoutes}件、履歴 ${result.stationHistory}件",
+                error = null
+            )
+        } catch (e: Exception) {
+            uiState = uiState.copy(error = "リストアに失敗しました: ${e.message}")
+        }
     }
     
     fun saveSettings(): Boolean {

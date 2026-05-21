@@ -1,10 +1,17 @@
 package org.sutezo.farert.ui.compose
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.*
@@ -30,17 +37,33 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val uiState = stateHolder.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showRestoreDialog by remember { mutableStateOf(false) }
     
     // Initialize state
     LaunchedEffect(Unit) {
         stateHolder.initialize(context)
     }
     
-    // Handle error display
     uiState.error?.let { error ->
         LaunchedEffect(error) {
-            // Show error dialog or snackbar
+            snackbarHostState.showSnackbar(error)
             stateHolder.handleEvent(SettingsUiEvent.ClearError)
+        }
+    }
+
+    uiState.message?.let { message ->
+        LaunchedEffect(message) {
+            snackbarHostState.showSnackbar(message)
+            stateHolder.handleEvent(SettingsUiEvent.ClearMessage)
+        }
+    }
+
+    uiState.clipboardText?.let { text ->
+        LaunchedEffect(text) {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("Farert backup", text))
+            stateHolder.handleEvent(SettingsUiEvent.ClearClipboardText)
         }
     }
     
@@ -58,7 +81,8 @@ fun SettingsScreen(
                 },
                 colors = farertTopAppBarColors()
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(
@@ -75,9 +99,22 @@ fun SettingsScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 uiState = uiState,
-                stateHolder = stateHolder
+                stateHolder = stateHolder,
+                onShowRestoreDialog = { showRestoreDialog = true }
             )
         }
+    }
+
+    if (showRestoreDialog) {
+        RestoreConfirmDialog(
+            onDismiss = { showRestoreDialog = false },
+            onRestore = {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val text = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                stateHolder.handleEvent(SettingsUiEvent.RestoreFromClipboard(text))
+                showRestoreDialog = false
+            }
+        )
     }
 }
 
@@ -86,10 +123,13 @@ fun SettingsScreen(
 private fun SettingsContent(
     modifier: Modifier = Modifier,
     uiState: SettingsUiState,
-    stateHolder: SettingsStateHolder
+    stateHolder: SettingsStateHolder,
+    onShowRestoreDialog: () -> Unit
 ) {
     Column(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         /*
@@ -224,5 +264,75 @@ private fun SettingsContent(
                 }
             }
         }
+
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "バックアップとリストア",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Text(
+                    text = "発着駅履歴、保存経路、きっぷホルダを共通 JSON としてクリップボード経由で保存・復元します",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            stateHolder.handleEvent(SettingsUiEvent.BackupToClipboard)
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("バックアップ")
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            onShowRestoreDialog()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Restore, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("リストア")
+                    }
+                }
+            }
+        }
     }
+}
+
+@Composable
+private fun RestoreConfirmDialog(
+    onDismiss: () -> Unit,
+    onRestore: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("リストア") },
+        text = { Text("クリップボードのバックアップ JSON で現在の発着駅履歴、保存経路、きっぷホルダを置き換えます。") },
+        confirmButton = {
+            TextButton(onClick = onRestore) {
+                Text("リストア")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("キャンセル")
+            }
+        }
+    )
 }

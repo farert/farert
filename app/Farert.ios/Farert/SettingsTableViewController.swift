@@ -8,13 +8,30 @@
 
 import UIKit
 
+private struct BackupDocument: Codable {
+    let version: String
+    let exportedAt: String
+    let storage: BackupStorage
+}
 
+private struct BackupStorage: Codable {
+    let currentRoute: String?
+    let savedRoutes: [String]
+    let ticketHolder: [BackupTicketHolder]
+    let stationHistory: [String]
+}
+
+private struct BackupTicketHolder: Codable {
+    let order: Int
+    let routeScript: String
+    let fareType: String
+}
 
 class SettingsTableViewController: UITableViewController {
 
     // MARK: - Public property
 //    var selectDbId : Int = 0
-    
+
     // MARK: - Private property
 //    var before_dbid_idx : Int = DB._MAX_ID.rawValue
     
@@ -22,6 +39,8 @@ class SettingsTableViewController: UITableViewController {
     
     var isSaved = false
     @IBOutlet weak var btnResetInfoMessage: UIButton!
+    @IBOutlet weak var btnBackup: UIButton!
+    @IBOutlet weak var btnRestore: UIButton!
     
     // MARK: - UI Propery
 //    @IBOutlet weak var swShinkansenKokuraHakataOther: UISwitch!
@@ -168,7 +187,131 @@ class SettingsTableViewController: UITableViewController {
         }
     }
     
+    @IBAction func actBtnBackupTouched(_ sender: UIButton) {
+        do {
+            let backup = try makeBackupJson()
+            UIPasteboard.general.string = backup
+            showAlert(title: "バックアップ", message: "バックアップ JSON をクリップボードへコピーしました")
+        } catch {
+            showAlert(title: "バックアップ失敗", message: error.localizedDescription)
+        }
+    }
+
+    @IBAction func actBtnRestoreTouched(_ sender: UIButton) {
+        let alert = UIAlertController(
+            title: "リストア",
+            message: "クリップボードのバックアップ JSON で現在の発着駅履歴、保存経路、きっぷホルダを置き換えます。",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+        alert.addAction(UIAlertAction(title: "リストア", style: .destructive) { [weak self] _ in
+            self?.restoreFromPasteboard()
+        })
+        present(alert, animated: true)
+    }
     
+    private func makeBackupJson() throws -> String {
+        let holder = Routefolder()
+        let ticketHolder = holder.backupItems().enumerated().map { index, item in
+            BackupTicketHolder(
+                order: index + 1,
+                routeScript: item.routeScript,
+                fareType: item.fareType
+            )
+        }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let document = BackupDocument(
+            version: "1.0",
+            exportedAt: formatter.string(from: Date()),
+            storage: BackupStorage(
+                currentRoute: nil,
+                savedRoutes: cRouteUtil.loadStrageRoute() as? [String] ?? [],
+                ticketHolder: ticketHolder,
+                stationHistory: cRouteUtil.readFromTerminalHistory() as? [String] ?? []
+            )
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(document)
+        guard let json = String(data: data, encoding: .utf8) else {
+            throw NSError(domain: "FarertBackup", code: 1, userInfo: [NSLocalizedDescriptionKey: "JSON の作成に失敗しました"])
+        }
+        return json
+    }
+
+    private func restoreFromPasteboard() {
+        guard let text = UIPasteboard.general.string, let data = text.data(using: .utf8) else {
+            showAlert(title: "リストア失敗", message: "クリップボードにバックアップ JSON がありません")
+            return
+        }
+        do {
+            let decoder = JSONDecoder()
+            let document = try decoder.decode(BackupDocument.self, from: data)
+            guard document.version == "1.0" else {
+                throw NSError(domain: "FarertBackup", code: 2, userInfo: [NSLocalizedDescriptionKey: "未対応のバックアップバージョンです"])
+            }
+            let savedRoutes = restoreSavedRoutes(document.storage.savedRoutes)
+            let ticketHolder = restoreTicketHolder(document.storage.ticketHolder)
+            let history = restoreStationHistory(document.storage.stationHistory)
+            showAlert(
+                title: "リストア",
+                message: "リストアしました: 保存経路 \(savedRoutes)件、きっぷホルダ \(ticketHolder)件、履歴 \(history)件"
+            )
+        } catch {
+            showAlert(title: "リストア失敗", message: error.localizedDescription)
+        }
+    }
+
+    private func restoreSavedRoutes(_ routes: [String]) -> Int {
+        var restored: [String] = []
+        for script in routes {
+            let trimmed = script.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty || restored.contains(trimmed) {
+                continue
+            }
+            guard let route = cRoute(), route.setupRoute(trimmed) >= 0 else {
+                continue
+            }
+            restored.append(route.routeScript() ?? trimmed)
+            if Int(MAX_ARCHIVE_ROUTE) <= restored.count {
+                break
+            }
+        }
+        cRouteUtil.save(toRouteArray: restored)
+        return restored.count
+    }
+
+    private func restoreTicketHolder(_ items: [BackupTicketHolder]) -> Int {
+        let holder = Routefolder()
+        let orderedItems = items.sorted { $0.order < $1.order }
+        return holder.restoreBackupItems(
+            orderedItems.map { (routeScript: $0.routeScript, fareType: $0.fareType) }
+        )
+    }
+
+    private func restoreStationHistory(_ history: [String]) -> Int {
+        var restored: [String] = []
+        for station in history {
+            let trimmed = station.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty || restored.contains(trimmed) {
+                continue
+            }
+            restored.append(trimmed)
+            if FGD.MAX_HISTORY <= restored.count {
+                break
+            }
+        }
+        cRouteUtil.saveToTerminalHistory(with: restored)
+        return restored.count
+    }
+
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using [segue destinationViewController].
