@@ -1,5 +1,11 @@
 # Farert 経路運賃営業キロ計算アプリ
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](license.txt)
+![Android](https://img.shields.io/badge/Android-24%2B-3DDC84?logo=android&logoColor=white)
+![iOS](https://img.shields.io/badge/iOS-supported-000000?logo=apple&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-supported-0078D4?logo=windows&logoColor=white)
+![POSIX CLI](https://img.shields.io/badge/POSIX-CLI-4EAA25?logo=gnubash&logoColor=white)
+
 ## Quick Try
 
 ```
