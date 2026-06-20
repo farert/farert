@@ -305,9 +305,9 @@ class SettingsTableViewController: UITableViewController {
                 stationHistory: cRouteUtil.readFromTerminalHistory() as? [String] ?? []
             )
             do {
-                restoreSavedRoutes(savedRoutes)
-                restoreTicketHolder(ticketHolder)
-                restoreStationHistory(history)
+                try restoreSavedRoutes(savedRoutes)
+                try restoreTicketHolder(ticketHolder)
+                try restoreStationHistory(history)
             } catch {
                 rollbackRestore(snapshot)
                 throw error
