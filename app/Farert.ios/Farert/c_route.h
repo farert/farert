@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, DB) {
 };
 */
 
-#define MAX_HISTORY              20
+#define MAX_HISTORY              50
 #define MAX_ARCHIVE_ROUTE        100
 #define MAX_HOLDER               60
 
