@@ -127,6 +127,30 @@ class Routefolder {
         }
     }
 
+    fun backupItems(context: Context) : List<Pair<String, String>> {
+        load(context)
+        return _routeList.map { folder ->
+            Pair(folder.routeList.route_script(), folder.aggregateType.toBackupFareType())
+        }
+    }
+
+    fun restoreBackupItems(context: Context, items: List<Pair<String, String>>) : Int {
+        _routeList.removeAll { true }
+        for (item in items) {
+            if (MAX_HOLDER <= _routeList.count()) {
+                break
+            }
+            val route = Route()
+            if (route.setup_route(item.first) < 0) {
+                continue
+            }
+            _routeList.add(Folder(route, aggregateFromBackupFareType(item.second)))
+        }
+        calc()
+        save(context)
+        return _routeList.count()
+    }
+
     fun setAggregateType(context: Context, index : Int, aggr : Aggregate) {
         if ((index < _routeList.count()) && (_routeList[index].aggregateType != aggr)) {
             _routeList[index].aggregateType = aggr
@@ -349,5 +373,30 @@ class Routefolder {
         result.add(cols.joinToString(","))
         return result.joinToString("\n")
     }
+
+    private fun Aggregate.toBackupFareType() : String {
+        return when (this) {
+            Aggregate.NORMAL -> "NORMAL"
+            Aggregate.CHILD -> "CHILD"
+            Aggregate.ROUNDTRIP -> "ROUND_TRIP"
+            Aggregate.STOCK -> "STOCK_DISCOUNT"
+            Aggregate.STOCKW -> "STOCK_DISCOUNT_X2"
+            Aggregate.ACADEMIC -> "STUDENT"
+            Aggregate.ACADEMIC_ROUNDTRIP -> "STUDENT_ROUND_TRIP"
+            Aggregate.NULLFARE -> "DISABLED"
+        }
+    }
+
+    private fun aggregateFromBackupFareType(fareType: String) : Aggregate {
+        return when (fareType) {
+            "CHILD" -> Aggregate.CHILD
+            "ROUND_TRIP" -> Aggregate.ROUNDTRIP
+            "STOCK_DISCOUNT" -> Aggregate.STOCK
+            "STOCK_DISCOUNT_X2" -> Aggregate.STOCKW
+            "STUDENT" -> Aggregate.ACADEMIC
+            "STUDENT_ROUND_TRIP" -> Aggregate.ACADEMIC_ROUNDTRIP
+            "DISABLED" -> Aggregate.NULLFARE
+            else -> Aggregate.NORMAL
+        }
+    }
 }
-    

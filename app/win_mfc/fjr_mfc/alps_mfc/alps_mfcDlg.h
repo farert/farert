@@ -53,6 +53,8 @@ protected:
 	void showFare(bool bResetOption = true);
 	int parseAndSetupRoute(LPCTSTR route_str);
 	void resetMenu(bool en_route = false);
+	void backupToJson();
+	void restoreFromJson();
 
 private:
 	Route	m_route;

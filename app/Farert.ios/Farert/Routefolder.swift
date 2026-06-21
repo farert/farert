@@ -128,6 +128,34 @@ public class Routefolder {
         }
     }
 
+    func backupItems() -> [(routeScript: String, fareType: String)] {
+        load()
+        return routeList.map { item in
+            (item.routeList.routeScript() ?? "", backupFareType(from: item.indexOfAggregate))
+        }
+    }
+
+    func restoreBackupItems(_ items: [(routeScript: String, fareType: String)]) -> Int {
+        routeList.removeAll()
+        for item in items {
+            if Int(MAX_HOLDER) <= routeList.count {
+                break
+            }
+            guard let route = cRoute(), route.setupRoute(item.routeScript) >= 0 else {
+                continue
+            }
+            routeList.append(
+                folder(
+                    routeList: cRouteList(route: route),
+                    indexOfAggregate: aggregateIndex(from: item.fareType)
+                )
+            )
+        }
+        calc()
+        save()
+        return routeList.count
+    }
+
     func setAggregateType(index : Int, aggr : Int) -> Void {
         if ((index < routeList.count) && (routeList[index].indexOfAggregate != aggr)) {
             routeList[index].indexOfAggregate = aggr
@@ -430,6 +458,48 @@ public class Routefolder {
         cols.append("\(String(describing: cRouteUtil.kmNumStr(salesKm_sum)!)) km")
         result += (cols.joined(separator: ",") + "\n")
         return result
+    }
+
+    private func backupFareType(from aggregate: Int) -> String {
+        switch aggregate {
+        case Aggregate.CHILD.rawValue:
+            return "CHILD"
+        case Aggregate.ROUNDTRIP.rawValue:
+            return "ROUND_TRIP"
+        case Aggregate.STOCK.rawValue:
+            return "STOCK_DISCOUNT"
+        case Aggregate.STOCKW.rawValue:
+            return "STOCK_DISCOUNT_X2"
+        case Aggregate.ACADEMIC.rawValue:
+            return "STUDENT"
+        case Aggregate.ACADEMIC_ROUNDTRIP.rawValue:
+            return "STUDENT_ROUND_TRIP"
+        case Aggregate.NULLFARE.rawValue:
+            return "DISABLED"
+        default:
+            return "NORMAL"
+        }
+    }
+
+    private func aggregateIndex(from fareType: String) -> Int {
+        switch fareType {
+        case "CHILD":
+            return Aggregate.CHILD.rawValue
+        case "ROUND_TRIP":
+            return Aggregate.ROUNDTRIP.rawValue
+        case "STOCK_DISCOUNT":
+            return Aggregate.STOCK.rawValue
+        case "STOCK_DISCOUNT_X2":
+            return Aggregate.STOCKW.rawValue
+        case "STUDENT":
+            return Aggregate.ACADEMIC.rawValue
+        case "STUDENT_ROUND_TRIP":
+            return Aggregate.ACADEMIC_ROUNDTRIP.rawValue
+        case "DISABLED":
+            return Aggregate.NULLFARE.rawValue
+        default:
+            return Aggregate.NORMAL.rawValue
+        }
     }
 
 }

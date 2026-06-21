@@ -5,6 +5,10 @@ sealed interface SettingsUiEvent {
     data class DatabaseSelectionChanged(val index: Int) : SettingsUiEvent
     data class KokuraShinzaiToggled(val enabled: Boolean) : SettingsUiEvent
     data object ResetInfoMessages : SettingsUiEvent
+    data object BackupToShare : SettingsUiEvent
+    data class RestoreFromClipboard(val jsonText: String) : SettingsUiEvent
     data object SaveSettings : SettingsUiEvent
     data object ClearError : SettingsUiEvent
+    data object ClearMessage : SettingsUiEvent
+    data object ClearShareText : SettingsUiEvent
 }
