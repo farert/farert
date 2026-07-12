@@ -1613,10 +1613,18 @@ int32_t Route::companyPassCheck(int32_t line_id, int32_t stationId1, int32_t sta
         ASSERT(!route_flag.compnda);
         ASSERT(route_flag.compncheck);
         ASSERT(!route_flag.compnpass);
-        ASSERT(route_list_raw.back().lineId != line_id);
         //通常はこれでよしだが、終端エラーで再トライ時にNGとなる：ASSERT(IS_COMPANY_LINE(route_list_raw.back().lineId));
 
         route_flag.compnend = true; // if company_line
+
+        // 同一会社線の継続(直通運転で分岐駅を挟み同じ会社線が続く場合)。
+        // 例: 金沢 七尾線(IRいしかわ直通) 津幡 IRいしかわ 倶利伽羅 で、津幡での
+        //     removeTail 後に同じ会社線を継ぎ足すと、末尾と同一会社線となる。
+        //     新規の会社線間接続ではないため乗継可否チェックは行わず継続する
+        //     (従来ここで back().lineId==line_id に達し -4 を返していた)。
+        if (route_list_raw.back().lineId == line_id) {
+            return 0;
+        }
 
         if (route_flag.compnbegin) {
             return 0;   /* 会社線始発はとりあえず許す！ */
