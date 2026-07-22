@@ -2387,10 +2387,16 @@ public class Route extends RouteList {
     		RouteUtil.ASSERT(!last_flag.compnda);
     		RouteUtil.ASSERT(last_flag.compncheck);
     		RouteUtil.ASSERT(!last_flag.compnpass);
-    		RouteUtil.ASSERT(route_list_raw.get(route_list_raw.size() - 1).lineId != line_id);
     		RouteUtil.ASSERT(RouteUtil.IS_COMPANY_LINE(route_list_raw.get(route_list_raw.size() - 1).lineId));
 
     		last_flag.compnend  = true;	// if company_line
+
+    		// 同一会社線の継続(直通運転で分岐駅を挟み同じ会社線が続く場合)。
+    		// 新規の会社線間接続ではないため乗継可否チェックは行わず継続する
+    		// (従来ここで back().lineId==line_id に達し弾いていた)。
+    		if (route_list_raw.get(route_list_raw.size() - 1).lineId == line_id) {
+    			return 0;
+    		}
 
     		if (last_flag.compnbegin) {
     			return 0;	/* 会社線始発はとりあえず許す！ */
