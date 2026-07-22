@@ -76,7 +76,7 @@ source ../all/start.sh
   "fareResultCode": 0,
   "isMeihanCityStartTerminalEnable": false,
   "isRuleApplied": true,
-  "totalSalesKm": 288,
+  "totalSalesKm": 28.8,
   "fare": 490,
   "fareForIC": 483,
   "childFare": 240,
@@ -165,7 +165,7 @@ source ../all/start.sh
 ```json
 {
   "fareResultCode": 0,
-  "totalSalesKm": 288,
+  "totalSalesKm": 28.8,
   "fare": 490,
   "fareForIC": 483,
   "childFare": 240,

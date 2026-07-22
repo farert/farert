@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <cstdlib>
 
 std::string open_database();
 void close_database();
@@ -177,6 +178,13 @@ namespace json_encoder {
     inline std::string pair(const std::string& key, int value) {
         std::ostringstream oss;
         oss << "\"" << key << "\":" << value;
+        return oss.str();
+    }
+
+    // distance stored in 1/10 km units, emitted as decimal kilometers (e.g. 1046 -> 104.6)
+    inline std::string km_pair(const std::string& key, int tenths_of_km) {
+        std::ostringstream oss;
+        oss << "\"" << key << "\":" << (tenths_of_km / 10) << "." << std::abs(tenths_of_km % 10);
         return oss.str();
     }
 
