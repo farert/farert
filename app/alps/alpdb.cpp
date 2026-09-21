@@ -11272,10 +11272,12 @@ void FARE_INFO::retr_fare(bool useBullet)
         if (IS_YAMATE(this->flag) && FARE_INFO::tax != 10) {
                                     // 2025.4.1 大阪環状線特例廃止 
             TRACE("fare(osaka-kan)\n");
-            _total_jr_fare = FARE_INFO::Fare_osakakan(_total_jr_sales_km_wo_brt);
+            // rule89 適用されているかもしれへんので、計算キロで計算
+            _total_jr_fare = FARE_INFO::Fare_osakakan(_total_jr_calc_km_wo_brt);
         } else {
             TRACE("fare(osaka)\n");
-            _total_jr_fare = FARE_INFO::Fare_osaka(_total_jr_sales_km_wo_brt);
+            // rule89 適用されているかもしれへんので、計算キロで計算 with _total_jr_sales_km_wo_brt to _total_jr_calc_km_wo_brt
+            _total_jr_fare = FARE_INFO::Fare_osaka(_total_jr_calc_km_wo_brt);
         }
     } else if (mask != 0) {
         /* JR東海 or(and) JR西日本 or 他会社またがり */
