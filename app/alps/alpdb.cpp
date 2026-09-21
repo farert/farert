@@ -11523,6 +11523,32 @@ int32_t FARE_INFO::Fare_table(int32_t dkm, int32_t skm, char c)
     return fare;
 }
 
+//static
+//  例外運賃（別表2号イのXX) JR東
+//
+//  @param [in] tblename
+//  @param [in] km
+//  @return fare
+//  @retval 0 non-available
+int32_t FARE_INFO::CalcKm_Table(const char* tblname, int32_t km)
+{
+    char* sql;
+    int32_t fare;
+
+    TRACE("CalcKm_Table(%s, %d)\n", tblname, km);
+
+    sql = sqlite3_mprintf("select fare from %s where km_s<=?1 and km_e>=?1", tblname);
+
+    DBO dbo(DBS::getInstance()->compileSql(sql));
+    sqlite3_free(sql);
+    dbo.setParam(1, KM(km));
+    if (dbo.moveNext()) {
+        fare = dbo.getInt(0);
+        return fare;
+    }
+    return 0;
+}
+
 
 //static
 //  特別通過運賃区間か判定し通過していたら加算運賃額を返す
@@ -11773,6 +11799,11 @@ int32_t FARE_INFO::Fare_east_basic(int32_t km)
     if (0 != fare) {
         return fare;
     }
+    fare = FARE_INFO::CalcKm_Table("t_farebspeek", km);
+    if (0 != fare) {
+        return fare;
+    }
+
     /* After 2025, less than 101 km doesn't pass  the following block. */
     if (km < 31) {                          // 1 to 3km
         if (FARE_INFO::tax == 10) {
@@ -11845,7 +11876,10 @@ int32_t FARE_INFO::Fare_east_local(int32_t km)
         return fare;
     }
     TRACE("Fare_east_local: c_km=%d\n", km);
-
+    fare = FARE_INFO::CalcKm_Table("t_farelspeek", km);
+    if (0 != fare) {
+        return fare;
+    }
     c_km *= 10;
 
     if (5460 <= c_km) {
@@ -11871,6 +11905,7 @@ int32_t FARE_INFO::Fare_east_local(int32_t km)
 //  @param [in] km    営業キロ
 //  @return 運賃額
 //
+// Not Used from 2026.3
 int32_t FARE_INFO::Fare_tokyo_f(int32_t km)
 {
     ASSERT(FALSE);
@@ -12016,6 +12051,7 @@ int32_t FARE_INFO::Fare_osaka(int32_t km)
 //  @param [in] km    営業キロ
 //  @return 運賃額
 //
+//  Not used from 2026.3
 int32_t FARE_INFO::Fare_yamate_f(int32_t km)
 {
     ASSERT(FALSE);
