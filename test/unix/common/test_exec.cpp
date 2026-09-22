@@ -3443,7 +3443,7 @@ int test_exec(void)
     elapsed = (double)(end - start) / CLOCKS_PER_SEC;
 
     TRACE(_T("proces lapse: %.3f sec.\n"), elapsed);
-
+    _ftprintf(os, "proces lapse: %.3f sec.\n", elapsed);
 	fclose(os);
 	return 1;
 }
