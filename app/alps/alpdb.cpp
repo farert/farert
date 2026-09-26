@@ -7693,7 +7693,19 @@ bool CalcRoute::CRule114::checkOfRule114j(int32_t kind)
     ASSERT(0 <= aSales_km);
     ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
-    if (RouteUtil::LDIR_FALL != RouteUtil::DirLine(line_id, station_id1, station_id2)) {
+    /* Direction reference station.
+     * For a single-line route station_id1 == station_id2, so DirLine() cannot tell the
+     * direction (it always returns LDIR_FALL). Use the adjacent station of the terminal
+     * in the 86/87-applied route (the city-center side) instead, so that the search
+     * always heads away from the city center. */
+    int32_t dir_from_station_id = station_id1;
+    if (route_list.size() == 2) {
+        ASSERT(2 <= route_list_special.size());
+        dir_from_station_id = is_start_city
+            ? route_list_special.at(route_list_special.size() - 2).stationId
+            : route_list_special.at(1).stationId;
+    }
+    if (RouteUtil::LDIR_FALL != RouteUtil::DirLine(line_id, dir_from_station_id, station_id2)) {
         /* 上り */
         km = -km;
     }
@@ -7857,6 +7869,13 @@ void CalcRoute::CRule114::judgementOfFare(int32_t arrive_station_id, int32_t bas
         return ;                    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
     fare_applied = fi.getFareForJR();           /* より遠い駅までの都区市内発着の仮適用運賃(横浜-甲斐住吉) */
+
+    /* Rule 114 applies only to a station beyond 200km (100km for Rule 87) from the city center.
+     * A candidate inside that distance is never a valid Rule 114 terminal. */
+    if (fi.getJRSalesKm() <= (is100km ? 1000 : 2000)) {
+        TRACE("Rule 114 candidate rejected: saleskm=%d (%s)\n", fi.getJRSalesKm(), SNAME(arrive_station_id));
+        return;                     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    }
 
     if (fare_applied < normal_fare) {
         /* 114条適用 */
