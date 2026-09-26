@@ -4,9 +4,11 @@ description: >
   Farert 鉄道運賃計算エンジン(app/alps/alpdb.cpp)の経路構築・運賃計算まわりの
   デバッグと回帰検証を行うスキル。add() / removeTail() / setup_route() の状態整合、
   会社線通過連絡運輸(compncheck/compnpass 等)、分岐特例(151条 段差型/水平型)、
-  新幹線在来線同一視、大阪環状線ループなど、経路エンジンの不具合調査・修正・回帰確認・
-  他プラットフォーム移植を行うときは必ずこのスキルを使うこと。alpdb.cpp / RouteFlag /
-  companyPassCheck / 通過連絡運輸 / 分岐特例 / removeTail / 重複エラー といった語が出たら
+  新幹線在来線同一視、大阪環状線ループ、特定都区市内の 86/87条と基準規程114条(CRule114)、
+  C++→Android(Java) エンジン移植(MigrateAndroid.md)など、経路エンジンの不具合調査・修正・
+  回帰確認・他プラットフォーム移植を行うときは必ずこのスキルを使うこと。alpdb.cpp / RouteFlag /
+  companyPassCheck / 通過連絡運輸 / 分岐特例 / removeTail / 重複エラー / 114条 / CRule114 /
+  特定都区市内 / MigrateAndroid / Java移植 といった語が出たら
   たとえ明示的に「スキルを使って」と言われなくても発動する。検証ハーネス
   test/unix/all/removetail-151-repro/ の使い方、C++回帰(farert -exec)と Java回帰
   (javatest.md / run_java_regression.sh)の手順、既知バグ分類(同一視・折りたたみは
@@ -36,6 +38,8 @@ sonnet/opus など別セッションが本作業を引き継ぐための知識�
 5. **移植は下記「移植と検証マトリクス」の各エンジンコピーへ同型で展開**する。運賃(金額)に
    直結する共有ロジックなので、プラットフォームごとに回帰を回してから完了とする。段階的に
    進める場合は「まず C++ のみ」等とユーザが範囲を切ることがあるので、指示に従うこと。
+   Android(Java) が C++ より遅れている場合は、個別修正の移植ではなく下記「Java 移植手順
+   (MigrateAndroid.md)」で C++ の差分をまとめて 1 対 1 移植する。
 
 ## 検証ハーネスの使い方
 
@@ -88,6 +92,7 @@ $R -fuzz 7 30000
 | **新幹線在来線同一視で重複エラー(-1)** | `新大村,西九州新幹線,長崎,長崎線,浦上` | **正しい挙動**。諫早-長崎は新幹線/在来線同一視区間。`F-3b`(`alpdb.cpp` 新幹線折返しチェック、`add()` 内)で -1。route_script は再add で復元できないが、それは同一視の帰結。修正対象外。 |
 | **151条圧縮後の removeTail=全消し** | `東京,東海道線,東神奈川,横浜線,横浜` → 2要素に圧縮 | **正しい挙動(ユーザ確認済み A:No)**。水平型変換で可視経路が2要素に折りたたまれると removeTail が `list_num<=2 → removeAll(false)` に落ち経路全体を破棄。中間駅情報は route_list_raw から消えており原理的に復元不能。修正対象外。 |
 | **会社線同一線継ぎ足しで ASSERT/-4** | `金沢 七尾線 津幡 IRいしかわ 倶利伽羅` の removeTail 後再add | **バグ → 修正済み**(下記)。 |
+| **114条が単一路線経路で誤適用(手前の駅で計算)** | `長万部 函館線 森林公園`(186.2km)が 熱郛(札幌から145.9km)で ¥3,520 | **バグ → 修正済み**(下記)。114条の計算駅は中心駅から 201km(87条は 101km)超でなければならない。 |
 
 判断に迷う NG は、まず「新幹線/同一視が絡むか」「経路が2要素に折りたたまれたか(rc=4/1→removeAll)」で
 上2つの正しい挙動を除外し、残りを真のバグ候補とする。
@@ -110,6 +115,38 @@ removeTail (through-service)")が C++ 本体。`git show e030467` で正確な�
 `return 0` で継続扱いにし、旧 `ASSERT(back().lineId != line_id)` を削除。異会社線接続
 (`back().lineId != line_id`)は従来どおり `CompanyConnectCheck` を通す。
 
+## 修正済みバグ: 114条 単一路線で探索方向が逆(2026-09 対応, C++/Java)
+
+コミット `b34b05a`(C++, "fix: BUG-77: Rule 114 was wrongly applied to single-line routes"、
+develop へは `848cbed` でマージ)。Java は MigrateAndroid.md 手順でまとめて移植。
+
+**症状**: `長万部 函館線 森林公園`(186.2km, 札幌市内着)で 114条が適用され、計算駅が経路の
+途中にある 熱郛(145.9km)になり ¥4,400 → ¥3,520 に下がる。`苗穂 函館線 長万部`(発側が都区市内)や
+`西大路→刈谷`、`塚本→尾張一宮`、`東仙台→豊原` など**単一路線で 86条適用まであと 10km 以内**の経路が
+すべて同じ症状。
+
+**根本原因**(`CalcRoute::CRule114::checkOfRule114j()`): 単一路線(`route_list.size()==2`)では
+探索起点 `station_id1` と末端 `station_id2` が同じ駅になり、`RouteUtil::DirLine()` は同一駅で常に
+`LDIR_FALL`(キロ程増加方向)を返す。そのため 200km 到達駅の探索が都区市内中心駅**側**へ向かい、
+`retreive_SpecificCoreAvailablePoint()` の SQL(起点キロ程 + 残りキロ)が手前の駅を返す。さらに
+`judgementOfFare()` は運賃比較しかせず、到達駅が 201km 超かを検証していなかった。
+
+**修正**(2段構え):
+1. 方向判定の発側駅を、単一路線のときだけ 86/87条適用後経路 `route_list_special` の隣接駅
+   (=中心駅側。発都区市内なら `size()-2`、着都区市内なら `at(1)`)にする。`station_id1` 自体は
+   変えないので `last_arrive_sales_km` や `judgementOfFare()` の起点は不変。
+2. `judgementOfFare()` で `fi.getJRSalesKm() <= (is100km ? 1000 : 2000)` なら候補を棄却
+   (TRACE `Rule 114 candidate rejected`)。-exec では岡山周辺の 192〜199km 候補が 56 回棄却されるが、
+   いずれも修正前も運賃比較で負けていたため結果は不変。
+
+**検証**: `-exec` 正規化 diff は 長万部⇔森林公園 のみ。正常例 `長津田→国母`(甲斐住吉)、
+`作並→那須塩原`(野崎; `specs/Core/Rule114.md` の 高久 は古い)は不変。
+
+**114条のトレース語**(stderr): `checkOfRule114j: raw = .., cook = ..` → `[get86or87firstPoint]: dept1:
+cond_km=±2000` → `judgementOfFare(駅, 路線, 起点)` → `Rule 114 Applied(旧->新)` / `candidate rejected` /
+`Rule 114 no applied`。`cond_km` の符号が探索方向(正=キロ程増加)。114条は 86/87条が前提なので、
+そもそも `RuleSpecific:chk` が 0 なら到達しない。
+
 ## 移植と検証マトリクス
 
 同じ b枝1箇所の修正を各エンジンコピーへ同型で展開し、プラットフォームごとに回帰を回す。
@@ -118,11 +155,61 @@ removeTail (through-service)")が C++ 本体。`git show e030467` で正確な�
 |---|---|---|---|
 | `app/alps/alpdb.cpp` | C++ 本体(Windows/iOS/CLI 共有) | **済** | `-exec` 前後 diff 実質差分ゼロ、ハーネス全スイープ ASSERT 0件、会社線 add/removeTail/add rc一致 |
 | `app/Farert.android/.../org/sutezo/alps/Route.java` | Android 本番 | **済** | `run_java_regression.sh` で Java `-exec` が C++ `test_result.txt` と**一致**、`compileDebugJavaWithJavac` 通過 |
-| `test/RouteTest/.../sutezo/routetest/alps/Route.java` | Java テストハーネス | **済** | (本番と同型。`last_flag`/`RouteUtil.` 前置) |
-| `test/RouteTest.kotolin/.../sutezo/routetest/alps/Route.kt` | Kotlin テスト | **未** | b枝 `ASSERT(back().lineId != line_id)` 相当(`:2626` 付近)を削り、`BIT_ON(lastFlag, BLF_COMPNEND)` の後に `if (back().lineId.toInt() == line_id) return 0` を挿入で同型移植可 |
+| `app/Farert.android/.../org/sutezo/alps/{CalcRoute,FARE_INFO,RouteItem,RouteUtil}.java` | Android 本番(114条・都区市内・近郊区間・運賃表) | **済**(848cbed 相当) | 同上。`CRule114` は Java では `CalcRoute.java` 内(Route.java ではない) |
+| `test/RouteTest/.../sutezo/routetest/alps/Route.java` | Java テストハーネス | **済**(会社線のみ) | (本番と同型。`last_flag`/`RouteUtil.` 前置)。114条は旧構造(`CRule114` 無し、`Retreive_SpecificCoreAvailablePoint` 直呼び)で 1対1 移植不可 |
+| `test/RouteTest.kotolin/.../sutezo/routetest/alps/Route.kt` | Kotlin テスト | **未**(会社線)。114条も旧構造 | b枝 `ASSERT(back().lineId != line_id)` 相当(`:2626` 付近)を削り、`BIT_ON(lastFlag, BLF_COMPNEND)` の後に `if (back().lineId.toInt() == line_id) return 0` を挿入で同型移植可 |
 
 Java コピーは `route_flag`/`last_flag` の別、`ASSERT`/`IS_COMPANY_LINE` の `RouteUtil.` 前置、
 `route_list_raw.get(size-1)` の書き方が違うだけで、ロジックは C++ と1対1。
+
+## Java 移植手順(MigrateAndroid.md)
+
+Android の `org.sutezo.alps` は C++ `alpdb.cpp/.h` の機械的 1対1 写し。リポジトリ直下
+`MigrateAndroid.md` に「Android が対応している C++ の Git hash」が書かれている。C++ が先行して
+いるときは、個別修正だけを移植せず **hash..HEAD の C++ 差分を丸ごと 1対1 で反映**し、最後に
+その hash を更新する。
+
+```bash
+BASE=$(grep -o 'Git hash [0-9a-f]*' MigrateAndroid.md | awk '{print $3}')
+git diff --stat $BASE HEAD -- app/alps/alpdb.cpp app/alps/alpdb.h test/unix/common/test_exec.cpp
+git diff $BASE HEAD -- app/alps/alpdb.cpp app/alps/alpdb.h     # これを上から順に Java へ
+./test/run_java_regression.sh                                  # exit 0 = C++ test_result.txt と一致
+(cd app/Farert.android && ./gradlew -q compileDebugJavaWithJavac compileDebugKotlin)
+sed -i '' "s/$BASE/$(git rev-parse HEAD)/" MigrateAndroid.md   # 最後に基準 hash を更新
+```
+
+C++ → Java の対応(2026-09 移植で確認済み):
+
+| C++ | Java |
+|---|---|
+| `RouteItem`(alpdb.h) | `RouteItem.java`(`lineId/stationId` は short、`let()`=operator=、`clone()`) |
+| `RouteUtil::*` static、`#define` マクロ | `RouteUtil.java` の static メソッド/定数。`FARE_INFO`/`CalcRoute` は `import static RouteUtil.*` |
+| `CalcRoute::*`、`CRule114` | `CalcRoute.java`(`CRule114` は内部クラス) |
+| `FARE_INFO::*`、運賃表 `Fare_*` | `FARE_INFO.java` |
+| `Route::*`(add/removeTail/会社線) | `Route.java` |
+| `vector<int32_t>` 戻り(MAKEPAIR で2値詰め) | `Integer[]` で**展開**して返す(例: `getDistanceEx` は C++ 7要素=Java 10要素、`d.size()==7` は `dex.length==10`) |
+| `DBO ctx(compileSql); setParam` | `RouteDB.db().rawQuery(sql, new String[]{...})` + `try/finally close()`。同じ `?1` を複数回使う SQL は Android SQLite の都合で `sql.replace("?1", value)` に展開 |
+| `TRACE(...)` | `System.out.printf(...)`(-exec 比較対象外だが 1対1 で入れる) |
+| `#if 0` ブロック | `/* */` でコメントアウト |
+
+**Java 回帰の読み方**:
+- `run_java_regression.sh` の diff が**数千ハンク**なら、個別修正の問題ではなく Java が C++ の
+  DB スキーマ変更(例: `d5d357b` の `sflg`→`cityno`/`urbanid` 列分離)に追随できていない。症状は
+  「`///既定`(特定都区市内)ブロックが Java 側に無い」「`規程114条適用` が Java 出力に 0 件」。
+  `grep -c '規程114条適用'` を C++ `test/unix/all/test_result.txt` と Java
+  `app/Farert.android/app/src/test/resources/test_result.txt` で比べると一目でわかる。
+- Java の修正前後だけを比べたいときは、Java ファイルを `git stash push -- <file>` して回帰を
+  回し出力を退避、`git stash pop` 後にもう一度回して diff する(C++ 基準と比べない)。
+- `JavaTestMain -exec` はテスト経路一覧を `test/unix/common/test_exec.cpp` から読むので、
+  C++ 側に経路を足せば Java も同じ経路を回る。stdout は捨てられるので TRACE を見たいときは
+  `javatest.md` の `java -cp ...` を手で叩いて stdout をファイルに取る。
+
+**ハマりどころ**:
+- 複数行 SQL 文字列リテラルの連結で `+` を落とすと `')'がありません` で 6 個前後のエラーが出る。
+- zsh で `for r in "駅 路線 駅"; do ./farert $r` は単語分割されない。`${=r}` を使う。
+  `echo ====` も zsh では `=cmd` 展開でエラーになるので引用符を付ける。
+- auto モードでは `git checkout -- <file>` が拒否されることがある。自分が入れた変更を戻すなら
+  Edit で該当ハンクだけ逆適用する。
 
 ## 回帰検証(修正時は必ず実施)
 
@@ -199,4 +286,7 @@ Java 側で構文確認だけしたいときは `cd app/Farert.android && ./grad
 - 詳細な調査ログ・フラグ表・3モードの具体例・今回のハマりどころ: `references/findings.md`
 - ハーネスの各モード仕様と過去の実行ログ: `test/unix/all/removetail-151-repro/README.md` と同ディレクトリの `*.log`
 - Java 回帰テストの正典(スタブ・JDBC・実行方法): リポジトリ直下 `javatest.md`
+- 114条バグの調査ログと Java 移植(2026-09)の記録: `references/findings.md` §8, §9
 - エンジン全体像: `specs/Core/architecture.md`、JR規則: `specs/Core/rule-88.md`、`specs/Core/Rule114.md`
+  (Rule114.md の「バグケース」表は修正前の記録。作並→那須塩原 の計算駅は現行 野崎)
+- Java 移植の正典: リポジトリ直下 `MigrateAndroid.md`(基準 hash)と `javatest.md`(実行方法)

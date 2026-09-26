@@ -109,16 +109,11 @@ public class RouteUtil {
     static final int URB_FUKUOKA = 4;
     static final int URB_SENDAI = 5;
     static final int URB_NAGOYA = 6;
+    static final int URB_KYUSYU = 7;
 
     static final int FLAG_FARECALC_INITIAL	= (1<<15);
-    public static int MASK_CITYNO(int flg) {
-        return ((flg) & 0x0f);
-    }
+
     /* 近郊区間 */
-    final static int MASK_URBAN = 0x380;
-    static int URBAN_ID(int flg) {
-        return (((int)(flg)>>>7)&7);
-    }
     static boolean IS_OSMSP(int flg) {
         return (((flg)&(1 << 11))!=0);	/* 大阪電車特定区間 ?*/
     }
@@ -218,7 +213,7 @@ public class RouteUtil {
 
     // 駅は分岐駅か
     public static boolean STATION_IS_JUNCTION(int sid) {
-        return (0 != (AttrOfStationId(sid) & (1<<12)));
+        return (0 != (AttrOfStationIdFlag(sid) & (1<<12)));
     }
 //#define STATION_IS_JUNCTION_F(flg)	(0 != (flg & (1<<12)))
 // sflg.12は特例乗り換え駅もONなのでlflg.15にした
@@ -967,7 +962,7 @@ public class RouteUtil {
      //static
      //	駅の属性を得る
      //
-     static int AttrOfStationId(int id) {
+     static int AttrOfStationIdFlag(int id) {
          Cursor ctx = RouteDB.db().rawQuery(
                  "select sflg from t_station where rowid=?", new String[] {String.valueOf(id)});
          int rc = (1 << 30);
@@ -979,6 +974,24 @@ public class RouteUtil {
              ctx.close();
          }
          return rc;
+     }
+
+     //static
+     //	駅の属性を得る
+     //	@return int[3] {sflg, cityno, urbanid} / int[0] if not found
+     //
+     static int[] AttrOfStationId(int id) {
+         Cursor ctx = RouteDB.db().rawQuery(
+                 "select sflg, cityno, urbanid from t_station where rowid=?", new String[] {String.valueOf(id)});
+         int[] results = new int[0];
+         try {
+             if (ctx.moveToNext()) {
+                 results = new int[] {ctx.getInt(0), ctx.getInt(1), ctx.getInt(2)};
+             }
+         } finally {
+             ctx.close();
+         }
+         return results;
      }
 
      //static
