@@ -528,16 +528,18 @@ std::string az_route::get_fare_info_object_json() {
             std::vector<std::string> messages;
             oss << json_encoder::begin_array("messages");
             
-            if (refRouteFlag.no_rule &&
+            // Same criterion as iOS/Android (isRuleApplied): the suburban-area
+            // note is shown only when the fare rules are applied.
+            if (!refRouteFlag.no_rule &&
                     fi.isUrbanArea() && !refRouteFlag.isUseBullet()) {
                 if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                     // messages.add(msgCantMetroTicket)
                 } else if (!refRouteFlag.isEnableRule115()
                         || !refRouteFlag.isRule115specificTerm()) {
                     if (refRouteFlag.isLongRoute()) {
-                        messages.push_back(json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です"));
+                        messages.push_back(json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)"));
                     } else {
-                        messages.push_back(json_encoder::value("近郊区間内ですので最安運賃の経路で計算"));
+                        messages.push_back(json_encoder::value("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)"));
                     }
                 }
 
