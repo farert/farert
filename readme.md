@@ -26,7 +26,7 @@ source ../all/start.sh
 ## build & make
 
 ### Windows
-+ Open file app/win_mfc/fjr_mfc/alps_mfc.sln in Microsoft Visual Studio 2022 Express.
++ Open file app/win_mfc/fjr_mfc/alps_mfc.sln in Microsoft Visual Studio Express.
 + Run [build]-[batch build]-[release]
 
 ### Android
