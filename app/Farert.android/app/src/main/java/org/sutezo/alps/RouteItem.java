@@ -46,6 +46,8 @@ package org.sutezo.alps;
      short lineId;
      short stationId;
      int flag;
+     int city_no;      /* uint8_t in C++ */
+     int urban_id;     /* uint8_t in C++ */
 
      public int lineId() { return lineId; }
      public int stationId() { return stationId; }
@@ -57,7 +59,14 @@ package org.sutezo.alps;
          //    salesKm = fare = 0;
 
          //	if (lineId <= 0) {
-         flag = RouteUtil.AttrOfStationId(stationId_) & RouteUtil.MASK_ROUTE_FLAG_SFLG;
+         int[] dbrec = RouteUtil.AttrOfStationId(stationId_);
+         if (dbrec.length != 3) {
+             flag = (1<<30);
+         } else {
+             flag = dbrec[0] & RouteUtil.MASK_ROUTE_FLAG_SFLG;
+             city_no = dbrec[1];
+             urban_id = dbrec[2];
+         }
          //	} else {
          //		flag = RouteUtil.AttrOfStationOnLineLine((int)lineId_, (int)stationId_);
          //	}
@@ -73,7 +82,14 @@ package org.sutezo.alps;
 
          lineId = (short)lineId_;
          stationId = (short)stationId_;
-         flag = RouteUtil.AttrOfStationId(stationId_) & RouteUtil.MASK_ROUTE_FLAG_SFLG;
+         int[] dbrec = RouteUtil.AttrOfStationId(stationId_);
+         if (dbrec.length != 3) {
+             flag = (1<<30);
+         } else {
+             flag = dbrec[0] & RouteUtil.MASK_ROUTE_FLAG_SFLG;
+             city_no = dbrec[1];
+             urban_id = dbrec[2];
+         }
          flag |= (flag_ & RouteUtil.MASK_ROUTE_FLAG_LFLG);
      }
 
@@ -86,6 +102,7 @@ package org.sutezo.alps;
          lineId = ri.lineId;
          stationId = ri.stationId;
          flag = ri.flag;
+         city_no = ri.city_no;
      }
 
      public RouteItem clone() {
@@ -95,6 +112,7 @@ package org.sutezo.alps;
              clone_obj.lineId = lineId;
              clone_obj.stationId = stationId;
              clone_obj.flag = flag;
+             clone_obj.city_no = city_no;
 
              return clone_obj;
          } catch (CloneNotSupportedException e) {
@@ -105,7 +123,14 @@ package org.sutezo.alps;
 
 
      void refresh() {
-         flag = RouteUtil.AttrOfStationId(stationId) & RouteUtil.MASK_ROUTE_FLAG_SFLG;
+         int[] dbrec = RouteUtil.AttrOfStationId(stationId);
+         if (dbrec.length != 3) {
+             flag = (1<<30);
+         } else {
+             flag = dbrec[0] & RouteUtil.MASK_ROUTE_FLAG_SFLG;
+             city_no = dbrec[1];
+             urban_id = dbrec[2];
+         }
      }
 
      boolean is_equal(RouteItem item_) {

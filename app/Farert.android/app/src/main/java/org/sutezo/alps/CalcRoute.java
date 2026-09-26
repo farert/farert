@@ -581,13 +581,11 @@ public class CalcRoute extends RouteList {
                 return RouteUtil.CITYNO_YAMATE;    /* 山手線内*/
             } else if (((startEndFlg == CSTART) && route_flag.ter_begin_city) ||
                     ((startEndFlg == CEND) && route_flag.ter_fin_city)) {
-                int flags;
                 if (startEndFlg == CSTART) {
-                    flags = route_list_cooked.get(0).flag;
+                    cityno = route_list_cooked.get(0).city_no;
                 } else {
-                    flags = route_list_cooked.get(route_list_cooked.size() - 1).flag;
+                    cityno = route_list_cooked.get(route_list_cooked.size() - 1).city_no;
                 }
-                cityno = RouteUtil.MASK_CITYNO(flags);
                 if ((0 < cityno) && (cityno < RouteUtil.CITYNO_YAMATE)) {
                     return cityno;
                 } else {
@@ -1357,7 +1355,7 @@ public class CalcRoute extends RouteList {
         if (0 == in_route_list.length) {
             return 0;	/* empty */
         }
-        city_no_s = RouteUtil.MASK_CITYNO(in_route_list[0].flag);
+        city_no_s = in_route_list[0].city_no;
         // 発駅が尼崎の場合大阪市内発ではない　基153-2
         if ((city_no_s == RouteUtil.CITYNO_OOSAKA) && (DbIdOf.INSTANCE.station("尼崎") == in_route_list[0].stationId)) {
             city_no_s = 0;
@@ -1373,7 +1371,7 @@ public class CalcRoute extends RouteList {
             }
         }
 
-        city_no_e = RouteUtil.MASK_CITYNO(in_route_list[in_route_list.length - 1].flag);
+        city_no_e = in_route_list[in_route_list.length - 1].city_no;
         // 着駅が尼崎の場合大阪市内着ではない　基153-2
         if ((city_no_e == RouteUtil.CITYNO_OOSAKA) &&
                 (DbIdOf.INSTANCE.station("尼崎") == in_route_list[in_route_list.length - 1].stationId)) {
@@ -1399,7 +1397,7 @@ public class CalcRoute extends RouteList {
             c = 0;
             stationId = in_route_list[0].stationId;	// 発
             for (int fite = 1; fite < in_route_list.length; fite++) {
-                int cno = RouteUtil.MASK_CITYNO(in_route_list[fite].flag);
+                int cno = in_route_list[fite].city_no;
                 if (c == 0) {
                     if (cno != city_no_s) {
                         c = 1;			// 抜けた
@@ -1454,7 +1452,7 @@ public class CalcRoute extends RouteList {
             c = 0;
             in_line.set(in_route_list[in_route_list.length - 1]);
             for (int rite = in_route_list.length - 2; 0 <= rite; rite--) {
-                int cno = RouteUtil.MASK_CITYNO(in_route_list[rite].flag);
+                int cno = in_route_list[rite].city_no;
                 if (c == 0) {
                     if (cno != city_no_e) {
                         c = 1;			//
@@ -1798,6 +1796,8 @@ public class CalcRoute extends RouteList {
     //  経路すべての駅が同一近郊間都市名なら、その都市名を返す(東京、新潟、仙台、福岡、関西）
     //  (Nout used)
     //
+    // #if 0 in C++ (MASK_URBAN / URBAN_ID were removed with the urbanid column)
+    /*
     static int InRouteUrban(final List<RouteItem> route_list) {
         short urban = 0;
 
@@ -1815,6 +1815,7 @@ public class CalcRoute extends RouteList {
         }
         return RouteUtil.URBAN_ID(urban);
     }
+    */
 
     /* 近郊区間ではない条件となる新幹線乗車があるか */
     //  経路はJR東海管内のみか？
@@ -1930,7 +1931,7 @@ public class CalcRoute extends RouteList {
                         "	from t_lines" +
                         "	where line_id=?1" +
                         "	and (lflg&(1<<31))=0" +
-                        "	and exists (select * from t_station where rowid=station_id and (sflg&15)=?4)" +
+                        "	and exists (select * from t_station where rowid = station_id and cityno = ?4)" +
                         "	and sales_km>=" +
                         "			(select min(sales_km)" +
                         "			from t_lines" +
@@ -2008,7 +2009,7 @@ public class CalcRoute extends RouteList {
 
         final String tsql =
                 "select rowid from t_station where" +
-                        " (sflg & (1 << 4))!=0 and (sflg & 15)=?1";
+                        " (sflg & (1 << 4))!=0 and cityno=?1";
         String sql = tsql.replace("?1", String.valueOf(cityId));
         Cursor dbo = RouteDB.db().rawQuery(sql, null); // Android Sqlite Bug // new String[] {String.valueOf(cityId)});
         try {
@@ -2357,6 +2358,13 @@ public class CalcRoute extends RouteList {
             }
             fare_applied = fi.getFareForJR();			/* より遠い駅までの都区市内発着の仮適用運賃(横浜-甲斐住吉) */
 
+            /* Rule 114 applies only to a station beyond 200km (100km for Rule 87) from the city center.
+             * A candidate inside that distance is never a valid Rule 114 terminal. */
+            if (fi.getJRSalesKm() <= (is100km ? 1000 : 2000)) {
+                System.out.printf("Rule 114 candidate rejected: saleskm=%d (%s)\n", fi.getJRSalesKm(), RouteUtil.StationName(arrive_station_id));
+                return;					// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            }
+
             if (fare_applied < normal_fare) {
                 /* 114条適用 */
                 System.out.printf("Rule 114 Applied(%d->%d)\n", normal_fare, fare_applied);
@@ -2549,7 +2557,19 @@ public class CalcRoute extends RouteList {
             ASSERT(0 <= aSales_km);
             ASSERT(0 <= last_arrive_sales_km);  // 単一路線の場合は0
 
-            if (RouteUtil.LINE_DIR.LDIR_FALL != RouteUtil.DirLine(line_id, station_id1, station_id2)) {
+            /* Direction reference station.
+             * For a single-line route station_id1 == station_id2, so DirLine() cannot tell the
+             * direction (it always returns LDIR_FALL). Use the adjacent station of the terminal
+             * in the 86/87-applied route (the city-center side) instead, so that the search
+             * always heads away from the city center. */
+            int dir_from_station_id = station_id1;
+            if (route_list.size() == 2) {
+                ASSERT(2 <= route_list_special.size());
+                dir_from_station_id = is_start_city
+                        ? route_list_special.get(route_list_special.size() - 2).stationId
+                        : route_list_special.get(1).stationId;
+            }
+            if (RouteUtil.LINE_DIR.LDIR_FALL != RouteUtil.DirLine(line_id, dir_from_station_id, station_id2)) {
                 /* 上り */
                 km = -km;
             }

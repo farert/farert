@@ -88,6 +88,7 @@ public class FARE_INFO {
     int brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
     
     int flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
+    int urban_id;                   /* uint8_t in C++ */
     int jr_fare;					//***
     int fare_ic;					//*** 0以外で有効
     int avail_days;					//***
@@ -143,6 +144,7 @@ public class FARE_INFO {
         brt_calc_km = fi.brt_calc_km;                    // BRT 計算キロ
         brt_discount_fare = fi.brt_discount_fare;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
         flag = fi.flag;						//***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
+        urban_id = fi.urban_id;
         jr_fare = fi.jr_fare;					//***
         fare_ic = fi.fare_ic;					//*** 0以外で有効
         avail_days = fi.avail_days;					//***
@@ -265,7 +267,7 @@ public class FARE_INFO {
                 fare_tmp = Fare_east_basic(_total_jr_calc_km_wo_brt);
             }
             /* IC運賃 適用か */
-            if (IsIC_area(RouteUtil.URBAN_ID(this.flag))  /* 近郊区間(最短距離で算出可能) */
+            if (IsIC_area(this.urban_id)  /* 近郊区間(最短距離で算出可能) */
                     && !useBullet) {                 /* 新幹線乗車はIC運賃適用外 */
                 this.fare_ic = fare_tmp;
             }
@@ -321,10 +323,12 @@ public class FARE_INFO {
             if (RouteUtil.IS_YAMATE(this.flag) && RouteDB.getInstance().tax() != 10) {
                 // 2025.4.1 大阪環状線特例廃止
                 System.out.print("fare(osaka-kan)\n");
-                _total_jr_fare = Fare_osakakan(_total_jr_sales_km_wo_brt);
+                // rule89 適用されているかもしれへんので、計算キロで計算
+                _total_jr_fare = Fare_osakakan(_total_jr_calc_km_wo_brt);
             } else {
                 System.out.print("fare(osaka)\n");
-                _total_jr_fare = Fare_osaka(_total_jr_sales_km_wo_brt);
+                // rule89 適用されているかもしれへんので、計算キロで計算 with _total_jr_sales_km_wo_brt to _total_jr_calc_km_wo_brt
+                _total_jr_fare = Fare_osaka(_total_jr_calc_km_wo_brt);
             }
         } else if (mask != 0) {
             /* JR東海 or(and) JR西日本 or 他会社またがり */
@@ -337,7 +341,7 @@ public class FARE_INFO {
                 fare_tmp = Fare_sub_f(_total_jr_sales_km_wo_brt);
 
                 if ((RouteDB.getInstance().tax() != 5) &&
-                        IsIC_area(RouteUtil.URBAN_ID(this.flag)) &&   /* 近郊区間(最短距離で算出可能) */
+                        IsIC_area(this.urban_id) &&   /* 近郊区間(最短距離で算出可能) */
                         !useBullet) {                                 /* 新幹線乗車はIC運賃適用外 */
                     this.fare_ic = fare_tmp;
                 }
@@ -350,7 +354,7 @@ public class FARE_INFO {
                 fare_tmp = Fare_basic_f(_total_jr_calc_km_wo_brt);
 
                 if ((RouteDB.getInstance().tax() != 5) && /* IC運賃導入 */
-                        IsIC_area(RouteUtil.URBAN_ID(this.flag)) &&   /* 近郊区間(最短距離で算出可能) */
+                        IsIC_area(this.urban_id) &&   /* 近郊区間(最短距離で算出可能) */
                         !useBullet) {                                 /* 新幹線乗車はIC運賃適用外 */
                     this.fare_ic = fare_tmp;
                 }
@@ -552,7 +556,7 @@ public class FARE_INFO {
                         osakakan_aggregate.setOsakaKanPass(true);
                     }
 
-                    if (8 != dex.length) {
+                    if (10 != dex.length) {
                         ASSERT(false);
                         return -1;    /* failure abort end. >>>>>>>>> */
                     }
@@ -611,10 +615,11 @@ public class FARE_INFO {
                         // 次回以降から駅1不要、駅1 sflgの下12ビット,
                         // bit12以上はGetDistanceEx()のクエリでOxfffしているので不要
                         this.flag |= (RouteUtil.FLAG_FARECALC_INITIAL | (/*~(1<<RouteUtil.BCBULURB) & */dex[6]));
+                        this.urban_id = dex[8];
                     }
                     flag = (RouteUtil.FLAG_FARECALC_INITIAL | RouteUtil.MASK_FARECALC_INITIAL | dex[7]);
-                    if ((flag & RouteUtil.MASK_URBAN) != (this.flag & RouteUtil.MASK_URBAN)) {/* 近郊区間(b7-9) の比較 */
-                        flag &= ~RouteUtil.MASK_URBAN;                /* 近郊区間 OFF */
+                    if (this.urban_id != dex[9]) {/* 近郊区間 の比較 */
+                        this.urban_id = 0;                /* 近郊区間 OFF */
                     }
                     this.flag &= flag;    /* b11,10,5(大阪/東京電車特定区間, 山手線／大阪環状線内) */
                     /* ~(反転）不要 */
@@ -725,7 +730,7 @@ public class FARE_INFO {
 
         for (RouteItem ite : routeList) {
             if (station_id1 != 0) {
-                cityId_c = MASK_CITYNO(ite.flag);
+                cityId_c = ite.city_no;
                 if (!(route_flag.isAvailableRule86or87()
                         && (cityId != 0) && (cityId_c != 0) && (cityId == cityId_c)) &&
                         IsBulletInUrban(ite.lineId, station_id1, ite.stationId, route_flag.rule88 != 0)) {
@@ -735,7 +740,7 @@ public class FARE_INFO {
                 }
             }
             station_id1 = ite.stationId;
-            cityId = MASK_CITYNO(ite.flag);
+            cityId = ite.city_no;
         }
         route_flag.bullet_line = enabled;
     }
@@ -1300,7 +1305,7 @@ public class FARE_INFO {
                         // 名古屋は近郊区間でないので距離(尾頭橋-岡崎 37.7km 名古屋-岡崎 40.1km)50km以下として条件に含める
                         // またIRいしかわの乗継割引区間も同様50km以下が条件
 
-                        if (RouteUtil.URB_TOKYO == RouteUtil.URBAN_ID(this.flag)) {      /* 東京、新潟、仙台 近郊区間(最短距離で算出可能) */
+                        if (RouteUtil.URB_TOKYO == this.urban_id) {      /* 東京、新潟、仙台 近郊区間(最短距離で算出可能) */
                         /* 新
                         幹線乗車も特別運賃適用 */
                             /* ---> b#18111401: しないようにした(上で弾いた)*/
@@ -1328,15 +1333,16 @@ public class FARE_INFO {
                     route_flag_.special_fare_enable = true; // 私鉄競合区間特別運賃適用
                 } else {
                     /* JR東海バリアフリー運賃 +10 */
-                    if (URB_NAGOYA == URBAN_ID(this.flag)) {
+                    if (URB_NAGOYA == this.urban_id) {
                         this.jr_fare += 10;
+                        System.out.print("JR Tokai barrier free fare +10 yen\n");
                     }
                 }
                 //ASSERT(this.company_fare == 0);	// 会社線は通っていない(しなの鉄道、伊勢線をとおるかも）
     		}
             /* 名古屋近郊区間 off */
-            if (URB_NAGOYA == URBAN_ID(this.flag)){
-                this.flag &= ~MASK_URBAN; /* b7-9 近郊区間 OFF */
+            if (URB_NAGOYA == this.urban_id){
+                this.urban_id = 0; /* b7-9 近郊区間 OFF */
             }
             // 特定区間は加算しない
             if (!route_flag_.special_fare_enable) {
@@ -1486,6 +1492,7 @@ public class FARE_INFO {
         brt_discount_fare = 0;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
 
         flag = 0;
+        urban_id = 0;
         jr_fare = 0;
         fare_ic = 0;
         avail_days = 0;
@@ -1607,7 +1614,7 @@ public class FARE_INFO {
     /*	近郊区間内かを返す(有効日数を1にする)
      */
     boolean 	isUrbanArea() {
-        return ((MASK_URBAN & flag) != 0);
+        return (urban_id != 0);
     }
 
     /*	総営業キロを返す
@@ -2197,6 +2204,11 @@ public class FARE_INFO {
         if (0 != fare) {
             return fare;
         }
+        fare = CalcKm_Table("t_farebspeek", km);
+        if (0 != fare) {
+            return fare;
+        }
+
         /* After 2025, less than 101 km doesn't pass  the following block. */
         if (km < 31) {							// 1 to 3km
             if (RouteDB.getInstance().tax() == 10) {
@@ -2269,7 +2281,11 @@ public class FARE_INFO {
             return fare;
         }
         c_km = ckm[0];
-
+        System.out.printf("Fare_east_local: c_km=%d\n", km);
+        fare = CalcKm_Table("t_farelspeek", km);
+        if (0 != fare) {
+            return fare;
+        }
         c_km *= 10;
 
         if (5460 <= c_km) {
@@ -2294,6 +2310,7 @@ public class FARE_INFO {
     //	@param [in] km    営業キロ
     //	@return 運賃額
     //
+    // Not Used from 2026.3
     private static int Fare_tokyo_f(int km) {
         ASSERT (false);
 
@@ -2434,6 +2451,7 @@ public class FARE_INFO {
     //	@param [in] km    営業キロ
     //	@return 運賃額
     //
+    //  Not used from 2026.3
     private static int Fare_yamate_f(int km) {
         ASSERT (false);
 
@@ -2923,6 +2941,32 @@ public class FARE_INFO {
     }
 
     //static
+    //  例外運賃（別表2号イのXX) JR東
+    //
+    //  @param [in] tblname
+    //  @param [in] km
+    //  @return fare
+    //  @retval 0 non-available
+    private static int CalcKm_Table(String tblname, int km) {
+        int fare = 0;
+
+        System.out.printf("CalcKm_Table(%s, %d)\n", tblname, km);
+
+        String sql = String.format(Locale.JAPANESE, "select fare from %s where km_s<=?1 and km_e>=?1", tblname);
+        // Android Sqlite: bind the same value for both occurrences of ?1
+        sql = sql.replace("?1", String.valueOf(KM.KM(km)));
+        Cursor dbo = RouteDB.db().rawQuery(sql, null);
+        try {
+            if (dbo.moveToNext()) {
+                fare = dbo.getInt(0);
+            }
+        } finally {
+            dbo.close();
+        }
+        return fare;
+    }
+
+    //static
     //	運賃テーブル参照(ls)
     //	calc_fare() => retr_fare() =>
     //
@@ -3074,9 +3118,11 @@ public class FARE_INFO {
      *	@return int[] [5] 駅2の会社ID
      *	@return int[] [6] 駅1のsflg
      *	@return int[] [7] 駅2のsflg
+     *	@return int[] [8] 駅1のurbanid
+     *	@return int[] [9] 駅2のurbanid
     */
     private Integer[] getDistanceEx(int line_id, int station_id1, int station_id2) {
-        Integer[] result = new Integer[8];
+        Integer[] result = new Integer[10];
 
         Cursor ctx = RouteDB.db().rawQuery(
                 "select" +
@@ -3101,7 +3147,9 @@ public class FARE_INFO {
                         "	(select sub_company_id from t_station where rowid=?2),"	+		// [5](6)
                         "	(select sub_company_id from t_station where rowid=?3)," +       // [5](7)
                         "	(select sflg&4095 from t_station where rowid=?2)," +            // [6](8)
-                        "   (select sflg&4095 from t_station where rowid=?3)"               // [7](9)
+                        "   (select sflg&4095 from t_station where rowid=?3)," +            // [7](9)
+                        "	(select urbanid from t_station where rowid=?2)," +              // [8](10)
+                        "   (select urbanid from t_station where rowid=?3)"                 // [9](11)
                 , new String[] {String.valueOf(line_id), String.valueOf(station_id1), String.valueOf(station_id2)});
         int company_id1;
     	int company_id2;
@@ -3120,6 +3168,8 @@ public class FARE_INFO {
                 sub_company_id2 = ctx.getInt(7);
                 result[6] = (ctx.getInt(8));    // 駅1のsflg
                 result[7] = (ctx.getInt(9));    // 駅2のsflg
+                result[8] = (ctx.getInt(10));   // 駅1のurbanid
+                result[9] = (ctx.getInt(11));   // 駅2のurbanid
 
                 if ((line_id == DbIdOf.INSTANCE.line("博多南線")) ||
                         (line_id == DbIdOf.INSTANCE.line("山陽新幹線"))) { //山陽新幹線、博多南線はJ九州内でもJR西日本
@@ -3276,10 +3326,13 @@ public class FARE_INFO {
      *	@return int[] [5] 駅2の会社ID
      *	@return int[] [6] 駅1のsflg
      *	@return int[] [7] 駅2のsflg
+     *	@return int[] [8] 駅1のurban_id
+     *	@return int[] [9] 駅2のurban_id
      */
     private static Integer[] GetDistanceEx(final RouteFlag osakakan_aggregate, int line_id, int station_id1, int station_id2) {
         List<Integer> result;
-        long rslt = 0;
+        long db_sflg = 0;
+        long db_urbanid = 0;
 
         result = RouteUtil.GetDistance(osakakan_aggregate, line_id, station_id1, station_id2); // [0][1]
         result.add(0);	// sales_km for in company as station_id1 [2]
@@ -3288,14 +3341,18 @@ public class FARE_INFO {
         result.add(RouteUtil.JR_WEST);	// 駅ID2の会社ID [5]
         // [5]
         try (Cursor ctx = RouteDB.db().rawQuery("select" +
-                        " (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)"        // [5]
+                        " (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)," +        // [5]
+                        " (select urbanid from t_station where rowid=?1) + ((select urbanid from t_station where rowid=?2) * 65536)"        // [6]
                 , new String[]{String.valueOf(station_id1), String.valueOf(station_id2)})) {
             if (ctx.moveToNext()) {
-                rslt = ctx.getLong(0);
+                db_sflg = ctx.getLong(0);
+                db_urbanid = ctx.getLong(1);
             }
         }
-        result.add((int)(0xffff & rslt));			// 駅1のsflg [6]
-        result.add((int)(0xffff & (rslt >>> 16)));	// 駅2のsflg [7]
+        result.add((int)(0xffff & db_sflg));			// 駅1のsflg [6]
+        result.add((int)(0xffff & (db_sflg >>> 16)));	// 駅2のsflg [7]
+        result.add((int)(0xffff & db_urbanid));			// 駅1のurban_id [8]
+        result.add((int)(0xffff & (db_urbanid >>> 16)));	// 駅2のurban_id [9]
 
         System.out.printf(Locale.JAPANESE, "oskkan:s1km=%d, c1km=%d\n", result.get(0), result.get(1));
         return result.toArray(new Integer[0]);
@@ -3504,6 +3561,7 @@ public class FARE_INFO {
     }
 
 
+    //  Not used from 2026.3
     static List<RouteItem> IsHachikoLineHaijima(final List<RouteItem> route_list) {
 
         List<RouteItem> out_route_list = new ArrayList<>();
