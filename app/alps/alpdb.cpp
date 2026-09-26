@@ -114,12 +114,21 @@ tstring RouteFlag::showAppliedRule() const
 //
 RouteItem::RouteItem(IDENT lineId_, IDENT stationId_)
 {
+    vector<uint32_t> dbrec;
+
     lineId = lineId_;
     stationId = stationId_;
 //    salesKm = fare = 0;
 
 //  if (lineId <= 0) {
-        flag = RouteUtil::AttrOfStationId((int32_t)stationId_) & MASK_ROUTE_FLAG_SFLG;
+        dbrec = RouteUtil::AttrOfStationId((int32_t)stationId_);
+        if (dbrec.size() != 3) {
+            flag = (1<<30);
+        } else {
+            flag = dbrec.at(0) & MASK_ROUTE_FLAG_SFLG;
+            city_no = dbrec.at(1);
+            urban_id = dbrec.at(2);
+        }
 //  } else {
 //      flag = RouteUtil::AttrOfStationOnLineLine((int32_t)lineId_, (int32_t)stationId_);
 //  }
@@ -132,17 +141,34 @@ RouteItem::RouteItem(IDENT lineId_, IDENT stationId_)
 //
 RouteItem::RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_)
 {
+    vector<uint32_t> dbrec;
 //    salesKm = fare = 0;
 
     lineId = lineId_;
     stationId = stationId_;
-    flag = RouteUtil::AttrOfStationId((int32_t)stationId_) & MASK_ROUTE_FLAG_SFLG;
+    dbrec = RouteUtil::AttrOfStationId((int32_t)stationId_);
+    if (dbrec.size() != 3) {
+        flag = (1<<30);
+    } else {
+        flag = dbrec.at(0) & MASK_ROUTE_FLAG_SFLG;
+        city_no = dbrec.at(1);
+        urban_id = dbrec.at(2);
+    }
     flag |= (flag_ & MASK_ROUTE_FLAG_LFLG);
 }
 
 void RouteItem::refresh()
 {
-    flag = RouteUtil::AttrOfStationId((int32_t)stationId) & MASK_ROUTE_FLAG_SFLG;
+    vector<uint32_t> dbrec;
+
+    dbrec = RouteUtil::AttrOfStationId((int32_t)stationId);
+    if (dbrec.size() != 3) {
+        flag = (1<<30);
+    } else {
+        flag = dbrec.at(0) & MASK_ROUTE_FLAG_SFLG;
+        city_no = dbrec.at(1);
+        urban_id = dbrec.at(2);
+    }
 }
 
 //////////////////////////////////////////////////////
@@ -3518,13 +3544,11 @@ int32_t CalcRoute::coreAreaIDByCityId(int32_t startEndFlg) const
             return CITYNO_YAMATE;   /* 山手線内*/
         } else if (((startEndFlg == CSTART) && (0 != (route_flag.rule86or87 & 0x01))) ||
                    ((startEndFlg == CEND)   && (0 != (route_flag.rule86or87 & 0x02)))) {
-            int flags;
             if (startEndFlg == CSTART) {
-                flags = route_list_cooked.front().flag;
+                cityno = route_list_cooked.front().city_no;
             } else {
-                flags = route_list_cooked.back().flag;
+                cityno = route_list_cooked.back().city_no;
             }
-            cityno = MASK_CITYNO(flags);
             if ((0 < cityno) && (cityno < CITYNO_YAMATE)) {
                 return cityno;
             } else {
@@ -4736,19 +4760,37 @@ tstring RouteUtil::LineName(int32_t id)
 //static
 //  駅の属性を得る
 //
-SPECIFICFLAG RouteUtil::AttrOfStationId(int32_t id)
+SPECIFICFLAG RouteUtil::AttrOfStationIdFlag(int32_t id)
 {
     DBO ctx = DBS::getInstance()->compileSql(
         "select sflg from t_station where rowid=?");
     if (ctx.isvalid()) {
-
         ctx.setParam(1, id);
 
         if (ctx.moveNext()) {
             return ctx.getInt(0);
         }
     }
-    return (1<<30);
+    return 1 << 30;
+}
+
+vector<uint32_t> RouteUtil::AttrOfStationId(int32_t id)
+{
+    vector<uint32_t> results;
+
+    DBO ctx = DBS::getInstance()->compileSql(
+        "select sflg, cityno, urbanid from t_station where rowid=?");
+    if (ctx.isvalid()) {
+
+        ctx.setParam(1, id);
+
+        if (ctx.moveNext()) {
+            results.push_back(ctx.getInt(0));
+            results.push_back(ctx.getInt(1));
+            results.push_back(ctx.getInt(2));
+        }
+    }
+    return results;
 }
 
 //static
@@ -5866,7 +5908,7 @@ int32_t CalcRoute::InCityStation(int32_t cityno, int32_t lineId, int32_t station
 "   from t_lines"
 "   where line_id=?1"
 "   and (lflg&(1<<31))=0"
-"   and exists (select * from t_station where rowid=station_id and (sflg&15)=?4)"
+"   and exists (select * from t_station where rowid = station_id and cityno = ?4)"
 "   and sales_km>="
 "           (select min(sales_km)"
 "           from t_lines"
@@ -5948,7 +5990,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
     if (fite == in_route_list.cend()) {
         return 0;   /* empty */
     }
-    city_no_s = MASK_CITYNO(fite->flag);
+    city_no_s = fite->city_no;
 
     // 発駅が尼崎の場合大阪市内発ではない　基153-2
     if ((city_no_s == CITYNO_OOSAKA) && (STATION_ID(_T("尼崎")) == fite->stationId)) {
@@ -5972,7 +6014,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
         ASSERT(FALSE);
         return 0;   /* fatal error */
     }
-    city_no_e = MASK_CITYNO(rite->flag);
+    city_no_e = rite->city_no;
     // 着駅が尼崎の場合大阪市内着ではない　基153-2
     if ((city_no_e == CITYNO_OOSAKA) && (STATION_ID(_T("尼崎")) == rite->stationId)) {
         city_no_e = 0;
@@ -5999,7 +6041,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
         c = 0;
         stationId = fite->stationId;    // 発
         for (fite++; fite != in_route_list.cend(); fite++) {
-            uint32_t cno = MASK_CITYNO(fite->flag);
+            uint32_t cno = fite->city_no;
             if (c == 0) {
                 if (cno != city_no_s) {
                     c = 1;          // 抜けた
@@ -6051,7 +6093,7 @@ uint32_t CalcRoute::CheckOfRule86(const vector<RouteItem>& in_route_list, const 
         c = 0;
         in_line.set(*rite);
         for (rite++; rite != in_route_list.crend(); rite++) {
-            uint32_t cno = MASK_CITYNO(rite->flag);
+            uint32_t cno = rite->city_no;
             if (c == 0) {
                 if (cno != city_no_e) {
                     c = 1;          //
@@ -6247,7 +6289,7 @@ int32_t CalcRoute::Retrieve_SpecificCoreStation(int32_t cityId)
 
     const static char tsql[] =
 "select rowid from t_station where"
-" (sflg & (1 << 4))!=0 and (sflg & 15)=?1";
+" (sflg & (1 << 4))!=0 and cityno=?1";
 
     DBO dbo = DBS::getInstance()->compileSql(tsql);
     if (dbo.isvalid()) {
@@ -9440,6 +9482,7 @@ int32_t     FARE_INFO::getFareForIC() const
  *                          駅2が境界駅なら-1を返す, 境界駅が駅1～駅2間になければ、Noneを返す
  *  @return vector<int32_t> [4] IDENT1(駅1の会社ID) + IDENT2(駅2の会社ID)
  *  @return vector<int32_t> [5] IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く)
+ *  @return vector<int32_t> [6] IDENT1(駅1のurbandid) / IDENT2(駅2のurbandid
  *  東海道線のみ3社に跨るので注意
 */
 vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, int32_t station_id2)
@@ -9468,7 +9511,8 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
 "   (select company_id from t_station where rowid=?3),"             // [4](5)
 "   (select sub_company_id from t_station where rowid=?2),"         // [4](6)
 "   (select sub_company_id from t_station where rowid=?3),"         // [4](7)
-"   ((select sflg&4095 from t_station where rowid=?2) + (select sflg&4095 from t_station where rowid=?3) * 65536)"      // [5](8)
+"   ((select sflg&4095 from t_station where rowid=?2) + (select sflg&4095 from t_station where rowid=?3) * 65536),"  // [5](8)
+"   ((select urbanid from t_station where rowid=?2) + (select urbanid from t_station where rowid=?3) * 65536)"      // [6](9)
 );
     uint32_t company_id1;
     uint32_t company_id2;
@@ -9491,7 +9535,7 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
             sub_company_id2 = ctx.getInt(7);
             result.push_back(0);                // IDENT1(駅ID1の会社ID) + IDENT2(駅ID2の会社ID)
             result.push_back(ctx.getInt(8));    // bit31:1=JR以外の会社線／0=JRグループ社線 / IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
-
+            result.push_back(ctx.getInt(9));
             if ((line_id == LINE_ID(_T("博多南線"))) ||
                 (line_id == LINE_ID(_T("山陽新幹線")))) { //山陽新幹線、博多南線はJ九州内でもJR西日本
                 result[4] = MAKEPAIR(JR_WEST, JR_WEST);
@@ -9666,28 +9710,33 @@ vector<int32_t> FARE_INFO::getDistanceEx(int32_t line_id, int32_t station_id1, i
  *                          駅2が境界駅なら-1を返す, 境界駅が駅1～駅2間になければ、Noneを返す
  *  @return vector<int32_t> [4] IDENT1(駅1の会社ID) + IDENT2(駅2の会社ID)
  *  @return vector<int32_t> [5] IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
+ *  @return vector<int32_t> [6] IDENT1(駅1のurband_id) / IDENT2(駅2のurban_id)
  *
  */
 vector<int32_t> FARE_INFO::GetDistanceEx(const RouteFlag& osakakan_aggregate, int32_t line_id, int32_t station_id1, int32_t station_id2)
 {
     vector<int32_t> result;
-    int32_t rslt = 0;
+    int32_t db_sflg = 0;
+    int32_t db_urbanid = 0;
 
     result = RouteUtil::GetDistance(osakakan_aggregate, line_id, station_id1, station_id2); // [0][1]
     result.push_back(0);    // sales_km for in company as station_id1 [2]
     result.push_back(0);    // calc_km  for in company as station_id1 [3]
     result.push_back(MAKEPAIR(JR_WEST, JR_WEST));   // IDENT1(駅ID1の会社ID) + IDENT2(駅ID2の会社ID) [4]
     DBO ctx = DBS::getInstance()->compileSql("select"
-" (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536)"        // [5]
+" (select sflg&4095 from t_station where rowid=?1) + ((select sflg&4095 from t_station where rowid=?2) * 65536),"        // [5]
+" (select urbanid from t_station where rowid=?1) + ((select urbanid from t_station where rowid=?2) * 65536)"        // [5]
         );
     if (ctx.isvalid()) {
         ctx.setParam(1, station_id1);
         ctx.setParam(2, station_id2);
         if (ctx.moveNext()) {
-            rslt = ctx.getInt(0);
+            db_sflg = ctx.getInt(0);
+            db_urbanid = ctx.getInt(1);
         }
     }
-    result.push_back(rslt); // bit31:1=JR以外の会社線／0=JRグループ社線 = 0 / IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
+    result.push_back(db_sflg); // bit31:1=JR以外の会社線／0=JRグループ社線 = 0 / IDENT1(駅1のsflg) / IDENT2(駅2のsflg(MSB=bit15除く))
+    result.push_back(db_urbanid); 
     TRACE("oskkan:s1km=%d, c1km=%d\n", result[0], result[1]);
 
     return result;
@@ -9780,7 +9829,7 @@ bool FARE_INFO::IsBulletInUrban(int32_t line_id, int32_t station_id1, int32_t st
  */
 bool    FARE_INFO::isUrbanArea() const
 {
-    return ((MASK_URBAN & flag) != 0);
+    return (urban_id != 0);
 }
 
 //static
@@ -9812,7 +9861,7 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
 
     for (ite = routeList.cbegin(); ite != routeList.cend(); ite++) {
         if (station_id1 != 0) {
-            cityId_c = (uint16_t)MASK_CITYNO(ite->flag);
+            cityId_c = (uint16_t)ite->city_no;
 
             TRACE("CheckIsBulletInUrbanOnSpecificTerm: %s, lid=%d, 70=%d, 8687=%d, city=%d - %d, IsBulletInUrban=%d\n",
                 ite->lineId == ID_L_RULE70 ? "true":"false", ite->lineId, pRoute_flag->rule70, pRoute_flag->isAvailableRule86or87(), cityId, cityId_c,
@@ -9829,7 +9878,7 @@ void FARE_INFO::CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& rout
             }
         }
         station_id1 = ite->stationId;
-        cityId = (uint16_t)MASK_CITYNO(ite->flag);
+        cityId = (uint16_t)ite->city_no;
     }
     pRoute_flag->bullet_line = enabled;
 }
@@ -10062,7 +10111,7 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                     osakakan_aggregate.setOsakaKanPass(true);
                 }
 
-                if (6 != d.size()) {
+                if (7 != d.size()) {
                     ASSERT(FALSE);
                     return -1;  /* failure abort end. >>>>>>>>> */
                 }
@@ -10121,10 +10170,11 @@ int32_t FARE_INFO::aggregate_fare_info(RouteFlag* pRoute_flag, const vector<Rout
                                     // 次回以降から駅1不要、駅1 sflgの下12ビット,
                                     // bit12以上はGetDistanceEx()のクエリでOxfffしているので不要
                     this->flag |= (FLAG_FARECALC_INITIAL | (/*~(1<<BCBULURB) & */IDENT1(d.at(5))));
+                    this->urban_id = IDENT1(d.at(6));
                 }
                 flag = (FLAG_FARECALC_INITIAL | MASK_FARECALC_INITIAL | IDENT2(d.at(5)));
-                if ((flag & MASK_URBAN) != (this->flag & MASK_URBAN)) {/* 近郊区間(b7-9) の比較 */
-                    flag &= ~MASK_URBAN;                /* 近郊区間 OFF */
+                if (this->urban_id != IDENT2(d.at(6))) {/* 近郊区間 の比較 */
+                    this->urban_id = 0;                /* 近郊区間 OFF */
                 }
                 this->flag &= flag; /* b11,10,5(大阪/東京電車特定区間, 山手線／大阪環状線内) */
                                     /* ~(反転）不要 */
@@ -10356,7 +10406,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                     // 名古屋は近郊区間でないので距離(尾頭橋-岡崎 37.7km 名古屋-岡崎 40.1km)50km以下として条件に含める
                     // またIRいしかわの乗継割引区間も同様50km以下が条件
 
-                    if (URB_TOKYO == URBAN_ID(this->flag)) {      /* 東京、新潟、仙台 近郊区間(最短距離で算出可能) */
+                    if (URB_TOKYO == this->urban_id) {      /* 東京、新潟、仙台 近郊区間(最短距離で算出可能) */
                                                                   /* 新幹線乗車も特別運賃適用 */
                                                                   /* ---> b#18111401: しないようにした(上で弾いた)*/
 
@@ -10383,7 +10433,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
                 pRoute_flag->special_fare_enable = true; // 私鉄競合区間特別運賃適用
             } else {
                 /* JR東海バリアフリー運賃 +10 */
-                if (URB_NAGOYA == URBAN_ID(this->flag)) {
+                if (URB_NAGOYA == this->urban_id) {
                     this->jr_fare += 10;
                     TRACE("JR Tokai barrier free fare +10 yen\n");
                 }
@@ -10391,8 +10441,8 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
             //ASSERT(this->company_fare == 0);    // 会社線は通っていない
         }
         /* 名古屋近郊区間 off */
-        if (URB_NAGOYA == URBAN_ID(this->flag)) {
-            this->flag &= ~MASK_URBAN; /* b7-9 近郊区間 OFF */
+        if (URB_NAGOYA == this->urban_id) {
+            this->urban_id = 0; /* b7-9 近郊区間 OFF */
         }
         // 特定区間は加算しない
         if (!pRoute_flag->special_fare_enable) {
@@ -10588,6 +10638,8 @@ xxxx xxxx 　   　XXXX XXXX
   static
   @param [in] route_list    The route
   @retval Chaned route or Empty route(if N/A)
+  
+  Not used from 2026.3
  */
 std::vector<RouteItem> FARE_INFO::IsHachikoLineHaijima(const std::vector<RouteItem>& route_list)
 {
@@ -11216,7 +11268,7 @@ void FARE_INFO::retr_fare(bool useBullet)
             fare_tmp = FARE_INFO::Fare_east_basic(_total_jr_calc_km_wo_brt);
         }
         /* IC運賃 適用か */
-        if (IsIC_area(URBAN_ID(this->flag))  /* 近郊区間(最短距離で算出可能) */
+        if (IsIC_area(this->urban_id)  /* 近郊区間(最短距離で算出可能) */
             && !useBullet) {                 /* 新幹線乗車はIC運賃適用外 */
             this->fare_ic = fare_tmp;
         }
@@ -11290,7 +11342,7 @@ void FARE_INFO::retr_fare(bool useBullet)
             fare_tmp = FARE_INFO::Fare_sub_f(_total_jr_sales_km_wo_brt);
 
             if ((FARE_INFO::tax != 5) &&
-                IsIC_area(URBAN_ID(this->flag)) &&   /* 近郊区間(最短距離で算出可能) */
+                IsIC_area(this->urban_id) &&   /* 近郊区間(最短距離で算出可能) */
                 !useBullet) {             /* 新幹線乗車はIC運賃適用外 */
                 //ASSERT(companymask == (1 << (JR_EAST - 1)));  /* JR East only  */
 
@@ -11305,7 +11357,7 @@ void FARE_INFO::retr_fare(bool useBullet)
             fare_tmp = FARE_INFO::Fare_basic_f(_total_jr_calc_km_wo_brt);
 
             if ((FARE_INFO::tax != 5) && /* IC運賃導入 */
-                IsIC_area(URBAN_ID(this->flag)) &&   /* 近郊区間(最短距離で算出可能) */
+                IsIC_area(this->urban_id) &&   /* 近郊区間(最短距離で算出可能) */
                 !useBullet) {            /* 新幹線乗車はIC運賃適用外 */
                 //ASSERT(companymask == (1 << (JR_EAST - 1)));  /* JR East only  */
 

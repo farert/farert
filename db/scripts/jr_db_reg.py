@@ -185,6 +185,8 @@ class Dbreg:
             prefect_id integer not null references t_prefect(rowid),
             samename text not null default(''),
             sflg integer not null,
+            cityno  integer not null default(0),
+            urbanid integer not null default(0),
             sub_company_id integer not null default(0),
 
             primary key(name, samename)
@@ -727,8 +729,9 @@ class Dbreg:
             sflg |= (1 << 13)
             tmp -= 10
 
-        tmp &= 0x07
-        sflg |= (tmp << 7)	# bit9-7
+        #tmp &= 0x07
+        #sflg |= (tmp << 7)	# bit9-7
+        urbanid = tmp
 
         # BSRSHINKTRSALW: 新幹線、在来線乗換
         # (新幹線のみ)
@@ -746,8 +749,9 @@ class Dbreg:
             sflg |= (1 << 4)	# BCCITYCT
             tmp -= 100
 
-        tmp &= 0x0f
-        sflg |= (tmp << 0)	# BCCITYNO: bit3-0
+        #tmp &= 0x0f
+        #sflg |= (tmp << 0)	# BCCITYNO: bit3-0
+        cityno = tmp
 
         # BSRCOMPANY
         # (会社線)
@@ -809,9 +813,9 @@ class Dbreg:
         if None != row:
             station_id = row[0]			# 登録済み
         else:
-            self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?, ?)', \
+            self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?, ?, ?, ?)', \
                         [ station_name, linitems[COL_STATION_KANA].strip(), company_id, prefect_id, \
-                          samename, sflg, sub_company_id])
+                          samename, sflg, cityno, urbanid, sub_company_id ])
             self.cur.execute('select rowid from t_station where name=? and samename=?', [station_name, samename])
             station_id = self.cur.fetchone()[0]
             self.n_station += 1

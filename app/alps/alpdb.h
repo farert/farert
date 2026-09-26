@@ -124,7 +124,7 @@ typedef uint32_t SPECIFICFLAG;
 /* ---------------------------------------!!!!!!!!!!!!!!! */
 
 // 駅は分岐駅か
-#define STATION_IS_JUNCTION(sid)        (0 != (RouteUtil::AttrOfStationId(sid) & (1<<12)))
+#define STATION_IS_JUNCTION(sid)        (0 != (RouteUtil::AttrOfStationIdFlag(sid) & (1<<12)))
 //#define STATION_IS_JUNCTION_F(flg)    (0 != (flg & (1<<12)))
 // sflg.12は特例乗り換え駅もONなのでlflg.15にした
 #define STATION_IS_JUNCTION_F(flg)      (0 != (flg & (1<<15)))
@@ -201,13 +201,11 @@ const LPCTSTR CLEAR_HISTORY = _T("(clear)");
 #define URB_FUKUOKA         4
 #define URB_SENDAI          5
 #define URB_NAGOYA          6
+#define URB_KYUSYU          7
 
 #define FLAG_FARECALC_INITIAL       (1<<15)
-#define MASK_CITYNO(flg)            ((flg)&0x0f)
 
 /* 近郊区間 */
-#define MASK_URBAN                  0x380
-#define URBAN_ID(flg)               (((int32_t)(flg)>>7)&7)
 #define IS_OSMSP(flg)               (((flg)&(1 << 11))!=0)  /* 大阪電車特定区間 ?*/
 #define IS_TKMSP(flg)               (((flg)&(1 << 10))!=0)  /* 東京電車特定区間 ?*/
 #define IS_YAMATE(flg)              (((flg)&(1 << 5))!=0)   /* 山手線内／大阪環状線内 ?*/
@@ -518,6 +516,8 @@ public:
     IDENT lineId = 0;
     IDENT stationId = 0;
     SPECIFICFLAG flag = 0;
+    uint8_t city_no = 0;
+    uint8_t urban_id = 0;
 //    unsigned int salesKm;        /* =0 is uninitialized. add by iPhone */
 //    unsigned int fare;           /* =0 is uninitialized. add by iPhone */
     RouteItem(IDENT lineId_, IDENT stationId_, SPECIFICFLAG flag_);
@@ -527,12 +527,14 @@ public:
         lineId = item_.lineId;
         stationId = item_.stationId;
         flag = item_.flag;
+        city_no = item_.city_no;
 //        salesKm = fare = 0;
     }
     RouteItem& operator=(const RouteItem& item_) {
         lineId = item_.lineId;
         stationId = item_.stationId;
         flag = item_.flag;
+        city_no = item_.city_no;
 //        salesKm = fare = 0;
         return *this;
     }
@@ -724,6 +726,7 @@ private:
     int32_t brt_calc_km;                // BRT 計算キロ
 private:
     int32_t flag;                       //***/* IDENT1: 全t_station.sflgの論理積 IDENT2: bit16-22: shinkansen ride mask  */
+    uint8_t urban_id;
     int32_t jr_fare;                    //***
     int32_t fare_ic;                    //*** 0以外で有効
     int32_t avail_days;                 //***
@@ -815,6 +818,7 @@ public:
         brt_discount_fare = 0;          // BRT 乗り継ぎ割引価格 BRT_DISCOUNT_FARE
 
         flag = 0;
+        urban_id = 0;
         jr_fare = 0;
         fare_ic = 0;
         avail_days = 0;
@@ -1128,7 +1132,8 @@ public:
 
     static tstring  CoreAreaCenterName(int32_t id);
 
-    static SPECIFICFLAG AttrOfStationId(int32_t id);
+    static vector<uint32_t> AttrOfStationId(int32_t id);
+    static SPECIFICFLAG AttrOfStationIdFlag(int32_t id);
     static SPECIFICFLAG AttrOfStationOnLineLine(int32_t line_id, int32_t station_id);
 
     static tstring  GetPrefectByStationId(int32_t stationId);
