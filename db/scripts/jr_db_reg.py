@@ -185,6 +185,8 @@ class Dbreg:
             prefect_id integer not null references t_prefect(rowid),
             samename text not null default(''),
             sflg integer not null,
+            cityno  integer not null default(0),
+            urbanid integer not null default(0),
             sub_company_id integer not null default(0),
 
             primary key(name, samename)
@@ -302,6 +304,13 @@ class Dbreg:
         """)
         ###########################################
         self.con.execute("""
+        create table t_farebspeek (
+            km_s	integer primary key,
+            km_e    integer not null,
+            fare	integer not null);
+        """)
+        ###########################################
+        self.con.execute("""
         create table t_farelspekm (
             km	integer primary key,
             ckm	integer not null,
@@ -312,6 +321,13 @@ class Dbreg:
             h8	integer not null,
             e5	integer not null,
             h5	integer not null);
+        """)
+        ###########################################
+        self.con.execute("""
+        create table t_farelspeek (
+            km_s	integer primary key,
+            km_e	integer not null,
+            fare	integer not null);
         """)
         ###########################################
         self.con.execute("""
@@ -555,7 +571,9 @@ class Dbreg:
             'r70bullet'		: self.reg_r70bullet,
             'rule86'		: self.reg_rule86,
             't_farebspekm'	: self.reg_t_farebspekm,
+            't_farebspeek'	: self.reg_t_farebspeek,
             't_farelspekm'	: self.reg_t_farelspekm,
+            't_farelspeek'	: self.reg_t_farelspeek,
             't_farels'		: self.reg_t_farels,
             't_fareadd'		: self.reg_t_fareadd,
             't_farespp'		: self.reg_t_farespp,
@@ -711,8 +729,9 @@ class Dbreg:
             sflg |= (1 << 13)
             tmp -= 10
 
-        tmp &= 0x07
-        sflg |= (tmp << 7)	# bit9-7
+        #tmp &= 0x07
+        #sflg |= (tmp << 7)	# bit9-7
+        urbanid = tmp
 
         # BSRSHINKTRSALW: 新幹線、在来線乗換
         # (新幹線のみ)
@@ -730,8 +749,9 @@ class Dbreg:
             sflg |= (1 << 4)	# BCCITYCT
             tmp -= 100
 
-        tmp &= 0x0f
-        sflg |= (tmp << 0)	# BCCITYNO: bit3-0
+        #tmp &= 0x0f
+        #sflg |= (tmp << 0)	# BCCITYNO: bit3-0
+        cityno = tmp
 
         # BSRCOMPANY
         # (会社線)
@@ -793,9 +813,9 @@ class Dbreg:
         if None != row:
             station_id = row[0]			# 登録済み
         else:
-            self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?, ?)', \
+            self.con.execute('insert into t_station values(?, ?, ?, ?, ?, ?, ?, ?, ?)', \
                         [ station_name, linitems[COL_STATION_KANA].strip(), company_id, prefect_id, \
-                          samename, sflg, sub_company_id])
+                          samename, sflg, cityno, urbanid, sub_company_id ])
             self.cur.execute('select rowid from t_station where name=? and samename=?', [station_name, samename])
             station_id = self.cur.fetchone()[0]
             self.n_station += 1
@@ -916,8 +936,16 @@ insert into t_rule86 values(
     # t_farebspekm: 3島会社幹線例外
         arg_list = pad_list(linitems, 15, '0')
         self.con.execute("""
-insert into t_farebspekm(km,h8,s8,k8, h5,s5,k5,ha, sa,ka,ba,ta, oa,ya,ea) values(?,?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?)""",
-        list(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
+insert into t_farebspekm(km,h8,s8,k8, h5,s5,k5,ha, sa,ka,ba,ta,oa,ya,ea) values(?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?,?)""",
+        tuple(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
+
+#------------------------------------------------------------------------------
+    def reg_t_farebspeek(self, label, linitems, lin):
+    # t_farebspeek: 別表2行イの2 JR東幹線例外
+        arg_list = pad_list(linitems, 3, '0')
+        self.con.execute("""
+insert into t_farebspeek(km_s, km_e, fare) values(?,?,?)""",
+        tuple(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
 #------------------------------------------------------------------------------
     def reg_t_farelspekm(self, label, linitems, lin):
     # t_farelspekm:地方交通線例外
@@ -925,6 +953,13 @@ insert into t_farebspekm(km,h8,s8,k8, h5,s5,k5,ha, sa,ka,ba,ta, oa,ya,ea) values
         self.con.execute("""
 insert into t_farelspekm(km,ckm,e8,h8,e5,h5,ea,ha,ba) values(?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         list(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
+#------------------------------------------------------------------------------
+    def reg_t_farelspeek(self, label, linitems, lin):
+    # t_farelspeek:別表2号イの6 JR東 地方交通線例外
+        arg_list = pad_list(linitems, 3, '0')
+        self.con.execute("""
+insert into t_farelspeek(km_s, km_e, fare) values(?, ?, ?)""",
+        tuple(map(lambda x:int(x.replace(',', '')) if x.strip() != '' else '0', arg_list)))
 #------------------------------------------------------------------------------
     def reg_t_farels(self, label, linitems, lin):
     # t_farels: 2島会社地方交通線

@@ -138,3 +138,68 @@ checkout が修正版を復元 → **修正版どうしを比較して「一致�
 ポイント: `-exec` 回帰は C++/Java とも removeTail を通らないので「通常運賃を壊していない」担保。
 修正挙動そのもの(add→removeTail→add)の実証は C++ ハーネスが引き受ける。Java で動的挙動まで
 見るなら `JavaTestMain` に removeTail シナリオを追加するか Android インストルメンテッドテストが必要。
+
+## 8. 114条 単一路線 誤適用(2026-09, BUG-77)
+
+### 発端
+`./farert -5 長万部 函館線 森林公園` が「規程114条適用 営業キロ 145.9km 計算駅 熱郛 ¥3,520
+(適用前 ¥4,400)」を出す。熱郛は経路の途中駅で、札幌から 201km どころか 145.9km しかない。
+
+### トレースで見えたこと
+```
+長万部[函館線]森林公園          <- route_list(86条適用前)
+長万部[函館線]札幌              <- route_list_special(86条適用後, 174.0km)
+checkOfRule114j: raw = 1862, cook = 1740 (122)
+[get86or87firstPoint]: dept1: cond_km=2000, base km=1740, 函館線 長万部
+judgementOfFare(熱郛, 函館線, 長万部)
+Rule 114 Applied(4400->3520)
+```
+`cond_km=+2000`(キロ程増加=札幌方向)になっている。`checkOfRule114j()` は単一路線だと
+`station_id1 == station_id2 == 長万部` で `DirLine()` に同一駅を渡し、SQL の
+`(km1 - km2) <= 0 then 1` が常に `LDIR_FALL` を返すため。`retreive_SpecificCoreAvailablePoint()`
+は「起点キロ程 + (2000-1740)=26.0km 先」を SQL で取るだけなので、方向が逆でも黙って 熱郛 を返す。
+`judgementOfFare()` は `fare_applied < normal_fare` しか見ないので、短い距離の運賃が勝って適用。
+
+### 修正と結果
+- 方向の基準駅を `route_list_special` の中心駅側隣接駅に(単一路線のみ)。修正後は
+  `cond_km=-2000` → `judgementOfFare(八雲)`(205.2km, ¥4,840 > ¥4,400)→ `Rule 114 no applied`。
+- `judgementOfFare()` 冒頭に 201km/101km 超ガード。-exec で 56 回発火(岡山周辺 西阿知/万富/総社/
+  建部 など 192.6〜199.7km)、いずれも結果不変。
+- -exec 正規化 diff: 長万部⇔森林公園 の 2 経路(test_exec.cpp の BUG83 ブロック)と実行時間のみ。
+- `specs/Core/Rule114.md` の「バグケース」表の 4 経路(西大路→刈谷 等)も同時に非適用になった。
+
+### 教訓
+- 「規則の前提条件(201km 超)」を探索方向の正しさに暗黙依存させていた。前提条件は結果側でも
+  明示的に検証する(防御)。
+- 単一路線経路は「乗換駅が無い」ため、C++ 内の多くの分岐で `size()==2` の特別扱いがある。
+  そこで作られる同一駅ペアを `DirLine`/`GetDistance` に渡すと 0/FALL に潰れる。
+
+## 9. Java 移植(2026-09, MigrateAndroid.md d0ac69f → 848cbed)
+
+### なぜ 114条修正だけ移植しても検証できなかったか
+Java の `-exec` 出力に `規程114条適用` が 0 件(C++ は 79 件)、`///既定` ブロックが軒並み無い。
+原因は C++ `d5d357b` で `t_station` の都区市内番号が `sflg & 15` から `cityno` 列、近郊区間が
+`sflg` bit7-9 から `urbanid` 列へ移り DB も再生成されたのに、Java がまだ `sflg` を読んでいたこと。
+新 DB では `sflg` 下位に都区市内番号が入っていないので Java は 86条を一切検出せず、114条は
+86/87条が前提なので `checkOfRule114j` に到達すらしない。**個別修正より先に DB スキーマ追随**。
+
+### 移植した C++ 差分(4 コミット)
+- `2634122` JR東 距離別例外運賃: `CalcKm_Table(t_farebspeek/t_farelspeek)` を `Fare_east_basic/local` から。
+- `6847775` 89条: 大阪の `Fare_osakakan/Fare_osaka` を営業キロ→計算キロ。
+- `d5d357b` `RouteItem.city_no/urban_id`、`AttrOfStationId()` 3要素化(+`AttrOfStationIdFlag`)、
+  `MASK_CITYNO/MASK_URBAN/URBAN_ID` 削除、`FARE_INFO.urban_id`、`getDistanceEx` に urbanid 2列、
+  `InCityStation`/`Retrieve_SpecificCoreStation` の SQL を `cityno=`、`InRouteUrban` を `#if 0`。
+- `b34b05a` 114条(§8)。
+
+### 結果
+`run_java_regression.sh` exit 0(ハンク 0、114条 79 件一致)、`gradlew compileDebugJavaWithJavac
+compileDebugKotlin` 通過。`MigrateAndroid.md` の基準 hash を `848cbed` に更新。
+`test/RouteTest`・`test/RouteTest.kotolin` の写しは 114条が旧構造(`CRule114` 無し)のため対象外。
+
+### ハマりどころ(実際に踏んだ)
+- Python の一括置換で `c_km = ckm[0];\n\n c_km *= 10;` が 2 関数に存在し assert 失敗 →
+  直前の `Fare_table("lspekm", ...)` まで含めて一意化。
+- `GetDistanceEx` の SQL リテラル連結で `+` 抜け → javac エラー 6 個(`')'がありません`)。
+- zsh: `for r in "..."; do ./farert $r` は分割されない(`${=r}`)。`echo ====` は `=cmd` 展開でエラー。
+- auto モードの `git checkout -- file` 拒否 → 自分のハンクを Edit で逆適用して戻した。
+

@@ -293,7 +293,7 @@ int g_tax; /* main.m */
 
 + (BOOL)IsJunction:(NSInteger)station_id
 {
-    return 0 != (RouteUtil::AttrOfStationId((int)station_id) & (1 << 12));
+    return 0 != (RouteUtil::AttrOfStationIdFlag((int)station_id) & (1 << 12));
 }
 
 + (BOOL)IsSpecificJunction:(NSInteger)lineId stationId:(NSInteger)station_id
