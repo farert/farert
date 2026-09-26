@@ -199,8 +199,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,28
- PRODUCTVERSION 26,7,0,0
+ FILEVERSION 2,1,0,29
+ PRODUCTVERSION 26,9,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -217,12 +217,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sutezo"
             VALUE "FileDescription", "farert"
-            VALUE "FileVersion", "2.1.0.28"
+            VALUE "FileVersion", "2.1.0.29"
             VALUE "InternalName", "alps_mfc.exe"
             VALUE "LegalCopyright", "2014-2026 (C)Sutezo.  All rights reserved."
             VALUE "OriginalFilename", "farert"
             VALUE "ProductName", "JR‰^’ÀŒvŽZ"
-            VALUE "ProductVersion", "26.7.0.0"
+            VALUE "ProductVersion", "26.9.0.0"
         END
     END
     BLOCK "VarFileInfo"
