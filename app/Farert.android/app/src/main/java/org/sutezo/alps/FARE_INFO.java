@@ -3821,6 +3821,20 @@ public class FARE_INFO {
                 // 　高崎-池袋、蒲田-上諏訪  など
                 System.out.print("neerest specific terminal over 200.0km or 100.0km\n");
                 decision = 20;
+                if (!route_original.getRouteFlag().no_rule) {
+                    if (0 < (getTotalSalesKm() - fare_info_specific_short.getTotalSalesKm())) {
+                        System.out.print("The appoint route and neerest specific route was different.\n");
+                        if (route_original.getRouteFlag().urban_neerest < 0) {
+                            System.out.println("Foreced choice appint route.");
+                            /* 指定経路(大回り)乗車券は近郊区間特例(当日限り)を適用しない */
+                            this.avail_days = days_ticket(this.sales_km);
+                            return false;
+                        }
+                        route_original.getRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
+                    } else {
+                        route_original.getRouteFlag().urban_neerest = 0; // すでに最安になってます
+                    }
+                }
             } else {
                 // B. 規程115 近郊区間内で指定経路が8687適用で、最短中心が8687適用できないなら単駅の最安経路
                 //     代々木ー用土、蒲田-茅野　など
