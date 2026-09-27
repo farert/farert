@@ -418,8 +418,11 @@ fun CalcRoute.calcFareInfo() : FareInfo
     // make message
     val messages : MutableList<String> = mutableListOf()
 
+    // No suburban-area note for company-line routes: the cheapest-route
+    // recalculation is skipped for them (same as FARE_INFO.showFare()).
     if (result.isRuleApplied &&
-            fi.isUrbanArea && !this.route_flag.isUseBullet) {
+            fi.isUrbanArea && !this.route_flag.isUseBullet &&
+            !this.route_flag.isIncludeCompanyLine) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
             // messages.add(msgCantMetroTicket)
         } else if (!this.route_flag.isEnableRule115 ||

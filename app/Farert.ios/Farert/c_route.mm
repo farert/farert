@@ -969,8 +969,11 @@ int g_tax; /* main.m */
     result.ticketAvailDays = fi.getTicketAvailDays();
 
     // make message
+    // No suburban-area note for company-line routes: the cheapest-route
+    // recalculation is skipped for them (same as FARE_INFO::showFare()).
     if (result.isRuleApplied &&
-        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
+        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet() &&
+        !obj_calcroute->refRouteFlag().isIncludeCompanyLine()) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
             //[resultMessage addObject:[NSString stringWithUTF8String:msgCantMetroTicket]];
         } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||

@@ -528,10 +528,12 @@ std::string az_route::get_fare_info_object_json() {
             std::vector<std::string> messages;
             oss << json_encoder::begin_array("messages");
             
-            // Same criterion as iOS/Android (isRuleApplied): the suburban-area
-            // note is shown only when the fare rules are applied.
+            // Same criterion as FARE_INFO::showFare(): the suburban-area note is shown
+            // only when the fare rules are applied and no company line is included
+            // (the cheapest-route recalculation is skipped for company-line routes).
             if (!refRouteFlag.no_rule &&
-                    fi.isUrbanArea() && !refRouteFlag.isUseBullet()) {
+                    fi.isUrbanArea() && !refRouteFlag.isUseBullet() &&
+                    !refRouteFlag.isIncludeCompanyLine()) {
                 if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                     // messages.add(msgCantMetroTicket)
                 } else if (!refRouteFlag.isEnableRule115()
