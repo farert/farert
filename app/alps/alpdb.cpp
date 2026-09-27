@@ -10877,6 +10877,25 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 
     /* 大都市近郊区間 */
 
+    // 指定経路オプションの選択可否を設定する
+    // 大回り、または最短経路でも有効日数2日以上(距離による有効日数の乗車券)なら指定経路を選択可
+    // @param [in] difference 指定経路と最短経路の営業キロ差
+    // @retval true 指定経路が選択済み(近郊区間特例を適用せず指定経路で確定)
+    auto isAppointRouteChosen = [&](int32_t difference) -> bool {
+        if ((0 < difference) || (1 < FARE_INFO::days_ticket(this->sales_km))) {
+            if (route_original.getRouteFlag().urban_neerest < 0) {
+                TRACE("Foreced choice appint route.\n");
+                /* 指定経路乗車券は近郊区間特例(当日限り)を適用しない */
+                this->avail_days = FARE_INFO::days_ticket(this->sales_km);
+                return true;
+            }
+            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
+        } else {
+            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
+        }
+        return false;
+    };
+
     // 最短経路算出(8687 applied)
     // 近郊区間内で指定経路が8687適用で、
     //   A. 最短中心が8687適用ならその運賃を採用（最短中心駅で算出）1, 3, 5,6,7,8
@@ -10918,19 +10937,9 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             // 　高崎-池袋、蒲田-上諏訪  など
             TRACE("neerest specific terminal over 200.0km or 100.0km\n");
             decision = 20;
-            if (!route_original.getRouteFlag().no_rule) {
-                if (0 < (getTotalSalesKm() - fare_info_specific_short.getTotalSalesKm())) {
-                    TRACE("The appoint route and neerest specific route was different.\n");
-                    if (route_original.getRouteFlag().urban_neerest < 0) {
-                        TRACE("Foreced choice appint route.\n");
-                        /* 指定経路(大回り)乗車券は近郊区間特例(当日限り)を適用しない */
-                        this->avail_days = FARE_INFO::days_ticket(this->sales_km);
-                        return false;
-                    }
-                    route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
-                } else {
-                    route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます
-                }
+            if (!route_original.getRouteFlag().no_rule &&
+                isAppointRouteChosen(getTotalSalesKm() - fare_info_specific_short.getTotalSalesKm())) {
+                return false;
             }
         } else {
             // B. 規程115 近郊区間内で指定経路が8687適用で、最短中心が8687適用できないなら単駅の最安経路
@@ -10975,21 +10984,19 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
                 /* 非適用ではrule115 変数のみが欲しいので */
                 return false;
             }
-            if (route_original.getRouteFlag().urban_neerest < 0) {
-                TRACE("Foreced choice appint route.\n");
-                /* 指定経路(大回り)乗車券は近郊区間特例(当日限り)を適用しない */
-                this->avail_days = FARE_INFO::days_ticket(this->sales_km);
+            if (isAppointRouteChosen(difference)) {
                 return false;
             }
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
-            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
         } else {
             TRACE("already neerest route.\n");
             if (route_original.refRouteFlag().no_rule) {
                 /* 非適用ではrule115 変数のみが欲しいので */
                 return false;
             }
-            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
+            if (isAppointRouteChosen(difference)) {
+                return false;
+            }
         }
 
         short_route_flag.rule86or87 = 0;
