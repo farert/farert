@@ -4145,8 +4145,10 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
         ++column;
     }
 
+    // Keep fallback_fail_item alive until error_ptr is filled below:
+    // p may point into it (it was a dangling pointer when scoped inside the if block).
+    tstring fallback_fail_item;
     if (rc < 0) {
-        tstring fallback_fail_item;
         int32_t fallback_offset = 0;
         const vector<tstring> fallback_tokens = setup_route_tokenize_fallback_input(route_body.c_str());
         const int32_t fallback_rc = setup_route_parse_fallback_tokens(*this, fallback_tokens, fallback_fail_item, fallback_offset);
@@ -10961,6 +10963,8 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             }
             if (route_original.getRouteFlag().urban_neerest < 0) {
                 TRACE("Foreced choice appint route.\n");
+                /* 指定経路(大回り)乗車券は近郊区間特例(当日限り)を適用しない */
+                this->avail_days = FARE_INFO::days_ticket(this->sales_km);
                 return false;
             }
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。

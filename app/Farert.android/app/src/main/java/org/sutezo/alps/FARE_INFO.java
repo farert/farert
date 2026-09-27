@@ -3866,6 +3866,8 @@ public class FARE_INFO {
                 }
                 if (route_original.getRouteFlag().urban_neerest < 0) {
                     System.out.println("Foreced choice appint route.");
+                    /* 指定経路(大回り)乗車券は近郊区間特例(当日限り)を適用しない */
+                    this.avail_days = days_ticket(this.sales_km);
                     return false;
                 }
                 route_original.getRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です

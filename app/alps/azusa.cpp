@@ -589,7 +589,7 @@ std::string az_route::get_fare_info_object_json() {
                 messages.push_back(json_encoder::value("旅客営業規則第88条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule160_4()) {
-                messages.push_back(json_encoder::value("旅客営業規則第160条第4項を適用していません"));
+                messages.push_back(json_encoder::value("旅客営業規則第160条第4・5項を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
                 messages.push_back(json_encoder::value("旅客営業規則第69条を適用していません"));
