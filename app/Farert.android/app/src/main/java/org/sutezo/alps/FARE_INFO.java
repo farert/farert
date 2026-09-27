@@ -1350,7 +1350,7 @@ public class FARE_INFO {
                 this.jr_fare += fare_add;
             }
 
-            if (isUrbanArea() && !route_flag_.isUseBullet()) {
+            if (isUrbanArea() && !route_flag_.isUseBullet() && !route_flag_.no_rule) { /* 非適用は近郊区間特例(当日限り)なし */
                 this.avail_days = 1;	/* 当日限り */
             } else {
                 /* 乗車券の有効日数 */

@@ -10471,7 +10471,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
             this->jr_fare += fare_add;
         }
 
-        if (isUrbanArea() && !pRoute_flag->isUseBullet()) {
+        if (isUrbanArea() && !pRoute_flag->isUseBullet() && !pRoute_flag->no_rule) { /* 非適用は近郊区間特例(当日限り)なし */
             this->avail_days = 1;   /* 当日限り */
         } else {
             /* 乗車券の有効日数 */
