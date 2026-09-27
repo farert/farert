@@ -444,8 +444,10 @@ std::string az_route::get_fare_info_object_json() {
                 }
                 oss << "{";
                 if (fi.isRule114()) {
-                    oss << json_encoder::pair("rule114StockFare", 
-                            fi.getFareStockDiscount(i, dummy, true));
+                    // Include the company-line fare, same as stockDiscountFare
+                    // and FARE_INFO::showFare().
+                    oss << json_encoder::pair("rule114StockFare",
+                            fi.getFareStockDiscount(i, dummy, true) + fi.getFareForCompanyline());
                     oss << ",";
                 }
                 oss << json_encoder::pair("stockDiscountFare",
