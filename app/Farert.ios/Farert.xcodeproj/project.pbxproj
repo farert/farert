@@ -11,6 +11,7 @@
 		2A0A0B5C1EE994ED00764EF1 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */; };
 		2A26688D20119EAB00FC0E17 /* McPickerBarButtonItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A26688C20119EAB00FC0E17 /* McPickerBarButtonItem.swift */; };
 		2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */; };
+		2A5CE0011F00AA0100ABCDEF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */; };
 		2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0881AD6966500F7DED2 /* Main.storyboard */; };
 		2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08B1AD6966500F7DED2 /* Images.xcassets */; };
 		2A2BB0AF1AD6970D00F7DED2 /* MainTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */; };
@@ -53,6 +54,7 @@
 		2A26688C20119EAB00FC0E17 /* McPickerBarButtonItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPickerBarButtonItem.swift; sourceTree = "<group>"; };
 		2A2BB07F1AD6966500F7DED2 /* Farert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Farert.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2A2BB08B1AD6966500F7DED2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTableViewController.swift; sourceTree = "<group>"; };
 		2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ResultTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -134,6 +136,7 @@
 				2A2BB0CA1AD6980600F7DED2 /* model */,
 				2A2BB0C91AD697FA00F7DED2 /* view */,
 				2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */,
+				2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */,
 				2AE754641ADCC2080020F59C /* CommonDefine.swift */,
 				2A2BB08B1AD6966500F7DED2 /* Images.xcassets */,
 				2A2BB0881AD6966500F7DED2 /* Main.storyboard */,
@@ -323,6 +326,7 @@
 				2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */,
 				2AF745241EFC0A65002BD1D6 /* McPickerPopoverViewController.swift in Sources */,
 				2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */,
+				2A5CE0011F00AA0100ABCDEF /* SceneDelegate.swift in Sources */,
 				2AE5B81D1E95F66500C58D92 /* SlideMenuController.swift in Sources */,
 				2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */,
 			);
