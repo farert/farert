@@ -3,7 +3,7 @@
 ## 目的
 
 - Migrate to Andrdoid version from C++ version.
-- Android は、C++の Git hash 848cbeddd8dcef2262dedfc189fd4941c7ee6d13  Versionと同様
+- Android は、C++の Git hash f0d66bcf1aec95b27adfdf201ed646182cd24c1e  Versionと同様
 - C++ バージョンの  現在 から更新している箇所を、Android版へも反映させる。
 - Android Version is Java.
 - C++ は、デバック済み、動作確認済みで正しい動作をしている。

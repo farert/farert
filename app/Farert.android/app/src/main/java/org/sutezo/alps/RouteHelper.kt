@@ -9,8 +9,8 @@ const val MAX_HOLDER : Int = 60
 const val MAX_HISTORY = 50
 const val MAX_ARCHIVE_ROUTE = 100 * 20
 
-const val msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です"
-const val msgAppliedLowcost = "近郊区間内ですので最安運賃の経路で計算"
+const val msgPossibleLowcost = "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)"
+const val msgAppliedLowcost = "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)"
 const val msgSpecificFareApply = "特定区間割引運賃適用"
 const val msgCantMetroTicket = "近郊区間内ですので同一駅発着のきっぷは購入できません."
 const val msgCanYouNeerestStation = "「単駅最安」で単駅発着が選択可能です"
@@ -325,7 +325,8 @@ fun CalcRoute.calcFareInfo() : FareInfo
         for (i in 0..1) {
             val stk = fi.getFareStockDiscount(i, true)
             if (0 < stk.fare) {
-                stks[i] = Triple(stks[i].first, stks[i].second + fi.fareForCompanyline, stk.fare + fi.fareForCompanyline)
+                // stks[i].second already includes the company-line fare (same as FARE_INFO.showFare())
+                stks[i] = Triple(stks[i].first, stks[i].second, stk.fare + fi.fareForCompanyline)
             }
         }
         result.fareForStockDiscounts = stks
