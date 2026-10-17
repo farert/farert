@@ -98,6 +98,10 @@ public class FARE_INFO {
     /* 114 */
     Rule114Info rule114Info = new Rule114Info();
 
+    /* 旅客営業規則第160条の4 新幹線乗継のための区間外乗車(c:分岐駅, d:新幹線乗換駅) 0:非該当 */
+    int rule160_4_junction_station;
+    int rule160_4_transfer_station;
+
     boolean roundTripDiscount;
 
     String route_for_disp;
@@ -151,6 +155,8 @@ public class FARE_INFO {
         companymask = fi.companymask;
 
         rule114Info.set(fi.rule114Info);
+        rule160_4_junction_station = fi.rule160_4_junction_station;
+        rule160_4_transfer_station = fi.rule160_4_transfer_station;
         roundTripDiscount = fi.roundTripDiscount;
         route_for_disp = fi.route_for_disp;
         calc_route_for_disp = fi.calc_route_for_disp;
@@ -779,6 +785,75 @@ public class FARE_INFO {
 
 
     /* static */
+    /** 旅客営業規則第160条の4(分岐駅通過列車に対する区間外乗車の特例)で
+     *  新幹線乗換駅d まで区間外乗車できる経路かをチェックする
+     *    分岐路線a 分岐駅c 本線b(d と反対方向) 新幹線(d と反対方向)  例: 伯備線 倉敷 山陽線 新倉敷 山陽新幹線
+     *    新幹線(d 方向) 本線b 分岐駅c 分岐路線a (逆向き)
+     * routeList: Route list
+     * return: {新幹線乗換駅d, 分岐駅c} / 非該当は {0, 0}
+     */
+    static int[] CheckRule160_4Transfer(final List<RouteItem> routeList)
+    {
+        final String tsql =
+          "select jctsp_line_idb1, jctsp_station_idd from t_jctspcl"
+        + " where type=1 and jctsp_station_idc2=0 and jctsp_line_ida=?1 and jctsp_station_idc1=?2";
+
+        for (int i = 1; i + 2 < routeList.size(); ++i) {
+            final boolean forward = IS_SHINKANSEN_LINE(routeList.get(i + 2).lineId);
+            final boolean backward = IS_SHINKANSEN_LINE(routeList.get(i).lineId);
+            if (!forward && !backward) {
+                continue;
+            }
+            // forward: a=[i], b=[i+1], 新幹線=[i+2] / backward: 新幹線=[i], b=[i+1], a=[i+2]
+            final int branch_line = forward ? routeList.get(i).lineId : routeList.get(i + 2).lineId;
+            final int main_line = routeList.get(i + 1).lineId;
+            final int junction = forward ? routeList.get(i).stationId : routeList.get(i + 1).stationId;
+            final int bullet_line = forward ? routeList.get(i + 2).lineId : routeList.get(i).lineId;
+            final int bullet_station = forward ? routeList.get(i + 1).stationId : routeList.get(i).stationId;
+            final int bullet_far_station = forward ? routeList.get(i + 2).stationId : routeList.get(i - 1).stationId;
+
+            if (IS_SHINKANSEN_LINE(branch_line) || IS_COMPANY_LINE(main_line)) {
+                continue;
+            }
+            int db_main_line;
+            int transfer;
+            try (Cursor dbo = RouteDB.db().rawQuery(tsql, new String[]{String.valueOf(branch_line), String.valueOf(junction)})) {
+                if (!dbo.moveToNext()) {
+                    continue;
+                }
+                db_main_line = dbo.getInt(0);
+                transfer = dbo.getInt(1);
+            }
+            if (db_main_line != main_line) {
+                continue;
+            }
+            // 160条の4 の区間表にないもの、新幹線乗車時の取扱いが別に定められているものは除く
+            if ((transfer == DbIdOf.INSTANCE.station("上野")) || (transfer == DbIdOf.INSTANCE.station("諫早")) ||
+                (transfer == DbIdOf.INSTANCE.station("小倉")) || (transfer == DbIdOf.INSTANCE.station("博多"))) {
+                continue;
+            }
+            if (BIT_CHK2(AttrOfStationOnLineLine(bullet_line, transfer), RouteList.BSRNOTYET_NA, RouteList.BSRSHINKJCT)) {   // 新幹線に乗換駅がない
+                continue;
+            }
+            // 本線b は分岐駅c から乗換駅d と反対方向、新幹線も d から同じ方向へ乗り通す
+            if (DirLine(main_line, junction, bullet_station) == DirLine(main_line, junction, transfer)) {
+                continue;
+            }
+            final LINE_DIR bullet_dir = forward ? DirLine(bullet_line, bullet_station, bullet_far_station)
+                                                : DirLine(bullet_line, bullet_far_station, bullet_station);
+            final LINE_DIR transfer_dir = forward ? DirLine(bullet_line, transfer, bullet_station)
+                                                  : DirLine(bullet_line, bullet_station, transfer);
+            if (bullet_dir != transfer_dir) {
+                continue;
+            }
+            System.out.printf("Rule160_4: transfer to bullet line at %s (via %s)\n", StationName(transfer), StationName(junction));
+            return new int[]{transfer, junction};
+        }
+        return new int[]{0, 0};
+    }
+
+
+    /* static */
     /** 分岐特例運賃をチェックする
      * Check if the route contains any junction fare specific records.
      * routeList: Route list
@@ -1163,6 +1238,10 @@ public class FARE_INFO {
             buffer.append("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
             buffer.append(this.getRule114apply_terminal_station());
         }
+        if (0 != this.rule160_4_transfer_station) {
+            buffer.append("\r\n");
+            buffer.append(this.getRule160_4TransferMessage());
+        }
         if (argRouteFlag.isCompnterm()) {
             buffer.append("\r\nこの経路の会社線通過連絡は許可されていません.");
         }
@@ -1180,6 +1259,19 @@ public class FARE_INFO {
     String     getRule114apply_terminal_station()
     {
         return rule114Info.stationName();
+    }
+
+    //  旅客営業規則第160条の4 新幹線乗継の案内文
+    //  return "岡山で新幹線乗り換え可（倉敷-岡山間途中下車不可）" / 非該当は空文字列
+    //
+    String     getRule160_4TransferMessage()
+    {
+        if (rule160_4_transfer_station == 0) {
+            return "";
+        }
+        return StationName(rule160_4_transfer_station) + "で新幹線乗り換え可（" +
+               StationName(rule160_4_junction_station) + "-" +
+               StationName(rule160_4_transfer_station) + "間途中下車不可）";
     }
 
 
@@ -1208,6 +1300,11 @@ public class FARE_INFO {
             return false;
             //goto err;		/* >>>>>>>>>>>>>>>>>>> */
         }
+
+        /* 旅客営業規則第160条の4(新幹線乗継のための区間外乗車)の案内 */
+        int[] rule160_4 = CheckRule160_4Transfer(routeList);
+        this.rule160_4_transfer_station = rule160_4[0];
+        this.rule160_4_junction_station = rule160_4[1];
 
         /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
         if (!route_flag_.no_rule /*&& !route_flag_.osakakan_detour*/) {
@@ -1498,6 +1595,8 @@ public class FARE_INFO {
         avail_days = 0;
 
         rule114Info.clear();
+        rule160_4_junction_station = 0;
+        rule160_4_transfer_station = 0;
 
         roundTripDiscount = false;
 

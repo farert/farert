@@ -1995,6 +1995,25 @@ public class Route extends RouteList {
 
         lflg2 |= (lflg1 & 0xff000000);
         lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));	// 水平型検知(D-2);
+
+        // 旅客営業規則第160条の4(分岐駅通過列車に対する区間外乗車の特例)
+        // 分岐路線a で分岐駅c に着き、本線b で c→d と区間を分けて指定した場合も
+        // 分岐特例(a d → a c, b d)と同じく水平型とし、続く新幹線での c 方面折返し(D-2)を許す
+        //   清音 伯備線 倉敷 山陽線 岡山 山陽新幹線 広島
+        //   木曽福島 中央西線 金山(中) 東海道線 名古屋 東海道新幹線 品川
+        if ((0 == (ctlflg & ADD_BULLET_NC)) && !BIT_CHK(jct_flg_on, BSRJCTHORD) &&
+            !route_flag.jctsp_route_change && (2 <= num) &&
+            (route_list_raw.get(num - 1).stationId == stationId1) &&
+            (stationId2 != DbIdOf.INSTANCE.station("小倉")) &&   // b#15032701
+            BIT_CHK(AttrOfStationOnLineLine(route_list_raw.get(num - 1).lineId, stationId2), BSRJCTSP) &&
+            (JCTSP == RetrieveJunctionSpecific(route_list_raw.get(num - 1).lineId, stationId2, jctspdt)) &&
+            (jctspdt.jctSpMainLineId_b == line_id) &&
+            (jctspdt.jctSpSubStationId_c == stationId1) &&
+            (jctspdt.jctSpSubStationId_c2 == 0)) {
+            System.out.println("JCT: rule160-4 split(J, B, D)");
+            jct_flg_on = BIT_ON(jct_flg_on, BSRJCTHORD);
+        }
+
         lflg2 |= jct_flg_on;	// BSRNOTYET_NA:BSRJCTHORD
         route_list_raw.add(new RouteItem((short)line_id, (short)stationId2, lflg2));
         ++num;

@@ -606,6 +606,9 @@ std::string az_route::get_fare_info_object_json() {
             if (fi.isRule114()) {
                 messages.push_back(json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:" + fi.getRule114apply_terminal_station()));
             }
+            if (!fi.getRule160_4TransferMessage().empty()) {
+                messages.push_back(json_encoder::value(fi.getRule160_4TransferMessage()));
+            }
             if (refRouteFlag.compnterm) {
                 messages.push_back(json_encoder::value("この経路の会社線通過連絡は許可されていません."));
             }

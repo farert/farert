@@ -1063,6 +1063,9 @@ int g_tax; /* main.m */
         [resultMessage addObject:[NSString stringWithFormat:
                                 @"旅客営業取扱基準規程第114条適用営業キロ計算駅:%@",           [NSString stringWithUTF8String:fi.getRule114apply_terminal_station().c_str()]]];
     }
+    if (!fi.getRule160_4TransferMessage().empty()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:fi.getRule160_4TransferMessage().c_str()]];
+    }
     if (obj_calcroute->refRouteFlag().compnterm) {
         [resultMessage addObject:[NSString stringWithUTF8String:
                                   "この経路の会社線通過連絡は許可されていません."]];

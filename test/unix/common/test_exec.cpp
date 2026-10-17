@@ -389,6 +389,8 @@ const static TCHAR *jct_spcial_route_tbl[] = {
 	_T("yy|米子 伯備線 岡山 山陽新幹線  広島"),
 	_T("yz|米子 伯備線 岡山 山陽線  x広島"),
 	_T("w0|米子 伯備線 岡山 山陽新幹線  姫路"),
+	_T("R160_4a|清音 伯備線 倉敷 山陽線 岡山 山陽新幹線 広島"),		// rule 160-4 split input
+	_T("R160_4b|木曽福島 中央西線 金山(中) 東海道線 名古屋 東海道新幹線 品川"),	// rule 160-4 split input
 	_T("w1|広島 山陽新幹線  岡山 伯備線 米子"),
 	_T("w2|広島 山陽線      岡山 伯備線 米子 山陰線 松江"),
 	_T("w3|姫路 山陽新幹線  岡山 伯備線 米子 山陰線 x鳥取"),
@@ -3212,7 +3214,8 @@ void test_jctspecial(const TCHAR *route_def[])
 			vector<RouteItem>::const_iterator pos = route.routeList().cbegin();
 			_ftprintf(os, _T("\nbegin: %s\n"), RouteUtil::StationName(pos->stationId).c_str());
 			for (++pos; pos != route.routeList().cend(); pos++) {
-				_ftprintf(os, _T("%s, %s, %04x\n"), RouteUtil::LineName(pos->lineId).c_str(), RouteUtil::StationName(pos->stationId).c_str(), pos->flag);
+				// internal flags are not dumped: they change with engine internals, not with results
+				_ftprintf(os, _T("%s, %s\n"), RouteUtil::LineName(pos->lineId).c_str(), RouteUtil::StationName(pos->stationId).c_str());
 			}
 			_ftprintf(os, _T("\nrc=%d, modify flag=%s\n"), rc, route.isModified() ? _T("ON"):_T("OFF"));
 		}

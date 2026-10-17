@@ -736,6 +736,10 @@ private:
     /* 114 */
     Rule114Info rule114Info;
 
+    /* 旅客営業規則第160条の4 新幹線乗継のための区間外乗車(c:分岐駅, d:新幹線乗換駅) 0:非該当 */
+    int32_t rule160_4_junction_station;
+    int32_t rule160_4_transfer_station;
+
     bool roundTripDiscount;
 
     tstring route_for_disp;
@@ -771,6 +775,7 @@ private:
     static void CheckIsBulletInUrbanOnSpecificTerm(const vector<RouteItem>& routeList, RouteFlag* pRoute_flag);
     static vector<JCTSP_DATA> GetJunctfionFareSpecifices();
     static vector<PAIRIDENT> Check_jctspcl_fare(const vector<RouteItem>& routeList);
+    static int32_t CheckRule160_4Transfer(const vector<RouteItem>& routeList, int32_t* junction_station);
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
@@ -824,6 +829,8 @@ public:
         avail_days = 0;
 
         rule114Info.clear();
+        rule160_4_junction_station = 0;
+        rule160_4_transfer_station = 0;
 
         roundTripDiscount = false;
 
@@ -903,6 +910,7 @@ public:
     int32_t     getRule114SalesKm() const { return rule114Info.sales_km(); }
     int32_t     getRule114CalcKm() const  { return rule114Info.calc_km();  }
     tstring     getRule114apply_terminal_station() const;
+    tstring     getRule160_4TransferMessage() const;
     int32_t     getJRSalesKm() const;
     int32_t     getJRCalcKm() const;
     int32_t     getCompanySalesKm() const;

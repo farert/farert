@@ -21,7 +21,9 @@ export farertDB=$(cd ../../../db && pwd)/jrdbNewest.db
 ```
 
 - `farertDB` が未設定だと `Should be set environment variable the 'farertDB'...` で即終了する。
-- `alpdb.cpp` を変更したら `make` し直す(依存は Makefile が追う)。全部作り直すときは `make clean && make`。
+- `alpdb.cpp` を変更したら `make` し直す。全部作り直すときは `make clean && make`。
+- **`alpdb.h` を変更したら必ず `make clean && make`**。Makefile はヘッダ依存を追わず `test_exec.o` 等が再ビルドされないため、
+  クラスのメンバを増やすとレイアウト不一致で無関係な ASSERT(例: `getBeginTerminalId() == beginStationId()`)や誤った結果が出る。
 
 ## 起動モード
 

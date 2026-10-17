@@ -536,10 +536,10 @@ public class JavaTestMain {
                 out.printf("begin: %s\n", RouteUtil.StationName(first.stationId));
                 for (int pos = 1; pos < route.routeList().size(); pos++) {
                     RouteItem item = route.routeList().get(pos);
-                    out.printf("%s, %s, %04x\n",
+                    // internal flags are not dumped (must match test/unix/common/test_exec.cpp)
+                    out.printf("%s, %s\n",
                             RouteUtil.LineName(item.lineId),
-                            RouteUtil.StationName(item.stationId),
-                            item.flag);
+                            RouteUtil.StationName(item.stationId));
                 }
                 out.println("");
                 out.printf("rc=%d, modify flag=%s\n", rc, route.isModified() ? "ON" : "OFF");
