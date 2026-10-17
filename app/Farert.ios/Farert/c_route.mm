@@ -1066,9 +1066,6 @@ int g_tax; /* main.m */
     if (!fi.getRule160_4TransferMessage().empty()) {
         [resultMessage addObject:[NSString stringWithUTF8String:fi.getRule160_4TransferMessage().c_str()]];
     }
-    if (!fi.getRule160_6TurnBackMessage().empty()) {
-        [resultMessage addObject:[NSString stringWithUTF8String:fi.getRule160_6TurnBackMessage().c_str()]];
-    }
     if (obj_calcroute->refRouteFlag().compnterm) {
         [resultMessage addObject:[NSString stringWithUTF8String:
                                   "この経路の会社線通過連絡は許可されていません."]];

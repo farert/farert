@@ -102,10 +102,6 @@ public class FARE_INFO {
     int rule160_4_junction_station;
     int rule160_4_transfer_station;
 
-    /* 旅客営業規則第160条の6 折返し直通列車による区間外乗車(c:左方の駅, d:折返し駅) 0:非該当 */
-    int rule160_6_junction_station;
-    int rule160_6_turn_station;
-
     boolean roundTripDiscount;
 
     String route_for_disp;
@@ -161,8 +157,6 @@ public class FARE_INFO {
         rule114Info.set(fi.rule114Info);
         rule160_4_junction_station = fi.rule160_4_junction_station;
         rule160_4_transfer_station = fi.rule160_4_transfer_station;
-        rule160_6_junction_station = fi.rule160_6_junction_station;
-        rule160_6_turn_station = fi.rule160_6_turn_station;
         roundTripDiscount = fi.roundTripDiscount;
         route_for_disp = fi.route_for_disp;
         calc_route_for_disp = fi.calc_route_for_disp;
@@ -860,76 +854,6 @@ public class FARE_INFO {
 
 
     /* static */
-    /** 旅客営業規則第160条の6(特定列車による折返し区間外乗車の特例)の対象経路かをチェックする
-     *  t_rule160_6 の 路線1 で左方の駅c に入り 路線2 で c から出る(逆向きも可)経路。
-     *  どちらの区間も折返し駅d と反対方向であること(d がその路線上にある場合)。
-     *  路線1 == 路線2 は同一路線で c を通過する経路。
-     * routeList: Route list
-     * return: {折返し駅d, 左方の駅c} / 非該当(旧DBでテーブルがない場合を含む)は {0, 0}
-     */
-    static int[] CheckRule160_6TurnBack(final List<RouteItem> routeList)
-    {
-        final String tsql = "select station_id_c, station_id_d, line_id1, line_id2 from t_rule160_6 order by id";
-
-        if (routeList.size() < 2) {
-            return new int[]{0, 0};
-        }
-        List<int[]> records = new ArrayList<>();
-        try (Cursor dbo = RouteDB.db().rawQuery(tsql, null)) {
-            while (dbo.moveToNext()) {
-                records.add(new int[]{dbo.getInt(0), dbo.getInt(1), dbo.getInt(2), dbo.getInt(3)});
-            }
-        } catch (RuntimeException e) {
-            // 旧DB(t_rule160_6 なし)では案内しない
-            System.out.println("Rule160_6: table not available: " + e.getMessage());
-            return new int[]{0, 0};
-        }
-        for (int[] rec : records) {
-            final int c = rec[0];
-            final int d = rec[1];
-            final int line1 = rec[2];
-            final int line2 = rec[3];
-            for (int i = 1; i < routeList.size(); ++i) {
-                final int line_id = routeList.get(i).lineId;
-                final int from = routeList.get(i - 1).stationId;
-                final int to = routeList.get(i).stationId;
-                boolean hit = false;
-                if ((to == c) && (i + 1 < routeList.size())) {
-                    // c で乗換: 路線1→路線2 または 路線2→路線1
-                    final int next_line = routeList.get(i + 1).lineId;
-                    final int next_to = routeList.get(i + 1).stationId;
-                    hit = (((line_id == line1) && (next_line == line2)) || ((line_id == line2) && (next_line == line1))) &&
-                          isAwayFromTurn(c, d, line_id, from) && isAwayFromTurn(c, d, next_line, next_to);
-                } else if ((line1 == line2) && (line_id == line1) && (from != c) && (to != c) &&
-                           (0 < InStation(c, line_id, from, to))) {
-                    // 同一路線で c を通過
-                    hit = !isStationOnLine(line_id, d) || (InStation(d, line_id, from, to) <= 0);
-                }
-                if (hit) {
-                    System.out.printf("Rule160_6: turn back at %s (via %s)\n", StationName(d), StationName(c));
-                    return new int[]{d, c};
-                }
-            }
-        }
-        return new int[]{0, 0};
-    }
-
-    // 160条の6: 区間(c - other)が折返し駅d と反対方向か(d が路線上にない場合は常に真)
-    private static boolean isAwayFromTurn(int c, int d, int line_id, int other)
-    {
-        if (!isStationOnLine(line_id, d)) {
-            return true;
-        }
-        return DirLine(line_id, c, other) != DirLine(line_id, c, d);
-    }
-
-    private static boolean isStationOnLine(int line_id, int station_id)
-    {
-        return !BIT_CHK2(AttrOfStationOnLineLine(line_id, station_id), RouteList.BSRNOTYET_NA, RouteList.BSRSHINKJCT);
-    }
-
-
-    /* static */
     /** 分岐特例運賃をチェックする
      * Check if the route contains any junction fare specific records.
      * routeList: Route list
@@ -1318,10 +1242,6 @@ public class FARE_INFO {
             buffer.append("\r\n");
             buffer.append(this.getRule160_4TransferMessage());
         }
-        if (0 != this.rule160_6_turn_station) {
-            buffer.append("\r\n");
-            buffer.append(this.getRule160_6TurnBackMessage());
-        }
         if (argRouteFlag.isCompnterm()) {
             buffer.append("\r\nこの経路の会社線通過連絡は許可されていません.");
         }
@@ -1352,18 +1272,6 @@ public class FARE_INFO {
         return StationName(rule160_4_transfer_station) + "で新幹線乗り換え可（" +
                StationName(rule160_4_junction_station) + "-" +
                StationName(rule160_4_transfer_station) + "間途中下車不可）";
-    }
-
-    //  旅客営業規則第160条の6 折返し直通列車の案内文
-    //  return "倉敷-岡山間を折り返す直通列車に乗車可（倉敷-岡山間途中下車不可）" / 非該当は空文字列
-    //
-    String     getRule160_6TurnBackMessage()
-    {
-        if (rule160_6_turn_station == 0) {
-            return "";
-        }
-        final String section = StationName(rule160_6_junction_station) + "-" + StationName(rule160_6_turn_station);
-        return section + "間を折り返す直通列車に乗車可（" + section + "間途中下車不可）";
     }
 
 
@@ -1397,12 +1305,6 @@ public class FARE_INFO {
         int[] rule160_4 = CheckRule160_4Transfer(routeList);
         this.rule160_4_transfer_station = rule160_4[0];
         this.rule160_4_junction_station = rule160_4[1];
-        /* 旅客営業規則第160条の6(折返し直通列車による区間外乗車)の案内(160条の4 と同じ分岐駅なら160条の4 のみ) */
-        int[] rule160_6 = CheckRule160_6TurnBack(routeList);
-        if ((0 != rule160_6[0]) && (rule160_6[1] != this.rule160_4_junction_station)) {
-            this.rule160_6_turn_station = rule160_6[0];
-            this.rule160_6_junction_station = rule160_6[1];
-        }
 
         /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
         if (!route_flag_.no_rule /*&& !route_flag_.osakakan_detour*/) {
@@ -1695,8 +1597,6 @@ public class FARE_INFO {
         rule114Info.clear();
         rule160_4_junction_station = 0;
         rule160_4_transfer_station = 0;
-        rule160_6_junction_station = 0;
-        rule160_6_turn_station = 0;
 
         roundTripDiscount = false;
 

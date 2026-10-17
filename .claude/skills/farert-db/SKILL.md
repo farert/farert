@@ -84,7 +84,7 @@ diff <(sqlite3 <repo>/db/jrdbNewest.db .dump) <(sqlite3 jrdbNewest.db .dump)   #
 
 ## 実例: t_rule160_6(2026-10)
 
-旅客営業規則第160条の6(折返し直通列車の区間外乗車)の案内用。列は `id / station_id_c / station_id_d / line_id1 / line_id2`。
-rule69 シートの `*t_rule160_6` セクション(`# id / 左方の駅c / 右方の駅d / 路線1 / 路線2`)から生成し、
-`FARE_INFO::CheckRule160_6TurnBack()`(C++/Java)が経路を判定して
-「倉敷-岡山間を折り返す直通列車に乗車可（倉敷-岡山間途中下車不可）」を showFare / WASM messages / iOS / Android に出す。
+旅客営業規則第160条の6(折返し直通列車の区間外乗車)の区間データ。列は `id / station_id_c / station_id_d / line_id1 / line_id2`。
+rule69 シートの `*t_rule160_6` セクション(`# id / 左方の駅c / 右方の駅d / 路線1 / 路線2`)から生成し、DB に入っている。
+**エンジン(C++/Java)は現在このテーブルを使っていない**(案内文の実装は一度入れたが取り消した)。
+使うときは上記手順 6〜8(旧 DB への配慮、C++/Java 1対1、-exec と Java 回帰)に従う。

@@ -3258,10 +3258,6 @@ JR東日本 株主優待4： \123,456
         sResult += _T("\r\n");
         sResult += this->getRule160_4TransferMessage();
     }
-    if (0 != this->rule160_6_turn_station) {
-        sResult += _T("\r\n");
-        sResult += this->getRule160_6TurnBackMessage();
-    }
     if (refRouteFlag.compnterm) {
         sResult += tstring(_T("\r\nこの経路の会社線通過連絡は許可されていません."));
     }
@@ -3292,19 +3288,6 @@ tstring     FARE_INFO::getRule160_4TransferMessage() const
     return RouteUtil::StationName(rule160_4_transfer_station) + _T("で新幹線乗り換え可（") +
            RouteUtil::StationName(rule160_4_junction_station) + _T("-") +
            RouteUtil::StationName(rule160_4_transfer_station) + _T("間途中下車不可）");
-}
-
-//  旅客営業規則第160条の6 折返し直通列車の案内文
-//  @return "倉敷-岡山間を折り返す直通列車に乗車可（倉敷-岡山間途中下車不可）" / 非該当は空文字列
-//
-tstring     FARE_INFO::getRule160_6TurnBackMessage() const
-{
-    if (rule160_6_turn_station == 0) {
-        return _T("");
-    }
-    const tstring section = RouteUtil::StationName(rule160_6_junction_station) + _T("-") +
-                            RouteUtil::StationName(rule160_6_turn_station);
-    return section + _T("間を折り返す直通列車に乗車可（") + section + _T("間途中下車不可）");
 }
 
 /*  public
@@ -10124,69 +10107,6 @@ int32_t FARE_INFO::CheckRule160_4Transfer(const vector<RouteItem>& routeList, in
 }
 
 
-/* static */
-/** 旅客営業規則第160条の6(特定列車による折返し区間外乗車の特例)の対象経路かをチェックする
- *  t_rule160_6 の 路線1 で左方の駅c に入り 路線2 で c から出る(逆向きも可)経路。
- *  どちらの区間も折返し駅d と反対方向であること(d がその路線上にある場合)。
- *  路線1 == 路線2 は同一路線で c を通過する経路。
- * @param routeList [in] Route list
- * @param junction_station [out] 左方の駅c(非該当は0)
- * @return 折返し駅d / 0: 非該当(旧DBでテーブルがない場合を含む)
- */
-int32_t FARE_INFO::CheckRule160_6TurnBack(const vector<RouteItem>& routeList, int32_t* junction_station)
-{
-    const static char tsql[] =
-    "select station_id_c, station_id_d, line_id1, line_id2 from t_rule160_6 order by id";
-
-    *junction_station = 0;
-    if (routeList.size() < 2) {
-        return 0;
-    }
-    DBO dbo = DBS::getInstance()->compileSql(tsql);
-    if (!dbo.isvalid()) {
-        return 0;
-    }
-    while (dbo.moveNext()) {
-        const int32_t c = dbo.getInt(0);
-        const int32_t d = dbo.getInt(1);
-        const int32_t line1 = dbo.getInt(2);
-        const int32_t line2 = dbo.getInt(3);
-
-        // 区間(c - other)が d と反対方向か(d が路線上にない場合は常に真)
-        auto isAwayFromTurn = [c, d](int32_t line_id, int32_t other) -> bool {
-            if (BIT_CHK2(RouteUtil::AttrOfStationOnLineLine(line_id, d), BSRNOTYET_NA, BSRSHINKJCT)) {
-                return true;
-            }
-            return RouteUtil::DirLine(line_id, c, other) != RouteUtil::DirLine(line_id, c, d);
-        };
-        for (size_t i = 1; i < routeList.size(); ++i) {
-            const int32_t line_id = routeList[i].lineId;
-            const int32_t from = routeList[i - 1].stationId;
-            const int32_t to = routeList[i].stationId;
-            bool hit = false;
-            if ((to == c) && (i + 1 < routeList.size())) {
-                // c で乗換: 路線1→路線2 または 路線2→路線1
-                const int32_t next_line = routeList[i + 1].lineId;
-                const int32_t next_to = routeList[i + 1].stationId;
-                hit = (((line_id == line1) && (next_line == line2)) || ((line_id == line2) && (next_line == line1))) &&
-                      isAwayFromTurn(line_id, from) && isAwayFromTurn(next_line, next_to);
-            } else if ((line1 == line2) && (line_id == line1) && (from != c) && (to != c) &&
-                       (0 < RouteUtil::InStation(c, line_id, from, to))) {
-                // 同一路線で c を通過
-                hit = BIT_CHK2(RouteUtil::AttrOfStationOnLineLine(line_id, d), BSRNOTYET_NA, BSRSHINKJCT) ||
-                      (RouteUtil::InStation(d, line_id, from, to) <= 0);
-            }
-            if (hit) {
-                TRACE(_T("Rule160_6: turn back at %s (via %s)\n"), SNAME(d), SNAME(c));
-                *junction_station = c;
-                return d;
-            }
-        }
-    }
-    return 0;
-}
-
-
 int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社線 */
                                       const RouteFlag& rRoute_flag,
                                       int32_t station_id_0,
@@ -10505,12 +10425,6 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
 
     /* 旅客営業規則第160条の4(新幹線乗継のための区間外乗車)の案内 */
     this->rule160_4_transfer_station = FARE_INFO::CheckRule160_4Transfer(routeList, &this->rule160_4_junction_station);
-    /* 旅客営業規則第160条の6(折返し直通列車による区間外乗車)の案内(160条の4 と同じ分岐駅なら160条の4 のみ) */
-    this->rule160_6_turn_station = FARE_INFO::CheckRule160_6TurnBack(routeList, &this->rule160_6_junction_station);
-    if ((0 != this->rule160_6_turn_station) && (this->rule160_6_junction_station == this->rule160_4_junction_station)) {
-        this->rule160_6_turn_station = 0;
-        this->rule160_6_junction_station = 0;
-    }
     
     /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
     if (!pRoute_flag->no_rule /*&& !pRoute_flag->osakakan_detour*/) {
