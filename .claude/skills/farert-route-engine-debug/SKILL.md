@@ -283,6 +283,7 @@ Java 側で構文確認だけしたいときは `cd app/Farert.android && ./grad
 
 ## さらに詳しく
 
+- `./farert` CLI の起動モード・オプション(`-数値[r]`)の正しい意味・出力ブロックの読み方: `farert-cli` スキル
 - 詳細な調査ログ・フラグ表・3モードの具体例・今回のハマりどころ: `references/findings.md`
 - ハーネスの各モード仕様と過去の実行ログ: `test/unix/all/removetail-151-repro/README.md` と同ディレクトリの `*.log`
 - Java 回帰テストの正典(スタブ・JDBC・実行方法): リポジトリ直下 `javatest.md`

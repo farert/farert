@@ -11,7 +11,6 @@
 		2A0A0B5C1EE994ED00764EF1 /* alpdb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A0A0B5A1EE994ED00764EF1 /* alpdb.cpp */; };
 		2A26688D20119EAB00FC0E17 /* McPickerBarButtonItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A26688C20119EAB00FC0E17 /* McPickerBarButtonItem.swift */; };
 		2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */; };
-		2A5CE0011F00AA0100ABCDEF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */; };
 		2A2BB08A1AD6966500F7DED2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB0881AD6966500F7DED2 /* Main.storyboard */; };
 		2A2BB08C1AD6966500F7DED2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A2BB08B1AD6966500F7DED2 /* Images.xcassets */; };
 		2A2BB0AF1AD6970D00F7DED2 /* MainTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */; };
@@ -34,6 +33,7 @@
 		2A57119E1EB836F800D593DD /* McPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119D1EB836F800D593DD /* McPicker.swift */; };
 		2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */; };
 		2A5711A21EB8CFA800D593DD /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5711A11EB8CFA800D593DD /* RoundButton.swift */; };
+		2A5CE0011F00AA0100ABCDEF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */; };
 		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
 		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
 		2A969B322354B2F400B8689F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A969B342354B2F400B8689F /* Localizable.strings */; };
@@ -54,7 +54,6 @@
 		2A26688C20119EAB00FC0E17 /* McPickerBarButtonItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPickerBarButtonItem.swift; sourceTree = "<group>"; };
 		2A2BB07F1AD6966500F7DED2 /* Farert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Farert.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2A2BB08B1AD6966500F7DED2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		2A2BB0A41AD6970D00F7DED2 /* MainTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTableViewController.swift; sourceTree = "<group>"; };
 		2A2BB0A51AD6970D00F7DED2 /* ResultTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ResultTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -80,6 +79,7 @@
 		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
 		2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolderTableViewCell.swift; sourceTree = "<group>"; };
 		2A5711A11EB8CFA800D593DD /* RoundButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
+		2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
@@ -480,11 +480,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Farert/Farert.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 101;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = W6SVZ3YCU5;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = W6SVZ3YCU5;
@@ -508,13 +508,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09;
+				MARKETING_VERSION = 26.09.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = Farert;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = farertAppStore;
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = farertMacAppStore;
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -529,11 +528,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Farert/Farert.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 101;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = W6SVZ3YCU5;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = W6SVZ3YCU5;
@@ -557,13 +556,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09;
+				MARKETING_VERSION = 26.09.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "経路運賃営業キロ計算アプリ";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = farertAppStore;
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = farertMacAppStore;
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Farert/Farert-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
