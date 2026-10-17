@@ -496,6 +496,7 @@ fun CalcRoute.calcFareInfo() : FareInfo
         messages.add(msg)
     }
     fi.rule160_4TransferMessage.takeIf { it.isNotEmpty() }?.let { messages.add(it) }
+    fi.rule160_6TurnBackMessage.takeIf { it.isNotEmpty() }?.let { messages.add(it) }
     if (this.route_flag.isCompnterm) {
         messages.add("この経路の会社線通過連絡は許可されていません.")
     }

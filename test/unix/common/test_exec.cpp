@@ -391,6 +391,9 @@ const static TCHAR *jct_spcial_route_tbl[] = {
 	_T("w0|米子 伯備線 岡山 山陽新幹線  姫路"),
 	_T("R160_4a|清音 伯備線 倉敷 山陽線 岡山 山陽新幹線 広島"),		// rule 160-4 split input
 	_T("R160_4b|木曽福島 中央西線 金山(中) 東海道線 名古屋 東海道新幹線 品川"),	// rule 160-4 split input
+	_T("R160_6a|米子 伯備線 倉敷 山陽線 広島"),				// rule 160-6 turn-back train
+	_T("R160_6b|萩 山陰線 下関"),						// rule 160-6 pass through (長門市)
+	_T("R160_6c|新見 伯備線 備中神代 芸備線 東城"),		// rule 160-6 not applied (from turn station side)
 	_T("w1|広島 山陽新幹線  岡山 伯備線 米子"),
 	_T("w2|広島 山陽線      岡山 伯備線 米子 山陰線 松江"),
 	_T("w3|姫路 山陽新幹線  岡山 伯備線 米子 山陰線 x鳥取"),

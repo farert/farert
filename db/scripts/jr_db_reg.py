@@ -253,6 +253,17 @@ class Dbreg:
         );
         """)
         ###########################################
+        # 旅客営業規則第160条の6(特定列車による折返し区間外乗車の特例) 案内用
+        self.con.execute("""
+        create table t_rule160_6 (
+            id		integer primary key,
+            station_id_c integer not null references t_station(rowid),
+            station_id_d integer not null references t_station(rowid),
+            line_id1 integer not null references t_line(rowid),
+            line_id2 integer not null references t_line(rowid)
+        );
+        """)
+        ###########################################
         self.con.execute("""
         create table t_rule70 (
             station_id1 integer not null references t_station(rowid),
@@ -567,6 +578,7 @@ class Dbreg:
             't_clinfar'		: self.reg_t_clinfar,
             't_rule69'		: self.reg_t_rule69,
             't_toica_range'	: self.reg_t_toica_range,
+            't_rule160_6'	: self.reg_t_rule160_6,
             'rule70'		: self.reg_rule70,
             'r70bullet'		: self.reg_r70bullet,
             'rule86'		: self.reg_rule86,
@@ -889,6 +901,19 @@ insert into t_toica_range(id, station_id1, line_id, station_id2, kind) values(
              [ident, *same_staion(linitems[1].strip()), 
               linitems[2], *same_staion(linitems[3].strip()), 
                   int(linitems[4])])
+
+#------------------------------------------------------------------------------
+    def reg_t_rule160_6(self, label, linitems, lin):
+        # t_rule160_6: id, 左方の駅c, 右方の駅d, 路線1, 路線2
+        self.con.execute("""
+insert into t_rule160_6(id, station_id_c, station_id_d, line_id1, line_id2) values(
+ ?,
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_station where name=? and samename=?),
+ (select rowid from t_line where name=?),
+ (select rowid from t_line where name=?))""",
+             [int(linitems[0]), *same_staion(linitems[1].strip()), *same_staion(linitems[2].strip()),
+              linitems[3].strip(), linitems[4].strip()])
 
 #------------------------------------------------------------------------------
     def reg_rule70(self, label, linitems, lin):

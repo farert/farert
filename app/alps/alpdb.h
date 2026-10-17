@@ -740,6 +740,10 @@ private:
     int32_t rule160_4_junction_station;
     int32_t rule160_4_transfer_station;
 
+    /* 旅客営業規則第160条の6 折返し直通列車による区間外乗車(c:左方の駅, d:折返し駅) 0:非該当 */
+    int32_t rule160_6_junction_station;
+    int32_t rule160_6_turn_station;
+
     bool roundTripDiscount;
 
     tstring route_for_disp;
@@ -776,6 +780,7 @@ private:
     static vector<JCTSP_DATA> GetJunctfionFareSpecifices();
     static vector<PAIRIDENT> Check_jctspcl_fare(const vector<RouteItem>& routeList);
     static int32_t CheckRule160_4Transfer(const vector<RouteItem>& routeList, int32_t* junction_station);
+    static int32_t CheckRule160_6TurnBack(const vector<RouteItem>& routeList, int32_t* junction_station);
     int aggregate_fare_company(bool first_company,
                               const RouteFlag& rRoute_flag,
                               int32_t station_id_0,
@@ -831,6 +836,8 @@ public:
         rule114Info.clear();
         rule160_4_junction_station = 0;
         rule160_4_transfer_station = 0;
+        rule160_6_junction_station = 0;
+        rule160_6_turn_station = 0;
 
         roundTripDiscount = false;
 
@@ -911,6 +918,7 @@ public:
     int32_t     getRule114CalcKm() const  { return rule114Info.calc_km();  }
     tstring     getRule114apply_terminal_station() const;
     tstring     getRule160_4TransferMessage() const;
+    tstring     getRule160_6TurnBackMessage() const;
     int32_t     getJRSalesKm() const;
     int32_t     getJRCalcKm() const;
     int32_t     getCompanySalesKm() const;

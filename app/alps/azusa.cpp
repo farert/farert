@@ -609,6 +609,9 @@ std::string az_route::get_fare_info_object_json() {
             if (!fi.getRule160_4TransferMessage().empty()) {
                 messages.push_back(json_encoder::value(fi.getRule160_4TransferMessage()));
             }
+            if (!fi.getRule160_6TurnBackMessage().empty()) {
+                messages.push_back(json_encoder::value(fi.getRule160_6TurnBackMessage()));
+            }
             if (refRouteFlag.compnterm) {
                 messages.push_back(json_encoder::value("この経路の会社線通過連絡は許可されていません."));
             }
