@@ -910,7 +910,7 @@ public:
     int32_t     getRule114SalesKm() const { return rule114Info.sales_km(); }
     int32_t     getRule114CalcKm() const  { return rule114Info.calc_km();  }
     tstring     getRule114apply_terminal_station() const;
-    tstring     getRule160_4TransferMessage() const;
+    tstring     getRule160_4TransferMessage(const TCHAR* newline = _T("\n")) const;
     int32_t     getJRSalesKm() const;
     int32_t     getJRCalcKm() const;
     int32_t     getCompanySalesKm() const;

@@ -1240,7 +1240,7 @@ public class FARE_INFO {
         }
         if (0 != this.rule160_4_transfer_station) {
             buffer.append("\r\n");
-            buffer.append(this.getRule160_4TransferMessage());
+            buffer.append(this.getRule160_4TransferMessage("\r\n"));
         }
         if (argRouteFlag.isCompnterm()) {
             buffer.append("\r\nこの経路の会社線通過連絡は許可されていません.");
@@ -1262,16 +1262,23 @@ public class FARE_INFO {
     }
 
     //  旅客営業規則第160条の4 新幹線乗継の案内文
-    //  return "岡山で新幹線乗り換え可（倉敷-岡山間途中下車不可）" / 非該当は空文字列
+    //  newline: 2行目(規則名)の前の改行文字
+    //  return "岡山で新幹線乗り換え可（倉敷-岡山間途中下車不可）<newline>（旅客営業規則第160条の4）" / 非該当は空文字列
     //
-    String     getRule160_4TransferMessage()
+    String     getRule160_4TransferMessage(String newline)
     {
         if (rule160_4_transfer_station == 0) {
             return "";
         }
         return StationName(rule160_4_transfer_station) + "で新幹線乗り換え可（" +
                StationName(rule160_4_junction_station) + "-" +
-               StationName(rule160_4_transfer_station) + "間途中下車不可）";
+               StationName(rule160_4_transfer_station) + "間途中下車不可）" +
+               newline + "（旅客営業規則第160条の4）";
+    }
+
+    String     getRule160_4TransferMessage()
+    {
+        return getRule160_4TransferMessage("\n");
     }
 
 

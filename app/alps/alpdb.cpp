@@ -3256,7 +3256,7 @@ JR東日本 株主優待4： \123,456
     }
     if (0 != this->rule160_4_transfer_station) {
         sResult += _T("\r\n");
-        sResult += this->getRule160_4TransferMessage();
+        sResult += this->getRule160_4TransferMessage(_T("\r\n"));
     }
     if (refRouteFlag.compnterm) {
         sResult += tstring(_T("\r\nこの経路の会社線通過連絡は許可されていません."));
@@ -3278,16 +3278,18 @@ tstring     FARE_INFO::getRule114apply_terminal_station() const
 }
 
 //  旅客営業規則第160条の4 新幹線乗継の案内文
-//  @return "岡山で新幹線乗り換え可（倉敷-岡山間途中下車不可）" / 非該当は空文字列
+//  @param [in] newline  2行目(規則名)の前の改行文字
+//  @return "岡山で新幹線乗り換え可（倉敷-岡山間途中下車不可）<newline>（旅客営業規則第160条の4）" / 非該当は空文字列
 //
-tstring     FARE_INFO::getRule160_4TransferMessage() const
+tstring     FARE_INFO::getRule160_4TransferMessage(const TCHAR* newline /* = _T("\n") */) const
 {
     if (rule160_4_transfer_station == 0) {
         return _T("");
     }
     return RouteUtil::StationName(rule160_4_transfer_station) + _T("で新幹線乗り換え可（") +
            RouteUtil::StationName(rule160_4_junction_station) + _T("-") +
-           RouteUtil::StationName(rule160_4_transfer_station) + _T("間途中下車不可）");
+           RouteUtil::StationName(rule160_4_transfer_station) + _T("間途中下車不可）") +
+           newline + _T("（旅客営業規則第160条の4）");
 }
 
 /*  public
