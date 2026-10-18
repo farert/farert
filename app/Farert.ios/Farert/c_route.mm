@@ -835,9 +835,9 @@ int g_tax; /* main.m */
     int w3;
     FARE_INFO::FareResult fareResult;
     const static char msgPossibleLowcost[] =
-                    "近郊区間内ですので最短経路の運賃で利用可能です";
+                    "近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)";
     const static char msgAppliedLowcost[] =
-                    "近郊区間内ですので最安運賃の経路で計算";
+                    "近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)";
     const static char msgSpecificFareApply[] = "特定区間割引運賃適用";
     //const static char msgCantMetroTicket[] = "近郊区間内ですので同一駅発着のきっぷは購入できません.";
     const static char msgCanYouNeerestStation[] = "「単駅最安」で単駅発着が選択可能です";
@@ -969,8 +969,11 @@ int g_tax; /* main.m */
     result.ticketAvailDays = fi.getTicketAvailDays();
 
     // make message
+    // No suburban-area note for company-line routes: the cheapest-route
+    // recalculation is skipped for them (same as FARE_INFO::showFare()).
     if (result.isRuleApplied &&
-        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet()) {
+        fi.isUrbanArea() && !obj_calcroute->refRouteFlag().isUseBullet() &&
+        !obj_calcroute->refRouteFlag().isIncludeCompanyLine()) {
         if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
             //[resultMessage addObject:[NSString stringWithUTF8String:msgCantMetroTicket]];
         } else if (!obj_calcroute->refRouteFlag().isEnableRule115() ||
@@ -1059,6 +1062,9 @@ int g_tax; /* main.m */
     if (result.isRule114Applied) {
         [resultMessage addObject:[NSString stringWithFormat:
                                 @"旅客営業取扱基準規程第114条適用営業キロ計算駅:%@",           [NSString stringWithUTF8String:fi.getRule114apply_terminal_station().c_str()]]];
+    }
+    if (!fi.getRule160_4TransferMessage().empty()) {
+        [resultMessage addObject:[NSString stringWithUTF8String:fi.getRule160_4TransferMessage().c_str()]];
     }
     if (obj_calcroute->refRouteFlag().compnterm) {
         [resultMessage addObject:[NSString stringWithUTF8String:

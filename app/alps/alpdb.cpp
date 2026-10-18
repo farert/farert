@@ -2696,6 +2696,24 @@ TRACE(_T("osaka-kan passed error\n"));  // 要るか？2015-2-15
     lflg2 |= (lflg1 & 0xff000000);
     lflg2 &= (0xff00ffff & ~(1<<BSRJCTHORD));   // 水平型検知(D-2);
 
+    // 旅客営業規則第160条の4(分岐駅通過列車に対する区間外乗車の特例)
+    // 分岐路線a で分岐駅c に着き、本線b で c→d と区間を分けて指定した場合も
+    // 分岐特例(a d → a c, b d)と同じく水平型とし、続く新幹線での c 方面折返し(D-2)を許す
+    //   清音 伯備線 倉敷 山陽線 岡山 山陽新幹線 広島
+    //   木曽福島 中央西線 金山(中) 東海道線 名古屋 東海道新幹線 品川
+    if ((0 == (ctlflg & ADD_BULLET_NC)) && !BIT_CHK(jct_flg_on, BSRJCTHORD) &&
+        !route_flag.jctsp_route_change && (2 <= num) &&
+        (route_list_raw.at(num - 1).stationId == stationId1) &&
+        (stationId2 != STATION_ID(_T("小倉"))) &&   // b#15032701
+        BIT_CHK(RouteUtil::AttrOfStationOnLineLine(route_list_raw.at(num - 1).lineId, stationId2), BSRJCTSP) &&
+        (JCTSP == Route::RetrieveJunctionSpecific(route_list_raw.at(num - 1).lineId, stationId2, &jctspdt)) &&
+        (jctspdt.jctSpMainLineId_b == line_id) &&
+        (jctspdt.jctSpSubStationId_c == stationId1) &&
+        (jctspdt.jctSpSubStationId_c2 == 0)) {
+        TRACE("JCT: rule160-4 split(J, B, D)\n");
+        BIT_ON(jct_flg_on, BSRJCTHORD);
+    }
+
     lflg2 |= jct_flg_on;    // BSRNOTYET_NA:BSRJCTHORD
     route_list_raw.push_back(RouteItem(line_id, stationId2, lflg2));
     ++num;
@@ -3236,6 +3254,10 @@ JR東日本 株主優待4： \123,456
         sResult += _T("\r\n旅客営業取扱基準規程第114条適用営業キロ計算駅:");
         sResult += this->getRule114apply_terminal_station();
     }
+    if (0 != this->rule160_4_transfer_station) {
+        sResult += _T("\r\n");
+        sResult += this->getRule160_4TransferMessage(_T("\r\n"));
+    }
     if (refRouteFlag.compnterm) {
         sResult += tstring(_T("\r\nこの経路の会社線通過連絡は許可されていません."));
     }
@@ -3253,6 +3275,21 @@ JR東日本 株主優待4： \123,456
 tstring     FARE_INFO::getRule114apply_terminal_station() const
 {
     return RouteUtil::StationName(rule114Info.stationId()).c_str(); 
+}
+
+//  旅客営業規則第160条の4 新幹線乗継の案内文
+//  @param [in] newline  2行目(規則名)の前の改行文字
+//  @return "岡山で新幹線乗り換え可（倉敷-岡山間途中下車不可）<newline>（旅客営業規則第160条の4）" / 非該当は空文字列
+//
+tstring     FARE_INFO::getRule160_4TransferMessage(const TCHAR* newline /* = _T("\n") */) const
+{
+    if (rule160_4_transfer_station == 0) {
+        return _T("");
+    }
+    return RouteUtil::StationName(rule160_4_transfer_station) + _T("で新幹線乗り換え可（") +
+           RouteUtil::StationName(rule160_4_junction_station) + _T("-") +
+           RouteUtil::StationName(rule160_4_transfer_station) + _T("間途中下車不可）") +
+           newline + _T("（旅客営業規則第160条の4）");
 }
 
 /*  public
@@ -4145,8 +4182,10 @@ int32_t Route::setup_route(LPCTSTR route_str, LPTSTR error_ptr /* = NULL*/, size
         ++column;
     }
 
+    // Keep fallback_fail_item alive until error_ptr is filled below:
+    // p may point into it (it was a dangling pointer when scoped inside the if block).
+    tstring fallback_fail_item;
     if (rc < 0) {
-        tstring fallback_fail_item;
         int32_t fallback_offset = 0;
         const vector<tstring> fallback_tokens = setup_route_tokenize_fallback_input(route_body.c_str());
         const int32_t fallback_rc = setup_route_parse_fallback_tokens(*this, fallback_tokens, fallback_fail_item, fallback_offset);
@@ -10000,6 +10039,76 @@ vector<PAIRIDENT> FARE_INFO::Check_jctspcl_fare(const vector<RouteItem>& routeLi
 }
 
 
+/* static */
+/** 旅客営業規則第160条の4(分岐駅通過列車に対する区間外乗車の特例)で
+ *  新幹線乗換駅d まで区間外乗車できる経路かをチェックする
+ *    分岐路線a 分岐駅c 本線b(d と反対方向) 新幹線(d と反対方向)  例: 伯備線 倉敷 山陽線 新倉敷 山陽新幹線
+ *    新幹線(d 方向) 本線b 分岐駅c 分岐路線a (逆向き)
+ * @param routeList [in] Route list
+ * @param junction_station [out] 分岐駅c(非該当は0)
+ * @return 新幹線乗換駅d / 0: 非該当
+ */
+int32_t FARE_INFO::CheckRule160_4Transfer(const vector<RouteItem>& routeList, int32_t* junction_station)
+{
+    const static char tsql[] =
+    "select jctsp_line_idb1, jctsp_station_idd from t_jctspcl"
+    " where type=1 and jctsp_station_idc2=0 and jctsp_line_ida=?1 and jctsp_station_idc1=?2";
+
+    *junction_station = 0;
+    for (size_t i = 1; i + 2 < routeList.size(); ++i) {
+        const bool forward = IS_SHINKANSEN_LINE(routeList[i + 2].lineId);
+        const bool backward = IS_SHINKANSEN_LINE(routeList[i].lineId);
+        if (!forward && !backward) {
+            continue;
+        }
+        // forward: a=[i], b=[i+1], 新幹線=[i+2] / backward: 新幹線=[i], b=[i+1], a=[i+2]
+        const int32_t branch_line = forward ? routeList[i].lineId : routeList[i + 2].lineId;
+        const int32_t main_line = routeList[i + 1].lineId;
+        const int32_t junction = forward ? routeList[i].stationId : routeList[i + 1].stationId;
+        const int32_t bullet_line = forward ? routeList[i + 2].lineId : routeList[i].lineId;
+        const int32_t bullet_station = forward ? routeList[i + 1].stationId : routeList[i].stationId;
+        const int32_t bullet_far_station = forward ? routeList[i + 2].stationId : routeList[i - 1].stationId;
+
+        if (IS_SHINKANSEN_LINE(branch_line) || IS_COMPANY_LINE(main_line)) {
+            continue;
+        }
+        DBO dbo = DBS::getInstance()->compileSql(tsql);
+        if (!dbo.isvalid()) {
+            break;
+        }
+        dbo.setParam(1, branch_line);
+        dbo.setParam(2, junction);
+        if (!dbo.moveNext() || (dbo.getInt(0) != main_line)) {
+            continue;
+        }
+        const int32_t transfer = dbo.getInt(1);
+        // 160条の4 の区間表にないもの、新幹線乗車時の取扱いが別に定められているものは除く
+        if ((transfer == STATION_ID(_T("上野"))) || (transfer == STATION_ID(_T("諫早"))) ||
+            (transfer == STATION_ID(_T("小倉"))) || (transfer == STATION_ID(_T("博多")))) {
+            continue;
+        }
+        if (BIT_CHK2(RouteUtil::AttrOfStationOnLineLine(bullet_line, transfer), BSRNOTYET_NA, BSRSHINKJCT)) {   // 新幹線に乗換駅がない
+            continue;
+        }
+        // 本線b は分岐駅c から乗換駅d と反対方向、新幹線も d から同じ方向へ乗り通す
+        if (RouteUtil::DirLine(main_line, junction, bullet_station) == RouteUtil::DirLine(main_line, junction, transfer)) {
+            continue;
+        }
+        const int32_t bullet_dir = forward ? RouteUtil::DirLine(bullet_line, bullet_station, bullet_far_station)
+                                           : RouteUtil::DirLine(bullet_line, bullet_far_station, bullet_station);
+        const int32_t transfer_dir = forward ? RouteUtil::DirLine(bullet_line, transfer, bullet_station)
+                                             : RouteUtil::DirLine(bullet_line, bullet_station, transfer);
+        if (bullet_dir != transfer_dir) {
+            continue;
+        }
+        TRACE(_T("Rule160_4: transfer to bullet line at %s (via %s)\n"), SNAME(transfer), SNAME(junction));
+        *junction_station = junction;
+        return transfer;
+    }
+    return 0;
+}
+
+
 int FARE_INFO::aggregate_fare_company(bool first_company,   /* 1回目の会社線 */
                                       const RouteFlag& rRoute_flag,
                                       int32_t station_id_0,
@@ -10315,6 +10424,9 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
         return false;
         //goto err;     /* >>>>>>>>>>>>>>>>>>> */
     }
+
+    /* 旅客営業規則第160条の4(新幹線乗継のための区間外乗車)の案内 */
+    this->rule160_4_transfer_station = FARE_INFO::CheckRule160_4Transfer(routeList, &this->rule160_4_junction_station);
     
     /* 旅客営業取扱基準規定43条の2（小倉、西小倉廻り） */
     if (!pRoute_flag->no_rule /*&& !pRoute_flag->osakakan_detour*/) {
@@ -10469,7 +10581,7 @@ bool FARE_INFO::calc_fare(RouteFlag* pRoute_flag, const vector<RouteItem>& route
             this->jr_fare += fare_add;
         }
 
-        if (isUrbanArea() && !pRoute_flag->isUseBullet()) {
+        if (isUrbanArea() && !pRoute_flag->isUseBullet() && !pRoute_flag->no_rule) { /* 非適用は近郊区間特例(当日限り)なし */
             this->avail_days = 1;   /* 当日限り */
         } else {
             /* 乗車券の有効日数 */
@@ -10875,6 +10987,25 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
 
     /* 大都市近郊区間 */
 
+    // 指定経路オプションの選択可否を設定する
+    // 大回り、または最短経路でも有効日数2日以上(距離による有効日数の乗車券)なら指定経路を選択可
+    // @param [in] difference 指定経路と最短経路の営業キロ差
+    // @retval true 指定経路が選択済み(近郊区間特例を適用せず指定経路で確定)
+    auto isAppointRouteChosen = [&](int32_t difference) -> bool {
+        if ((0 < difference) || (1 < FARE_INFO::days_ticket(this->sales_km))) {
+            if (route_original.getRouteFlag().urban_neerest < 0) {
+                TRACE("Foreced choice appint route.\n");
+                /* 指定経路乗車券は近郊区間特例(当日限り)を適用しない */
+                this->avail_days = FARE_INFO::days_ticket(this->sales_km);
+                return true;
+            }
+            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
+        } else {
+            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
+        }
+        return false;
+    };
+
     // 最短経路算出(8687 applied)
     // 近郊区間内で指定経路が8687適用で、
     //   A. 最短中心が8687適用ならその運賃を採用（最短中心駅で算出）1, 3, 5,6,7,8
@@ -10916,6 +11047,10 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
             // 　高崎-池袋、蒲田-上諏訪  など
             TRACE("neerest specific terminal over 200.0km or 100.0km\n");
             decision = 20;
+            if (!route_original.getRouteFlag().no_rule &&
+                isAppointRouteChosen(getTotalSalesKm() - fare_info_specific_short.getTotalSalesKm())) {
+                return false;
+            }
         } else {
             // B. 規程115 近郊区間内で指定経路が8687適用で、最短中心が8687適用できないなら単駅の最安経路
             //     代々木ー用土、蒲田-茅野　など
@@ -10959,19 +11094,19 @@ bool FARE_INFO::reCalcFareForOptiomizeRoute(RouteList& route_original)
                 /* 非適用ではrule115 変数のみが欲しいので */
                 return false;
             }
-            if (route_original.getRouteFlag().urban_neerest < 0) {
-                TRACE("Foreced choice appint route.\n");
+            if (isAppointRouteChosen(difference)) {
                 return false;
             }
             route_original.refRouteFlag().meihan_city_enable = 0;   // 名阪のあれも。
-            route_original.refRouteFlag().urban_neerest = 1; // 近郊区間内ですので最短経路の運賃で利用可能です
         } else {
             TRACE("already neerest route.\n");
             if (route_original.refRouteFlag().no_rule) {
                 /* 非適用ではrule115 変数のみが欲しいので */
                 return false;
             }
-            route_original.refRouteFlag().urban_neerest = 0; // すでに最安になってます(ので指定経路へ云々の選択肢なし)
+            if (isAppointRouteChosen(difference)) {
+                return false;
+            }
         }
 
         short_route_flag.rule86or87 = 0;

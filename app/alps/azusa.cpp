@@ -444,8 +444,10 @@ std::string az_route::get_fare_info_object_json() {
                 }
                 oss << "{";
                 if (fi.isRule114()) {
-                    oss << json_encoder::pair("rule114StockFare", 
-                            fi.getFareStockDiscount(i, dummy, true));
+                    // Include the company-line fare, same as stockDiscountFare
+                    // and FARE_INFO::showFare().
+                    oss << json_encoder::pair("rule114StockFare",
+                            fi.getFareStockDiscount(i, dummy, true) + fi.getFareForCompanyline());
                     oss << ",";
                 }
                 oss << json_encoder::pair("stockDiscountFare",
@@ -528,16 +530,20 @@ std::string az_route::get_fare_info_object_json() {
             std::vector<std::string> messages;
             oss << json_encoder::begin_array("messages");
             
-            if (refRouteFlag.no_rule &&
-                    fi.isUrbanArea() && !refRouteFlag.isUseBullet()) {
+            // Same criterion as FARE_INFO::showFare(): the suburban-area note is shown
+            // only when the fare rules are applied and no company line is included
+            // (the cheapest-route recalculation is skipped for company-line routes).
+            if (!refRouteFlag.no_rule &&
+                    fi.isUrbanArea() && !refRouteFlag.isUseBullet() &&
+                    !refRouteFlag.isIncludeCompanyLine()) {
                 if (fi.getBeginTerminalId() == fi.getEndTerminalId()) {
                     // messages.add(msgCantMetroTicket)
                 } else if (!refRouteFlag.isEnableRule115()
                         || !refRouteFlag.isRule115specificTerm()) {
                     if (refRouteFlag.isLongRoute()) {
-                        messages.push_back(json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です"));
+                        messages.push_back(json_encoder::value("近郊区間内ですので最短経路の運賃で利用可能です(途中下車不可、有効日数当日限り)"));
                     } else {
-                        messages.push_back(json_encoder::value("近郊区間内ですので最安運賃の経路で計算"));
+                        messages.push_back(json_encoder::value("近郊区間内ですので最安運賃の経路にしました(途中下車不可、有効日数当日限り)"));
                     }
                 }
 
@@ -583,7 +589,7 @@ std::string az_route::get_fare_info_object_json() {
                 messages.push_back(json_encoder::value("旅客営業規則第88条を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule160_4()) {
-                messages.push_back(json_encoder::value("旅客営業規則第160条第4項を適用していません"));
+                messages.push_back(json_encoder::value("旅客営業規則第160条第4・5項を適用していません"));
             }
             if (refRouteFlag.no_rule && refRouteFlag.isAvailableRule69()) {
                 messages.push_back(json_encoder::value("旅客営業規則第69条を適用していません"));
@@ -599,6 +605,9 @@ std::string az_route::get_fare_info_object_json() {
             }
             if (fi.isRule114()) {
                 messages.push_back(json_encoder::value("旅客営業取扱基準規程第114条適用営業キロ計算駅:" + fi.getRule114apply_terminal_station()));
+            }
+            if (!fi.getRule160_4TransferMessage().empty()) {
+                messages.push_back(json_encoder::value(fi.getRule160_4TransferMessage()));
             }
             if (refRouteFlag.compnterm) {
                 messages.push_back(json_encoder::value("この経路の会社線通過連絡は許可されていません."));

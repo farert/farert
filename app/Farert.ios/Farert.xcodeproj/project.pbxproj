@@ -33,6 +33,7 @@
 		2A57119E1EB836F800D593DD /* McPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119D1EB836F800D593DD /* McPicker.swift */; };
 		2A5711A01EB83D6300D593DD /* HolderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */; };
 		2A5711A21EB8CFA800D593DD /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5711A11EB8CFA800D593DD /* RoundButton.swift */; };
+		2A5CE0011F00AA0100ABCDEF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */; };
 		2A69CCE21E737046007F478A /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A69CCE11E737046007F478A /* libsqlite3.tbd */; };
 		2A8CBB901E9EF6F4002EDB37 /* LeftTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */; };
 		2A969B322354B2F400B8689F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A969B342354B2F400B8689F /* Localizable.strings */; };
@@ -78,6 +79,7 @@
 		2A57119D1EB836F800D593DD /* McPicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McPicker.swift; sourceTree = "<group>"; };
 		2A57119F1EB83D6300D593DD /* HolderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolderTableViewCell.swift; sourceTree = "<group>"; };
 		2A5711A11EB8CFA800D593DD /* RoundButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
+		2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2A69CCE11E737046007F478A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		2A7BB5F51EFF5E0A00A47293 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2A8CBB8F1E9EF6F4002EDB37 /* LeftTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeftTableViewController.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 				2A2BB0CA1AD6980600F7DED2 /* model */,
 				2A2BB0C91AD697FA00F7DED2 /* view */,
 				2A2BB0841AD6966500F7DED2 /* AppDelegate.swift */,
+				2A5CE0021F00AA0100ABCDEF /* SceneDelegate.swift */,
 				2AE754641ADCC2080020F59C /* CommonDefine.swift */,
 				2A2BB08B1AD6966500F7DED2 /* Images.xcassets */,
 				2A2BB0881AD6966500F7DED2 /* Main.storyboard */,
@@ -323,6 +326,7 @@
 				2AE754651ADCC2080020F59C /* CommonDefine.swift in Sources */,
 				2AF745241EFC0A65002BD1D6 /* McPickerPopoverViewController.swift in Sources */,
 				2A2BB0851AD6966500F7DED2 /* AppDelegate.swift in Sources */,
+				2A5CE0011F00AA0100ABCDEF /* SceneDelegate.swift in Sources */,
 				2AE5B81D1E95F66500C58D92 /* SlideMenuController.swift in Sources */,
 				2AC7488B1B402A7600D9BD11 /* RouteListTableViewCell.swift in Sources */,
 			);
@@ -476,11 +480,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Farert/Farert.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 102;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = W6SVZ3YCU5;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = W6SVZ3YCU5;
@@ -504,7 +508,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09;
+				MARKETING_VERSION = 26.10;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = Farert;
 				PROVISIONING_PROFILE = "";
@@ -525,11 +529,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Farert/Farert.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 102;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = W6SVZ3YCU5;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = W6SVZ3YCU5;
@@ -553,7 +557,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 26.09;
+				MARKETING_VERSION = 26.10;
 				PRODUCT_BUNDLE_IDENTIFIER = org.sutezo.Farert;
 				PRODUCT_NAME = "経路運賃営業キロ計算アプリ";
 				PROVISIONING_PROFILE = "";
