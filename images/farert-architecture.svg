@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1070 568" width="1070" height="568" font-family="-apple-system, 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif">
+  <!-- Farert architecture overview: platform layers, shared core, and database -->
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6d28d9"/>
+    </marker>
+    <marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#10b981"/>
+    </marker>
+    <style>
+      .t { font-size: 15px; font-weight: 700; fill: #1e293b; text-anchor: middle; }
+      .s { font-size: 12.5px; fill: #334155; text-anchor: middle; }
+      .h { font-size: 17px; font-weight: 700; text-anchor: middle; }
+      .lbl { font-size: 12px; font-weight: 700; fill: #64748b; text-anchor: middle; }
+      .note { font-size: 12px; fill: #475569; text-anchor: middle; }
+      .repo { font-size: 12.5px; font-weight: 700; fill: #475569; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1070" height="568" rx="16" fill="#f8fafc"/>
+  <text x="535" y="34" class="t" style="font-size:22px">Farert アーキテクチャ</text>
+
+  <!-- Repository brackets -->
+  <path d="M40,70 v-8 h780 v8" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="430" y="56" class="repo">farert リポジトリ（本リポジトリ）</text>
+  <path d="M850,70 v-8 h180 v8" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="940" y="56" class="repo">farert-wasm → farert-pwa</text>
+
+  <!-- Platform headers -->
+  <text x="130" y="94" class="h" style="fill:#16a34a">Android</text>
+  <text x="330" y="94" class="h" style="fill:#2563eb">iOS / macOS</text>
+  <text x="530" y="94" class="h" style="fill:#0078d4">Windows</text>
+  <text x="730" y="94" class="h" style="fill:#4d7c0f">CLI（POSIX）</text>
+  <text x="940" y="94" class="h" style="fill:#ea580c">Web（PWA）</text>
+
+  <!-- Row labels -->
+  <text x="20" y="147" class="lbl" transform="rotate(-90 20 147)">UI</text>
+  <text x="20" y="232" class="lbl" transform="rotate(-90 20 232)">ミドル</text>
+  <text x="20" y="318" class="lbl" transform="rotate(-90 20 318)">コア</text>
+
+  <!-- UI layer -->
+  <rect x="40" y="108" width="180" height="70" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="130" y="138" class="t">Kotlin</text>
+  <text x="130" y="160" class="s">Jetpack Compose / M3</text>
+  <rect x="240" y="108" width="180" height="70" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="330" y="138" class="t">Swift</text>
+  <text x="330" y="160" class="s">UIKit</text>
+  <rect x="850" y="108" width="180" height="116" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="940" y="160" class="t">TypeScript</text>
+  <text x="940" y="182" class="s">SvelteKit + Service Worker</text>
+
+  <!-- Middle layer -->
+  <rect x="40" y="193" width="180" height="70" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="130" y="223" class="t">Java</text>
+  <text x="130" y="245" class="s">コア呼び出しラッパ</text>
+  <rect x="240" y="193" width="180" height="70" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="330" y="223" class="t">Objective-C</text>
+  <text x="330" y="245" class="s">C++ ブリッジ</text>
+
+  <!-- PWA: WASM module containing the core and the database -->
+  <rect x="850" y="239" width="180" height="228" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="940" y="263" class="t">WASM</text>
+  <text x="940" y="281" class="s">JS ⇄ C++ バインディング</text>
+  <rect x="862" y="292" width="156" height="60" rx="8" fill="#8b5cf6" stroke="#6d28d9" stroke-width="1.5"/>
+  <text x="940" y="317" class="t" style="font-size:13.5px;fill:#ffffff">コア app/alps</text>
+  <text x="940" y="338" class="s" style="font-size:11.5px;fill:#ede9fe">同一ソース C++ → WASM</text>
+  <rect x="862" y="396" width="156" height="48" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="940" y="417" class="s" style="font-weight:700;fill:#047857">DB 内包</text>
+  <text x="940" y="434" class="s" style="font-size:11.5px;fill:#047857">同一 DB を同梱</text>
+
+  <!-- Windows: UI and middle are a single MFC layer -->
+  <rect x="440" y="108" width="180" height="155" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="530" y="178" class="t">MFC（C++）</text>
+  <text x="530" y="200" class="s">UI ＋ ミドル</text>
+
+  <!-- CLI: command-line front end covers UI and middle -->
+  <rect x="640" y="108" width="180" height="155" rx="10" fill="#ecfccb" stroke="#65a30d" stroke-width="2"/>
+  <text x="730" y="178" class="t">コマンドライン（C++）</text>
+  <text x="730" y="200" class="s">test/unix</text>
+  <text x="730" y="220" class="s">回帰テスト・動作確認用</text>
+
+  <!-- Core layer: Java port (Android) -->
+  <rect x="40" y="278" width="180" height="80" rx="10" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+  <text x="130" y="302" class="t">コア（Java）</text>
+  <text x="130" y="322" class="s">org.sutezo.alps</text>
+  <text x="130" y="344" class="note" style="fill:#b91c1c">C++ コアから 1 対 1 移植</text>
+  <text x="230" y="324" class="t" style="font-size:20px;fill:#b91c1c">≒</text>
+
+  <!-- Core layer: single-source C++ core shared by iOS / Windows / CLI (and built into WASM) -->
+  <rect x="240" y="278" width="580" height="80" rx="10" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2"/>
+  <text x="530" y="310" class="t" style="fill:#ffffff">コア app/alps（C++）― シングルソース</text>
+  <text x="530" y="333" class="s" style="fill:#ede9fe">経路探索・営業キロ・運賃計算・特例規則</text>
+  <line x1="822" y1="322" x2="860" y2="322" stroke="#6d28d9" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrp)"/>
+
+  <!-- Database (native platforms) -->
+  <rect x="40" y="388" width="780" height="64" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+  <text x="430" y="416" class="t">経路・運賃データベース（SQLite）jrdbNewest.db</text>
+  <text x="430" y="437" class="s">Google スプレッドシート → db/ で生成 → 各プラットフォームへ配布（Android は ZIP 圧縮）</text>
+  <line x1="130" y1="362" x2="130" y2="386" stroke="#64748b" stroke-width="2" marker-start="url(#arr)"/>
+  <line x1="530" y1="362" x2="530" y2="386" stroke="#64748b" stroke-width="2" marker-start="url(#arr)"/>
+  <line x1="822" y1="420" x2="860" y2="420" stroke="#10b981" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrg)"/>
+
+  <!-- Legend -->
+  <g font-size="12.5" fill="#334155">
+    <rect x="45" y="500" width="16" height="16" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="67" y="513">UI 層</text>
+    <rect x="130" y="500" width="16" height="16" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+    <text x="152" y="513">ミドル層（UI ⇄ コアの橋渡し）</text>
+    <rect x="345" y="500" width="16" height="16" rx="3" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="367" y="513">MFC</text>
+    <rect x="420" y="500" width="16" height="16" rx="3" fill="#ecfccb" stroke="#65a30d"/>
+    <text x="442" y="513">CLI</text>
+    <rect x="490" y="500" width="16" height="16" rx="3" fill="#8b5cf6" stroke="#6d28d9"/>
+    <text x="512" y="513">コア（C++）</text>
+    <rect x="615" y="500" width="16" height="16" rx="3" fill="#fee2e2" stroke="#ef4444"/>
+    <text x="637" y="513">コア（Java 移植版）</text>
+    <rect x="790" y="500" width="16" height="16" rx="3" fill="#d1fae5" stroke="#10b981"/>
+    <text x="812" y="513">データベース</text>
+  </g>
+  <text x="535" y="548" class="note" style="font-style:italic">※ 運賃計算ロジックはすべてのプラットフォームで共通。UI のみ各プラットフォームのネイティブ技術で実装</text>
+</svg>
