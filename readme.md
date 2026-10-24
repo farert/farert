@@ -24,7 +24,7 @@ source ../all/start.sh
 - 経路探索・運賃計算のコア（[app/alps](app/alps)）は C++ のシングルソースで、iOS / macOS・Windows・CLI・Web版が同一ソースをそれぞれビルドして使用します。Android 版のみ C++ から 1 対 1 で移植した Java 版を使用します。
 - Windows 版は MFC が UI とミドルを兼ねます。CLI（[test/unix](test/unix)）は回帰テスト・動作確認用です。
 - Web版（PWA）は [farert-wasm](https://github.com/farert/farert-wasm) がコアを WebAssembly 化し、[farert-pwa](https://github.com/farert/farert-pwa) がそれを利用します。
-- 経路・運賃データベースは Google スプレッドシートから [db/](db) で生成し、各プラットフォームへ配布します（Web版は WASM に同梱）。
+- 経路・運賃データベースは Google スプレッドシートから [db/](db) で生成し、各プラットフォームへ配布します。Web版は Emscripten の `--preload-file` で DB を `.data` ファイルにまとめ、起動時に仮想ファイルシステム（MEMFS）の `/data/jrdbNewest.db` へ展開してコアから SQLite で開きます。
 
 ## なんなのか
 - https://farert.blogspot.com/p/main.html

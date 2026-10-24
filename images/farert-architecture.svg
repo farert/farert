@@ -34,7 +34,7 @@
   <text x="330" y="94" class="h" style="fill:#2563eb">iOS / macOS</text>
   <text x="530" y="94" class="h" style="fill:#0078d4">Windows</text>
   <text x="730" y="94" class="h" style="fill:#4d7c0f">CLI（POSIX）</text>
-  <text x="940" y="94" class="h" style="fill:#ea580c">Web（PWA）</text>
+  <text x="940" y="94" class="h" style="fill:#0f766e">Web（PWA）</text>
 
   <!-- Row labels -->
   <text x="20" y="147" class="lbl" transform="rotate(-90 20 147)">UI</text>
@@ -68,7 +68,7 @@
   <text x="940" y="317" class="t" style="font-size:13.5px;fill:#ffffff">コア app/alps</text>
   <text x="940" y="338" class="s" style="font-size:11.5px;fill:#ede9fe">同一ソース C++ → WASM</text>
   <rect x="862" y="396" width="156" height="48" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
-  <text x="940" y="417" class="s" style="font-weight:700;fill:#047857">DB 内包</text>
+  <text x="940" y="417" class="s" style="font-weight:700;fill:#047857">DB プリロード</text>
   <text x="940" y="434" class="s" style="font-size:11.5px;fill:#047857">同一 DB を同梱</text>
 
   <!-- Windows: UI and middle are a single MFC layer -->
